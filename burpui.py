@@ -76,12 +76,46 @@ status = {
         '0': 'deleting'
         }
 
-burphost = ''
+"""
+                        cntr->warning,
+                        p1cntr->byte,
+                        cntr->byte,
+                        cntr->recvbyte,
+                        cntr->sentbyte,
+                        p1cntr->start,
+                        path?path:"");
+"""
+
+counters = [
+        'phase',
+        'files',
+        'files_enc',
+        'meta',
+        'meta_enc',
+        'dir',
+        'softlink',
+        'hardlink',
+        'special',
+        'efs',
+        'vssheader',
+        'vssheader_enc',
+        'vssfooter',
+        'vssfooter_enc',
+        'total',
+        'warning',
+        'estimated_bytes',
+        'bytes',
+        'bytes_in',
+        'bytes_out',
+        'start',
+        'path'
+        ]
+
 burpport = -1
 
 def _burp_status(query='\n'):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect((burphost, burpport))
+    s.connect(('127.0.0.1', burpport))
     s.send(query)
     s.shutdown(socket.SHUT_WR)
     f = s.makefile()
@@ -97,13 +131,20 @@ def _parse_backup_log(f, n):
             'received': '^\s*Bytes received: (\d+)'
             }
     lookup_complex = {
-            'files':    '^\s*Files:\s+(.+)\s+\|\s+(\d+)$',
-            'dir':      '^\s*Directories:\s+(.+)\s+\|\s+(\d+)$',
-            'softlink': '^\s*Soft links:\s+(.+)\s+\|\s+(\d+)$',
-            'hardlink': '^\s*Hard links:\s+(.+)\s+\|\s+(\d+)$',
-            'metadata': '^\s*Meta data:\s+(.+)\s+\|\s+(\d+)$',
-            'special':  '^\s*Special files:\s+(.+)\s+\|\s+(\d+)$',
-            'total':    '^\s*Grand total:\s+(.+)\s+\|\s+(\d+)$'
+            'files':         '^\s*Files:\s+(.+)\s+\|\s+(\d+)$',
+            'files_enc':     '^\s*Files \(encrypted\):\s+(.+)\s+\|\s+(\d+)$',
+            'dir':           '^\s*Directories:\s+(.+)\s+\|\s+(\d+)$',
+            'softlink':      '^\s*Soft links:\s+(.+)\s+\|\s+(\d+)$',
+            'hardlink':      '^\s*Hard links:\s+(.+)\s+\|\s+(\d+)$',
+            'meta':          '^\s*Meta data:\s+(.+)\s+\|\s+(\d+)$',
+            'meta_enc':      '^\s*Meta data\(enc\):\s+(.+)\s+\|\s+(\d+)$',
+            'special':       '^\s*Special files:\s+(.+)\s+\|\s+(\d+)$',
+            'efs':           '^\s*EFS files:\s+(.+)\s+\|\s+(\d+)$',
+            'vssheader':     '^\s*VSS headers:\s+(.+)\s+\|\s+(\d+)$',
+            'vssheader_enc': '^\s*VSS headers \(enc\):\s+(.+)\s+\|\s+(\d+)$',
+            'vssfooter':     '^\s*VSS footers:\s+(.+)\s+\|\s+(\d+)$',
+            'vssfooter_enc': '^\s*VSS footers \(enc\):\s+(.+)\s+\|\s+(\d+)$',
+            'total':         '^\s*Grand total:\s+(.+)\s+\|\s+(\d+)$'
             }
     backup = { 'windows': False, 'number': n }
     useful = False
@@ -166,6 +207,69 @@ def _parse_backup_log(f, n):
                 break
     return backup
 
+def _get_counters(name=None):
+    r = {}
+    i = 0
+    if not name:
+        return r
+    f = _burp_status('c:{0}\n'.format(name))
+    for l in f.readlines():
+        line = l.rstrip('\n')
+        rs = re.search('^{0}\s+\d\s+(\w)\s+(.+)$'.format(name), line)
+        if rs and rs.group(1) == 'r':
+            for v in rs.group(2).split('\t'):
+                break
+            counters = re.findall('\d+/\d+/\d+/\d+/\d+', rs.group(2))
+    f.close()
+    return r
+
+def _is_backup_running(name=None):
+    if not name:
+        return False
+    f = _burp_status('c:{0}\n'.format(name))
+    for l in f.readlines():
+        line = l.rstrip('\n')
+        r = re.search('^{0}\s+\d\s+(\w)'.format(name), line)
+        if r and r.group(1) not in [ 'i', 'c', 'C' ]:
+            f.close()
+            return True
+    f.close()
+    return False
+
+def _is_one_backup_running():
+    r = []
+    for c in _get_all_clients():
+        if _is_backup_running(c['name']):
+            r.append(c['name'])
+    return r
+
+def _get_all_clients():
+    f = _burp_status()
+    j = []
+    for l in f.readlines():
+        line = l.rstrip('\n')
+        if not line:
+            continue
+        logging.debug("line: '{0}'".format(line))
+        regex = re.compile("\s*(\w+)\s+\d\s+(\w)\s+(.+)")
+        m = regex.search(line)
+        c = {}
+        c['name'] = m.group(1)
+        c['state'] = status[m.group(2)]
+        infos = m.group(3)
+        logging.debug("infos: '{0}'".format(infos))
+        if infos == "0":
+            c['last'] = 'never'
+        elif re.match('^\d+\s\d+\s\d+$', infos):
+            sp = infos.split()
+            c['last'] = datetime.datetime.fromtimestamp(int(sp[2])).strftime('%Y-%m-%d %H:%M:%S')
+        else:
+            sp = infos.split('\t')
+            c['last'] = datetime.datetime.fromtimestamp(int(sp[len(sp)-2])).strftime('%Y-%m-%d %H:%M:%S')
+        j.append(c)
+    f.close()
+    return j
+
 def _get_client(name=None):
     r = []
     if not name:
@@ -179,7 +283,7 @@ def _get_client(name=None):
         logging.debug("line: '{0}'".format(line))
         regex = re.compile("\s*(\w+)\s+\d\s+(\w)\s+(.+)")
         m = regex.search(line)
-        if m.group(3) == "0" or m.group(2) != "i":
+        if m.group(3) == "0" or m.group(2) not in [ 'i', 'c', 'C' ]:
             continue
         backups = m.group(3).split('\t')
         for b in backups:
@@ -234,7 +338,7 @@ def _get_tree(name=None, backup=None, root=None):
     f.close()
     return r
 
-@app.route('/api/client-tree.json/<name>/<backup>', methods=['GET'])
+@app.route('/api/client-tree.json/<name>/<int:backup>', methods=['GET'])
 def client_tree(name=None, backup=None):
     """
     WebService: return a specific client files tree
@@ -247,7 +351,7 @@ def client_tree(name=None, backup=None):
     return jsonify(results=j)
 
 @app.route('/api/client-stat.json/<name>')
-@app.route('/api/client-stat.json/<name>/<backup>')
+@app.route('/api/client-stat.json/<name>/<int:backup>')
 def client_stat_json(name=None, backup=None):
     """
     WebService: return a specific client detailed report
@@ -279,30 +383,7 @@ def clients():
     """
     WebService: return a JSON listing all clients
     """
-    f = _burp_status()
-    j = []
-    for l in f.readlines():
-        line = l.rstrip('\n')
-        if not line:
-            continue
-        logging.debug("line: '{0}'".format(line))
-        regex = re.compile("\s*(\w+)\s+\d\s+(\w)\s+(.+)")
-        m = regex.search(line)
-        c = {}
-        c['name'] = m.group(1)
-        c['state'] = status[m.group(2)]
-        infos = m.group(3)
-        logging.debug("infos: '{0}'".format(infos))
-        if infos == "0":
-            c['last'] = 'never'
-        elif re.match('^\d+\s\d+\s\d+$', infos):
-            sp = infos.split()
-            c['last'] = datetime.datetime.fromtimestamp(int(sp[2])).strftime('%Y-%m-%d %H:%M:%S')
-        else:
-            sp = infos.split('\t')
-            c['last'] = datetime.datetime.fromtimestamp(int(sp[len(sp)-2])).strftime('%Y-%m-%d %H:%M:%S')
-        j.append(c)
-    f.close()
+    j = _get_all_clients()
     return jsonify(results=j)
 
 @app.route('/client-browse/<name>', methods=['GET'])
@@ -323,7 +404,7 @@ def client_report(name=None):
     return render_template('client-report.html', client=True, report=True, cname=name)
 
 @app.route('/backup-report/<name>', methods=['GET'])
-@app.route('/backup-report/<name>/<backup>', methods=['GET'])
+@app.route('/backup-report/<name>/<int:backup>', methods=['GET'])
 def backup_report(name=None, backup=None):
     """
     Backup specific report
@@ -342,6 +423,8 @@ def client(name=None):
         c = name
     else:
         c = request.args.get('name')
+#    if _is_backup_running(c):
+#        return redirect(url_for('live_status', name=name))
     return render_template('client.html', client=True, overview=True, cname=c)
 
 @app.route("/")
@@ -376,10 +459,8 @@ if __name__ == "__main__":
 
     config = ConfigParser.ConfigParser()
     config.read('burpui.cfg')
-    burphost = config.get('Global', 'host')
     burpport = config.getint('Global', 'port')
 
-    logging.info('burp host: {0}'.format( burphost ))
     logging.info('burp port: {0}'.format( burpport ))
 
     app.run(host='0.0.0.0', debug=d)
