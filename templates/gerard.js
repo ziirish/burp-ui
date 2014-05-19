@@ -217,7 +217,7 @@ var _client = function() {
 			                .x(function(d) { return d[0] })
 			                .y(function(d) { return d[1] })
 			                .clipEdge(true)
-			                .useInteractiveGuideline(false)
+			                .useInteractiveGuideline(true)
 					.color(d3.scale.category20c().range())
 			                ;
 
@@ -230,19 +230,23 @@ var _client = function() {
 	}
 	url = '{{ url_for("client_stat_json", name=cname) }}';
 	$.getJSON(url, function(d) {
-		var _fields = [ 'dir', 'files', 'hardlink', 'softlink' ];
+		var _fields = [ 'dir', 'files', 'hardlink', 'softlink', 'files_enc', 'meta', 'meta_enc', 'special', 'efs', 'vssheader', 'vssheader_enc', 'vssfooter', 'vssfooter_enc' ];
 		$.each(_charts, function(k, l) {
 			data = [];
 			$.each(_fields, function(i, c) {
 				values = [];
+				push = false;
 				$.each(d.results, function(a, j) {
 					if (j[c] !== undefined) {
 						values.push([ parseInt(j.end), parseInt(j[c][l]) ]);
+						push = true;
 					} else {
 						values.push([ parseInt(j.end), 0 ]);
 					}
 				});
-				data.push({ 'key': c, 'values': values });
+				if (push) {
+					data.push({ 'key': c, 'values': values });
+				}
 			});
 			$.each(_charts_obj, function(i, c) {
 				if (c.key === 'chart_'+l) {
@@ -462,24 +466,24 @@ $(function() {
 	}).focus();
 
 	$("#btnResetSearch").click(function(e){
-	  $("input[name=search-tree]").val("");
-	  $("span#matches").text("");
-	  tree.clearFilter();
+		$("input[name=search-tree]").val("");
+		$("span#matches").text("");
+		tree.clearFilter();
 	}).attr("disabled", true);
 
 	$("input#hideMode").change(function(e){
-	  tree.options.filter.mode = $(this).is(":checked") ? "hide" : "dimm";
-	  tree.clearFilter();
-	  $("input[name=search-tree]").keyup();
+		tree.options.filter.mode = $(this).is(":checked") ? "hide" : "dimm";
+		tree.clearFilter();
+		$("input[name=search-tree]").keyup();
 	});
 	$("input#leavesOnly").change(function(e){
-	  // tree.options.filter.leavesOnly = $(this).is(":checked");
-	  tree.clearFilter();
-	  $("input[name=search-tree]").keyup();
+		// tree.options.filter.leavesOnly = $(this).is(":checked");
+		tree.clearFilter();
+		$("input[name=search-tree]").keyup();
 	});
 	$("input#regex").change(function(e){
-	  tree.clearFilter();
-	  $("input[name=search-tree]").keyup();
+		tree.clearFilter();
+		$("input[name=search-tree]").keyup();
 	});
 
 	{% endif %}
