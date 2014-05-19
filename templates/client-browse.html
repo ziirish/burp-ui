@@ -1,0 +1,46 @@
+{% extends "layout.html" %}
+{% block body %}
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+          <ul class="breadcrumb" style="margin-bottom: 5px;">                      
+            <li><a href="{{ url_for('home') }}">Home</a></li>                      
+            <li><a href="{{ url_for('client', name=cname) }}">{{ cname }} overview</a></li>
+            <li class="active">Backup n°{{ nbackup }} overview</li>                
+          </ul>                                                                    
+          <br />
+          <h1 class="page-header">Backup n°{{ nbackup }} of {{ cname }}</h1>
+          <div class="row">
+            <form class="form-inline" role="form">
+              <div class="form-group">
+                <div class="input-group">
+                  <input type="text" class="form-control" placeholder="filter..." name="search-tree" autocomplete="off">
+                  <div class="input-group-btn">
+                    <button class="btn btn-default dropdown-toggle" data-toggle="dropdown" type="button">
+                      <span class="glyphicon glyphicon-cog"></span> options 
+                      <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu pull-right" role="menu">
+                      <li><a href="#"><div class="checkbox"><label><input type="checkbox" id="hideMode">&nbsp;Hide unmatched nodes <span class="glyphicon glyphicon-eye-close"></span></label></div></a></li>
+                      <li><a href="#"><div class="checkbox"><label><input type="checkbox" id="leavesOnly">&nbsp;Leaves only <span class="glyphicon glyphicon-leaf"></span></label></div></a></li>
+                      <li><a href="#"><div class="checkbox"><label><input type="checkbox" id="regex">&nbsp;Use regex <span class="glyphicon glyphicon-filter"></span></label></div></a></li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <span id="btnResetSearch" class="btn btn-default">×</span>
+              <span class="help-block" id="matches"></span>
+            </form>
+          </div>
+          <br />
+          <div class="table-responsive row">
+            <table id="tree" class="table">
+              <thead>
+                <tr>
+                  <th></th><th>mode</th><th>UID</th><th>GID</th><th>Size</th><th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+              </tbody>
+            </table>
+          </div>
+        </div>
+{% endblock %}

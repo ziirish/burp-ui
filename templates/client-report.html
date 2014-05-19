@@ -1,0 +1,49 @@
+{% extends "layout.html" %}
+{% block body %}
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+          <ul class="breadcrumb" style="margin-bottom: 5px;">
+            <li><a href="{{ url_for('home') }}">Home</a></li>
+            <li class="active">{{ cname }} overview</li>
+          </ul>
+          <br />
+          <h1 class="page-header">{{ cname }}</h1>
+          <div class="row placeholders">
+            <div class="col-xs-12 col-sm-12 placeholder">
+              <div class="mycharts" id="chart_new" style="height: 350px;">
+                <svg></svg>
+              </div>
+              <h4>New</h4>
+            </div>
+            <div class="col-xs-12 col-sm-12 placeholder">
+              <div class="mycharts" id="chart_scanned" style="height: 350px;">
+                <svg></svg>
+              </div>
+              <h4>Scanned</h4>
+            </div>
+            <div class="col-xs-12 col-sm-12 placeholder">
+              <div class="mycharts" id="chart_changed" style="height: 350px;">
+                <svg></svg>
+              </div>
+              <h4>Changed</h4>
+            </div>
+            <div class="col-xs-12 col-sm-12 placeholder">
+              <div class="mycharts" id="chart_deleted" style="height: 350px;">
+                <svg></svg>
+              </div>
+              <h4>Deleted</h4>
+            </div>
+            <div class="col-xs-12 col-sm-12 placeholder">
+              <div class="mycharts" id="chart_unchanged" style="height: 350px;">
+                <svg></svg>
+              </div>
+              <h4>Unchanged</h4>
+            </div>
+            <div class="col-xs-12 col-sm-12 placeholder">
+              <div class="mycharts" id="chart_total" style="height: 350px;">
+                <svg></svg>
+              </div>
+              <h4>Total</h4>
+            </div>
+          </div>
+        </div>
+{% endblock %}

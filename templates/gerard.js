@@ -1,0 +1,486 @@
+/***
+ * _clients_bh: Bloodhound object used for the autocompletion of the input field
+ */
+var _clients_bh = new Bloodhound({	
+	datumTokenizer: Bloodhound.tokenizers.obj.whitespace('name'),
+	queryTokenizer: Bloodhound.tokenizers.whitespace,
+	limit: 10,
+	prefetch: {
+		url: '{{ url_for("clients") }}',
+		filter: function(list) {
+			return list.results;
+		}
+	}
+});
+
+_clients_bh.initialize();
+
+/***
+ * Map out _clients_bh to our input with the typeahead plugin
+ */
+$('#input-client').typeahead(null, {
+	name: 'clients',
+	displayKey: 'name',
+	source: _clients_bh.ttAdapter()
+});
+
+
+{% if clients and overview %}
+/***
+ * Here is the 'clients' part
+ * It is available on the global clients view
+ */
+
+/***
+ * First we map some burp status with some style
+ */
+var __status = {
+	'client crashed': 'danger',
+	'server crashed': 'danger',
+	'running': 'info',
+};
+
+/***
+ * _clients: function that retrieve up-to-date informations from the burp server
+ * JSON format:
+ * {
+ *   "results": [
+ *     {
+ *       "last": "2014-05-12 19:40:02",
+ *       "name": "client1",
+ *       "state": "idle"
+ *     },
+ *     {
+ *       "last": "never",
+ *       "name": "client2",
+ *       "state": "idle"
+ *     }
+ *   ]
+ * }
+ *  The JSON is then parsed into a table
+ */
+var _clients = function() {
+	url = '{{ url_for("clients") }}';
+	$.getJSON(url, function(data) {
+		$('#table-clients > tbody:last').empty();
+		$.each(data.results, function(j, c) {
+			clas = '';
+			if (__status[c.state] != undefined) {
+				clas = ' '+__status[c.state];
+			}
+			$('#table-clients > tbody:last').append('<tr class="clickable'+clas+'" style="cursor: pointer;"><td><a href="{{ url_for("client") }}?name='+c.name+'" style="color: inherit; text-decoration: inherit;">'+c.name+'</a></td><td>'+c.state+'</td><td>'+c.last+'</td></tr>');
+		});
+	});
+};
+{% endif %}
+
+{% if client and overview %}
+/***
+ * Here is the 'client' part
+ * It is available on the 'specific' client view
+ */
+
+/***
+ * _client: function that retrieve up-to-date informations from the burp server about a specific client
+ * JSON format:
+ * {
+ *   "results": [
+ *     {
+ *       "date": "2014-05-12 19:40:02",
+ *       "number": "254"
+ *     },
+ *     {
+ *       "date": "2014-05-11 21:20:03",
+ *       "number": "253"
+ *     }
+ *   ]
+ * }
+ * The JSON is then parsed into a table
+ */
+var _client = function() {
+	url = '{{ url_for("client_json", name=cname) }}';
+	$.getJSON(url, function(data) {
+		$('#table-client >tbody:last').empty();
+		if (data.results.length == 0) {
+			$('#table-client').hide();
+			$('#client-alert').show();
+		} else {
+			$.each(data.results, function(j, c) {
+				$('#table-client> tbody:last').append('<tr class="clickable" style="cursor: pointer;"><td><a href="{{ url_for("client_browse", name=cname) }}?backup='+c.number+'" style="color: inherit; text-decoration: inherit;">'+c.number+'</a></td><td>'+c.date+'</td></tr>');
+			});
+		}
+	});
+};
+{% endif %}
+{% if backup and report and client %}
+var _charts = [ 'new', 'scanned', 'changed', 'deleted', 'total', 'unchanged' ];
+var _charts_obj = [];
+var chart_unified;
+var data_unified = [];
+var initialized = false;
+
+var _client = function() {
+	if (!initialized) {
+		$.each(_charts, function(i, j) {
+			tmp =  nv.models.pieChart()
+				.x(function(d) { return d.label })
+				.y(function(d) { return parseInt(d.value) })
+				.showLabels(true)
+				.labelThreshold(.05)
+				.labelType("percent")
+				.donut(true)
+				.valueFormat(d3.format('f'))
+				.color(d3.scale.category20c().range())
+				.tooltipContent(function(key, y, e, graph) { return '<h3>'+key+'</h3><p>'+y+' '+j+'</p>'; })
+				.donutRatio(0.55);
+
+			_charts_obj.push({ 'key': 'chart_'+j, 'obj': tmp, 'data': [] });
+		});
+		chart_unified = nv.models.multiBarHorizontalChart()
+				.x(function(d) { return d.label })
+				.y(function(d) { return parseInt(d.value) })
+				.showValues(false)
+				.tooltips(true)
+				.valueFormat(d3.format('f'))
+//				.stacked(true)
+				.tooltipContent(function(key, x, y, e, graph) { return '<h3>' + key + ' - ' + x + '</h3><p>' + y + '</p>'; })
+				.color(d3.scale.category20().range())
+				.showControls(false);
+
+		chart_unified.yAxis.tickFormat(d3.format(',.0f'));
+	}
+	url = '{{ url_for("client_stat_json", name=cname, backup=nbackup) }}';
+	$.getJSON(url, function(d) {
+		var _fields = [ 'dir', 'files', 'hardlink', 'softlink' ];
+		j = d.results;
+		$.each(_charts, function(k, l) {
+			data = [];
+			$.each(_fields, function(i, c) {
+				if (j[c] !== undefined && parseInt(j[c][l]) != 0) {
+					data.push({ 'label': c, 'value': parseInt(j[c][l]) });
+				}
+			});
+			if (data.length > 0) {
+				var dis = (l === 'total' || l === 'unchanged' || l === 'scanned');
+				data_unified.push({ 'key': l, 'values': data, disabled: dis });
+			}
+			$.each(_charts_obj, function(i, c) {
+				if (c.key === 'chart_'+l) {
+					if (data.length > 0 && !j.windows) {
+						c.data = data;
+						$('#chart_'+l).parent().show();
+					} else {
+						$('#chart_'+l).parent().hide();
+					}
+					return false;
+				}
+			});
+		});
+	});
+	_redraw();
+};
+
+var _redraw = function() {
+	$.each(_charts_obj, function(i, j) {
+		nv.addGraph(function() {
+
+			d3.select('#'+j.key+' svg')
+				.datum(j.data)
+				.transition().duration(500)
+				.call(j.obj);
+
+			nv.utils.windowResize(j.obj.update);
+
+			return j.obj;
+		});
+	});
+	nv.addGraph(function() {
+		d3.select('#chart_combined svg')
+			.datum(data_unified)
+			.transition().duration(500)
+			.call(chart_unified);
+
+		nv.utils.windowResize(chart_unified.update);
+	});
+	initialized = true;
+};
+{% endif %}
+{% if not backup and report and client %}
+var _charts = [ 'new', 'scanned', 'changed', 'deleted', 'total', 'unchanged' ];
+var _charts_obj = [];
+var initialized = false;
+
+var _client = function() {
+	if (!initialized) {
+		$.each(_charts, function(i, j) {
+			tmp = nv.models.stackedAreaChart()
+			                .x(function(d) { return d[0] })
+			                .y(function(d) { return d[1] })
+			                .clipEdge(true)
+			                .useInteractiveGuideline(false)
+					.color(d3.scale.category20c().range())
+			                ;
+
+			tmp.xAxis.showMaxMin(false).tickFormat(function(d) { return d3.time.format('%x')(new Date(d*1000)) });
+
+			tmp.yAxis.tickFormat(d3.format('f'));
+
+			_charts_obj.push({ 'key': 'chart_'+j, 'obj': tmp, 'data': [] });
+		});
+	}
+	url = '{{ url_for("client_stat_json", name=cname) }}';
+	$.getJSON(url, function(d) {
+		var _fields = [ 'dir', 'files', 'hardlink', 'softlink' ];
+		$.each(_charts, function(k, l) {
+			data = [];
+			$.each(_fields, function(i, c) {
+				values = [];
+				$.each(d.results, function(a, j) {
+					if (j[c] !== undefined) {
+						values.push([ parseInt(j.end), parseInt(j[c][l]) ]);
+					} else {
+						values.push([ parseInt(j.end), 0 ]);
+					}
+				});
+				data.push({ 'key': c, 'values': values });
+			});
+			$.each(_charts_obj, function(i, c) {
+				if (c.key === 'chart_'+l) {
+					if (data.length > 0) {
+						c.data = data;
+						$('#chart_'+l).parent().show();
+					} else {
+						$('#chart_'+l).parent().hide();
+					}
+					return false;
+				}
+			});
+		});
+	});
+	_redraw();
+};
+
+var _redraw = function() {
+	$.each(_charts_obj, function(i, j) {
+		nv.addGraph(function() {
+
+			d3.select('#'+j.key+' svg')
+				.datum(j.data)
+				.transition().duration(500)
+				.call(j.obj);
+
+			nv.utils.windowResize(j.obj.update);
+
+			return j.obj;
+		});
+	});
+	initialized = true;
+};
+{% endif %}
+
+var _async_ajax = function(b) {
+	$.ajaxSetup({
+		async: b
+	});
+}
+
+$(function() {
+	_async_ajax(false);
+
+	/***
+	 * Action on the 'refresh' button
+	 */
+	$('#refresh').on('click', function(e) {
+		e.preventDefault();
+		{% if clients %}
+		_clients();
+		{% endif %}
+		{% if client %}
+		_client();
+		{% endif %}
+	});
+
+	/***
+	 * trigger action on the 'search field' when the 'enter' key is pressed
+	 */
+	var search = $('input[id="input-client"]');
+	search.keypress(function(e) {
+		if (e.which == 13) {
+			window.location = '{{ url_for("client") }}?name='+search.val();
+		}
+	});
+
+	/***
+	 * add a listener to the '.clickable' element dynamically added in the document (see _client and _clients function)
+	 */
+	$( document ).on('click', '.clickable', function() {
+		window.location = $(this).find('a').attr('href');
+	});
+
+	/***
+	 * initialize our page if needed
+	 */
+	{% if clients %}
+	_clients();
+	{% endif %}
+	{% if client %}
+	_client();
+	{% endif %}
+
+	{% if not report %}
+	/***
+	 * auto-refresh our page if needed
+	 */
+	var auto_refresh = setInterval(function() {
+		{% if clients %}
+		_clients();
+		{% endif %}
+		{% if client %}
+		_client();
+		{% endif %}
+		return;
+	}, 30000);
+	{% endif %}
+
+	{% if tree %}
+	/***
+	 * Here is our tree to browse a specific backup
+	 * The tree is first initialized with the 'root' part of the backup.
+	 * JSON example:
+	 * {
+	 *   "results": [
+	 *     {
+	 *       "name": "/",
+	 *       "parent": "",
+	 *       "type": "d"
+	 *     }
+	 *   ]
+	 * }
+	 * This JSON is then parsed into another one to initialize our tree.
+	 * Each 'directory' is expandable.
+	 * A new JSON is returned for each one of then on-demand.
+	 * JSON output:
+	 * {
+	 *   "results": [
+	 *     {
+	 *       "name": "etc", 
+	 *       "parent": "/", 
+	 *       "type": "d"
+	 *     }, 
+	 *     {
+	 *       "name": "home", 
+	 *       "parent": "/", 
+	 *       "type": "d"
+	 *     }
+	 *   ]
+	 * }
+	 */
+	$("#tree").fancytree({
+		extensions: ["glyph", "table", "gridnav", "filter"],
+		glyph: {
+			map: {
+				doc: "glyphicon glyphicon-file",
+				docOpen: "glyphicon glyphicon-file",
+				checkbox: "glyphicon glyphicon-unchecked",
+				checkboxSelected: "glyphicon glyphicon-check",
+				checkboxUnknown: "glyphicon glyphicon-share",
+				error: "glyphicon glyphicon-warning-sign",
+				expanderClosed: "glyphicon glyphicon-plus-sign",
+				expanderLazy: "glyphicon glyphicon-plus-sign",
+				// expanderLazy: "glyphicon glyphicon-expand",
+				expanderOpen: "glyphicon glyphicon-minus-sign",
+				// expanderOpen: "glyphicon glyphicon-collapse-down",
+				folder: "glyphicon glyphicon-folder-close",
+				folderOpen: "glyphicon glyphicon-folder-open",
+				loading: "glyphicon glyphicon-refresh"
+				// loading: "icon-spinner icon-spin"
+			}
+		},
+		source: function() { 
+			r = [];
+			$.getJSON('{{ url_for("client_tree", name=cname, backup=nbackup) }}', function(data) {
+				$.each(data.results, function(j, c) {
+					l = (c.type === "d");
+					f = (c.type === "d");
+					s = {title: c.name, key: c.name, lazy: l, folder: f, uid: c.uid, gid: c.gid, date: c.date, mode: c.mode, size: c.size, inodes: c.inodes};
+					r.push(s);
+				});
+			});
+			return r;
+		},
+		lazyLoad: function(event, data) {
+			var node = data.node;
+			r = [];
+			p = node.key;
+			if (p !== "/") p += '/';
+			$.getJSON('{{ url_for("client_tree", name=cname, backup=nbackup) }}?root='+p, function(data) {
+				$.each(data.results, function(j, c) {
+					l = (c.type === "d");
+					f = (c.type === "d");
+					s = {title: c.name, key: c.parent+c.name, lazy: l, folder: f, uid: c.uid, gid: c.gid, date: c.date, mode: c.mode, size: c.size, inodes: c.inodes};
+					r.push(s);
+				});
+			});
+			data.result = r;
+		},
+		selectMode: 1,
+		scrollParent: $(window),
+		renderColumns: function(event, data) {
+			var node = data.node;
+			$tdList = $(node.tr).find(">td");
+
+			$tdList.eq(1).text(node.data.mode);
+			$tdList.eq(2).text(node.data.uid);
+			$tdList.eq(3).text(node.data.gid);
+			$tdList.eq(4).text(node.data.size);
+			$tdList.eq(5).text(node.data.date);
+		}
+	});
+
+	var tree = $("#tree").fancytree("getTree");
+
+	$("input[name=search-tree]").keyup(function(e){
+		var n,
+		leavesOnly = $("#leavesOnly").is(":checked"),
+		match = $(this).val();
+
+		if(e && e.which === $.ui.keyCode.ESCAPE || $.trim(match) === ""){
+			$("#btnResetSearch").click();
+			return;
+		}
+		if($("#regex").is(":checked")) {
+			// Pass function to perform match
+			n = tree.filterNodes(function(node) {
+				return new RegExp(match, "i").test(node.title);
+			}, leavesOnly);
+		} else {
+			// Pass a string to perform case insensitive matching
+			n = tree.filterNodes(match, leavesOnly);
+		}
+		$("#btnResetSearch").attr("disabled", false);
+		$("span#matches").text("(" + n + " matches)");
+	}).focus();
+
+	$("#btnResetSearch").click(function(e){
+	  $("input[name=search-tree]").val("");
+	  $("span#matches").text("");
+	  tree.clearFilter();
+	}).attr("disabled", true);
+
+	$("input#hideMode").change(function(e){
+	  tree.options.filter.mode = $(this).is(":checked") ? "hide" : "dimm";
+	  tree.clearFilter();
+	  $("input[name=search-tree]").keyup();
+	});
+	$("input#leavesOnly").change(function(e){
+	  // tree.options.filter.leavesOnly = $(this).is(":checked");
+	  tree.clearFilter();
+	  $("input[name=search-tree]").keyup();
+	});
+	$("input#regex").change(function(e){
+	  tree.clearFilter();
+	  $("input[name=search-tree]").keyup();
+	});
+
+	{% endif %}
+});

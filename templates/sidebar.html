@@ -1,0 +1,29 @@
+        <div class="col-sm-3 col-md-2 sidebar">
+          <ul class="nav nav-sidebar">
+            <li {% if overview %}class="active"{% endif %}>
+            {% if backup %}
+            <a href="{{ url_for('client_browse', name=cname) }}?backup={{ nbackup }}">Overview</a>
+            {% elif client %}
+            <a href="{{ url_for('client', name=cname) }}">Overview</a>
+            {% elif clients %}
+            <a href="{{ url_for('home') }}">Overview</a>
+            {% else %}
+            <a href="#">Overview</a>
+            {% endif %}
+            </li>
+            <li {% if report %}class="active"{% endif %}>
+            {% if client and not backup %}
+            <a href="{{ url_for('client_report', name=cname) }}">Reports</a>
+            {% elif clients %}
+            <a href="#">Reports</a>
+            {% elif backup %}
+            <a href="{{ url_for('backup_report', name=cname, backup=nbackup) }}">Reports</a>
+            {% else %}
+            <a href="#">Reports</a>
+            {% endif %}
+            </li>
+          </ul>
+          <ul class="nav nav-sidebar" style="display: none;">
+            <li><a href="">Nav item</a></li>
+          </ul>
+        </div>
