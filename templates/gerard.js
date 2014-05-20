@@ -213,15 +213,17 @@ var initialized = false;
 var _client = function() {
 	if (!initialized) {
 		$.each(_charts, function(i, j) {
-			tmp = nv.models.stackedAreaChart()
-			                .x(function(d) { return d[0] })
-			                .y(function(d) { return d[1] })
-			                .clipEdge(true)
-			                .useInteractiveGuideline(true)
-					.color(d3.scale.category20c().range())
-			                ;
+//			tmp = nv.models.stackedAreaChart()
+			tmp = nv.models.multiBarChart()
+							.x(function(d) { return d[0] })
+							.y(function(d) { return d[1] })
+							.stacked(true)
+//							.clipEdge(true)
+//							.useInteractiveGuideline(true)
+							.color(d3.scale.category20c().range())
+							;
 
-			tmp.xAxis.showMaxMin(false).tickFormat(function(d) { return d3.time.format('%x')(new Date(d*1000)) });
+			tmp.xAxis.showMaxMin(true).tickFormat(function(d) { return d3.time.format('%x')(new Date(d)) });
 
 			tmp.yAxis.tickFormat(d3.format('f'));
 
@@ -238,7 +240,8 @@ var _client = function() {
 				push = false;
 				$.each(d.results, function(a, j) {
 					if (j[c] !== undefined) {
-						values.push([ parseInt(j.end), parseInt(j[c][l]) ]);
+						val = parseFloat(j[c][l]);
+						values.push([ parseInt(j.end)*1000, val ]);
 						push = true;
 					} else {
 						values.push([ parseInt(j.end), 0 ]);
