@@ -127,13 +127,17 @@ def _burp_status(query='\n'):
     except socket.error:
         form = socket.AF_INET6
         logging.debug('{0} is an IPv6 address'.format(burphost))
-    s = socket.socket(form, socket.SOCK_STREAM)
-    s.connect((burphost, burpport))
-    s.send(query)
-    s.shutdown(socket.SHUT_WR)
-    f = s.makefile()
-    s.close()
-    return f
+    try:
+        s = socket.socket(form, socket.SOCK_STREAM)
+        s.connect((burphost, burpport))
+        s.send(query)
+        s.shutdown(socket.SHUT_WR)
+        f = s.makefile()
+        s.close()
+        return f
+    except socket.error:
+        logging.error('Cannot contact burp server at {0}:{1}'.format(burphost, burpport))
+        return -1
 
 def _parse_backup_log(f, n):
     lookup_easy = {
@@ -163,7 +167,7 @@ def _parse_backup_log(f, n):
     useful = False
     for l in f.readlines():
         line = l.rstrip('\n')
-        if re.match('^\d{4}-\d{2}-\d{2} (\d{2}:){3} burp\[\d+\] Client is Windows$', line):
+        if re.match('^\d{4}-\d{2}-\d{2} (\d{2}:){3} \w+\[\d+\] Client is Windows$', line):
             backup['windows'] = True
         elif not useful and not re.match('^-+$', line):
             continue
@@ -210,6 +214,8 @@ def _get_counters(name=None):
     if not name:
         return r
     f = _burp_status('c:{0}\n'.format(name))
+    if f == -1:
+        return r
     for l in f.readlines():
         line = l.rstrip('\n')
         rs = re.search('^{0}\s+\d\s+(\w)\s+(.+)$'.format(name), line)
@@ -224,6 +230,8 @@ def _is_backup_running(name=None):
     if not name:
         return False
     f = _burp_status('c:{0}\n'.format(name))
+    if f == -1:
+        return False
     for l in f.readlines():
         line = l.rstrip('\n')
         r = re.search('^{0}\s+\d\s+(\w)'.format(name), line)
@@ -241,8 +249,10 @@ def _is_one_backup_running():
     return r
 
 def _get_all_clients():
-    f = _burp_status()
     j = []
+    f = _burp_status()
+    if f == -1:
+        return j
     for l in f.readlines():
         line = l.rstrip('\n')
         if not line:
@@ -273,6 +283,8 @@ def _get_client(name=None):
         return r
     c = name
     f = _burp_status('c:{0}\n'.format(c))
+    if f == -1:
+        return r
     for l in f.readlines():
         line = l.rstrip('\n')
         if not re.match('^{0}\t'.format(c), line):
@@ -302,6 +314,8 @@ def _get_tree(name=None, backup=None, root=None):
         top = root.encode('utf-8')
 
     f = _burp_status('c:{0}:b:{1}:p:{2}\n'.format(name, backup, top))
+    if f == -1:
+        return r
     useful = False
     for l in f.readlines():
         line = l.rstrip('\n')
@@ -362,11 +376,15 @@ def client_stat_json(name=None, backup=None):
         return jsonify(results=j)
     if backup:
         f = _burp_status('c:{0}:b:{1}:f:log.gz\n'.format(name, backup))
+        if f == -1:
+            return jsonify(results=j)
         j = _parse_backup_log(f, backup)
         f.close()
     else:
         for c in _get_client(name):
             f =  _burp_status('c:{0}:b:{1}:f:log.gz\n'.format(name, c['number']))
+            if f == -1:
+                continue
             j.append(_parse_backup_log(f, c['number']))
             f.close()
     return jsonify(results=j)
