@@ -11,6 +11,11 @@ import datetime
 from flask import Flask, request, render_template, jsonify, redirect, url_for
 from optparse import OptionParser
 
+burpport = 4972
+burphost = '127.0.0.1'
+port = 5000
+bind = '::'
+
 import math
 import string
 
@@ -111,11 +116,16 @@ counters = [
         'path'
         ]
 
-burpport = -1
-
 def _burp_status(query='\n'):
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect(('127.0.0.1', burpport))
+    try:
+        socket.inet_aton(burphost)
+        form = socket.AF_INET
+        logging.debug('{0} is an IPv4 address'.format(burphost))
+    except socket.error:
+        form = socket.AF_INET6
+        logging.debug('{0} is an IPv6 address'.format(burphost))
+    s = socket.socket(form, socket.SOCK_STREAM)
+    s.connect((burphost, burpport))
     s.send(query)
     s.shutdown(socket.SHUT_WR)
     f = s.makefile()
@@ -168,22 +178,6 @@ def _parse_backup_log(f, n):
                 found = True
                 if key in ['start', 'end']:
                     backup[key] = int(time.mktime(datetime.datetime.strptime(r.group(1), '%Y-%m-%d %H:%M:%S').timetuple()))
-#                elif key == 'duration':
-#                    sr = re.search('^(\d{2}:\d{2}:)?(\d{2}:)?\d{2}:\d{2}$', r.group(1))
-#                    if sr:
-#                        if not sr.group(1) and not sr.group(2):
-#                            f = '%M:%S'
-#                            t = r.group(1)
-#                        elif sr.group(2):
-#                            f = '%H:%M:%S'
-#                            t = r.group(1)
-#                        else:
-#                            f = '%H:%M:%S'
-#                            sp = r.group(1).split(':')
-#                            dth = int(sp[0]) * 24
-#                            dth += int(sp[1])
-#                            t = '{0}:{1}:{2}'.format(dth, sp[2], sp[3])
-#                        backup[key] = int(time.mktime(datetime.datetime.strptime(t, f).timetuple()))
                 else:
                     backup[key] = r.group(1)
                 break
@@ -457,10 +451,16 @@ if __name__ == "__main__":
     if loglevel.upper() == 'DEBUG':
         d = True
 
-    config = ConfigParser.ConfigParser()
+    config = ConfigParser.ConfigParser({'bport': burpport, 'bhost': burphost, 'port': port, 'bind': bind})
     config.read('burpui.cfg')
-    burpport = config.getint('Global', 'port')
+    burpport = config.getint('Global', 'bport')
+    burphost = config.get('Global', 'bhost')
+    port = config.getint('Global', 'port')
+    bind = config.get('Global', 'bind')
 
     logging.info('burp port: {0}'.format( burpport ))
+    logging.info('burp host: {0}'.format( burphost ))
+    logging.info('listen port: {0}'.format( port ))
+    logging.info('bind addr: {0}'.format( bind ))
 
-    app.run(host='0.0.0.0', debug=d)
+    app.run(host=bind, port=port, debug=d)
