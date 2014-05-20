@@ -1,3 +1,8 @@
+function pad(num) {
+	var s = "0000000" + num;
+	return s.substr(s.length-7);
+}
+
 /***
  * _clients_bh: Bloodhound object used for the autocompletion of the input field
  */
@@ -106,7 +111,7 @@ var _client = function() {
 			$('#client-alert').show();
 		} else {
 			$.each(data.results, function(j, c) {
-				$('#table-client> tbody:last').append('<tr class="clickable" style="cursor: pointer;"><td><a href="{{ url_for("client_browse", name=cname) }}?backup='+c.number+'" style="color: inherit; text-decoration: inherit;">'+c.number+'</a></td><td>'+c.date+'</td></tr>');
+				$('#table-client> tbody:last').append('<tr class="clickable" style="cursor: pointer;"><td><a href="{{ url_for("client_browse", name=cname) }}?backup='+c.number+'" style="color: inherit; text-decoration: inherit;">'+pad(c.number)+'</a></td><td>'+c.date+'</td></tr>');
 			});
 		}
 	});
@@ -480,7 +485,6 @@ $(function() {
 		$("input[name=search-tree]").keyup();
 	});
 	$("input#leavesOnly").change(function(e){
-		// tree.options.filter.leavesOnly = $(this).is(":checked");
 		tree.clearFilter();
 		$("input[name=search-tree]").keyup();
 	});

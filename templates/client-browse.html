@@ -4,10 +4,10 @@
           <ul class="breadcrumb" style="margin-bottom: 5px;">                      
             <li><a href="{{ url_for('home') }}">Home</a></li>                      
             <li><a href="{{ url_for('client', name=cname) }}">{{ cname }} overview</a></li>
-            <li class="active">Backup n°{{ nbackup }} overview</li>                
+            <li class="active">Backup n°{{ nbackup|mypad }} overview</li>                
           </ul>                                                                    
           <br />
-          <h1 class="page-header">Backup n°{{ nbackup }} of {{ cname }}</h1>
+          <h1 class="page-header">Backup n°{{ nbackup|mypad }} of {{ cname }}</h1>
           <div class="row">
             <form class="form-inline" role="form">
               <div class="form-group">

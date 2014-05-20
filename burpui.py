@@ -16,6 +16,11 @@ burphost = '127.0.0.1'
 port = 5000
 bind = '::'
 
+"""
+The following code is used to convert bytes to be human readable.
+It was found on the Internet...
+"""
+
 import math
 import string
 
@@ -64,6 +69,10 @@ class _human_readable( long ):
 
         return "{0:{1}}".format(t,width) if width != "" else t
 
+"""
+Now this is Burp-UI
+"""
+
 app = Flask(__name__)
 
 status = {
@@ -80,16 +89,6 @@ status = {
         '9': 'verifying',
         '0': 'deleting'
         }
-
-"""
-                        cntr->warning,
-                        p1cntr->byte,
-                        cntr->byte,
-                        cntr->recvbyte,
-                        cntr->sentbyte,
-                        p1cntr->start,
-                        path?path:"");
-"""
 
 counters = [
         'phase',
@@ -115,6 +114,10 @@ counters = [
         'start',
         'path'
         ]
+
+"""
+Utilities functions
+"""
 
 def _burp_status(query='\n'):
     try:
@@ -332,6 +335,10 @@ def _get_tree(name=None, backup=None, root=None):
     f.close()
     return r
 
+"""
+Here is the API
+"""
+
 @app.route('/api/client-tree.json/<name>/<int:backup>', methods=['GET'])
 def client_tree(name=None, backup=None):
     """
@@ -379,6 +386,17 @@ def clients():
     """
     j = _get_all_clients()
     return jsonify(results=j)
+
+"""
+Here is a custom filter
+"""
+@app.template_filter()
+def mypad (s):
+    return '{0:07d}'.format(int(s))
+
+"""
+And here is the main site
+"""
 
 @app.route('/client-browse/<name>', methods=['GET'])
 def client_browse(name=None):
