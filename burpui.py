@@ -445,7 +445,7 @@ if __name__ == "__main__":
     if options.log:
         loglevel = options.log
     else:
-        loglevel = WARNING
+        loglevel = 'WARNING'
 
     numeric_level = getattr(logging, loglevel.upper(), None)
     if not isinstance(numeric_level, int):
