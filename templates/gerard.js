@@ -218,17 +218,15 @@ var initialized = false;
 var _client = function() {
 	if (!initialized) {
 		$.each(_charts, function(i, j) {
-//			tmp = nv.models.stackedAreaChart()
-			tmp = nv.models.multiBarChart()
+			tmp = nv.models.stackedAreaChart()
 							.x(function(d) { return d[0] })
 							.y(function(d) { return d[1] })
-							.stacked(true)
-//							.clipEdge(true)
-//							.useInteractiveGuideline(true)
+							.useInteractiveGuideline(true)
 							.color(d3.scale.category20c().range())
 							;
 
-			tmp.xAxis.showMaxMin(true).tickFormat(function(d) { return d3.time.format('%x')(new Date(d)) });
+			tmp.margin({bottom: 105, left: 80});
+			tmp.xAxis.showMaxMin(true).tickFormat(function(d) { return d3.time.format('%x %X')(new Date(d)) }).rotateLabels(-45);
 
 			tmp.yAxis.tickFormat(d3.format('f'));
 
@@ -274,6 +272,7 @@ var _client = function() {
 
 var _redraw = function() {
 	$.each(_charts_obj, function(i, j) {
+
 		nv.addGraph(function() {
 
 			d3.select('#'+j.key+' svg')

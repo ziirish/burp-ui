@@ -302,6 +302,8 @@ def _get_client(name=None):
             ba['date'] = datetime.datetime.fromtimestamp(int(sp[2])).strftime('%Y-%m-%d %H:%M:%S')
             r.append(ba)
     f.close()
+    # Here we need to reverse the array so the backups are sorted by date ASC
+    r.reverse()
     return r
 
 def _get_tree(name=None, backup=None, root=None):
