@@ -181,13 +181,25 @@ svg text {
   fill: #C8C8C8;
 }
 
-/*
-.mycharts {
-  background-color: #E9F2F9;
-  color: #697075;
+.nvd3.nv-pie path {
+  stroke-opacity: 0;
 }
-*/
 
 .nvtooltip {
   color: #697075;
+}
+
+@keyframes blink {  
+  0% { opacity: 1.0; }
+  50% { opacity: 0.0; }
+  100% { opacity: 1.0; }
+}
+@-webkit-keyframes blink {
+  0% { opacity: 1.0; }
+  50% { opacity: 0.0; }
+  100% { opacity: 1.0; }
+}
+.blink {
+  animation: blink 1s step-start 0s infinite;
+  -webkit-animation: blink 1s step-start 0s infinite;
 }

@@ -355,6 +355,15 @@ def _get_tree(name=None, backup=None, root=None):
 Here is the API
 """
 
+@app.route('/api/running.json')
+def backup_running():
+    """
+    WebService: return true if at least one backup is running
+    """
+    j = _is_one_backup_running()
+    r = len(j) > 0
+    return jsonify(results=r)
+
 @app.route('/api/client-tree.json/<name>/<int:backup>', methods=['GET'])
 def client_tree(name=None, backup=None):
     """
