@@ -1,7 +1,18 @@
-function pad(num) {
+var pad = function (num) {
 	var s = "0000000" + num;
 	return s.substr(s.length-7);
 }
+
+var _check_running = function() {
+	url = '{{ url_for("backup_running") }}';
+	$.getJSON(url, function(data) {
+		if (data.results) {
+			$('#toblink').addClass('blink');
+		} else {
+			$('#toblink').removeClass('blink');
+		}
+	});
+};
 
 /***
  * _clients_bh: Bloodhound object used for the autocompletion of the input field
@@ -351,6 +362,10 @@ $(function() {
 		{% endif %}
 		return;
 	}, 30000);
+
+	var refresh_running = setInterval(function () {
+		_check_running();
+	}, 5000);
 	{% endif %}
 
 	{% if tree %}
