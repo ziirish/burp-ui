@@ -8,6 +8,7 @@ import re
 import socket
 import time
 import datetime
+import collections
 from flask import Flask, request, render_template, jsonify, redirect, url_for
 from optparse import OptionParser
 
@@ -113,20 +114,28 @@ counters = [
         'bytes_out',
         'start',
         'path'
-        ]
+       ]
 
 """
 Utilities functions
 """
 
+def _bdebug(message=None):
+    import inspect
+    func = inspect.currentframe().f_back.f_code
+    if not message:
+        logging.debug('{0}:{1} {2}'.format(func.co_filename, func.co_firstlineno, func.co_name))
+    else:
+        logging.debug('{0}:{1} {2} -> {3}'.format(func.co_filename, func.co_firstlineno, func.co_name, message))
+
 def _burp_status(query='\n'):
     try:
         socket.inet_aton(burphost)
         form = socket.AF_INET
-        logging.debug('{0} is an IPv4 address'.format(burphost))
+        _bdebug('{0} is an IPv4 address'.format(burphost))
     except socket.error:
         form = socket.AF_INET6
-        logging.debug('{0} is an IPv6 address'.format(burphost))
+        _bdebug('{0} is an IPv6 address'.format(burphost))
     try:
         s = socket.socket(form, socket.SOCK_STREAM)
         s.connect((burphost, burpport))
@@ -136,7 +145,7 @@ def _burp_status(query='\n'):
         s.close()
         return f
     except socket.error:
-        logging.error('Cannot contact burp server at {0}:{1}'.format(burphost, burpport))
+        _berror('Cannot contact burp server at {0}:{1}'.format(burphost, burpport))
         return -1
 
 def _parse_backup_log(f, n):
@@ -195,7 +204,7 @@ def _parse_backup_log(f, n):
         for key, regex in lookup_complex.iteritems():
             r = re.search(regex, line)
             if r:
-                logging.debug("match[1]: '{0}'".format(r.group(1)))
+                _bdebug("match[1]: '{0}'".format(r.group(1)))
                 sp = re.split('\s+', r.group(1))
                 backup[key] = {
                         'new':       sp[0],
@@ -210,7 +219,6 @@ def _parse_backup_log(f, n):
 
 def _get_counters(name=None):
     r = {}
-    i = 0
     if not name:
         return r
     f = _burp_status('c:{0}\n'.format(name))
@@ -218,12 +226,28 @@ def _get_counters(name=None):
         return r
     for l in f.readlines():
         line = l.rstrip('\n')
-        rs = re.search('^{0}\s+\d\s+(\w)\s+(.+)$'.format(name), line)
-        if rs and rs.group(1) == 'r':
-            for v in rs.group(2).split('\t'):
-                break
-            counters = re.findall('\d+/\d+/\d+/\d+/\d+', rs.group(2))
+        _bdebug('line: {0}'.format(line))
+        rs = re.search('^{0}\s+(\d)\s+(\w)\s+(.+)$'.format(name), line)
+        if rs and rs.group(2) == 'r' and int(rs.group(1)) == 2:
+            c = 0
+            for v in rs.group(3).split('\t'):
+                _bdebug('{0}: {1}'.format(counters[c], v))
+                if c < 15:
+                    r[counters[c]] = v.split('/')
+                else:
+                    r[counters[c]] = v
+                c += 1
     f.close()
+    diff = time.time() - int(r['start'])
+    byteswant = int(r['estimated_bytes'])
+    bytesgot = int(r['bytes_in'])
+    bytespersec = bytesgot / diff
+    bytesleft = byteswant - bytesgot
+    if (bytespersec > 0):
+        timeleft = int(bytesleft / bytespersec)
+        r['timeleft'] = timeleft
+    else:
+        r['timeleft'] = -1
     return r
 
 def _is_backup_running(name=None):
@@ -257,14 +281,14 @@ def _get_all_clients():
         line = l.rstrip('\n')
         if not line:
             continue
-        logging.debug("line: '{0}'".format(line))
+        _bdebug("line: '{0}'".format(line))
         regex = re.compile("\s*(\w+)\s+\d\s+(\w)\s+(.+)")
         m = regex.search(line)
         c = {}
         c['name'] = m.group(1)
         c['state'] = status[m.group(2)]
         infos = m.group(3)
-        logging.debug("infos: '{0}'".format(infos))
+        _bdebug("infos: '{0}'".format(infos))
         if infos == "0":
             c['last'] = 'never'
         elif re.match('^\d+\s\d+\s\d+$', infos):
@@ -289,7 +313,7 @@ def _get_client(name=None):
         line = l.rstrip('\n')
         if not re.match('^{0}\t'.format(c), line):
             continue
-        logging.debug("line: '{0}'".format(line))
+        _bdebug("line: '{0}'".format(line))
         regex = re.compile("\s*(\w+)\s+\d\s+(\w)\s+(.+)")
         m = regex.search(line)
         if m.group(3) == "0" or m.group(2) not in [ 'i', 'c', 'C' ]:
@@ -323,7 +347,7 @@ def _get_tree(name=None, backup=None, root=None):
         line = l.rstrip('\n')
         if not line:
             continue
-        logging.debug("line: '{0}'".format(line))
+        _bdebug("line: '{0}'".format(line))
         if not useful and re.match('^-list begin-$', line):
             useful = True
             continue
@@ -354,6 +378,19 @@ def _get_tree(name=None, backup=None, root=None):
 """
 Here is the API
 """
+
+@app.route('/api/live.json')
+def live():
+    """
+    WebServer: return the live status of the server
+    """
+    r = []
+    for c in _is_one_backup_running():
+        s = {}
+        s['client'] = c
+        s['status'] = _get_counters(c)
+        r.append(s)
+    return jsonify(results=r)
 
 @app.route('/api/running.json')
 def backup_running():
