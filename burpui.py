@@ -145,7 +145,7 @@ def _burp_status(query='\n'):
         s.close()
         return f
     except socket.error:
-        _berror('Cannot contact burp server at {0}:{1}'.format(burphost, burpport))
+        logging.error('Cannot contact burp server at {0}:{1}'.format(burphost, burpport))
         return -1
 
 def _parse_backup_log(f, n):
