@@ -3,6 +3,7 @@
 import ConfigParser
 import logging
 import sys
+import os
 import subprocess
 import re
 import socket
@@ -129,24 +130,33 @@ def _bdebug(message=None):
         logging.debug('{0}:{1} {2} -> {3}'.format(func.co_filename, func.co_firstlineno, func.co_name, message))
 
 def _burp_status(query='\n'):
+    r = []
     try:
         socket.inet_aton(burphost)
         form = socket.AF_INET
-        _bdebug('{0} is an IPv4 address'.format(burphost))
     except socket.error:
         form = socket.AF_INET6
-        _bdebug('{0} is an IPv6 address'.format(burphost))
     try:
+        if not query.endswith('\n'):
+            q = '{0}\n'.format(query)
+        else:
+            q = query
         s = socket.socket(form, socket.SOCK_STREAM)
         s.connect((burphost, burpport))
-        s.send(query)
+        s.send(q)
         s.shutdown(socket.SHUT_WR)
         f = s.makefile()
         s.close()
-        return f
+        for l in f.readlines():
+            line = l.rstrip('\n')
+            if not line:
+                continue
+            r.append(line)
+        f.close()
+        return r
     except socket.error:
         logging.error('Cannot contact burp server at {0}:{1}'.format(burphost, burpport))
-        return -1
+        return r
 
 def _parse_backup_log(f, n):
     lookup_easy = {
@@ -174,8 +184,7 @@ def _parse_backup_log(f, n):
             }
     backup = { 'windows': False, 'number': n }
     useful = False
-    for l in f.readlines():
-        line = l.rstrip('\n')
+    for line in f:
         if re.match('^\d{4}-\d{2}-\d{2} (\d{2}:){3} \w+\[\d+\] Client is Windows$', line):
             backup['windows'] = True
         elif not useful and not re.match('^-+$', line):
@@ -222,10 +231,9 @@ def _get_counters(name=None):
     if not name:
         return r
     f = _burp_status('c:{0}\n'.format(name))
-    if f == -1:
+    if not f:
         return r
-    for l in f.readlines():
-        line = l.rstrip('\n')
+    for line in f:
         _bdebug('line: {0}'.format(line))
         rs = re.search('^{0}\s+(\d)\s+(\w)\s+(.+)$'.format(name), line)
         if rs and rs.group(2) == 'r' and int(rs.group(1)) == 2:
@@ -237,7 +245,6 @@ def _get_counters(name=None):
                 else:
                     r[counters[c]] = v
                 c += 1
-    f.close()
     diff = time.time() - int(r['start'])
     byteswant = int(r['estimated_bytes'])
     bytesgot = int(r['bytes_in'])
@@ -254,15 +261,10 @@ def _is_backup_running(name=None):
     if not name:
         return False
     f = _burp_status('c:{0}\n'.format(name))
-    if f == -1:
-        return False
-    for l in f.readlines():
-        line = l.rstrip('\n')
+    for line in f:
         r = re.search('^{0}\s+\d\s+(\w)'.format(name), line)
         if r and r.group(1) not in [ 'i', 'c', 'C' ]:
-            f.close()
             return True
-    f.close()
     return False
 
 def _is_one_backup_running():
@@ -275,12 +277,7 @@ def _is_one_backup_running():
 def _get_all_clients():
     j = []
     f = _burp_status()
-    if f == -1:
-        return j
-    for l in f.readlines():
-        line = l.rstrip('\n')
-        if not line:
-            continue
+    for line in f:
         _bdebug("line: '{0}'".format(line))
         regex = re.compile("\s*(\w+)\s+\d\s+(\w)\s+(.+)")
         m = regex.search(line)
@@ -298,19 +295,19 @@ def _get_all_clients():
             sp = infos.split('\t')
             c['last'] = datetime.datetime.fromtimestamp(int(sp[len(sp)-2])).strftime('%Y-%m-%d %H:%M:%S')
         j.append(c)
-    f.close()
     return j
 
 def _get_client(name=None):
+    """
+    _get_client returns a list of dict representing the backups (with its number
+    and date) of a given client
+    """
     r = []
     if not name:
         return r
     c = name
     f = _burp_status('c:{0}\n'.format(c))
-    if f == -1:
-        return r
-    for l in f.readlines():
-        line = l.rstrip('\n')
+    for line in f:
         if not re.match('^{0}\t'.format(c), line):
             continue
         _bdebug("line: '{0}'".format(line))
@@ -325,12 +322,15 @@ def _get_client(name=None):
             ba['number'] = sp[0]
             ba['date'] = datetime.datetime.fromtimestamp(int(sp[2])).strftime('%Y-%m-%d %H:%M:%S')
             r.append(ba)
-    f.close()
     # Here we need to reverse the array so the backups are sorted by date ASC
     r.reverse()
     return r
 
 def _get_tree(name=None, backup=None, root=None):
+    """
+    _get_tree returns a list of dict representing files/dir (with their attr)
+    within a given path
+    """
     r = []
     if not name or not backup:
         return r
@@ -340,13 +340,8 @@ def _get_tree(name=None, backup=None, root=None):
         top = root.encode('utf-8')
 
     f = _burp_status('c:{0}:b:{1}:p:{2}\n'.format(name, backup, top))
-    if f == -1:
-        return r
     useful = False
-    for l in f.readlines():
-        line = l.rstrip('\n')
-        if not line:
-            continue
+    for line in f:
         _bdebug("line: '{0}'".format(line))
         if not useful and re.match('^-list begin-$', line):
             useful = True
@@ -372,7 +367,6 @@ def _get_tree(name=None, backup=None, root=None):
                 t['name'] = sp[len(sp)-1]
                 t['parent'] = top
                 r.append(t)
-    f.close()
     return r
 
 """
@@ -424,17 +418,11 @@ def client_stat_json(name=None, backup=None):
         return jsonify(results=j)
     if backup:
         f = _burp_status('c:{0}:b:{1}:f:log.gz\n'.format(name, backup))
-        if f == -1:
-            return jsonify(results=j)
         j = _parse_backup_log(f, backup)
-        f.close()
     else:
         for c in _get_client(name):
             f =  _burp_status('c:{0}:b:{1}:f:log.gz\n'.format(name, c['number']))
-            if f == -1:
-                continue
             j.append(_parse_backup_log(f, c['number']))
-            f.close()
     return jsonify(results=j)
 
 @app.route('/api/client.json/<name>')
@@ -458,6 +446,9 @@ Here is a custom filter
 """
 @app.template_filter()
 def mypad (s):
+    """
+    Filter: used to pad 0's to backup numbers as in the burp's status monitor
+    """
     return '{0:07d}'.format(int(s))
 
 """
@@ -517,13 +508,19 @@ if __name__ == "__main__":
     Main function
     """
     parser = OptionParser()
-    parser.add_option('-l', '--log', dest="log", help='log level')
+    parser.add_option('-l', '--log', dest='log', help='log level')
+    parser.add_option('-c', '--config', dest='config', help='configuration file')
 
     (options, args) = parser.parse_args()
     if options.log:
         loglevel = options.log
     else:
         loglevel = 'WARNING'
+
+    if options.config:
+        conf = options.config
+    else:
+        conf = '{0}/burpui.cfg'.format(os.path.dirname(os.path.realpath(__file__)))
 
     numeric_level = getattr(logging, loglevel.upper(), None)
     if not isinstance(numeric_level, int):
@@ -536,11 +533,12 @@ if __name__ == "__main__":
         d = True
 
     config = ConfigParser.ConfigParser({'bport': burpport, 'bhost': burphost, 'port': port, 'bind': bind})
-    config.read('burpui.cfg')
-    burpport = config.getint('Global', 'bport')
-    burphost = config.get('Global', 'bhost')
-    port = config.getint('Global', 'port')
-    bind = config.get('Global', 'bind')
+    with open(conf) as fp:
+        config.readfp(fp)
+        burpport = config.getint('Global', 'bport')
+        burphost = config.get('Global', 'bhost')
+        port = config.getint('Global', 'port')
+        bind = config.get('Global', 'bind')
 
     logging.info('burp port: {0}'.format( burpport ))
     logging.info('burp host: {0}'.format( burphost ))
