@@ -543,6 +543,8 @@ if __name__ == "__main__":
         port = config.getint('Global', 'port')
         bind = config.get('Global', 'bind')
 
+        app.config['REFRESH'] = config.getint('UI', 'refresh')
+
     app.logger.info('burp port: %s', burpport)
     app.logger.info('burp host: %s', burphost)
     app.logger.info('listen port: %s', port)
