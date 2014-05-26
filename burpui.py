@@ -122,6 +122,10 @@ Utilities functions
 """
 
 def _burp_status(query='\n'):
+    """
+    _burp_status connects to the burp status port, ask the given 'question' and
+    parses the output in an array
+    """
     r = []
     try:
         socket.inet_aton(burphost)
@@ -151,6 +155,10 @@ def _burp_status(query='\n'):
         return r
 
 def _parse_backup_log(f, n):
+    """
+    _parse_backup_log parses the log.gz of a given backup and returns a dict
+    containing different stats used to render the charts in the reporting view
+    """
     lookup_easy = {
             'start':    '^Start time: (.+)$',
             'end':      '^\s*End time: (.+)$',
@@ -219,6 +227,10 @@ def _parse_backup_log(f, n):
     return backup
 
 def _get_counters(name=None):
+    """
+    _get_counters parses the stats of the live status for a given client and
+    returns a dict
+    """
     r = {}
     if not name:
         return r
@@ -250,6 +262,10 @@ def _get_counters(name=None):
     return r
 
 def _is_backup_running(name=None):
+    """
+    _is_backup_running returns True if the given client is currently running a
+    backup
+    """
     if not name:
         return False
     f = _burp_status('c:{0}\n'.format(name))
@@ -260,6 +276,10 @@ def _is_backup_running(name=None):
     return False
 
 def _is_one_backup_running():
+    """
+    _is_one_backup_running returns a list of clients name that are currently
+    running a backup
+    """
     r = []
     for c in _get_all_clients():
         if _is_backup_running(c['name']):
@@ -267,6 +287,10 @@ def _is_one_backup_running():
     return r
 
 def _get_all_clients():
+    """
+    _get_all_clients returns a list of dict representing each clients with their
+    name, state and last backup date
+    """
     j = []
     f = _burp_status()
     for line in f:
