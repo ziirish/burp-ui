@@ -361,12 +361,12 @@ $(function() {
 		_client();
 		{% endif %}
 		return;
-	}, 30000);
+	}, {{ config.REFRESH * 1000 }});
+	{% endif %}
 
 	var refresh_running = setInterval(function () {
 		_check_running();
-	}, 5000);
-	{% endif %}
+	}, {{ config.REFRESH * 1000 }});
 
 	{% if tree %}
 	/***
@@ -436,6 +436,9 @@ $(function() {
 		},
 		lazyLoad: function(event, data) {
 			var node = data.node;
+			// ugly hack to display a "loading" icon while retrieving data
+			node._isLoading = true;
+			node.renderStatus();
 			r = [];
 			p = node.key;
 			if (p !== "/") p += '/';
@@ -448,7 +451,19 @@ $(function() {
 				});
 			});
 			data.result = r;
+			node._isLoading = false;
+			node.renderStatus();
 		},
+		/*
+		// TODO: make it recursively loadable
+		loadChildren: function(event, data) {
+			data.node.visit(function(subNode){
+				if( subNode.isUndefined() && subNode.isExpanded() ) {
+					subNode.load();
+				}
+			});
+		},
+		*/
 		selectMode: 1,
 		scrollParent: $(window),
 		renderColumns: function(event, data) {
