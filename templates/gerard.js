@@ -121,7 +121,7 @@ var _client = function() {
 			$('#table-client').hide();
 			$('#client-alert').show();
 		} else {
-			$.each(data.results, function(j, c) {
+			$.each(data.results.reverse(), function(j, c) {
 				$('#table-client> tbody:last').append('<tr class="clickable" style="cursor: pointer;"><td><a href="{{ url_for("client_browse", name=cname) }}?backup='+c.number+'" style="color: inherit; text-decoration: inherit;">'+pad(c.number)+'</a></td><td>'+c.date+'</td></tr>');
 			});
 		}
@@ -485,7 +485,7 @@ $(function() {
 		}
 		$("#btnResetSearch").attr("disabled", false);
 		$("span#matches").text("(" + n + " matches)");
-	}).focus();
+	});
 
 	$("#btnResetSearch").click(function(e){
 		$("input[name=search-tree]").val("");
