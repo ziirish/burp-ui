@@ -121,14 +121,6 @@ counters = [
 Utilities functions
 """
 
-def _bdebug(message=None):
-    import inspect
-    func = inspect.currentframe().f_back.f_code
-    if not message:
-        logging.debug('{0}:{1} {2}'.format(func.co_filename, func.co_firstlineno, func.co_name))
-    else:
-        logging.debug('{0}:{1} {2} -> {3}'.format(func.co_filename, func.co_firstlineno, func.co_name, message))
-
 def _burp_status(query='\n'):
     r = []
     try:
@@ -155,7 +147,7 @@ def _burp_status(query='\n'):
         f.close()
         return r
     except socket.error:
-        logging.error('Cannot contact burp server at {0}:{1}'.format(burphost, burpport))
+        app.logger.error('Cannot contact burp server at %s:%s', burphost, burpport)
         return r
 
 def _parse_backup_log(f, n):
@@ -213,7 +205,7 @@ def _parse_backup_log(f, n):
         for key, regex in lookup_complex.iteritems():
             r = re.search(regex, line)
             if r:
-                _bdebug("match[1]: '{0}'".format(r.group(1)))
+                app.logger.debug("match[1]: '{0}'".format(r.group(1)))
                 sp = re.split('\s+', r.group(1))
                 backup[key] = {
                         'new':       sp[0],
@@ -234,12 +226,12 @@ def _get_counters(name=None):
     if not f:
         return r
     for line in f:
-        _bdebug('line: {0}'.format(line))
+        app.logger.debug('line: {0}'.format(line))
         rs = re.search('^{0}\s+(\d)\s+(\w)\s+(.+)$'.format(name), line)
         if rs and rs.group(2) == 'r' and int(rs.group(1)) == 2:
             c = 0
             for v in rs.group(3).split('\t'):
-                _bdebug('{0}: {1}'.format(counters[c], v))
+                app.logger.debug('{0}: {1}'.format(counters[c], v))
                 if c < 15:
                     r[counters[c]] = v.split('/')
                 else:
@@ -278,14 +270,14 @@ def _get_all_clients():
     j = []
     f = _burp_status()
     for line in f:
-        _bdebug("line: '{0}'".format(line))
+        app.logger.debug("line: '{0}'".format(line))
         regex = re.compile("\s*(\w+)\s+\d\s+(\w)\s+(.+)")
         m = regex.search(line)
         c = {}
         c['name'] = m.group(1)
         c['state'] = status[m.group(2)]
         infos = m.group(3)
-        _bdebug("infos: '{0}'".format(infos))
+        app.logger.debug("infos: '{0}'".format(infos))
         if infos == "0":
             c['last'] = 'never'
         elif re.match('^\d+\s\d+\s\d+$', infos):
@@ -310,7 +302,7 @@ def _get_client(name=None):
     for line in f:
         if not re.match('^{0}\t'.format(c), line):
             continue
-        _bdebug("line: '{0}'".format(line))
+        app.logger.debug("line: '{0}'".format(line))
         regex = re.compile("\s*(\w+)\s+\d\s+(\w)\s+(.+)")
         m = regex.search(line)
         if m.group(3) == "0" or m.group(2) not in [ 'i', 'c', 'C' ]:
@@ -342,7 +334,7 @@ def _get_tree(name=None, backup=None, root=None):
     f = _burp_status('c:{0}:b:{1}:p:{2}\n'.format(name, backup, top))
     useful = False
     for line in f:
-        _bdebug("line: '{0}'".format(line))
+        app.logger.debug("line: '{0}'".format(line))
         if not useful and re.match('^-list begin-$', line):
             useful = True
             continue
@@ -508,29 +500,16 @@ if __name__ == "__main__":
     Main function
     """
     parser = OptionParser()
-    parser.add_option('-l', '--log', dest='log', help='log level')
-    parser.add_option('-c', '--config', dest='config', help='configuration file')
+    parser.add_option('-v', '--verbose', dest='log', help='verbose output', action='store_true')
+    parser.add_option('-c', '--config', dest='config', help='configuration file', metavar='CONFIG')
 
     (options, args) = parser.parse_args()
-    if options.log:
-        loglevel = options.log
-    else:
-        loglevel = 'WARNING'
+    d = options.log
 
     if options.config:
         conf = options.config
     else:
         conf = '{0}/burpui.cfg'.format(os.path.dirname(os.path.realpath(__file__)))
-
-    numeric_level = getattr(logging, loglevel.upper(), None)
-    if not isinstance(numeric_level, int):
-        raise ValueError('Invalid log level: %s' % loglevel)
-
-    logging.basicConfig(level=numeric_level)
-
-    d = False
-    if loglevel.upper() == 'DEBUG':
-        d = True
 
     config = ConfigParser.ConfigParser({'bport': burpport, 'bhost': burphost, 'port': port, 'bind': bind})
     with open(conf) as fp:
@@ -540,9 +519,9 @@ if __name__ == "__main__":
         port = config.getint('Global', 'port')
         bind = config.get('Global', 'bind')
 
-    logging.info('burp port: {0}'.format( burpport ))
-    logging.info('burp host: {0}'.format( burphost ))
-    logging.info('listen port: {0}'.format( port ))
-    logging.info('bind addr: {0}'.format( bind ))
+    app.logger.info('burp port: %s', burpport)
+    app.logger.info('burp host: %s', burphost)
+    app.logger.info('listen port: %s', port)
+    app.logger.info('bind addr: %s', bind)
 
     app.run(host=bind, port=port, debug=d)
