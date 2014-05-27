@@ -4,7 +4,7 @@
 
 # Licenses
 
-Burp-UI is released under the three-clauses BSD License.
+Burp-UI is released under the BSD 3-clause [License](LICENSE).
 
 But this project is built on top of other tools listed here:
 
