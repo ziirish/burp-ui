@@ -17,6 +17,54 @@ burpport = 4972
 burphost = '127.0.0.1'
 port = 5000
 bind = '::'
+refresh = 15
+
+"""
+Now this is Burp-UI
+"""
+
+app = Flask(__name__)
+app.config['CFG'] = os.path.join(app.root_path, 'burpui.cfg')
+
+status = {
+        'i': 'idle',
+        'r': 'running',
+        'c': 'client crashed',
+        'C': 'server crashed',
+        '1': 'scanning',
+        '2': 'backup',
+        '3': 'merging',
+        '4': 'shuffling',
+        '7': 'listing',
+        '8': 'restoring',
+        '9': 'verifying',
+        '0': 'deleting'
+        }
+
+counters = [
+        'phase',
+        'files',
+        'files_enc',
+        'meta',
+        'meta_enc',
+        'dir',
+        'softlink',
+        'hardlink',
+        'special',
+        'efs',
+        'vssheader',
+        'vssheader_enc',
+        'vssfooter',
+        'vssfooter_enc',
+        'total',
+        'warning',
+        'estimated_bytes',
+        'bytes',
+        'bytes_in',
+        'bytes_out',
+        'start',
+        'path'
+       ]
 
 """
 The following code is used to convert bytes to be human readable.
@@ -70,52 +118,6 @@ class _human_readable( long ):
         t = ("{0:{1}f}"+mult[i]+suffix).format(v, precis) 
 
         return "{0:{1}}".format(t,width) if width != "" else t
-
-"""
-Now this is Burp-UI
-"""
-
-app = Flask(__name__)
-
-status = {
-        'i': 'idle',
-        'r': 'running',
-        'c': 'client crashed',
-        'C': 'server crashed',
-        '1': 'scanning',
-        '2': 'backup',
-        '3': 'merging',
-        '4': 'shuffling',
-        '7': 'listing',
-        '8': 'restoring',
-        '9': 'verifying',
-        '0': 'deleting'
-        }
-
-counters = [
-        'phase',
-        'files',
-        'files_enc',
-        'meta',
-        'meta_enc',
-        'dir',
-        'softlink',
-        'hardlink',
-        'special',
-        'efs',
-        'vssheader',
-        'vssheader_enc',
-        'vssfooter',
-        'vssfooter_enc',
-        'total',
-        'warning',
-        'estimated_bytes',
-        'bytes',
-        'bytes_in',
-        'bytes_out',
-        'start',
-        'path'
-       ]
 
 """
 Utilities functions
@@ -519,6 +521,27 @@ def home():
     """
     return render_template('clients.html', clients=True, overview=True)
 
+def init(conf=None):
+    global burpport, burphost, port, bind, refresh
+    if not conf:
+        conf = app.config['CFG']
+
+    config = ConfigParser.ConfigParser({'bport': burpport, 'bhost': burphost, 'port': port, 'bind': bind, 'refresh': refresh})
+    with open(conf) as fp:
+        config.readfp(fp)
+        burpport = config.getint('Global', 'bport')
+        burphost = config.get('Global', 'bhost')
+        port = config.getint('Global', 'port')
+        bind = config.get('Global', 'bind')
+
+        app.config['REFRESH'] = config.getint('UI', 'refresh')
+
+    app.logger.info('burp port: %d', burpport)
+    app.logger.info('burp host: %s', burphost)
+    app.logger.info('listen port: %d', port)
+    app.logger.info('bind addr: %s', bind)
+    app.logger.info('refresh: %d', refresh)
+
 if __name__ == "__main__":
     """
     Main function
@@ -529,25 +552,13 @@ if __name__ == "__main__":
 
     (options, args) = parser.parse_args()
     d = options.log
+    app.config['DEBUG'] = d
 
     if options.config:
         conf = options.config
     else:
-        conf = '{0}/burpui.cfg'.format(os.path.dirname(os.path.realpath(__file__)))
+        conf = app.config['CFG']
 
-    config = ConfigParser.ConfigParser({'bport': burpport, 'bhost': burphost, 'port': port, 'bind': bind})
-    with open(conf) as fp:
-        config.readfp(fp)
-        burpport = config.getint('Global', 'bport')
-        burphost = config.get('Global', 'bhost')
-        port = config.getint('Global', 'port')
-        bind = config.get('Global', 'bind')
-
-        app.config['REFRESH'] = config.getint('UI', 'refresh')
-
-    app.logger.info('burp port: %s', burpport)
-    app.logger.info('burp host: %s', burphost)
-    app.logger.info('listen port: %s', port)
-    app.logger.info('bind addr: %s', bind)
+    init(conf)
 
     app.run(host=bind, port=port, debug=d)

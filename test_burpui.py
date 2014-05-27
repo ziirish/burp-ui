@@ -10,6 +10,7 @@ class BurpuiLiveTestCase(LiveServerTestCase):
 	def create_app(self):
 		burpui.app.config['TESTING'] = True
 		burpui.app.config['LIVESERVER_PORT'] = 5001
+		burpui.init()
 		return burpui.app
 
 #	def setUp(self):
