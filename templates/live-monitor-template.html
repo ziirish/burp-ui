@@ -1,6 +1,5 @@
 <br />
 <h1 class="page-header">{{ cname }}</h1>
-<h3>Backup progression</h3>
 <div class="progress progress-striped active">
-  <div class="progress-bar progress-bar-success" style="width: 45%"></div>
+  <div class="progress-bar progress-bar-success" style="width: {{ counters.bytes_in / counters.estimated_bytes * 100 }}%"></div>
 </div>

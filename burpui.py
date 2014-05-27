@@ -10,7 +10,7 @@ import socket
 import time
 import datetime
 import collections
-from flask import Flask, request, render_template, jsonify, redirect, url_for, abort
+from flask import Flask, request, render_template, jsonify, redirect, url_for, abort, flash
 from optparse import OptionParser
 
 burpport = 4972
@@ -27,6 +27,7 @@ Now this is Burp-UI
 
 app = Flask(__name__)
 app.config['CFG'] = os.path.join(app.root_path, 'burpui.cfg')
+app.secret_key = 'VpgOXNXAgcO81xFPyWj07ppN6kExNZeCDRShseNzFKV7ZCgmW2/eLn6xSlt7pYAVBj12zx2Vv9Kw3Q3jd1266A=='
 
 status = {
         'i': 'idle',
@@ -251,7 +252,10 @@ def _get_counters(name=None):
                 if c < 15:
                     r[counters[c]] = v.split('/')
                 else:
-                    r[counters[c]] = v
+                    if "bytes" in counters[c]:
+                        r[counters[c]] = int(v)
+                    else:
+                        r[counters[c]] = v
                 c += 1
     diff = time.time() - int(r['start'])
     byteswant = int(r['estimated_bytes'])
@@ -396,15 +400,16 @@ Here is the API
 """
 
 @app.route('/api/running-clients.json')
-def clients_running():
+def running_clients():
     """
     WebServer: return a list of running clients
     """
-    return _is_one_backup_running()
+    r = _is_one_backup_running()
+    return jsonify(results=r)
 
-@app.route('/api/render-template', methods=['GET'])
-@app.route('/api/render-template/<name>')
-def render_tpl(name=None):
+@app.route('/api/render-live-template', methods=['GET'])
+@app.route('/api/render-live-template/<name>')
+def render_live_tpl(name=None):
     c = request.args.get('name')
     if not name and not c:
         abort(500)
@@ -499,6 +504,17 @@ def mypad (s):
 And here is the main site
 """
 
+@app.route('/live-monitor')
+@app.route('/live-monitor/<name>')
+def live_monitor(name=None):
+    """
+    Live status monitor view
+    """
+    if not running:
+        flash('Sorry, there are no running backups')
+        return redirect(url_for('home'))
+    return render_template('live-monitor.html', live=True, cname=name)
+
 @app.route('/client-browse/<name>', methods=['GET'])
 @app.route('/client-browse/<name>/<int:backup>')
 def client_browse(name=None, backup=None):
@@ -540,8 +556,8 @@ def client(name=None):
         c = name
     else:
         c = request.args.get('name')
-#    if _is_backup_running(c):
-#        return redirect(url_for('live_status', name=name))
+    if _is_backup_running(c):
+        return redirect(url_for('live_monitor', name=name))
     return render_template('client.html', client=True, overview=True, cname=c)
 
 @app.route("/")

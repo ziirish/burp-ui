@@ -299,6 +299,21 @@ var _redraw = function() {
 	initialized = true;
 };
 {% endif %}
+{% if live %}
+_live = function() {
+	url = '{{ url_for("running_clients") }}';
+	html = ''
+	$.getJSON(url, function(data) {
+		$.each(data.results, function(i, c) {
+			u = '{{ url_for("render_live_tpl") }}?name='+c;
+			$.get(u, function(d) {
+				html += d;
+			});
+		});
+	});
+	$('#live-container').html(html);
+};
+{% endif %}
 
 var _async_ajax = function(b) {
 	$.ajaxSetup({
@@ -319,6 +334,9 @@ $(function() {
 		{% endif %}
 		{% if client %}
 		_client();
+		{% endif %}
+		{% if live %}
+		_live();
 		{% endif %}
 	});
 
@@ -348,6 +366,9 @@ $(function() {
 	{% if client %}
 	_client();
 	{% endif %}
+	{% if live %}
+	_live();
+	{% endif %}
 
 	{% if not report %}
 	/***
@@ -359,6 +380,9 @@ $(function() {
 		{% endif %}
 		{% if client %}
 		_client();
+		{% endif %}
+		{% if live %}
+		_live();
 		{% endif %}
 		return;
 	}, {{ config.REFRESH * 1000 }});
