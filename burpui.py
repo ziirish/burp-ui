@@ -467,6 +467,8 @@ def mypad (s):
     """
     Filter: used to pad 0's to backup numbers as in the burp's status monitor
     """
+    if not s:
+        return '0000000'
     return '{0:07d}'.format(int(s))
 
 """
@@ -474,11 +476,15 @@ And here is the main site
 """
 
 @app.route('/client-browse/<name>', methods=['GET'])
-def client_browse(name=None):
+@app.route('/client-browse/<name>/<int:backup>')
+def client_browse(name=None, backup=None):
     """
     Browse a specific backup of a specific client
     """
-    return render_template('client-browse.html', tree=True, backup=True, overview=True, cname=name, nbackup=request.args.get('backup'))
+    bkp = request.args.get('backup')
+    if bkp and not backup:
+        return redirect(url_for('client_browse', name=name, backup=bkp))
+    return render_template('client-browse.html', tree=True, backup=True, overview=True, cname=name, nbackup=backup)
 
 @app.route('/client-report/<name>')
 def client_report(name=None):
