@@ -10,12 +10,12 @@
     <title>Burp Server Dashboard</title>
 
     <!-- Bootstrap core CSS -->
-    <link href="{{ url_for('static', filename='bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='bootstrap/bootstrap.min.css') }}" rel="stylesheet">
     {% if report %}
-    <link href="{{ url_for('static', filename='nv.d3.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='nvd3/nv.d3.min.css') }}" rel="stylesheet">
     {% endif %}
     {% if tree %}
-    <link href="{{ url_for('static', filename='skin-bootstrap/ui.fancytree.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='fancytree/skin-bootstrap/ui.fancytree.css') }}" rel="stylesheet">
     {% endif %}
 
     <!-- Custom styles for this template -->
@@ -37,18 +37,24 @@
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src="{{ url_for('static', filename='jquery.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='typeahead.jquery.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='bloodhound.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='jquery/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='bootstrap/bootstrap.min.js') }}"></script>
+    <!-- Typeadhead + Bloodhound Javascript
+    ================================================== -->
+    <script src="{{ url_for('static', filename='typeahead/typeahead.jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='typeahead/bloodhound.min.js') }}"></script>
     {% if report %}
-    <script src="{{ url_for('static', filename='d3.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='nv.d3.min.js') }}"></script>
+    <!-- d3 + nvd3 Javascript
+    ================================================== -->
+    <script src="{{ url_for('static', filename='d3/d3.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='nvd3/nv.d3.min.js') }}"></script>
     {% endif %}
     {% if tree %}
-    <script src="{{ url_for('static', filename='jquery-ui-1.10.4.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='jquery.fancytree-custom.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='jquery.fancytree.filter.js') }}"></script>
+    <!-- Fancytree Javascript
+    ================================================== -->
+    <script src="{{ url_for('static', filename='jquery-ui/jquery-ui-1.10.4.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='fancytree/jquery.fancytree-custom.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='fancytree/jquery.fancytree.filter.js') }}"></script>
     {% endif %}
     <script type="text/javascript">
       {% include "gerard.js" %}
