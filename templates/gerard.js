@@ -129,7 +129,7 @@ var _client = function() {
 };
 {% endif %}
 {% if backup and report and client %}
-var _charts = [ 'new', 'scanned', 'changed', 'deleted', 'total', 'unchanged' ];
+var _charts = [ 'new', 'changed', 'unchanged', 'deleted', 'total', 'scanned' ];
 var _charts_obj = [];
 var chart_unified;
 var data_unified = [];
@@ -222,7 +222,7 @@ var _redraw = function() {
 };
 {% endif %}
 {% if not backup and report and client %}
-var _charts = [ 'new', 'scanned', 'changed', 'deleted', 'total', 'unchanged' ];
+var _charts = [ 'new', 'changed', 'unchanged', 'deleted', 'total', 'scanned' ];
 var _charts_obj = [];
 var initialized = false;
 
