@@ -10,7 +10,7 @@ import socket
 import time
 import datetime
 import collections
-from flask import Flask, request, render_template, jsonify, redirect, url_for
+from flask import Flask, request, render_template, jsonify, redirect, url_for, abort
 from optparse import OptionParser
 
 burpport = 4972
@@ -18,6 +18,8 @@ burphost = '127.0.0.1'
 port = 5000
 bind = '::'
 refresh = 15
+
+running = []
 
 """
 Now this is Burp-UI
@@ -234,7 +236,7 @@ def _get_counters(name=None):
     returns a dict
     """
     r = {}
-    if not name:
+    if not name or name not in running:
         return r
     f = _burp_status('c:{0}\n'.format(name))
     if not f:
@@ -282,10 +284,12 @@ def _is_one_backup_running():
     _is_one_backup_running returns a list of clients name that are currently
     running a backup
     """
+    global running
     r = []
     for c in _get_all_clients():
         if _is_backup_running(c['name']):
             r.append(c['name'])
+    running = r
     return r
 
 def _get_all_clients():
@@ -390,6 +394,26 @@ def _get_tree(name=None, backup=None, root=None):
 """
 Here is the API
 """
+
+@app.route('/api/running-clients.json')
+def clients_running():
+    """
+    WebServer: return a list of running clients
+    """
+    return _is_one_backup_running()
+
+@app.route('/api/render-template', methods=['GET'])
+@app.route('/api/render-template/<name>')
+def render_tpl(name=None):
+    c = request.args.get('name')
+    if not name and not c:
+        abort(500)
+    if not name:
+        name = c
+    if name not in running:
+        abort(404)
+    counters = _get_counters(name)
+    return render_template('live-monitor-template.html', cname=name, counters=counters)
 
 @app.route('/api/live.json')
 def live():
