@@ -249,7 +249,7 @@ def _get_counters(name=None):
             c = 0
             for v in rs.group(3).split('\t'):
                 app.logger.debug('{0}: {1}'.format(counters[c], v))
-                if c < 15:
+                if c > 0 and c < 15:
                     r[counters[c]] = v.split('/')
                 else:
                     if "bytes" in counters[c]:
