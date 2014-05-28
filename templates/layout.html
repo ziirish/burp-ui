@@ -29,7 +29,9 @@
 
     <div class="container-fluid">
       <div class="row">
+        {% if not live %}
         {% include "sidebar.html" %}
+        {% endif %}
         {% block body %}{% endblock %}
       </div>
     </div>
