@@ -28,6 +28,7 @@ Now this is Burp-UI
 app = Flask(__name__)
 app.config['CFG'] = os.path.join(app.root_path, 'burpui.cfg')
 app.secret_key = 'VpgOXNXAgcO81xFPyWj07ppN6kExNZeCDRShseNzFKV7ZCgmW2/eLn6xSlt7pYAVBj12zx2Vv9Kw3Q3jd1266A=='
+app.jinja_env.globals.update(isinstance=isinstance,list=list)
 
 status = {
         'i': 'idle',
@@ -46,20 +47,20 @@ status = {
 
 counters = [
         'phase',
-        'files',
-        'files_enc',
-        'meta',
-        'meta_enc',
-        'dir',
-        'softlink',
-        'hardlink',
-        'special',
-        'efs',
-        'vssheader',
-        'vssheader_enc',
-        'vssfooter',
-        'vssfooter_enc',
-        'total',
+        'Total',
+        'Files',
+        'Files (encrypted)',
+        'Metadata',
+        'Metadata (enc)',
+        'Directories',
+        'Softlink',
+        'Hardlink',
+        'Special files',
+        'VSS header',
+        'VSS header (enc)',
+        'VSS footer',
+        'VSS footer (enc)',
+        'Grand total',
         'warning',
         'estimated_bytes',
         'bytes',
@@ -187,7 +188,7 @@ def _parse_backup_log(f, n):
             'vssfooter_enc': '^\s*VSS footers \(enc\):\s+(.+)\s+\|\s+(\d+)$',
             'total':         '^\s*Grand total:\s+(.+)\s+\|\s+(\d+)$'
             }
-    backup = { 'windows': False, 'number': n }
+    backup = { 'windows': False, 'number': int(n) }
     useful = False
     for line in f:
         if re.match('^\d{4}-\d{2}-\d{2} (\d{2}:){3} \w+\[\d+\] Client is Windows$', line):
@@ -238,12 +239,12 @@ def _parse_backup_log(f, n):
                 app.logger.debug("match[1]: '{0}'".format(r.group(1)))
                 sp = re.split('\s+', r.group(1))
                 backup[key] = {
-                        'new':       sp[0],
-                        'changed':   sp[1],
-                        'unchanged': sp[2],
-                        'deleted':   sp[3],
-                        'total':     sp[4],
-                        'scanned':   r.group(2)
+                        'new':       int(sp[0]),
+                        'changed':   int(sp[1]),
+                        'unchanged': int(sp[2]),
+                        'deleted':   int(sp[3]),
+                        'total':     int(sp[4]),
+                        'scanned':   int(r.group(2))
                         }
                 break
     return backup
@@ -267,12 +268,14 @@ def _get_counters(name=None):
             for v in rs.group(3).split('\t'):
                 app.logger.debug('{0}: {1}'.format(counters[c], v))
                 if c > 0 and c < 15:
-                    r[counters[c]] = v.split('/')
+                    val = map(int, v.split('/'))
+                    if val[0] > 0 or val[1] > 0 or val[2] or val[3] > 0:
+                        r[counters[c]] = val
                 else:
-                    if "bytes" in counters[c]:
-                        r[counters[c]] = int(v)
+                    if 'path' == counters[c]:
+                        r[counters[c]] = v.encode('utf-8')
                     else:
-                        r[counters[c]] = v
+                        r[counters[c]] = int(v)
                 c += 1
     diff = time.time() - int(r['start'])
     byteswant = int(r['estimated_bytes'])
@@ -516,6 +519,17 @@ def mypad (s):
     if not s:
         return '0000000'
     return '{0:07d}'.format(int(s))
+
+@app.template_filter()
+def time_human(d):
+    s = ''
+    seconds = (((d % 31536000) % 86400) % 3600) % 60
+    minutes = math.floor((((d % 31536000) % 86400) % 3600) / 60)
+    hours   = math.floor(((d % 31536000) % 86400) / 3600)
+    if hours > 0:
+        s = '%02dH' % hours
+    return '%s %02dm %02ds' % (s, minutes, seconds)
+
 
 """
 And here is the main site

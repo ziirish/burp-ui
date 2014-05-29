@@ -158,7 +158,6 @@ var _client = function() {
 				.showValues(false)
 				.tooltips(true)
 				.valueFormat(d3.format('f'))
-//				.stacked(true)
 				.tooltipContent(function(key, x, y, e, graph) { return '<h3>' + key + ' - ' + x + '</h3><p>' + y + '</p>'; })
 				.color(d3.scale.category20().range())
 				.showControls(false);
