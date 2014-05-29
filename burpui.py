@@ -168,8 +168,8 @@ def _parse_backup_log(f, n):
             'start':    '^Start time: (.+)$',
             'end':      '^\s*End time: (.+)$',
             'duration': '^Time taken: (.+)$',
-            'totsize':  '^\s*Bytes in backup: (\d+)',
-            'received': '^\s*Bytes received: (\d+)'
+            'totsize':  '^\s*Bytes in backup:\s+(\d+)',
+            'received': '^\s*Bytes received:\s+(\d+)'
             }
     lookup_complex = {
             'files':         '^\s*Files:\s+(.+)\s+\|\s+(\d+)$',
@@ -208,8 +208,25 @@ def _parse_backup_log(f, n):
                 found = True
                 if key in ['start', 'end']:
                     backup[key] = int(time.mktime(datetime.datetime.strptime(r.group(1), '%Y-%m-%d %H:%M:%S').timetuple()))
+                elif key == 'duration':
+                    tmp = r.group(1).split(':')
+                    tmp.reverse()
+                    i = 0
+                    fields = [0] * 4
+                    for v in tmp:
+                        fields[i] = int(v)
+                        i += 1
+                    while i < 3:
+                        fields[i] = 0
+                        i += 1
+                    seconds = 0
+                    seconds += fields[0]
+                    seconds += fields[1] * 60
+                    seconds += fields[2] * (60 * 60)
+                    seconds += fields[3] * (60 * 60 * 24)
+                    backup[key] = seconds
                 else:
-                    backup[key] = r.group(1)
+                    backup[key] = int(r.group(1))
                 break
 
         if found:

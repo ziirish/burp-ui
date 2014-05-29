@@ -1,6 +1,6 @@
-var pad = function (num) {
+var pad = function (num, size) {
 	var s = "0000000" + num;
-	return s.substr(s.length-7);
+	return s.substr(s.length-size);
 }
 
 var _check_running = function() {
@@ -122,7 +122,7 @@ var _client = function() {
 			$('#client-alert').show();
 		} else {
 			$.each(data.results.reverse(), function(j, c) {
-				$('#table-client> tbody:last').append('<tr class="clickable" style="cursor: pointer;"><td><a href="{{ url_for("client_browse", name=cname) }}?backup='+c.number+'" style="color: inherit; text-decoration: inherit;">'+pad(c.number)+'</a></td><td>'+c.date+'</td></tr>');
+				$('#table-client> tbody:last').append('<tr class="clickable" style="cursor: pointer;"><td><a href="{{ url_for("client_browse", name=cname) }}?backup='+c.number+'" style="color: inherit; text-decoration: inherit;">'+pad(c.number, 7)+'</a></td><td>'+c.date+'</td></tr>');
 			});
 		}
 	});
@@ -224,7 +224,42 @@ var _redraw = function() {
 {% if not backup and report and client %}
 var _charts = [ 'new', 'changed', 'unchanged', 'deleted', 'total', 'scanned' ];
 var _charts_obj = [];
+var _chart_stats = null;
+var _stats_data = [];
 var initialized = false;
+
+var _bytes_human_readable = function(bytes, si) {
+	var thresh = si ? 1000 : 1024;
+	if(bytes < thresh) return bytes + ' B';
+	var units = si ? ['kB','MB','GB','TB','PB','EB','ZB','YB'] : ['KiB','MiB','GiB','TiB','PiB','EiB','ZiB','YiB'];
+	var u = -1;
+	do {
+		bytes /= thresh;
+		++u;
+	} while(bytes >= thresh);
+	return bytes.toFixed(1)+' '+units[u];
+};
+
+var _time_human_readable = function(d) {
+	str = '';
+	var days = Math.floor((d % 31536000) / 86400);
+	var hours = Math.floor(((d % 31536000) % 86400) / 3600);
+	var minutes = Math.floor((((d % 31536000) % 86400) % 3600) / 60);
+	var seconds = (((d % 31536000) % 86400) % 3600) % 60;
+	if (days > 0) {
+		str += days;
+		if (days > 1) {
+			str += ' days ';
+		} else {
+			str += ' day ';
+		}
+	}
+	if (hours > 0) {
+		str += pad(hours,2)+'H ';
+	}
+	str += pad(minutes,2)+'m '+pad(seconds,2)+'s';
+	return str;
+};
 
 var _client = function() {
 	if (!initialized) {
@@ -234,23 +269,43 @@ var _client = function() {
 							.y(function(d) { return d[1] })
 							.useInteractiveGuideline(true)
 							.color(d3.scale.category20c().range())
+							.margin({bottom: 105, left: 80})
 							;
 
-			tmp.margin({bottom: 105, left: 80});
 			tmp.xAxis.showMaxMin(true).tickFormat(function(d) { return d3.time.format('%x %X')(new Date(d)) }).rotateLabels(-45);
 
 			tmp.yAxis.tickFormat(d3.format('f'));
 
 			_charts_obj.push({ 'key': 'chart_'+j, 'obj': tmp, 'data': [] });
 		});
+		_chart_stats = nv.models.linePlusBarChart()
+					.color(d3.scale.category10().range())
+					.x(function(d,i) { return i })
+					.y(function(d) { return d[1] })
+					.margin({bottom: 105, left: 80})
+					;
+
+		_chart_stats.xAxis.tickFormat(function(d) {
+			var dx = data[0].values[d] && data[0].values[d][0] || 0;
+			return d3.time.format('%x %X')(new Date(dx))
+		}).rotateLabels(-45).showMaxMin(true);
+
+		_chart_stats.y1Axis.tickFormat(function(d) { return _time_human_readable(d) }); // Time
+
+		_chart_stats.y2Axis.tickFormat(function(d) { return _bytes_human_readable(d, false) }); // Size
+
+		_chart_stats.bars.forceY([0]);
 	}
 	url = '{{ url_for("client_stat_json", name=cname) }}';
 	$.getJSON(url, function(d) {
 		var _fields = [ 'dir', 'files', 'hardlink', 'softlink', 'files_enc', 'meta', 'meta_enc', 'special', 'efs', 'vssheader', 'vssheader_enc', 'vssfooter', 'vssfooter_enc' ];
+		var stats = true;
 		$.each(_charts, function(k, l) {
 			data = [];
 			$.each(_fields, function(i, c) {
 				values = [];
+				size = [];
+				duration = [];
 				push = false;
 				$.each(d.results, function(a, j) {
 					if (j[c] !== undefined) {
@@ -260,7 +315,18 @@ var _client = function() {
 					} else {
 						values.push([ parseInt(j.end), 0 ]);
 					}
+					if (stats) {
+						size.push([ parseInt(j.end)*1000, j.received ]);
+						duration.push([ parseInt(j.end)*1000, j.duration ]);
+					}
 				});
+				if (stats) {
+					stats = false;
+					_stats_data = [
+						{'key': 'Duration', 'bar': true, 'values': duration},
+						{'key': 'Bytes received', 'values': size}
+					]
+				}
 				if (push) {
 					data.push({ 'key': c, 'values': values });
 				}
@@ -296,6 +362,19 @@ var _redraw = function() {
 			return j.obj;
 		});
 	});
+
+	nv.addGraph(function() {
+
+		d3.select('#chart_stats svg')
+			.datum(_stats_data)
+			.transition().duration(500)
+			.call(_chart_stats);
+
+		nv.utils.windowResize(_chart_stats.update);
+
+		return _chart_stats;
+	});
+
 	initialized = true;
 };
 {% endif %}
