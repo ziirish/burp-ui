@@ -475,6 +475,27 @@ def client_tree(name=None, backup=None):
     j = _get_tree(name, backup, root)
     return jsonify(results=j)
 
+@app.route('/api/clients-report.json')
+def clients_report():
+    """
+    WebService: return a JSON with global stats
+    """
+    j = []
+    clients = _get_all_clients()
+    cl = []
+    ba = []
+    for c in clients:
+        client = _get_client(c['name'])
+        if not client:
+            continue
+        f = _burp_status('c:{0}:b:{1}:f:log.gz\n'.format(c['name'], client[-1]['number']))
+        cl.append( { 'name': c['name'], 'stats': _parse_backup_log(f, client[-1]['number']) } )
+        for b in client:
+            f = _burp_status('c:{0}:b:{1}:f:log.gz\n'.format(c['name'], b['number']))
+            ba.append(_parse_backup_log(f, b['number']))
+    j.append( { 'clients': cl, 'backups': ba } )
+    return jsonify(results=j)
+
 @app.route('/api/client-stat.json/<name>')
 @app.route('/api/client-stat.json/<name>/<int:backup>')
 def client_stat_json(name=None, backup=None):
