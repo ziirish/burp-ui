@@ -160,7 +160,7 @@ def _burp_status(query='\n'):
         app.logger.error('Cannot contact burp server at %s:%s', burphost, burpport)
         return r
 
-def _parse_backup_log(f, n):
+def _parse_backup_log(f, n, c=None):
     """
     _parse_backup_log parses the log.gz of a given backup and returns a dict
     containing different stats used to render the charts in the reporting view
@@ -189,6 +189,8 @@ def _parse_backup_log(f, n):
             'total':         '^\s*Grand total:\s+(.+)\s+\|\s+(\d+)$'
             }
     backup = { 'windows': False, 'number': int(n) }
+    if c is not None:
+        backup['name'] = c 
     useful = False
     for line in f:
         if re.match('^\d{4}-\d{2}-\d{2} (\d{2}:){3} \w+\[\d+\] Client is Windows$', line):
@@ -326,7 +328,7 @@ def _get_all_clients():
     f = _burp_status()
     for line in f:
         app.logger.debug("line: '{0}'".format(line))
-        regex = re.compile("\s*(\w+)\s+\d\s+(\w)\s+(.+)")
+        regex = re.compile('\s*(\w+)\s+\d\s+(\w)\s+(.+)')
         m = regex.search(line)
         c = {}
         c['name'] = m.group(1)
@@ -358,7 +360,7 @@ def _get_client(name=None):
         if not re.match('^{0}\t'.format(c), line):
             continue
         app.logger.debug("line: '{0}'".format(line))
-        regex = re.compile("\s*(\w+)\s+\d\s+(\w)\s+(.+)")
+        regex = re.compile('\s*(\w+)\s+\d\s+(\w)\s+(.+)')
         m = regex.search(line)
         if m.group(3) == "0" or m.group(2) not in [ 'i', 'c', 'C' ]:
             continue
@@ -476,7 +478,7 @@ def client_tree(name=None, backup=None):
     return jsonify(results=j)
 
 @app.route('/api/clients-report.json')
-def clients_report():
+def clients_report_json():
     """
     WebService: return a JSON with global stats
     """
@@ -492,7 +494,7 @@ def clients_report():
         cl.append( { 'name': c['name'], 'stats': _parse_backup_log(f, client[-1]['number']) } )
         for b in client:
             f = _burp_status('c:{0}:b:{1}:f:log.gz\n'.format(c['name'], b['number']))
-            ba.append(_parse_backup_log(f, b['number']))
+            ba.append(_parse_backup_log(f, b['number'], c['name']))
     j.append( { 'clients': cl, 'backups': sorted(ba, key=lambda k: k['end']) } )
     return jsonify(results=j)
 
@@ -592,6 +594,13 @@ def client_report(name=None):
         return redirect(url_for('backup_report', name=name, backup=l[0]['number']))
     return render_template('client-report.html', client=True, report=True, cname=name)
 
+@app.route('/clients-report')
+def clients_report():
+    """
+    Global report
+    """
+    return render_template('clients-report.html', clients=True, report=True)
+
 @app.route('/backup-report/<name>', methods=['GET'])
 @app.route('/backup-report/<name>/<int:backup>', methods=['GET'])
 def backup_report(name=None, backup=None):
@@ -616,7 +625,7 @@ def client(name=None):
         return redirect(url_for('live_monitor', name=name))
     return render_template('client.html', client=True, overview=True, cname=c)
 
-@app.route("/")
+@app.route('/')
 def home():
     """
     Home page
@@ -644,7 +653,7 @@ def init(conf=None):
     app.logger.info('bind addr: %s', bind)
     app.logger.info('refresh: %d', refresh)
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     """
     Main function
     """

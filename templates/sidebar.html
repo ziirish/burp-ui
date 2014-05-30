@@ -15,7 +15,7 @@
             {% if client and not backup %}
             <a href="{{ url_for('client_report', name=cname) }}">Reports</a>
             {% elif clients %}
-            <a href="#">Reports</a>
+            <a href="{{ url_for('clients_report') }}">Reports</a>
             {% elif backup %}
             <a href="{{ url_for('backup_report', name=cname, backup=nbackup) }}">Reports</a>
             {% else %}
