@@ -11,7 +11,7 @@
             {% if client and not backup %}
             <a class="btn btn-default {% if report %}active{% endif %}" href="{{ url_for('client_report', name=cname) }}">Reports</a>
             {% elif clients %}
-            <a class="btn btn-default {% if report %}active{% endif %}" href="#">Reports</a>
+            <a class="btn btn-default {% if report %}active{% endif %}" href="{{ url_for('clients_report') }}">Reports</a>
             {% elif backup %}
             <a class="btn btn-default {% if report %}active{% endif %}" href="{{ url_for('backup_report', name=cname, backup=nbackup) }}">Reports</a>
             {% else %}

@@ -90,6 +90,96 @@ var _clients = function() {
 };
 {% endif %}
 
+{% if clients and report %}
+var _charts = [ 'repartition', 'size', 'files', 'backups' ];
+var _charts_obj = [];
+var initialized = false;
+
+var _clients = function() {
+	if (!initialized) {
+		$.each(_charts, function(i, j) {
+			tmp =  nv.models.pieChart()
+				.x(function(d) { return d.label })
+				.y(function(d) { return d.value })
+				.showLabels(true)
+				.labelThreshold(.05)
+				.labelType("percent")
+				.valueFormat(d3.format('f'))
+				.color(d3.scale.category20c().range())
+				.tooltipContent(function(key, y, e, graph) { return '<h3>'+key+'</h3><p>'+y+'</p>'; })
+				;
+
+			_charts_obj.push({ 'key': 'chart_'+j, 'obj': tmp, 'data': [] });
+		});
+	}
+	url = '{{ url_for("clients_report_json") }}';
+	$.getJSON(url, function(d) {
+		rep = [];
+		size = [];
+		files = [];
+		backups = [];
+		windows = 0;
+		nonwin = 0;
+		$.each(d.results[0]['clients'], function(k, c) {
+			if (c.stats.windows) {
+				windows++;
+			} else {
+				nonwin++;
+			}
+			size.push({'label': c.name, 'value': c.stats.totsize});
+			files.push({'label': c.name, 'value': c.stats.total.total});
+		});
+		$.each(d.results[0]['backups'], function(k, c) {
+			if (c.name in backups) {
+				backups[c.name]++;
+			} else {
+				backups.push(c.name);
+				backups[c.name] = 1;
+			}
+		});
+		rep = [{'label': 'Windows', 'value': windows}, {'label': 'Unix/Linux', 'value': nonwin}];
+		$.each(_charts_obj, function(i, c) {
+			switch (c.key) {
+				case 'chart_repartition':
+					c.data = rep;
+					return false;
+				case 'chart_size':
+					c.data = size;
+					return false;
+				case 'chart_files':
+					c.data = files;
+					return false;
+				case 'chart_backups':
+					data = [];
+					$.each(backups, function(cl, num) {
+						data.push({'label': cl, 'value': num});
+					});
+					c.data = data;
+					return false;
+			}
+		});
+	});
+	_redraw();
+};
+
+var _redraw = function() {
+	$.each(_charts_obj, function(i, j) {
+		nv.addGraph(function() {
+
+			d3.select('#'+j.key+' svg')
+				.datum(j.data)
+				.transition().duration(500)
+				.call(j.obj);
+
+			nv.utils.windowResize(j.obj.update);
+
+			return j.obj;
+		});
+	});
+	initialized = true;
+};
+{% endif %}
+
 {% if client and overview %}
 /***
  * Here is the 'client' part
