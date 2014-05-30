@@ -493,7 +493,7 @@ def clients_report():
         for b in client:
             f = _burp_status('c:{0}:b:{1}:f:log.gz\n'.format(c['name'], b['number']))
             ba.append(_parse_backup_log(f, b['number']))
-    j.append( { 'clients': cl, 'backups': ba } )
+    j.append( { 'clients': cl, 'backups': sorted(ba, key=lambda k: k['end']) } )
     return jsonify(results=j)
 
 @app.route('/api/client-stat.json/<name>')
