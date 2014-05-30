@@ -282,6 +282,7 @@ def _get_counters(name=None):
     bytesgot = int(r['bytes_in'])
     bytespersec = bytesgot / diff
     bytesleft = byteswant - bytesgot
+    r['speed'] = bytespersec
     if (bytespersec > 0):
         timeleft = int(bytesleft / bytespersec)
         r['timeleft'] = timeleft
@@ -530,6 +531,9 @@ def time_human(d):
         s = '%02dH' % hours
     return '%s %02dm %02ds' % (s, minutes, seconds)
 
+@app.template_filter()
+def bytes_human(b):
+    return '{0:.1eM}'.format(_human_readable(b))
 
 """
 And here is the main site

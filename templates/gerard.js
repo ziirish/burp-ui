@@ -419,6 +419,7 @@ $(function() {
 		{% if live %}
 		_live();
 		{% endif %}
+		_check_running();
 	});
 
 	/***
@@ -441,6 +442,7 @@ $(function() {
 	/***
 	 * initialize our page if needed
 	 */
+	_check_running();
 	{% if clients %}
 	_clients();
 	{% endif %}

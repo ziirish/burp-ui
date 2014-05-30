@@ -16,7 +16,7 @@
   </div>
   {% endif %}
   <div class="row">
-    <div class="col-lg-4">
+    <div class="col-lg-6">
       <ul class="list-group">
         <li class="list-group-item">
           <span class="badge">{{ counters.phase }}</span>
@@ -32,6 +32,18 @@
           Warning
         </li>
         {% endif %}
+      </ul>
+    </div>
+    <div class="col-lg-6">
+      <ul class="list-group">
+        <li class="list-group-item">
+          <span class="badge">{{ counters.bytes_in|bytes_human }}</span>
+          Bytes received
+        </li>
+        <li class="list-group-item">
+          <span class="badge">{{ counters.speed|bytes_human }}/s</span>
+          Speed
+        </li>
       </ul>
     </div>
   </div>
