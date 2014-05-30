@@ -95,6 +95,18 @@ var _charts = [ 'repartition', 'size', 'files', 'backups' ];
 var _charts_obj = [];
 var initialized = false;
 
+var _bytes_human_readable = function(bytes, si) {
+	var thresh = si ? 1000 : 1024;
+	if(bytes < thresh) return bytes + ' B';
+	var units = si ? ['kB','MB','GB','TB','PB','EB','ZB','YB'] : ['KiB','MiB','GiB','TiB','PiB','EiB','ZiB','YiB'];
+	var u = -1;
+	do {
+		bytes /= thresh;
+		++u;
+	} while(bytes >= thresh);
+	return bytes.toFixed(1)+' '+units[u];
+};
+
 var _clients = function() {
 	if (!initialized) {
 		$.each(_charts, function(i, j) {
@@ -106,7 +118,7 @@ var _clients = function() {
 				.labelType("percent")
 				.valueFormat(d3.format('f'))
 				.color(d3.scale.category20c().range())
-				.tooltipContent(function(key, y, e, graph) { return '<h3>'+key+'</h3><p>'+y+'</p>'; })
+				.tooltipContent(function(key, y, e, graph) { return '<h3>'+key+'</h3><p>'+(j == 'size' ? _bytes_human_readable(y, false) : y)+'</p>'; })
 				;
 
 			_charts_obj.push({ 'key': 'chart_'+j, 'obj': tmp, 'data': [] });
@@ -117,7 +129,7 @@ var _clients = function() {
 		rep = [];
 		size = [];
 		files = [];
-		backups = [];
+		backups = {};
 		windows = 0;
 		nonwin = 0;
 		$.each(d.results[0]['clients'], function(k, c) {
@@ -133,7 +145,6 @@ var _clients = function() {
 			if (c.name in backups) {
 				backups[c.name]++;
 			} else {
-				backups.push(c.name);
 				backups[c.name] = 1;
 			}
 		});
@@ -142,20 +153,20 @@ var _clients = function() {
 			switch (c.key) {
 				case 'chart_repartition':
 					c.data = rep;
-					return false;
+					break;
 				case 'chart_size':
 					c.data = size;
-					return false;
+					break;
 				case 'chart_files':
 					c.data = files;
-					return false;
+					break;
 				case 'chart_backups':
 					data = [];
 					$.each(backups, function(cl, num) {
 						data.push({'label': cl, 'value': num});
 					});
 					c.data = data;
-					return false;
+					break;
 			}
 		});
 	});
