@@ -2,6 +2,55 @@
 
 [![build status](http://ci.ziirish.me/projects/1/status.png?ref=master)](http://ci.ziirish.me/projects/1?ref=master)
 
+# Installation
+
+Burp-UI is written in Python with the [Flask](http://flask.pocoo.org/) micro-framework.
+The easiest way to install Flask is to use ```pip```.
+
+On Debian, you can install ```pip``` with the following command:
+
+```
+aptitude install python-pip
+```
+
+Once ```pip``` is installed, you can install ```Flask``` this way:
+
+```
+pip install Flask
+```
+
+Then you need to download the sources.
+
+For example:
+
+```
+git clone http://git.ziirish.me/ziirish/burp-ui.git
+```
+
+You can setup various parameters in the [burpui.cfg](burpui.cfg) file.
+
+Then you can run ```burp-ui```: ```python burpui.py```
+
+By default, ```burp-ui``` listens on all interfaces (including IPv6) on port 5000.
+
+You can then point your browser to http://127.0.0.1:5000/
+
+# TODO
+
+Here is a non-exhaustive list of things I'd like to add:
+
+* Authentication so that only admins can access to burp stats.
+* server-initiated restoration (with burp, you can create a special file that triggers
+a restoration when the client contacts the server the next time. In this case the
+client must accepts server-initiated restoration).
+* burp-server configuration front-end (so that you can configure your burp server
+within burp-ui).
+* More statistics.
+* etc.
+
+Also note that in the future, I'd like to write a burp-client UI.
+But I didn't think yet of what to do.
+
 # Licenses
 
 Burp-UI is released under the BSD 3-clause [License](LICENSE).
