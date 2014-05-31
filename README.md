@@ -71,4 +71,4 @@ Also note that this project is made with the Awesome [Flask](http://flask.pocoo.
 # Thanks
 
 Special Thanks to Graham Keeling for its great software! This project would not
-exists without [Burp](http://burp.grke.org/).
+exist without [Burp](http://burp.grke.org/).
