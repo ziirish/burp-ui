@@ -18,6 +18,10 @@ burphost = '127.0.0.1'
 port = 5000
 bind = '::'
 refresh = 15
+ssl = False
+sslcert = ''
+sslkey = ''
+sslcontext = None
 
 running = []
 
@@ -633,17 +637,24 @@ def home():
     return render_template('clients.html', clients=True, overview=True)
 
 def init(conf=None):
-    global burpport, burphost, port, bind, refresh
+    global burpport, burphost, port, bind, refresh, ssl, sslcert, sslkey
     if not conf:
         conf = app.config['CFG']
 
-    config = ConfigParser.ConfigParser({'bport': burpport, 'bhost': burphost, 'port': port, 'bind': bind, 'refresh': refresh})
+    config = ConfigParser.ConfigParser({'bport': burpport, 'bhost': burphost, 'port': port, 'bind': bind, 'refresh': refresh, 'ssl': ssl, 'sslcert': sslcert, 'sslkey': sslkey})
     with open(conf) as fp:
         config.readfp(fp)
         burpport = config.getint('Global', 'bport')
         burphost = config.get('Global', 'bhost')
         port = config.getint('Global', 'port')
         bind = config.get('Global', 'bind')
+        try:
+            ssl = config.getboolean('Global', 'ssl')
+        except ValueError:
+            app.logger.error("Wrong value for 'ssl' key! Assuming 'false'")
+            ssl = False
+        sslcert = config.get('Global', 'sslcert')
+        sslkey = config.get('Global', 'sslkey')
 
         app.config['REFRESH'] = config.getint('UI', 'refresh')
 
@@ -651,6 +662,9 @@ def init(conf=None):
     app.logger.info('burp host: %s', burphost)
     app.logger.info('listen port: %d', port)
     app.logger.info('bind addr: %s', bind)
+    app.logger.info('use ssl: %s', ssl)
+    app.logger.info('sslcert: %s', sslcert)
+    app.logger.info('sslkey: %s', sslkey)
     app.logger.info('refresh: %d', refresh)
 
 if __name__ == '__main__':
@@ -672,4 +686,13 @@ if __name__ == '__main__':
 
     init(conf)
 
-    app.run(host=bind, port=port, debug=d)
+    if ssl:
+        from OpenSSL import SSL
+        sslcontext = SSL.Context(SSL.SSLv23_METHOD)
+        sslcontext.use_privatekey_file(sslkey)
+        sslcontext.use_certificate_file(sslcert)
+
+    if sslcontext:
+        app.run(host=bind, port=port, debug=d, ssl_context=sslcontext)
+    else:
+        app.run(host=bind, port=port, debug=d)
