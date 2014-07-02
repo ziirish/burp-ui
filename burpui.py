@@ -22,6 +22,7 @@ ssl = False
 sslcert = ''
 sslkey = ''
 sslcontext = None
+conf = None
 
 running = []
 
@@ -268,7 +269,7 @@ def _get_counters(name=None):
         return r
     for line in f:
         app.logger.debug('line: {0}'.format(line))
-        rs = re.search('^{0}\s+(\d)\s+(\w)\s+(.+)$'.format(name), line)
+        rs = re.search('^{0}\s+(\d)\s+(\S)\s+(.+)$'.format(name), line)
         if rs and rs.group(2) == 'r' and int(rs.group(1)) == 2:
             c = 0
             for v in rs.group(3).split('\t'):
@@ -305,7 +306,7 @@ def _is_backup_running(name=None):
         return False
     f = _burp_status('c:{0}\n'.format(name))
     for line in f:
-        r = re.search('^{0}\s+\d\s+(\w)'.format(name), line)
+        r = re.search('^{0}\s+\d\s+(\S)'.format(name), line)
         if r and r.group(1) not in [ 'i', 'c', 'C' ]:
             return True
     return False
@@ -332,7 +333,7 @@ def _get_all_clients():
     f = _burp_status()
     for line in f:
         app.logger.debug("line: '{0}'".format(line))
-        regex = re.compile('\s*(\w+)\s+\d\s+(\w)\s+(.+)')
+        regex = re.compile('\s*(\S+)\s+\d\s+(\S)\s+(.+)')
         m = regex.search(line)
         c = {}
         c['name'] = m.group(1)
@@ -364,7 +365,7 @@ def _get_client(name=None):
         if not re.match('^{0}\t'.format(c), line):
             continue
         app.logger.debug("line: '{0}'".format(line))
-        regex = re.compile('\s*(\w+)\s+\d\s+(\w)\s+(.+)')
+        regex = re.compile('\s*(\S+)\s+\d\s+(\S)\s+(.+)')
         m = regex.search(line)
         if m.group(3) == "0" or m.group(2) not in [ 'i', 'c', 'C' ]:
             continue
