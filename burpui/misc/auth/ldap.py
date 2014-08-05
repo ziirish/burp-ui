@@ -8,7 +8,7 @@ class LdapLoader:
     def __init__(self, app=None):
         self.app = app
         conf = self.app.config['CFG']
-        c = ConfigParser.ConfigParser({'host': 'localhost', 'binddn': '', 'bindpw': '', 'filter': None, 'base': ''})
+        c = ConfigParser.ConfigParser({'host': 'localhost', 'binddn': '', 'bindpw': '', 'filter': '', 'base': ''})
         with open(conf) as fp:
             c.readfp(fp)
             try:
