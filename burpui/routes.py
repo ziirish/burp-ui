@@ -1,39 +1,22 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
-import ConfigParser
 import logging
 import sys
-import os
 import subprocess
 import re
 import socket
 import time
 import datetime
 import collections
-from flask import Flask, request, render_template, jsonify, redirect, url_for, abort, flash
-from optparse import OptionParser
+from flask import Flask, request, render_template, jsonify, redirect, url_for, abort, flash, g, session
 
-burpport = 4972
-burphost = '127.0.0.1'
-port = 5000
-bind = '::'
-refresh = 15
-ssl = False
-sslcert = ''
-sslkey = ''
-sslcontext = None
-conf = None
+from burpui import app, bui
 
 running = []
 
 """
 Now this is Burp-UI
 """
-
-app = Flask(__name__)
-app.config['CFG'] = os.path.join(app.root_path, 'burpui.cfg')
-app.secret_key = 'VpgOXNXAgcO81xFPyWj07ppN6kExNZeCDRShseNzFKV7ZCgmW2/eLn6xSlt7pYAVBj12zx2Vv9Kw3Q3jd1266A=='
-app.jinja_env.globals.update(isinstance=isinstance,list=list)
 
 status = {
         'i': 'idle',
@@ -139,7 +122,7 @@ def _burp_status(query='\n'):
     """
     r = []
     try:
-        socket.inet_aton(burphost)
+        socket.inet_aton(bui.burphost)
         form = socket.AF_INET
     except socket.error:
         form = socket.AF_INET6
@@ -149,7 +132,7 @@ def _burp_status(query='\n'):
         else:
             q = query
         s = socket.socket(form, socket.SOCK_STREAM)
-        s.connect((burphost, burpport))
+        s.connect((bui.burphost, bui.burpport))
         s.send(q)
         s.shutdown(socket.SHUT_WR)
         f = s.makefile()
@@ -162,7 +145,7 @@ def _burp_status(query='\n'):
         f.close()
         return r
     except socket.error:
-        app.logger.error('Cannot contact burp server at %s:%s', burphost, burpport)
+        app.logger.error('Cannot contact burp server at %s:%s', bui.burphost, bui.burpport)
         return r
 
 def _parse_backup_log(f, n, c=None):
@@ -210,6 +193,7 @@ def _parse_backup_log(f, n, c=None):
             continue
 
         found = False
+        # this method is not optimal, but it is easy to read and to maintain
         for key, regex in lookup_easy.iteritems():
             r = re.search(regex, line)
             if r:
@@ -224,9 +208,6 @@ def _parse_backup_log(f, n, c=None):
                     for v in tmp:
                         fields[i] = int(v)
                         i += 1
-                    while i < 3:
-                        fields[i] = 0
-                        i += 1
                     seconds = 0
                     seconds += fields[0]
                     seconds += fields[1] * 60
@@ -235,8 +216,10 @@ def _parse_backup_log(f, n, c=None):
                     backup[key] = seconds
                 else:
                     backup[key] = int(r.group(1))
+                # break the loop as soon as we find a match
                 break
 
+        # if found is True, we already parsed the line so we can jump to the next one
         if found:
             continue
 
@@ -636,64 +619,3 @@ def home():
     Home page
     """
     return render_template('clients.html', clients=True, overview=True)
-
-def init(conf=None):
-    global burpport, burphost, port, bind, refresh, ssl, sslcert, sslkey
-    if not conf:
-        conf = app.config['CFG']
-
-    config = ConfigParser.ConfigParser({'bport': burpport, 'bhost': burphost, 'port': port, 'bind': bind, 'refresh': refresh, 'ssl': ssl, 'sslcert': sslcert, 'sslkey': sslkey})
-    with open(conf) as fp:
-        config.readfp(fp)
-        burpport = config.getint('Global', 'bport')
-        burphost = config.get('Global', 'bhost')
-        port = config.getint('Global', 'port')
-        bind = config.get('Global', 'bind')
-        try:
-            ssl = config.getboolean('Global', 'ssl')
-        except ValueError:
-            app.logger.error("Wrong value for 'ssl' key! Assuming 'false'")
-            ssl = False
-        sslcert = config.get('Global', 'sslcert')
-        sslkey = config.get('Global', 'sslkey')
-
-        app.config['REFRESH'] = config.getint('UI', 'refresh')
-
-    app.logger.info('burp port: %d', burpport)
-    app.logger.info('burp host: %s', burphost)
-    app.logger.info('listen port: %d', port)
-    app.logger.info('bind addr: %s', bind)
-    app.logger.info('use ssl: %s', ssl)
-    app.logger.info('sslcert: %s', sslcert)
-    app.logger.info('sslkey: %s', sslkey)
-    app.logger.info('refresh: %d', refresh)
-
-if __name__ == '__main__':
-    """
-    Main function
-    """
-    parser = OptionParser()
-    parser.add_option('-v', '--verbose', dest='log', help='verbose output', action='store_true')
-    parser.add_option('-c', '--config', dest='config', help='configuration file', metavar='CONFIG')
-
-    (options, args) = parser.parse_args()
-    d = options.log
-    app.config['DEBUG'] = d
-
-    if options.config:
-        conf = options.config
-    else:
-        conf = app.config['CFG']
-
-    init(conf)
-
-    if ssl:
-        from OpenSSL import SSL
-        sslcontext = SSL.Context(SSL.SSLv23_METHOD)
-        sslcontext.use_privatekey_file(sslkey)
-        sslcontext.use_certificate_file(sslcert)
-
-    if sslcontext:
-        app.run(host=bind, port=port, debug=d, ssl_context=sslcontext)
-    else:
-        app.run(host=bind, port=port, debug=d)
