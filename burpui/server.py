@@ -25,17 +25,23 @@ class Server:
         config = ConfigParser.ConfigParser({'bport': g_burpport, 'bhost': g_burphost, 'port': g_port, 'bind': g_bind, 'refresh': g_refresh, 'ssl': g_ssl, 'sslcert': g_sslcert, 'sslkey': g_sslkey})
         with open(conf) as fp:
             config.readfp(fp)
-            self.burpport = config.getint('Global', 'bport')
-            self.burphost = config.get('Global', 'bhost')
-            self.port = config.getint('Global', 'port')
-            self.bind = config.get('Global', 'bind')
             try:
-                self.ssl = config.getboolean('Global', 'ssl')
-            except ValueError:
-                self.app.logger.error("Wrong value for 'ssl' key! Assuming 'false'")
-                self.ssl = False
-            self.sslcert = config.get('Global', 'sslcert')
-            self.sslkey = config.get('Global', 'sslkey')
+                self.burpport = config.getint('Global', 'bport')
+                self.burphost = config.get('Global', 'bhost')
+                self.port = config.getint('Global', 'port')
+                self.bind = config.get('Global', 'bind')
+                try:
+                    self.ssl = config.getboolean('Global', 'ssl')
+                except ValueError:
+                    self.app.logger.error("Wrong value for 'ssl' key! Assuming 'false'")
+                    self.ssl = False
+                self.sslcert = config.get('Global', 'sslcert')
+                self.sslkey = config.get('Global', 'sslkey')
+                if config.get('Global', 'auth') == 'LDAP':
+                    from burpui.misc.auth.ldap import LdapUser as User
+                    self.user = User(self.app)
+            except ConfigParser.NoOptionError:
+                self.app.logger.error("Missing option")
 
             self.app.config['REFRESH'] = config.getint('UI', 'refresh')
 
