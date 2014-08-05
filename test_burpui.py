@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf8 -*-
 import os
 from burpui import app, bui
 import unittest
@@ -8,9 +10,11 @@ from flask.ext.testing import LiveServerTestCase, TestCase
 class BurpuiLiveTestCase(LiveServerTestCase):
 
 	def create_app(self):
+		conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'burpui.cfg')
 		app.config['TESTING'] = True
 		app.config['LIVESERVER_PORT'] = 5001
-		bui.setup(conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'burpui.cfg'))
+		app.config['CFG'] = conf
+		bui.setup(conf)
 		return app
 
 #	def setUp(self):
