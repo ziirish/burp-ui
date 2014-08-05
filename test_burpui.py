@@ -1,5 +1,5 @@
 import os
-import burpui
+from burpui import app, bui
 import unittest
 import urllib2
 import pprint
@@ -8,10 +8,10 @@ from flask.ext.testing import LiveServerTestCase, TestCase
 class BurpuiLiveTestCase(LiveServerTestCase):
 
 	def create_app(self):
-		burpui.app.config['TESTING'] = True
-		burpui.app.config['LIVESERVER_PORT'] = 5001
-		burpui.init()
-		return burpui.app
+		app.config['TESTING'] = True
+		app.config['LIVESERVER_PORT'] = 5001
+		bui.setup(conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'burpui.cfg'))
+		return app
 
 #	def setUp(self):
 
@@ -25,9 +25,9 @@ class BurpuiLiveTestCase(LiveServerTestCase):
 class BurpuiTestCase(TestCase):
 
 	def create_app(self):
-		burpui.app.config['TESTING'] = True
-		burpui.burpport = 9999
-		return burpui.app
+		app.config['TESTING'] = True
+		bui.burpport = 9999
+		return app
 
 	def test_some_json(self):
 		response = self.client.get('/api/clients.json')
