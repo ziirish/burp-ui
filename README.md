@@ -2,18 +2,33 @@
 
 [![build status](http://ci.ziirish.me/projects/1/status.png?ref=master)](http://ci.ziirish.me/projects/1?ref=master)
 
+# Requirements
+
+For LDAP authentication (optional), we need the `simpleldap` module that 
+requires the following packages on Debian:
+
+```
+aptitude install libsasl2-dev libldap2-dev
+```
+
+Then we install the module itself:
+
+```
+pip install simpleldap
+```
+
 # Installation
 
 Burp-UI is written in Python with the [Flask](http://flask.pocoo.org/) micro-framework.
-The easiest way to install Flask is to use ```pip```.
+The easiest way to install Flask is to use `pip`.
 
-On Debian, you can install ```pip``` with the following command:
+On Debian, you can install `pip` with the following command:
 
 ```
 aptitude install python-pip
 ```
 
-Once ```pip``` is installed, you can install ```Flask``` this way:
+Once `pip` is installed, you can install `Flask` this way:
 
 ```
 pip install Flask
@@ -29,11 +44,16 @@ git clone http://git.ziirish.me/ziirish/burp-ui.git
 
 You can setup various parameters in the [burpui.cfg](burpui.cfg) file.
 
-Then you can run ```burp-ui```: ```python burpui.py```
+Then you can run `burp-ui`: `python burpui.py`
 
-By default, ```burp-ui``` listens on all interfaces (including IPv6) on port 5000.
+By default, `burp-ui` listens on all interfaces (including IPv6) on port 5000.
 
 You can then point your browser to http://127.0.0.1:5000/
+
+# Notes
+
+Please feel free to report any issues on my [gitlab](https://git.ziirish.me/ziirish/burp-ui/issues)
+I have closed the *github tracker* to have a unique tracker system.
 
 # TODO
 
