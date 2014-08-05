@@ -21,7 +21,8 @@ if __name__ == '__main__':
         conf = options.config
     else:
         conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'burpui.cfg')
-        app.config['CFG'] = conf
+
+    app.config['CFG'] = conf
 
     bui.setup(conf)
     bui.run(d)
