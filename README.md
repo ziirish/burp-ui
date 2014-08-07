@@ -8,7 +8,7 @@ For LDAP authentication (optional), we need the `simpleldap` module that
 requires the following packages on Debian:
 
 ```
-aptitude install libsasl2-dev libldap2-dev
+aptitude install libsasl2-dev libldap2-dev python-dev
 ```
 
 Then we install the module itself:
@@ -28,10 +28,14 @@ On Debian, you can install `pip` with the following command:
 aptitude install python-pip
 ```
 
-Once `pip` is installed, you can install `Flask` this way:
+Once `pip` is installed, you can install `Flask` and the other requirements this
+way:
 
 ```
 pip install Flask
+pip install flask-login
+pip install WTForms
+pip install Flask-WTF
 ```
 
 Then you need to download the sources.
@@ -68,7 +72,7 @@ within burp-ui).
 * More statistics.
 * etc.
 
-Also note that in the future, I'd like to write a burp-client UI.
+Also note that in the future, I'd like to write a burp-client GUI.
 But I didn't think yet of what to do.
 
 # Licenses
