@@ -17,10 +17,11 @@ class BurpuiLiveTestCase(LiveServerTestCase):
 		bui.setup(conf)
 		return app
 
-#	def setUp(self):
+	def setUp(self):
+		print '\nBegin Test 1\n'
 
-#	def tearDown(self):
-#		print 'Test Finished!\n'
+	def tearDown(self):
+		print '\nTest 1 Finished!\n'
 
 	def test_server_is_up_and_running(self):
 		response = urllib2.urlopen(self.get_server_url())
@@ -28,9 +29,15 @@ class BurpuiLiveTestCase(LiveServerTestCase):
 
 class BurpuiTestCase(TestCase):
 
+	def setUp(self):
+		print '\nBegin Test 2\n'
+
+	def tearDown(self):
+		print '\nTest 2 Finished!\n'
+
 	def create_app(self):
 		app.config['TESTING'] = True
-		bui.burpport = 9999
+		bui.cli.port = 9999
 		return app
 
 	def test_some_json(self):
