@@ -43,8 +43,8 @@ class Server:
                 self.sslcert = config.get('Global', 'sslcert')
                 self.sslkey = config.get('Global', 'sslkey')
                 if config.get('Global', 'auth') == 'LDAP':
-                    from burpui.misc.auth.ldap import LdapUser as User
-                    self.user = User(self.app)
+                    from burpui.misc.auth.ldap import LdapUserHandler as Handler
+                    self.uhandler = Handler(self.app)
                 else:
                     self.app.logger.error("Ooops, unsuported authentication backend")
                     sys.exit(1)
