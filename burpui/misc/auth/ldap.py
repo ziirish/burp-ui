@@ -28,7 +28,9 @@ class LdapLoader:
 
         try:
             self.ldap = simpleldap.Connection(self.host, dn=self.binddn, password=self.bindpw)
+            self.app.logger.info('OK, connected to LDAP')
         except:
+            self.app.logger.error('Could not connect to LDAP')
             self.ldap = None
 
     def __exit__(self, exc_type, exc_value, traceback):
@@ -57,17 +59,37 @@ class LdapLoader:
 
 
 
-
-
-class LdapUser(UserMixin):
+class LdapUserHandler:
     def __init__(self, app=None):
         self.active = False
         self.ldap = LdapLoader(app)
+        self.users = {}
 
-    def exists(self, uid=None):
-        return self.ldap.fetch(uid)
+    def user(self, name=None):
+        if name not in self.users:
+            self.users[name] = LdapUser(self.ldap, name)
+        return self.users[name]
 
-    def login(self, uid=None, passwd=None):
-        return self.ldap.check(uid, passwd)
 
+
+class LdapUser(UserMixin):
+    def __init__(self, ldap=None, name=None):
+        self.active = False
+        self.ldap = ldap
+        self.name = name
+
+        ldapres = self.ldap.fetch(self.name)
+
+        if ldapres:
+            self.id = ldapres
+            self.active = True
+
+    def login(self, name=None, passwd=None):
+        return self.ldap.check(name, passwd)
+
+    def is_active(self):
+        return self.active
+
+    def get_id(self):
+        return self.id
 
