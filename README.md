@@ -44,7 +44,7 @@ git clone http://git.ziirish.me/ziirish/burp-ui.git
 
 You can setup various parameters in the [burpui.cfg](burpui.cfg) file.
 
-Then you can run `burp-ui`: `python burpui.py`
+Then you can run `burp-ui`: `python burp-ui.py`
 
 By default, `burp-ui` listens on all interfaces (including IPv6) on port 5000.
 
