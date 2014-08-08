@@ -1,11 +1,40 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 import math
-#import collections
-from flask import Flask, request, render_template, jsonify, redirect, url_for, abort, flash, g, session
 
-from burpui import app, bui
+from flask import Flask, request, render_template, jsonify, redirect, url_for, abort, flash, g, session
+from flask.ext.login import login_user, login_required, logout_user, current_user
+
+from burpui import app, bui, login_manager
+from burpui.forms import LoginForm
 from burpui.misc.utils import human_readable as _hr
+
+@login_manager.user_loader
+def load_user(userid):
+    return bui.uhandler.user(userid)
+
+@app.route('/login', methods=['POST', 'GET'])
+def login():
+    form = LoginForm(request.form)
+    if form.validate_on_submit():
+        user = bui.uhandler.user(form.username.data)
+        app.logger.info('%s active: %s', form.username.data, user.active)
+        if user.active and user.login(form.username.data, passwd=form.password.data):
+            login_user(user)
+            flash('Logged in successfully.')
+            return redirect(url_for('test_login'))
+    return render_template('login.html', form=form, login=True)
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
+
+@app.route('/test_login')
+@login_required
+def test_login():
+    return render_template('test-login.html', login=True, user=current_user.name)
 
 """
 Here is the API
@@ -122,7 +151,7 @@ def clients():
     return jsonify(results=j)
 
 """
-Here is a custom filter
+Here are some custom filters
 """
 @app.template_filter()
 def mypad (s):
