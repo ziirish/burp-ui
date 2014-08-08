@@ -38,12 +38,16 @@ class LdapLoader:
             self.ldap.close()
 
     def fetch(self, uid=None):
+        query = 'uid={0}'.format(uid)
         try:
-            if self.filter:
-                r = self.ldap.search('uid={0}'.format(uid), self.filt, base_dn=self.base)
+            if self.filt:
+                self.app.logger.info('query: %s | filter: %s | base: %s', query, self.filt, self.base)
+                r = self.ldap.search(query, self.filt, base_dn=self.base)
             else:
-                r = self.ldap.search('uid={0}'.format(uid), base_dn=self.base)
+                self.app.logger.info('query: %s | base: %s', query, self.base)
+                r = self.ldap.search(query, base_dn=self.base)
         except:
+            self.app.logger.info('Ooops, LDAP lookup failed')
             return None
 
         return r[0]['uid'][0]
@@ -61,7 +65,6 @@ class LdapLoader:
 
 class LdapUserHandler:
     def __init__(self, app=None):
-        self.active = False
         self.ldap = LdapLoader(app)
         self.users = {}
 

@@ -3,6 +3,7 @@ var pad = function (num, size) {
 	return s.substr(s.length-size);
 }
 
+{% if not login %}
 var _check_running = function() {
 	url = '{{ url_for("backup_running") }}';
 	$.getJSON(url, function(data) {
@@ -13,6 +14,7 @@ var _check_running = function() {
 		}
 	});
 };
+{% endif %}
 
 /***
  * _clients_bh: Bloodhound object used for the autocompletion of the input field
@@ -523,7 +525,9 @@ $(function() {
 		{% if live %}
 		_live();
 		{% endif %}
+		{% if not login %}
 		_check_running();
+		{% endif %}
 	});
 
 	/***
@@ -546,7 +550,9 @@ $(function() {
 	/***
 	 * initialize our page if needed
 	 */
+	{% if not login %}
 	_check_running();
+	{% endif %}
 	{% if clients %}
 	_clients();
 	{% endif %}
@@ -575,9 +581,11 @@ $(function() {
 	}, {{ config.REFRESH * 1000 }});
 	{% endif %}
 
+	{% if not login %}
 	var refresh_running = setInterval(function () {
 		_check_running();
 	}, {{ config.REFRESH * 1000 }});
+	{% endif %}
 
 	{% if tree %}
 	/***
