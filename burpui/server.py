@@ -65,12 +65,13 @@ class Server:
         self.app.logger.info('sslkey: %s', self.sslkey)
         self.app.logger.info('refresh: %d', self.app.config['REFRESH'])
 
-        if self.vers == 1:
-            from burpui.misc.backend.burp1 import Burp as CLI
-            self.cli = CLI(self.app, self.burphost, self.burpport)
-        else:
-            self.app.logger.error("Ooops, unsuported Burp server version")
-            sys.exit(1)
+        try:
+            mod = __import__('burpui.misc.backend.burp{0}'.format(self.vers), fromlist=['Burp'])
+            Client = mod.Burp
+            self.cli = Client(self.app, self.burphost, self.burpport)
+        except Exception:
+            self.app.logger.error('Failed loading backend for Burp version %d', self.vers)
+            sys.exit(2)
 
         self.init = True
 
