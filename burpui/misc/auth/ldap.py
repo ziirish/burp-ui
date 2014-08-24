@@ -1,5 +1,6 @@
 # -*- coding: utf8 -*-
 from flask.ext.login import UserMixin
+from burpui.misc.auth.interface import BUIhandler, BUIuser
 
 import simpleldap
 import ConfigParser
@@ -38,12 +39,16 @@ class LdapLoader:
             self.ldap.close()
 
     def fetch(self, uid=None):
-        query = 'uid={0}'.format(uid)
         try:
             if self.filt:
-                self.app.logger.info('query: %s | filter: %s | base: %s', query, self.filt, self.base)
-                r = self.ldap.search(query, self.filt, base_dn=self.base)
+                self.app.logger.info('filter: %s | base: %s', self.filt, self.base)
+                r = self.ldap.search(self.filt, base_dn=self.base)
+                for record in r:
+                    if record['uid'][0] == uid:
+                        return record['uid'][0]
+                return None
             else:
+                query = 'uid={0}'.format(uid)
                 self.app.logger.info('query: %s | base: %s', query, self.base)
                 r = self.ldap.search(query, base_dn=self.base)
         except:
@@ -63,7 +68,7 @@ class LdapLoader:
 
 
 
-class LdapUserHandler:
+class UserHandler(BUIhandler):
     def __init__(self, app=None):
         self.ldap = LdapLoader(app)
         self.users = {}
@@ -75,7 +80,7 @@ class LdapUserHandler:
 
 
 
-class LdapUser(UserMixin):
+class LdapUser(UserMixin, BUIuser):
     def __init__(self, ldap=None, name=None):
         self.active = False
         self.ldap = ldap
