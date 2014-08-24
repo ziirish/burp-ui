@@ -6,8 +6,9 @@ import time
 import datetime
 
 from burpui.misc.utils import human_readable as _hr
+from burpui.misc.backend.interface import BUIbackend
 
-class Burp:
+class Burp(BUIbackend):
     states = {
         'i': 'idle',
         'r': 'running',
