@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 import ConfigParser
+import sys
 
 g_burpport = 4972
 g_burphost = '127.0.0.1'
@@ -11,7 +12,7 @@ g_ssl = False
 g_sslcert = ''
 g_sslkey = ''
 g_version = 1
-g_auth = 'LDAP'
+g_auth = 'ldap'
 
 class Server:
     def __init__(self, app=None):
@@ -42,11 +43,12 @@ class Server:
                     self.ssl = False
                 self.sslcert = config.get('Global', 'sslcert')
                 self.sslkey = config.get('Global', 'sslkey')
-                if config.get('Global', 'auth') == 'LDAP':
-                    from burpui.misc.auth.ldap import LdapUserHandler as Handler
-                    self.uhandler = Handler(self.app)
-                else:
-                    self.app.logger.error("Ooops, unsuported authentication backend")
+                try:
+                    mod = __import__('burpui.misc.auth.{0}'.format(config.get('Global', 'auth')), fromlist=['UserHandler'])
+                    UserHandler = mod.UserHandler
+                    self.uhandler = UserHandler(self.app)
+                except Exception:
+                    self.app.logger.error('Import Exception, module \'%s\'', config.get('Global', 'auth'))
                     sys.exit(1)
             except ConfigParser.NoOptionError:
                 self.app.logger.error("Missing option")
