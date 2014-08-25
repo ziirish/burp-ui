@@ -1,4 +1,3 @@
-# -*- coding: utf8 -*-
 #raise NotImplementedError("Sorry, the current Backend does not implement this method!")
 
 class BUIbackend:
