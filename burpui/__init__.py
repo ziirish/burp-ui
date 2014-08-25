@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 __title__ = 'burp-ui'
-__version__ = '0.0.1'
 __author__ = 'Benjamin SANS (Ziirish)'
 __license__ = 'BSD 3-clause'
 
