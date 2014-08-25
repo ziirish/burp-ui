@@ -24,17 +24,19 @@ if sys.argv[-1] == 'publish':
 
 setup(
     name='burp-ui',
-    version=open('VERSION').read(),
+    version=open('VERSION').read().rstrip(),
     description=u('Burp-UI is a web-ui for burp backup written in python with Flask and jQuery/Bootstrap'),
-    long_description=open('README.md').read(),
+    long_description=open('README.rst').read(),
     license=open('LICENSE').read(),
     author=u('Benjamin SANS (Ziirish)'),
     author_email=u('ziirish@ziirish.info'),
-    url='https://github.com/ziirish/burp-ui',
+    url='http://git.ziirish.me/ziirish/burp-ui',
     keywords='burp web ui',
     packages=['burpui'],
+    scripts=['bin/burp-ui'],
+    py_modules=['burpui'],
     install_requires=['Flask==0.10.1', 'Flask-Login==0.2.11', 'Flask-WTF==0.10.0', 'WTForms==2.0.1'],
-    extras_require = {
+    extras_require={
         'ldap_authentication': ['simpleldap==0.8']
     },
     classifiers=[
