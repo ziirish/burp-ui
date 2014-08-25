@@ -1,3 +1,5 @@
 *.pyc
 burpui-dev.cfg
 devel.sh
+*.egg*
+dist
