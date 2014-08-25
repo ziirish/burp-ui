@@ -1,16 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
+import sys
 import os
-from burpui import app, bui
 import unittest
 import urllib2
 import pprint
 from flask.ext.testing import LiveServerTestCase, TestCase
 
+sys.path.append('{0}/..'.format(os.path.join(os.path.dirname(os.path.realpath(__file__)))))
+
+from burpui import app, bui
+
 class BurpuiLiveTestCase(LiveServerTestCase):
 
 	def create_app(self):
-		conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'burpui.cfg')
+		conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../burpui.cfg')
 		app.config['TESTING'] = True
 		app.config['LIVESERVER_PORT'] = 5001
 		app.config['CFG'] = conf
