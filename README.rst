@@ -100,7 +100,8 @@ But this project is built on top of other tools listed here:
 
 Also note that this project is made with the Awesome `Flask`_ micro-framework.
 
-# Thanks
+Thanks
+------
 
 Special Thanks to Graham Keeling for its great software! This project would not
 exist without `Burp`_.
