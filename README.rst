@@ -7,7 +7,7 @@ Build Status
 Requirements
 ------------
 
-For LDAP authentication (optional), we need the `simpleldap` module that 
+For LDAP authentication (optional), we need the ``simpleldap`` module that 
 requires the following packages on Debian:
 
 ::
@@ -26,16 +26,16 @@ Installation
 ------------
 
 Burp-UI is written in Python with the `Flask`_ micro-framework.
-The easiest way to install Flask is to use `pip`.
+The easiest way to install Flask is to use ``pip``.
 
-On Debian, you can install `pip` with the following command:
+On Debian, you can install ``pip`` with the following command:
 
 ::
 
     aptitude install python-pip
 
 
-Once `pip` is installed, you can install `Flask` and the other requirements this
+Once ``pip`` is installed, you can install ``Flask`` and the other requirements this
 way:
 
 ::
@@ -57,16 +57,16 @@ For example:
 
 You can setup various parameters in the `burpui.cfg`_ file.
 
-Then you can run `burp-ui`: `python burp-ui.py`
+Then you can run ``burp-ui``: ``python burp-ui.py``
 
-By default, `burp-ui` listens on all interfaces (including IPv6) on port 5000.
+By default, ``burp-ui`` listens on all interfaces (including IPv6) on port 5000.
 
 You can then point your browser to http://127.0.0.1:5000/
 
 Notes
 -----
 
-Please feel free to report any issues on my `gitlab <https://git.ziirish.me/ziirish/burp-ui/issues>`
+Please feel free to report any issues on my `gitlab <https://git.ziirish.me/ziirish/burp-ui/issues>`_
 I have closed the *github tracker* to have a unique tracker system.
 
 TODO
@@ -92,16 +92,16 @@ Burp-UI is released under the BSD 3-clause `License`_.
 
 But this project is built on top of other tools listed here:
 
-- `d3.js <http://d3js.org/>` (`BSD <http://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/d3/LICENSE>`)
-- `nvd3.js <http://nvd3.org/>` (`Apache <http://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/nvd3/LICENSE.md>`)
-- `jQuery <http://jquery.com/>` (`MIT <http://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/jquery/MIT-LICENSE.txt>`)
-- `jQuery-UI <http://jqueryui.com/>` (`MIT <http://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/jquery-ui/MIT-LICENSE.txt>`)
-- `fancytree <https://github.com/mar10/fancytree>` (`MIT <http://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/fancytree/MIT-LICENSE.txt>`)
-- `bootstrap <http://getbootstrap.com/>` (`MIT <http://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/bootstrap/LICENSE>`)
-- `typeahead <http://twitter.github.io/typeahead.js/>` (`MIT <http://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/typeahead/LICENSE>`)
-- `bootswatch <http://bootswatch.com/>` (`MIT <http://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/bootstrap/bootswatch.LICENSE>`)
+- `d3.js <http://d3js.org/>`_ (`BSD <http://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/d3/LICENSE>`_)
+- `nvd3.js <http://nvd3.org/>`_ (`Apache <http://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/nvd3/LICENSE.md>`_)
+- `jQuery <http://jquery.com/>`_ (`MIT <http://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/jquery/MIT-LICENSE.txt>`_)
+- `jQuery-UI <http://jqueryui.com/>`_ (`MIT <http://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/jquery-ui/MIT-LICENSE.txt>`_)
+- `fancytree <https://github.com/mar10/fancytree>`_ (`MIT <http://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/fancytree/MIT-LICENSE.txt>`_)
+- `bootstrap <http://getbootstrap.com/>`_ (`MIT <http://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/bootstrap/LICENSE>`_)
+- `typeahead <http://twitter.github.io/typeahead.js/>`_ (`MIT <http://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/typeahead/LICENSE>`_)
+- `bootswatch <http://bootswatch.com/>`_ (`MIT <http://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/bootstrap/bootswatch.LICENSE>`_)
 
-Also note that this project is made with the Awesome [Flask](http://flask.pocoo.org/) micro-framework.
+Also note that this project is made with the Awesome `Flask`_ micro-framework.
 
 # Thanks
 
