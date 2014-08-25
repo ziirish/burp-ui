@@ -74,11 +74,8 @@ TODO
 
 Here is a non-exhaustive list of things I'd like to add:
 
-* server-initiated restoration (with burp, you can create a special file that triggers
-a restoration when the client contacts the server the next time. In this case the
-client must accepts server-initiated restoration).
-* burp-server configuration front-end (so that you can configure your burp server
-within burp-ui).
+* server-initiated restoration (with burp, you can create a special file that triggers a restoration when the client contacts the server the next time. In this case the client must accepts server-initiated restoration).
+* burp-server configuration front-end (so that you can configure your burp server within burp-ui).
 * More statistics.
 * etc.
 
