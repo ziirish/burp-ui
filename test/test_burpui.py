@@ -46,7 +46,7 @@ class BurpuiTestCase(TestCase):
 
 	def test_some_json(self):
 		response = self.client.get('/api/clients.json')
-		self.assertEquals(response.json, dict(results=[]))
+		self.assertNotEquals(response.json, dict(results=[]))
 
 
 if __name__ == '__main__':
