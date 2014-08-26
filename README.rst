@@ -89,14 +89,14 @@ Burp-UI is released under the BSD 3-clause `License`_.
 
 But this project is built on top of other tools listed here:
 
-- `d3.js <http://d3js.org/>`_ (`BSD <http://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/d3/LICENSE>`_)
-- `nvd3.js <http://nvd3.org/>`_ (`Apache <http://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/nvd3/LICENSE.md>`_)
-- `jQuery <http://jquery.com/>`_ (`MIT <http://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/jquery/MIT-LICENSE.txt>`_)
-- `jQuery-UI <http://jqueryui.com/>`_ (`MIT <http://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/jquery-ui/MIT-LICENSE.txt>`_)
-- `fancytree <https://github.com/mar10/fancytree>`_ (`MIT <http://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/fancytree/MIT-LICENSE.txt>`_)
-- `bootstrap <http://getbootstrap.com/>`_ (`MIT <http://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/bootstrap/LICENSE>`_)
-- `typeahead <http://twitter.github.io/typeahead.js/>`_ (`MIT <http://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/typeahead/LICENSE>`_)
-- `bootswatch <http://bootswatch.com/>`_ (`MIT <http://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/bootstrap/bootswatch.LICENSE>`_)
+- `d3.js <http://d3js.org/>`_ (`BSD <http://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/d3/LICENSE>`__)
+- `nvd3.js <http://nvd3.org/>`_ (`Apache <http://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/nvd3/LICENSE.md>`__)
+- `jQuery <http://jquery.com/>`_ (`MIT <http://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/jquery/MIT-LICENSE.txt>`__)
+- `jQuery-UI <http://jqueryui.com/>`_ (`MIT <http://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/jquery-ui/MIT-LICENSE.txt>`__)
+- `fancytree <https://github.com/mar10/fancytree>`_ (`MIT <http://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/fancytree/MIT-LICENSE.txt>`__)
+- `bootstrap <http://getbootstrap.com/>`_ (`MIT <http://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/bootstrap/LICENSE>`__)
+- `typeahead <http://twitter.github.io/typeahead.js/>`_ (`MIT <http://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/typeahead/LICENSE>`__)
+- `bootswatch <http://bootswatch.com/>`_ (`MIT <http://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/bootstrap/bootswatch.LICENSE>`__)
 
 Also note that this project is made with the Awesome `Flask`_ micro-framework.
 
