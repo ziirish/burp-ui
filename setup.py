@@ -2,13 +2,11 @@
 # coding: utf-8
 
 import os
+import os.path
 import sys
 import re
 
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
+from setuptools import setup, find_packages
 
 if sys.version < '3':
     import codecs
@@ -22,6 +20,8 @@ if sys.argv[-1] == 'publish':
     os.system('python setup.py sdist upload')
     sys.exit()
 
+datadir = os.path.join('share', 'burpui', 'etc')
+
 setup(
     name='burp-ui',
     version=open('VERSION').read().rstrip(),
@@ -32,9 +32,9 @@ setup(
     author_email=u('ziirish@ziirish.info'),
     url='http://git.ziirish.me/ziirish/burp-ui',
     keywords='burp web ui',
-    packages=['burpui'],
+    packages=find_packages(),
     scripts=['bin/burp-ui'],
-    py_modules=['burpui'],
+    data_files=[(datadir, [os.path.join(datadir, 'burpui.cfg')])],
     install_requires=['Flask==0.10.1', 'Flask-Login==0.2.11', 'Flask-WTF==0.10.0', 'WTForms==2.0.1'],
     extras_require={
         'ldap_authentication': ['simpleldap==0.8']
