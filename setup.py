@@ -3,8 +3,8 @@
 
 import os
 import os.path
-import sys
 import re
+import sys
 
 from setuptools import setup, find_packages
 
@@ -15,10 +15,6 @@ if sys.version < '3':
 else:
     def u(x):
         return x
-
-if sys.argv[-1] == 'publish':
-    os.system('python setup.py sdist upload')
-    sys.exit()
 
 datadir = os.path.join('share', 'burpui', 'etc')
 
@@ -33,6 +29,11 @@ setup(
     url='http://git.ziirish.me/ziirish/burp-ui',
     keywords='burp web ui',
     packages=find_packages(),
+    include_package_data=True,
+    package_data={
+        'static': 'burpui/static/*',
+        'templates': 'burpui/templates/*'
+    },
     scripts=['bin/burp-ui'],
     data_files=[(datadir, [os.path.join(datadir, 'burpui.cfg')])],
     install_requires=['Flask==0.10.1', 'Flask-Login==0.2.11', 'Flask-WTF==0.10.0', 'WTForms==2.0.1'],
