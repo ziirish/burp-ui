@@ -1,6 +1,5 @@
 include LICENSE
 include README.md
 include VERSION
-include burpui.cfg
-include burp-ui.py
+include share/burpui/etc/burpui.cfg
 recursive-include burpui *
