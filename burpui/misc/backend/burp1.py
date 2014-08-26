@@ -5,7 +5,7 @@ import time
 import datetime
 
 from burpui.misc.utils import human_readable as _hr
-from burpui.misc.backend.interface import BUIbackend
+from burpui.misc.backend.interface import BUIbackend, BUIserverException
 
 class Burp(BUIbackend):
     states = {
@@ -89,7 +89,7 @@ class Burp(BUIbackend):
             return r
         except socket.error:
             self.app.logger.error('Cannot contact burp server at %s:%s', self.host, self.port)
-            return r
+            raise BUIserverException('Cannot contact burp server at {0}:{1}'.format(self.host, self.port))
 
     def parse_backup_log(self, f, n, c=None):
         """
@@ -230,7 +230,10 @@ class Burp(BUIbackend):
         """
         if not name:
             return False
-        f = self.status('c:{0}\n'.format(name))
+        try:
+            f = self.status('c:{0}\n'.format(name))
+        except BUIserverException:
+            return False
         for line in f:
             r = re.search('^{0}\s+\d\s+(\S)'.format(name), line)
             if r and r.group(1) not in [ 'i', 'c', 'C' ]:
@@ -243,7 +246,11 @@ class Burp(BUIbackend):
         running a backup
         """
         r = []
-        for c in self.get_all_clients():
+        try:
+            cls = self.get_all_clients()
+        except BUIserverException:
+            return r
+        for c in cls:
             if self.is_backup_running(c['name']):
                 r.append(c['name'])
         self.running = r

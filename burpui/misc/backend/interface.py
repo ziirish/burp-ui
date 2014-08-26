@@ -1,4 +1,4 @@
-#raise NotImplementedError("Sorry, the current Backend does not implement this method!")
+# -*- coding: utf8 -*-
 
 class BUIbackend:
     def __init__(self, app=None, host='127.0.0.1', port=4972):
@@ -29,3 +29,6 @@ class BUIbackend:
 
     def get_tree(self, name=None, backup=None, root=None):
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")
+
+class BUIserverException(Exception):
+    pass
