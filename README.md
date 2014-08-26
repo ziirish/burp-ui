@@ -28,27 +28,19 @@ On Debian, you can install `pip` with the following command:
 aptitude install python-pip
 ```
 
-Once `pip` is installed, you can install `Flask` and the other requirements this
-way:
+Once `pip` is installed, you can install `Burp-UI` this way:
 
 ```
-pip install Flask
-pip install flask-login
-pip install WTForms
-pip install Flask-WTF
-```
-
-Then you need to download the sources.
-
-For example:
-
-```
-git clone http://git.ziirish.me/ziirish/burp-ui.git
+pip install burp-ui
 ```
 
 You can setup various parameters in the [burpui.cfg](burpui.cfg) file.
+This file can be specified with the `-c` flag or should be present in
+`/etc/burp/burpui.cfg`.
+By default `Burp-UI` ships with a default file located in 
+`$BURPUIDIR/../share/burpui/etc/burpui.cfg`.
 
-Then you can run `burp-ui`: `python burp-ui.py`
+Then you can run `burp-ui`: `burp-ui`
 
 By default, `burp-ui` listens on all interfaces (including IPv6) on port 5000.
 
@@ -63,7 +55,6 @@ I have closed the *github tracker* to have a unique tracker system.
 
 Here is a non-exhaustive list of things I'd like to add:
 
-* Authentication so that only admins can access to burp stats.
 * server-initiated restoration (with burp, you can create a special file that triggers
 a restoration when the client contacts the server the next time. In this case the
 client must accepts server-initiated restoration).
