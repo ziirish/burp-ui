@@ -11,7 +11,7 @@ g_ssl = False
 g_sslcert = ''
 g_sslkey = ''
 g_version = 1
-g_auth = 'ldap'
+g_auth = 'basic'
 
 class Server:
     def __init__(self, app=None):
@@ -23,6 +23,9 @@ class Server:
         self.sslcontext = None
         if not conf:
             conf = self.app.config['CFG']
+
+        if not conf:
+            raise IOError('No configuration file found')
 
         config = ConfigParser.ConfigParser({'bport': g_burpport, 'bhost': g_burphost, 'port': g_port,
                     'bind': g_bind, 'refresh': g_refresh, 'ssl': g_ssl, 'sslcert': g_sslcert,

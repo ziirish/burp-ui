@@ -2,7 +2,11 @@
 from flask.ext.login import UserMixin
 from burpui.misc.auth.interface import BUIhandler, BUIuser
 
-import simpleldap
+try:
+    import simpleldap
+except ImportError:
+    raise ImportError('Unable to load \'simpleldap\' module')
+
 import ConfigParser
 
 class LdapLoader:
