@@ -7,6 +7,7 @@ from flask.ext.login import login_user, login_required, logout_user, current_use
 from burpui import app, bui, login_manager
 from burpui.forms import LoginForm
 from burpui.misc.utils import human_readable as _hr
+from burpui.misc.backend.interface import BUIserverException
 
 @login_manager.user_loader
 def load_user(userid):
@@ -57,7 +58,10 @@ def render_live_tpl(name=None):
         name = c
     if name not in bui.cli.running:
         abort(404)
-    counters = bui.cli.get_counters(name)
+    try:
+        counters = bui.cli.get_counters(name)
+    except BUIserverException:
+        counters = []
     return render_template('live-monitor-template.html', cname=name, counters=counters)
 
 @app.route('/api/live.json')
@@ -69,7 +73,10 @@ def live():
     for c in bui.cli.is_one_backup_running():
         s = {}
         s['client'] = c
-        s['status'] = bui.cli.get_counters(c)
+        try:
+            s['status'] = bui.cli.get_counters(c)
+        except BUIserverException:
+            s['status'] = []
         r.append(s)
     return jsonify(results=r)
 
@@ -91,7 +98,11 @@ def client_tree(name=None, backup=None):
     if not name or not backup:
         return jsonify(results=j)
     root = request.args.get('root')
-    j = bui.cli.get_tree(name, backup, root)
+    try:
+        j = bui.cli.get_tree(name, backup, root)
+    except BUIserverException, e:
+        err = [str(e)]
+        return jsonify(errors=err)
     return jsonify(results=j)
 
 @app.route('/api/clients-report.json')
@@ -100,7 +111,11 @@ def clients_report_json():
     WebService: return a JSON with global stats
     """
     j = []
-    clients = bui.cli.get_all_clients()
+    try:
+        clients = bui.cli.get_all_clients()
+    except BUIserverException, e:
+        err = [str(e)]
+        return jsonify(errors=err)
     cl = []
     ba = []
     for c in clients:
@@ -123,12 +138,22 @@ def client_stat_json(name=None, backup=None):
     """
     j = []
     if not name:
-        return jsonify(results=j)
+        err = ['No client defined']
+        return jsonify(errors=err)
     if backup:
-        f = bui.cli.status('c:{0}:b:{1}:f:log.gz\n'.format(name, backup))
+        try:
+            f = bui.cli.status('c:{0}:b:{1}:f:log.gz\n'.format(name, backup))
+        except BUIserverException, e:
+            err = [str(e)]
+            return jsonify(errors=err)
         j = bui.cli.parse_backup_log(f, backup)
     else:
-        for c in bui.cli.get_client(name):
+        try:
+            cl = bui.cli.get_client(name)
+        except BUIserverException, e:
+            err = [str(e)]
+            return jsonify(errors=err)
+        for c in cl:
             f =  bui.cli.status('c:{0}:b:{1}:f:log.gz\n'.format(name, c['number']))
             j.append(bui.cli.parse_backup_log(f, c['number']))
     return jsonify(results=j)
@@ -138,7 +163,11 @@ def client_json(name=None):
     """
     WebService: return a specific client backups overview
     """
-    j = bui.cli.get_client(name)
+    try:
+        j = bui.cli.get_client(name)
+    except BUIserverException, e:
+        err = [str(e)]
+        return jsonify(errors=err)
     return jsonify(results=j)
 
 @app.route('/api/clients.json')
@@ -146,7 +175,11 @@ def clients():
     """
     WebService: return a JSON listing all clients
     """
-    j = bui.cli.get_all_clients()
+    try:
+        j = bui.cli.get_all_clients()
+    except BUIserverException, e:
+        err = [str(e)]
+        return jsonify(errors=err)
     return jsonify(results=j)
 
 """
