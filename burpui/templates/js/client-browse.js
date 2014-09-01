@@ -55,6 +55,14 @@
 		source: function() { 
 			r = [];
 			$.getJSON('{{ url_for("client_tree", name=cname, backup=nbackup) }}', function(data) {
+				if (!data.results) {
+					if (data.notif) {
+						$.each(data.notif, function(i, n) {
+							notif(n[0], n[1]);
+						});
+					}
+					return;
+				}
 				$.each(data.results, function(j, c) {
 					l = (c.type === "d");
 					f = (c.type === "d");
@@ -73,6 +81,14 @@
 			p = node.key;
 			if (p !== "/") p += '/';
 			$.getJSON('{{ url_for("client_tree", name=cname, backup=nbackup) }}?root='+p, function(data) {
+				if (!data.results) {
+					if (data.notif) {
+						$.each(data.notif, function(i, n) {
+							notif(n[0], n[1]);
+						});
+					}
+					return;
+				}
 				$.each(data.results, function(j, c) {
 					l = (c.type === "d");
 					f = (c.type === "d");

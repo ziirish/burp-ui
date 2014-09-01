@@ -1,7 +1,36 @@
-var pad = function (num, size) {
+var pad = function(num, size) {
 	var s = "0000000" + num;
 	return s.substr(s.length-size);
-}
+};
+
+var notif = function(type, message) {
+	var t = '';
+	switch(type) {
+		case 0:
+			t = 'success';
+			i = '<span class="glyphicon glyphicon-ok-sign"></span> ';
+			break;
+		case 1:
+			t = 'warning';
+			i = '<span class="glyphicon glyphicon-question-sign"></span> ';
+			break;
+		case 2:
+			t = 'danger';
+			i = '<span class="glyphicon glyphicon-exclamation-sign"></span> ';
+			break;
+		case 3:
+		default:
+			t = 'info';
+			i = '<span class="glyphicon glyphicon-info-sign"></span> ';
+			break;
+	}
+	e = $('<div class="alert alert-dismissable alert-'+t+'">'+
+			'<button type="button" class="close" data-dismiss="alert">×</button>'+
+			i+message+
+		  '</div>');
+	$('#bui-notifications').append(e).show();
+	e.animate({opacity:1}, 5000, 'linear', function() { e.animate({opacity:0}, 2000, 'linear', function() {e.remove(); }); });
+};
 
 {% if not login %}
 var _check_running = function() {
@@ -26,7 +55,10 @@ var _clients_bh = new Bloodhound({
 	prefetch: {
 		url: '{{ url_for("clients") }}',
 		filter: function(list) {
-			return list.results;
+			if (list.results) {
+				return list.results;
+			}
+			return new Array();
 		}
 	}
 });
@@ -71,10 +103,18 @@ var _async_ajax = function(b) {
 	$.ajaxSetup({
 		async: b
 	});
-}
+};
 
 $(function() {
 	_async_ajax(false);
+
+	/***
+	 * Show the notifications
+	 */
+	$('#bui-notifications > div').each(function() {
+		e = $(this);
+		e.animate({opacity:1}, 5000, 'linear', function() { e.animate({opacity:0}, 2000, 'linear', function() {e.remove(); }); });
+	});
 
 	/***
 	 * Action on the 'refresh' button

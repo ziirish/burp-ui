@@ -29,6 +29,11 @@ var _client = function() {
 		if (!data.results) {
 			$('#table-client').hide();
 			$('#client-alert').show();
+			if (data.notif) {
+				$.each(data.notif, function(i, n) {
+					notif(n[0], n[1]);
+				});
+			}
 			return;
 		}
 		if (data.results.length == 0) {
