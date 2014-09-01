@@ -22,8 +22,10 @@ class LdapLoader:
                 self.base = c.get('LDAP', 'base')
                 self.binddn = c.get('LDAP', 'binddn')
                 self.bindpw = c.get('LDAP', 'bindpw')
-            except ConfigParser.NoOptionError:
-                self.app.logger.error("Missing option")
+            except ConfigParser.NoOptionError, e:
+                self.app.logger.error(str(e))
+            except ConfigParser.NoSectionError, e:
+                self.app.logger.error(str(e))
 
         self.app.logger.info('LDAP host: %s', self.host)
         self.app.logger.info('LDAP filter: %s', self.filt)
