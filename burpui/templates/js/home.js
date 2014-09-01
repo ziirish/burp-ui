@@ -36,11 +36,12 @@ var _clients = function() {
 	url = '{{ url_for("clients") }}';
 	$.getJSON(url, function(data) {
 		$('#table-clients > tbody:last').empty();
-		if (!data.resuts && data.errors) {
-			alert(data.errors[0]);
-			return;
-		}
 		if (!data.results) {
+			if (data.notif) {
+				$.each(data.notif, function(i, n) {
+					notif(n[0], n[1]);
+				});
+			}
 			return;
 		}
 		$.each(data.results, function(j, c) {

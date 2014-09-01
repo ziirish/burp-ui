@@ -38,6 +38,19 @@ var _client = function() {
 	$.getJSON(url, function(d) {
 		var _fields = [ 'dir', 'files', 'hardlink', 'softlink' ];
 		j = d.results;
+		if (!j) {
+			if (d.notif) {
+				$.each(d.notif, function(i, n) {
+					notif(n[0], n[1]);
+				});
+			}
+			$('.mycharts').each(function() {
+				$(this).parent().hide();
+			});
+		}
+		$('.mycharts').each(function() {
+			$(this).parent().show();
+		});
 		$.each(_charts, function(k, l) {
 			data = [];
 			$.each(_fields, function(i, c) {

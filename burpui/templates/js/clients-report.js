@@ -43,6 +43,20 @@ var _clients = function() {
 		backups = {};
 		windows = 0;
 		nonwin = 0;
+		if (!d.results) {
+			if (d.notif) {
+				$.each(d.notif, function(i, n) {
+					notif(n[0], n[1]);
+				});
+			}
+			$('.mycharts').each(function() {
+				$(this).parent().hide();
+			});
+			return;
+		}
+		$('.mycharts').each(function() {
+			$(this).parent().show();
+		});
 		$.each(d.results[0]['clients'], function(k, c) {
 			if (c.stats.windows) {
 				windows++;

@@ -101,8 +101,8 @@ def client_tree(name=None, backup=None):
     try:
         j = bui.cli.get_tree(name, backup, root)
     except BUIserverException, e:
-        err = [str(e)]
-        return jsonify(errors=err)
+        err = [[2, str(e)]]
+        return jsonify(notif=err)
     return jsonify(results=j)
 
 @app.route('/api/clients-report.json')
@@ -114,8 +114,8 @@ def clients_report_json():
     try:
         clients = bui.cli.get_all_clients()
     except BUIserverException, e:
-        err = [str(e)]
-        return jsonify(errors=err)
+        err = [[2, str(e)]]
+        return jsonify(notif=err)
     cl = []
     ba = []
     for c in clients:
@@ -138,21 +138,21 @@ def client_stat_json(name=None, backup=None):
     """
     j = []
     if not name:
-        err = ['No client defined']
-        return jsonify(errors=err)
+        err = [[1, 'No client defined']]
+        return jsonify(notif=err)
     if backup:
         try:
             f = bui.cli.status('c:{0}:b:{1}:f:log.gz\n'.format(name, backup))
         except BUIserverException, e:
-            err = [str(e)]
-            return jsonify(errors=err)
+            err = [[2, str(e)]]
+            return jsonify(notif=err)
         j = bui.cli.parse_backup_log(f, backup)
     else:
         try:
             cl = bui.cli.get_client(name)
         except BUIserverException, e:
-            err = [str(e)]
-            return jsonify(errors=err)
+            err = [[2, str(e)]]
+            return jsonify(notif=err)
         for c in cl:
             f =  bui.cli.status('c:{0}:b:{1}:f:log.gz\n'.format(name, c['number']))
             j.append(bui.cli.parse_backup_log(f, c['number']))
@@ -166,8 +166,8 @@ def client_json(name=None):
     try:
         j = bui.cli.get_client(name)
     except BUIserverException, e:
-        err = [str(e)]
-        return jsonify(errors=err)
+        err = [[2, str(e)]]
+        return jsonify(notif=err)
     return jsonify(results=j)
 
 @app.route('/api/clients.json')
@@ -178,8 +178,8 @@ def clients():
     try:
         j = bui.cli.get_all_clients()
     except BUIserverException, e:
-        err = [str(e)]
-        return jsonify(errors=err)
+        err = [[2, str(e)]]
+        return jsonify(notif=err)
     return jsonify(results=j)
 
 """

@@ -1,5 +1,9 @@
 {% extends "layout.html" %}
 {% block body %}
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2">
+          <div id="bui-notifications">
+          </div>
+        </div>
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
           {% include "small_topbar.html" %}
           <ul class="breadcrumb" style="margin-bottom: 5px;">                      
@@ -22,7 +26,7 @@
               </tbody>
             </table>
             <div class="alert alert-dismissable alert-danger" id="client-alert" style="display: none;">
-              <strong>Sorry!</strong> There are no backups for this client.
+              <span class="glyphicon glyphicon-exclamation-sign"></span> <strong>Sorry!</strong> There are no backups for this client.
             </div>
           </div>
         </div>
