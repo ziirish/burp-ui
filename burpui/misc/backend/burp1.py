@@ -3,9 +3,13 @@ import re
 import socket
 import time
 import datetime
+import ConfigParser
 
 from burpui.misc.utils import human_readable as _hr
 from burpui.misc.backend.interface import BUIbackend, BUIserverException
+
+g_burpport = 4972
+g_burphost = '127.0.0.1'
 
 class Burp(BUIbackend):
     states = {
@@ -48,11 +52,25 @@ class Burp(BUIbackend):
         'path'
        ]
 
-    def __init__(self, app=None, host='127.0.0.1', port=4972):
+    def __init__(self, app=None, host='127.0.0.1', port=4972, conf=None):
+        global g_burpport, g_burphost
         self.app = app
         self.host = host
         self.port = port
         self.running = []
+        if conf:
+            config = ConfigParser.ConfigParser({'bport': g_burpport, 'bhost': g_burphost})
+            with open(conf) as fp:
+                config.readfp(fp)
+                try:
+                    self.port = config.getint('Burp1', 'bport')
+                    self.host = config.get('Burp1', 'bhost')
+                except ConfigParser.NoOptionError, e:
+                    self.app.logger.error(str(e))
+                except ConfigParser.NoSectionError, e:
+                    self.app.logger.error(str(e))
+            self.app.logger.info('burp port: %d', self.port)
+            self.app.logger.info('burp host: %s', self.host)
 
     """
     Utilities functions
