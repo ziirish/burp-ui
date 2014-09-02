@@ -11,7 +11,9 @@ from burpui.misc.backend.interface import BUIserverException
 
 @login_manager.user_loader
 def load_user(userid):
-    return bui.uhandler.user(userid)
+    if bui.auth != 'none':
+        return bui.uhandler.user(userid)
+    return None
 
 @app.route('/login', methods=['POST', 'GET'])
 def login():
@@ -20,7 +22,7 @@ def login():
         user = bui.uhandler.user(form.username.data)
         app.logger.info('%s active: %s', form.username.data, user.active)
         if user.active and user.login(form.username.data, passwd=form.password.data):
-            login_user(user)
+            login_user(user, remember=form.remember.data)
             flash('Logged in successfully.')
             return redirect(url_for('test_login'))
     return render_template('login.html', form=form, login=True)
@@ -41,6 +43,7 @@ Here is the API
 """
 
 @app.route('/api/running-clients.json')
+@login_required
 def running_clients():
     """
     WebServer: return a list of running clients
@@ -50,6 +53,7 @@ def running_clients():
 
 @app.route('/api/render-live-template', methods=['GET'])
 @app.route('/api/render-live-template/<name>')
+@login_required
 def render_live_tpl(name=None):
     c = request.args.get('name')
     if not name and not c:
@@ -65,6 +69,7 @@ def render_live_tpl(name=None):
     return render_template('live-monitor-template.html', cname=name, counters=counters)
 
 @app.route('/api/live.json')
+@login_required
 def live():
     """
     WebServer: return the live status of the server
@@ -81,6 +86,7 @@ def live():
     return jsonify(results=r)
 
 @app.route('/api/running.json')
+@login_required
 def backup_running():
     """
     WebService: return true if at least one backup is running
@@ -90,6 +96,7 @@ def backup_running():
     return jsonify(results=r)
 
 @app.route('/api/client-tree.json/<name>/<int:backup>', methods=['GET'])
+@login_required
 def client_tree(name=None, backup=None):
     """
     WebService: return a specific client files tree
@@ -106,6 +113,7 @@ def client_tree(name=None, backup=None):
     return jsonify(results=j)
 
 @app.route('/api/clients-report.json')
+@login_required
 def clients_report_json():
     """
     WebService: return a JSON with global stats
@@ -132,6 +140,7 @@ def clients_report_json():
 
 @app.route('/api/client-stat.json/<name>')
 @app.route('/api/client-stat.json/<name>/<int:backup>')
+@login_required
 def client_stat_json(name=None, backup=None):
     """
     WebService: return a specific client detailed report
@@ -159,6 +168,7 @@ def client_stat_json(name=None, backup=None):
     return jsonify(results=j)
 
 @app.route('/api/client.json/<name>')
+@login_required
 def client_json(name=None):
     """
     WebService: return a specific client backups overview
@@ -171,6 +181,7 @@ def client_json(name=None):
     return jsonify(results=j)
 
 @app.route('/api/clients.json')
+@login_required
 def clients():
     """
     WebService: return a JSON listing all clients
@@ -214,6 +225,7 @@ And here is the main site
 
 @app.route('/live-monitor')
 @app.route('/live-monitor/<name>')
+@login_required
 def live_monitor(name=None):
     """
     Live status monitor view
@@ -225,6 +237,7 @@ def live_monitor(name=None):
 
 @app.route('/client-browse/<name>', methods=['GET'])
 @app.route('/client-browse/<name>/<int:backup>')
+@login_required
 def client_browse(name=None, backup=None):
     """
     Browse a specific backup of a specific client
@@ -235,6 +248,7 @@ def client_browse(name=None, backup=None):
     return render_template('client-browse.html', tree=True, backup=True, overview=True, cname=name, nbackup=backup)
 
 @app.route('/client-report/<name>')
+@login_required
 def client_report(name=None):
     """
     Specific client report
@@ -245,6 +259,7 @@ def client_report(name=None):
     return render_template('client-report.html', client=True, report=True, cname=name)
 
 @app.route('/clients-report')
+@login_required
 def clients_report():
     """
     Global report
@@ -253,6 +268,7 @@ def clients_report():
 
 @app.route('/backup-report/<name>', methods=['GET'])
 @app.route('/backup-report/<name>/<int:backup>', methods=['GET'])
+@login_required
 def backup_report(name=None, backup=None):
     """
     Backup specific report
@@ -263,6 +279,7 @@ def backup_report(name=None, backup=None):
 
 @app.route('/client', methods=['GET'])
 @app.route('/client/<name>')
+@login_required
 def client(name=None):
     """
     Specific client overview
@@ -276,6 +293,7 @@ def client(name=None):
     return render_template('client.html', client=True, overview=True, cname=c)
 
 @app.route('/')
+@login_required
 def home():
     """
     Home page
