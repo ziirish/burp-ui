@@ -15,6 +15,9 @@
             <li class="disabled"><a href="#"><span class="glyphicon glyphicon-wrench"></span>&nbsp;Settings</a></li>
             <li {% if live %}class="active"{% endif %}><a href="{{ url_for('live_monitor') }}"><span id="toblink" class="glyphicon glyphicon-screenshot"></span>&nbsp;Live monitor</a></li>
             <li><a id="refresh" href="#"><span class="glyphicon glyphicon-refresh"></span></a></li>
+            {% if current_user and current_user.is_authenticated() %}
+            <li><a href="{{ url_for('logout') }}"><span class="glyphicon glyphicon-log-out"></span>&nbsp;Logout <small>({{ current_user.name }})</small></a></li>
+            {% endif %}
           </ul>
           <form class="navbar-form navbar-right" id="search">
             <input type="text" class="form-control" id="input-client" placeholder="Search client..." autocomplete="off">
