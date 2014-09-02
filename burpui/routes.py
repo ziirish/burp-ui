@@ -40,13 +40,16 @@ def test_login():
 
 """
 Here is the API
+
+The whole API returns JSON-formated data
 """
 
 @app.route('/api/running-clients.json')
 @login_required
 def running_clients():
     """
-    WebServer: return a list of running clients
+    API: running_clients
+    :returns: a list of running clients
     """
     r = bui.cli.is_one_backup_running()
     return jsonify(results=r)
@@ -55,6 +58,12 @@ def running_clients():
 @app.route('/api/render-live-template/<name>')
 @login_required
 def render_live_tpl(name=None):
+    """
+    API: render_live_tpl
+    :param name: the client name if any. You can also use the GET parameter
+    'name' to achieve the same thing
+    :returns: HTML that should be included directly into the page
+    """
     c = request.args.get('name')
     if not name and not c:
         abort(500)
@@ -72,7 +81,8 @@ def render_live_tpl(name=None):
 @login_required
 def live():
     """
-    WebServer: return the live status of the server
+    API: live
+    :returns: the live status of the server
     """
     r = []
     for c in bui.cli.is_one_backup_running():
@@ -89,7 +99,8 @@ def live():
 @login_required
 def backup_running():
     """
-    WebService: return true if at least one backup is running
+    API: backup_running
+    :returns: true if at least one backup is running
     """
     j = bui.cli.is_one_backup_running()
     r = len(j) > 0
@@ -100,6 +111,9 @@ def backup_running():
 def client_tree(name=None, backup=None):
     """
     WebService: return a specific client files tree
+    :param name: the client name (mandatory)
+    :param backup: the backup number (mandatory)
+
     """
     j = []
     if not name or not backup:
