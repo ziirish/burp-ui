@@ -8,6 +8,7 @@
             {% call macros.render_form(form, action_url=url_for('login'), action_text='Login') %}
               {{ macros.render_field(form.username, placeholder='Username', type='text') }}
               {{ macros.render_field(form.password, placeholder='Password', type='password') }}
+              {{ macros.render_checkbox_field(form.remember) }}
             {% endcall %}
           </div>
         </div>
