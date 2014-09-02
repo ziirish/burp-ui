@@ -204,15 +204,47 @@ svg text {
   -webkit-animation: blink 1s step-start 0s infinite;
 }
 
-/* centered columns styles */
-.row-centered {
-  text-align:center;
+.wrapper {
+  margin-top: 80px;
+  margin-bottom: 80px;
 }
-.col-centered {
-  display:inline-block;
-  float:none;
-  /* reset the text-align */
-  text-align:left;
-  /* inline-block space fix */
-  margin-right:-4px;
+
+.form-signin {
+  background: linear-gradient(#8a9196, #7a8288 60%, #70787d);
+  max-width: 380px;
+  padding: 15px 35px 45px;
+  margin: 0 auto;
+  border: 1px solid rgba(0,0,0,0.1);
+
+  .checkbox {
+    margin-bottom: 30px;
+  }
+
+  .form-control {
+    position: relative;
+    font-size: 16px;
+    height: auto;
+    padding: 10px;
+    @include box-sizing(border-box);
+
+    &:focus {
+      z-index: 2;
+    }
+  }
+
+  input[type="text"] {
+    margin-bottom: -1px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  input[type="password"] {
+    margin-bottom: 20px;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+  }
+}
+
+#search {
+  margin-right: 0.1em;
 }
