@@ -1,3 +1,4 @@
+
 var pad = function(num, size) {
 	var s = "0000000" + num;
 	return s.substr(s.length-size);
@@ -32,7 +33,7 @@ var notif = function(type, message) {
 	e.animate({opacity:1}, 5000, 'linear', function() { e.animate({opacity:0}, 2000, 'linear', function() {e.remove(); }); });
 };
 
-{% if not login %}
+{% if not login -%}
 var _check_running = function() {
 	url = '{{ url_for("backup_running") }}';
 	$.getJSON(url, function(data) {
@@ -43,7 +44,7 @@ var _check_running = function() {
 		}
 	});
 };
-{% endif %}
+{% endif -%}
 
 /***
  * _clients_bh: Bloodhound object used for the autocompletion of the input field
@@ -75,29 +76,29 @@ $('#input-client').typeahead(null, {
 });
 
 
-{% if clients and overview %}
+{% if clients and overview -%}
 {% include "js/home.js" %}
-{% endif %}
+{% endif -%}
 
-{% if clients and report %}
+{% if clients and report -%}
 {% include "js/clients-report.js" %}
-{% endif %}
+{% endif -%}
 
-{% if client and overview %}
+{% if client and overview -%}
 {% include "js/client.js" %}
-{% endif %}
+{% endif -%}
 
-{% if backup and report and client %}
+{% if backup and report and client -%}
 {% include "js/backup-report.js" %}
-{% endif %}
+{% endif -%}
 
-{% if not backup and report and client %}
+{% if not backup and report and client -%}
 {% include "js/client-report.js" %}
-{% endif %}
+{% endif -%}
 
-{% if live %}
+{% if live -%}
 {% include "js/live-report.js" %}
-{% endif %}
+{% endif -%}
 
 var _async_ajax = function(b) {
 	$.ajaxSetup({
@@ -112,27 +113,41 @@ $(function() {
 	 * Show the notifications
 	 */
 	$('#bui-notifications > div').each(function() {
-		e = $(this);
+		var e = $(this);
 		e.animate({opacity:1}, 5000, 'linear', function() { e.animate({opacity:0}, 2000, 'linear', function() {e.remove(); }); });
 	});
+
+	/***
+	 * show details in topbar
+	 */
+	$('li.detail').hover(
+		// mouse in
+		function() {
+			$(this).find('.dtl').show();
+		},
+		// mouse out
+		function() {
+			$(this).find('.dtl').hide();
+		}
+	);
 
 	/***
 	 * Action on the 'refresh' button
 	 */
 	$('#refresh').on('click', function(e) {
 		e.preventDefault();
-		{% if clients %}
+		{% if clients -%}
 		_clients();
-		{% endif %}
-		{% if client %}
+		{% endif -%}
+		{% if client -%}
 		_client();
-		{% endif %}
-		{% if live %}
+		{% endif -%}
+		{% if live -%}
 		_live();
-		{% endif %}
-		{% if not login %}
+		{% endif -%}
+		{% if not login -%}
 		_check_running();
-		{% endif %}
+		{% endif -%}
 	});
 
 	/***
@@ -155,44 +170,44 @@ $(function() {
 	/***
 	 * initialize our page if needed
 	 */
-	{% if not login %}
+	{% if not login -%}
 	_check_running();
-	{% endif %}
-	{% if clients %}
+	{% endif -%}
+	{% if clients -%}
 	_clients();
-	{% endif %}
-	{% if client %}
+	{% endif -%}
+	{% if client -%}
 	_client();
-	{% endif %}
-	{% if live %}
+	{% endif -%}
+	{% if live -%}
 	_live();
-	{% endif %}
+	{% endif -%}
 
-	{% if not report %}
+	{% if not report and not login -%}
 	/***
 	 * auto-refresh our page if needed
 	 */
 	var auto_refresh = setInterval(function() {
-		{% if clients %}
+		{% if clients -%}
 		_clients();
-		{% endif %}
-		{% if client %}
+		{% endif -%}
+		{% if client -%}
 		_client();
-		{% endif %}
-		{% if live %}
+		{% endif -%}
+		{% if live -%}
 		_live();
-		{% endif %}
+		{% endif -%}
 		return;
 	}, {{ config.REFRESH * 1000 }});
-	{% endif %}
+	{% endif -%}
 
-	{% if not login %}
+	{% if not login -%}
 	var refresh_running = setInterval(function () {
 		_check_running();
 	}, {{ config.REFRESH * 1000 }});
-	{% endif %}
+	{% endif -%}
 
-	{% if tree %}
+	{% if tree -%}
 	{% include "js/client-browse.js" %}
-	{% endif %}
+	{% endif -%}
 });
