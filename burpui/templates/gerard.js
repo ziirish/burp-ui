@@ -123,11 +123,11 @@ $(function() {
 	$('li.detail').hover(
 		// mouse in
 		function() {
-			$(this).find('.dtl').show();
+			$(this).find('.dtl').removeClass('hidden-md hidden-lg');
 		},
 		// mouse out
 		function() {
-			$(this).find('.dtl').hide();
+			$(this).find('.dtl').addClass('hidden-md hidden-lg');
 		}
 	);
 
