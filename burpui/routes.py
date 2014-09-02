@@ -20,23 +20,17 @@ def login():
     form = LoginForm(request.form)
     if form.validate_on_submit():
         user = bui.uhandler.user(form.username.data)
-        app.logger.info('%s active: %s', form.username.data, user.active)
         if user.active and user.login(form.username.data, passwd=form.password.data):
             login_user(user, remember=form.remember.data)
-            flash('Logged in successfully.')
-            return redirect(url_for('test_login'))
+            flash('Logged in successfully', 'success')
+            return redirect(request.args.get("next") or url_for('home'))
     return render_template('login.html', form=form, login=True)
 
 @app.route('/logout')
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for('login'))
-
-@app.route('/test_login')
-@login_required
-def test_login():
-    return render_template('test-login.html', login=True, user=current_user.name)
+    return redirect(url_for('home'))
 
 """
 Here is the API
@@ -245,7 +239,7 @@ def live_monitor(name=None):
     Live status monitor view
     """
     if not bui.cli.running:
-        flash('Sorry, there are no running backups')
+        flash('Sorry, there are no running backups', 'warning')
         return redirect(url_for('home'))
     return render_template('live-monitor.html', live=True, cname=name)
 
