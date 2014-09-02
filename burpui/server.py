@@ -41,13 +41,18 @@ class Server:
                     self.ssl = False
                 self.sslcert = config.get('Global', 'sslcert')
                 self.sslkey = config.get('Global', 'sslkey')
-                try:
-                    mod = __import__('burpui.misc.auth.{0}'.format(config.get('Global', 'auth')), fromlist=['UserHandler'])
-                    UserHandler = mod.UserHandler
-                    self.uhandler = UserHandler(self.app)
-                except Exception, e:
-                    self.app.logger.error('Import Exception, module \'%s\': %s', config.get('Global', 'auth'), str(e))
-                    sys.exit(1)
+                self.auth = config.get('Global', 'auth')
+                if self.auth != 'none':
+                    try:
+                        mod = __import__('burpui.misc.auth.{0}'.format(config.get('Global', 'auth')), fromlist=['UserHandler'])
+                        UserHandler = mod.UserHandler
+                        self.uhandler = UserHandler(self.app)
+                    except Exception, e:
+                        self.app.logger.error('Import Exception, module \'%s\': %s', config.get('Global', 'auth'), str(e))
+                        sys.exit(1)
+                else:
+                    # I know that's ugly, but hey, I need it!
+                    self.app.login_manager._login_disabled = True
             except ConfigParser.NoOptionError:
                 self.app.logger.error("Missing option")
 
