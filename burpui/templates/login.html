@@ -1,11 +1,10 @@
 {% extends "layout.html" %}
 {% import 'macros.html' as macros %}
 {% block body %}
+        {% include "notifications.html" %}
         <div class="main">
-          <h1 class="page-header">Login</h1>
-
           <div class="wrapper">
-            {% call macros.render_form(form, action_url=url_for('login'), action_text='Login') %}
+            {% call macros.render_form(form, action_url=url_for('login'), action_text='Login', class_='form-signin', btn_class='btn btn-info btn-lg btn-primary btn-block') %}
               {{ macros.render_field(form.username, placeholder='Username', type='text') }}
               {{ macros.render_field(form.password, placeholder='Password', type='password') }}
               {{ macros.render_checkbox_field(form.remember) }}
