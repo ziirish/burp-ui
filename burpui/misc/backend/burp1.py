@@ -1,15 +1,22 @@
 # -*- coding: utf8 -*-
 import re
+import os
 import socket
 import time
+import json
 import datetime
 import ConfigParser
+import shutil
+import subprocess
+import zipfile
 
 from burpui.misc.utils import human_readable as _hr
 from burpui.misc.backend.interface import BUIbackend, BUIserverException
 
 g_burpport = 4972
 g_burphost = '127.0.0.1'
+g_tmpdir   = '/tmp/buirestore'
+g_burpbin  = '/usr/sbin/burp'
 
 class Burp(BUIbackend):
     states = {
@@ -52,25 +59,57 @@ class Burp(BUIbackend):
         'path'
        ]
 
-    def __init__(self, app=None, host='127.0.0.1', port=4972, conf=None):
-        global g_burpport, g_burphost
+    def __init__(self, app=None, conf=None):
+        global g_burpport, g_burphost, g_tmpdir, g_burpbin
         self.app = app
-        self.host = host
-        self.port = port
+        self.host = g_burphost
         self.running = []
         if conf:
-            config = ConfigParser.ConfigParser({'bport': g_burpport, 'bhost': g_burphost})
+            config = ConfigParser.ConfigParser({'bport': g_burpport, 'tmpdir': g_tmpdir, 'burpbin': g_burpbin})
             with open(conf) as fp:
                 config.readfp(fp)
                 try:
                     self.port = config.getint('Burp1', 'bport')
-                    self.host = config.get('Burp1', 'bhost')
+                    tdir = config.get('Burp1', 'tmpdir')
+                    bbin = config.get('Burp1', 'burpbin')
+
+                    if not bbin.startswith('/'):
+                        self.app.logger.warning('Please provide an absolute path for the \'burpbin\' option. Fallback to \'%s\'', g_burpbin)
+                        bbin = g_burpbin
+                    elif not re.match('^\S+$', bbin):
+                        self.app.logger.warning('Incorrect value for the \'burpbin\' option. Fallback to \'%s\'', g_burpbin)
+                        bbin = g_burpbin
+                    elif not os.path.isfile(bbin) or not os.access(bbin, os.X_OK):
+                        self.app.logger.warning('\'%s\' does not exist or is not executable. Fallback to \'%s\'', bbin, g_burpbin)
+                        bbin = g_burpbin
+
+                    if not tdir.startswith('/'):
+                        self.app.logger.warning('Please provide an absolute path for the \'tmpdir\' option. Fallback to \'%s\'', g_tmpdir)
+                        tdir = g_tmpdir
+                    elif not re.match('^\S+$', tdir):
+                        self.app.logger.warning('Incorrect value for the \'tmpdir\' option. Fallback to \'%s\'', g_tmpdir)
+                        tdir = g_tmpdir
+                    elif os.path.isdir(tdir) and os.listdir(tdir):
+                        raise Exception('\'{0}\' is not empty!'.format(tdir))
+                    elif os.path.isdir(tdir) and not os.access(tdir, os.W_OK|os.X_OK):
+                        self.app.logger.warning('\'%s\' is not writable. Fallback to \'%s\'', tdir, g_tmpdir)
+                        tdir = g_tmpdir
+
+                    self.burpbin = bbin
+                    self.tmpdir = tdir
                 except ConfigParser.NoOptionError, e:
                     self.app.logger.error(str(e))
                 except ConfigParser.NoSectionError, e:
                     self.app.logger.error(str(e))
-            self.app.logger.info('burp port: %d', self.port)
-            self.app.logger.info('burp host: %s', self.host)
+        else:
+            self.port = g_burpport
+            self.burpbin = g_burpbin
+            self.tmpdir = g_tmpdir
+
+        self.app.logger.info('burp port: %d', self.port)
+        self.app.logger.info('burp host: %s', self.host)
+        self.app.logger.info('burp binary: %s', self.burpbin)
+        self.app.logger.info('temporary dir: %s', self.tmpdir)
 
     """
     Utilities functions
@@ -206,7 +245,7 @@ class Burp(BUIbackend):
         returns a dict
         """
         r = {}
-        if not name or name not in running:
+        if not name or name not in self.running:
             return r
         f = self.status('c:{0}\n'.format(name))
         if not f:
@@ -253,7 +292,7 @@ class Burp(BUIbackend):
         except BUIserverException:
             return False
         for line in f:
-            r = re.search('^{0}\s+\d\s+(\S)'.format(name), line)
+            r = re.search('^{0}\s+\d\s+(\w)'.format(name), line)
             if r and r.group(1) not in [ 'i', 'c', 'C' ]:
                 return True
         return False
@@ -372,3 +411,36 @@ class Burp(BUIbackend):
                     t['parent'] = top
                     r.append(t)
         return r
+
+    def restore_files(self, name=None, backup=None, files=None):
+        if not name or not backup or not files:
+            return None
+        flist = json.loads(files)
+        if 'restore' not in flist:
+            return None
+        if os.path.isdir(self.tmpdir):
+            shutil.rmtree(self.tmpdir)
+        for r in flist['restore']:
+            reg = ''
+            if r['folder'] and r['key'] != '/':
+                reg = r['key']+'/'
+            else:
+                reg = r['key']
+            #cmd = self.burpbin+' -C '+name+' -a r -b '+str(backup)+' -r \''+reg+'\' -d '+self.tmpdir
+            status = subprocess.call([self.burpbin, '-C', name, '-a', 'r', '-b', str(backup), '-r', reg, '-d', self.tmpdir])
+            if status != 0:
+                return None
+
+        zip_dir = self.tmpdir.rstrip(os.sep)
+        zip_file = zip_dir+'.zip'
+        if os.path.isfile(zip_file):
+            os.remove(zip_file)
+        zip_len = len(zip_dir) + 1
+        with zipfile.ZipFile(zip_file, mode='w', compression=zipfile.ZIP_DEFLATED) as zf:
+            for dirname, subdirs, files in os.walk(zip_dir):
+                for filename in files:
+                    path = os.path.join(dirname, filename)
+                    entry = path[zip_len:]
+                    zf.write(path, entry)
+        return zip_file
+

@@ -97,7 +97,7 @@ $('#input-client').typeahead(null, {
 {% endif -%}
 
 {% if live -%}
-{% include "js/live-report.js" %}
+{% include "js/live-monitor.js" %}
 {% endif -%}
 
 var _async_ajax = function(b) {

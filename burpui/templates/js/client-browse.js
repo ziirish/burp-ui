@@ -32,6 +32,8 @@
 	 * }
 	 */
 	$("#tree").fancytree({
+		checkbox: true,
+		selectMode: 2,
 		extensions: ["glyph", "table", "gridnav", "filter"],
 		glyph: {
 			map: {
@@ -110,7 +112,6 @@
 			});
 		},
 		*/
-		selectMode: 1,
 		scrollParent: $(window),
 		renderColumns: function(event, data) {
 			var node = data.node;
@@ -121,6 +122,21 @@
 			$tdList.eq(3).text(node.data.gid);
 			$tdList.eq(4).text(node.data.size);
 			$tdList.eq(5).text(node.data.date);
+		},
+		select: function(event, data) {
+			var s = data.tree.getSelectedNodes();
+			if (s.length > 0) {
+				$("#restore-form").show();
+				v = [];
+				$.each(s, function(i, n) {
+					v.push({key: n.key, folder: n.folder});
+				});
+				r = {restore:v};
+				$("input[name=list]").val(JSON.stringify(r));
+			} else {
+				$("#restore-form").hide();
+				$("input[name=list]").val('');
+			}
 		}
 	});
 
@@ -166,5 +182,15 @@
 	$("input#regex").change(function(e){
 		tree.clearFilter();
 		$("input[name=search-tree]").keyup();
+	});
+
+	$("#form-restore").on('submit', function(e) {
+		$.fileDownload($(this).prop('action'), {
+			preparingMessageHtml: "We are processing the restoration, please wait...",
+			failMessageHtml: "There was an error restoring files",
+			httpMethod: "POST",
+			data: $(this).serialize()
+		});
+		e.preventDefault();
 	});
 
