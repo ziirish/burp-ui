@@ -69,8 +69,10 @@ TODO
 
 Here is a non-exhaustive list of things I'd like to add:
 
-* server-initiated restoration (with burp, you can create a special file that triggers a restoration when the client contacts the server the next time. In this case the client must accepts server-initiated restoration).
-* burp-server configuration front-end (so that you can configure your burp server within burp-ui).
+* Download files when browsing backups through the UI.
+* Server-initiated restoration (with burp, you can create a special file that triggers a restoration when the client contacts the server the next time. In this case the client must accepts server-initiated restoration).
+* Burp-server configuration front-end (so that you can configure your burp server within burp-ui).
+* Give Burp-UI the ability to run on a remote machine (see `this link <http://sourceforge.net/p/burp/mailman/message/32770207/>`__ for details).
 * More statistics.
 * etc.
 
