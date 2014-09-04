@@ -7,6 +7,10 @@ Build Status
 Requirements
 ------------
 
+Please note that currently, ``Burp-UI`` must be running on the same server that
+runs the burp-server.
+
+
 For LDAP authentication (optional), we need the ``simpleldap`` module that 
 requires the following packages on Debian:
 
