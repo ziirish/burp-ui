@@ -1,8 +1,8 @@
 # -*- coding: utf8 -*-
 import math
 
-from flask import Flask, request, render_template, jsonify, redirect, url_for, abort, flash, g, session
-from flask.ext.login import login_user, login_required, logout_user, current_user
+from flask import Flask, request, render_template, jsonify, redirect, url_for, abort, flash, send_file
+from flask.ext.login import login_user, login_required, logout_user 
 
 from burpui import app, bui, login_manager
 from burpui.forms import LoginForm
@@ -15,22 +15,30 @@ def load_user(userid):
         return bui.uhandler.user(userid)
     return None
 
-@app.route('/login', methods=['POST', 'GET'])
-def login():
-    form = LoginForm(request.form)
-    if form.validate_on_submit():
-        user = bui.uhandler.user(form.username.data)
-        if user.active and user.login(form.username.data, passwd=form.password.data):
-            login_user(user, remember=form.remember.data)
-            flash('Logged in successfully', 'success')
-            return redirect(request.args.get("next") or url_for('home'))
-    return render_template('login.html', form=form, login=True)
+@app.route('/test/download')
+def test_download():
+    try:
+        resp = send_file('/tmp/monfichierr', as_attachment=True)
+        resp.set_cookie('fileDownload', 'true')
+        return resp
+    except Exception, e:
+        abort(500)
 
-@app.route('/logout')
+@app.route('/api/restore/<name>/<int:backup>', methods=['POST'])
 @login_required
-def logout():
-    logout_user()
-    return redirect(url_for('home'))
+def restore(name=None, backup=None):
+    l = request.form.get('list')
+    if not l or not name or not backup:
+        abort(500)
+    archive = bui.cli.restore_files(name, backup, l)
+    if not archive:
+        abort(500)
+    try:
+        resp = send_file(archive, as_attachment=True)
+        resp.set_cookie('fileDownload', 'true')
+        return resp
+    except Exception, e:
+        abort(500)
 
 """
 Here is the API
@@ -299,6 +307,23 @@ def client(name=None):
     if bui.cli.is_backup_running(c):
         return redirect(url_for('live_monitor', name=name))
     return render_template('client.html', client=True, overview=True, cname=c)
+
+@app.route('/login', methods=['POST', 'GET'])
+def login():
+    form = LoginForm(request.form)
+    if form.validate_on_submit():
+        user = bui.uhandler.user(form.username.data)
+        if user.active and user.login(form.username.data, passwd=form.password.data):
+            login_user(user, remember=form.remember.data)
+            flash('Logged in successfully', 'success')
+            return redirect(request.args.get("next") or url_for('home'))
+    return render_template('login.html', form=form, login=True)
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('home'))
 
 @app.route('/')
 @login_required

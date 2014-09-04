@@ -11,12 +11,12 @@
 
     <!-- Bootstrap core CSS -->
     <link href="{{ url_for('static', filename='bootstrap/bootstrap.min.css') }}" rel="stylesheet">
-    {% if report %}
+    {% if report -%}
     <link href="{{ url_for('static', filename='nvd3/nv.d3.min.css') }}" rel="stylesheet">
-    {% endif %}
-    {% if tree %}
+    {% endif -%}
+    {% if tree -%}
     <link href="{{ url_for('static', filename='fancytree/skin-bootstrap/ui.fancytree.css') }}" rel="stylesheet">
-    {% endif %}
+    {% endif -%}
 
     <!-- Custom styles for this template -->
     <link href="{{ url_for('static', filename='dashboard.css') }}" rel="stylesheet">
@@ -29,9 +29,9 @@
 
     <div class="container-fluid">
       <div class="row">
-        {% if not live and not login %}
+        {% if not live and not login -%}
         {% include "sidebar.html" %}
-        {% endif %}
+        {% endif -%}
         {% block body %}{% endblock %}
       </div>
     </div>
@@ -45,19 +45,22 @@
     ================================================== -->
     <script src="{{ url_for('static', filename='typeahead/typeahead.jquery.min.js') }}"></script>
     <script src="{{ url_for('static', filename='typeahead/bloodhound.min.js') }}"></script>
-    {% if report %}
+    {% if report -%}
     <!-- d3 + nvd3 Javascript
     ================================================== -->
     <script src="{{ url_for('static', filename='d3/d3.min.js') }}"></script>
     <script src="{{ url_for('static', filename='nvd3/nv.d3.min.js') }}"></script>
-    {% endif %}
-    {% if tree %}
+    {% endif -%}
+    {% if tree -%}
     <!-- Fancytree Javascript
     ================================================== -->
     <script src="{{ url_for('static', filename='jquery-ui/jquery-ui-1.10.4.min.js') }}"></script>
     <script src="{{ url_for('static', filename='fancytree/jquery.fancytree-custom.min.js') }}"></script>
     <script src="{{ url_for('static', filename='fancytree/jquery.fancytree.filter.js') }}"></script>
-    {% endif %}
+    <!-- FileDownload Javascript
+    ================================================== -->
+    <script src="{{ url_for('static', filename='jquery/jquery.fileDownload.js') }}"></script>
+    {% endif -%}
     <script type="text/javascript">
       {% include "gerard.js" %}
     </script>

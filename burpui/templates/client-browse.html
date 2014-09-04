@@ -44,5 +44,14 @@
               </tbody>
             </table>
           </div>
+          <br />
+          <div class="row">
+            <form id="form-restore" class="form-inline" method="POST" role="form" action="{{ url_for("restore", name=cname, backup=nbackup) }}">
+              <input type="hidden" name="list">
+              <div id="restore-form" style="display:none;">
+                <button type="submit" class="btn btn-info">Restore selected files</button>
+              </div>
+            </form>
+          </div>
         </div>
 {% endblock %}
