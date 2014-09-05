@@ -63,6 +63,9 @@ class Burp(BUIbackend):
         global g_burpport, g_burphost, g_tmpdir, g_burpbin
         self.app = app
         self.host = g_burphost
+        self.port = g_burpport
+        self.burpbin = g_burpbin
+        self.tmpdir = g_tmpdir
         self.running = []
         if conf:
             config = ConfigParser.ConfigParser({'bport': g_burpport, 'tmpdir': g_tmpdir, 'burpbin': g_burpbin})
@@ -101,10 +104,6 @@ class Burp(BUIbackend):
                     self.app.logger.error(str(e))
                 except ConfigParser.NoSectionError, e:
                     self.app.logger.error(str(e))
-        else:
-            self.port = g_burpport
-            self.burpbin = g_burpbin
-            self.tmpdir = g_tmpdir
 
         self.app.logger.info('burp port: %d', self.port)
         self.app.logger.info('burp host: %s', self.host)

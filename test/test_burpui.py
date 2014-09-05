@@ -42,8 +42,12 @@ class BurpuiTestCase(TestCase):
 		print '\nTest 2 Finished!\n'
 
 	def create_app(self):
+		conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../burpui.cfg')
 		app.config['TESTING'] = True
 		app.config['LOGIN_DISABLED'] = True
+		app.config['LIVESERVER_PORT'] = 5001
+		app.config['CFG'] = conf
+		bui.setup(conf)
 		bui.cli.port = 9999
 		login_manager.init_app(app)
 		return app
