@@ -67,17 +67,20 @@ I have closed the *github tracker* to have a unique tracker system.
 TODO
 ----
 
-Here is a non-exhaustive list of things I'd like to add:
-
-* Download files when browsing backups through the UI.
-* Server-initiated restoration (with burp, you can create a special file that triggers a restoration when the client contacts the server the next time. In this case the client must accepts server-initiated restoration).
-* Burp-server configuration front-end (so that you can configure your burp server within burp-ui).
-* Give Burp-UI the ability to run on a remote machine (see `this link <http://sourceforge.net/p/burp/mailman/message/32770207/>`__ for details).
-* More statistics.
-* etc.
+`Here <https://git.ziirish.me/ziirish/burp-ui/issues?label_name=todo>`_ is a non-exhaustive list of things I'd like to add.
 
 Also note that in the future, I'd like to write a burp-client GUI.
 But I didn't think yet of what to do.
+
+Changelog
+---------
+
+* version 0.0.3:
+  - Add authentication
+* version 0.0.2:
+  - Fix bugs
+* version 0.0.1:
+  - Initial release
 
 Licenses
 --------
@@ -86,14 +89,14 @@ Burp-UI is released under the BSD 3-clause `License`_.
 
 But this project is built on top of other tools listed here:
 
-- `d3.js <http://d3js.org/>`_ (`BSD <http://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/d3/LICENSE>`__)
-- `nvd3.js <http://nvd3.org/>`_ (`Apache <http://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/nvd3/LICENSE.md>`__)
-- `jQuery <http://jquery.com/>`_ (`MIT <http://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/jquery/MIT-LICENSE.txt>`__)
-- `jQuery-UI <http://jqueryui.com/>`_ (`MIT <http://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/jquery-ui/MIT-LICENSE.txt>`__)
-- `fancytree <https://github.com/mar10/fancytree>`_ (`MIT <http://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/fancytree/MIT-LICENSE.txt>`__)
-- `bootstrap <http://getbootstrap.com/>`_ (`MIT <http://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/bootstrap/LICENSE>`__)
-- `typeahead <http://twitter.github.io/typeahead.js/>`_ (`MIT <http://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/typeahead/LICENSE>`__)
-- `bootswatch <http://bootswatch.com/>`_ (`MIT <http://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/bootstrap/bootswatch.LICENSE>`__)
+- `d3.js <http://d3js.org/>`_ (`BSD <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/d3/LICENSE>`__)
+- `nvd3.js <http://nvd3.org/>`_ (`Apache <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/nvd3/LICENSE.md>`__)
+- `jQuery <http://jquery.com/>`_ (`MIT <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/jquery/MIT-LICENSE.txt>`__)
+- `jQuery-UI <http://jqueryui.com/>`_ (`MIT <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/jquery-ui/MIT-LICENSE.txt>`__)
+- `fancytree <https://github.com/mar10/fancytree>`_ (`MIT <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/fancytree/MIT-LICENSE.txt>`__)
+- `bootstrap <http://getbootstrap.com/>`_ (`MIT <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/bootstrap/LICENSE>`__)
+- `typeahead <http://twitter.github.io/typeahead.js/>`_ (`MIT <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/typeahead/LICENSE>`__)
+- `bootswatch <http://bootswatch.com/>`_ (`MIT <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/bootstrap/bootswatch.LICENSE>`__)
 
 Also note that this project is made with the Awesome `Flask`_ micro-framework.
 
@@ -104,6 +107,6 @@ Special Thanks to Graham Keeling for its great software! This project would not
 exist without `Burp`_.
 
 .. _Flask: http://flask.pocoo.org/
-.. _License: http://git.ziirish.me/ziirish/burp-ui/blob/master/LICENSE
+.. _License: https://git.ziirish.me/ziirish/burp-ui/blob/master/LICENSE
 .. _Burp: http://burp.grke.org/
-.. _burpui.cfg: http://git.ziirish.me/ziirish/burp-ui/blob/master/burpui.cfg
+.. _burpui.cfg: https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui.cfg
