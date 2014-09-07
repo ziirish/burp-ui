@@ -185,9 +185,18 @@
 	});
 
 	$("#form-restore").on('submit', function(e) {
+		var $preparingFileModal = $("#restore-modal");
+		
+		$preparingFileModal.modal('toggle');
+
 		$.fileDownload($(this).prop('action'), {
-			preparingMessageHtml: "We are processing the restoration, please wait...",
-			failMessageHtml: "There was an error restoring files",
+			successCallback: function (url) {
+				$preparingFileModal.modal('hide');
+			},
+			failCallback: function (responseHtml, url) {
+				$preparingFileModal.modal('hide');
+				$("#error-modal").modal('toggle');
+			},
 			httpMethod: "POST",
 			data: $(this).serialize()
 		});

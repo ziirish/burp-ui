@@ -49,9 +49,47 @@
             <form id="form-restore" class="form-inline" method="POST" role="form" action="{{ url_for("restore", name=cname, backup=nbackup) }}">
               <input type="hidden" name="list">
               <div id="restore-form" style="display:none;">
-                <button type="submit" class="btn btn-info">Restore selected files</button>
+                <button type="submit" class="btn btn-info">Download selected files</button>
               </div>
             </form>
+          </div>
+        </div>
+        <div id="restore-modal" class="modal fade">
+          <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Processing request</h4>
+              </div>
+              <div class="modal-body">
+                Please wait while restoration is processing...
+                <br />
+                <div class="progress progress-striped active">
+                  <div class="progress-bar progress-bar-info" style="width: 100%"></div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="error-modal" class="modal fade">
+          <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Restoration error</h4>
+              </div>
+              <div class="modal-body">
+                <div class="alert alert-danger">
+                  An error occurred while processing the restoration.
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+              </div>
+            </div>
           </div>
         </div>
 {% endblock %}
