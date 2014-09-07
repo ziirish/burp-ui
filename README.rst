@@ -58,6 +58,22 @@ By default, ``burp-ui`` listens on all interfaces (including IPv6) on port 5000.
 
 You can then point your browser to http://127.0.0.1:5000/
 
+Instructions
+------------
+
+In order to make the *on the fly* restoration/download functionality work, there
+you need to check a few things:
+
+1. Provide the full path of the burp (client) binary file
+2. Provide the full path of an empty directory where a temporary restoration
+   will be made. This involves you have enough space left on that location on
+   the server that runs ``Burp-UI``
+3. Launch ``Burp-UI`` with a user that can proceed restorations and that can
+   write in the directory above
+4. Make sure to configure a client on the server that runs ``Burp-UI`` that can
+   restore files of other clients (option *restore_client* in burp-server
+   configuration)
+
 Notes
 -----
 
@@ -74,6 +90,10 @@ But I didn't think yet of what to do.
 
 Changelog
 ---------
+
+* version 0.0.4:
+
+  - Add the ability to download files directly from the web interface
 
 * version 0.0.3:
 
