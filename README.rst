@@ -76,11 +76,17 @@ Changelog
 ---------
 
 * version 0.0.3:
+
   - Add authentication
+
 * version 0.0.2:
+
   - Fix bugs
+
 * version 0.0.1:
+
   - Initial release
+
 
 Licenses
 --------
