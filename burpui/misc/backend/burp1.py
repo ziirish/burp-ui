@@ -68,34 +68,39 @@ class Burp(BUIbackend):
         self.tmpdir = g_tmpdir
         self.running = []
         if conf:
-            config = ConfigParser.ConfigParser({'bport': g_burpport, 'tmpdir': g_tmpdir, 'burpbin': g_burpbin})
+            config = ConfigParser.ConfigParser({'bport': g_burpport, 'bhost': g_burphost, 'tmpdir': g_tmpdir, 'burpbin': g_burpbin})
             with open(conf) as fp:
                 config.readfp(fp)
                 try:
                     self.port = config.getint('Burp1', 'bport')
+                    self.host = config.get('Burp1', 'bhost')
                     tdir = config.get('Burp1', 'tmpdir')
                     bbin = config.get('Burp1', 'burpbin')
 
+                    if self.host not in ['127.0.0.1', '::1']:
+                        self.app.logger.warning("Invalid value for 'bhost'. Must be '127.0.0.1' or '::1'. Falling back to '%s'", g_burphost)
+                        self.host = g_burphost
+
                     if not bbin.startswith('/'):
-                        self.app.logger.warning('Please provide an absolute path for the \'burpbin\' option. Fallback to \'%s\'', g_burpbin)
+                        self.app.logger.warning("Please provide an absolute path for the 'burpbin' option. Fallback to '%s'", g_burpbin)
                         bbin = g_burpbin
                     elif not re.match('^\S+$', bbin):
-                        self.app.logger.warning('Incorrect value for the \'burpbin\' option. Fallback to \'%s\'', g_burpbin)
+                        self.app.logger.warning("Incorrect value for the 'burpbin' option. Fallback to '%s'", g_burpbin)
                         bbin = g_burpbin
                     elif not os.path.isfile(bbin) or not os.access(bbin, os.X_OK):
-                        self.app.logger.warning('\'%s\' does not exist or is not executable. Fallback to \'%s\'', bbin, g_burpbin)
+                        self.app.logger.warning("'%s' does not exist or is not executable. Fallback to '%s'", bbin, g_burpbin)
                         bbin = g_burpbin
 
                     if not tdir.startswith('/'):
-                        self.app.logger.warning('Please provide an absolute path for the \'tmpdir\' option. Fallback to \'%s\'', g_tmpdir)
+                        self.app.logger.warning("Please provide an absolute path for the 'tmpdir' option. Fallback to '%s'", g_tmpdir)
                         tdir = g_tmpdir
                     elif not re.match('^\S+$', tdir):
-                        self.app.logger.warning('Incorrect value for the \'tmpdir\' option. Fallback to \'%s\'', g_tmpdir)
+                        self.app.logger.warning("Incorrect value for the 'tmpdir' option. Fallback to '%s'", g_tmpdir)
                         tdir = g_tmpdir
                     elif os.path.isdir(tdir) and os.listdir(tdir):
-                        raise Exception('\'{0}\' is not empty!'.format(tdir))
+                        raise Exception("'{0}' is not empty!".format(tdir))
                     elif os.path.isdir(tdir) and not os.access(tdir, os.W_OK|os.X_OK):
-                        self.app.logger.warning('\'%s\' is not writable. Fallback to \'%s\'', tdir, g_tmpdir)
+                        self.app.logger.warning("'%s' is not writable. Fallback to '%s'", tdir, g_tmpdir)
                         tdir = g_tmpdir
 
                     self.burpbin = bbin
