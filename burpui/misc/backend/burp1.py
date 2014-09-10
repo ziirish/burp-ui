@@ -78,43 +78,53 @@ class Burp(BUIbackend):
                     bbin = config.get('Burp1', 'burpbin')
 
                     if self.host not in ['127.0.0.1', '::1']:
-                        self.app.logger.warning("Invalid value for 'bhost'. Must be '127.0.0.1' or '::1'. Falling back to '%s'", g_burphost)
+                        self.logger('warning', "Invalid value for 'bhost'. Must be '127.0.0.1' or '::1'. Falling back to '%s'", g_burphost)
                         self.host = g_burphost
 
                     if not bbin.startswith('/'):
-                        self.app.logger.warning("Please provide an absolute path for the 'burpbin' option. Fallback to '%s'", g_burpbin)
+                        self.logger('warning', "Please provide an absolute path for the 'burpbin' option. Fallback to '%s'", g_burpbin)
                         bbin = g_burpbin
                     elif not re.match('^\S+$', bbin):
-                        self.app.logger.warning("Incorrect value for the 'burpbin' option. Fallback to '%s'", g_burpbin)
+                        self.logger('warning', "Incorrect value for the 'burpbin' option. Fallback to '%s'", g_burpbin)
                         bbin = g_burpbin
                     elif not os.path.isfile(bbin) or not os.access(bbin, os.X_OK):
-                        self.app.logger.warning("'%s' does not exist or is not executable. Fallback to '%s'", bbin, g_burpbin)
+                        self.logger('warning', "'%s' does not exist or is not executable. Fallback to '%s'", bbin, g_burpbin)
                         bbin = g_burpbin
 
                     if not tdir.startswith('/'):
-                        self.app.logger.warning("Please provide an absolute path for the 'tmpdir' option. Fallback to '%s'", g_tmpdir)
+                        self.logger('warning', "Please provide an absolute path for the 'tmpdir' option. Fallback to '%s'", g_tmpdir)
                         tdir = g_tmpdir
                     elif not re.match('^\S+$', tdir):
-                        self.app.logger.warning("Incorrect value for the 'tmpdir' option. Fallback to '%s'", g_tmpdir)
+                        self.logger('warning', "Incorrect value for the 'tmpdir' option. Fallback to '%s'", g_tmpdir)
                         tdir = g_tmpdir
                     elif os.path.isdir(tdir) and os.listdir(tdir):
                         raise Exception("'{0}' is not empty!".format(tdir))
                     elif os.path.isdir(tdir) and not os.access(tdir, os.W_OK|os.X_OK):
-                        self.app.logger.warning("'%s' is not writable. Fallback to '%s'", tdir, g_tmpdir)
+                        self.logger('warning', "'%s' is not writable. Fallback to '%s'", tdir, g_tmpdir)
                         tdir = g_tmpdir
 
                     self.burpbin = bbin
                     self.tmpdir = tdir
                 except ConfigParser.NoOptionError, e:
-                    self.app.logger.error(str(e))
+                    self.logger('error', str(e))
                 except ConfigParser.NoSectionError, e:
-                    self.app.logger.error(str(e))
+                    self.logger('error', str(e))
 
-        self.app.logger.info('burp port: %d', self.port)
-        self.app.logger.info('burp host: %s', self.host)
-        self.app.logger.info('burp binary: %s', self.burpbin)
-        self.app.logger.info('temporary dir: %s', self.tmpdir)
+        self.logger('info', 'burp port: %d', self.port)
+        self.logger('info', 'burp host: %s', self.host)
+        self.logger('info', 'burp binary: %s', self.burpbin)
+        self.logger('info', 'temporary dir: %s', self.tmpdir)
 
+    def logger(self, level, *args):
+        if self.app:
+            logs = {
+                'info': self.app.logger.info,
+                'error': self.app.logger.error,
+                'debug': self.app.logger.debug,
+                'warning': self.app.logger.warning
+            }
+            if level in logs:
+                logs[level](*args)
     """
     Utilities functions
     """
@@ -149,7 +159,7 @@ class Burp(BUIbackend):
             f.close()
             return r
         except socket.error:
-            self.app.logger.error('Cannot contact burp server at %s:%s', self.host, self.port)
+            self.logger('error', 'Cannot contact burp server at %s:%s', self.host, self.port)
             raise BUIserverException('Cannot contact burp server at {0}:{1}'.format(self.host, self.port))
 
     def parse_backup_log(self, f, n, c=None):
@@ -230,7 +240,7 @@ class Burp(BUIbackend):
             for key, regex in lookup_complex.iteritems():
                 r = re.search(regex, line)
                 if r:
-                    self.app.logger.debug("match[1]: '{0}'".format(r.group(1)))
+                    self.logger('debug', "match[1]: '{0}'".format(r.group(1)))
                     sp = re.split('\s+', r.group(1))
                     backup[key] = {
                             'new':       int(sp[0]),
@@ -255,12 +265,12 @@ class Burp(BUIbackend):
         if not f:
             return r
         for line in f:
-            self.app.logger.debug('line: {0}'.format(line))
+            self.logger('debug', 'line: {0}'.format(line))
             rs = re.search('^{0}\s+(\d)\s+(\S)\s+(.+)$'.format(name), line)
             if rs and rs.group(2) == 'r' and int(rs.group(1)) == 2:
                 c = 0
                 for v in rs.group(3).split('\t'):
-                    self.app.logger.debug('{0}: {1}'.format(self.counters[c], v))
+                    self.logger('debug', '{0}: {1}'.format(self.counters[c], v))
                     if c > 0 and c < 15:
                         val = map(int, v.split('/'))
                         if val[0] > 0 or val[1] > 0 or val[2] or val[3] > 0:
@@ -325,14 +335,14 @@ class Burp(BUIbackend):
         j = []
         f = self.status()
         for line in f:
-            self.app.logger.debug("line: '{0}'".format(line))
+            self.logger('debug', "line: '{0}'".format(line))
             regex = re.compile('\s*(\S+)\s+\d\s+(\S)\s+(.+)')
             m = regex.search(line)
             c = {}
             c['name'] = m.group(1)
             c['state'] = self.states[m.group(2)]
             infos = m.group(3)
-            self.app.logger.debug("infos: '{0}'".format(infos))
+            self.logger('debug', "infos: '{0}'".format(infos))
             if infos == "0":
                 c['last'] = 'never'
             elif re.match('^\d+\s\d+\s\d+$', infos):
@@ -357,7 +367,7 @@ class Burp(BUIbackend):
         for line in f:
             if not re.match('^{0}\t'.format(c), line):
                 continue
-            self.app.logger.debug("line: '{0}'".format(line))
+            self.logger('debug', "line: '{0}'".format(line))
             regex = re.compile('\s*(\S+)\s+\d\s+(\S)\s+(.+)')
             m = regex.search(line)
             if m.group(3) == "0" or m.group(2) not in [ 'i', 'c', 'C' ]:
@@ -389,7 +399,7 @@ class Burp(BUIbackend):
         f = self.status('c:{0}:b:{1}:p:{2}\n'.format(name, backup, top))
         useful = False
         for line in f:
-            self.app.logger.debug("line: '{0}'".format(line))
+            self.logger('debug', "line: '{0}'".format(line))
             if not useful and re.match('^-list begin-$', line):
                 useful = True
                 continue
@@ -404,14 +414,14 @@ class Burp(BUIbackend):
                         t['type'] = 'd'
                     else:
                         t['type'] = 'f'
-                    sp = re.split('\s+', line)
+                    sp = re.split('\s+', line, 7)
                     t['mode'] = sp[0]
                     t['inodes'] = sp[1]
                     t['uid'] = sp[2]
                     t['gid'] = sp[3]
                     t['size'] = '{0:.1eM}'.format(_hr(sp[4]))
                     t['date'] = '{0} {1}'.format(sp[5], sp[6])
-                    t['name'] = sp[len(sp)-1]
+                    t['name'] = sp[7]
                     t['parent'] = top
                     r.append(t)
         return r
