@@ -17,6 +17,7 @@ g_burpport = 4972
 g_burphost = '127.0.0.1'
 g_tmpdir   = '/tmp/buirestore'
 g_burpbin  = '/usr/sbin/burp'
+g_stripbin = '/usr/sbin/vss_strip'
 
 class Burp(BUIbackend):
     states = {
@@ -60,7 +61,7 @@ class Burp(BUIbackend):
        ]
 
     def __init__(self, app=None, conf=None):
-        global g_burpport, g_burphost, g_tmpdir, g_burpbin
+        global g_burpport, g_burphost, g_tmpdir, g_burpbin, g_stripbin
         self.app = app
         self.host = g_burphost
         self.port = g_burpport
@@ -68,7 +69,7 @@ class Burp(BUIbackend):
         self.tmpdir = g_tmpdir
         self.running = []
         if conf:
-            config = ConfigParser.ConfigParser({'bport': g_burpport, 'bhost': g_burphost, 'tmpdir': g_tmpdir, 'burpbin': g_burpbin})
+            config = ConfigParser.ConfigParser({'bport': g_burpport, 'bhost': g_burphost, 'tmpdir': g_tmpdir, 'burpbin': g_burpbin, 'stripbin': g_stripbin})
             with open(conf) as fp:
                 config.readfp(fp)
                 try:
@@ -76,11 +77,22 @@ class Burp(BUIbackend):
                     self.host = config.get('Burp1', 'bhost')
                     tdir = config.get('Burp1', 'tmpdir')
                     bbin = config.get('Burp1', 'burpbin')
+                    strip = config.get('Burp1', 'stripbin')
 
                     if self.host not in ['127.0.0.1', '::1']:
                         self.logger('warning', "Invalid value for 'bhost'. Must be '127.0.0.1' or '::1'. Falling back to '%s'", g_burphost)
                         self.host = g_burphost
 
+                    if not strip.startswith('/'):
+                        self.logger('warning', "Please provide an absolute path for the 'stripbin' option. Fallback to '%s'", g_stripbin)
+                        strip = g_stripbin
+                    elif not re.match('^\S+$', strip):
+                        self.logger('warning', "Incorrect value for the 'stripbin' option. Fallback to '%s'", g_stripbin)
+                        strip = g_stripbin
+                    elif not os.path.isfile(strip) or not os.access(strip, os.X_OK):
+                        self.logger('warning', "'%s' does not exist or is not executable. Fallback to '%s'", strip, g_stripbin)
+                        strip = g_stripbin
+                        
                     if not bbin.startswith('/'):
                         self.logger('warning', "Please provide an absolute path for the 'burpbin' option. Fallback to '%s'", g_burpbin)
                         bbin = g_burpbin
@@ -97,7 +109,7 @@ class Burp(BUIbackend):
                     elif not re.match('^\S+$', tdir):
                         self.logger('warning', "Incorrect value for the 'tmpdir' option. Fallback to '%s'", g_tmpdir)
                         tdir = g_tmpdir
-                    elif os.path.isdir(tdir) and os.listdir(tdir):
+                    elif os.path.isdir(tdir) and os.listdir(tdir) and not self.app.config.get('TESTING'):
                         raise Exception("'{0}' is not empty!".format(tdir))
                     elif os.path.isdir(tdir) and not os.access(tdir, os.W_OK|os.X_OK):
                         self.logger('warning', "'%s' is not writable. Fallback to '%s'", tdir, g_tmpdir)
@@ -105,6 +117,7 @@ class Burp(BUIbackend):
 
                     self.burpbin = bbin
                     self.tmpdir = tdir
+                    self.stripbin = strip
                 except ConfigParser.NoOptionError, e:
                     self.logger('error', str(e))
                 except ConfigParser.NoSectionError, e:
@@ -113,6 +126,7 @@ class Burp(BUIbackend):
         self.logger('info', 'burp port: %d', self.port)
         self.logger('info', 'burp host: %s', self.host)
         self.logger('info', 'burp binary: %s', self.burpbin)
+        self.logger('info', 'strip binary: %s', self.stripbin)
         self.logger('info', 'temporary dir: %s', self.tmpdir)
 
     def logger(self, level, *args):
@@ -450,10 +464,23 @@ class Burp(BUIbackend):
         if os.path.isfile(zip_file):
             os.remove(zip_file)
         zip_len = len(zip_dir) + 1
+        stripping = True
         with zipfile.ZipFile(zip_file, mode='w', compression=zipfile.ZIP_DEFLATED) as zf:
             for dirname, subdirs, files in os.walk(zip_dir):
                 for filename in files:
                     path = os.path.join(dirname, filename)
+                    if stripping and os.path.isfile(path):
+                        self.logger('debug', "stripping file: %s", path)
+                        shutil.move(path, path+'.tmp')
+                        status = subprocess.call([self.stripbin, '-i', path+'.tmp', '-o', path])
+                        if status != 0:
+                            os.remove(path)
+                            shutil.move(path+'.tmp', path)
+                            stripping = False
+                            self.logger('debug', "Disable stripping since this file does not seem to embed VSS headers")
+                        else:
+                            os.remove(path+'.tmp')
+
                     entry = path[zip_len:]
                     zf.write(path, entry)
         return zip_file
