@@ -9,13 +9,14 @@ import ConfigParser
 import shutil
 import subprocess
 import zipfile
+import codecs
 
 from burpui.misc.utils import human_readable as _hr
 from burpui.misc.backend.interface import BUIbackend, BUIserverException
 
 g_burpport = 4972
 g_burphost = '127.0.0.1'
-g_tmpdir   = '/tmp/buirestore'
+g_tmpdir   = u'/tmp/buirestore'
 g_burpbin  = '/usr/sbin/burp'
 g_stripbin = '/usr/sbin/vss_strip'
 
@@ -71,7 +72,7 @@ class Burp(BUIbackend):
         self.running = []
         if conf:
             config = ConfigParser.ConfigParser({'bport': g_burpport, 'bhost': g_burphost, 'tmpdir': g_tmpdir, 'burpbin': g_burpbin, 'stripbin': g_stripbin})
-            with open(conf) as fp:
+            with codecs.open(conf, 'r', 'utf-8') as fp:
                 config.readfp(fp)
                 try:
                     self.port = config.getint('Burp1', 'bport')
