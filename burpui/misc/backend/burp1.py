@@ -455,7 +455,6 @@ class Burp(BUIbackend):
                 reg = r['key']+'/'
             else:
                 reg = r['key']
-            #cmd = self.burpbin+' -C '+name+' -a r -b '+str(backup)+' -r \''+reg+'\' -d '+self.tmpdir
             status = subprocess.call([self.burpbin, '-C', name, '-a', 'r', '-b', str(backup), '-r', reg, '-d', self.tmpdir])
             if status != 0:
                 return None
@@ -484,5 +483,7 @@ class Burp(BUIbackend):
 
                     entry = path[zip_len:]
                     zf.write(path, entry)
+
+        shutil.rmtree(self.tmpdir)
         return zip_file
 
