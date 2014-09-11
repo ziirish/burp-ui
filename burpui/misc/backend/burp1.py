@@ -66,6 +66,7 @@ class Burp(BUIbackend):
         self.host = g_burphost
         self.port = g_burpport
         self.burpbin = g_burpbin
+        self.stripbin = g_stripbin
         self.tmpdir = g_tmpdir
         self.running = []
         if conf:
