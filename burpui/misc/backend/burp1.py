@@ -450,15 +450,20 @@ class Burp(BUIbackend):
             return None
         if os.path.isdir(self.tmpdir):
             shutil.rmtree(self.tmpdir)
+        full_reg = u''
         for r in flist['restore']:
-            reg = ''
+            reg = u''
             if r['folder'] and r['key'] != '/':
-                reg = r['key']+'/'
+                reg += r['key']+'/'
             else:
-                reg = r['key']
-            status = subprocess.call([self.burpbin, '-C', name, '-a', 'r', '-b', str(backup), '-r', reg, '-d', self.tmpdir])
-            if status != 0:
-                return None
+                reg += r['key']
+            full_reg += '^'+reg+'$|'
+
+        cmd = [self.burpbin, '-C', name, '-a', 'r', '-b', str(backup), '-r', full_reg.rstrip('|'), '-d', self.tmpdir]
+        self.logger('debug', cmd)
+        status = subprocess.call(cmd)
+        if status != 0:
+            return None
 
         zip_dir = self.tmpdir.rstrip(os.sep)
         zip_file = zip_dir+'.zip'
