@@ -454,10 +454,10 @@ class Burp(BUIbackend):
         for r in flist['restore']:
             reg = u''
             if r['folder'] and r['key'] != '/':
-                reg += r['key']+'/'
+                reg += '^'+r['key']+'/|'
             else:
-                reg += r['key']
-            full_reg += '^'+reg+'$|'
+                reg += '^'+r['key']+'$|'
+            full_reg += reg
 
         cmd = [self.burpbin, '-C', name, '-a', 'r', '-b', str(backup), '-r', full_reg.rstrip('|'), '-d', self.tmpdir]
         self.logger('debug', cmd)
