@@ -33,7 +33,14 @@
             </form>
           </div>
           <br />
-          <div class="table-responsive row">
+          <div id="waiting-container" class="row">
+            <span class="icon-refresh-animate glyphicon glyphicon-refresh"></span>&nbsp;Loading, Please wait...
+            <br />
+            <div class="progress progress-striped active">
+              <div class="progress-bar progress-bar-info" style="width: 100%"></div>
+            </div>
+          </div>
+          <div id="tree-container" class="table-responsive row" style="display:none;">
             <table id="tree" class="table">
               <thead>
                 <tr>
@@ -49,8 +56,8 @@
             <form id="form-restore" class="form-inline" method="POST" role="form" action="{{ url_for("restore", name=cname, backup=nbackup) }}">
               <input type="hidden" name="list">
               <div id="restore-form" style="display:none;">
-                <button type="submit" class="btn btn-info">Download selected files</button>
-                <button type="button" id="btn-clear" class="btn btn-info">Clear selection</button>
+                <button type="submit" class="btn btn-info"><span class="glyphicon glyphicon-cloud-download"></span>&nbsp;Download selected files</button>
+                <button type="button" id="btn-clear" class="btn btn-info"><span class="glyphicon glyphicon-trash"></span>&nbsp;Clear selection</button>
               </div>
             </form>
           </div>
@@ -63,7 +70,7 @@
                 <h4 class="modal-title">Processing request</h4>
               </div>
               <div class="modal-body">
-                Please wait while restoration is processing...
+                <span class="icon-refresh-animate glyphicon glyphicon-refresh"></span>&nbsp;Please wait while restoration is processing...
                 <br />
                 <div class="progress progress-striped active">
                   <div class="progress-bar progress-bar-info" style="width: 100%"></div>
@@ -84,7 +91,7 @@
               </div>
               <div class="modal-body">
                 <div class="alert alert-danger">
-                  An error occurred while processing the restoration.
+                  <span class="glyphicon glyphicon-exclamation-sign"></span>&nbsp;An error occurred while processing the restoration.
                 </div>
               </div>
               <div class="modal-footer">

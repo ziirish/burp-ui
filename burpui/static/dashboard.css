@@ -248,3 +248,16 @@ svg text {
 #search {
   margin-right: 0.1em;
 }
+
+@keyframes rotateThis {
+  from { transform: scale( 1 ) rotate( 0deg ); }
+  to { transform: scale( 1 ) rotate( 360deg ); }
+}
+@-webkit-keyframes rotateThis {
+  from { transform: scale( 1 ) rotate( 0deg ); }
+  to { transform: scale( 1 ) rotate( 360deg ); }
+}
+.icon-refresh-animate {
+  animation: rotateThis 1s infinite linear;
+  webkit-animation: rotateThis 1s infinite linear;
+}

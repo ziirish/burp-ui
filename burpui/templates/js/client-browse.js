@@ -50,7 +50,7 @@
 				// expanderOpen: "glyphicon glyphicon-collapse-down",
 				folder: "glyphicon glyphicon-folder-close",
 				folderOpen: "glyphicon glyphicon-folder-open",
-				loading: "glyphicon glyphicon-refresh"
+				loading: "icon-refresh-animate glyphicon glyphicon-refresh"
 				// loading: "icon-spinner icon-spin"
 			}
 		},
@@ -72,6 +72,8 @@
 					r.push(s);
 				});
 			});
+			$("#waiting-container").hide();
+			$("#tree-container").show();
 			return r;
 		},
 		lazyLoad: function(event, data) {
