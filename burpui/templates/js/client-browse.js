@@ -33,7 +33,7 @@
 	 */
 	$("#tree").fancytree({
 		checkbox: true,
-		selectMode: 2,
+		selectMode: 3,
 		extensions: ["glyph", "table", "gridnav", "filter"],
 		glyph: {
 			map: {
@@ -201,5 +201,11 @@
 			data: $(this).serialize()
 		});
 		e.preventDefault();
+	});
+	$("#btn-clear").on('click', function() {
+		tree.visit(function(node){
+			node.setSelected(false);
+		});
+		return false;
 	});
 
