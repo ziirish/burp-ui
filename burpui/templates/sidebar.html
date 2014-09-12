@@ -2,28 +2,25 @@
           <ul class="nav nav-sidebar">
             <li {% if overview %}class="active"{% endif %}>
             {% if backup %}
-            <a href="{{ url_for('client_browse', name=cname) }}?backup={{ nbackup }}">Overview</a>
+            <a href="{{ url_for('client_browse', name=cname) }}?backup={{ nbackup }}"><span class="glyphicon glyphicon-th"></span>&nbsp;Overview</a>
             {% elif client %}
-            <a href="{{ url_for('client', name=cname) }}">Overview</a>
+            <a href="{{ url_for('client', name=cname) }}"><span class="glyphicon glyphicon-th"></span>&nbsp;Overview</a>
             {% elif clients %}
-            <a href="{{ url_for('home') }}">Overview</a>
+            <a href="{{ url_for('home') }}"><span class="glyphicon glyphicon-th"></span>&nbsp;Overview</a>
             {% else %}
-            <a href="#">Overview</a>
+            <a href="#"><span class="glyphicon glyphicon-th"></span>&nbsp;Overview</a>
             {% endif %}
             </li>
             <li {% if report %}class="active"{% endif %}>
             {% if client and not backup %}
-            <a href="{{ url_for('client_report', name=cname) }}">Reports</a>
+            <a href="{{ url_for('client_report', name=cname) }}"><span class="glyphicon glyphicon-stats"></span>&nbsp;Reports</a>
             {% elif clients %}
-            <a href="{{ url_for('clients_report') }}">Reports</a>
+            <a href="{{ url_for('clients_report') }}"><span class="glyphicon glyphicon-stats"></span>&nbsp;Reports</a>
             {% elif backup %}
-            <a href="{{ url_for('backup_report', name=cname, backup=nbackup) }}">Reports</a>
+            <a href="{{ url_for('backup_report', name=cname, backup=nbackup) }}"><span class="glyphicon glyphicon-stats"></span>&nbsp;Reports</a>
             {% else %}
-            <a href="#">Reports</a>
+            <a href="#"><span class="glyphicon glyphicon-stats"></span>&nbsp;Reports</a>
             {% endif %}
             </li>
-          </ul>
-          <ul class="nav nav-sidebar" style="display: none;">
-            <li><a href="">Nav item</a></li>
           </ul>
         </div>
