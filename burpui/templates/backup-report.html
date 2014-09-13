@@ -5,7 +5,7 @@
           {% include "small_topbar.html" %}
           <ul class="breadcrumb" style="margin-bottom: 5px;">
             <li><a href="{{ url_for('home') }}">Home</a></li>
-            <li><a href="{{ url_for('client', name=cname) }}">{{ cname }} overview</a></li>
+            <li><a href="{{ url_for('client', name=cname, server=server) }}">{{ cname }} overview</a></li>
             <li class="active">Backup n°{{ nbackup|mypad }} overview</li>
           </ul>
           <br />

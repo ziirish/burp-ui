@@ -145,7 +145,7 @@ class Burp(BUIbackend):
     Utilities functions
     """
 
-    def status(self, query='\n'):
+    def status(self, query='\n', agent=None):
         """
         status connects to the burp status port, ask the given 'question' and
         parses the output in an array
@@ -178,7 +178,7 @@ class Burp(BUIbackend):
             self.logger('error', 'Cannot contact burp server at %s:%s', self.host, self.port)
             raise BUIserverException('Cannot contact burp server at {0}:{1}'.format(self.host, self.port))
 
-    def parse_backup_log(self, f, n, c=None):
+    def parse_backup_log(self, f, n, c=None, agent=None):
         """
         parse_backup_log parses the log.gz of a given backup and returns a dict
         containing different stats used to render the charts in the reporting view
@@ -269,7 +269,7 @@ class Burp(BUIbackend):
                     break
         return backup
 
-    def get_counters(self, name=None):
+    def get_counters(self, name=None, agent=None):
         """
         get_counters parses the stats of the live status for a given client and
         returns a dict
@@ -310,7 +310,7 @@ class Burp(BUIbackend):
             r['timeleft'] = -1
         return r
 
-    def is_backup_running(self, name=None):
+    def is_backup_running(self, name=None, agent=None):
         """
         is_backup_running returns True if the given client is currently running a
         backup
@@ -327,7 +327,7 @@ class Burp(BUIbackend):
                 return True
         return False
 
-    def is_one_backup_running(self):
+    def is_one_backup_running(self, agent=None):
         """
         is_one_backup_running returns a list of clients name that are currently
         running a backup
@@ -343,7 +343,7 @@ class Burp(BUIbackend):
         self.running = r
         return r
 
-    def get_all_clients(self):
+    def get_all_clients(self, agent=None):
         """
         get_all_clients returns a list of dict representing each clients with their
         name, state and last backup date
@@ -370,7 +370,7 @@ class Burp(BUIbackend):
             j.append(c)
         return j
 
-    def get_client(self, name=None):
+    def get_client(self, name=None, agent=None):
         """
         get_client returns a list of dict representing the backups (with its number
         and date) of a given client
@@ -399,7 +399,7 @@ class Burp(BUIbackend):
         r.reverse()
         return r
 
-    def get_tree(self, name=None, backup=None, root=None):
+    def get_tree(self, name=None, backup=None, root=None, agent=None):
         """
         get_tree returns a list of dict representing files/dir (with their attr)
         within a given path
@@ -442,7 +442,7 @@ class Burp(BUIbackend):
                     r.append(t)
         return r
 
-    def restore_files(self, name=None, backup=None, files=None):
+    def restore_files(self, name=None, backup=None, files=None, agent=None):
         if not name or not backup or not files:
             return None
         flist = json.loads(files)

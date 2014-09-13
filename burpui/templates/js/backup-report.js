@@ -34,7 +34,7 @@ var _client = function() {
 
 		chart_unified.yAxis.tickFormat(d3.format(',.0f'));
 	}
-	url = '{{ url_for("client_stat_json", name=cname, backup=nbackup) }}';
+	url = '{{ url_for("client_stat_json", name=cname, backup=nbackup, server=server) }}';
 	$.getJSON(url, function(d) {
 		var _fields = [ 'dir', 'files', 'hardlink', 'softlink' ];
 		j = d.results;

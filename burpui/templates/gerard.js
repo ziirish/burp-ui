@@ -34,8 +34,9 @@ var notif = function(type, message) {
 };
 
 {% if not login -%}
+	{% if not (servers and overview) -%}
 var _check_running = function() {
-	url = '{{ url_for("backup_running") }}';
+	url = '{{ url_for("backup_running", server=server) }}';
 	$.getJSON(url, function(data) {
 		if (data.results) {
 			$('#toblink').addClass('blink');
@@ -44,6 +45,11 @@ var _check_running = function() {
 		}
 	});
 };
+	{% else -%}
+var _check_running = function() {
+	return false;
+};
+	{% endif -%}
 {% endif -%}
 
 /***
@@ -54,7 +60,7 @@ var _clients_bh = new Bloodhound({
 	queryTokenizer: Bloodhound.tokenizers.whitespace,
 	limit: 10,
 	prefetch: {
-		url: '{{ url_for("clients") }}',
+		url: '{{ url_for("clients_json", server=server) }}',
 		filter: function(list) {
 			if (list.results) {
 				return list.results;
@@ -75,9 +81,12 @@ $('#input-client').typeahead(null, {
 	source: _clients_bh.ttAdapter()
 });
 
+{% if servers and overview -%}
+{% include "js/servers.js" %}
+{% endif -%}
 
 {% if clients and overview -%}
-{% include "js/home.js" %}
+{% include "js/clients.js" %}
 {% endif -%}
 
 {% if clients and report -%}
@@ -148,6 +157,9 @@ $(function() {
 		{% if not login -%}
 		_check_running();
 		{% endif -%}
+		{% if servers and overview -%}
+		_servers();
+		{% endif -%}
 	});
 
 	/***
@@ -156,7 +168,7 @@ $(function() {
 	var search = $('input[id="input-client"]');
 	search.keypress(function(e) {
 		if (e.which == 13) {
-			window.location = '{{ url_for("client") }}?name='+search.val();
+			window.location = '{{ url_for("client", server=server) }}?name='+search.val();
 		}
 	});
 
@@ -182,6 +194,9 @@ $(function() {
 	{% if live -%}
 	_live();
 	{% endif -%}
+	{% if servers and overview -%}
+	_servers();
+	{% endif -%}
 
 	{% if not report and not login -%}
 	/***
@@ -196,6 +211,9 @@ $(function() {
 		{% endif -%}
 		{% if live -%}
 		_live();
+		{% endif -%}
+		{% if servers and overview -%}
+		_servers();
 		{% endif -%}
 		return;
 	}, {{ config.REFRESH * 1000 }});

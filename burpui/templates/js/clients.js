@@ -33,7 +33,7 @@ var __status = {
  *  The JSON is then parsed into a table
  */
 var _clients = function() {
-	url = '{{ url_for("clients") }}';
+	url = '{{ url_for("clients_json", server=server) }}';
 	$.getJSON(url, function(data) {
 		$('#table-clients > tbody:last').empty();
 		if (!data.results) {
@@ -49,7 +49,7 @@ var _clients = function() {
 			if (__status[c.state] != undefined) {
 				clas = ' '+__status[c.state];
 			}
-			$('#table-clients > tbody:last').append('<tr class="clickable'+clas+'" style="cursor: pointer;"><td><a href="{{ url_for("client") }}?name='+c.name+'" style="color: inherit; text-decoration: inherit;">'+c.name+'</a></td><td>'+c.state+'</td><td>'+c.last+'</td></tr>');
+			$('#table-clients > tbody:last').append('<tr class="clickable'+clas+'" style="cursor: pointer;"><td><a href="{{ url_for("client", server=server) }}?name='+c.name+'" style="color: inherit; text-decoration: inherit;">'+c.name+'</a></td><td>'+c.state+'</td><td>'+c.last+'</td></tr>');
 		});
 	});
 };
