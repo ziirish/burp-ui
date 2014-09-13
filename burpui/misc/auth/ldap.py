@@ -57,8 +57,8 @@ class LdapLoader:
                 query = 'uid={0}'.format(uid)
                 self.app.logger.info('query: %s | base: %s', query, self.base)
                 r = self.ldap.search(query, base_dn=self.base)
-        except:
-            self.app.logger.info('Ooops, LDAP lookup failed')
+        except Exception, e:
+            self.app.logger.error('Ooops, LDAP lookup failed: %s', str(e))
             return None
 
         return r[0]['uid'][0]

@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+{% block body %}
+        {% include "notifications.html" %}
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+          {% include "small_topbar.html" %}
+          <ul class="breadcrumb" style="margin-bottom: 5px;">                      
+            <li class="active">Home</li>                
+          </ul>                                                                    
+          <br />
+          <h1 class="page-header">Servers</h1>
+
+          <div class="table-responsive">
+            <table class="table table-striped table-hover" id="table-servers">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Clients</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+              </tbody>
+            </table>
+          </div>
+        </div>
+{% endblock %}

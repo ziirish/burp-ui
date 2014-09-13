@@ -56,7 +56,7 @@
 		},
 		source: function() { 
 			r = [];
-			$.getJSON('{{ url_for("client_tree", name=cname, backup=nbackup) }}', function(data) {
+			$.getJSON('{{ url_for("client_tree", name=cname, backup=nbackup, server=server) }}', function(data) {
 				if (!data.results) {
 					if (data.notif) {
 						$.each(data.notif, function(i, n) {
@@ -84,7 +84,7 @@
 			r = [];
 			p = node.key;
 			if (p !== "/") p += '/';
-			$.getJSON('{{ url_for("client_tree", name=cname, backup=nbackup) }}?root='+p, function(data) {
+			$.getJSON('{{ url_for("client_tree", name=cname, backup=nbackup, server=server) }}?root='+p, function(data) {
 				if (!data.results) {
 					if (data.notif) {
 						$.each(data.notif, function(i, n) {

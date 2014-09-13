@@ -22,7 +22,7 @@
  * The JSON is then parsed into a table
  */
 var _client = function() {
-	url = '{{ url_for("client_json", name=cname) }}';
+	url = '{{ url_for("client_json", name=cname, server=server) }}';
 	$.getJSON(url, function(data) {
 		$('#table-client >tbody:last').empty();
 		$('#client-alert').hide();
@@ -41,7 +41,7 @@ var _client = function() {
 			$('#client-alert').show();
 		} else {
 			$.each(data.results.reverse(), function(j, c) {
-				$('#table-client> tbody:last').append('<tr class="clickable" style="cursor: pointer;"><td><a href="{{ url_for("client_browse", name=cname) }}?backup='+c.number+'" style="color: inherit; text-decoration: inherit;">'+pad(c.number, 7)+'</a></td><td>'+c.date+'</td></tr>');
+				$('#table-client> tbody:last').append('<tr class="clickable" style="cursor: pointer;"><td><a href="{{ url_for("client_browse", name=cname, server=server) }}?backup='+c.number+'" style="color: inherit; text-decoration: inherit;">'+pad(c.number, 7)+'</a></td><td>'+c.date+'</td></tr>');
 			});
 		}
 	});

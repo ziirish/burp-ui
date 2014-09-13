@@ -15,15 +15,6 @@ def load_user(userid):
         return bui.uhandler.user(userid)
     return None
 
-@app.route('/test/download')
-def test_download():
-    try:
-        resp = send_file('/tmp/monfichierr', as_attachment=True)
-        resp.set_cookie('fileDownload', 'true')
-        return resp
-    except Exception, e:
-        abort(500)
-
 @app.route('/api/restore/<name>/<int:backup>', methods=['POST'])
 @login_required
 def restore(name=None, backup=None):
@@ -47,25 +38,32 @@ The whole API returns JSON-formated data
 """
 
 @app.route('/api/running-clients.json')
+@app.route('/api/<server>/running-clients.json')
 @login_required
-def running_clients():
+def running_clients(server=None):
     """
     API: running_clients
     :returns: a list of running clients
     """
-    r = bui.cli.is_one_backup_running()
+    if not server:
+        server = request.args.get('server')
+    r = bui.cli.is_one_backup_running(agent=server)
     return jsonify(results=r)
 
 @app.route('/api/render-live-template', methods=['GET'])
+@app.route('/api/<server>/render-live-template', methods=['GET'])
 @app.route('/api/render-live-template/<name>')
+@app.route('/api/<server>/render-live-template/<name>')
 @login_required
-def render_live_tpl(name=None):
+def render_live_tpl(server=None, name=None):
     """
     API: render_live_tpl
     :param name: the client name if any. You can also use the GET parameter
     'name' to achieve the same thing
     :returns: HTML that should be included directly into the page
     """
+    if not server:
+        server = request.args.get('server')
     c = request.args.get('name')
     if not name and not c:
         abort(500)
@@ -74,136 +72,166 @@ def render_live_tpl(name=None):
     if name not in bui.cli.running:
         abort(404)
     try:
-        counters = bui.cli.get_counters(name)
+        counters = bui.cli.get_counters(name, agent=server)
     except BUIserverException:
         counters = []
-    return render_template('live-monitor-template.html', cname=name, counters=counters)
+    return render_template('live-monitor-template.html', cname=name, counters=counters, server=server)
+
+@app.route('/api/servers.json')
+@login_required
+def servers_json():
+    r = []
+    for serv in bui.cli.servers_status:
+        r.append({'name': serv, 'clients': len(bui.cli.servers_status[serv]['clients']), 'connected': bui.cli.servers_status[serv]['alive']})
+    return jsonify(results=r)
 
 @app.route('/api/live.json')
+@app.route('/api/<server>/live.json')
 @login_required
-def live():
+def live(server=None):
     """
     API: live
     :returns: the live status of the server
     """
+    if not server:
+        server = request.args.get('server')
     r = []
-    for c in bui.cli.is_one_backup_running():
+    for c in bui.cli.is_one_backup_running(agent=server):
         s = {}
         s['client'] = c
         try:
-            s['status'] = bui.cli.get_counters(c)
+            s['status'] = bui.cli.get_counters(c, agent=server)
         except BUIserverException:
             s['status'] = []
         r.append(s)
     return jsonify(results=r)
 
 @app.route('/api/running.json')
+@app.route('/api/<server>/running.json')
 @login_required
-def backup_running():
+def backup_running(server=None):
     """
     API: backup_running
     :returns: true if at least one backup is running
     """
-    j = bui.cli.is_one_backup_running()
+    if not server:
+        server = request.args.get('server')
+    j = bui.cli.is_one_backup_running(agent=server)
     r = len(j) > 0
     return jsonify(results=r)
 
 @app.route('/api/client-tree.json/<name>/<int:backup>', methods=['GET'])
+@app.route('/api/<server>/client-tree.json/<name>/<int:backup>', methods=['GET'])
 @login_required
-def client_tree(name=None, backup=None):
+def client_tree(server=None, name=None, backup=None):
     """
     WebService: return a specific client files tree
     :param name: the client name (mandatory)
     :param backup: the backup number (mandatory)
 
     """
+    if not server:
+        server = request.args.get('server')
     j = []
     if not name or not backup:
         return jsonify(results=j)
     root = request.args.get('root')
     try:
-        j = bui.cli.get_tree(name, backup, root)
+        j = bui.cli.get_tree(name, backup, root, agent=server)
     except BUIserverException, e:
         err = [[2, str(e)]]
         return jsonify(notif=err)
     return jsonify(results=j)
 
 @app.route('/api/clients-report.json')
+@app.route('/api/<server>/clients-report.json')
 @login_required
-def clients_report_json():
+def clients_report_json(server=None):
     """
     WebService: return a JSON with global stats
     """
+    if not server:
+        server = request.args.get('server')
     j = []
     try:
-        clients = bui.cli.get_all_clients()
+        clients = bui.cli.get_all_clients(agent=server)
     except BUIserverException, e:
         err = [[2, str(e)]]
         return jsonify(notif=err)
     cl = []
     ba = []
     for c in clients:
-        client = bui.cli.get_client(c['name'])
+        client = bui.cli.get_client(c['name'], agent=server)
         if not client:
             continue
-        f = bui.cli.status('c:{0}:b:{1}:f:log.gz\n'.format(c['name'], client[-1]['number']))
-        cl.append( { 'name': c['name'], 'stats': bui.cli.parse_backup_log(f, client[-1]['number']) } )
+        f = bui.cli.status('c:{0}:b:{1}:f:log.gz\n'.format(c['name'], client[-1]['number']), agent=server)
+        cl.append( { 'name': c['name'], 'stats': bui.cli.parse_backup_log(f, client[-1]['number'], agent=server) } )
         for b in client:
-            f = bui.cli.status('c:{0}:b:{1}:f:log.gz\n'.format(c['name'], b['number']))
-            ba.append(bui.cli.parse_backup_log(f, b['number'], c['name']))
+            f = bui.cli.status('c:{0}:b:{1}:f:log.gz\n'.format(c['name'], b['number']), agent=server)
+            ba.append(bui.cli.parse_backup_log(f, b['number'], c['name']), agent=server)
     j.append( { 'clients': cl, 'backups': sorted(ba, key=lambda k: k['end']) } )
     return jsonify(results=j)
 
 @app.route('/api/client-stat.json/<name>')
+@app.route('/api/<server>/client-stat.json/<name>')
 @app.route('/api/client-stat.json/<name>/<int:backup>')
+@app.route('/api/<server>/client-stat.json/<name>/<int:backup>')
 @login_required
-def client_stat_json(name=None, backup=None):
+def client_stat_json(server=None, name=None, backup=None):
     """
     WebService: return a specific client detailed report
     """
+    if not server:
+        server = request.args.get('server')
     j = []
     if not name:
         err = [[1, 'No client defined']]
         return jsonify(notif=err)
     if backup:
         try:
-            f = bui.cli.status('c:{0}:b:{1}:f:log.gz\n'.format(name, backup))
+            f = bui.cli.status('c:{0}:b:{1}:f:log.gz\n'.format(name, backup), agent=server)
         except BUIserverException, e:
             err = [[2, str(e)]]
             return jsonify(notif=err)
-        j = bui.cli.parse_backup_log(f, backup)
+        j = bui.cli.parse_backup_log(f, backup, agent=server)
     else:
         try:
-            cl = bui.cli.get_client(name)
+            cl = bui.cli.get_client(name, agent=server)
         except BUIserverException, e:
             err = [[2, str(e)]]
             return jsonify(notif=err)
         for c in cl:
-            f =  bui.cli.status('c:{0}:b:{1}:f:log.gz\n'.format(name, c['number']))
-            j.append(bui.cli.parse_backup_log(f, c['number']))
+            f =  bui.cli.status('c:{0}:b:{1}:f:log.gz\n'.format(name, c['number']), agent=server)
+            j.append(bui.cli.parse_backup_log(f, c['number']), agent=server)
     return jsonify(results=j)
 
 @app.route('/api/client.json/<name>')
+@app.route('/api/<server>/client.json/<name>')
 @login_required
-def client_json(name=None):
+def client_json(server=None, name=None):
     """
     WebService: return a specific client backups overview
     """
+    if not server:
+        server = request.args.get('server')
     try:
-        j = bui.cli.get_client(name)
+        j = bui.cli.get_client(name, agent=server)
     except BUIserverException, e:
         err = [[2, str(e)]]
         return jsonify(notif=err)
     return jsonify(results=j)
 
 @app.route('/api/clients.json')
+@app.route('/api/<server>/clients.json')
 @login_required
-def clients():
+def clients_json(server=None):
     """
     WebService: return a JSON listing all clients
     """
+    if not server:
+        server = request.args.get('server')
     try:
-        j = bui.cli.get_all_clients()
+        j = bui.cli.get_all_clients(agent=server)
     except BUIserverException, e:
         err = [[2, str(e)]]
         return jsonify(notif=err)
@@ -240,63 +268,83 @@ And here is the main site
 """
 
 @app.route('/live-monitor')
+@app.route('/<server>/live-monitor')
 @app.route('/live-monitor/<name>')
+@app.route('/<server>/live-monitor/<name>')
 @login_required
-def live_monitor(name=None):
+def live_monitor(server=None, name=None):
     """
     Live status monitor view
     """
+    if not server:
+        server = request.get.args('server')
     if not bui.cli.running:
         flash('Sorry, there are no running backups', 'warning')
         return redirect(url_for('home'))
-    return render_template('live-monitor.html', live=True, cname=name)
+    return render_template('live-monitor.html', live=True, cname=name, server=server)
 
 @app.route('/client-browse/<name>', methods=['GET'])
+@app.route('/<server>/client-browse/<name>', methods=['GET'])
 @app.route('/client-browse/<name>/<int:backup>')
+@app.route('/<server>/client-browse/<name>/<int:backup>')
 @login_required
-def client_browse(name=None, backup=None):
+def client_browse(server=None, name=None, backup=None):
     """
     Browse a specific backup of a specific client
     """
+    if not server:
+        server = request.args.get('server')
     bkp = request.args.get('backup')
     if bkp and not backup:
-        return redirect(url_for('client_browse', name=name, backup=bkp))
-    return render_template('client-browse.html', tree=True, backup=True, overview=True, cname=name, nbackup=backup)
+        return redirect(url_for('client_browse', name=name, backup=bkp, server=server))
+    return render_template('client-browse.html', tree=True, backup=True, overview=True, cname=name, nbackup=backup, server=server)
 
 @app.route('/client-report/<name>')
+@app.route('/<server>/client-report/<name>')
 @login_required
-def client_report(name=None):
+def client_report(server=None, name=None):
     """
     Specific client report
     """
-    l = bui.cli.get_client(name)
+    if not server:
+        server = request.args.get('server')
+    l = bui.cli.get_client(name, agent=server)
     if len(l) == 1:
-        return redirect(url_for('backup_report', name=name, backup=l[0]['number']))
-    return render_template('client-report.html', client=True, report=True, cname=name)
+        return redirect(url_for('backup_report', name=name, backup=l[0]['number']), server=server)
+    return render_template('client-report.html', client=True, report=True, cname=name, server=server)
 
 @app.route('/clients-report')
+@app.route('/<server>/clients-report')
 @login_required
-def clients_report():
+def clients_report(server=None):
     """
     Global report
     """
-    return render_template('clients-report.html', clients=True, report=True)
+    if not server:
+        server = request.args.get('server')
+    return render_template('clients-report.html', clients=True, report=True, server=server)
 
 @app.route('/backup-report/<name>', methods=['GET'])
+@app.route('/<server>/backup-report/<name>', methods=['GET'])
 @app.route('/backup-report/<name>/<int:backup>', methods=['GET'])
+@app.route('/<server>/backup-report/<name>/<int:backup>', methods=['GET'])
 @login_required
-def backup_report(name=None, backup=None):
+def backup_report(server=None, name=None, backup=None):
     """
     Backup specific report
     """
     if not backup:
         backup = request.args.get('backup')
-    return render_template('backup-report.html', client=True, backup=True, report=True, cname=name, nbackup=backup)
+    if not server:
+        server = request.args.get('server')
+    return render_template('backup-report.html', client=True, backup=True, report=True, cname=name, nbackup=backup, server=server)
 
 @app.route('/client', methods=['GET'])
+@app.route('/<server>/client', methods=['GET'])
 @app.route('/client/<name>')
+@app.route('/<server>/client/<name>')
 @login_required
-def client(name=None):
+def client(server=None, name=None):
     """
     Specific client overview
     """
@@ -304,9 +352,24 @@ def client(name=None):
         c = name
     else:
         c = request.args.get('name')
-    if bui.cli.is_backup_running(c):
-        return redirect(url_for('live_monitor', name=name))
-    return render_template('client.html', client=True, overview=True, cname=c)
+    if not server:
+        server = request.args.get('server')
+    if bui.cli.is_backup_running(c, agent=server):
+        return redirect(url_for('live_monitor', name=name, server=server))
+    return render_template('client.html', client=True, overview=True, cname=c, server=server)
+
+@app.route('/clients', methods=['GET'])
+@app.route('/<server>/clients', methods=['GET'])
+@login_required
+def clients(server=None):
+    if not server:
+        server = request.args.get('server')
+    return render_template('clients.html', clients=True, overview=True, server=server)
+
+@app.route('/servers', methods=['GET'])
+@login_required
+def servers():
+    return render_template('servers.html', servers=True, overview=True)
 
 @app.route('/login', methods=['POST', 'GET'])
 def login():
@@ -317,6 +380,8 @@ def login():
             login_user(user, remember=form.remember.data)
             flash('Logged in successfully', 'success')
             return redirect(request.args.get("next") or url_for('home'))
+        else:
+            flash('Wrong username or password', 'danger')
     return render_template('login.html', form=form, login=True)
 
 @app.route('/logout')
@@ -331,4 +396,7 @@ def home():
     """
     Home page
     """
-    return render_template('clients.html', clients=True, overview=True)
+    if bui.standalone:
+        return redirect(url_for('clients'))
+    else:
+        return redirect(url_for('servers'))

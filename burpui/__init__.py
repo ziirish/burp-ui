@@ -10,7 +10,7 @@ __license__ = 'BSD 3-clause'
 
 from flask import Flask
 from flask.ext.login import LoginManager
-from burpui.server import Server as BurpUI
+from burpui.server import BUIServer as BurpUI
 
 # First, we setup the app
 app = Flask(__name__)

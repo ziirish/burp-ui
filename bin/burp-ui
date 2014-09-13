@@ -20,6 +20,8 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()
     d = options.log
     app.config['DEBUG'] = d
+    if d:
+        app.config['TESTING'] = True
 
     if options.config:
         if os.path.isfile(options.config):
