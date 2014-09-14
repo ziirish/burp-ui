@@ -4,6 +4,7 @@ import re
 import socket
 import sys
 import json
+import time
 import struct
 import ConfigParser
 
@@ -15,6 +16,7 @@ class Burp(BUIbackend):
         self.app = app
         self.servers = {}
         self.servers_status = {}
+        self.app.config['SERVERS'] = []
         if conf:
             config = ConfigParser.ConfigParser()
             with open(conf) as fp:
@@ -34,6 +36,7 @@ class Burp(BUIbackend):
         self.app.logger.debug(self.servers)
         for key, serv in self.servers.iteritems():
             self.servers_status[key] = {'clients': [], 'alive': serv.connected}
+            self.app.config['SERVERS'].append(key)
             if not serv.connected:
                 continue
             for c in serv.get_all_clients(key):
@@ -111,6 +114,7 @@ class NClient(BUIbackend):
         self.ssl = ssl
         self.nok = False
         self.connected = False
+        self.retry = False
         self.app = app
         self.conn()
 
@@ -119,6 +123,7 @@ class NClient(BUIbackend):
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.sock.connect((self.host, self.port))
             self.connected = True
+            self.retry = False
             self.app.logger.debug('OK, connected to agent %s:%s', self.host, self.port)
         except Exception, e:
             self.connected = False
@@ -135,9 +140,11 @@ class NClient(BUIbackend):
             self.sock.sendall(struct.pack('!Q', length))
             self.sock.sendall(raw)
             self.app.logger.debug("Sending: %s", raw)
-            res = self.sock.recv(10)
+            #time.sleep(1)
+            res = ''
+            res = self.recv_timeout(2)
             self.app.logger.debug("recv: '%s'", res)
-            if 'OK Result:' != res:
+            if 'OK' != res:
                 self.app.logger.debug('Ooops, unsuccessful!')
                 self.nok = True
                 return
@@ -145,28 +152,69 @@ class NClient(BUIbackend):
             self.nok = False
         except Exception, e:
             self.app.logger.error(str(e))
-            self.conn()
             self.nok = True
-            self.send_command(old_data)
+            if not self.retry:
+                self.retry = True
+                self.conn()
+                self.send_command(old_data)
 
     def get_result(self):
         if self.nok:
             return None
         self.app.logger.debug('What now?')
-        lengthbuf = self.sock.recv(8)
+        lengthbuf = self.recv_timeout(8)
         length, = struct.unpack('!Q', lengthbuf)
         return self.recvall(length)
 
     def recvall(self, length):
         buf = b''
         bsize = 1024
+        if length < bsize:
+            bsize = length
         while length:
-            newbuf = self.sock.recv(1024)
+            newbuf = self.sock.recv(bsize)
             if not newbuf: return None
             buf += newbuf
             length -= len(newbuf)
         self.app.logger.debug('result: %s', buf)
         return buf
+
+    def recv_timeout(self, length, timeout=2):
+        #make socket non blocking
+        self.sock.setblocking(0)
+         
+        #total data partwise in an array
+        total_data=[];
+        data='';
+         
+        #beginning time
+        begin=time.time()
+        while 1:
+            #if you got some data, then break after timeout
+            if total_data and time.time()-begin > timeout:
+                break
+             
+            #if you got no data at all, wait a little longer, twice the timeout
+            elif time.time()-begin > timeout*2:
+                break
+             
+            #recv something
+            try:
+                data = self.recvall(length)
+                if data:
+                    if len(data) == length:
+                        return data
+                    total_data.append(data)
+                    #change the beginning time for measurement
+                    begin=time.time()
+                else:
+                    #sleep for sometime to indicate a gap
+                    time.sleep(0.1)
+            except:
+                pass
+         
+        #join all parts to make final string
+        return ''.join(total_data)
 
     """
     Utilities functions

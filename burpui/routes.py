@@ -82,7 +82,7 @@ def render_live_tpl(server=None, name=None):
 def servers_json():
     r = []
     for serv in bui.cli.servers_status:
-        r.append({'name': serv, 'clients': len(bui.cli.servers_status[serv]['clients']), 'connected': bui.cli.servers_status[serv]['alive']})
+        r.append({'name': serv, 'clients': len(bui.cli.servers_status[serv]['clients']), 'alive': bui.cli.servers_status[serv]['alive']})
     return jsonify(results=r)
 
 @app.route('/api/live.json')
@@ -168,7 +168,7 @@ def clients_report_json(server=None):
         cl.append( { 'name': c['name'], 'stats': bui.cli.parse_backup_log(f, client[-1]['number'], agent=server) } )
         for b in client:
             f = bui.cli.status('c:{0}:b:{1}:f:log.gz\n'.format(c['name'], b['number']), agent=server)
-            ba.append(bui.cli.parse_backup_log(f, b['number'], c['name']), agent=server)
+            ba.append(bui.cli.parse_backup_log(f, b['number'], c['name'], agent=server))
     j.append( { 'clients': cl, 'backups': sorted(ba, key=lambda k: k['end']) } )
     return jsonify(results=j)
 
@@ -202,7 +202,7 @@ def client_stat_json(server=None, name=None, backup=None):
             return jsonify(notif=err)
         for c in cl:
             f =  bui.cli.status('c:{0}:b:{1}:f:log.gz\n'.format(name, c['number']), agent=server)
-            j.append(bui.cli.parse_backup_log(f, c['number']), agent=server)
+            j.append(bui.cli.parse_backup_log(f, c['number'], agent=server))
     return jsonify(results=j)
 
 @app.route('/api/client.json/<name>')
@@ -277,7 +277,7 @@ def live_monitor(server=None, name=None):
     Live status monitor view
     """
     if not server:
-        server = request.get.args('server')
+        server = request.args.get('server')
     if not bui.cli.running:
         flash('Sorry, there are no running backups', 'warning')
         return redirect(url_for('home'))

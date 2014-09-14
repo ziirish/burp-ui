@@ -34,7 +34,8 @@ var notif = function(type, message) {
 };
 
 {% if not login -%}
-	{% if not (servers and overview) -%}
+	{% if config.STANDALONE -%}
+
 var _check_running = function() {
 	url = '{{ url_for("backup_running", server=server) }}';
 	$.getJSON(url, function(data) {
@@ -52,6 +53,7 @@ var _check_running = function() {
 	{% endif -%}
 {% endif -%}
 
+{% if config.STANDALONE -%}
 /***
  * _clients_bh: Bloodhound object used for the autocompletion of the input field
  */
@@ -75,11 +77,60 @@ _clients_bh.initialize();
 /***
  * Map out _clients_bh to our input with the typeahead plugin
  */
-$('#input-client').typeahead(null, {
+$('#input-client').typeahead({
+	highlight: true
+},
+{
 	name: 'clients',
 	displayKey: 'name',
 	source: _clients_bh.ttAdapter()
 });
+{% else -%}
+	{% for srv in config.SERVERS -%}
+
+var _{{ srv }}_bh = new Bloodhound({
+	datumTokenizer: Bloodhound.tokenizers.obj.whitespace('name'),
+	queryTokenizer: Bloodhound.tokenizers.whitespace,
+	limit: 10,
+	prefetch: {
+		url: '{{ url_for("clients_json", server=srv) }}',
+		filter: function(list) {
+			if (list.results) {
+				return list.results;
+			}
+			return new Array();
+		}
+	}
+});
+
+_{{ srv }}_bh.initialize();
+	{% endfor -%}
+
+
+$('#input-client').typeahead({
+	highlight: true
+},
+	{% for srv in config.SERVERS -%}
+
+{
+	name: '{{ srv }}',
+	displayKey: 'name',
+	source: _{{ srv }}_bh.ttAdapter(),
+	templates: {
+		header: '<h3 class="server-name">{{ srv }}</h3>'
+	}
+		{% if loop.last -%}
+
+}
+		{% else -%}
+
+},
+		{% endif -%}
+	{% endfor -%}
+).on('typeahead:selected', function(obj, datum, name) {
+	window.location = '{{ url_for("client") }}?name='+datum.name+'&server='+name;
+});
+{% endif -%}
 
 {% if servers and overview -%}
 {% include "js/servers.js" %}
@@ -155,13 +206,14 @@ $(function() {
 		_live();
 		{% endif -%}
 		{% if not login -%}
-		_check_running();
+		//_check_running();
 		{% endif -%}
 		{% if servers and overview -%}
 		_servers();
 		{% endif -%}
 	});
 
+	{% if config.STANDALONE -%}
 	/***
 	 * trigger action on the 'search field' when the 'enter' key is pressed
 	 */
@@ -171,6 +223,7 @@ $(function() {
 			window.location = '{{ url_for("client", server=server) }}?name='+search.val();
 		}
 	});
+	{% endif -%}
 
 	/***
 	 * add a listener to the '.clickable' element dynamically added in the document (see _client and _clients function)
@@ -183,7 +236,7 @@ $(function() {
 	 * initialize our page if needed
 	 */
 	{% if not login -%}
-	_check_running();
+	//_check_running();
 	{% endif -%}
 	{% if clients -%}
 	_clients();
@@ -221,7 +274,7 @@ $(function() {
 
 	{% if not login -%}
 	var refresh_running = setInterval(function () {
-		_check_running();
+		//_check_running();
 	}, {{ config.REFRESH * 1000 }});
 	{% endif -%}
 
