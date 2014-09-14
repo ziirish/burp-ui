@@ -142,6 +142,11 @@ width:100%;
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff0088cc', endColorstr='#ff0077b3', GradientType=0)
 }
 
+.tt-suggestion.tt-cursor {
+  background-color: #0097cf;
+  color: #fff;
+}
+
 .tt-suggestion.tt-is-under-cursor a {
   color: #fff;
 }
@@ -152,6 +157,14 @@ width:100%;
 
 .tt-hint {
     color: #999999;
+}
+
+#search .server-name {
+  margin: 0 20px 5px 20px;
+  padding: 3px 0;
+  border-bottom: 1px solid #ccc;
+  color: #000;
+  text-transform: uppercase;
 }
 
 #tree {
