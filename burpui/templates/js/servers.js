@@ -23,7 +23,7 @@ var _servers = function() {
 		$.each(data.results, function(j, c) {
 			cl = '';
 			glyph = 'glyphicon-ok';
-			if (!c.connected) {
+			if (!c.alive) {
 				cl = ' danger';
 				glyph = 'glyphicon-remove';
 			}
