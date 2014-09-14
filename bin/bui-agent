@@ -2,6 +2,7 @@
 # -*- coding: utf8 -*-
 import sys
 import os
+import logging
 from optparse import OptionParser
 
 sys.path.append('{0}/..'.format(os.path.join(os.path.dirname(os.path.realpath(__file__)))))

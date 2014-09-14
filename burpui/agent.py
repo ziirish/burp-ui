@@ -77,20 +77,26 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
         lengthbuf = self.request.recv(8)
         length, = struct.unpack('!Q', lengthbuf)
         data = self.request.recv(length)
-        print data
+        print '--------------------'
+        print 'recv: '+data
+        print '--------------------'
         j = json.loads(data)
         if j['password'] != self.server.agent.password:
+            print '-----> Wrong Password <-----'
             self.request.sendall('KO')
             return
         if j['func'] not in self.server.agent.methods:
+            print '-----> Wrong method <-----'
             self.request.sendall('KO')
             return
-        self.request.sendall('OK Result:')
+        self.request.sendall('OK')
         if j['args']:
             res = json.dumps(self.server.agent.methods[j['func']](**j['args']))
         else:
             res = json.dumps(self.server.agent.methods[j['func']]())
+        print '--------------------'
         print res
+        print '--------------------'
         self.request.sendall(struct.pack('!Q', len(res)))
         self.request.sendall(res)
 
