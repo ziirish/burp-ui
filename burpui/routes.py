@@ -81,8 +81,8 @@ def render_live_tpl(server=None, name=None):
 @login_required
 def servers_json():
     r = []
-    for serv in bui.cli.servers_status:
-        r.append({'name': serv, 'clients': len(bui.cli.servers_status[serv]['clients']), 'alive': bui.cli.servers_status[serv]['alive']})
+    for serv in bui.cli.servers:
+        r.append({'name': serv, 'clients': len(bui.cli.servers[serv].get_all_clients(serv)), 'alive': bui.cli.servers[serv].ping()})
     return jsonify(results=r)
 
 @app.route('/api/live.json')

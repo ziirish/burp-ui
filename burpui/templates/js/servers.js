@@ -23,11 +23,13 @@ var _servers = function() {
 		$.each(data.results, function(j, c) {
 			cl = '';
 			glyph = 'glyphicon-ok';
+			href = '{{ url_for("clients") }}?server='+c.name;
 			if (!c.alive) {
 				cl = ' danger';
 				glyph = 'glyphicon-remove';
+				href = '#';
 			}
-			$('#table-servers > tbody:last').append('<tr class="clickable'+cl+'" style="cursor: pointer;"><td><a href="{{ url_for("clients") }}?server='+c.name+'" style="color: inherit; text-decoration: inherit;">'+c.name+'</a></td><td>'+c.clients+'</td><td><span class="glyphicon '+glyph+'"></span></td></tr>');
+			$('#table-servers > tbody:last').append('<tr class="clickable'+cl+'" style="cursor: pointer;"><td><a href="'+href+'" style="color: inherit; text-decoration: inherit;">'+c.name+'</a></td><td>'+c.clients+'</td><td><span class="glyphicon '+glyph+'"></span></td></tr>');
 		});
 	});
 };

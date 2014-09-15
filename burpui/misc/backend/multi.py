@@ -15,7 +15,6 @@ class Burp(BUIbackend):
     def __init__(self, app=None, conf=None):
         self.app = app
         self.servers = {}
-        self.servers_status = {}
         self.app.config['SERVERS'] = []
         if conf:
             config = ConfigParser.ConfigParser()
@@ -35,12 +34,7 @@ class Burp(BUIbackend):
 
         self.app.logger.debug(self.servers)
         for key, serv in self.servers.iteritems():
-            self.servers_status[key] = {'clients': [], 'alive': serv.ping()}
             self.app.config['SERVERS'].append(key)
-            if not serv.connected:
-                continue
-            for c in serv.get_all_clients(key):
-                self.servers_status[key]['clients'].append(c['name'])
 
     """
     Utilities functions
@@ -112,9 +106,7 @@ class NClient(BUIbackend):
         self.port = port
         self.password = password
         self.ssl = ssl
-        self.nok = False
         self.connected = False
-        self.retry = False
         self.app = app
 
     def conn(self):
@@ -123,7 +115,6 @@ class NClient(BUIbackend):
                 return
             self.sock = socket.create_connection((self.host, self.port))
             self.connected = True
-            self.retry = False
             self.app.logger.debug('OK, connected to agent %s:%s', self.host, self.port)
         except Exception, e:
             self.connected = False
@@ -135,15 +126,15 @@ class NClient(BUIbackend):
         return res
 
     def close(self):
-        self.sock.close()
+        if self.connected:
+            self.sock.close()
         self.connected = False
 
     def do_command(self, data=None):
         self.conn()
-        res = []
+        res = '[]'
         if not data:
-            return
-        old_data = data
+            return res
         try:
             data['password'] = self.password
             raw = json.dumps(data)
@@ -151,39 +142,38 @@ class NClient(BUIbackend):
             self.sock.sendall(struct.pack('!Q', length))
             self.sock.sendall(raw)
             self.app.logger.debug("Sending: %s", raw)
-            #time.sleep(1)
-            res = self.recvall(2)
-            self.app.logger.debug("recv: '%s'", res)
-            if 'OK' != res:
+            tmp = self.recvall(2)
+            self.app.logger.debug("recv: '%s'", tmp)
+            if 'OK' != tmp:
                 self.app.logger.debug('Ooops, unsuccessful!')
                 return res
             self.app.logger.debug("Data sent successfully")
-            lengthbuf = self.recvall(8)
+            lengthbuf = self.recvall(8, False)
             length, = struct.unpack('!Q', lengthbuf)
             res = self.recvall(length)
         except Exception, e:
             self.app.logger.error(str(e))
-            if not self.retry:
-                self.retry = True
-                res = self.do_command(old_data)
         finally:
             self.close()
-        return res
+            return res
 
-    def recvall(self, length=1024):
+    def recvall(self, length=1024, debug=True, timeout=5):
         buf = b''
         bsize = 1024
         received = 0
+        tries = 0
         if length < bsize:
             bsize = length
-        while received < length:
+        while received < length and tries < timeout:
             newbuf = self.sock.recv(bsize)
             if not newbuf:
+                tries += 1
                 time.sleep(0.1)
                 continue
             buf += newbuf
             received += len(newbuf)
-        self.app.logger.debug('result (%d/%d): %s', length, len(buf), buf)
+        if debug:
+            self.app.logger.debug('result (%d/%d): %s', length, len(buf), buf)
         return buf
 
     """
