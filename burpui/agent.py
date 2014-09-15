@@ -95,10 +95,11 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
         else:
             res = json.dumps(self.server.agent.methods[j['func']]())
         print '--------------------'
-        print res
+        print 'result: '+res
         print '--------------------'
         self.request.sendall(struct.pack('!Q', len(res)))
         self.request.sendall(res)
+        self.request.close()
 
 class AgentServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
     # Ctrl-C will cleanly kill all spawned threads

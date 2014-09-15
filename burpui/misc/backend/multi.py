@@ -120,8 +120,7 @@ class NClient(BUIbackend):
 
     def conn(self):
         try:
-            self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.sock.connect((self.host, self.port))
+            self.sock = socket.create_connection((self.host, self.port))
             self.connected = True
             self.retry = False
             self.app.logger.debug('OK, connected to agent %s:%s', self.host, self.port)
@@ -141,8 +140,8 @@ class NClient(BUIbackend):
             self.sock.sendall(raw)
             self.app.logger.debug("Sending: %s", raw)
             #time.sleep(1)
-            res = ''
-            res = self.recv_timeout(2)
+            res = b''
+            res += self.recvall(2)
             self.app.logger.debug("recv: '%s'", res)
             if 'OK' != res:
                 self.app.logger.debug('Ooops, unsuccessful!')
@@ -162,59 +161,25 @@ class NClient(BUIbackend):
         if self.nok:
             return None
         self.app.logger.debug('What now?')
-        lengthbuf = self.recv_timeout(8)
+        lengthbuf = self.sock.recv(8)
         length, = struct.unpack('!Q', lengthbuf)
         return self.recvall(length)
 
-    def recvall(self, length):
+    def recvall(self, length=1024):
         buf = b''
         bsize = 1024
+        received = 0
         if length < bsize:
             bsize = length
-        while length:
+        while received < length:
             newbuf = self.sock.recv(bsize)
-            if not newbuf: return None
+            if not newbuf:
+                time.sleep(0.1)
+                continue
             buf += newbuf
-            length -= len(newbuf)
-        self.app.logger.debug('result: %s', buf)
+            received += len(newbuf)
+        self.app.logger.debug('result (%d/%d): %s', length, len(buf), buf)
         return buf
-
-    def recv_timeout(self, length, timeout=2):
-        #make socket non blocking
-        self.sock.setblocking(0)
-         
-        #total data partwise in an array
-        total_data=[];
-        data='';
-         
-        #beginning time
-        begin=time.time()
-        while 1:
-            #if you got some data, then break after timeout
-            if total_data and time.time()-begin > timeout:
-                break
-             
-            #if you got no data at all, wait a little longer, twice the timeout
-            elif time.time()-begin > timeout*2:
-                break
-             
-            #recv something
-            try:
-                data = self.recvall(length)
-                if data:
-                    if len(data) == length:
-                        return data
-                    total_data.append(data)
-                    #change the beginning time for measurement
-                    begin=time.time()
-                else:
-                    #sleep for sometime to indicate a gap
-                    time.sleep(0.1)
-            except:
-                pass
-         
-        #join all parts to make final string
-        return ''.join(total_data)
 
     """
     Utilities functions
