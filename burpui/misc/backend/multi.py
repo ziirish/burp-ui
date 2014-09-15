@@ -35,7 +35,7 @@ class Burp(BUIbackend):
 
         self.app.logger.debug(self.servers)
         for key, serv in self.servers.iteritems():
-            self.servers_status[key] = {'clients': [], 'alive': serv.connected}
+            self.servers_status[key] = {'clients': [], 'alive': serv.ping()}
             self.app.config['SERVERS'].append(key)
             if not serv.connected:
                 continue
@@ -116,10 +116,11 @@ class NClient(BUIbackend):
         self.connected = False
         self.retry = False
         self.app = app
-        self.conn()
 
     def conn(self):
         try:
+            if self.connected:
+                return
             self.sock = socket.create_connection((self.host, self.port))
             self.connected = True
             self.retry = False
@@ -128,7 +129,18 @@ class NClient(BUIbackend):
             self.connected = False
             self.app.logger.error('Could not connect to %s:%s => %s', self.host, self.port, str(e))
 
-    def send_command(self, data=None):
+    def ping(self):
+        self.conn()
+        res = self.connected
+        return res
+
+    def close(self):
+        self.sock.close()
+        self.connected = False
+
+    def do_command(self, data=None):
+        self.conn()
+        res = []
         if not data:
             return
         old_data = data
@@ -140,30 +152,23 @@ class NClient(BUIbackend):
             self.sock.sendall(raw)
             self.app.logger.debug("Sending: %s", raw)
             #time.sleep(1)
-            res = b''
-            res += self.recvall(2)
+            res = self.recvall(2)
             self.app.logger.debug("recv: '%s'", res)
             if 'OK' != res:
                 self.app.logger.debug('Ooops, unsuccessful!')
-                self.nok = True
-                return
+                return res
             self.app.logger.debug("Data sent successfully")
-            self.nok = False
+            lengthbuf = self.recvall(8)
+            length, = struct.unpack('!Q', lengthbuf)
+            res = self.recvall(length)
         except Exception, e:
             self.app.logger.error(str(e))
-            self.nok = True
             if not self.retry:
                 self.retry = True
-                self.conn()
-                self.send_command(old_data)
-
-    def get_result(self):
-        if self.nok:
-            return None
-        self.app.logger.debug('What now?')
-        lengthbuf = self.sock.recv(8)
-        length, = struct.unpack('!Q', lengthbuf)
-        return self.recvall(length)
+                res = self.do_command(old_data)
+        finally:
+            self.close()
+        return res
 
     def recvall(self, length=1024):
         buf = b''
@@ -191,8 +196,7 @@ class NClient(BUIbackend):
         parses the output in an array
         """
         data = {'func': 'status', 'args': {'query': query}}
-        self.send_command(data)
-        return json.loads(self.get_result())
+        return json.loads(self.do_command(data))
 
     def parse_backup_log(self, f, n, c=None, agent=None):
         """
@@ -200,8 +204,7 @@ class NClient(BUIbackend):
         containing different stats used to render the charts in the reporting view
         """
         data = {'func': 'parse_backup_log', 'args': {'f': f, 'n': n, 'c': c}}
-        self.send_command(data)
-        return json.loads(self.get_result())
+        return json.loads(self.do_command(data))
 
     def get_counters(self, name=None, agent=None):
         """
@@ -209,8 +212,7 @@ class NClient(BUIbackend):
         returns a dict
         """
         data = {'func': 'get_counters', 'args': {'name': name}}
-        self.send_command(data)
-        return json.loads(self.get_result())
+        return json.loads(self.do_command(data))
 
     def is_backup_running(self, name=None, agent=None):
         """
@@ -218,8 +220,7 @@ class NClient(BUIbackend):
         backup
         """
         data = {'func': 'is_backup_running', 'args': {'name': name}}
-        self.send_command(data)
-        return json.loads(self.get_result())
+        return json.loads(self.do_command(data))
 
     def is_one_backup_running(self, agent=None):
         """
@@ -227,8 +228,7 @@ class NClient(BUIbackend):
         running a backup
         """
         data = {'func': 'is_one_backup_running', 'args': None}
-        self.send_command(data)
-        return json.loads(self.get_result())
+        return json.loads(self.do_command(data))
 
     def get_all_clients(self, agent=None):
         """
@@ -236,8 +236,7 @@ class NClient(BUIbackend):
         name, state and last backup date
         """
         data = {'func': 'get_all_clients', 'args': None}
-        self.send_command(data)
-        return json.loads(self.get_result())
+        return json.loads(self.do_command(data))
 
     def get_client(self, name=None, agent=None):
         """
@@ -245,8 +244,7 @@ class NClient(BUIbackend):
         and date) of a given clientm
         """
         data = {'func': 'get_client', 'args': {'name': name}}
-        self.send_command(data)
-        return json.loads(self.get_result())
+        return json.loads(self.do_command(data))
 
     def get_tree(self, name=None, backup=None, root=None, agent=None):
         """
@@ -254,8 +252,7 @@ class NClient(BUIbackend):
         within a given path
         """
         data = {'func': 'get_tree', 'args': {'name': name, 'backup': backup, 'root': root}}
-        self.send_command(data)
-        return json.loads(self.get_result())
+        return json.loads(self.do_command(data))
 
     def restore_files(self, name=None, backup=None, files=None, agent=None):
         return None
