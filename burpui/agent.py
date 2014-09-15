@@ -2,6 +2,7 @@
 import sys
 import struct
 import json
+import time
 import ConfigParser
 import SocketServer
 from threading import Thread
@@ -76,7 +77,7 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
         # self.request is the client connection
         lengthbuf = self.request.recv(8)
         length, = struct.unpack('!Q', lengthbuf)
-        data = self.request.recv(length)
+        data = self.recvall(length)
         print '--------------------'
         print 'recv: '+data
         print '--------------------'
@@ -100,6 +101,21 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
         self.request.sendall(struct.pack('!Q', len(res)))
         self.request.sendall(res)
         self.request.close()
+
+    def recvall(self, length=1024):
+        buf = b''
+        bsize = 1024
+        received = 0
+        if length < bsize:
+            bsize = length
+        while received < length:
+            newbuf = self.request.recv(bsize)
+            if not newbuf:
+                time.sleep(0.1)
+                continue
+            buf += newbuf
+            received += len(newbuf)
+        return buf
 
 class AgentServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
     # Ctrl-C will cleanly kill all spawned threads
