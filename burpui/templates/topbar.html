@@ -12,9 +12,13 @@
         <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav navbar-right">
             {% if not config.STANDALONE -%}
-            <li class="detail"><a href="{{ url_for('home') }}"><span class="glyphicon glyphicon-hdd"></span><span class="dtl hidden-md hidden-lg">&nbsp;Servers</span></a></li>
-            {% endif -%}
+            <li class="detail {% if not server %}active{% endif %}"><a href="{{ url_for('home') }}"><span class="glyphicon glyphicon-hdd"></span><span class="dtl hidden-md hidden-lg">&nbsp;Servers</span></a></li>
+                {% if server -%}
+            <li class="detail{% if clients %} active{% endif %}"><a href="{{ url_for('clients', server=server) }}"><span class="glyphicon glyphicon-tasks"></span><span class="dtl hidden-md hidden-lg">&nbsp;Clients</span></a></li>
+                {% endif -%}
+            {% else -%}
             <li class="detail{% if clients %} active{% endif %}"><a href="{{ url_for('home') }}"><span class="glyphicon glyphicon-tasks"></span><span class="dtl hidden-md hidden-lg">&nbsp;Clients</span></a></li>
+            {% endif -%}
             <li class="detail disabled"><a href="#"><span class="glyphicon glyphicon-wrench"></span><span class="dtl hidden-md hidden-lg">&nbsp;Settings</span></a></li>
             <li class="detail{% if live %} active{% endif %}"><a href="{{ url_for('live_monitor', server=server) }}"><span id="toblink" class="glyphicon glyphicon-screenshot"></span><span class="dtl hidden-md hidden-lg">&nbsp;Live monitor</span></a></li>
             {% if current_user and current_user.is_authenticated() -%}

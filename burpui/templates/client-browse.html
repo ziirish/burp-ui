@@ -4,10 +4,17 @@
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
           {% include "small_topbar.html" %}
           <ul class="breadcrumb" style="margin-bottom: 5px;">                      
-            <li><a href="{{ url_for('home') }}">Home</a></li>                      
+            {% if server -%}
+            <li><a href="{{ url_for('home') }}">Home</a></li>
+            <li><a href="{{ url_for('clients', server=server) }}">{{ server }} clients</a></li>
+            <li><a href="{{ url_for('client', name=cname, server=server) }}">{{ cname }} overview</a></li>
+            <li class="active">Backup n°{{ nbackup|mypad }} overview</li>
+            {% else -%}
+            <li><a href="{{ url_for('home') }}">Home</a></li>
             <li><a href="{{ url_for('client', name=cname) }}">{{ cname }} overview</a></li>
-            <li class="active">Backup n°{{ nbackup|mypad }} overview</li>                
-          </ul>                                                                    
+            <li class="active">Backup n°{{ nbackup|mypad }} overview</li>
+            {% endif -%}
+          </ul>
           <br />
           <h1 class="page-header">Backup n°{{ nbackup|mypad }} of {{ cname }}</h1>
           <div class="row">
