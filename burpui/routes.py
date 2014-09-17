@@ -47,7 +47,7 @@ def running_clients(server=None):
     """
     if not server:
         server = request.args.get('server')
-    r = bui.cli.is_one_backup_running(agent=server)
+    r = bui.cli.is_one_backup_running(server)
     return jsonify(results=r)
 
 @app.route('/api/render-live-template', methods=['GET'])
@@ -64,13 +64,22 @@ def render_live_tpl(server=None, name=None):
     """
     if not server:
         server = request.args.get('server')
-    c = request.args.get('name')
-    if not name and not c:
-        abort(500)
     if not name:
-        name = c
-    if name not in bui.cli.running:
-        abort(404)
+        name = request.args.get('name')
+    if not name:
+        abort(500)
+    if isinstance(bui.cli.running, dict):
+        if server and name not in bui.cli.running[server]:
+            abort(404)
+        else:
+            found = False
+            for k, a in bui.cli.running.iteritems():
+                found = found or (name in a)
+            if not found:
+                abort(404)
+    else:
+        if name not in bui.cli.running:
+            abort(404)
     try:
         counters = bui.cli.get_counters(name, agent=server)
     except BUIserverException:
@@ -96,14 +105,30 @@ def live(server=None):
     if not server:
         server = request.args.get('server')
     r = []
-    for c in bui.cli.is_one_backup_running(agent=server):
-        s = {}
-        s['client'] = c
-        try:
-            s['status'] = bui.cli.get_counters(c, agent=server)
-        except BUIserverException:
-            s['status'] = []
-        r.append(s)
+    if server:
+        l = (bui.cli.is_one_backup_running(server))[server]
+    else:
+        l = bui.cli.is_one_backup_running()
+    if isinstance(l, dict):
+        for k, a in l.iteritems():
+            for c in a:
+                s = {}
+                s['client'] = c
+                s['agent'] = k
+                try:
+                    s['status'] = bui.cli.get_counters(c, agent=k)
+                except BUIserverException:
+                    s['status'] = []
+                r.append(s)
+    else:
+        for c in l:
+            s = {}
+            s['client'] = c
+            try:
+                s['status'] = bui.cli.get_counters(c, agent=server)
+            except BUIserverException:
+                s['status'] = []
+            r.append(s)
     return jsonify(results=r)
 
 @app.route('/api/running.json')
@@ -114,10 +139,13 @@ def backup_running(server=None):
     API: backup_running
     :returns: true if at least one backup is running
     """
-    if not server:
-        server = request.args.get('server')
-    j = bui.cli.is_one_backup_running(agent=server)
-    r = len(j) > 0
+    j = bui.cli.is_one_backup_running(server)
+    r = False
+    if isinstance(j, dict):
+        for k, v in j.iteritems():
+            r = r or (len(v) > 0)
+    else:
+        r = len(j) > 0
     return jsonify(results=r)
 
 @app.route('/api/client-tree.json/<name>/<int:backup>', methods=['GET'])
@@ -278,9 +306,18 @@ def live_monitor(server=None, name=None):
     """
     if not server:
         server = request.args.get('server')
-    if not bui.cli.running:
-        flash('Sorry, there are no running backups', 'warning')
-        return redirect(url_for('home'))
+    if bui.standalone:
+        if not bui.cli.running:
+            flash('Sorry, there are no running backups', 'warning')
+            return redirect(url_for('home'))
+    else:
+        run = False
+        for a in bui.cli.servers:
+            run = run or (a in bui.cli.running and bui.cli.running[a])
+        if not run:
+            flash('Sorry, there are no running backups', 'warning')
+            return redirect(url_for('home'))
+            
     return render_template('live-monitor.html', live=True, cname=name, server=server)
 
 @app.route('/client-browse/<name>', methods=['GET'])
