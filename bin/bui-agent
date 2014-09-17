@@ -14,6 +14,7 @@ if __name__ == '__main__':
     Main function
     """
     parser = OptionParser()
+    parser.add_option('-v', '--verbose', dest='log', help='verbose output', action='store_true')
     parser.add_option('-c', '--config', dest='config', help='configuration file', metavar='CONFIG')
 
     (options, args) = parser.parse_args()
@@ -30,5 +31,5 @@ if __name__ == '__main__':
                 conf = p
                 break
 
-    agent = Agent(conf)
+    agent = Agent(conf, options.log)
     agent.run()

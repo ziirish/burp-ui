@@ -16,9 +16,12 @@ g_sslkey  = ''
 g_password = 'password'
 
 class BUIAgent:
-    def __init__(self, conf=None):
+    def __init__(self, conf=None, debug=False):
         global g_port, g_bind, g_ssl, g_version, g_sslcert, g_sslkey, g_password
         self.conf = conf
+        self.dbg = debug
+        print 'conf: '+self.conf
+        print 'debug: '+str(self.dbg)
         if not conf:
             raise IOError('No configuration file found')
 
@@ -70,6 +73,9 @@ class BUIAgent:
         except KeyboardInterrupt:
             sys.exit(0)
 
+    def debug(self, msg, *args):
+        if self.dbg:
+            print msg % (args)
 
 class AgentTCPHandler(SocketServer.BaseRequestHandler):
     "One instance per connection.  Override handle(self) to customize action."
@@ -78,16 +84,16 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
         lengthbuf = self.request.recv(8)
         length, = struct.unpack('!Q', lengthbuf)
         data = self.recvall(length)
-        print '--------------------'
-        print 'recv: '+data
-        print '--------------------'
+        self.server.agent.debug('####################')
+        self.server.agent.debug('recv: %s', data)
+        self.server.agent.debug('####################')
         j = json.loads(data)
         if j['password'] != self.server.agent.password:
-            print '-----> Wrong Password <-----'
+            self.server.agent.debug('-----> Wrong Password <-----')
             self.request.sendall('KO')
             return
         if j['func'] not in self.server.agent.methods:
-            print '-----> Wrong method <-----'
+            self.server.agent.debug('-----> Wrong method <-----')
             self.request.sendall('KO')
             return
         self.request.sendall('OK')
@@ -95,9 +101,9 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
             res = json.dumps(self.server.agent.methods[j['func']](**j['args']))
         else:
             res = json.dumps(self.server.agent.methods[j['func']]())
-        print '--------------------'
-        print 'result: '+res
-        print '--------------------'
+        self.server.agent.debug('####################')
+        self.server.agent.debug('result: %s', res)
+        self.server.agent.debug('####################')
         self.request.sendall(struct.pack('!Q', len(res)))
         self.request.sendall(res)
         self.request.close()
