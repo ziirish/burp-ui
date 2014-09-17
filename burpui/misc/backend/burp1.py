@@ -275,8 +275,12 @@ class Burp(BUIbackend):
         returns a dict
         """
         r = {}
-        if not name or name not in self.running:
-            return r
+        if agent:
+            if not name or name not in self.running[agent]:
+                return r
+        else:
+            if not name or name not in self.running:
+                return r
         f = self.status('c:{0}\n'.format(name))
         if not f:
             return r
@@ -338,7 +342,7 @@ class Burp(BUIbackend):
         except BUIserverException:
             return r
         for c in cls:
-            if self.is_backup_running(c['name']):
+            if self.is_backup_running(c['name'], agent):
                 r.append(c['name'])
         self.running = r
         return r

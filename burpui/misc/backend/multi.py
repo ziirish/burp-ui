@@ -16,6 +16,7 @@ class Burp(BUIbackend):
         self.app = app
         self.servers = {}
         self.app.config['SERVERS'] = []
+        self.running = {}
         if conf:
             config = ConfigParser.ConfigParser()
             with open(conf) as fp:
@@ -73,13 +74,24 @@ class Burp(BUIbackend):
         is_one_backup_running returns a list of clients name that are currently
         running a backup
         """
-        return self.servers[agent].is_one_backup_running()
+        r = []
+        if agent:
+            r = self.servers[agent].is_one_backup_running(agent)
+            self.running[agent] = r
+        else:
+            r = {}
+            for a in self.servers:
+                r[a] = self.servers[a].is_one_backup_running(a)
+            self.running = r
+        return r
 
     def get_all_clients(self, agent=None):
         """
         get_all_clients returns a list of dict representing each clients with their
         name, state and last backup date
         """
+        if agent not in self.servers:
+            return []
         return self.servers[agent].get_all_clients()
 
     def get_client(self, name=None, agent=None):
@@ -173,7 +185,7 @@ class NClient(BUIbackend):
             buf += newbuf
             received += len(newbuf)
         if debug:
-            self.app.logger.debug('result (%d/%d): %s', length, len(buf), buf)
+            self.app.logger.debug('result (%d/%d): %s', len(buf), length, buf)
         return buf
 
     """
@@ -217,7 +229,7 @@ class NClient(BUIbackend):
         is_one_backup_running returns a list of clients name that are currently
         running a backup
         """
-        data = {'func': 'is_one_backup_running', 'args': None}
+        data = {'func': 'is_one_backup_running', 'args': {'agent': agent}}
         return json.loads(self.do_command(data))
 
     def get_all_clients(self, agent=None):

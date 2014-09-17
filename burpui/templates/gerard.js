@@ -34,10 +34,12 @@ var notif = function(type, message) {
 };
 
 {% if not login -%}
-	{% if config.STANDALONE -%}
-
 var _check_running = function() {
+	{% if server -%}
 	url = '{{ url_for("backup_running", server=server) }}';
+	{% else -%}
+	url = '{{ url_for("backup_running") }}';
+	{% endif -%}
 	$.getJSON(url, function(data) {
 		if (data.results) {
 			$('#toblink').addClass('blink');
@@ -46,11 +48,6 @@ var _check_running = function() {
 		}
 	});
 };
-	{% else -%}
-var _check_running = function() {
-	return false;
-};
-	{% endif -%}
 {% endif -%}
 
 {% if config.STANDALONE -%}
@@ -236,7 +233,7 @@ $(function() {
 	 * initialize our page if needed
 	 */
 	{% if not login -%}
-	//_check_running();
+	_check_running();
 	{% endif -%}
 	{% if clients -%}
 	_clients();
@@ -274,7 +271,7 @@ $(function() {
 
 	{% if not login -%}
 	var refresh_running = setInterval(function () {
-		//_check_running();
+		_check_running();
 	}, {{ config.REFRESH * 1000 }});
 	{% endif -%}
 
