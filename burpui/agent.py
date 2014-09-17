@@ -81,32 +81,35 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
     "One instance per connection.  Override handle(self) to customize action."
     def handle(self):
         # self.request is the client connection
-        lengthbuf = self.request.recv(8)
-        length, = struct.unpack('!Q', lengthbuf)
-        data = self.recvall(length)
-        self.server.agent.debug('####################')
-        self.server.agent.debug('recv: %s', data)
-        self.server.agent.debug('####################')
-        j = json.loads(data)
-        if j['password'] != self.server.agent.password:
-            self.server.agent.debug('-----> Wrong Password <-----')
-            self.request.sendall('KO')
-            return
-        if j['func'] not in self.server.agent.methods:
-            self.server.agent.debug('-----> Wrong method <-----')
-            self.request.sendall('KO')
-            return
-        self.request.sendall('OK')
-        if j['args']:
-            res = json.dumps(self.server.agent.methods[j['func']](**j['args']))
-        else:
-            res = json.dumps(self.server.agent.methods[j['func']]())
-        self.server.agent.debug('####################')
-        self.server.agent.debug('result: %s', res)
-        self.server.agent.debug('####################')
-        self.request.sendall(struct.pack('!Q', len(res)))
-        self.request.sendall(res)
-        self.request.close()
+        try:
+            lengthbuf = self.request.recv(8)
+            length, = struct.unpack('!Q', lengthbuf)
+            data = self.recvall(length)
+            self.server.agent.debug('####################')
+            self.server.agent.debug('recv: %s', data)
+            self.server.agent.debug('####################')
+            j = json.loads(data)
+            if j['password'] != self.server.agent.password:
+                self.server.agent.debug('-----> Wrong Password <-----')
+                self.request.sendall('KO')
+                return
+            if j['func'] not in self.server.agent.methods:
+                self.server.agent.debug('-----> Wrong method <-----')
+                self.request.sendall('KO')
+                return
+            self.request.sendall('OK')
+            if j['args']:
+                res = json.dumps(self.server.agent.methods[j['func']](**j['args']))
+            else:
+                res = json.dumps(self.server.agent.methods[j['func']]())
+            self.server.agent.debug('####################')
+            self.server.agent.debug('result: %s', res)
+            self.server.agent.debug('####################')
+            self.request.sendall(struct.pack('!Q', len(res)))
+            self.request.sendall(res)
+            self.request.close()
+        except Exception, e:
+            self.server.agent.debug('ERROR: %s', str(e))
 
     def recvall(self, length=1024):
         buf = b''
@@ -132,3 +135,17 @@ class AgentServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
     def __init__(self, server_address, RequestHandlerClass, agent=None):
         self.agent = agent
         SocketServer.TCPServer.__init__(self, server_address, RequestHandlerClass)
+
+    def get_request(self):
+        if self.agent.ssl: 
+            import ssl
+            (newsocket, fromaddr) = SocketServer.TCPServer.get_request(self)
+            connstream = ssl.wrap_socket(newsocket,
+                                        server_side=True,
+                                        certfile=self.agent.sslcert,
+                                        keyfile=self.agent.sslkey,
+                                        ssl_version=ssl.PROTOCOL_SSLv23)
+            return connstream, fromaddr
+        # if we don't use ssl, use the 'super' method
+        return SocketServer.TCPServer.get_request(self)
+
