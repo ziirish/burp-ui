@@ -6,7 +6,9 @@
             {% elif client %}
             <a href="{{ url_for('client', name=cname, server=server) }}"><span class="glyphicon glyphicon-th"></span>&nbsp;Overview</a>
             {% elif clients %}
-            <a href="{{ url_for('home') }}"><span class="glyphicon glyphicon-th"></span>&nbsp;Overview</a>
+            <a href="{{ url_for('clients', server=server) }}"><span class="glyphicon glyphicon-th"></span>&nbsp;Overview</a>
+            {% elif servers %}
+            <a href="{{ url_for('servers') }}"><span class="glyphicon glyphicon-th"></span>&nbsp;Overview</a>
             {% else %}
             <a href="#"><span class="glyphicon glyphicon-th"></span>&nbsp;Overview</a>
             {% endif %}
@@ -18,6 +20,8 @@
             <a href="{{ url_for('clients_report', server=server) }}"><span class="glyphicon glyphicon-stats"></span>&nbsp;Reports</a>
             {% elif backup %}
             <a href="{{ url_for('backup_report', name=cname, backup=nbackup, server=server) }}"><span class="glyphicon glyphicon-stats"></span>&nbsp;Reports</a>
+            {% elif servers %}
+            <a href="{{ url_for('servers') }}"><span class="glyphicon glyphicon-stats"></span>&nbsp;Reports</a>
             {% else %}
             <a href="#"><span class="glyphicon glyphicon-stats"></span>&nbsp;Reports</a>
             {% endif %}
