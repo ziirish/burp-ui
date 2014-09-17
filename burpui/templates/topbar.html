@@ -9,6 +9,7 @@
           </button>
           <a class="navbar-brand" href="{{ url_for('home') }}">Burp Server Dashboard</a>
         </div>
+        {% if not login -%}
         <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav navbar-right">
             {% if not config.STANDALONE -%}
@@ -30,5 +31,6 @@
             <input type="text" class="form-control" id="input-client" placeholder="Search client..." autocomplete="off">
           </form>
         </div>
+        {% endif -%}
       </div>
     </div>

@@ -50,7 +50,8 @@ var _check_running = function() {
 };
 {% endif -%}
 
-{% if config.STANDALONE -%}
+{% if not login -%}
+	{% if config.STANDALONE -%}
 /***
  * _clients_bh: Bloodhound object used for the autocompletion of the input field
  */
@@ -82,8 +83,8 @@ $('#input-client').typeahead({
 	displayKey: 'name',
 	source: _clients_bh.ttAdapter()
 });
-{% else -%}
-	{% for srv in config.SERVERS -%}
+	{% else -%}
+		{% for srv in config.SERVERS -%}
 
 var _{{ srv }}_bh = new Bloodhound({
 	datumTokenizer: Bloodhound.tokenizers.obj.whitespace('name'),
@@ -101,13 +102,13 @@ var _{{ srv }}_bh = new Bloodhound({
 });
 
 _{{ srv }}_bh.initialize();
-	{% endfor -%}
+		{% endfor -%}
 
 
 $('#input-client').typeahead({
 	highlight: true
 },
-	{% for srv in config.SERVERS -%}
+		{% for srv in config.SERVERS -%}
 
 {
 	name: '{{ srv }}',
@@ -116,17 +117,18 @@ $('#input-client').typeahead({
 	templates: {
 		header: '<h3 class="server-name">{{ srv }}</h3>'
 	}
-		{% if loop.last -%}
+			{% if loop.last -%}
 
 }
-		{% else -%}
+			{% else -%}
 
 },
-		{% endif -%}
-	{% endfor -%}
+			{% endif -%}
+		{% endfor -%}
 ).on('typeahead:selected', function(obj, datum, name) {
 	window.location = '{{ url_for("client") }}?name='+datum.name+'&server='+name;
 });
+	{% endif -%}
 {% endif -%}
 
 {% if servers and overview -%}
@@ -203,7 +205,7 @@ $(function() {
 		_live();
 		{% endif -%}
 		{% if not login -%}
-		//_check_running();
+		_check_running();
 		{% endif -%}
 		{% if servers and overview -%}
 		_servers();

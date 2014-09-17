@@ -4,7 +4,9 @@
             {% elif client %}
             <a class="btn btn-default {% if overview %}active{% endif %}" href="{{ url_for('client', name=cname, server=server) }}"><span class="glyphicon glyphicon-th"></span>&nbsp;Overview</a>
             {% elif clients %}
-            <a class="btn btn-default {% if overview %}active{% endif %}" href="{{ url_for('home') }}"><span class="glyphicon glyphicon-th"></span>&nbsp;Overview</a>
+            <a class="btn btn-default {% if overview %}active{% endif %}" href="{{ url_for('clients', server=server) }}"><span class="glyphicon glyphicon-th"></span>&nbsp;Overview</a>
+            {% elif servers %}
+            <a class="btn btn-default {% if overview %}active{% endif %}" href="{{ url_for('servers') }}"><span class="glyphicon glyphicon-th"></span>&nbsp;Overview</a>
             {% else %}
             <a class="btn btn-default {% if overview %}active{% endif %}" href="#"><span class="glyphicon glyphicon-th"></span>&nbsp;Overview</a>
             {% endif %}
@@ -12,6 +14,8 @@
             <a class="btn btn-default {% if report %}active{% endif %}" href="{{ url_for('client_report', name=cname, server=server) }}"><span class="glyphicon glyphicon-stats"></span>&nbsp;Reports</a>
             {% elif clients %}
             <a class="btn btn-default {% if report %}active{% endif %}" href="{{ url_for('clients_report', server=server) }}"><span class="glyphicon glyphicon-stats"></span>&nbsp;Reports</a>
+            {% elif servers %}
+            <a class="btn btn-default {% if report %}active{% endif %}" href="{{ url_for('servers') }}"><span class="glyphicon glyphicon-stats"></span>&nbsp;Reports</a>
             {% elif backup %}
             <a class="btn btn-default {% if report %}active{% endif %}" href="{{ url_for('backup_report', name=cname, backup=nbackup, server=server) }}"><span class="glyphicon glyphicon-stats"></span>&nbsp;Reports</a>
             {% else %}

@@ -1,18 +1,9 @@
 
 _parse_live_result = function(data, serv) {
-	{% if server -%}
-	redirect = '{{ url_for("home", server=server) }}';
-	{% else -%}
-	if (serv) {
-		redirect = '{{ url_for("home") }}?server='+serv;
-	} else {
-		redirect = '{{ url_for("home") }}';
-	}
-	{% endif -%}
-	if (!data.results || data.results.length === 0) {
-		document.location = redirect;
-	}
 	var res = '';
+	if (!data.results || data.results.length === 0) {
+		return res;
+	}
 	$.each(data.results, function(i, c) {
 		if (c instanceof String || typeof c == 'string') {
 			{% if server -%}
@@ -25,7 +16,9 @@ _parse_live_result = function(data, serv) {
 			}
 			{% endif -%}
 			$.get(u, function(d) {
-				res += d;
+				if (d) {
+					res += d;
+				}
 			});
 		} else {
 			$.each(c, function(j, a) {
@@ -40,7 +33,9 @@ _parse_live_result = function(data, serv) {
 					}
 					{% endif -%}
 					$.get(u, function(d) {
-						res += d;
+						if (d) {
+							res += d;
+						}
 					});
 				});
 			});
@@ -53,7 +48,7 @@ _parse_live_result = function(data, serv) {
 _live = function() {
 	urls = Array();
 	{% for s in config.SERVERS -%}
-	urls.append({'url': '{{ url_for("running_clients") }}'+?server={{ s }}, 'serv': {{ s }}});
+	urls.push({'url': '{{ url_for("running_clients") }}?server={{ s }}', 'serv': '{{ s }}'});
 	{% endfor -%}
 	html = '';
 	$.each(urls, function(i, rec) {
@@ -61,6 +56,14 @@ _live = function() {
 			html += _parse_live_result(data, rec['serv']);
 		});
 	});
+	{% if server -%}
+	redirect = '{{ url_for("home", server=server) }}';
+	{% else -%}
+	redirect = '{{ url_for("home") }}';
+	{% endif -%}
+	if (!html) {
+		document.location = redirect;
+	}
 	$('#live-container').html(html);
 };
 {% else -%}
@@ -74,6 +77,14 @@ _live = function() {
 	$.getJSON(url, function(data) {
 		html += _parse_live_result(data);
 	});
+	{% if server -%}
+	redirect = '{{ url_for("home", server=server) }}';
+	{% else -%}
+	redirect = '{{ url_for("home") }}';
+	{% endif -%}
+	if (!html) {
+		document.location = redirect;
+	}
 	$('#live-container').html(html);
 };
 {% endif -%}
