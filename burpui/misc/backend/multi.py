@@ -125,7 +125,16 @@ class NClient(BUIbackend):
         try:
             if self.connected:
                 return
-            self.sock = socket.create_connection((self.host, self.port))
+            if self.ssl:
+                import ssl
+                s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+                self.sock = ssl.wrap_socket(s, cert_reqs=ssl.CERT_NONE, ssl_version=ssl.PROTOCOL_SSLv23)
+                try:
+                    self.sock.connect((self.host, self.port))
+                except Exception, e:
+                    self.app.logger.error('ERROR HERE: %s', str(e))
+            else:
+                self.sock = socket.create_connection((self.host, self.port))
             self.connected = True
             self.app.logger.debug('OK, connected to agent %s:%s', self.host, self.port)
         except Exception, e:
