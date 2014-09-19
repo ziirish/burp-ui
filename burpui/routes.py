@@ -1,8 +1,11 @@
 # -*- coding: utf8 -*-
 import math
+from zlib import adler32
+from time import gmtime, strftime, time
 
-from flask import Flask, request, render_template, jsonify, redirect, url_for, abort, flash, send_file
+from flask import Flask, Response, request, render_template, jsonify, redirect, url_for, abort, flash, send_file
 from flask.ext.login import login_user, login_required, logout_user 
+from werkzeug.datastructures import Headers
 
 from burpui import app, bui, login_manager
 from burpui.forms import LoginForm
@@ -16,20 +19,66 @@ def load_user(userid):
     return None
 
 @app.route('/api/restore/<name>/<int:backup>', methods=['POST'])
+@app.route('/api/<server>/restore/<name>/<int:backup>', methods=['POST'])
 @login_required
-def restore(name=None, backup=None):
+def restore(server=None, name=None, backup=None):
     l = request.form.get('list')
     if not l or not name or not backup:
         abort(500)
-    archive = bui.cli.restore_files(name, backup, l)
-    if not archive:
-        abort(500)
-    try:
-        resp = send_file(archive, as_attachment=True)
-        resp.set_cookie('fileDownload', 'true')
+    if server:
+        filename = 'restoration_%d_%s_on_%s_at_%s.zip' % (backup, name, server, strftime("%Y-%m-%d_%H_%M_%S", gmtime()))
+    else:
+        filename = 'restoration_%d_%s_at_%s.zip' % (backup, name, strftime("%Y-%m-%d_%H_%M_%S", gmtime()))
+    if not server:
+        archive = bui.cli.restore_files(name, backup, l)
+        if not archive:
+            abort(500)
+        try:
+            resp = send_file(archive, as_attachment=True, attachment_filename=filename)
+            resp.set_cookie('fileDownload', 'true')
+        except Exception, e:
+            app.logger.error(str(e))
+            abort(500)
+    else:
+        socket = None
+        try:
+            socket, length = bui.cli.restore_files(name, backup, l, server)
+            app.logger.debug('Need to get %d Bytes : %s', length, socket)
+            def stream_file(sock, l):
+                bsize = 1024
+                timeout = 5
+                received = 0
+                tries = 0
+                if l < bsize:
+                    bsize = l
+                while received < l and tries < timeout:
+                    buf = b''
+                    buf += sock.recv(bsize)
+                    if not buf:
+                        tries += 1
+                        time.sleep(0.1)
+                        continue
+                    received += len(buf)
+                    app.logger.debug('%d/%d', received, l)
+                    yield buf
+                sock.close()
+
+            headers = Headers()
+            headers.add('Content-Disposition', 'attachment', filename=filename)
+            headers['Content-Length'] = length
+
+            resp = Response(stream_file(socket, length), mimetype='application/octet-stream',
+                            headers=headers, direct_passthrough=True)
+            resp.set_cookie('fileDownload', 'true')
+            resp.set_etag('flask-%s-%s-%s' % (
+                    time(),
+                    length,
+                    adler32(filename.encode('utf-8')) & 0xffffffff))
+        except Exception, e:
+            app.logger.error(str(e))
+            abort(500)
         return resp
-    except Exception, e:
-        abort(500)
+
 
 """
 Here is the API

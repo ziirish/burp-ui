@@ -1,4 +1,5 @@
 # -*- coding: utf8 -*-
+import os
 import sys
 import struct
 import json
@@ -62,7 +63,8 @@ class BUIAgent:
                 'is_one_backup_running': self.backend.is_one_backup_running,
                 'get_all_clients': self.backend.get_all_clients,
                 'get_client': self.backend.get_client,
-                'get_tree': self.backend.get_tree
+                'get_tree': self.backend.get_tree,
+                'restore_files': self.backend.restore_files
             }
 
         self.server = AgentServer((self.bind, self.port), AgentTCPHandler, self)
@@ -81,6 +83,7 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
     "One instance per connection.  Override handle(self) to customize action."
     def handle(self):
         # self.request is the client connection
+        self.server.agent.debug('===============>')
         try:
             lengthbuf = self.request.recv(8)
             length, = struct.unpack('!Q', lengthbuf)
@@ -98,18 +101,33 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
                 self.request.sendall('KO')
                 return
             self.request.sendall('OK')
-            if j['args']:
-                res = json.dumps(self.server.agent.methods[j['func']](**j['args']))
+            if j['func'] == 'restore_files':
+                res = self.server.agent.methods[j['func']](**j['args'])
             else:
-                res = json.dumps(self.server.agent.methods[j['func']]())
+                if j['args']:
+                    res = json.dumps(self.server.agent.methods[j['func']](**j['args']))
+                else:
+                    res = json.dumps(self.server.agent.methods[j['func']]())
             self.server.agent.debug('####################')
             self.server.agent.debug('result: %s', res)
             self.server.agent.debug('####################')
-            self.request.sendall(struct.pack('!Q', len(res)))
-            self.request.sendall(res)
+            if j['func'] == 'restore_files':
+                size = os.path.getsize(res)
+                self.request.sendall(struct.pack('!Q', size))
+                with open(res, 'rb') as f:
+                    buf = f.read(1024)
+                    while buf:
+                        self.server.agent.debug('sending %d Bytes', len(buf))
+                        self.request.sendall(buf)
+                        buf = f.read(1024)
+            else:
+                self.request.sendall(struct.pack('!Q', len(res)))
+                self.request.sendall(res)
             self.request.close()
         except Exception, e:
             self.server.agent.debug('ERROR: %s', str(e))
+        finally:
+            self.server.agent.debug('<===============')
 
     def recvall(self, length=1024):
         buf = b''

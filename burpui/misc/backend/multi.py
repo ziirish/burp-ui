@@ -1,6 +1,6 @@
 # -*- coding: utf8 -*-
 import re
-
+import copy
 import socket
 import sys
 import json
@@ -109,7 +109,7 @@ class Burp(BUIbackend):
         return self.servers[agent].get_tree(name, backup, root)
 
     def restore_files(self, name=None, backup=None, files=None, agent=None):
-        pass
+        return self.servers[agent].restore_files(name, backup, files)
 
 class NClient(BUIbackend):
 
@@ -125,35 +125,41 @@ class NClient(BUIbackend):
         try:
             if self.connected:
                 return
-            if self.ssl:
-                import ssl
-                s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-                self.sock = ssl.wrap_socket(s, cert_reqs=ssl.CERT_NONE, ssl_version=ssl.PROTOCOL_SSLv23)
-                try:
-                    self.sock.connect((self.host, self.port))
-                except Exception, e:
-                    self.app.logger.error('ERROR HERE: %s', str(e))
-            else:
-                self.sock = socket.create_connection((self.host, self.port))
+            self.sock = self.do_conn()
             self.connected = True
             self.app.logger.debug('OK, connected to agent %s:%s', self.host, self.port)
         except Exception, e:
             self.connected = False
             self.app.logger.error('Could not connect to %s:%s => %s', self.host, self.port, str(e))
 
+    def do_conn(self):
+        ret = None
+        if self.ssl:
+            import ssl
+            s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+            ret = ssl.wrap_socket(s, cert_reqs=ssl.CERT_NONE, ssl_version=ssl.PROTOCOL_SSLv23)
+            try:
+                ret.connect((self.host, self.port))
+            except Exception, e:
+                self.app.logger.error('ERROR: %s', str(e))
+        else:
+            ret = socket.create_connection((self.host, self.port))
+        return ret
+
     def ping(self):
         self.conn()
         res = self.connected
         return res
 
-    def close(self):
-        if self.connected:
+    def close(self, force=True):
+        if self.connected and force:
             self.sock.close()
         self.connected = False
 
     def do_command(self, data=None):
         self.conn()
         res = '[]'
+        toclose = True
         if not data:
             return res
         try:
@@ -171,11 +177,15 @@ class NClient(BUIbackend):
             self.app.logger.debug("Data sent successfully")
             lengthbuf = self.recvall(8, False)
             length, = struct.unpack('!Q', lengthbuf)
-            res = self.recvall(length)
+            if data['func'] == 'restore_files':
+                toclose = False
+                res = (self.sock, length)
+            else:
+                res = self.recvall(length)
         except Exception, e:
             self.app.logger.error(str(e))
         finally:
-            self.close()
+            self.close(toclose)
             return res
 
     def recvall(self, length=1024, debug=True, timeout=5):
@@ -266,5 +276,6 @@ class NClient(BUIbackend):
         return json.loads(self.do_command(data))
 
     def restore_files(self, name=None, backup=None, files=None, agent=None):
-        return None
+        data = {'func': 'restore_files', 'args': {'name': name, 'backup': backup, 'files': files}}
+        return self.do_command(data)
 
