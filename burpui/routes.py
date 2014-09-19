@@ -23,6 +23,7 @@ def load_user(userid):
 @login_required
 def restore(server=None, name=None, backup=None):
     l = request.form.get('list')
+    resp = None
     if not l or not name or not backup:
         abort(500)
     if server:
@@ -77,7 +78,7 @@ def restore(server=None, name=None, backup=None):
         except Exception, e:
             app.logger.error(str(e))
             abort(500)
-        return resp
+    return resp
 
 
 """
