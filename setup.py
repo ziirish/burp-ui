@@ -34,8 +34,10 @@ setup(
         'static': 'burpui/static/*',
         'templates': 'burpui/templates/*'
     },
-    scripts=['bin/burp-ui'],
-    data_files=[(datadir, [os.path.join(datadir, 'burpui.cfg')])],
+    scripts=['bin/burp-ui', 'bin/bui-agent'],
+    data_files=[(datadir, [os.path.join(datadir, 'burpui.cfg')]),
+                (datadir, [os.path.join(datadir, 'buiagent.cfg')])
+    ],
     install_requires=['Flask==0.10.1', 'Flask-Login==0.2.11', 'Flask-WTF==0.10.0', 'WTForms==2.0.1'],
     extras_require={
         'ldap_authentication': ['simpleldap==0.8']
