@@ -35,7 +35,7 @@ def restore(server=None, name=None, backup=None):
         if not archive:
             abort(500)
         try:
-            resp = send_file(archive, as_attachment=True, attachment_filename=filename)
+            resp = send_file(archive, as_attachment=True, attachment_filename=filename, mimetype='application/zip')
             resp.set_cookie('fileDownload', 'true')
         except Exception, e:
             app.logger.error(str(e))
@@ -68,7 +68,7 @@ def restore(server=None, name=None, backup=None):
             headers.add('Content-Disposition', 'attachment', filename=filename)
             headers['Content-Length'] = length
 
-            resp = Response(stream_file(socket, length), mimetype='application/octet-stream',
+            resp = Response(stream_file(socket, length), mimetype='application/zip',
                             headers=headers, direct_passthrough=True)
             resp.set_cookie('fileDownload', 'true')
             resp.set_etag('flask-%s-%s-%s' % (
