@@ -95,6 +95,11 @@ But I didn't think yet of what to do.
 Changelog
 ---------
 
+* version 0.0.5:
+
+  - Add multi-server support
+  - fix bugs
+
 * version 0.0.4:
 
   - Add the ability to download files directly from the web interface
