@@ -1,7 +1,7 @@
 # -*- coding: utf8 -*-
 import math
 from zlib import adler32
-from time import gmtime, strftime, time
+from time import gmtime, strftime, time, sleep
 
 from flask import Flask, Response, request, render_template, jsonify, redirect, url_for, abort, flash, send_file
 from flask.ext.login import login_user, login_required, logout_user 
@@ -57,7 +57,7 @@ def restore(server=None, name=None, backup=None):
                     buf += sock.recv(bsize)
                     if not buf:
                         tries += 1
-                        time.sleep(0.1)
+                        sleep(0.1)
                         continue
                     received += len(buf)
                     app.logger.debug('%d/%d', received, l)

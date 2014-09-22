@@ -142,6 +142,7 @@ class NClient(BUIbackend):
                 ret.connect((self.host, self.port))
             except Exception, e:
                 self.app.logger.error('ERROR: %s', str(e))
+                raise e
         else:
             ret = socket.create_connection((self.host, self.port))
         return ret
