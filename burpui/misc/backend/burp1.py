@@ -191,20 +191,20 @@ class Burp(BUIbackend):
                 'received': '^\s*Bytes received:\s+(\d+)'
                 }
         lookup_complex = {
-                'files':         '^\s*Files:\s+(.+)\s+\|\s+(\d+)$',
-                'files_enc':     '^\s*Files \(encrypted\):\s+(.+)\s+\|\s+(\d+)$',
-                'dir':           '^\s*Directories:\s+(.+)\s+\|\s+(\d+)$',
-                'softlink':      '^\s*Soft links:\s+(.+)\s+\|\s+(\d+)$',
-                'hardlink':      '^\s*Hard links:\s+(.+)\s+\|\s+(\d+)$',
-                'meta':          '^\s*Meta data:\s+(.+)\s+\|\s+(\d+)$',
-                'meta_enc':      '^\s*Meta data\(enc\):\s+(.+)\s+\|\s+(\d+)$',
-                'special':       '^\s*Special files:\s+(.+)\s+\|\s+(\d+)$',
-                'efs':           '^\s*EFS files:\s+(.+)\s+\|\s+(\d+)$',
-                'vssheader':     '^\s*VSS headers:\s+(.+)\s+\|\s+(\d+)$',
-                'vssheader_enc': '^\s*VSS headers \(enc\):\s+(.+)\s+\|\s+(\d+)$',
-                'vssfooter':     '^\s*VSS footers:\s+(.+)\s+\|\s+(\d+)$',
-                'vssfooter_enc': '^\s*VSS footers \(enc\):\s+(.+)\s+\|\s+(\d+)$',
-                'total':         '^\s*Grand total:\s+(.+)\s+\|\s+(\d+)$'
+                'files':         '^\s*Files:?\s+(.+)\s+\|\s+(\d+)$',
+                'files_enc':     '^\s*Files \(encrypted\):?\s+(.+)\s+\|\s+(\d+)$',
+                'dir':           '^\s*Directories:?\s+(.+)\s+\|\s+(\d+)$',
+                'softlink':      '^\s*Soft links:?\s+(.+)\s+\|\s+(\d+)$',
+                'hardlink':      '^\s*Hard links:?\s+(.+)\s+\|\s+(\d+)$',
+                'meta':          '^\s*Meta data:?\s+(.+)\s+\|\s+(\d+)$',
+                'meta_enc':      '^\s*Meta data\(enc\):?\s+(.+)\s+\|\s+(\d+)$',
+                'special':       '^\s*Special files:?\s+(.+)\s+\|\s+(\d+)$',
+                'efs':           '^\s*EFS files:?\s+(.+)\s+\|\s+(\d+)$',
+                'vssheader':     '^\s*VSS headers:?\s+(.+)\s+\|\s+(\d+)$',
+                'vssheader_enc': '^\s*VSS headers \(enc\):?\s+(.+)\s+\|\s+(\d+)$',
+                'vssfooter':     '^\s*VSS footers:?\s+(.+)\s+\|\s+(\d+)$',
+                'vssfooter_enc': '^\s*VSS footers \(enc\):?\s+(.+)\s+\|\s+(\d+)$',
+                'total':         '^\s*Grand total:?\s+(.+)\s+\|\s+(\d+)$'
                 }
         backup = { 'windows': False, 'number': int(n) }
         if c is not None:
