@@ -466,6 +466,7 @@ class Burp(BUIbackend):
         cmd = [self.burpbin, '-C', name, '-a', 'r', '-b', str(backup), '-r', full_reg.rstrip('|'), '-d', self.tmpdir]
         self.logger('debug', cmd)
         status = subprocess.call(cmd)
+        self.logger('debug', 'command returned: %d', status)
         if status != 0:
             return None
 
