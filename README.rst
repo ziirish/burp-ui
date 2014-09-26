@@ -81,9 +81,6 @@ Please feel free to report any issues on my `gitlab <https://git.ziirish.me/ziir
 I have closed the *github tracker* to have a unique tracker system.
 
 
-The multi-server mode is a **Work In Progress**, it is quite unstable yet. Use
-it only if you know what you are doing.
-
 TODO
 ----
 
