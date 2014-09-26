@@ -467,7 +467,7 @@ class Burp(BUIbackend):
         self.logger('debug', cmd)
         status = subprocess.call(cmd)
         self.logger('debug', 'command returned: %d', status)
-        if status != 0:
+        if status not in [0, 2]:
             return None
 
         zip_dir = self.tmpdir.rstrip(os.sep)
