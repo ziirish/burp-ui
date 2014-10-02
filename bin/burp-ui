@@ -2,12 +2,11 @@
 # -*- coding: utf8 -*-
 import sys
 import os
-import os.path
 from optparse import OptionParser
 
 sys.path.append('{0}/..'.format(os.path.join(os.path.dirname(os.path.realpath(__file__)))))
 
-from burpui import app, bui
+from burpui import bui, init
 
 if __name__ == '__main__':
     """
@@ -19,25 +18,8 @@ if __name__ == '__main__':
 
     (options, args) = parser.parse_args()
     d = options.log
-    app.config['DEBUG'] = d
-    if d:
-        app.config['TESTING'] = True
 
-    if options.config:
-        if os.path.isfile(options.config):
-            conf = options.config
-            app.config['CFG'] = conf
-        else:
-            raise IOError('File not found: \'{0}\''.format(options.config))
-    else:
-        conf_files = ['/etc/burp/burpui.cfg', os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'share', 'burpui', 'etc', 'burpui.cfg')]
-        for p in conf_files:
-            app.logger.debug('Trying file \'%s\'', p)
-            if os.path.isfile(p):
-                app.config['CFG'] = p
-                app.logger.debug('Using file \'%s\'', p)
-                break
+    init(options.config, d, False)
 
-    bui.setup(app.config['CFG'])
     bui.run(d)
 

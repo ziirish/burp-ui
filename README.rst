@@ -4,6 +4,7 @@ Build Status
 .. image:: http://ci.ziirish.me/projects/1/status.png?ref=master
     :target: http://ci.ziirish.me/projects/1?ref=master
 
+
 Requirements
 ------------
 
@@ -29,7 +30,7 @@ Then we install the module itself:
 Installation
 ------------
 
-Burp-UI is written in Python with the `Flask`_ micro-framework.
+``Burp-UI`` is written in Python with the `Flask`_ micro-framework.
 The easiest way to install Flask is to use ``pip``.
 
 On Debian, you can install ``pip`` with the following command:
@@ -58,6 +59,27 @@ By default, ``burp-ui`` listens on all interfaces (including IPv6) on port 5000.
 
 You can then point your browser to http://127.0.0.1:5000/
 
+
+Gunicorn
+--------
+
+``Burp-UI`` now supports `Gunicorn <http://gunicorn.org>`_ in order to handle 
+multiple users simultaneously.
+
+You need to install ``gunicorn`` and ``eventlet``:
+
+::
+
+    pip install eventlet
+    pip install gunicorn
+
+You will then be able to launch ``Burp-UI`` this way:
+
+::
+
+    gunicorn -k eventlet -w 4 'burpui:init(conf="/path/to/burpui.cfg")'
+
+
 Instructions
 ------------
 
@@ -74,6 +96,7 @@ you need to check a few things:
    restore files of other clients (option *restore_client* in burp-server
    configuration)
 
+
 Notes
 -----
 
@@ -88,6 +111,7 @@ TODO
 
 Also note that in the future, I'd like to write a burp-client GUI.
 But I didn't think yet of what to do.
+
 
 Changelog
 ---------
@@ -132,6 +156,7 @@ But this project is built on top of other tools listed here:
 - Home-made `favicon <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/images/favicon.ico>`_ based on pictures from `simsoncrazy <http://www.simpsoncrazy.com/pictures/homer>`_
 
 Also note that this project is made with the Awesome `Flask`_ micro-framework.
+
 
 Thanks
 ------
