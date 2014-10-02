@@ -7,6 +7,7 @@ __title__ = 'burp-ui'
 __author__ = 'Benjamin SANS (Ziirish)'
 __license__ = 'BSD 3-clause'
 
+import os
 
 from flask import Flask
 from flask.ext.login import LoginManager
@@ -31,3 +32,30 @@ login_manager.login_message_category = 'info'
 
 # Then we load our routes
 import burpui.routes
+
+def init(conf=None, debug=False, gunicorn=True):
+    app.config['DEBUG'] = debug
+    if debug:
+        app.config['TESTING'] = True
+
+    if conf:
+        if os.path.isfile(conf):
+            app.config['CFG'] = conf
+        else:
+            raise IOError('File not found: \'{0}\''.format(conf))
+    else:
+        conf_files = ['/etc/burp/burpui.cfg', os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', '..', 'share', 'burpui', 'etc', 'burpui.cfg')]
+        for p in conf_files:
+            app.logger.debug('Trying file \'%s\'', p)
+            if os.path.isfile(p):
+                app.config['CFG'] = p
+                app.logger.debug('Using file \'%s\'', p)
+                break
+
+    bui.setup(app.config['CFG'])
+
+    if gunicorn:
+        from werkzeug.contrib.fixers import ProxyFix
+        app.wsgi_app = ProxyFix(app.wsgi_app)
+
+    return app
