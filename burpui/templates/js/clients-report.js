@@ -43,6 +43,7 @@ var _clients = function() {
 		backups = {};
 		windows = 0;
 		nonwin = 0;
+		unknown = 0;
 		if (!d.results) {
 			if (d.notif) {
 				$.each(d.notif, function(i, n) {
@@ -58,8 +59,10 @@ var _clients = function() {
 			$(this).parent().show();
 		});
 		$.each(d.results[0]['clients'], function(k, c) {
-			if (c.stats.windows) {
+			if (c.stats.windows == 'true') {
 				windows++;
+			} else if (c.stats.windows == 'unknown') {
+				unknown++;
 			} else {
 				nonwin++;
 			}
@@ -73,7 +76,7 @@ var _clients = function() {
 				backups[c.name] = 1;
 			}
 		});
-		rep = [{'label': 'Windows', 'value': windows}, {'label': 'Unix/Linux', 'value': nonwin}];
+		rep = [{'label': 'Windows', 'value': windows}, {'label': 'Unix/Linux', 'value': nonwin}, {'label': 'Unknwon', 'value': unknown}];
 		$.each(_charts_obj, function(i, c) {
 			switch (c.key) {
 				case 'chart_repartition':

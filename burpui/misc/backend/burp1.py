@@ -1,6 +1,7 @@
 # -*- coding: utf8 -*-
 import re
 import os
+import sys
 import socket
 import time
 import json
@@ -13,6 +14,13 @@ import codecs
 
 from burpui.misc.utils import human_readable as _hr
 from burpui.misc.backend.interface import BUIbackend, BUIserverException
+
+def currentframe():
+    """Return the frame object for the caller's stack frame."""
+    try:
+        raise Exception
+    except:
+        return sys.exc_info()[2].tb_frame.f_back
 
 g_burpport = 4972
 g_burphost = '127.0.0.1'
@@ -140,6 +148,18 @@ class Burp(BUIbackend):
                 'warning': self.app.logger.warning
             }
             if level in logs:
+                """
+                Try to guess where was call the function
+                """
+                cf = currentframe()
+                if cf is not None:
+                    cf = cf.f_back
+                    """
+                    Ugly hack to reformat the message
+                    """
+                    ar = list(args)
+                    ar[0] = '('+str(cf.f_lineno)+') '+ar[0]
+                    args = tuple(ar)
                 logs[level](*args)
     """
     Utilities functions
@@ -178,17 +198,155 @@ class Burp(BUIbackend):
             self.logger('error', 'Cannot contact burp server at %s:%s', self.host, self.port)
             raise BUIserverException('Cannot contact burp server at {0}:{1}'.format(self.host, self.port))
 
+    def get_backup_logs(self, n, c, forward=False, agent=None):
+        if not c or not n:
+            return []
+
+        f = self.status('c:{0}:b:{1}\n'.format(c, n), agent=agent)
+        found = False
+        for line in f:
+            if line == 'backup_stats':
+                found = True
+                break
+
+        if not found:
+            cl = None
+            if forward:
+                cl = c
+
+            f = self.status('c:{0}:b:{1}:f:log.gz\n'.format(c, n), agent=agent)
+            return self.parse_backup_log(f, n, cl, agent=agent)
+
+        return self.parse_backup_stats(n, c, forward, agent=agent)
+
+    def parse_backup_stats(self, n, c, forward=False, agent=None):
+        backup = { 'windows': 'unknown', 'number': int(n) }
+        if forward:
+            backup['name'] = c
+        keys = {
+                'time_start':                    'start',
+                'time_end':                      'end',
+                'time_taken':                    'duration',
+                'bytes_in_backup':               'totsize',
+                'bytes_received':                'received',
+                'files':                         [ 'files', 'new' ],
+                'files_changed':                 [ 'files', 'changed' ],
+                'files_same':                    [ 'files', 'unchanged' ],
+                'files_deleted':                 [ 'files', 'deleted' ],
+                'files_scanned':                 [ 'files', 'scanned' ],
+                'files_total':                   [ 'files', 'total' ],
+                'files_encrypted':               [ 'files_enc', 'new' ],
+                'files_encrypted_changed':       [ 'files_enc', 'changed' ],
+                'files_encrypted_same':          [ 'files_enc', 'unchanged' ],
+                'files_encrypted_deleted':       [ 'files_enc', 'deleted' ],
+                'files_encrypted_scanned':       [ 'files_enc', 'scanned' ],
+                'files_encrypted_total':         [ 'files_enc', 'total' ],
+                'directories':                   [ 'dir', 'new' ],
+                'directories_changed':           [ 'dir', 'changed' ],
+                'directories_same':              [ 'dir', 'unchanged' ],
+                'directories_deleted':           [ 'dir', 'deleted' ],
+                'directories_scanned':           [ 'dir', 'scanned' ],
+                'directories_total':             [ 'dir', 'total' ],
+                'soft_links':                    [ 'softlink', 'new' ],
+                'soft_links_changed':            [ 'softlink', 'changed' ],
+                'soft_links_same':               [ 'softlink', 'unchanged' ],
+                'soft_links_deleted':            [ 'softlink', 'deleted' ],
+                'soft_links_scanned':            [ 'softlink', 'scanned' ],
+                'soft_links_total':              [ 'softlink', 'total' ],
+                'hard_links':                    [ 'hardlink', 'new' ],
+                'hard_links_changed':            [ 'hardlink', 'changed' ],
+                'hard_links_same':               [ 'hardlink', 'unchanged' ],
+                'hard_links_deleted':            [ 'hardlink', 'deleted' ],
+                'hard_links_scanned':            [ 'hardlink', 'scanned' ],
+                'hard_links_total':              [ 'hardlink', 'total' ],
+                'meta_data':                     [ 'meta', 'new' ],
+                'meta_data_changed':             [ 'meta', 'changed' ],
+                'meta_data_same':                [ 'meta', 'unchanged' ],
+                'meta_data_deleted':             [ 'meta', 'deleted' ],
+                'meta_data_scanned':             [ 'meta', 'scanned' ],
+                'meta_data_total':               [ 'meta', 'total' ],
+                'meta_data_encrypted':           [ 'meta_enc', 'new' ],
+                'meta_data_encrypted_changed':   [ 'meta_enc', 'changed' ],
+                'meta_data_encrypted_same':      [ 'meta_enc', 'unchanged' ],
+                'meta_data_encrypted_deleted':   [ 'meta_enc', 'deleted' ],
+                'meta_data_encrypted_scanned':   [ 'meta_enc', 'scanned' ],
+                'meta_data_encrypted_total':     [ 'meta_enc', 'total' ],
+                'special_files':                 [ 'special', 'new' ],
+                'special_files_changed':         [ 'special', 'changed' ],
+                'special_files_same':            [ 'special', 'unchanged' ],
+                'special_files_deleted':         [ 'special', 'deleted' ],
+                'special_files_scanned':         [ 'special', 'scanned' ],
+                'special_files_total':           [ 'special', 'total' ],
+                'efs_files':                     [ 'efs', 'new' ],
+                'efs_files_changed':             [ 'efs', 'changed' ],
+                'efs_files_same':                [ 'efs', 'unchanged' ],
+                'efs_files_deleted':             [ 'efs', 'deleted' ],
+                'efs_files_scanned':             [ 'efs', 'scanned' ],
+                'efs_files_total':               [ 'efs', 'total' ],
+                'vss_headers':                   [ 'vssheader', 'new' ],
+                'vss_headers_changed':           [ 'vssheader', 'changed' ],
+                'vss_headers_same':              [ 'vssheader', 'unchanged' ],
+                'vss_headers_deleted':           [ 'vssheader', 'deleted' ],
+                'vss_headers_scanned':           [ 'vssheader', 'scanned' ],
+                'vss_headers_total':             [ 'vssheader', 'total' ],
+                'vss_headers_encrypted':         [ 'vssheader_enc', 'new' ],
+                'vss_headers_encrypted_changed': [ 'vssheader_enc', 'changed' ],
+                'vss_headers_encrypted_same':    [ 'vssheader_enc', 'unchanged' ],
+                'vss_headers_encrypted_deleted': [ 'vssheader_enc', 'deleted' ],
+                'vss_headers_encrypted_scanned': [ 'vssheader_enc', 'scanned' ],
+                'vss_headers_encrypted_total':   [ 'vssheader_enc', 'total' ],
+                'vss_footers':                   [ 'vssfooter', 'new' ],
+                'vss_footers_changed':           [ 'vssfooter', 'changed' ],
+                'vss_footers_same':              [ 'vssfooter', 'unchanged' ],
+                'vss_footers_deleted':           [ 'vssfooter', 'deleted' ],
+                'vss_footers_scanned':           [ 'vssfooter', 'scanned' ],
+                'vss_footers_total':             [ 'vssfooter', 'total' ],
+                'vss_footers_encrypted':         [ 'vssfooter_enc', 'new' ],
+                'vss_footers_encrypted_changed': [ 'vssfooter_enc', 'changed' ],
+                'vss_footers_encrypted_same':    [ 'vssfooter_enc', 'unchanged' ],
+                'vss_footers_encrypted_deleted': [ 'vssfooter_enc', 'deleted' ],
+                'vss_footers_encrypted_scanned': [ 'vssfooter_enc', 'scanned' ],
+                'vss_footers_encrypted_total':   [ 'vssfooter_enc', 'total' ],
+                'total':                         [ 'total', 'new' ],
+                'total_changed':                 [ 'total', 'changed' ],
+                'total_same':                    [ 'total', 'unchanged' ],
+                'total_deleted':                 [ 'total', 'deleted' ],
+                'total_scanned':                 [ 'total', 'scanned' ],
+                'total_total':                   [ 'total', 'total' ]
+            }
+        f = self.status('c:{0}:b:{1}:f:backup_stats\n'.format(c, n), agent=agent)
+        for line in f:
+            if line == '-list begin-' or line == '-list end-':
+                continue
+            (key, val) = line.split(':')
+            if backup['windows'] == 'unknown' and key == 'client_is_windows':
+                if val == '1':
+                    backup['windows'] = 'true'
+                else:
+                    backup['windows'] = 'false'
+                continue
+            if not key in keys:
+                continue
+            rk = keys[key]
+            if isinstance(rk, list):
+                if not rk[0] in backup:
+                    backup[rk[0]] = {}
+                backup[rk[0]][rk[1]] = int(val)
+            else:
+                backup[rk] = int(val)
+        return backup
+
     def parse_backup_log(self, f, n, c=None, agent=None):
         """
         parse_backup_log parses the log.gz of a given backup and returns a dict
         containing different stats used to render the charts in the reporting view
         """
         lookup_easy = {
-                'start':    '^Start time: (.+)$',
-                'end':      '^\s*End time: (.+)$',
-                'duration': '^Time taken: (.+)$',
-                'totsize':  '^\s*Bytes in backup:\s+(\d+)',
-                'received': '^\s*Bytes received:\s+(\d+)'
+                'start':         '^Start time: (.+)$',
+                'end':           '^\s*End time: (.+)$',
+                'duration':      '^Time taken: (.+)$',
+                'totsize':       '^\s*Bytes in backup:\s+(\d+)',
+                'received':      '^\s*Bytes received:\s+(\d+)'
                 }
         lookup_complex = {
                 'files':         '^\s*Files:?\s+(.+)\s+\|\s+(\d+)$',
@@ -206,13 +364,13 @@ class Burp(BUIbackend):
                 'vssfooter_enc': '^\s*VSS footers \(enc\):?\s+(.+)\s+\|\s+(\d+)$',
                 'total':         '^\s*Grand total:?\s+(.+)\s+\|\s+(\d+)$'
                 }
-        backup = { 'windows': False, 'number': int(n) }
+        backup = { 'windows': 'false', 'number': int(n) }
         if c is not None:
             backup['name'] = c 
         useful = False
         for line in f:
             if re.match('^\d{4}-\d{2}-\d{2} (\d{2}:){3} \w+\[\d+\] Client is Windows$', line):
-                backup['windows'] = True
+                backup['windows'] = 'true'
             elif not useful and not re.match('^-+$', line):
                 continue
             elif useful and re.match('^-+$', line):
