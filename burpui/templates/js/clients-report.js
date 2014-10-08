@@ -76,7 +76,7 @@ var _clients = function() {
 				backups[c.name] = 1;
 			}
 		});
-		rep = [{'label': 'Windows', 'value': windows}, {'label': 'Unix/Linux', 'value': nonwin}, {'label': 'Unknwon', 'value': unknown}];
+		rep = [{'label': 'Windows', 'value': windows}, {'label': 'Unix/Linux', 'value': nonwin}, {'label': 'Unknown', 'value': unknown}];
 		$.each(_charts_obj, function(i, c) {
 			switch (c.key) {
 				case 'chart_repartition':
