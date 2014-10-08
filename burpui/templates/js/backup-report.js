@@ -47,6 +47,7 @@ var _client = function() {
 			$('.mycharts').each(function() {
 				$(this).parent().hide();
 			});
+			return;
 		}
 		$('.mycharts').each(function() {
 			$(this).parent().show();
@@ -64,7 +65,7 @@ var _client = function() {
 			}
 			$.each(_charts_obj, function(i, c) {
 				if (c.key === 'chart_'+l) {
-					if (data.length > 0 && !j.windows) {
+					if (data.length > 0 && j.windows != 'true') {
 						c.data = data;
 						$('#chart_'+l).parent().show();
 					} else {

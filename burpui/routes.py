@@ -242,11 +242,9 @@ def clients_report_json(server=None):
         client = bui.cli.get_client(c['name'], agent=server)
         if not client:
             continue
-        f = bui.cli.status('c:{0}:b:{1}:f:log.gz\n'.format(c['name'], client[-1]['number']), agent=server)
-        cl.append( { 'name': c['name'], 'stats': bui.cli.parse_backup_log(f, client[-1]['number'], agent=server) } )
+        cl.append( { 'name': c['name'], 'stats': bui.cli.get_backup_logs(client[-1]['number'], c['name'], agent=server) } )
         for b in client:
-            f = bui.cli.status('c:{0}:b:{1}:f:log.gz\n'.format(c['name'], b['number']), agent=server)
-            ba.append(bui.cli.parse_backup_log(f, b['number'], c['name'], agent=server))
+            ba.append(bui.cli.get_backup_logs(b['number'], c['name'], True, agent=server))
     j.append( { 'clients': cl, 'backups': sorted(ba, key=lambda k: k['end']) } )
     return jsonify(results=j)
 
@@ -267,11 +265,10 @@ def client_stat_json(server=None, name=None, backup=None):
         return jsonify(notif=err)
     if backup:
         try:
-            f = bui.cli.status('c:{0}:b:{1}:f:log.gz\n'.format(name, backup), agent=server)
+            j = bui.cli.get_backup_logs(backup, name, agent=server)
         except BUIserverException, e:
             err = [[2, str(e)]]
             return jsonify(notif=err)
-        j = bui.cli.parse_backup_log(f, backup, agent=server)
     else:
         try:
             cl = bui.cli.get_client(name, agent=server)
@@ -279,8 +276,7 @@ def client_stat_json(server=None, name=None, backup=None):
             err = [[2, str(e)]]
             return jsonify(notif=err)
         for c in cl:
-            f =  bui.cli.status('c:{0}:b:{1}:f:log.gz\n'.format(name, c['number']), agent=server)
-            j.append(bui.cli.parse_backup_log(f, c['number'], agent=server))
+            j.append(bui.cli.get_backup_logs(c['number'], name, agent=server))
     return jsonify(results=j)
 
 @app.route('/api/client.json/<name>')
