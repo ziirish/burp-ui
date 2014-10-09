@@ -1,7 +1,8 @@
 # -*- coding: utf8 -*-
 import math
+import select
 from zlib import adler32
-from time import gmtime, strftime, time, sleep
+from time import gmtime, strftime, time
 
 from flask import Flask, Response, request, render_template, jsonify, redirect, url_for, abort, flash, send_file
 from flask.ext.login import login_user, login_required, logout_user 
@@ -47,17 +48,16 @@ def restore(server=None, name=None, backup=None):
             app.logger.debug('Need to get %d Bytes : %s', length, socket)
             def stream_file(sock, l):
                 bsize = 1024
-                timeout = 5
                 received = 0
-                tries = 0
                 if l < bsize:
                     bsize = l
-                while received < l and tries < timeout:
+                while received < l:
                     buf = b''
+                    r, _, _ = select.select([sock], [], [], 5)
+                    if not r:
+                        raise Exception ('Socket timed-out')
                     buf += sock.recv(bsize)
                     if not buf:
-                        tries += 1
-                        sleep(0.1)
                         continue
                     received += len(buf)
                     app.logger.debug('%d/%d', received, l)

@@ -2,6 +2,7 @@
 import re
 import copy
 import socket
+import select
 import sys
 import json
 import time
@@ -48,12 +49,12 @@ class Burp(BUIbackend):
         """
         return self.servers[agent].status(query)
 
-    def parse_backup_log(self, f, n, c=None, agent=None):
+    def get_backup_logs(self, n, c, forward=False, agent=None):
         """
         parse_backup_log parses the log.gz of a given backup and returns a dict
         containing different stats used to render the charts in the reporting view
         """
-        return self.servers[agent].parse_backup_log(f, n, c)
+        return self.servers[agent].get_backup_logs(n, c, forward)
 
     def get_counters(self, name=None, agent=None):
         """
@@ -170,43 +171,33 @@ class NClient(BUIbackend):
             self.sock.sendall(struct.pack('!Q', length))
             self.sock.sendall(raw)
             self.app.logger.debug("Sending: %s", raw)
-            tmp = self.recvall(2)
+            r, _, _ = select.select([self.sock], [], [], 5)
+            if not r:
+                raise Exception ('Socket timed-out')
+            tmp = self.sock.recv(2)
             self.app.logger.debug("recv: '%s'", tmp)
             if 'OK' != tmp:
                 self.app.logger.debug('Ooops, unsuccessful!')
                 return res
             self.app.logger.debug("Data sent successfully")
-            lengthbuf = self.recvall(8, False)
+            r, _, _ = select.select([self.sock], [], [], 5)
+            if not r:
+                raise Exception ('Socket timed-out')
+            lengthbuf = self.sock.recv(8)
             length, = struct.unpack('!Q', lengthbuf)
             if data['func'] == 'restore_files':
                 toclose = False
                 res = (self.sock, length)
             else:
-                res = self.recvall(length)
+                r, _, _ = select.select([self.sock], [], [], 5)
+                if not r:
+                    raise Exception ('Socket timed-out')
+                res = self.sock.recv(length)
         except Exception, e:
             self.app.logger.error(str(e))
         finally:
             self.close(toclose)
             return res
-
-    def recvall(self, length=1024, debug=True, timeout=5):
-        buf = b''
-        bsize = 1024
-        received = 0
-        tries = 0
-        if length < bsize:
-            bsize = length
-        while received < length and tries < timeout:
-            newbuf = self.sock.recv(bsize)
-            if not newbuf:
-                tries += 1
-                time.sleep(0.1)
-                continue
-            buf += newbuf
-            received += len(newbuf)
-        if debug:
-            self.app.logger.debug('result (%d/%d): %s', len(buf), length, buf)
-        return buf
 
     """
     Utilities functions
@@ -220,12 +211,12 @@ class NClient(BUIbackend):
         data = {'func': 'status', 'args': {'query': query}}
         return json.loads(self.do_command(data))
 
-    def parse_backup_log(self, f, n, c=None, agent=None):
+    def get_backup_logs(self, n, c, forward=False, agent=None):
         """
         parse_backup_log parses the log.gz of a given backup and returns a dict
         containing different stats used to render the charts in the reporting view
         """
-        data = {'func': 'parse_backup_log', 'args': {'f': f, 'n': n, 'c': c}}
+        data = {'func': 'get_backup_logs', 'args': {'n': n, 'c': c, 'forward': forward}}
         return json.loads(self.do_command(data))
 
     def get_counters(self, name=None, agent=None):
