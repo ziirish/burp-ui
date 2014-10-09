@@ -90,56 +90,56 @@ class Burp(BUIbackend):
                     strip = config.get('Burp1', 'stripbin')
 
                     if self.host not in ['127.0.0.1', '::1']:
-                        self.logger('warning', "Invalid value for 'bhost'. Must be '127.0.0.1' or '::1'. Falling back to '%s'", g_burphost)
+                        self._logger('warning', "Invalid value for 'bhost'. Must be '127.0.0.1' or '::1'. Falling back to '%s'", g_burphost)
                         self.host = g_burphost
 
                     if not strip.startswith('/'):
-                        self.logger('warning', "Please provide an absolute path for the 'stripbin' option. Fallback to '%s'", g_stripbin)
+                        self._logger('warning', "Please provide an absolute path for the 'stripbin' option. Fallback to '%s'", g_stripbin)
                         strip = g_stripbin
                     elif not re.match('^\S+$', strip):
-                        self.logger('warning', "Incorrect value for the 'stripbin' option. Fallback to '%s'", g_stripbin)
+                        self._logger('warning', "Incorrect value for the 'stripbin' option. Fallback to '%s'", g_stripbin)
                         strip = g_stripbin
                     elif not os.path.isfile(strip) or not os.access(strip, os.X_OK):
-                        self.logger('warning', "'%s' does not exist or is not executable. Fallback to '%s'", strip, g_stripbin)
+                        self._logger('warning', "'%s' does not exist or is not executable. Fallback to '%s'", strip, g_stripbin)
                         strip = g_stripbin
                         
                     if not bbin.startswith('/'):
-                        self.logger('warning', "Please provide an absolute path for the 'burpbin' option. Fallback to '%s'", g_burpbin)
+                        self._logger('warning', "Please provide an absolute path for the 'burpbin' option. Fallback to '%s'", g_burpbin)
                         bbin = g_burpbin
                     elif not re.match('^\S+$', bbin):
-                        self.logger('warning', "Incorrect value for the 'burpbin' option. Fallback to '%s'", g_burpbin)
+                        self._logger('warning', "Incorrect value for the 'burpbin' option. Fallback to '%s'", g_burpbin)
                         bbin = g_burpbin
                     elif not os.path.isfile(bbin) or not os.access(bbin, os.X_OK):
-                        self.logger('warning', "'%s' does not exist or is not executable. Fallback to '%s'", bbin, g_burpbin)
+                        self._logger('warning', "'%s' does not exist or is not executable. Fallback to '%s'", bbin, g_burpbin)
                         bbin = g_burpbin
 
                     if not tdir.startswith('/'):
-                        self.logger('warning', "Please provide an absolute path for the 'tmpdir' option. Fallback to '%s'", g_tmpdir)
+                        self._logger('warning', "Please provide an absolute path for the 'tmpdir' option. Fallback to '%s'", g_tmpdir)
                         tdir = g_tmpdir
                     elif not re.match('^\S+$', tdir):
-                        self.logger('warning', "Incorrect value for the 'tmpdir' option. Fallback to '%s'", g_tmpdir)
+                        self._logger('warning', "Incorrect value for the 'tmpdir' option. Fallback to '%s'", g_tmpdir)
                         tdir = g_tmpdir
                     elif os.path.isdir(tdir) and os.listdir(tdir) and not self.app.config.get('TESTING'):
                         raise Exception("'{0}' is not empty!".format(tdir))
                     elif os.path.isdir(tdir) and not os.access(tdir, os.W_OK|os.X_OK):
-                        self.logger('warning', "'%s' is not writable. Fallback to '%s'", tdir, g_tmpdir)
+                        self._logger('warning', "'%s' is not writable. Fallback to '%s'", tdir, g_tmpdir)
                         tdir = g_tmpdir
 
                     self.burpbin = bbin
                     self.tmpdir = tdir
                     self.stripbin = strip
                 except ConfigParser.NoOptionError, e:
-                    self.logger('error', str(e))
+                    self._logger('error', str(e))
                 except ConfigParser.NoSectionError, e:
-                    self.logger('error', str(e))
+                    self._logger('error', str(e))
 
-        self.logger('info', 'burp port: %d', self.port)
-        self.logger('info', 'burp host: %s', self.host)
-        self.logger('info', 'burp binary: %s', self.burpbin)
-        self.logger('info', 'strip binary: %s', self.stripbin)
-        self.logger('info', 'temporary dir: %s', self.tmpdir)
+        self._logger('info', 'burp port: %d', self.port)
+        self._logger('info', 'burp host: %s', self.host)
+        self._logger('info', 'burp binary: %s', self.burpbin)
+        self._logger('info', 'strip binary: %s', self.stripbin)
+        self._logger('info', 'temporary dir: %s', self.tmpdir)
 
-    def logger(self, level, *args):
+    def _logger(self, level, *args):
         if self.app:
             logs = {
                 'info': self.app.logger.info,
@@ -195,7 +195,7 @@ class Burp(BUIbackend):
             f.close()
             return r
         except socket.error:
-            self.logger('error', 'Cannot contact burp server at %s:%s', self.host, self.port)
+            self._logger('error', 'Cannot contact burp server at %s:%s', self.host, self.port)
             raise BUIserverException('Cannot contact burp server at {0}:{1}'.format(self.host, self.port))
 
     def get_backup_logs(self, n, c, forward=False, agent=None):
@@ -215,11 +215,11 @@ class Burp(BUIbackend):
                 cl = c
 
             f = self.status('c:{0}:b:{1}:f:log.gz\n'.format(c, n), agent=agent)
-            return self.parse_backup_log(f, n, cl, agent=agent)
+            return self._parse_backup_log(f, n, cl, agent=agent)
 
-        return self.parse_backup_stats(n, c, forward, agent=agent)
+        return self._parse_backup_stats(n, c, forward, agent=agent)
 
-    def parse_backup_stats(self, n, c, forward=False, agent=None):
+    def _parse_backup_stats(self, n, c, forward=False, agent=None):
         backup = { 'windows': 'unknown', 'number': int(n) }
         if forward:
             backup['name'] = c
@@ -336,7 +336,7 @@ class Burp(BUIbackend):
                 backup[rk] = int(val)
         return backup
 
-    def parse_backup_log(self, f, n, c=None, agent=None):
+    def _parse_backup_log(self, f, n, c=None, agent=None):
         """
         parse_backup_log parses the log.gz of a given backup and returns a dict
         containing different stats used to render the charts in the reporting view
@@ -414,7 +414,7 @@ class Burp(BUIbackend):
             for key, regex in lookup_complex.iteritems():
                 r = re.search(regex, line)
                 if r:
-                    self.logger('debug', "match[1]: '{0}'".format(r.group(1)))
+                    self._logger('debug', "match[1]: '{0}'".format(r.group(1)))
                     sp = re.split('\s+', r.group(1))
                     backup[key] = {
                             'new':       int(sp[0]),
@@ -443,12 +443,12 @@ class Burp(BUIbackend):
         if not f:
             return r
         for line in f:
-            self.logger('debug', 'line: {0}'.format(line))
+            self._logger('debug', 'line: {0}'.format(line))
             rs = re.search('^{0}\s+(\d)\s+(\S)\s+(.+)$'.format(name), line)
             if rs and rs.group(2) == 'r' and int(rs.group(1)) == 2:
                 c = 0
                 for v in rs.group(3).split('\t'):
-                    self.logger('debug', '{0}: {1}'.format(self.counters[c], v))
+                    self._logger('debug', '{0}: {1}'.format(self.counters[c], v))
                     if c > 0 and c < 15:
                         val = map(int, v.split('/'))
                         if val[0] > 0 or val[1] > 0 or val[2] or val[3] > 0:
@@ -513,14 +513,14 @@ class Burp(BUIbackend):
         j = []
         f = self.status()
         for line in f:
-            self.logger('debug', "line: '{0}'".format(line))
+            self._logger('debug', "line: '{0}'".format(line))
             regex = re.compile('\s*(\S+)\s+\d\s+(\S)\s+(.+)')
             m = regex.search(line)
             c = {}
             c['name'] = m.group(1)
             c['state'] = self.states[m.group(2)]
             infos = m.group(3)
-            self.logger('debug', "infos: '{0}'".format(infos))
+            self._logger('debug', "infos: '{0}'".format(infos))
             if infos == "0":
                 c['last'] = 'never'
             elif re.match('^\d+\s\d+\s\d+$', infos):
@@ -545,7 +545,7 @@ class Burp(BUIbackend):
         for line in f:
             if not re.match('^{0}\t'.format(c), line):
                 continue
-            self.logger('debug', "line: '{0}'".format(line))
+            self._logger('debug', "line: '{0}'".format(line))
             regex = re.compile('\s*(\S+)\s+\d\s+(\S)\s+(.+)')
             m = regex.search(line)
             if m.group(3) == "0" or m.group(2) not in [ 'i', 'c', 'C' ]:
@@ -577,7 +577,7 @@ class Burp(BUIbackend):
         f = self.status('c:{0}:b:{1}:p:{2}\n'.format(name, backup, top))
         useful = False
         for line in f:
-            self.logger('debug', "line: '{0}'".format(line))
+            self._logger('debug', "line: '{0}'".format(line))
             if not useful and re.match('^-list begin-$', line):
                 useful = True
                 continue
@@ -622,9 +622,9 @@ class Burp(BUIbackend):
             full_reg += reg
 
         cmd = [self.burpbin, '-C', name, '-a', 'r', '-b', str(backup), '-r', full_reg.rstrip('|'), '-d', self.tmpdir]
-        self.logger('debug', cmd)
+        self._logger('debug', cmd)
         status = subprocess.call(cmd)
-        self.logger('debug', 'command returned: %d', status)
+        self._logger('debug', 'command returned: %d', status)
         if status not in [0, 2]:
             return None
 
@@ -639,14 +639,14 @@ class Burp(BUIbackend):
                 for filename in files:
                     path = os.path.join(dirname, filename)
                     if stripping and os.path.isfile(path):
-                        self.logger('debug', "stripping file: %s", path)
+                        self._logger('debug', "stripping file: %s", path)
                         shutil.move(path, path+'.tmp')
                         status = subprocess.call([self.stripbin, '-i', path+'.tmp', '-o', path])
                         if status != 0:
                             os.remove(path)
                             shutil.move(path+'.tmp', path)
                             stripping = False
-                            self.logger('debug', "Disable stripping since this file does not seem to embed VSS headers")
+                            self._logger('debug', "Disable stripping since this file does not seem to embed VSS headers")
                         else:
                             os.remove(path+'.tmp')
 

@@ -9,7 +9,7 @@ class BUIbackend:
     def status(self, query='\n', agent=None):
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")
 
-    def parse_backup_log(self, f, n, c=None, agent=None):
+    def get_backup_logs(self, n, c, forward=False, agent=None):
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")
 
     def get_counters(self, name=None, agent=None):
@@ -29,6 +29,12 @@ class BUIbackend:
 
     def get_tree(self, name=None, backup=None, root=None, agent=None):
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")
+
+    def restore_files(self, name=None, backup=None, files=None, agent=None):
+        raise NotImplementedError("Sorry, the current Backend does not implement this method!")
+
+class BUIserverException(Exception):
+    pass
 
 class BUIserverException(Exception):
     pass
