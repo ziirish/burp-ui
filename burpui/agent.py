@@ -2,6 +2,7 @@
 import os
 import sys
 import struct
+import select
 import json
 import time
 import ConfigParser
@@ -57,7 +58,7 @@ class BUIAgent:
 
         self.methods = {
                 'status': self.backend.status,
-                'parse_backup_log': self.backend.parse_backup_log,
+                'get_backup_logs': self.backend.get_backup_logs,
                 'get_counters': self.backend.get_counters,
                 'is_backup_running': self.backend.is_backup_running,
                 'is_one_backup_running': self.backend.is_one_backup_running,
@@ -85,6 +86,9 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
         # self.request is the client connection
         self.server.agent.debug('===============>')
         try:
+            r, _, _ = select.select([self.request], [], [], 5)
+            if not r:
+                raise Exception ('Socket timed-out')
             lengthbuf = self.request.recv(8)
             length, = struct.unpack('!Q', lengthbuf)
             data = self.recvall(length)
@@ -92,6 +96,9 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
             self.server.agent.debug('recv: %s', data)
             self.server.agent.debug('####################')
             j = json.loads(data)
+            _, w, _ = select.select([], [self.request], [], 5)
+            if not w:
+                raise Exception ('Socket timed-out')
             if j['password'] != self.server.agent.password:
                 self.server.agent.debug('-----> Wrong Password <-----')
                 self.request.sendall('KO')
@@ -111,6 +118,9 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
             self.server.agent.debug('####################')
             self.server.agent.debug('result: %s', res)
             self.server.agent.debug('####################')
+            _, w, _ = select.select([], [self.request], [], 5)
+            if not w:
+                raise Exception ('Socket timed-out')
             if j['func'] == 'restore_files':
                 size = os.path.getsize(res)
                 self.request.sendall(struct.pack('!Q', size))
@@ -120,6 +130,9 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
                         self.server.agent.debug('sending %d Bytes', len(buf))
                         self.request.sendall(buf)
                         buf = f.read(1024)
+                        _, w, _ = select.select([], [self.request], [], 5)
+                        if not w:
+                            raise Exception ('Socket timed-out')
             else:
                 self.request.sendall(struct.pack('!Q', len(res)))
                 self.request.sendall(res)
