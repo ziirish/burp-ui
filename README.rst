@@ -168,3 +168,4 @@ exist without `Burp`_.
 .. _License: https://git.ziirish.me/ziirish/burp-ui/blob/master/LICENSE
 .. _Burp: http://burp.grke.org/
 .. _burpui.cfg: https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui.cfg
+
