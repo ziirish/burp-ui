@@ -166,7 +166,10 @@ class Burp(BUIbackend):
                     Ugly hack to reformat the message
                     """
                     ar = list(args)
-                    ar[0] = '('+str(cf.f_lineno)+') '+ar[0]
+                    if isinstance(ar[0], str):
+                        ar[0] = '('+str(cf.f_lineno)+') '+ar[0]
+                    else:
+                        ar = ['('+str(cf.f_lineno)+') {0}'.format(ar)]
                     args = tuple(ar)
                 logs[level](*args)
     """
