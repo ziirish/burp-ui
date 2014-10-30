@@ -475,7 +475,9 @@ class Burp(BUIbackend):
                             r[self.counters[c]] = val
                     else:
                         if 'path' == self.counters[c]:
-                            r[self.counters[c]] = v.encode('utf-8')
+                            tmp = u''
+                            tmp += v
+                            r[self.counters[c]] = tmp.encode('utf-8')
                         else:
                             r[self.counters[c]] = int(v)
                     c += 1
