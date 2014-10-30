@@ -22,11 +22,12 @@ def currentframe():
     except:
         return sys.exc_info()[2].tb_frame.f_back
 
-g_burpport = 4972
-g_burphost = '127.0.0.1'
-g_tmpdir   = u'/tmp/buirestore'
-g_burpbin  = '/usr/sbin/burp'
-g_stripbin = '/usr/sbin/vss_strip'
+g_burpport    = 4972
+g_burphost    = '127.0.0.1'
+g_tmpdir      = u'/tmp/buirestore'
+g_burpbin     = u'/usr/sbin/burp'
+g_stripbin    = u'/usr/sbin/vss_strip'
+g_burpconfcli = None
 
 class Burp(BUIbackend):
     states = {
@@ -70,16 +71,17 @@ class Burp(BUIbackend):
        ]
 
     def __init__(self, app=None, conf=None):
-        global g_burpport, g_burphost, g_tmpdir, g_burpbin, g_stripbin
+        global g_burpport, g_burphost, g_tmpdir, g_burpbin, g_stripbin, g_burpconfcli
         self.app = app
         self.host = g_burphost
         self.port = g_burpport
         self.burpbin = g_burpbin
         self.stripbin = g_stripbin
         self.tmpdir = g_tmpdir
+        self.burpconfcli = g_burpconfcli
         self.running = []
         if conf:
-            config = ConfigParser.ConfigParser({'bport': g_burpport, 'bhost': g_burphost, 'tmpdir': g_tmpdir, 'burpbin': g_burpbin, 'stripbin': g_stripbin})
+            config = ConfigParser.ConfigParser({'bport': g_burpport, 'bhost': g_burphost, 'tmpdir': g_tmpdir, 'burpbin': g_burpbin, 'stripbin': g_stripbin, 'bconfcli': g_burpconfcli})
             with codecs.open(conf, 'r', 'utf-8') as fp:
                 config.readfp(fp)
                 try:
@@ -88,6 +90,11 @@ class Burp(BUIbackend):
                     tdir = config.get('Burp1', 'tmpdir')
                     bbin = config.get('Burp1', 'burpbin')
                     strip = config.get('Burp1', 'stripbin')
+                    confcli = config.get('Burp1', 'bconfcli')
+
+                    if confcli and not os.path.isfile(confcli):
+                        self._logger('warning', "The file '%s' does not exist", confcli)
+                        confcli = None
 
                     if self.host not in ['127.0.0.1', '::1']:
                         self._logger('warning', "Invalid value for 'bhost'. Must be '127.0.0.1' or '::1'. Falling back to '%s'", g_burphost)
@@ -136,6 +143,7 @@ class Burp(BUIbackend):
                     self.burpbin = bbin
                     self.tmpdir = tdir
                     self.stripbin = strip
+                    self.burpconfcli = confcli
                 except ConfigParser.NoOptionError, e:
                     self._logger('error', str(e))
                 except ConfigParser.NoSectionError, e:
@@ -146,6 +154,7 @@ class Burp(BUIbackend):
         self._logger('info', 'burp binary: %s', self.burpbin)
         self._logger('info', 'strip binary: %s', self.stripbin)
         self._logger('info', 'temporary dir: %s', self.tmpdir)
+        self._logger('info', 'burp conf cli: %s', self.burpconfcli)
 
     def _logger(self, level, *args):
         if self.app:
@@ -633,6 +642,9 @@ class Burp(BUIbackend):
             full_reg += reg
 
         cmd = [self.burpbin, '-C', name, '-a', 'r', '-b', str(backup), '-r', full_reg.rstrip('|'), '-d', self.tmpdir]
+        if self.burpconfcli:
+            cmd.append('-c')
+            cmd.append(self.burpconfcli)
         self._logger('debug', cmd)
         status = subprocess.call(cmd)
         self._logger('debug', 'command returned: %d', status)
