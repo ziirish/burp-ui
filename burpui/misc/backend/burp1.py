@@ -102,6 +102,10 @@ class Burp(BUIbackend):
                     elif not os.path.isfile(strip) or not os.access(strip, os.X_OK):
                         self._logger('warning', "'%s' does not exist or is not executable. Fallback to '%s'", strip, g_stripbin)
                         strip = g_stripbin
+
+                    if not os.path.isfile(strip) or not os.access(strip, os.X_OK):
+                        self._logger('error', "Ooops, '%s' not found or is not executable", strip)
+                        strip = None
                         
                     if not bbin.startswith('/'):
                         self._logger('warning', "Please provide an absolute path for the 'burpbin' option. Fallback to '%s'", g_burpbin)
@@ -112,6 +116,10 @@ class Burp(BUIbackend):
                     elif not os.path.isfile(bbin) or not os.access(bbin, os.X_OK):
                         self._logger('warning', "'%s' does not exist or is not executable. Fallback to '%s'", bbin, g_burpbin)
                         bbin = g_burpbin
+
+                    if not os.path.isfile(bbin) or not os.access(bbin, os.X_OK):
+                        self._logger('error', "Ooops, '%s' not found or is not executable", bbin)
+                        bbin = None
 
                     if not tdir.startswith('/'):
                         self._logger('warning', "Please provide an absolute path for the 'tmpdir' option. Fallback to '%s'", g_tmpdir)
@@ -605,7 +613,7 @@ class Burp(BUIbackend):
         return r
 
     def restore_files(self, name=None, backup=None, files=None, agent=None):
-        if not name or not backup or not files:
+        if not name or not backup or not files or not self.stripbin or not self.burpbin:
             return None
         flist = json.loads(files)
         if 'restore' not in flist:
@@ -616,15 +624,17 @@ class Burp(BUIbackend):
         for r in flist['restore']:
             reg = u''
             if r['folder'] and r['key'] != '/':
-                reg += '^'+r['key']+'/|'
+                reg += '^'+re.escape(r['key'])+'/|'
             else:
-                reg += '^'+r['key']+'$|'
+                reg += '^'+re.escape(r['key'])+'$|'
             full_reg += reg
 
         cmd = [self.burpbin, '-C', name, '-a', 'r', '-b', str(backup), '-r', full_reg.rstrip('|'), '-d', self.tmpdir]
         self._logger('debug', cmd)
         status = subprocess.call(cmd)
         self._logger('debug', 'command returned: %d', status)
+        # a return code of 2 means there were some warnings during restoration
+        # so we can assume the restoration was successful anyway
         if status not in [0, 2]:
             return None
 
