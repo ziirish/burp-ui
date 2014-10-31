@@ -109,8 +109,8 @@ class Burp(BUIbackend):
         """
         return self.servers[agent].get_tree(name, backup, root)
 
-    def restore_files(self, name=None, backup=None, files=None, agent=None):
-        return self.servers[agent].restore_files(name, backup, files)
+    def restore_files(self, name=None, backup=None, files=None, strip=None, agent=None):
+        return self.servers[agent].restore_files(name, backup, strip, files)
 
 class NClient(BUIbackend):
 
@@ -267,7 +267,7 @@ class NClient(BUIbackend):
         data = {'func': 'get_tree', 'args': {'name': name, 'backup': backup, 'root': root}}
         return json.loads(self.do_command(data))
 
-    def restore_files(self, name=None, backup=None, files=None, agent=None):
-        data = {'func': 'restore_files', 'args': {'name': name, 'backup': backup, 'files': files}}
+    def restore_files(self, name=None, backup=None, files=None, strip=None, agent=None):
+        data = {'func': 'restore_files', 'args': {'name': name, 'backup': backup, 'files': files, 'strip': strip}}
         return self.do_command(data)
 

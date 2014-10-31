@@ -176,14 +176,17 @@
 		tree.options.filter.mode = $(this).is(":checked") ? "hide" : "dimm";
 		tree.clearFilter();
 		$("input[name=search-tree]").keyup();
+		e.stopPropagation();
 	});
 	$("input#leavesOnly").change(function(e){
 		tree.clearFilter();
 		$("input[name=search-tree]").keyup();
+		e.stopPropagation();
 	});
 	$("input#regex").change(function(e){
 		tree.clearFilter();
 		$("input[name=search-tree]").keyup();
+		e.stopPropagation();
 	});
 
 	$("#form-restore").on('submit', function(e) {
@@ -209,5 +212,12 @@
 			node.setSelected(false);
 		});
 		return false;
+	});
+	$(".dropdown-menu label, .dropdown-menu input, .dropdown-menu li").click(function(e) {
+		e.stopPropagation();
+	});
+	$(".dropdown-menu a").click(function(e) {
+		e.preventDefault();
+		e.stopPropagation();
 	});
 

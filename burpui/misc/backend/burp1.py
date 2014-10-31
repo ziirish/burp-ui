@@ -626,7 +626,7 @@ class Burp(BUIbackend):
                     r.append(t)
         return r
 
-    def restore_files(self, name=None, backup=None, files=None, agent=None):
+    def restore_files(self, name=None, backup=None, files=None, strip=None, agent=None):
         if not name or not backup or not files or not self.stripbin or not self.burpbin:
             return None
         flist = json.loads(files)
@@ -647,6 +647,9 @@ class Burp(BUIbackend):
         if self.burpconfcli:
             cmd.append('-c')
             cmd.append(self.burpconfcli)
+        if strip and strip.isdigit() and int(strip) > 0:
+            cmd.append('-s')
+            cmd.append(strip)
         self._logger('debug', cmd)
         status = subprocess.call(cmd)
         self._logger('debug', 'command returned: %d', status)

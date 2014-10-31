@@ -27,10 +27,10 @@
                       <span class="glyphicon glyphicon-cog"></span> options 
                       <span class="caret"></span>
                     </button>
-                    <ul class="dropdown-menu pull-right" role="menu">
-                      <li><a href="#"><div class="checkbox"><label><input type="checkbox" id="hideMode">&nbsp;Hide unmatched nodes <span class="glyphicon glyphicon-eye-close"></span></label></div></a></li>
-                      <li><a href="#"><div class="checkbox"><label><input type="checkbox" id="leavesOnly">&nbsp;Leaves only <span class="glyphicon glyphicon-leaf"></span></label></div></a></li>
-                      <li><a href="#"><div class="checkbox"><label><input type="checkbox" id="regex">&nbsp;Use regex <span class="glyphicon glyphicon-filter"></span></label></div></a></li>
+                    <ul class="dropdown-menu">
+                      <li><a href="#"><label><input type="checkbox" id="hideMode">&nbsp;Hide unmatched nodes <span class="glyphicon glyphicon-eye-close"></span></label></a></li>
+                      <li><a href="#"><label><input type="checkbox" id="leavesOnly">&nbsp;Leaves only <span class="glyphicon glyphicon-leaf"></span></label></a></li>
+                      <li><a href="#"><label><input type="checkbox" id="regex">&nbsp;Use regex <span class="glyphicon glyphicon-filter"></span></label></a></li>
                     </ul>
                   </div>
                 </div>
@@ -63,7 +63,13 @@
             <form id="form-restore" class="form-inline" method="POST" role="form" action="{{ url_for("restore", name=cname, backup=nbackup, server=server) }}">
               <input type="hidden" name="list">
               <div id="restore-form" style="display:none;">
-                <button type="submit" class="btn btn-info"><span class="glyphicon glyphicon-cloud-download"></span>&nbsp;Download selected files</button>
+                <div class="btn-group">
+                  <button type="submit" class="btn btn-info"><span class="glyphicon glyphicon-cloud-download"></span>&nbsp;Download selected files</button>
+                  <button class="btn btn-info dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
+                  <ul class="dropdown-menu">
+                    <li><a href="#"><label for="strip">Number of leading path components to strip:</label><input type="text" id="strip" name="strip" placeholder="0" autocomplete="off" maxlength="2" size="2"></a></li>
+                  </ul>
+                </div>
                 <button type="button" id="btn-clear" class="btn btn-info"><span class="glyphicon glyphicon-trash"></span>&nbsp;Clear selection</button>
               </div>
             </form>
