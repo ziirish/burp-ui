@@ -1,0 +1,4 @@
+Flask==0.10.1
+Flask-Login==0.2.11
+Flask-WTF==0.10.0
+WTForms==2.0.1
