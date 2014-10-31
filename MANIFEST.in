@@ -1,6 +1,10 @@
 include LICENSE
 include README.rst
 include VERSION
+include requirements.txt
+include test-requirements.txt
 include share/burpui/etc/burpui.cfg
 include share/burpui/etc/buiagent.cfg
+include contrib/debian/init.sh
+include contrib/centos/init.sh
 recursive-include burpui *
