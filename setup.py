@@ -28,12 +28,12 @@ datadir = os.path.join('share', 'burpui', 'etc')
 setup(
     name=name,
     version=open('VERSION').read().rstrip(),
-    description=description
+    description=description,
     long_description=open('README.rst').read(),
     license=open('LICENSE').read(),
-    author=author
-    author_email=author_email
-    url=url
+    author=author,
+    author_email=author_email,
+    url=url,
     keywords='burp web ui',
     packages=find_packages(),
     include_package_data=True,
@@ -45,7 +45,7 @@ setup(
     data_files=[(datadir, [os.path.join(datadir, 'burpui.cfg')]),
                 (datadir, [os.path.join(datadir, 'buiagent.cfg')])
     ],
-    install_requires=requires
+    install_requires=requires,
     extras_require={
         'ldap_authentication': ['simpleldap==0.8']
     },
