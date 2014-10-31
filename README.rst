@@ -116,24 +116,32 @@ But I didn't think yet of what to do.
 Changelog
 ---------
 
-* version 0.0.5:
+* version `current <https://git.ziirish.me/ziirish/burp-ui/>`_:
+
+  - `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/v0.0.5...master>`_
+
+* version `0.0.5 <https://git.ziirish.me/ziirish/burp-ui/commits/v0.0.5>`_:
 
   - Add multi-server support
-  - fix bugs
+  - Fix bugs
+  - `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/v0.0.4...v0.0.5>`_
 
-* version 0.0.4:
+* version `0.0.4 <https://git.ziirish.me/ziirish/burp-ui/commits/v0.0.4>`_:
 
   - Add the ability to download files directly from the web interface
+  - `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/v0.0.3...v0.0.4>`_
 
-* version 0.0.3:
+* version `0.0.3 <https://git.ziirish.me/ziirish/burp-ui/commits/v0.0.3>`_:
 
   - Add authentication
+  - `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/v0.0.2...v0.0.3>`_
 
-* version 0.0.2:
+* version `0.0.2 <https://git.ziirish.me/ziirish/burp-ui/commits/v0.0.2>`_:
 
   - Fix bugs
+  - `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/v0.0.1...v0.0.2>`_
 
-* version 0.0.1:
+* version `0.0.1 <https://git.ziirish.me/ziirish/burp-ui/commits/v0.0.1>`_:
 
   - Initial release
 
@@ -153,7 +161,7 @@ But this project is built on top of other tools listed here:
 - `bootstrap <http://getbootstrap.com/>`_ (`MIT <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/bootstrap/LICENSE>`__)
 - `typeahead <http://twitter.github.io/typeahead.js/>`_ (`MIT <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/typeahead/LICENSE>`__)
 - `bootswatch <http://bootswatch.com/>`_ (`MIT <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/bootstrap/bootswatch.LICENSE>`__)
-- Home-made `favicon <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/images/favicon.ico>`_ based on pictures from `simsoncrazy <http://www.simpsoncrazy.com/pictures/homer>`_
+- Home-made `favicon <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/images/favicon.ico>`_ based on pictures from `simpsoncrazy <http://www.simpsoncrazy.com/pictures/homer>`_
 
 Also note that this project is made with the Awesome `Flask`_ micro-framework.
 
