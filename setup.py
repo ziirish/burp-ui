@@ -8,25 +8,32 @@ import sys
 
 from setuptools import setup, find_packages
 
-if sys.version < '3':
-    import codecs
-    def u(x):
-        return codecs.unicode_escape_decode(x)[0]
-else:
-    def u(x):
-        return x
+with open(os.path.join(os.path.dirname(__file__), 'burpui', '__init__.py')) as f:
+    data = f.read()
+
+    name = re.search("__title__ = '(.*)'", data).group(1)
+    author = re.search("__author__ = '(.*)'", data).group(1)
+    author_email = re.search("__author_email__ = '(.*)'", data).group(1)
+    description = re.search("__description__ = '(.*)'", data).group(1)
+    url = re.search("__url__ = '(.*)'", data).group(1)
+
+with open('requirements.txt', 'r') as f:
+    requires = [x.strip() for x in f if x.strip()]
+
+with open('test-requirements.txt', 'r') as f:
+    test_requires = [x.strip() for x in f if x.strip()]
 
 datadir = os.path.join('share', 'burpui', 'etc')
 
 setup(
-    name='burp-ui',
+    name=name,
     version=open('VERSION').read().rstrip(),
-    description=u('Burp-UI is a web-ui for burp backup written in python with Flask and jQuery/Bootstrap'),
+    description=description
     long_description=open('README.rst').read(),
     license=open('LICENSE').read(),
-    author=u('Benjamin SANS (Ziirish)'),
-    author_email=u('ziirish@ziirish.info'),
-    url='http://git.ziirish.me/ziirish/burp-ui',
+    author=author
+    author_email=author_email
+    url=url
     keywords='burp web ui',
     packages=find_packages(),
     include_package_data=True,
@@ -38,10 +45,11 @@ setup(
     data_files=[(datadir, [os.path.join(datadir, 'burpui.cfg')]),
                 (datadir, [os.path.join(datadir, 'buiagent.cfg')])
     ],
-    install_requires=['Flask==0.10.1', 'Flask-Login==0.2.11', 'Flask-WTF==0.10.0', 'WTForms==2.0.1'],
+    install_requires=requires
     extras_require={
         'ldap_authentication': ['simpleldap==0.8']
     },
+    tests_require=test_requires,
     classifiers=[
         'Framework :: Flask',
         'Intended Audience :: System Administrators',

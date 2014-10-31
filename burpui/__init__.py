@@ -3,9 +3,12 @@
 Burp-UI is a web-ui for burp backup written in python with Flask and
 jQuery/Bootstrap
 """
-__title__ = 'burp-ui'
-__author__ = 'Benjamin SANS (Ziirish)'
-__license__ = 'BSD 3-clause'
+__title__        = 'burp-ui'
+__author__       = 'Benjamin SANS (Ziirish)'
+__author_email__ = 'ziirish+burpui@ziirish.info'
+__url__          = 'https://git.ziirish.me/ziirish/burp-ui'
+__description__  = 'Burp-UI is a web-ui for burp backup written in python with Flask and jQuery/Bootstrap'
+__license__      = 'BSD 3-clause'
 
 import os
 
