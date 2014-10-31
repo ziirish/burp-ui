@@ -24,6 +24,7 @@ def load_user(userid):
 @login_required
 def restore(server=None, name=None, backup=None):
     l = request.form.get('list')
+    s = request.form.get('strip')
     resp = None
     if not l or not name or not backup:
         abort(500)
@@ -32,7 +33,7 @@ def restore(server=None, name=None, backup=None):
     else:
         filename = 'restoration_%d_%s_at_%s.zip' % (backup, name, strftime("%Y-%m-%d_%H_%M_%S", gmtime()))
     if not server:
-        archive = bui.cli.restore_files(name, backup, l)
+        archive = bui.cli.restore_files(name, backup, l, s)
         if not archive:
             abort(500)
         try:
@@ -44,7 +45,7 @@ def restore(server=None, name=None, backup=None):
     else:
         socket = None
         try:
-            socket, length = bui.cli.restore_files(name, backup, l, server)
+            socket, length = bui.cli.restore_files(name, backup, l, s, server)
             app.logger.debug('Need to get %d Bytes : %s', length, socket)
             def stream_file(sock, l):
                 bsize = 1024

@@ -30,7 +30,7 @@ class BUIbackend:
     def get_tree(self, name=None, backup=None, root=None, agent=None):
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")
 
-    def restore_files(self, name=None, backup=None, files=None, agent=None):
+    def restore_files(self, name=None, backup=None, files=None, strip=None, agent=None):
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")
 
 class BUIserverException(Exception):
