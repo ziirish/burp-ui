@@ -1,8 +1,8 @@
 Build Status
 ------------
 
-.. image:: http://ci.ziirish.me/projects/1/status.png?ref=master
-    :target: http://ci.ziirish.me/projects/1?ref=master
+.. image:: https://ci.ziirish.me/projects/1/status.png?ref=master
+    :target: https://ci.ziirish.me/projects/1?ref=master
 
 
 Requirements
@@ -107,7 +107,8 @@ I have closed the *github tracker* to have a unique tracker system.
 TODO
 ----
 
-`Here <https://git.ziirish.me/ziirish/burp-ui/issues?label_name=todo>`_ is a non-exhaustive list of things I'd like to add.
+`Here <https://git.ziirish.me/ziirish/burp-ui/issues?label_name=todo>`_ is a
+non-exhaustive list of things I'd like to add.
 
 Also note that in the future, I'd like to write a burp-client GUI.
 But I didn't think yet of what to do.
@@ -160,7 +161,11 @@ But this project is built on top of other tools listed here:
 - `fancytree <https://github.com/mar10/fancytree>`_ (`MIT <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/fancytree/MIT-LICENSE.txt>`__)
 - `bootstrap <http://getbootstrap.com/>`_ (`MIT <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/bootstrap/LICENSE>`__)
 - `typeahead <http://twitter.github.io/typeahead.js/>`_ (`MIT <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/typeahead/LICENSE>`__)
-- `bootswatch <http://bootswatch.com/>`_ (`MIT <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/bootstrap/bootswatch.LICENSE>`__)
+- `bootswatch <http://bootswatch.com/>`_ theme ``Slate`` (`MIT <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/bootstrap/bootswatch.LICENSE>`__)
+- `angular-bootstrap-switch <https://github.com/frapontillo/angular-bootstrap-switch>`_ (`Apache <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/angular-bootstrap-switch/LICENSE>`__)
+- `angular.js <https://angularjs.org/>`_ (`MIT <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/angularjs/LICENSE>`__)
+- `angular-ui-select <https://github.com/angular-ui/ui-select>`_ (`MIT <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/angular-ui-select/LICENSE>`__)
+- `lodash <https://github.com/lodash/lodash>`_ (`MIT <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/lodash/LICENSE.txt`__)
 - Home-made `favicon <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/images/favicon.ico>`_ based on pictures from `simpsoncrazy <http://www.simpsoncrazy.com/pictures/homer>`_
 
 Also note that this project is made with the Awesome `Flask`_ micro-framework.
