@@ -19,6 +19,19 @@ def load_user(userid):
         return bui.uhandler.user(userid)
     return None
 
+@app.route('/settings')
+@app.route('/<server>/settings')
+@login_required
+def settings(server=None):
+    return render_template('config.html', settings=True, server=server)
+
+@app.route('/api/srvconfig')
+@app.route('/api/<server>/srvconfig')
+@login_required
+def read_conf_srv(server=None):
+    r = bui.cli.read_conf()
+    return jsonify(results=r,boolean=bui.cli.parser.boolean)
+
 @app.route('/api/restore/<name>/<int:backup>', methods=['POST'])
 @app.route('/api/<server>/restore/<name>/<int:backup>', methods=['POST'])
 @login_required

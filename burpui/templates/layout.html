@@ -18,6 +18,10 @@
     {% if tree -%}
     <link href="{{ url_for('static', filename='fancytree/skin-bootstrap/ui.fancytree.css') }}" rel="stylesheet">
     {% endif -%}
+    {% if settings -%}
+    <link href="{{ url_for('static', filename='bootstrap-switch/bootstrap-switch.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='angular-ui-select/select.min.css') }}" rel="stylesheet">
+    {% endif -%}
 
     <!-- Custom styles for this template -->
     <link href="{{ url_for('static', filename='dashboard.css') }}" rel="stylesheet">
@@ -60,6 +64,16 @@
     <!-- FileDownload Javascript
     ================================================== -->
     <script src="{{ url_for('static', filename='jquery/jquery.fileDownload.js') }}"></script>
+    {% endif -%}
+    {% if settings -%}
+    <!-- angular-toggle-switch Javascript
+    ================================================== -->
+    <script src="{{ url_for('static', filename='lodash/lodash.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='angularjs/angular.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='angularjs/angular-sanitize.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='bootstrap-switch/bootstrap-switch.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='angular-bootstrap-switch/angular-bootstrap-switch.js') }}"></script>
+    <script src="{{ url_for('static', filename='angular-ui-select/select.min.js') }}"></script>
     {% endif -%}
     <script type="text/javascript">
       {% include "gerard.js" %}
