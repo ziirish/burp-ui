@@ -14,6 +14,7 @@ import codecs
 
 from burpui.misc.utils import human_readable as _hr
 from burpui.misc.backend.interface import BUIbackend, BUIserverException
+from burpui.misc.parser.burp1 import Parser
 
 def currentframe():
     """Return the frame object for the caller's stack frame."""
@@ -28,6 +29,7 @@ g_tmpdir      = u'/tmp/buirestore'
 g_burpbin     = u'/usr/sbin/burp'
 g_stripbin    = u'/usr/sbin/vss_strip'
 g_burpconfcli = None
+g_burpconfsrv = u'/etc/burp/burp-server.conf'
 
 class Burp(BUIbackend):
     states = {
@@ -71,7 +73,7 @@ class Burp(BUIbackend):
        ]
 
     def __init__(self, app=None, conf=None):
-        global g_burpport, g_burphost, g_tmpdir, g_burpbin, g_stripbin, g_burpconfcli
+        global g_burpport, g_burphost, g_tmpdir, g_burpbin, g_stripbin, g_burpconfcli, g_burpconfsrv
         self.app = app
         self.host = g_burphost
         self.port = g_burpport
@@ -79,9 +81,10 @@ class Burp(BUIbackend):
         self.stripbin = g_stripbin
         self.tmpdir = g_tmpdir
         self.burpconfcli = g_burpconfcli
+        self.burpconfsrv = g_burpconfsrv
         self.running = []
         if conf:
-            config = ConfigParser.ConfigParser({'bport': g_burpport, 'bhost': g_burphost, 'tmpdir': g_tmpdir, 'burpbin': g_burpbin, 'stripbin': g_stripbin, 'bconfcli': g_burpconfcli})
+            config = ConfigParser.ConfigParser({'bport': g_burpport, 'bhost': g_burphost, 'tmpdir': g_tmpdir, 'burpbin': g_burpbin, 'stripbin': g_stripbin, 'bconfcli': g_burpconfcli, 'bconfsrv': g_burpconfsrv})
             with codecs.open(conf, 'r', 'utf-8') as fp:
                 config.readfp(fp)
                 try:
@@ -91,10 +94,15 @@ class Burp(BUIbackend):
                     bbin = config.get('Burp1', 'burpbin')
                     strip = config.get('Burp1', 'stripbin')
                     confcli = config.get('Burp1', 'bconfcli')
+                    confsrv = config.get('Burp1', 'bconfsrv')
 
                     if confcli and not os.path.isfile(confcli):
                         self._logger('warning', "The file '%s' does not exist", confcli)
                         confcli = None
+
+                    if confsrv and not os.path.isfile(confsrv):
+                        self._logger('warning', "The file '%s' does not exist", confsrv)
+                        confsrv = None
 
                     if self.host not in ['127.0.0.1', '::1']:
                         self._logger('warning', "Invalid value for 'bhost'. Must be '127.0.0.1' or '::1'. Falling back to '%s'", g_burphost)
@@ -144,10 +152,13 @@ class Burp(BUIbackend):
                     self.tmpdir = tdir
                     self.stripbin = strip
                     self.burpconfcli = confcli
+                    self.burpconfsrv = confsrv
                 except ConfigParser.NoOptionError, e:
                     self._logger('error', str(e))
                 except ConfigParser.NoSectionError, e:
                     self._logger('error', str(e))
+
+        self.parser = Parser(self.app, self.burpconfsrv)
 
         self._logger('info', 'burp port: %d', self.port)
         self._logger('info', 'burp host: %s', self.host)
@@ -155,6 +166,7 @@ class Burp(BUIbackend):
         self._logger('info', 'strip binary: %s', self.stripbin)
         self._logger('info', 'temporary dir: %s', self.tmpdir)
         self._logger('info', 'burp conf cli: %s', self.burpconfcli)
+        self._logger('info', 'burp conf srv: %s', self.burpconfsrv)
 
     def _logger(self, level, *args):
         if self.app:
@@ -686,3 +698,5 @@ class Burp(BUIbackend):
         shutil.rmtree(self.tmpdir)
         return zip_file
 
+    def read_conf(self):
+        return self.parser.readfile()

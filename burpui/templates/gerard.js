@@ -60,7 +60,7 @@ var _clients_bh = new Bloodhound({
 	queryTokenizer: Bloodhound.tokenizers.whitespace,
 	limit: 10,
 	prefetch: {
-		url: '{{ url_for("clients_json", server=server) }}',
+		url: '{{ url_for("clients_json") }}',
 		filter: function(list) {
 			if (list.results) {
 				return list.results;
@@ -157,6 +157,10 @@ $('#input-client').typeahead({
 
 {% if live -%}
 {% include "js/live-monitor.js" %}
+{% endif -%}
+
+{% if settings -%}
+{% include "js/config.js" %}
 {% endif -%}
 
 var _async_ajax = function(b) {
