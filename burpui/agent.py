@@ -65,7 +65,8 @@ class BUIAgent:
                 'get_all_clients': self.backend.get_all_clients,
                 'get_client': self.backend.get_client,
                 'get_tree': self.backend.get_tree,
-                'restore_files': self.backend.restore_files
+                'restore_files': self.backend.restore_files,
+                'read_conf': self.backend.read_conf
             }
 
         self.server = AgentServer((self.bind, self.port), AgentTCPHandler, self)

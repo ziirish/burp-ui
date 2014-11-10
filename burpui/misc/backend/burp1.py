@@ -698,5 +698,5 @@ class Burp(BUIbackend):
         shutil.rmtree(self.tmpdir)
         return zip_file
 
-    def read_conf(self):
+    def read_conf(self, agent=None):
         return self.parser.readfile()

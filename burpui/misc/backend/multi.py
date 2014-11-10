@@ -112,6 +112,9 @@ class Burp(BUIbackend):
     def restore_files(self, name=None, backup=None, files=None, strip=None, agent=None):
         return self.servers[agent].restore_files(name, backup, strip, files)
 
+    def read_conf(self, agent=None):
+        return self.servers[agent].read_conf()
+
 class NClient(BUIbackend):
 
     def __init__(self, app=None, host=None, port=None, password=None, ssl=None):
@@ -271,3 +274,6 @@ class NClient(BUIbackend):
         data = {'func': 'restore_files', 'args': {'name': name, 'backup': backup, 'files': files, 'strip': strip}}
         return self.do_command(data)
 
+    def read_conf(self, agent=None):
+        data = {'func': 'read_conf', 'args': None}
+        return json.loads(self.do_command(data))
