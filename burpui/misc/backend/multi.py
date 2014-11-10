@@ -110,7 +110,7 @@ class Burp(BUIbackend):
         return self.servers[agent].get_tree(name, backup, root)
 
     def restore_files(self, name=None, backup=None, files=None, strip=None, agent=None):
-        return self.servers[agent].restore_files(name, backup, strip, files)
+        return self.servers[agent].restore_files(name, backup, files, strip)
 
     def read_conf(self, agent=None):
         return self.servers[agent].read_conf()
@@ -257,7 +257,7 @@ class NClient(BUIbackend):
     def get_client(self, name=None, agent=None):
         """
         get_client returns a list of dict representing the backups (with its number
-        and date) of a given clientm
+        and date) of a given client
         """
         data = {'func': 'get_client', 'args': {'name': name}}
         return json.loads(self.do_command(data))
