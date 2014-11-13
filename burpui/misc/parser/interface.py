@@ -6,4 +6,7 @@ class BUIparser:
         self.conf = conf
 
     def readfile(self):
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")
+        raise NotImplementedError("Sorry, the current Parser does not implement this method!")
+
+    def getkey(self, key):
+        raise NotImplementedError("Sorry, the current Parser does not implement this method!")

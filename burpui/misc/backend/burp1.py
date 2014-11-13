@@ -699,4 +699,11 @@ class Burp(BUIbackend):
         return zip_file
 
     def read_conf(self, agent=None):
+        if not self.parser:
+            return None
         return self.parser.readfile()
+
+    def get_parser_attr(self, attr=None, agent=None):
+        if not attr or not self.parser:
+            return None
+        return self.parser.getkey(attr)
