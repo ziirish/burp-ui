@@ -1,6 +1,5 @@
 # -*- coding: utf8 -*-
 import os
-import sys
 import struct
 import select
 import json
@@ -66,7 +65,8 @@ class BUIAgent:
                 'get_client': self.backend.get_client,
                 'get_tree': self.backend.get_tree,
                 'restore_files': self.backend.restore_files,
-                'read_conf': self.backend.read_conf
+                'read_conf': self.backend.read_conf,
+                'get_parser_attr': self.backend.get_parser_attr
             }
 
         self.server = AgentServer((self.bind, self.port), AgentTCPHandler, self)

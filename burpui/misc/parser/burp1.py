@@ -261,3 +261,9 @@ class Parser(BUIparser):
                     break
 
         return res
+
+    def getkey(self, key):
+        try:
+            return getattr(self, key)
+        except:
+            return None
