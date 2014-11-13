@@ -30,7 +30,7 @@ def settings(server=None):
 @login_required
 def read_conf_srv(server=None):
     r = bui.cli.read_conf(server)
-    return jsonify(results=r,boolean=bui.cli.parser.boolean)
+    return jsonify(results=r,boolean=bui.cli.get_parser_attr('boolean'),server_doc=bui.cli.get_parser_attr('server_doc'))
 
 @app.route('/api/restore/<name>/<int:backup>', methods=['POST'])
 @app.route('/api/<server>/restore/<name>/<int:backup>', methods=['POST'])

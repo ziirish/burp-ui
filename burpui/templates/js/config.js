@@ -21,6 +21,7 @@ app.controller('MainCtrl', function($scope, $http) {
 		success(function(data, status, headers, config) {
 			$scope.bools = data.results.boolean;
 			$scope.all.bools = data.boolean;
+			$scope.server_doc = data.server_doc;
 		});
 	$scope.submit = function(e) {
 		/* ugly hack to disable form submission when pressing the 'return' key
@@ -56,8 +57,12 @@ app.controller('MainCtrl', function($scope, $http) {
 			$scope.avail.bools.push({'name': n, 'value': false});
 		});
 	};
-	$scope.selectBool = function(selected, model) {
+	$scope.selectBool = function(selected, select) {
+		select.search = undefined;
 		$scope.bools.push(selected);
+		$scope.add.bool = false;
+	};
+  $scope.undoAddBool = function() {
 		$scope.add.bool = false;
 	};
 });
