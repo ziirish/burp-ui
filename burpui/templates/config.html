@@ -12,48 +12,54 @@
             {% endif -%}
           </ul>
           <br />
-          <h1 class="page-header">Burp Configuration</h1>
 
-          <form class="form-horizontal" action="/settings" method="GET" ng-app="ConfigApp" ng-controller="MainCtrl" ng-submit="submit($event)">
-            {% raw %}
-            <fieldset>
-              <legend>Booleans</legend>
-              <div class="form-group" ng-repeat="bool in bools">
-                <label for="{{ bool.name }}_view" class="col-lg-3 control-label">{{ bool.name }}</label>
-                <div class="col-lg-9">
-                  <input bs-switch ng-model="bool.value" type="checkbox" id="{{ bool.name }}_view" name="{{ bool.name }}_view" class="form-control">
-                  <input type="hidden" name="{{ bool.name }}" id="{{ bool.name }}">
-                  &nbsp;
-                  <button type="button" class="btn btn-danger btn-xs" ng-click="removeBool($index)"><span class="glyphicon glyphicon-minus"></span></button>
-                  &nbsp;
-                  {{ server_doc[bool.name] }}
+          <div class="form-container">
+            <div class="scrollspy-config">
+              <form class="form-horizontal" action="/settings" method="GET" ng-app="ConfigApp" ng-controller="MainCtrl" ng-submit="submit($event)">
+                {% raw %}
+                <fieldset>
+                  <legend id="boolean">Booleans</legend>
+                  <div class="form-group" ng-repeat="bool in bools">
+                    <label for="{{ bool.name }}_view" class="col-lg-3 control-label">{{ bool.name }}</label>
+                    <div class="col-lg-9">
+                      <input bs-switch ng-model="bool.value" type="checkbox" id="{{ bool.name }}_view" name="{{ bool.name }}_view" class="form-control">
+                      <input type="hidden" name="{{ bool.name }}" id="{{ bool.name }}">
+                      &nbsp;
+                      <button type="button" class="btn btn-danger btn-xs" ng-click="removeBool($index)"><span class="glyphicon glyphicon-minus"></span></button>
+                      &nbsp;
+                      {{ server_doc[bool.name] }}
+                    </div>
+                  </div>
+                  <div class="form-group" ng-hide="!add.bool">
+                    <div class="col-lg-3">
+                      <ui-select ng-model="new.bool" ng-disabled="!add.bool" style="width: 100%;" on-select="selectBool($item, $select)">
+                        <ui-select-match placeholder="Select an option">{{$select.selected.name}}</ui-select-match>
+                        <ui-select-choices repeat="value.name as value in avail.bools | filter: $select.search">
+                          <div ng-bind-html="value.name | highlight: $select.search"></div>
+                        </ui-select-choices>
+                      </ui-select>
+                    </div>
+                    <div class="col-lg-9">
+                      <button type="button" class="btn btn-danger" ng-click="undoAddBool()"><span class="glyphicon glyphicon-remove"></span></button>
+                    </div>
+                  </div>
+                  <div class="form-group" ng-hide="bools.length >= all.bools.length || add.bool">
+                    <div class="col-lg-3 col-lg-offset-3">
+                      <button type="button" class="btn btn-success btn-primary" ng-click="clickAddBool()"><span class="glyphicon glyphicon-plus"></span></button>
+                    </div>
+                  </div>
+                </fieldset>
+                <fieldset>
+                  <legend id="string">Strings</legend>
+                </fieldset>
+                {% endraw %}
+                <div class="form-group">
+                  <div class="col-lg-3 col-lg-offset-3">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                  </div>
                 </div>
-              </div>
-              <div class="form-group" ng-hide="!add.bool">
-                <div class="col-lg-3">
-                  <ui-select ng-model="new.bool" ng-disabled="!add.bool" style="width: 100%;" on-select="selectBool($item, $select)">
-                    <ui-select-match placeholder="Select an option">{{$select.selected.name}}</ui-select-match>
-                    <ui-select-choices repeat="value.name as value in avail.bools | filter: $select.search">
-                      <div ng-bind-html="value.name | highlight: $select.search"></div>
-                    </ui-select-choices>
-                  </ui-select>
-                </div>
-                <div class="col-lg-9">
-                  <button type="button" class="btn btn-danger" ng-click="undoAddBool()"><span class="glyphicon glyphicon-remove"></span></button>
-                </div>
-              </div>
-              <div class="form-group" ng-hide="bools.length >= all.bools.length || add.bool">
-                <div class="col-lg-3 col-lg-offset-3">
-                  <button type="button" class="btn btn-success btn-primary" ng-click="clickAddBool()"><span class="glyphicon glyphicon-plus"></span></button>
-                </div>
-              </div>
-            </fieldset>
-            {% endraw %}
-            <div class="form-group">
-              <div class="col-lg-3 col-lg-offset-3">
-                <button type="submit" class="btn btn-primary">Submit</button>
-              </div>
+              </form>
             </div>
-          </form>
+          </div>
         </div>
 {% endblock %}
