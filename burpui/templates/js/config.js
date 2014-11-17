@@ -66,3 +66,8 @@ app.controller('MainCtrl', function($scope, $http) {
 		$scope.add.bool = false;
 	};
 });
+
+$(function() {
+	$('body').scrollspy({ target: '#navbar-config' });
+});
+
