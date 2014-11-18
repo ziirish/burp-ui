@@ -26,7 +26,7 @@ var notif = function(type, message) {
 			break;
 	}
 	e = $('<div class="alert alert-dismissable alert-'+t+'">'+
-			'<button type="button" class="close" data-dismiss="alert">×</button>'+
+			'<button type="button" class="close" data-dismiss="alert">&times;</button>'+
 			i+message+
 		  '</div>');
 	$('#bui-notifications').append(e).show();
