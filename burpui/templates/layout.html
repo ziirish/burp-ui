@@ -28,7 +28,7 @@
 
   </head>
 
-  <body>
+  <body {% if config %}ng-app="ConfigApp"{% endif %}>
 
     {% include "topbar.html" %}
 
@@ -74,6 +74,8 @@
     <script src="{{ url_for('static', filename='bootstrap-switch/bootstrap-switch.min.js') }}"></script>
     <script src="{{ url_for('static', filename='angular-bootstrap-switch/angular-bootstrap-switch.js') }}"></script>
     <script src="{{ url_for('static', filename='angular-ui-select/select.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='angular-strap/angular-strap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='angular-strap/angular-strap.tpl.min.js') }}"></script>
     {% endif -%}
     <script type="text/javascript">
       {% include "gerard.js" %}

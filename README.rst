@@ -150,7 +150,7 @@ Changelog
 Licenses
 --------
 
-Burp-UI is released under the BSD 3-clause `License`_.
+``Burp-UI`` is released under the BSD 3-clause `License`_.
 
 But this project is built on top of other tools listed here:
 
@@ -165,6 +165,7 @@ But this project is built on top of other tools listed here:
 - `angular-bootstrap-switch <https://github.com/frapontillo/angular-bootstrap-switch>`_ (`Apache <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/angular-bootstrap-switch/LICENSE>`__)
 - `angular.js <https://angularjs.org/>`_ (`MIT <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/angularjs/LICENSE>`__)
 - `angular-ui-select <https://github.com/angular-ui/ui-select>`_ (`MIT <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/angular-ui-select/LICENSE>`__)
+- `AngularStrap <http://mgcrea.github.io/angular-strap/>`_ (`MIT <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/angular-strap/LICENSE.md>`__)
 - `lodash <https://github.com/lodash/lodash>`_ (`MIT <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/lodash/LICENSE.txt>`__)
 - Home-made `favicon <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/images/favicon.ico>`_ based on pictures from `simpsoncrazy <http://www.simpsoncrazy.com/pictures/homer>`_
 
