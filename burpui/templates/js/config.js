@@ -1,5 +1,5 @@
 
-var app = angular.module('ConfigApp', ['ngSanitize', 'frapontillo.bootstrap-switch', 'ui.select']);
+var app = angular.module('ConfigApp', ['ngSanitize', 'frapontillo.bootstrap-switch', 'ui.select', 'mgcrea.ngStrap']);
 
 app.config(function(uiSelectConfig) {
   uiSelectConfig.theme = 'bootstrap';
@@ -7,20 +7,25 @@ app.config(function(uiSelectConfig) {
 
 app.controller('MainCtrl', function($scope, $http) {
 	$scope.bools = [];
+	$scope.strings = [];
 	$scope.all = {};
 	$scope.avail = {};
 	$scope.new = {
-			'bool': undefined,
-			'int': undefined
+			'bools': undefined,
+			'integers': undefined,
+			'strings': undefined
 		};
 	$scope.add = {
-			'bool': false,
-			'int': false
+			'bools': false,
+			'integers': false,
+			'strings': false
 		};
 	$http.get('{{ url_for("read_conf_srv", server=server) }}').
 		success(function(data, status, headers, config) {
 			$scope.bools = data.results.boolean;
 			$scope.all.bools = data.boolean;
+			$scope.strings = data.results.common;
+			$scope.all.strings = data.string;
 			$scope.server_doc = data.server_doc;
 		});
 	$scope.submit = function(e) {
@@ -34,40 +39,36 @@ app.controller('MainCtrl', function($scope, $http) {
 		});
 		if (!sbm) {
 			e.preventDefault();
+			return;
 		}
 		angular.forEach($scope.bools, function(value, key) {
 			$('#'+value.name).val(value.value);
 			$('#'+value.name+'_view').attr('disabled', true);
 		});
 	};
-	$scope.removeBool = function(index) {
-		$scope.bools.splice(index, 1);
-		$scope.add.bool = false;
-		$scope.new.bool = undefined;
+	$scope.remove = function(key, index) {
+		$scope[key].splice(index, 1);
+		$scope.add[key] = false;
+		$scope.new[key] = undefined;
 	};
-	$scope.clickAddBool = function() {
-		if ($scope.new.bool) {
-			$scope.new.bool = undefined;
+	$scope.clickAdd = function(type) {
+		if ($scope.new[type]) {
+			$scope.new[type] = undefined;
 		}
-		$scope.add.bool = true;
-		keys = _.pluck($scope.bools, 'name');
-		diff = _.difference($scope.all.bools, keys);
-		$scope.avail.bools = [];
+		$scope.add[type] = true;
+		keys = _.pluck($scope[type], 'name');
+		diff = _.difference($scope.all[type], keys);
+		$scope.avail[type] = [];
 		_(diff).forEach(function(n) {
-			$scope.avail.bools.push({'name': n, 'value': false});
+			$scope.avail[type].push({'name': n, 'value': undefined});
 		});
 	};
-	$scope.selectBool = function(selected, select) {
+	$scope.select = function(selected, select, type) {
 		select.search = undefined;
-		$scope.bools.push(selected);
-		$scope.add.bool = false;
+		$scope[type].push(selected);
+		$scope.add[type] = false;
 	};
-  $scope.undoAddBool = function() {
-		$scope.add.bool = false;
+	$scope.undoAdd = function(type) {
+		$scope.add[type] = false;
 	};
 });
-
-$(function() {
-	$('body').scrollspy({ target: '#navbar-config' });
-});
-

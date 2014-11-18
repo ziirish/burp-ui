@@ -274,3 +274,8 @@ svg text {
   animation: rotateThis 1s infinite linear;
   webkit-animation: rotateThis 1s infinite linear;
 }
+
+legend[id] {
+  margin-top: -45px;
+  padding-top: 80px;
+}
