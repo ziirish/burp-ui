@@ -157,6 +157,36 @@ class Parser(BUIparser):
             u'max_status_children',
             u'max_storage_subdirs'
         ]
+    string = [
+            u'mode',
+            u'address',
+            u'status_address',
+            u'directory',
+            u'timestamp_format',
+            u'pidfile',
+            u'compression',
+            u'client_lockdir',
+            u'user',
+            u'group',
+            u'working_dir_recovery_method',
+            u'ssl_key_password',
+            u'ssl_ciphers',
+            u'ssl_compression',
+            u'dedup_group',
+            u'ca_name',
+            u'ca_server_name',
+            u'ssl_cert_ca',
+            u'ssl_cert',
+            u'ssl_key',
+            u'ssl_dhfile',
+            u'ca_conf',
+            u'ca_burp_ca',
+            u'notify_success_script',
+            u'notify_failure_script',
+            u'server_script_pre',
+            u'server_script_post',
+            u'server_script'
+        ]
     server_doc = {
             u'mode': "Required to run in server mode.",
             u'port': "Defines the main TCP port that the server listens on.",
@@ -272,7 +302,7 @@ class Parser(BUIparser):
 
     def _parse_lines_srv(self, fi):
         other_files = []
-        dic = {}
+        dic = []
         boolean = []
         multi = {}
         integer = []
@@ -297,7 +327,7 @@ class Parser(BUIparser):
                         multi[key] = []
                     multi[key].append(val)
                     continue
-                dic[key] = val
+                dic.append({'name': key, 'value': val})
 
         return dic, boolean, multi, integer, other_files
 

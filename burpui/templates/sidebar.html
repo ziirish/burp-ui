@@ -1,4 +1,7 @@
         <div class="col-sm-3 col-md-2 sidebar">
+          {% if config -%}
+          {% include "sideconfig.html" %}
+          {% else -%}
           <ul class="nav nav-sidebar">
             <li {% if overview %}class="active"{% endif %}>
             {% if backup %}
@@ -27,7 +30,5 @@
             {% endif %}
             </li>
           </ul>
-          {% if config -%}
-          {% include "spyside.html" %}
           {% endif -%}
         </div>

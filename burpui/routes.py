@@ -25,12 +25,19 @@ def load_user(userid):
 def settings(server=None):
     return render_template('config.html', settings=True, server=server)
 
-@app.route('/api/srvconfig')
-@app.route('/api/<server>/srvconfig')
+@app.route('/api/server-config')
+@app.route('/api/<server>/server-config')
 @login_required
 def read_conf_srv(server=None):
     r = bui.cli.read_conf(server)
-    return jsonify(results=r,boolean=bui.cli.get_parser_attr('boolean'),server_doc=bui.cli.get_parser_attr('server_doc'))
+    return jsonify(results=r,boolean=bui.cli.get_parser_attr('boolean'),server_doc=bui.cli.get_parser_attr('server_doc'),string=bui.cli.get_parser_attr('string'))
+
+
+"""
+Here is the API
+
+The whole API returns JSON-formated data
+"""
 
 @app.route('/api/restore/<name>/<int:backup>', methods=['POST'])
 @app.route('/api/<server>/restore/<name>/<int:backup>', methods=['POST'])
@@ -93,13 +100,6 @@ def restore(server=None, name=None, backup=None):
             app.logger.error(str(e))
             abort(500)
     return resp
-
-
-"""
-Here is the API
-
-The whole API returns JSON-formated data
-"""
 
 @app.route('/api/running-clients.json')
 @app.route('/api/<server>/running-clients.json')
