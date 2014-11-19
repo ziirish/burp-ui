@@ -71,4 +71,14 @@ app.controller('MainCtrl', function($scope, $http) {
 	$scope.undoAdd = function(type) {
 		$scope.add[type] = false;
 	};
+	$scope.focusIn = function(ev) {
+		el = $( ev.target ).parent().parent();
+		el.next('div').hide();
+		el.removeClass('col-lg-2').addClass('col-lg-10');
+	};
+	$scope.focusOut = function(ev) {
+		el = $( ev.target ).parent().parent();
+		el.next('div').show();
+		el.removeClass('col-lg-10').addClass('col-lg-2');
+	};
 });
