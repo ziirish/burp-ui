@@ -52,10 +52,13 @@
                 <legend id="string">Strings</legend>
                 <div class="form-group" ng-repeat="string in strings">
                   <label for="{{ string.name }}" class="col-lg-2 control-label">{{ string.name }}</label>
-                  <div class="col-lg-2 form-inline">
-                    <input class="form-control" type="text" id="{{ string.name }}" name="{{ string.name }}" ng-model="string.value" style="width: 80%;">
-                    &nbsp;
-                    <button type="button" class="btn btn-danger btn-xs" ng-click="remove('strings', $index)"><span class="glyphicon glyphicon-minus"></span></button>
+                  <div class="col-lg-2">
+                    <div class="input-group">
+                      <input class="form-control" type="text" id="{{ string.name }}" name="{{ string.name }}" ng-model="string.value" ng-focus="focusIn($event)" ng-blur="focusOut($event)">
+                      <span class="input-group-btn">
+                        <button type="button" class="btn btn-danger" ng-click="remove('strings', $index)"><span class="glyphicon glyphicon-minus"></span></button>
+                      </span>
+                    </div>
                   </div>
                   <div class="col-lg-8" ng-bind-html="server_doc[string.name]"></div>
                 </div>

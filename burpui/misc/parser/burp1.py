@@ -43,7 +43,7 @@ class Parser(BUIparser):
             u'client_lockdir': '',
             u'user': '',
             u'group': '',
-            u'umask': 0022, #int #mode
+            u'umask': 0022, #mode
             u'ratelimit': 0, #int
             u'network_timeout': 7200, #int
             u'working_dir_recovery_method': '',
@@ -185,7 +185,8 @@ class Parser(BUIparser):
             u'notify_failure_script',
             u'server_script_pre',
             u'server_script_post',
-            u'server_script'
+            u'server_script',
+            u'umask'
         ]
     server_doc = {
             u'mode': "Required to run in server mode.",
