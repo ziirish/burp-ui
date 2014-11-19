@@ -547,14 +547,12 @@ class Burp(BUIbackend):
         j = []
         f = self.status()
         for line in f:
-            self._logger('debug', "line: '{0}'".format(line))
             regex = re.compile('\s*(\S+)\s+\d\s+(\S)\s+(.+)')
             m = regex.search(line)
             c = {}
             c['name'] = m.group(1)
             c['state'] = self.states[m.group(2)]
             infos = m.group(3)
-            self._logger('debug', "infos: '{0}'".format(infos))
             if infos == "0":
                 c['last'] = 'never'
             elif re.match('^\d+\s\d+\s\d+$', infos):
