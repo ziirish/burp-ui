@@ -95,6 +95,7 @@ class Parser(BUIparser):
             u'status_address': ['127.0.0.1', '::1'], #127.0.0.1 / ::1
             u'compression': ['zlib{0}'.format(x) for x in range(1, 10)],
             u'ssl_compression': ['zlib{0}'.format(x) for x in range(1, 10)],
+            u'working_dir_recovery_method': ['use', 'delete', 'resume'],
         }
     files = [
             u'ssl_cert_ca',
@@ -189,6 +190,8 @@ class Parser(BUIparser):
             u'umask'
         ]
     server_doc = {
+            u'address': "Defines the main TCP address that the server listens on. The default is either '::' or '0.0.0.0', dependent upon compile time options.",
+            u'status_address': "Defines the main TCP address that the server listens on for status requests. The default is either '::1' or '127.0.0.1', dependent upon compile time options.",
             u'mode': "Required to run in server mode.",
             u'port': "Defines the main TCP port that the server listens on.",
             u'status_port': "Defines the TCP port that the server listens on for status requests.",

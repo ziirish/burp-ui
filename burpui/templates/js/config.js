@@ -10,6 +10,7 @@ app.controller('MainCtrl', function($scope, $http) {
 	$scope.strings = [];
 	$scope.all = {};
 	$scope.avail = {};
+	$scope.suggest = {};
 	$scope.new = {
 			'bools': undefined,
 			'integers': undefined,
@@ -27,6 +28,7 @@ app.controller('MainCtrl', function($scope, $http) {
 			$scope.strings = data.results.common;
 			$scope.all.strings = data.string;
 			$scope.server_doc = data.server_doc;
+			$scope.suggest = data.suggest;
 		});
 	$scope.submit = function(e) {
 		/* ugly hack to disable form submission when pressing the 'return' key
@@ -72,13 +74,15 @@ app.controller('MainCtrl', function($scope, $http) {
 		$scope.add[type] = false;
 	};
 	$scope.focusIn = function(ev) {
-		el = $( ev.target ).parent().parent();
+		el = $( ev.target ).parent();
 		el.next('div').hide();
-		el.removeClass('col-lg-2').addClass('col-lg-10');
+		el.next('div').next('div').hide();
+		el.removeClass('col-lg-2').addClass('col-lg-9');
 	};
 	$scope.focusOut = function(ev) {
-		el = $( ev.target ).parent().parent();
+		el = $( ev.target ).parent();
 		el.next('div').show();
-		el.removeClass('col-lg-10').addClass('col-lg-2');
+		el.next('div').next('div').show();
+		el.removeClass('col-lg-9').addClass('col-lg-2');
 	};
 });

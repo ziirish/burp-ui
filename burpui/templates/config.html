@@ -20,17 +20,18 @@
               <fieldset>
                 <legend id="boolean">Booleans</legend>
                 <div class="form-group" ng-repeat="bool in bools">
-                  <label for="{{ bool.name }}_view" class="col-lg-2 control-label">{{ bool.name }}</label>
+                  <label for="{{ bool.name }}_view" class="col-lg-3 control-label">{{ bool.name }}</label>
                   <div class="col-lg-2">
                     <input bs-switch ng-model="bool.value" type="checkbox" id="{{ bool.name }}_view" name="{{ bool.name }}_view" class="form-control">
                     <input type="hidden" name="{{ bool.name }}" id="{{ bool.name }}">
-                    &nbsp;
-                    <button type="button" class="btn btn-danger btn-xs" ng-click="remove('bools', $index)"><span class="glyphicon glyphicon-minus"></span></button>
                   </div>
-                  <div class="col-lg-8" ng-bind-html="server_doc[bool.name]"></div>
+                  <div class="col-lg-1">
+                    <button type="button" class="btn btn-danger" ng-click="remove('bools', $index)"><span class="glyphicon glyphicon-minus"></span></button>
+                  </div>
+                  <div class="col-lg-6" ng-bind-html="server_doc[bool.name]"></div>
                 </div>
                 <div class="form-group" ng-hide="!add.bools">
-                  <div class="col-lg-2">
+                  <div class="col-lg-3">
                     <ui-select ng-model="new.bools" ng-disabled="!add.bools" style="width: 100%;" on-select="select($item, $select, 'bools')">
                       <ui-select-match placeholder="Select an option">{{ $select.selected.name }}</ui-select-match>
                       <ui-select-choices repeat="value.name as value in avail.bools | filter: $select.search">
@@ -38,12 +39,12 @@
                       </ui-select-choices>
                     </ui-select>
                   </div>
-                  <div class="col-lg-10">
+                  <div class="col-lg-9">
                     <button type="button" class="btn btn-danger" ng-click="undoAdd('bools')"><span class="glyphicon glyphicon-remove"></span></button>
                   </div>
                 </div>
                 <div class="form-group" ng-hide="bools.length >= all.bools.length || add.bools">
-                  <div class="col-lg-2 col-lg-offset-2">
+                  <div class="col-lg-3 col-lg-offset-3">
                     <button type="button" class="btn btn-success btn-primary" ng-click="clickAdd('bools')"><span class="glyphicon glyphicon-plus"></span></button>
                   </div>
                 </div>
@@ -51,19 +52,20 @@
               <fieldset>
                 <legend id="string">Strings</legend>
                 <div class="form-group" ng-repeat="string in strings">
-                  <label for="{{ string.name }}" class="col-lg-2 control-label">{{ string.name }}</label>
-                  <div class="col-lg-2">
-                    <div class="input-group">
-                      <input class="form-control" type="text" id="{{ string.name }}" name="{{ string.name }}" ng-model="string.value" ng-focus="focusIn($event)" ng-blur="focusOut($event)">
-                      <span class="input-group-btn">
-                        <button type="button" class="btn btn-danger" ng-click="remove('strings', $index)"><span class="glyphicon glyphicon-minus"></span></button>
-                      </span>
-                    </div>
+                  <label for="{{ string.name }}" class="col-lg-3 control-label">{{ string.name }}</label>
+                  <div ng-if="!suggest[string.name]" class="col-lg-2">
+                    <input class="form-control" type="text" id="{{ string.name }}" name="{{ string.name }}" ng-model="string.value" ng-focus="focusIn($event)" ng-blur="focusOut($event)">
                   </div>
-                  <div class="col-lg-8" ng-bind-html="server_doc[string.name]"></div>
+                  <div ng-if="suggest[string.name]" class="col-lg-2">
+                    <select class="form-control" id="{{ string.name }}" name="{{ string.name }}" ng-model="string.value" ng-options="currOption for currOption in suggest[string.name]"></select>
+                  </div>
+                  <div class="col-lg-1">
+                    <button type="button" class="btn btn-danger" ng-click="remove('strings', $index)"><span class="glyphicon glyphicon-minus"></span></button>
+                  </div>
+                  <div class="col-lg-6" ng-bind-html="server_doc[string.name]"></div>
                 </div>
                 <div class="form-group" ng-hide="!add.strings">
-                  <div class="col-lg-2">
+                  <div class="col-lg-3">
                     <ui-select ng-model="new.strings" ng-disabled="!add.strings" style="width: 100%;" on-select="select($item, $select, 'strings')">
                       <ui-select-match placeholder="Select an option">{{ $select.selected.name }}</ui-select-match>
                       <ui-select-choices repeat="value.name as value in avail.strings | filter: $select.search">
@@ -71,19 +73,19 @@
                       </ui-select-choices>
                     </ui-select>
                   </div>
-                  <div class="col-lg-10">
+                  <div class="col-lg-9">
                     <button type="button" class="btn btn-danger" ng-click="undoAdd('strings')"><span class="glyphicon glyphicon-remove"></span></button>
                   </div>
                 </div>
                 <div class="form-group" ng-hide="strings.length >= all.strings.length || add.strings">
-                  <div class="col-lg-2 col-lg-offset-2">
+                  <div class="col-lg-3 col-lg-offset-3">
                     <button type="button" class="btn btn-success btn-primary" ng-click="clickAdd('strings')"><span class="glyphicon glyphicon-plus"></span></button>
                   </div>
                 </div>
               </fieldset>
               {% endraw %}
               <div class="form-group">
-                <div class="col-lg-2 col-lg-offset-2">
+                <div class="col-lg-3 col-lg-offset-3">
                   <button type="submit" class="btn btn-primary">Submit</button>
                 </div>
               </div>
