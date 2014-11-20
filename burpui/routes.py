@@ -30,7 +30,11 @@ def settings(server=None):
 @login_required
 def read_conf_srv(server=None):
     r = bui.cli.read_conf(server)
-    return jsonify(results=r,boolean=bui.cli.get_parser_attr('boolean'),server_doc=bui.cli.get_parser_attr('server_doc'),string=bui.cli.get_parser_attr('string'))
+    return jsonify(results=r,
+                   boolean=bui.cli.get_parser_attr('boolean'),
+                   server_doc=bui.cli.get_parser_attr('server_doc'),
+                   string=bui.cli.get_parser_attr('string'),
+                   suggest=bui.cli.get_parser_attr('values_server'))
 
 
 """
