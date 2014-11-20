@@ -11,6 +11,7 @@ app.controller('MainCtrl', function($scope, $http) {
 	$scope.all = {};
 	$scope.avail = {};
 	$scope.suggest = {};
+	$scope.old = {};
 	$scope.new = {
 			'bools': undefined,
 			'integers': undefined,
@@ -49,6 +50,10 @@ app.controller('MainCtrl', function($scope, $http) {
 		});
 	};
 	$scope.remove = function(key, index) {
+		if (!$scope.old[key]) {
+			$scope.old[key] = {};
+		}
+		$scope.old[key][$scope[key][index]['name']] = $scope[key][index]['value'];
 		$scope[key].splice(index, 1);
 		$scope.add[key] = false;
 		$scope.new[key] = undefined;
@@ -67,6 +72,9 @@ app.controller('MainCtrl', function($scope, $http) {
 	};
 	$scope.select = function(selected, select, type) {
 		select.search = undefined;
+		if ($scope.old[type] && $scope.old[type][selected.name]) {
+			selected.value = $scope.old[type][selected.name];
+		}
 		$scope[type].push(selected);
 		$scope.add[type] = false;
 	};
