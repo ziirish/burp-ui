@@ -34,7 +34,8 @@ def read_conf_srv(server=None):
                    boolean=bui.cli.get_parser_attr('boolean'),
                    server_doc=bui.cli.get_parser_attr('server_doc'),
                    string=bui.cli.get_parser_attr('string'),
-                   suggest=bui.cli.get_parser_attr('values_server'))
+                   suggest=bui.cli.get_parser_attr('values_server'),
+                   defaults=bui.cli.get_parser_attr('defaults_server'))
 
 
 """

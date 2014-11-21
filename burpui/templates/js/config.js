@@ -8,6 +8,7 @@ app.config(function(uiSelectConfig) {
 app.controller('MainCtrl', function($scope, $http) {
 	$scope.bools = [];
 	$scope.strings = [];
+	$scope.defaults = {};
 	$scope.all = {};
 	$scope.avail = {};
 	$scope.suggest = {};
@@ -30,6 +31,7 @@ app.controller('MainCtrl', function($scope, $http) {
 			$scope.all.strings = data.string;
 			$scope.server_doc = data.server_doc;
 			$scope.suggest = data.suggest;
+			$scope.defaults = data.defaults;
 		});
 	$scope.submit = function(e) {
 		/* ugly hack to disable form submission when pressing the 'return' key
@@ -67,7 +69,8 @@ app.controller('MainCtrl', function($scope, $http) {
 		diff = _.difference($scope.all[type], keys);
 		$scope.avail[type] = [];
 		_(diff).forEach(function(n) {
-			$scope.avail[type].push({'name': n, 'value': undefined});
+			v = $scope.defaults[n];
+			$scope.avail[type].push({'name': n, 'value': v});
 		});
 	};
 	$scope.select = function(selected, select, type) {
