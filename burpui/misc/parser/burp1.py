@@ -22,37 +22,37 @@ class Parser(BUIparser):
             u'port': 4971, #int
             u'status_port': 4972, #int
             u'status_address': '', #127.0.0.1 / ::1
-            u'daemon': 1, #bool
-            u'fork': 1, #bool
+            u'daemon': True, #bool
+            u'fork': True, #bool
             u'directory': '',
-            u'directory_tree': 1, #bool
+            u'directory_tree': True, #bool
             u'timestamp_format': '',
-            u'password_check': 1, #bool
+            u'password_check': True, #bool
             u'clientconfdir': '', #dir
             u'pidfile': '',
-            u'syslog': 0, #bool
-            u'stdout': 1, #bool
-            u'keep': 168, #multi #int
-            u'hardlinked_archive': 0, #bool
+            u'syslog': False, #bool
+            u'stdout': True, #bool
+            u'keep': [7, 6, 4], #multi #int
+            u'hardlinked_archive': False, #bool
             u'max_hardlinks': 10000, #int
-            u'librsync': 1, #bool
-            u'compression': 'zlib9',
-            u'version_warn': 1, #bool
-            u'path_length_warn': 1, #bool
-            u'protocol': 0, #int
+            u'librsync': True, #bool
+            u'compression': 'gzip9',
+            u'version_warn': True, #bool
+            u'path_length_warn': True, #bool
+            u'protocol': False, #int
             u'client_lockdir': '',
             u'user': '',
             u'group': '',
             u'umask': 0022, #mode
-            u'ratelimit': 0, #int
+            u'ratelimit': False, #int
             u'network_timeout': 7200, #int
             u'working_dir_recovery_method': '',
-            u'client_can_delete': 1, #bool
-            u'client_can_diff': 1, #bool
-            u'client_can_force_backup': 1, #bool
-            u'client_can_list': 1, #bool
-            u'client_can_restore': 1, #bool
-            u'client_can_verify': 1, #bool
+            u'client_can_delete': True, #bool
+            u'client_can_diff': True, #bool
+            u'client_can_force_backup': True, #bool
+            u'client_can_list': True, #bool
+            u'client_can_restore': True, #bool
+            u'client_can_verify': True, #bool
             u'restore_client': '', #multi
             u'ssl_cert_ca': '', #file
             u'ssl_cert': '', #file
@@ -68,32 +68,32 @@ class Parser(BUIparser):
             u'timer_arg': '', #multi
             u'notify_success_script': '', #file
             u'notify_success_arg': '', #multi
-            u'notify_success_warnings_only': 0, #bool
-            u'notify_success_changes_only': 0, #bool
+            u'notify_success_warnings_only': False, #bool
+            u'notify_success_changes_only': False, #bool
             u'notify_failure_script': '', #file
             u'notify_failure_arg': '', #multi
             u'dedup_group': '',
             u'server_script_pre': '', #file
             u'server_script_pre_arg': '', #multi
-            u'server_script_pre_notify': 0, #bool
+            u'server_script_pre_notify': False, #bool
             u'server_script_post': '', #file
             u'server_script_post_arg': '', #multi
-            u'server_script_post_notify': 0, #bool
+            u'server_script_post_notify': False, #bool
             u'server_script': '', #file
             u'server_script_arg': '', #multi
-            u'server_script_notify': 0, #bool
-            u'server_script_post_run_on_fail': 0, #bool
+            u'server_script_notify': False, #bool
+            u'server_script_post_run_on_fail': False, #bool
             u'autoupgrade_dir': '', #dir
             u'ca_conf': '', #file
             u'ca_name': '',
             u'ca_server_name': '',
             u'ca_burp_ca': '', #file
-            u'monitor_browse_cache': 0, #bool
+            u'monitor_browse_cache': False, #bool
         }
     values_server = {
             u'mode': ['client', 'server'],
             u'status_address': ['127.0.0.1', '::1'], #127.0.0.1 / ::1
-            u'compression': ['zlib{0}'.format(x) for x in range(1, 10)],
+            u'compression': ['gzip{0}'.format(x) for x in range(1, 10)],
             u'ssl_compression': ['zlib{0}'.format(x) for x in range(1, 10)],
             u'working_dir_recovery_method': ['use', 'delete', 'resume'],
         }
@@ -149,7 +149,6 @@ class Parser(BUIparser):
     integer = [
             u'port',
             u'status_port',
-            u'keep',
             u'max_hardlinks',
             u'protocol',
             u'ratelimit',
@@ -190,6 +189,7 @@ class Parser(BUIparser):
             u'umask'
         ]
     server_doc = {
+            u'ssl_compression': "Choose the level of zlib compression over SSL. Setting 0 or zlib0 turnsSSL compression off. Setting non-zero gives zlib5 compression (it is not currently possible for openssl to set any other level). The default is 5. 'gzip' is a synonym of 'zlib'.is a synonym of 'zlib'.",
             u'address': "Defines the main TCP address that the server listens on. The default is either '::' or '0.0.0.0', dependent upon compile time options.",
             u'status_address': "Defines the main TCP address that the server listens on for status requests. The default is either '::1' or '127.0.0.1', dependent upon compile time options.",
             u'mode': "Required to run in server mode.",
