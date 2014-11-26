@@ -2,4 +2,5 @@
 burpui-dev.cfg
 devel.sh
 *.egg*
+.coverage
 dist
