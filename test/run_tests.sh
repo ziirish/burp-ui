@@ -23,13 +23,13 @@ pip install -r requirements.txt
 pip install -r test-requirements.txt
 LOG=$(mktemp)
 (
-nosetests --with-coverage --cover-package=burpui test/test_burpui.py 2>&1 >$LOG
+nosetests --with-coverage --cover-package=burpui test/test_burpui.py
 ret=$?
+exit $ret
+) &>$LOG
+ret2=$?
 cat $LOG
 grep TOTAL $LOG | awk '{ print "TOTAL: "$4; }'
-exit $ret
-)
-ret2=$?
 rm $LOG
 deactivate
 
