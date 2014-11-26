@@ -308,7 +308,7 @@ class Parser(BUIparser):
         other_files = []
         dic = []
         boolean = []
-        multi = {}
+        multi = []
         integer = []
         for l in fi:
             if re.match('^\s*#', l):
@@ -327,15 +327,20 @@ class Parser(BUIparser):
                     other_files.append(val)
                     continue
                 if key in self.multi:
-                    if not key in multi:
-                        multi[key] = []
-                    multi[key].append(val)
+                    found = False
+                    for m in multi:
+                        if m['name'] == key:
+                            m['value'].append(val)
+                            found = True
+                            break
+                    if not found:
+                        multi.append({'name': key, 'value': [val]})
                     continue
                 dic.append({'name': key, 'value': val})
 
         return dic, boolean, multi, integer, other_files
 
-    def readfile(self):
+    def read_server_conf(self):
         if not self.conf:
             return []
         self.content = []
@@ -367,7 +372,7 @@ class Parser(BUIparser):
 
         return res
 
-    def getkey(self, key):
+    def get_priv_attr(self, key):
         try:
             return getattr(self, key)
         except:
