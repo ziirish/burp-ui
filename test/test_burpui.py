@@ -33,13 +33,67 @@ class BurpuiLiveTestCase(LiveServerTestCase):
 		response = urllib2.urlopen(self.get_server_url())
 		self.assertEqual(response.code, 200)
 
-class BurpuiTestCase(TestCase):
+class BurpuiAPITestCase(TestCase):
 
 	def setUp(self):
 		print '\nBegin Test 2\n'
-
+	
 	def tearDown(self):
 		print '\nTest 2 Finished!\n'
+	
+	def create_app(self):
+		conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test2.cfg')
+		app.config['TESTING'] = True
+		app.config['LOGIN_DISABLED'] = True
+		app.config['CFG'] = conf
+		bui.setup(conf)
+		login_manager.init_app(app)
+		return app
+
+	def test_no_clients(self):
+		response = self.client.get('/api/clients.json')
+		self.assertEquals(response.json, {u'notif':[[2, u'Cannot contact burp server at 127.0.0.1:9999']]})
+	
+	def test_config_parsing(self):
+		response = self.client.get('/api/server-config')
+		print response.json
+		self.assertEquals(response.json, dict(results=[],
+												 boolean=bui.cli.get_parser_attr('boolean'),
+												 string=bui.cli.get_parser_attr('string'),
+												 multi=bui.cli.get_parser_attr('multi'),
+												 server_doc=bui.cli.get_parser_attr('server_doc'),
+												 suggest=bui.cli.get_parser_attr('values_server'),
+												 defaults=bui.cli.get_parser_attr('defaults_server')))
+	
+	def test_restore(self):
+		response = self.client.post('/api/restore/dummy/1', data=dict(strip=False))
+		self.assert500(response)
+	
+	def test_running_clients(self):
+		response = self.client.get('/api/running-clients.json')
+		self.assertEquals(response.json, dict(results=[]))
+	
+	def test_live_rendering(self):
+		response = self.client.get('/api/render-live-template/toto')
+		self.assert404(response)
+		response = self.client.get('/api/render-live-template')
+		self.assert500(response)
+
+#	def test_servers_json(self):
+#		response = self.client.get('/api/servers.json')
+#		self.assertEquals(response.json, dict(results=[]))
+
+	def test_live(self):
+		response = self.client.get('/api/live.json')
+		self.assertEquals(response.json, dict(results=[]))
+
+class BurpuiRoutesTestCase(TestCase):
+
+	def setUp(self):
+		print '\nBegin Test 3\n'
+
+	def tearDown(self):
+		print '\nTest 3 Finished!\n'
 
 	def create_app(self):
 		conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../burpui.cfg')
@@ -51,18 +105,18 @@ class BurpuiTestCase(TestCase):
 		bui.cli.port = 9999
 		login_manager.init_app(app)
 		return app
-
-	def test_no_clients(self):
-		response = self.client.get('/api/clients.json')
-		self.assertNotEquals(response.json, dict(results=[]))
+	
+	def test_config_render(self):
+		response = self.client.get('/settings')
+		assert 'Burp Configuration' in response.data
 
 class BurpuiLoginTestCase(TestCase):
 
 	def setUp(self):
-		print '\nBegin Test 3\n'
+		print '\nBegin Test 4\n'
 
 	def tearDown(self):
-		print '\nTest 3 Finished!\n'
+		print '\nTest 4 Finished!\n'
 
 	def login(self, username, password):
 		return self.client.post('/login', data=dict(
