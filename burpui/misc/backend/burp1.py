@@ -223,7 +223,12 @@ class Burp(BUIbackend):
                 line = l.rstrip('\n')
                 if not line:
                     continue
-                r.append(line)
+                ap = ''
+                try:
+                    ap = line.encode('utf-8')
+                except UnicodeEncodeError:
+                    ap = line
+                r.append(ap)
             f.close()
             return r
         except socket.error:
@@ -487,23 +492,22 @@ class Burp(BUIbackend):
                             r[self.counters[c]] = val
                     else:
                         if 'path' == self.counters[c]:
-                            tmp = u''
-                            tmp += v
-                            r[self.counters[c]] = tmp.encode('utf-8')
+                            r[self.counters[c]] = v
                         else:
                             r[self.counters[c]] = int(v)
                     c += 1
-        diff = time.time() - int(r['start'])
-        byteswant = int(r['estimated_bytes'])
-        bytesgot = int(r['bytes_in'])
-        bytespersec = bytesgot / diff
-        bytesleft = byteswant - bytesgot
-        r['speed'] = bytespersec
-        if (bytespersec > 0):
-            timeleft = int(bytesleft / bytespersec)
-            r['timeleft'] = timeleft
-        else:
-            r['timeleft'] = -1
+        if r.viewkeys() & {'start', 'estimated_bytes', 'bytes_in'}:
+            diff = time.time() - int(r['start'])
+            byteswant = int(r['estimated_bytes'])
+            bytesgot = int(r['bytes_in'])
+            bytespersec = bytesgot / diff
+            bytesleft = byteswant - bytesgot
+            r['speed'] = bytespersec
+            if (bytespersec > 0):
+                timeleft = int(bytesleft / bytespersec)
+                r['timeleft'] = timeleft
+            else:
+                r['timeleft'] = -1
         return r
 
     def is_backup_running(self, name=None, agent=None):
@@ -553,7 +557,9 @@ class Burp(BUIbackend):
             c['name'] = m.group(1)
             c['state'] = self.states[m.group(2)]
             infos = m.group(3)
-            if infos == "0":
+            if c['state'] in ['running']:
+                c['last'] = 'now'
+            elif infos == "0":
                 c['last'] = 'never'
             elif re.match('^\d+\s\d+\s\d+$', infos):
                 sp = infos.split()
@@ -604,7 +610,10 @@ class Burp(BUIbackend):
         if not root:
             top = ''
         else:
-            top = root.encode('utf-8')
+            try:
+                top = root.encode('utf-8')
+            except UnicodeEncodeError:
+                top = root
 
         f = self.status('c:{0}:b:{1}:p:{2}\n'.format(name, backup, top))
         useful = False
@@ -699,9 +708,9 @@ class Burp(BUIbackend):
     def read_conf(self, agent=None):
         if not self.parser:
             return None
-        return self.parser.readfile()
+        return self.parser.read_server_conf()
 
     def get_parser_attr(self, attr=None, agent=None):
         if not attr or not self.parser:
             return None
-        return self.parser.getkey(attr)
+        return self.parser.get_priv_attr(attr)

@@ -1,11 +1,16 @@
 <br />
 <div class="col-lg-12">
   <h1 class="page-header">{{ cname }}</h1>
-  <h4>{{ (counters.bytes / counters.estimated_bytes * 100)|round }}%</h4>
+  {% if counters.bytes and counters.estimated_bytes -%}
+    {% set percent = (counters.bytes / counters.estimated_bytes * 100) %}
+  {% else -%}
+    {% set percent = 0 %}
+  {% endif -%}
+  <h4>{{ percent|round }}%</h4>
   <div class="progress progress-striped active">
-    <div class="progress-bar progress-bar-success" style="width: {{ counters.bytes / counters.estimated_bytes * 100 }}%"></div>
+    <div class="progress-bar progress-bar-success" style="width: {{ percent }}%"></div>
   </div>
-  {% if counters.path %}
+  {% if counters.path -%}
   <div class="panel panel-primary">
     <div class="panel-heading">
       <h3 class="panel-title">Path</h3>
@@ -14,36 +19,44 @@
       {{ counters.path }}
     </div>
   </div>
-  {% endif %}
+  {% endif -%}
   <div class="row">
     <div class="col-lg-6">
       <ul class="list-group">
+        {% if counters.phase -%}
         <li class="list-group-item">
           <span class="badge">{{ counters.phase }}</span>
           Phase
         </li>
+        {% endif -%}
+        {% if counters.timeleft -%}
         <li class="list-group-item">
           <span class="badge">{{ counters.timeleft|time_human }}</span>
           Time left
         </li>
-        {% if counters.warning > 0 %}
+        {% endif -%}
+        {% if counters.warning and counters.warning > 0 -%}
         <li class="list-group-item">
           <span class="badge">{{ counters.warning }}</span>
           Warning
         </li>
-        {% endif %}
+        {% endif -%}
       </ul>
     </div>
     <div class="col-lg-6">
       <ul class="list-group">
+        {% if counters.bytes_in -%}
         <li class="list-group-item">
           <span class="badge">{{ counters.bytes_in|bytes_human }}</span>
           Bytes received
         </li>
+        {% endif -%}
+        {% if counters.speed -%}
         <li class="list-group-item">
           <span class="badge">{{ counters.speed|bytes_human }}/s</span>
           Speed
         </li>
+        {% endif -%}
       </ul>
     </div>
   </div>
@@ -59,16 +72,16 @@
       </tr>
     </thead>
     <tbody>
-    {% for d in counters %}
-    {% if isinstance(counters[d], list) and d != 'Grand total' %}
+    {% for d in counters -%}
+      {% if isinstance(counters[d], list) and d != 'Grand total' -%}
       <tr>
         <th>{{ d }}</th>
-        {% for v in counters[d] %}
+        {% for v in counters[d] -%}
         <td>{{ v }}</th>
-        {% endfor %}
+        {% endfor -%}
       </tr>
-    {% endif %}
-    {% endfor %}
+      {% endif -%}
+    {% endfor -%}
     </tbody>
   </table>
 </div>
