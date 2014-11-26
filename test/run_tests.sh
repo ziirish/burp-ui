@@ -26,15 +26,15 @@ LOG=$(mktemp)
 nosetests --with-coverage --cover-package=burpui test/test_burpui.py 2>&1 >$LOG
 ret=$?
 cat $LOG
+grep TOTAL $LOG | awk '{ print "TOTAL: "$4; }'
 exit $ret
 )
-ret=$?
-grep TOTAL $LOG | awk '{ print "TOTAL: "$4; }'
+ret2=$?
 rm $LOG
 deactivate
 
 echo "That's it!"
 
-echo "Return: $ret"
+echo "Return: $ret2"
 
-exit $ret
+exit $ret2
