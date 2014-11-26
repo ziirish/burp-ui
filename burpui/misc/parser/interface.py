@@ -5,8 +5,8 @@ class BUIparser:
         self.app = app
         self.conf = conf
 
-    def readfile(self):
+    def read_server_conf(self):
         raise NotImplementedError("Sorry, the current Parser does not implement this method!")
 
-    def getkey(self, key):
+    def get_priv_attr(self, key):
         raise NotImplementedError("Sorry, the current Parser does not implement this method!")
