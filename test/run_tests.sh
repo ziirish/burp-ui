@@ -22,9 +22,19 @@ source py2.7/bin/activate
 pip install -r requirements.txt
 pip install -r test-requirements.txt
 LOG=$(mktemp)
-nosetests --with-coverage --cover-package=burpui test/test_burpui.py 2>&1 | tee -a $LOG
+(
+nosetests --with-coverage --cover-package=burpui test/test_burpui.py 2>&1 >$LOG
+ret=$?
+cat $LOG
+exit $ret
+)
+ret=$?
 grep TOTAL $LOG | awk '{ print "TOTAL: "$4; }'
 rm $LOG
 deactivate
 
 echo "That's it!"
+
+echo "Return: $ret"
+
+exit $ret
