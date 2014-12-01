@@ -56,7 +56,6 @@ class BurpuiAPITestCase(TestCase):
 	
 	def test_config_parsing(self):
 		response = self.client.get('/api/server-config')
-		print response.json
 		self.assertEquals(response.json, dict(results=[],
 												 boolean=bui.cli.get_parser_attr('boolean'),
 												 server_doc=bui.cli.get_parser_attr('server_doc'),
@@ -86,6 +85,28 @@ class BurpuiAPITestCase(TestCase):
 	def test_live(self):
 		response = self.client.get('/api/live.json')
 		self.assertEquals(response.json, dict(results=[]))
+	
+	def test_running(self):
+		response = self.client.get('/api/running.json')
+		self.assertEquals(response.json, dict(results=False))
+	
+	def test_client_tree(self):
+		response = self.client.get('/api/client-tree.json/toto/1')
+		self.assertEquals(response.json, {u'notif':[[2, u'Cannot contact burp server at 127.0.0.1:9999']]})
+	
+	def test_clients_report_json(self):
+		response = self.client.get('/api/clients-report.json')
+		self.assertEquals(response.json, {u'notif':[[2, u'Cannot contact burp server at 127.0.0.1:9999']]})
+	
+	def test_client_stat_json(self):
+		response = self.client.get('/api/client-stat.json/toto')
+		self.assertEquals(response.json, {u'notif':[[2, u'Cannot contact burp server at 127.0.0.1:9999']]})
+		response = self.client.get('/api/client-stat.json/toto/1')
+		self.assertEquals(response.json, {u'notif':[[2, u'Cannot contact burp server at 127.0.0.1:9999']]})
+	
+	def test_client_json(self):
+		response = self.client.get('/api/client.json/toto')
+		self.assertEquals(response.json, {u'notif':[[2, u'Cannot contact burp server at 127.0.0.1:9999']]})
 
 class BurpuiRoutesTestCase(TestCase):
 
@@ -109,6 +130,10 @@ class BurpuiRoutesTestCase(TestCase):
 	def test_config_render(self):
 		response = self.client.get('/settings')
 		assert 'Burp Configuration' in response.data
+	
+	def test_live_monitor(self):
+		response = self.client.get('/live-monitor', follow_redirects=True)
+		assert 'Sorry, there are no running backups' in response.data
 
 class BurpuiLoginTestCase(TestCase):
 
@@ -136,7 +161,6 @@ class BurpuiLoginTestCase(TestCase):
 
 	def test_login_ok(self):
 		rv = self.login('admin', 'admin')
-		print rv.data
 		assert 'Logged in successfully' in rv.data
 	
 	def test_login_ko(self):
