@@ -58,9 +58,9 @@ class BurpuiAPITestCase(TestCase):
 		response = self.client.get('/api/server-config')
 		self.assertEquals(response.json, dict(results=[],
 												 boolean=bui.cli.get_parser_attr('boolean'),
-												 server_doc=bui.cli.get_parser_attr('server_doc'),
 												 string=bui.cli.get_parser_attr('string'),
-#												 multi=bui.cli.get_parser_attr('multi'),
+												 multi=bui.cli.get_parser_attr('multi'),
+												 server_doc=bui.cli.get_parser_attr('server_doc'),
 												 suggest=bui.cli.get_parser_attr('values_server'),
 												 defaults=bui.cli.get_parser_attr('defaults_server')))
 	
@@ -78,9 +78,9 @@ class BurpuiAPITestCase(TestCase):
 		response = self.client.get('/api/render-live-template')
 		self.assert500(response)
 
-#	def test_servers_json(self):
-#		response = self.client.get('/api/servers.json')
-#		self.assertEquals(response.json, dict(results=[]))
+	def test_servers_json(self):
+		response = self.client.get('/api/servers.json')
+		self.assertEquals(response.json, dict(results=[]))
 
 	def test_live(self):
 		response = self.client.get('/api/live.json')
