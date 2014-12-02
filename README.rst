@@ -119,6 +119,18 @@ Changelog
 
 * version `current <https://git.ziirish.me/ziirish/burp-ui/>`_:
 
+  - Add `gunicorn support <https://git.ziirish.me/ziirish/burp-ui/commit/836f522f51ba0706ca94b379d93b20c75e71ecb1>`_
+  - Add `init script for CentOS <https://git.ziirish.me/ziirish/burp-ui/issues/27>`_
+  - Add `init script for Debian <https://git.ziirish.me/ziirish/burp-ui/issues/29>`_
+  - Add `autofocus login field on login page <https://git.ziirish.me/ziirish/burp-ui/commit/a559c3c2191991f1065ff15df4cd94757133e67d>`_
+  - Fix issue `#25 <https://git.ziirish.me/ziirish/burp-ui/issues/25>`_
+  - Fix issue `#26 <https://git.ziirish.me/ziirish/burp-ui/issues/26>`_
+  - Fix issue `#30 <https://git.ziirish.me/ziirish/burp-ui/issues/30>`_
+  - Fix issue `#32 <https://git.ziirish.me/ziirish/burp-ui/issues/32>`_
+  - Fix issue `#33 <https://git.ziirish.me/ziirish/burp-ui/issues/33>`_
+  - Code cleanup
+  - Improve unit tests
+  - Bugfixes
   - `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/v0.0.5...master>`_
 
 * version `0.0.5 <https://git.ziirish.me/ziirish/burp-ui/commits/v0.0.5>`_:
