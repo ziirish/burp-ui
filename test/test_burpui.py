@@ -59,6 +59,7 @@ class BurpuiAPITestCase(TestCase):
 		self.assertEquals(response.json, dict(results=[],
 												 boolean=bui.cli.get_parser_attr('boolean'),
 												 string=bui.cli.get_parser_attr('string'),
+												 integer=bui.cli.get_parser_attr('integer'),
 												 multi=bui.cli.get_parser_attr('multi'),
 												 server_doc=bui.cli.get_parser_attr('server_doc'),
 												 suggest=bui.cli.get_parser_attr('values_server'),

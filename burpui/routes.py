@@ -33,6 +33,7 @@ def read_conf_srv(server=None):
     return jsonify(results=r,
                    boolean=bui.cli.get_parser_attr('boolean'),
                    string=bui.cli.get_parser_attr('string'),
+                   integer=bui.cli.get_parser_attr('integer'),
                    multi=bui.cli.get_parser_attr('multi'),
                    server_doc=bui.cli.get_parser_attr('server_doc'),
                    suggest=bui.cli.get_parser_attr('values_server'),
