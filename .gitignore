@@ -4,3 +4,4 @@ devel.sh
 *.egg*
 .coverage
 dist
+py2.7
