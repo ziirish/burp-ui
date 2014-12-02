@@ -32,8 +32,9 @@ def read_conf_srv(server=None):
     r = bui.cli.read_conf(server)
     return jsonify(results=r,
                    boolean=bui.cli.get_parser_attr('boolean'),
-                   server_doc=bui.cli.get_parser_attr('server_doc'),
                    string=bui.cli.get_parser_attr('string'),
+                   multi=bui.cli.get_parser_attr('multi'),
+                   server_doc=bui.cli.get_parser_attr('server_doc'),
                    suggest=bui.cli.get_parser_attr('values_server'),
                    defaults=bui.cli.get_parser_attr('defaults_server'))
 
@@ -159,8 +160,9 @@ def render_live_tpl(server=None, name=None):
 @login_required
 def servers_json():
     r = []
-    for serv in bui.cli.servers:
-        r.append({'name': serv, 'clients': len(bui.cli.servers[serv].get_all_clients(serv)), 'alive': bui.cli.servers[serv].ping()})
+    if hasattr(bui.cli, 'servers'):
+        for serv in bui.cli.servers:
+            r.append({'name': serv, 'clients': len(bui.cli.servers[serv].get_all_clients(serv)), 'alive': bui.cli.servers[serv].ping()})
     return jsonify(results=r)
 
 @app.route('/api/live.json')
