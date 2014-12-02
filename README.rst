@@ -4,6 +4,37 @@ Build Status
 .. image:: https://ci.ziirish.me/projects/1/status.png?ref=master
     :target: https://ci.ziirish.me/projects/1?ref=master
 
+What's that?
+------------
+
+Let me introduce you ``Burp-UI``. It is a web-based UI to manage your
+burp-servers.
+You can view different reports about burp-servers, burp-clients, backups, etc.
+``Burp-UI`` allows you to perform *on-the-fly* restorations and should allow
+you to edit/manage your burp-server's conf file very soon.
+
+It is actually an improvement of the burp status monitor (``burp -c /etc/burp/burp-server.conf -a s``).
+
+It currently supports only the burp-1.x branch but it is totally modular so 
+supporting burp-2.x won't be a big deal.
+So in order to work properly, you must be running ``Burp-UI`` on the same host
+that runs your burp-server (because the burp status port only listen on 
+*localhost*).
+If you don't want to, I developed a ``bui-agent`` that allows you to *proxify* 
+external commands to your burp status port.
+
+
+Who are you?
+------------
+
+I'm `Ziirish <http://ziirish.info>`_, a French sysadmin that loves `Burp`_ and
+would like to help its adoption by providing it a nice and powerful interface.
+If you like my work, you can:
+
+* Thank me by sending me an email or writing a nice comment
+* Buy me a beer or some fries or both!
+* Make a donation on my Paypal
+
 
 Requirements
 ------------
