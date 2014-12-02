@@ -14,7 +14,7 @@
           <br />
 
           <div class="form-container">
-            <form class="form-horizontal" action="{{ url_for('settings', server=server) }}" method="GET" ng-controller="MainCtrl" ng-submit="submit($event)">
+            <form class="form-horizontal" action="{{ url_for('settings', server=server) }}" method="GET" ng-controller="MainCtrl" ng-submit="submit($event)" name="setSettings">
               {# From here, the jinja syntax is escaped because we use the angularjs syntax #}
               {% raw %}
               <fieldset>
@@ -84,6 +84,37 @@
                 </div>
               </fieldset>
               <fieldset>
+                <legend id="integer">Integers</legend>
+                <div class="form-group" ng-class="{'has-error': !setSettings[int.name].$valid}" ng-repeat="int in integers">
+                  <label for="{{ int.name }}" class="col-lg-3 control-label">{{ int.name }}</label>
+                  <div class="col-lg-2">
+                    <input class="form-control" type="number" id="{{ int.name }}" name="{{ int.name }}" ng-model="int.value" ng-focus="focusIn($event)" ng-blur="focusOut($event)">
+                  </div>
+                  <div class="col-lg-1">
+                    <button type="button" class="btn btn-danger" ng-click="remove('integers', $index)"><span class="glyphicon glyphicon-minus"></span></button>
+                  </div>
+                  <div class="col-lg-6" ng-bind-html="server_doc[int.name]"></div>
+                </div>
+                <div class="form-group" ng-hide="!add.integers">
+                  <div class="col-lg-3">
+                    <ui-select ng-model="new.integers" ng-disabled="!add.integers" style="width: 100%;" on-select="select($item, $select, 'integers')">
+                      <ui-select-match placeholder="Select an option">{{ $select.selected.name }}</ui-select-match>
+                      <ui-select-choices repeat="value.name as value in avail.integers | filter: $select.search">
+                        <div ng-bind-html="value.name | highlight: $select.search"></div>
+                      </ui-select-choices>
+                    </ui-select>
+                  </div>
+                  <div class="col-lg-9">
+                    <button type="button" class="btn btn-danger" ng-click="undoAdd('integers')"><span class="glyphicon glyphicon-remove"></span></button>
+                  </div>
+                </div>
+                <div class="form-group" ng-hide="integers.length >= all.integers.length || add.integers">
+                  <div class="col-lg-3 col-lg-offset-3">
+                    <button type="button" class="btn btn-success btn-primary" ng-click="clickAdd('integers')"><span class="glyphicon glyphicon-plus"></span></button>
+                  </div>
+                </div>
+              </fieldset>
+              <fieldset>
                 <legend id="multi">Multi</legend>
                 <div class="well" ng-repeat="multi in multis">
                   <div class="form-group" ng-repeat="(i, val) in multi.value track by $index">
@@ -119,12 +150,12 @@
                   </div>
                 </div>
               </fieldset>
-              {% endraw %}
               <div class="form-group">
                 <div class="col-lg-3 col-lg-offset-3">
-                  <button type="submit" class="btn btn-primary">Submit</button>
+                  <button type="submit" class="btn btn-primary" ng-disabled="!setSettings.$valid">Submit</button>
                 </div>
               </div>
+              {% endraw %}
             </form>
           </div>
         </div>

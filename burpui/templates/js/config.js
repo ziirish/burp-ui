@@ -31,6 +31,8 @@ app.controller('MainCtrl', function($scope, $http) {
 			$scope.all.bools = data.boolean;
 			$scope.strings = data.results.common;
 			$scope.all.strings = data.string;
+			$scope.integers = data.results.integer;
+			$scope.all.integers = data.integer;
 			$scope.multis = data.results.multi;
 			$scope.all.multis = data.multi;
 			$scope.server_doc = data.server_doc;
@@ -89,6 +91,8 @@ app.controller('MainCtrl', function($scope, $http) {
 			v = $scope.defaults[n];
 			if (!v && type == 'multis') {
 				v = [''];
+			} else if (!v && type == 'integers') {
+				v = 0;
 			}
 			$scope.avail[type].push({'name': n, 'value': v});
 		});
@@ -116,4 +120,15 @@ app.controller('MainCtrl', function($scope, $http) {
 		el.next('div').next('div').show();
 		el.removeClass('col-lg-9').addClass('col-lg-2');
 	};
+});
+
+// Add a smooth scrolling to anchor
+$(document).ready(function() {
+	$('a[href^="#"]').click(function() {
+		var target = $(this.hash);
+		if (target.length == 0) target = $('a[name="' + this.hash.substr(1) + '"]');
+		if (target.length == 0) target = $('html');
+		$('html, body').animate({ scrollTop: target.offset().top }, 500);
+		return false;
+	});
 });
