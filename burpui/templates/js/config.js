@@ -16,12 +16,14 @@ app.controller('MainCtrl', function($scope, $http) {
 	$scope.new = {
 			'bools': undefined,
 			'integers': undefined,
-			'strings': undefined
+			'strings': undefined,
+			'multis': undefined
 		};
 	$scope.add = {
 			'bools': false,
 			'integers': false,
-			'strings': false
+			'strings': false,
+			'multis': false
 		};
 	$http.get('{{ url_for("read_conf_srv", server=server) }}').
 		success(function(data, status, headers, config) {
@@ -29,6 +31,8 @@ app.controller('MainCtrl', function($scope, $http) {
 			$scope.all.bools = data.boolean;
 			$scope.strings = data.results.common;
 			$scope.all.strings = data.string;
+			$scope.multis = data.results.multi;
+			$scope.all.multis = data.multi;
 			$scope.server_doc = data.server_doc;
 			$scope.suggest = data.suggest;
 			$scope.defaults = data.defaults;
@@ -60,6 +64,19 @@ app.controller('MainCtrl', function($scope, $http) {
 		$scope.add[key] = false;
 		$scope.new[key] = undefined;
 	};
+	$scope.removeMulti = function(pindex, cindex) {
+		$scope.multis[pindex].value.splice(cindex, 1);
+		if ($scope.multis[pindex].value.length <= 0) {
+			$scope.multis.splice(pindex, 1);
+		}
+		$scope.add.multis = false;
+		$scope.new.multis = false;
+	};
+	$scope.addMulti = function(pindex) {
+		$scope.multis[pindex].value.push('');
+		$scope.add.multis = false;
+		$scope.new.multis = false;
+	};
 	$scope.clickAdd = function(type) {
 		if ($scope.new[type]) {
 			$scope.new[type] = undefined;
@@ -70,6 +87,9 @@ app.controller('MainCtrl', function($scope, $http) {
 		$scope.avail[type] = [];
 		_(diff).forEach(function(n) {
 			v = $scope.defaults[n];
+			if (!v && type == 'multis') {
+				v = [''];
+			}
 			$scope.avail[type].push({'name': n, 'value': v});
 		});
 	};
