@@ -4,6 +4,12 @@ Build Status
 .. image:: https://ci.ziirish.me/projects/1/status.png?ref=master
     :target: https://ci.ziirish.me/projects/1?ref=master
 
+Screenshots
+-----------
+
+.. image:: https://git.ziirish.me/ziirish/burp-ui/blob/master/pictures/burp-ui.gif
+
+
 What's that?
 ------------
 
