@@ -7,7 +7,8 @@ Build Status
 Screenshots
 -----------
 
-.. image:: https://git.ziirish.me/ziirish/burp-ui/blob/master/pictures/burp-ui.gif
+.. image:: https://git.ziirish.me/ziirish/burp-ui/raw/master/pictures/burp-ui.gif
+    :target: https://git.ziirish.me/ziirish/burp-ui/blob/master/pictures/burp-ui.gif
 
 
 What's that?
