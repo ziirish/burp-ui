@@ -124,7 +124,7 @@
                     </div>
                     <div class="col-lg-1">
                       <button type="button" class="btn btn-danger" ng-click="removeMulti($parent.$index, $index)"><span class="glyphicon glyphicon-minus"></span></button>
-                      <button type="button" class="btn btn-success btn-primary" ng-click="addMulti($parent.$index)" ng-show="$last"><span class="glyphicon glyphicon-plus"></span></button>
+                      <button type="button" class="btn btn-success btn-primary" ng-click="addMulti($parent.$parent.$index)" ng-if="$last"><span class="glyphicon glyphicon-plus"></span></button>
                     </div>
                     <div class="col-lg-6">
                       <div ng-if="$first" ng-bind-html="server_doc[$parent.multi.name]"></div>
