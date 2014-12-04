@@ -147,7 +147,7 @@ $.extend({
 
             isIos = true;
 
-        } else if (userAgent.indexOf('android') !== -1) {
+        } else if ((userAgent.indexOf('mozilla/5.0') > -1 && userAgent.indexOf('android ') > -1 && userAgent.indexOf('applewebKit') > -1) && !(userAgent.indexOf('chrome') > -1)) {
 
             isAndroid = true;
 
