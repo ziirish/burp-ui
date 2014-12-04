@@ -1,7 +1,6 @@
 # -*- coding: utf8 -*-
 import re
 import os
-import sys
 import socket
 import time
 import json
@@ -12,16 +11,9 @@ import subprocess
 import zipfile
 import codecs
 
-from burpui.misc.utils import human_readable as _hr
+from burpui.misc.utils import human_readable as _hr, BUIlogging
 from burpui.misc.backend.interface import BUIbackend, BUIserverException
 from burpui.misc.parser.burp1 import Parser
-
-def currentframe():
-    """Return the frame object for the caller's stack frame."""
-    try:
-        raise Exception
-    except:
-        return sys.exc_info()[2].tb_frame.f_back
 
 g_burpport    = 4972
 g_burphost    = '127.0.0.1'
@@ -31,7 +23,7 @@ g_stripbin    = u'/usr/sbin/vss_strip'
 g_burpconfcli = None
 g_burpconfsrv = u'/etc/burp/burp-server.conf'
 
-class Burp(BUIbackend):
+class Burp(BUIbackend, BUIlogging):
     states = {
         'i': 'idle',
         'r': 'running',
@@ -168,31 +160,6 @@ class Burp(BUIbackend):
         self._logger('info', 'burp conf cli: %s', self.burpconfcli)
         self._logger('info', 'burp conf srv: %s', self.burpconfsrv)
 
-    def _logger(self, level, *args):
-        if self.app:
-            logs = {
-                'info': self.app.logger.info,
-                'error': self.app.logger.error,
-                'debug': self.app.logger.debug,
-                'warning': self.app.logger.warning
-            }
-            if level in logs:
-                """
-                Try to guess where was call the function
-                """
-                cf = currentframe()
-                if cf is not None:
-                    cf = cf.f_back
-                    """
-                    Ugly hack to reformat the message
-                    """
-                    ar = list(args)
-                    if isinstance(ar[0], str):
-                        ar[0] = '('+str(cf.f_lineno)+') '+ar[0]
-                    else:
-                        ar = ['('+str(cf.f_lineno)+') {0}'.format(ar)]
-                    args = tuple(ar)
-                logs[level](*args)
     """
     Utilities functions
     """

@@ -7,6 +7,8 @@ It was found on the Internet...
 
 import math
 import string
+import sys
+import inspect
 
 # code from here: http://code.activestate.com/recipes/578323-human-readable-filememory-sizes-v2/
 class human_readable( long ):
@@ -52,4 +54,39 @@ class human_readable( long ):
         t = ("{0:{1}f}"+mult[i]+suffix).format(v, precis) 
 
         return "{0:{1}}".format(t,width) if width != "" else t
+
+def currentframe():
+    """Return the frame object for the caller's stack frame."""
+    try:
+        raise Exception
+    except:
+        return sys.exc_info()[2].tb_frame.f_back
+
+class BUIlogging:
+    def _logger(self, level, *args):
+        if self.app:
+            logs = {
+                'info': self.app.logger.info,
+                'error': self.app.logger.error,
+                'debug': self.app.logger.debug,
+                'warning': self.app.logger.warning
+            }
+            if level in logs:
+                """
+                Try to guess where was call the function
+                """
+                cf = currentframe()
+                (frame, filename, line_number, function_name, lines, index) = inspect.getouterframes(cf)[1]
+                if cf is not None:
+                    cf = cf.f_back
+                    """
+                    Ugly hack to reformat the message
+                    """
+                    ar = list(args)
+                    if isinstance(ar[0], str):
+                        ar[0] = filename+':'+str(cf.f_lineno)+' => '+ar[0]
+                    else:
+                        ar = [filename+':'+str(cf.f_lineno)+' => {0}'.format(ar)]
+                    args = tuple(ar)
+                logs[level](*args)
 
