@@ -206,6 +206,7 @@
 			data: $(this).serialize()
 		});
 		e.preventDefault();
+		return false;
 	});
 	$("#btn-clear").on('click', function() {
 		tree.visit(function(node){
