@@ -54,10 +54,10 @@
                 <div class="form-group" ng-repeat="string in strings">
                   <label for="{{ string.name }}" class="col-lg-3 control-label">{{ string.name }}</label>
                   <div ng-if="!suggest[string.name]" class="col-lg-2">
-                    <input class="form-control" type="text" id="{{ string.name }}" name="{{ string.name }}" ng-model="string.value" ng-focus="focusIn($event)" ng-blur="focusOut($event)">
+                    <input class="form-control" type="text" id="{{ string.name }}" name="{{ string.name }}" ng-model="string.value" ng-focus="focusIn($event)" ng-blur="focusOut($event)" placeholder="{{ placeholders[string.name] }}">
                   </div>
                   <div ng-if="suggest[string.name]" class="col-lg-2">
-                    <select class="form-control" id="{{ string.name }}" name="{{ string.name }}" ng-model="string.value" ng-options="currOption for currOption in suggest[string.name]"></select>
+                    <select class="form-control" id="{{ string.name }}" name="{{ string.name }}" ng-model="string.value" ng-options="currOption for currOption in suggest[string.name]" placeholder="{{ placeholders[string.name] }}"></select>
                   </div>
                   <div class="col-lg-1">
                     <button type="button" class="btn btn-danger" ng-click="remove('strings', $index)"><span class="glyphicon glyphicon-minus"></span></button>
@@ -88,7 +88,7 @@
                 <div class="form-group" ng-class="{'has-error': !setSettings[int.name].$valid}" ng-repeat="int in integers">
                   <label for="{{ int.name }}" class="col-lg-3 control-label">{{ int.name }}</label>
                   <div class="col-lg-2">
-                    <input class="form-control" type="number" id="{{ int.name }}" name="{{ int.name }}" ng-model="int.value" ng-focus="focusIn($event)" ng-blur="focusOut($event)">
+                    <input class="form-control" type="number" id="{{ int.name }}" name="{{ int.name }}" ng-model="int.value" ng-focus="focusIn($event)" ng-blur="focusOut($event)" placeholder="{{ placeholders[int.name] }}">
                   </div>
                   <div class="col-lg-1">
                     <button type="button" class="btn btn-danger" ng-click="remove('integers', $index)"><span class="glyphicon glyphicon-minus"></span></button>
@@ -120,11 +120,11 @@
                   <div class="form-group" ng-repeat="(i, val) in multi.value track by $index">
                     <label class="col-lg-3 control-label" for="{{ $parent.multi.name }}-{{ $index }}">{{ $parent.multi.name }}</label>
                     <div class="col-lg-2">
-                      <input class="form-control" type="text" name="{{ $parent.multi.name }}[]" id="{{ $parent.multi.name }}-{{ $index }}" ng-model="$parent.multi.value[i]" ng-focus="focusIn($event)" ng-blur="focusOut($event)">
+                      <input class="form-control" type="text" name="{{ $parent.multi.name }}[]" id="{{ $parent.multi.name }}-{{ $index }}" ng-model="$parent.multi.value[i]" ng-focus="focusIn($event)" ng-blur="focusOut($event)" placeholder="{{ placeholders[$parent.multi.name] }}">
                     </div>
                     <div class="col-lg-1">
                       <button type="button" class="btn btn-danger" ng-click="removeMulti($parent.$index, $index)"><span class="glyphicon glyphicon-minus"></span></button>
-                      <button type="button" class="btn btn-success btn-primary" ng-click="addMulti($parent.$index)" ng-if="$last"><span class="glyphicon glyphicon-plus"></span></button>
+                      <button type="button" class="btn btn-success btn-primary" ng-click="addMulti($parent.$index)" ng-show="$last"><span class="glyphicon glyphicon-plus"></span></button>
                     </div>
                     <div class="col-lg-6">
                       <div ng-if="$first" ng-bind-html="server_doc[$parent.multi.name]"></div>

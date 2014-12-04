@@ -63,6 +63,7 @@ class BurpuiAPITestCase(TestCase):
 												 multi=bui.cli.get_parser_attr('multi'),
 												 server_doc=bui.cli.get_parser_attr('server_doc'),
 												 suggest=bui.cli.get_parser_attr('values_server'),
+												 placeholders=bui.cli.get_parser_attr('placeholders'),
 												 defaults=bui.cli.get_parser_attr('defaults_server')))
 	
 	def test_restore(self):

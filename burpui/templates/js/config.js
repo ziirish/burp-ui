@@ -9,6 +9,7 @@ app.controller('MainCtrl', function($scope, $http) {
 	$scope.bools = [];
 	$scope.strings = [];
 	$scope.defaults = {};
+	$scope.placeholders = {};
 	$scope.all = {};
 	$scope.avail = {};
 	$scope.suggest = {};
@@ -37,6 +38,7 @@ app.controller('MainCtrl', function($scope, $http) {
 			$scope.all.multis = data.multi;
 			$scope.server_doc = data.server_doc;
 			$scope.suggest = data.suggest;
+			$scope.placeholders = data.placeholders;
 			$scope.defaults = data.defaults;
 		});
 	$scope.submit = function(e) {
@@ -91,8 +93,6 @@ app.controller('MainCtrl', function($scope, $http) {
 			v = $scope.defaults[n];
 			if (!v && type == 'multis') {
 				v = [''];
-			} else if (!v && type == 'integers') {
-				v = 0;
 			}
 			$scope.avail[type].push({'name': n, 'value': v});
 		});
