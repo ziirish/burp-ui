@@ -1,21 +1,13 @@
 # -*- coding: utf8 -*-
 import re
 import os
-import sys
 import shutil
 import codecs
 
-from burpui.misc.utils import human_readable as _hr
+from burpui.misc.utils import human_readable as _hr, BUIlogging
 from burpui.misc.parser.interface import BUIparser
 
-def currentframe():
-    """Return the frame object for the caller's stack frame."""
-    try:
-        raise Exception
-    except:
-        return sys.exc_info()[2].tb_frame.f_back
-
-class Parser(BUIparser):
+class Parser(BUIparser,BUIlogging):
     defaults_server = {
             u'mode': '',
             u'address': '', #IP
@@ -89,6 +81,8 @@ class Parser(BUIparser):
             u'ca_server_name': '',
             u'ca_burp_ca': '', #file
             u'monitor_browse_cache': False, #bool
+            u'hard_quota': '',
+            u'soft_quota': '',
         }
     values_server = {
             u'mode': ['client', 'server'],
@@ -109,7 +103,7 @@ class Parser(BUIparser):
             u'server_script_post',
             u'server_script',
             u'ca_conf',
-            u'ca_burp_ca'
+            u'ca_burp_ca',
         ]
     multi = [
             u'keep',
@@ -119,7 +113,7 @@ class Parser(BUIparser):
             u'timer_arg',
             u'server_script_arg',
             u'server_script_pre_arg',
-            u'server_script_post_arg'
+            u'server_script_post_arg',
         ]
     boolean = [
             u'daemon',
@@ -144,7 +138,7 @@ class Parser(BUIparser):
             u'server_script_post_notify',
             u'server_script_notify',
             u'server_script_post_run_on_fail',
-            u'monitor_browse_cache'
+            u'monitor_browse_cache',
         ]
     integer = [
             u'port',
@@ -155,7 +149,7 @@ class Parser(BUIparser):
             u'network_timeout',
             u'max_children',
             u'max_status_children',
-            u'max_storage_subdirs'
+            u'max_storage_subdirs',
         ]
     string = [
             u'mode',
@@ -186,7 +180,9 @@ class Parser(BUIparser):
             u'server_script_pre',
             u'server_script_post',
             u'server_script',
-            u'umask'
+            u'umask',
+            u'hard_quota',
+            u'soft_quota',
         ]
     server_doc = {
             u'ssl_compression': "Choose the level of zlib compression over SSL. Setting 0 or zlib0 turnsSSL compression off. Setting non-zero gives zlib5 compression (it is not currently possible for openssl to set any other level). The default is 5. 'gzip' is a synonym of 'zlib'.is a synonym of 'zlib'.",
@@ -244,7 +240,7 @@ class Parser(BUIparser):
             u'notify_success_arg': "A user-definable argument to the notify success script. You can have many of these. The notify_success_arg options can be overriddden by the client configuration files in clientconfdir on the server.",
             u'notify_success_warnings_only': "Set to 1 to send success notifications when there were warnings. If this and notify_success_changes_only are not turned on, success notifications are always sent.",
             u'notify_failure_script': "The same as notify_success_script, but for backups that failed.",
-            u'notify_failure_arg': "The same as notify_failure_arg, but for backups that failed.",
+            u'notify_failure_arg': "The same as notify_success_arg, but for backups that failed.",
             u'dedup_group': "Enables you to group clients together for file deduplication purposes. For example, you might want to set 'dedup_group=xp' for each Windows XP client, and then run the bedup program on a cron job every other day with the option '-g xp'.",
             u'server_script_pre': "Path to a script to run on the server after each successfully authenticated connection but before any work is carried out. The arguments to it are 'pre', '(client command)', 'reserved3' to 'reserved5', and then arguments defined by server_script_pre_arg. If the script returns non-zero, the task asked for by the client will not be run. This command and related options can be overriddden by the client configuration files in clientconfdir on the server.",
             u'server_script_pre_arg': "A user-definable argument to the server pre script. You can have many of these.",
@@ -260,37 +256,13 @@ class Parser(BUIparser):
             u'ca_conf': "Path to certificate authority configuration file. The CA configuration file will usually be /etc/burp/CA.cnf. The CA directory indicated by CA.cnf will usually be /etc/burp/CA. If ca_conf is set and the CA directory does not exist, the server will create, populate it, and the paths indicated by ssl_cert_ca, ssl_cert, ssl_key and ssl_dhfile will be overwritten. For more detailed information on this and the other ca_* options, please see docs/burp_ca.txt.",
             u'ca_name': "Name of the CA that the server will generate when using the ca_conf option.",
             u'ca_server_name': "The name that the server will put into its own SSL certficates when using the ca_conf option.",
-            u'ca_burp_ca': "Path to the burp_ca script when using the ca_conf option."
+            u'ca_burp_ca': "Path to the burp_ca script when using the ca_conf option.",
+            u'soft_quota': "A warning will be issued when the estimated size of all files is greater than the specified size and smaller than hard_quota. Example: 'soft_quota = 95Gb'. Set to 0 (the default) to have no warning.",
+            u'hard_quota': "Do not back up the client if the estimated size of all files is greater than the specified size. Example: 'hard_quota = 100Gb'. Set to 0 (the default) to have no limit.",
         }
 
     #def __init__(self, app=None, conf=None):
         #self._logger('info', 'temporary dir: %s', self.tmpdir)
-
-    def _logger(self, level, *args):
-        if self.app:
-            logs = {
-                'info': self.app.logger.info,
-                'error': self.app.logger.error,
-                'debug': self.app.logger.debug,
-                'warning': self.app.logger.warning
-            }
-            if level in logs:
-                """
-                Try to guess where was call the function
-                """
-                cf = currentframe()
-                if cf is not None:
-                    cf = cf.f_back
-                    """
-                    Ugly hack to reformat the message
-                    """
-                    ar = list(args)
-                    if isinstance(ar[0], str):
-                        ar[0] = '('+str(cf.f_lineno)+') '+ar[0]
-                    else:
-                        ar = ['('+str(cf.f_lineno)+') {0}'.format(ar)]
-                    args = tuple(ar)
-                logs[level](*args)
 
     def _readfile(self, f=None, sourced=False):
         if not f:
