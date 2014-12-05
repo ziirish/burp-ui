@@ -16,7 +16,7 @@ from burpui.misc.backend.interface import BUIbackend, BUIserverException
 from burpui.misc.parser.burp1 import Parser
 
 g_burpport    = 4972
-g_burphost    = '127.0.0.1'
+g_burphost    = '::1'
 g_tmpdir      = u'/tmp/buirestore'
 g_burpbin     = u'/usr/sbin/burp'
 g_stripbin    = u'/usr/sbin/vss_strip'
@@ -152,6 +152,9 @@ class Burp(BUIbackend, BUIlogging):
 
         self.parser = Parser(self.app, self.burpconfsrv)
 
+        self.family = self._get_inet_family(self.host)
+        self._test_burp_settings(self.host)
+
         self._logger('info', 'burp port: %d', self.port)
         self._logger('info', 'burp host: %s', self.host)
         self._logger('info', 'burp binary: %s', self.burpbin)
@@ -164,6 +167,36 @@ class Burp(BUIbackend, BUIlogging):
     Utilities functions
     """
 
+    def _get_inet_family(self, addr):
+        if addr == '127.0.0.1':
+            return socket.AF_INET
+        else:
+            return socket.AF_INET6
+
+    def _test_burp_settings(self, addr, retry=False):
+        family = self._get_inet_family(addr)
+        try:
+            s = socket.socket(family, socket.SOCK_STREAM)
+            s.connect((addr, self.port))
+            s.close()
+            return True
+        except socket.error:
+            self._logger('warning', 'Cannot contact burp server at %s:%s', addr, self.port)
+            if not retry:
+                new_addr = ''
+                if self.host == '127.0.0.1':
+                    new_addr = '::1'
+                else:
+                    new_addr = '127.0.0.1'
+                self._logger('info', 'Trying %s:%s instead', new_addr, self.port)
+                if self._test_burp_settings(new_addr, True):
+                    self._logger('info', '%s:%s is reachable, switching to it for this runtime', new_addr, self.port)
+                    self.host = new_addr
+                    self.family = family
+                    return True
+                self._logger('error', 'Cannot guess burp server address')
+        return False
+
     def status(self, query='\n', agent=None):
         """
         status connects to the burp status port, ask the given 'question' and
@@ -171,16 +204,11 @@ class Burp(BUIbackend, BUIlogging):
         """
         r = []
         try:
-            socket.inet_aton(self.host)
-            form = socket.AF_INET
-        except socket.error:
-            form = socket.AF_INET6
-        try:
             if not query.endswith('\n'):
                 q = '{0}\n'.format(query)
             else:
                 q = query
-            s = socket.socket(form, socket.SOCK_STREAM)
+            s = socket.socket(self.family, socket.SOCK_STREAM)
             s.connect((self.host, self.port))
             s.send(q)
             s.shutdown(socket.SHUT_WR)
