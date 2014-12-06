@@ -6,6 +6,7 @@ ISROOT=0
 
 [ $UID -eq 0 ] && ISROOT=1
 
+
 echo "test requirements"
 [ $ISROOT -eq 1 ] && apt-get update
 
