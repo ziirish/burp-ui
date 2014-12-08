@@ -14,21 +14,21 @@
           <br />
 
           <div class="form-container">
-            <form class="form-horizontal" action="{{ url_for('settings', server=server) }}" method="GET" ng-controller="MainCtrl" ng-submit="submit($event)" name="setSettings">
+            <form class="form-horizontal" action="{{ url_for('settings', server=server) }}" method="POST" ng-controller="MainCtrl" ng-submit="submit($event)" name="setSettings">
               {# From here, the jinja syntax is escaped because we use the angularjs syntax #}
               {% raw %}
               <fieldset>
                 <legend id="boolean">Booleans</legend>
                 <div class="form-group" ng-repeat="bool in bools">
-                  <label for="{{ bool.name }}_view" class="col-lg-3 control-label">{{ bool.name }}</label>
+                  <label for="{{ ::bool.name }}_view" class="col-lg-3 control-label">{{ ::bool.name }}</label>
                   <div class="col-lg-2">
-                    <input bs-switch ng-model="bool.value" type="checkbox" id="{{ bool.name }}_view" name="{{ bool.name }}_view" class="form-control">
-                    <input type="hidden" name="{{ bool.name }}" id="{{ bool.name }}">
+                    <input bs-switch ng-model="bool.value" type="checkbox" id="{{ ::bool.name }}_view" name="{{ ::bool.name }}_view" class="form-control">
+                    <input type="hidden" name="{{ ::bool.name }}" id="{{ ::bool.name }}">
                   </div>
                   <div class="col-lg-1">
                     <button type="button" class="btn btn-danger" ng-click="remove('bools', $index)"><span class="glyphicon glyphicon-minus"></span></button>
                   </div>
-                  <div class="col-lg-6" ng-bind-html="server_doc[bool.name]"></div>
+                  <div class="col-lg-6" ng-bind-html="::server_doc[bool.name]"></div>
                 </div>
                 <div class="form-group" ng-hide="!add.bools">
                   <div class="col-lg-3">
@@ -52,17 +52,17 @@
               <fieldset>
                 <legend id="string">Strings</legend>
                 <div class="form-group" ng-repeat="string in strings">
-                  <label for="{{ string.name }}" class="col-lg-3 control-label">{{ string.name }}</label>
+                  <label for="{{ ::string.name }}" class="col-lg-3 control-label">{{ ::string.name }}</label>
                   <div ng-if="!suggest[string.name]" class="col-lg-2">
-                    <input class="form-control" type="text" id="{{ string.name }}" name="{{ string.name }}" ng-model="string.value" ng-focus="focusIn($event)" ng-blur="focusOut($event)" placeholder="{{ placeholders[string.name] }}">
+                    <input class="form-control" type="text" id="{{ ::string.name }}" name="{{ ::string.name }}" ng-model="string.value" ng-focus="focusIn($event)" ng-blur="focusOut($event)" placeholder="{{ ::placeholders[string.name] }}">
                   </div>
                   <div ng-if="suggest[string.name]" class="col-lg-2">
-                    <select class="form-control" id="{{ string.name }}" name="{{ string.name }}" ng-model="string.value" ng-options="currOption for currOption in suggest[string.name]" placeholder="{{ placeholders[string.name] }}"></select>
+                    <select class="form-control" id="{{ ::string.name }}" name="{{ ::string.name }}" ng-model="string.value" ng-options="currOption for currOption in ::suggest[string.name]" placeholder="{{ ::placeholders[string.name] }}"></select>
                   </div>
                   <div class="col-lg-1">
                     <button type="button" class="btn btn-danger" ng-click="remove('strings', $index)"><span class="glyphicon glyphicon-minus"></span></button>
                   </div>
-                  <div class="col-lg-6" ng-bind-html="server_doc[string.name]"></div>
+                  <div class="col-lg-6" ng-bind-html="::server_doc[string.name]"></div>
                 </div>
                 <div class="form-group" ng-hide="!add.strings">
                   <div class="col-lg-3">
@@ -86,14 +86,14 @@
               <fieldset>
                 <legend id="integer">Integers</legend>
                 <div class="form-group" ng-class="{'has-error': !setSettings[int.name].$valid}" ng-repeat="int in integers">
-                  <label for="{{ int.name }}" class="col-lg-3 control-label">{{ int.name }}</label>
+                  <label for="{{ ::int.name }}" class="col-lg-3 control-label">{{ ::int.name }}</label>
                   <div class="col-lg-2">
-                    <input class="form-control" type="number" id="{{ int.name }}" name="{{ int.name }}" ng-model="int.value" ng-focus="focusIn($event)" ng-blur="focusOut($event)" placeholder="{{ placeholders[int.name] }}">
+                    <input class="form-control" type="number" id="{{ ::int.name }}" name="{{ ::int.name }}" ng-model="int.value" ng-focus="focusIn($event)" ng-blur="focusOut($event)" placeholder="{{ ::placeholders[int.name] }}">
                   </div>
                   <div class="col-lg-1">
                     <button type="button" class="btn btn-danger" ng-click="remove('integers', $index)"><span class="glyphicon glyphicon-minus"></span></button>
                   </div>
-                  <div class="col-lg-6" ng-bind-html="server_doc[int.name]"></div>
+                  <div class="col-lg-6" ng-bind-html="::server_doc[int.name]"></div>
                 </div>
                 <div class="form-group" ng-hide="!add.integers">
                   <div class="col-lg-3">
@@ -118,16 +118,16 @@
                 <legend id="multi">Multi</legend>
                 <div class="well" ng-repeat="multi in multis">
                   <div class="form-group" ng-repeat="(i, val) in multi.value track by $index">
-                    <label class="col-lg-3 control-label" for="{{ $parent.multi.name }}-{{ $index }}">{{ $parent.multi.name }}</label>
+                    <label class="col-lg-3 control-label" for="{{ ::$parent.multi.name }}-{{ $index }}">{{ ::$parent.multi.name }}</label>
                     <div class="col-lg-2">
-                      <input class="form-control" type="text" name="{{ $parent.multi.name }}[]" id="{{ $parent.multi.name }}-{{ $index }}" ng-model="$parent.multi.value[i]" ng-focus="focusIn($event)" ng-blur="focusOut($event)" placeholder="{{ placeholders[$parent.multi.name] }}">
+                      <input class="form-control" type="text" name="{{ ::$parent.multi.name }}" id="{{ ::$parent.multi.name }}-{{ $index }}" ng-model="$parent.multi.value[i]" ng-focus="focusIn($event)" ng-blur="focusOut($event)" placeholder="{{ ::placeholders[$parent.multi.name] }}">
                     </div>
                     <div class="col-lg-1">
                       <button type="button" class="btn btn-danger" ng-click="removeMulti($parent.$index, $index)"><span class="glyphicon glyphicon-minus"></span></button>
                       <button type="button" class="btn btn-success btn-primary" ng-click="addMulti($parent.$parent.$index)" ng-if="$last"><span class="glyphicon glyphicon-plus"></span></button>
                     </div>
                     <div class="col-lg-6">
-                      <div ng-if="$first" ng-bind-html="server_doc[$parent.multi.name]"></div>
+                      <div ng-if="$first" ng-bind-html="::server_doc[$parent.multi.name]"></div>
                     </div>
                   </div>
                 </div>
