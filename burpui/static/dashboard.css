@@ -279,3 +279,8 @@ legend[id] {
   margin-top: -45px;
   padding-top: 80px;
 }
+
+.dtl {
+  display: none;
+  height: 15px;
+}
