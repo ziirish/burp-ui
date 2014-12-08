@@ -186,11 +186,11 @@ $(function() {
 	$('li.detail').hover(
 		// mouse in
 		function() {
-			$(this).find('.dtl').removeClass('hidden-md hidden-lg');
+			$(this).find('.dtl').animate({width: 'toggle'});
 		},
 		// mouse out
 		function() {
-			$(this).find('.dtl').addClass('hidden-md hidden-lg');
+			$(this).find('.dtl').animate({width: 'toggle'});
 		}
 	);
 
