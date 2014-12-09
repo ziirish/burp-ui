@@ -1,5 +1,5 @@
 
-var app = angular.module('ConfigApp', ['ngSanitize', 'frapontillo.bootstrap-switch', 'ui.select', 'mgcrea.ngStrap']);
+var app = angular.module('ConfigApp', ['ngSanitize', 'frapontillo.bootstrap-switch', 'ui.select', 'mgcrea.ngStrap', 'angular-onbeforeunload']);
 
 app.config(function(uiSelectConfig) {
   uiSelectConfig.theme = 'bootstrap';
@@ -26,6 +26,7 @@ app.controller('MainCtrl', function($scope, $http) {
 			'strings': false,
 			'multis': false
 		};
+	$scope.changed = false;
 	$http.get('{{ url_for("read_conf_srv", server=server) }}').
 		success(function(data, status, headers, config) {
 			$scope.bools = data.results.boolean;
@@ -42,6 +43,7 @@ app.controller('MainCtrl', function($scope, $http) {
 			$scope.defaults = data.defaults;
 		});
 	$scope.submit = function(e) {
+		e.preventDefault();
 		/* ugly hack to disable form submission when pressing the 'return' key
 		 * on the select + replace switch by hidden fields so that the unchecked
 		 * switch get submitted */
@@ -51,13 +53,48 @@ app.controller('MainCtrl', function($scope, $http) {
 			if (value && value.selected) sbm = false;
 		});
 		if (!sbm) {
-			e.preventDefault();
 			return;
 		}
-		angular.forEach($scope.bools, function(value, key) {
-			$('#'+value.name).val(value.value);
-			$('#'+value.name+'_view').attr('disabled', true);
-		});
+		var form = $(e.target);
+		if (form.attr('name') === 'setSettings') {
+			angular.forEach($scope.bools, function(value, key) {
+				form.find('#'+value.name).val(value.value);
+				form.find('#'+value.name+'_view').attr('disabled', true);
+			});
+			submit = form.find('button[type="submit"]');
+			sav = submit.text();
+			submit.text('Saving...');
+			submit.attr('disabled', true);
+			$.ajax({
+						url: form.attr('action'),
+						type: form.attr('method'),
+						data: form.serialize()
+			}).fail(function(xhr, stat, err) {
+				var msg = '<strong>ERROR:</strong> ';
+				if (stat && err) {
+					msg +=  '<p>'+stat+'</p><pre>'+err+'</pre>';
+				} else if (stat) {
+					msg += '<p>'+stat+'</p>';
+				} else if (err) {
+					msg += '<pre>'+err+'</pre>';
+				}
+				notif(2, msg, 10000);
+			}).done(function(data) {
+				if (data.notif) {
+					$.each(data.notif, function(i, n) {
+						notif(n[0], n[1]);
+					});
+				}
+				$scope.setSettings.$setPristine();
+				$scope.changed = false;
+			}).always(function() {
+				submit.text(sav);
+				submit.attr('disabled', false);
+			});
+			angular.forEach($scope.bools, function(value, key) {
+				form.find('#'+value.name+'_view').attr('disabled', false);
+			});
+		}
 	};
 	$scope.remove = function(key, index) {
 		if (!$scope.old[key]) {
@@ -67,6 +104,7 @@ app.controller('MainCtrl', function($scope, $http) {
 		$scope[key].splice(index, 1);
 		$scope.add[key] = false;
 		$scope.new[key] = undefined;
+		$scope.changed = true;
 	};
 	$scope.removeMulti = function(pindex, cindex) {
 		$scope.multis[pindex].value.splice(cindex, 1);
@@ -75,11 +113,13 @@ app.controller('MainCtrl', function($scope, $http) {
 		}
 		$scope.add.multis = false;
 		$scope.new.multis = false;
+		$scope.changed = true;
 	};
 	$scope.addMulti = function(pindex) {
 		$scope.multis[pindex].value.push('');
 		$scope.add.multis = false;
 		$scope.new.multis = false;
+		$scope.changed = true;
 	};
 	$scope.clickAdd = function(type) {
 		if ($scope.new[type]) {
@@ -104,6 +144,7 @@ app.controller('MainCtrl', function($scope, $http) {
 		}
 		$scope[type].push(selected);
 		$scope.add[type] = false;
+		$scope.changed = true;
 	};
 	$scope.undoAdd = function(type) {
 		$scope.add[type] = false;

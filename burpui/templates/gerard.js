@@ -4,7 +4,8 @@ var pad = function(num, size) {
 	return s.substr(s.length-size);
 };
 
-var notif = function(type, message) {
+var notif = function(type, message, timeout) {
+	timeout = (typeof timeout === "undefined") ? 5000 : timeout;
 	var t = '';
 	switch(type) {
 		case 0:
@@ -30,7 +31,7 @@ var notif = function(type, message) {
 			i+message+
 		  '</div>');
 	$('#bui-notifications').append(e).show();
-	e.animate({opacity:1}, 5000, 'linear', function() { e.animate({opacity:0}, 2000, 'linear', function() {e.remove(); }); });
+	e.animate({opacity:1}, timeout, 'linear', function() { e.animate({opacity:0}, 2000, 'linear', function() {e.remove(); }); });
 };
 
 {% if not login -%}

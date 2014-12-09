@@ -14,9 +14,10 @@
           <br />
 
           <div class="form-container">
-            <form class="form-horizontal" action="{{ url_for('settings', server=server) }}" method="POST" ng-controller="MainCtrl" ng-submit="submit($event)" name="setSettings">
+            <form class="form-horizontal" action="{{ url_for('settings', server=server) }}" method="POST" ng-controller="MainCtrl" ng-submit="submit($event)" name="setSettings" onbeforeunload>
               {# From here, the jinja syntax is escaped because we use the angularjs syntax #}
               {% raw %}
+              <input type="hidden" name="changed" value="false">
               <fieldset>
                 <legend id="boolean">Booleans</legend>
                 <div class="form-group" ng-repeat="bool in bools">
