@@ -43,6 +43,18 @@ If you like my work, you can:
 * Make a donation on my Paypal
 
 
+Contributing
+------------
+
+Contributions are welcome. You can help in any way you want, for instance by
+opening issues on the `bug tracker <https://git.ziirish.me/ziirish/burp-ui/issues>`__,
+sending patches, etc.
+There is also a dedicated website. Currently it only hosts a `Discourse <http://www.discourse.org/>`__
+instance where you ca discuss with each other.
+Feel free to use it and post your tips and remarks.
+The address is: `http://burpui.ziirish.me/ <http://burpui.ziirish.me/>`__
+
+
 Requirements
 ------------
 
@@ -98,11 +110,33 @@ By default, ``burp-ui`` listens on all interfaces (including IPv6) on port 5000.
 You can then point your browser to http://127.0.0.1:5000/
 
 
+Development
+-----------
+
+If you wish to use the latest and yet unstable version (eg. `master <https://git.ziirish.me/ziirish/burp-ui/tree/master>`__),
+you can install it using ``pip`` too, but I would recommend you to use a 
+``virtualenv``.
+
+To do so, run the following commands:
+
+::
+
+    mkdir /opt/bui-venv
+    pip install virtualenv
+    virtualenv /opt/bui-venv
+    source /opt/bui-venv/bin/activate
+    pip install git+https://git.ziirish.me/ziirish/burp-ui.git
+
+
+You can uninstall/disable this ``Burp-UI`` setup by typing ``deactivate`` and
+removing the ``/opt/bui-venv`` directory.
+
+
 Gunicorn
 --------
 
-``Burp-UI`` now supports `Gunicorn <http://gunicorn.org>`_ in order to handle 
-multiple users simultaneously.
+Starting from v0.0.6, ``Burp-UI`` supports `Gunicorn <http://gunicorn.org>`_ in
+order to handle multiple users simultaneously.
 
 You need to install ``gunicorn`` and ``eventlet``:
 
@@ -121,8 +155,8 @@ You will then be able to launch ``Burp-UI`` this way:
 Instructions
 ------------
 
-In order to make the *on the fly* restoration/download functionality work, there
-you need to check a few things:
+In order to make the *on the fly* restoration/download functionality work, you
+need to check a few things:
 
 1. Provide the full path of the burp (client) binary file
 2. Provide the full path of an empty directory where a temporary restoration
@@ -138,7 +172,7 @@ you need to check a few things:
 Notes
 -----
 
-Please feel free to report any issues on my `gitlab <https://git.ziirish.me/ziirish/burp-ui/issues>`_
+Please feel free to report any issues on my `gitlab <https://git.ziirish.me/ziirish/burp-ui/issues>`_.
 I have closed the *github tracker* to have a unique tracker system.
 
 
