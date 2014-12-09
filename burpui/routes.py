@@ -19,10 +19,15 @@ def load_user(userid):
         return bui.uhandler.user(userid)
     return None
 
-@app.route('/settings')
-@app.route('/<server>/settings')
+@app.route('/settings', methods=['GET', 'POST'])
+@app.route('/<server>/settings', methods=['GET', 'POST'])
 @login_required
 def settings(server=None):
+    if request.method == 'POST':
+        print request.form.keys()
+        print request.form.getlist('keep')
+        noti = [[0, 'Yo Dawg!']]
+        return jsonify(notif=noti)
     return render_template('config.html', settings=True, server=server)
 
 @app.route('/api/server-config')
