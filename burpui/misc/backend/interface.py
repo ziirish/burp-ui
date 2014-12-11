@@ -33,6 +33,12 @@ class BUIbackend:
     def restore_files(self, name=None, backup=None, files=None, strip=None, agent=None):
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")
 
+    def read_conf(self, agent=None):
+        raise NotImplementedError("Sorry, the current Backend does not implement this method!")
+
+    def store_conf(self, data, agent=None):
+        raise NotImplementedError("Sorry, the current Backend does not implement this method!")
+
     def get_parser_attr(self, attr=None, agent=None):
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")
 

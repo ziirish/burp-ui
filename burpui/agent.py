@@ -66,6 +66,7 @@ class BUIAgent:
                 'get_tree': self.backend.get_tree,
                 'restore_files': self.backend.restore_files,
                 'read_conf': self.backend.read_conf,
+                'store_conf': self.backend.store_conf,
                 'get_parser_attr': self.backend.get_parser_attr
             }
 

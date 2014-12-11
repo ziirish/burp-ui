@@ -24,11 +24,9 @@ def load_user(userid):
 @login_required
 def settings(server=None):
     if request.method == 'POST':
-        print request.form.keys()
-        print request.form.getlist('keep')
-        noti = [[0, 'Yo Dawg!']]
+        noti = bui.cli.store_conf(request.form)
         return jsonify(notif=noti)
-    return render_template('config.html', settings=True, server=server)
+    return render_template('settings.html', settings=True, server=server)
 
 @app.route('/api/server-config')
 @app.route('/api/<server>/server-config')
