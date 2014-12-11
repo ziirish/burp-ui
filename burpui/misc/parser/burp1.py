@@ -336,6 +336,7 @@ class Parser(BUIparser,BUIlogging):
     #def __init__(self, app=None, conf=None):
         #self._logger('info', 'temporary dir: %s', self.tmpdir)
 
+
     def _readfile(self, f=None, sourced=False):
         if not f:
             return []
@@ -415,6 +416,32 @@ class Parser(BUIparser,BUIlogging):
                     break
 
         return res
+
+    def store_server_conf(self, data):
+        if not self.conf:
+            return [[0, 'Sorry, no configuration file defined']]
+        ref = '{}.bui.init.back'.format(self.conf)
+        if not os.path.isfile(ref):
+            try:
+                shutil.copy(self.conf, ref)
+            except Exception, e:
+                return [[2, str(e)]]
+
+        with codecs.open(self.conf, 'w', 'utf-8') as f:
+            f.write('# Auto-generated configuration using Burp-UI\n')
+            for key in data.keys():
+                if key in self.boolean:
+                    val = 0
+                    if data.get(key):
+                        val = 1
+                    f.write('{} = {}\n'.format(key, val))
+                elif key in self.multi:
+                    for val in data.getlist(key):
+                        f.write('{} = {}\n'.format(key, val))
+                else:
+                    f.write('{} = {}\n'.format(key, data.get(key)))
+
+        return [[0, 'Configuration successfully saved.']]
 
     def get_priv_attr(self, key):
         try:
