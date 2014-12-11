@@ -115,6 +115,9 @@ class Burp(BUIbackend):
     def read_conf(self, agent=None):
         return self.servers[agent].read_conf()
 
+    def store_conf(self, data, agent=None):
+        return self.servers[agent].store_conf(data)
+
     def get_parser_attr(self, attr=None, agent=None):
         return self.servers[agent].get_parser_attr(attr)
 
@@ -280,6 +283,10 @@ class NClient(BUIbackend):
     def read_conf(self, agent=None):
         data = {'func': 'read_conf', 'args': None}
         return json.loads(self.do_command(data))
+
+    def store_conf(self, data, agent=None):
+        data = {'func': 'store_conf', 'args': {'data': data}}
+        return json.loads(self.do_comman(data))
 
     def get_parser_attr(self, attr=None, agent=None):
         data = {'func': 'get_parser_attr', 'args': {'attr': attr}}
