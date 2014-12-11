@@ -161,7 +161,7 @@ $('#input-client').typeahead({
 {% endif -%}
 
 {% if settings -%}
-{% include "js/config.js" %}
+{% include "js/settings.js" %}
 {% endif -%}
 
 var _async_ajax = function(b) {
