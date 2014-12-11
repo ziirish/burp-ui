@@ -17,7 +17,6 @@
             <form class="form-horizontal" action="{{ url_for('settings', server=server) }}" method="POST" ng-controller="MainCtrl" ng-submit="submit($event)" name="setSettings" onbeforeunload>
               {# From here, the jinja syntax is escaped because we use the angularjs syntax #}
               {% raw %}
-              <input type="hidden" name="changed" value="false">
               <fieldset>
                 <legend id="boolean">Booleans</legend>
                 <div class="form-group" ng-repeat="bool in bools">
@@ -58,7 +57,9 @@
                     <input class="form-control" type="text" id="{{ ::string.name }}" name="{{ ::string.name }}" ng-model="string.value" ng-focus="focusIn($event)" ng-blur="focusOut($event)" placeholder="{{ ::placeholders[string.name] }}">
                   </div>
                   <div ng-if="suggest[string.name]" class="col-lg-2">
-                    <select class="form-control" id="{{ ::string.name }}" name="{{ ::string.name }}" ng-model="string.value" ng-options="currOption for currOption in ::suggest[string.name]" placeholder="{{ ::placeholders[string.name] }}"></select>
+                    <select class="form-control" id="{{ ::string.name }}" name="{{ ::string.name }}" ng-model="string.value" placeholder="{{ ::placeholders[string.name] }}">
+                      <option ng-repeat="opt in ::suggest[string.name]" ng-selected="{{opt==string.value}}" value="{{ opt }}">{{ opt }}</option>
+                    </select>
                   </div>
                   <div class="col-lg-1">
                     <button type="button" class="btn btn-danger" ng-click="remove('strings', $index)"><span class="glyphicon glyphicon-minus"></span></button>
