@@ -6,18 +6,24 @@ from optparse import OptionParser
 
 sys.path.append('{0}/..'.format(os.path.join(os.path.dirname(os.path.realpath(__file__)))))
 
-from burpui import bui, init
+from burpui import bui, init, __title__, __version__
 
 if __name__ == '__main__':
     """
     Main function
     """
     parser = OptionParser()
-    parser.add_option('-v', '--verbose', dest='log', help='verbose output', action='store_true')
-    parser.add_option('-c', '--config', dest='config', help='configuration file', metavar='CONFIG')
+    parser.add_option('-v', '--verbose', dest='log', help='Verbose output.', action='store_true')
+    parser.add_option('-d', '--debug', dest='log', help='Verbose output (alias).', action='store_true') #alias for -v
+    parser.add_option('-V', '--version', dest='version', help='Print version and exit.', action='store_true')
+    parser.add_option('-c', '--config', dest='config', help='Configuration file.', metavar='CONFIG')
 
     (options, args) = parser.parse_args()
     d = options.log
+
+    if options.version:
+        print '{}: v{}'.format(__title__, __version__)
+        sys.exit(0)
 
     init(options.config, d, False)
 
