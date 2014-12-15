@@ -2,8 +2,6 @@
 import ConfigParser
 import sys
 
-from burpui.misc.utils import castBool
-
 g_port = '5000'
 g_bind = '::'
 g_refresh = '15'
