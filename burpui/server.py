@@ -2,14 +2,16 @@
 import ConfigParser
 import sys
 
-g_port = 5000
+from burpui.misc.utils import castBool
+
+g_port = '5000'
 g_bind = '::'
-g_refresh = 15
-g_ssl = False
-g_standalone = True
+g_refresh = '15'
+g_ssl = 'False'
+g_standalone = 'True'
 g_sslcert = ''
 g_sslkey = ''
-g_version = 1
+g_version = '1'
 g_auth = 'basic'
 
 class BUIServer:

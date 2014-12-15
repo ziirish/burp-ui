@@ -8,10 +8,10 @@ import ConfigParser
 import SocketServer
 from threading import Thread
 
-g_port = 10000
+g_port = '10000'
 g_bind = '::'
-g_ssl  = False
-g_version = 1
+g_ssl  = 'False'
+g_version = '1'
 g_sslcert = ''
 g_sslkey  = ''
 g_password = 'password'
