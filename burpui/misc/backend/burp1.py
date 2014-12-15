@@ -15,7 +15,7 @@ from burpui.misc.utils import human_readable as _hr, BUIlogging
 from burpui.misc.backend.interface import BUIbackend, BUIserverException
 from burpui.misc.parser.burp1 import Parser
 
-g_burpport    = 4972
+g_burpport    = '4972'
 g_burphost    = '::1'
 g_tmpdir      = u'/tmp/buirestore'
 g_burpbin     = u'/usr/sbin/burp'
@@ -68,7 +68,7 @@ class Burp(BUIbackend, BUIlogging):
         global g_burpport, g_burphost, g_tmpdir, g_burpbin, g_stripbin, g_burpconfcli, g_burpconfsrv
         self.app = app
         self.host = g_burphost
-        self.port = g_burpport
+        self.port = int(g_burpport)
         self.burpbin = g_burpbin
         self.stripbin = g_stripbin
         self.tmpdir = g_tmpdir
