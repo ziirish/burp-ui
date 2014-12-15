@@ -169,6 +169,16 @@ need to check a few things:
    configuration)
 
 
+Troubleshooting
+---------------
+
+In case you encounter troubles with ``Burp-UI``, you should run it with the
+``-d`` flag and paste the relevant output within your bug-report.
+Please also give the version of ``burp`` AND ``Burp-UI``.
+Since v0.0.6 you can use the ``-V`` or ``--version`` flag in order to get your
+version number.
+
+
 Notes
 -----
 
@@ -195,11 +205,15 @@ Changelog
   - Add `init script for CentOS <https://git.ziirish.me/ziirish/burp-ui/issues/27>`_
   - Add `init script for Debian <https://git.ziirish.me/ziirish/burp-ui/issues/29>`_
   - Add `autofocus login field on login page <https://git.ziirish.me/ziirish/burp-ui/commit/a559c3c2191991f1065ff15df4cd94757133e67d>`_
+  - Add `burp-server configuration panel <https://git.ziirish.me/ziirish/burp-ui/issues/13>`_
   - Fix issue `#25 <https://git.ziirish.me/ziirish/burp-ui/issues/25>`_
   - Fix issue `#26 <https://git.ziirish.me/ziirish/burp-ui/issues/26>`_
   - Fix issue `#30 <https://git.ziirish.me/ziirish/burp-ui/issues/30>`_
   - Fix issue `#32 <https://git.ziirish.me/ziirish/burp-ui/issues/32>`_
   - Fix issue `#33 <https://git.ziirish.me/ziirish/burp-ui/issues/33>`_
+  - Fix issue `#34 <https://git.ziirish.me/ziirish/burp-ui/issues/34>`_
+  - Fix issue `#35 <https://git.ziirish.me/ziirish/burp-ui/issues/35>`_
+  - Fix issue `#39 <https://git.ziirish.me/ziirish/burp-ui/issues/39>`_
   - Code cleanup
   - Improve unit tests
   - Bugfixes
