@@ -192,7 +192,7 @@ class Burp(BUIbackend, BUIlogging):
                 if self._test_burp_settings(new_addr, True):
                     self._logger('info', '%s:%s is reachable, switching to it for this runtime', new_addr, self.port)
                     self.host = new_addr
-                    self.family = family
+                    self.family = self._get_inet_family(new_addr)
                     return True
                 self._logger('error', 'Cannot guess burp server address')
         return False
