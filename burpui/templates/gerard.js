@@ -174,8 +174,7 @@ var _fit_menu = function() {
 	size = $(window).width();
 	target = $('li.detail');
 	if (size < 800) {
-		target.off('hover');
-		target.unbind('mouseenter mouseleave');
+		target.off( "mouseenter mouseleave" );
 		target.find('.dtl').show();
 	} else {
 		target.hover(
