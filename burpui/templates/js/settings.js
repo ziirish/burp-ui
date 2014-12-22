@@ -1,11 +1,11 @@
 
-var app = angular.module('ConfigApp', ['ngSanitize', 'frapontillo.bootstrap-switch', 'ui.select', 'mgcrea.ngStrap', 'angular-onbeforeunload']);
+var app = angular.module('MainApp', ['ngSanitize', 'frapontillo.bootstrap-switch', 'ui.select', 'mgcrea.ngStrap', 'angular-onbeforeunload']);
 
 app.config(function(uiSelectConfig) {
   uiSelectConfig.theme = 'bootstrap';
 });
 
-app.controller('MainCtrl', function($scope, $http) {
+app.controller('ConfigCtrl', function($scope, $http) {
 	$scope.bools = [];
 	$scope.strings = [];
 	$scope.defaults = {};
