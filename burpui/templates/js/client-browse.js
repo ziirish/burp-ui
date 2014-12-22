@@ -217,8 +217,4 @@
 	$(".dropdown-menu label, .dropdown-menu input, .dropdown-menu li").click(function(e) {
 		e.stopPropagation();
 	});
-	$(".dropdown-menu a").click(function(e) {
-		e.preventDefault();
-		e.stopPropagation();
-	});
 
