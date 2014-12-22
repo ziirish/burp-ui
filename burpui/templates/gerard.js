@@ -170,6 +170,28 @@ var _async_ajax = function(b) {
 	});
 };
 
+var _fit_menu = function() {
+	size = $(window).width();
+	target = $('li.detail');
+	if (size < 800) {
+		target.off('hover');
+		target.unbind('mouseenter mouseleave');
+		target.find('.dtl').show();
+	} else {
+		target.hover(
+			// mouse in
+			function() {
+				$(this).find('.dtl').animate({width: 'toggle'});
+			},
+			// mouse out
+			function() {
+				$(this).find('.dtl').animate({width: 'toggle'});
+			}
+		);
+		target.find('.dtl').hide();
+	}
+}
+
 $(function() {
 	_async_ajax(false);
 
@@ -184,16 +206,8 @@ $(function() {
 	/***
 	 * show details in topbar
 	 */
-	$('li.detail').hover(
-		// mouse in
-		function() {
-			$(this).find('.dtl').animate({width: 'toggle'});
-		},
-		// mouse out
-		function() {
-			$(this).find('.dtl').animate({width: 'toggle'});
-		}
-	);
+	_fit_menu();
+	$(window).on('resize', _fit_menu);
 
 	/***
 	 * Action on the 'refresh' button

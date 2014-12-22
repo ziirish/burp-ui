@@ -14,7 +14,7 @@
           <br />
 
           <div class="form-container">
-            <form class="form-horizontal" action="{{ url_for('settings', server=server) }}" method="POST" ng-controller="MainCtrl" ng-submit="submit($event)" name="setSettings" onbeforeunload>
+            <form class="form-horizontal" action="{{ url_for('settings', server=server) }}" method="POST" ng-controller="ConfigCtrl" ng-submit="submit($event)" name="setSettings" onbeforeunload>
               {# From here, the jinja syntax is escaped because we use the angularjs syntax #}
               {% raw %}
               <fieldset>
