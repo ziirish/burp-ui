@@ -284,3 +284,18 @@ legend[id] {
   display: none;
   height: 15px;
 }
+
+.browse > li {
+  clear: both;
+  display: block;
+  font-weight: normal;
+  line-height: 1.42857;
+  padding: 3px 20px;
+  white-space: nowrap;
+}
+
+.browse > li:hover, .browse > li:focus {
+  background-color: #272b30;
+  color: #ffffff;
+  text-decoration: none;
+}

@@ -56,15 +56,18 @@ The whole API returns JSON-formated data
 def restore(server=None, name=None, backup=None):
     l = request.form.get('list')
     s = request.form.get('strip')
+    f = request.form.get('format')
     resp = None
+    if not f:
+        f = 'zip'
     if not l or not name or not backup:
         abort(500)
     if server:
-        filename = 'restoration_%d_%s_on_%s_at_%s.zip' % (backup, name, server, strftime("%Y-%m-%d_%H_%M_%S", gmtime()))
+        filename = 'restoration_%d_%s_on_%s_at_%s.%s' % (backup, name, server, strftime("%Y-%m-%d_%H_%M_%S", gmtime()), f)
     else:
-        filename = 'restoration_%d_%s_at_%s.zip' % (backup, name, strftime("%Y-%m-%d_%H_%M_%S", gmtime()))
+        filename = 'restoration_%d_%s_at_%s.%s' % (backup, name, strftime("%Y-%m-%d_%H_%M_%S", gmtime()), f)
     if not server:
-        archive = bui.cli.restore_files(name, backup, l, s)
+        archive = bui.cli.restore_files(name, backup, l, s, f)
         if not archive:
             abort(500)
         try:
@@ -76,7 +79,7 @@ def restore(server=None, name=None, backup=None):
     else:
         socket = None
         try:
-            socket, length = bui.cli.restore_files(name, backup, l, s, server)
+            socket, length = bui.cli.restore_files(name, backup, l, s, f, server)
             app.logger.debug('Need to get %d Bytes : %s', length, socket)
             def stream_file(sock, l):
                 bsize = 1024

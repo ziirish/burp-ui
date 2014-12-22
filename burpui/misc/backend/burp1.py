@@ -9,6 +9,7 @@ import ConfigParser
 import shutil
 import subprocess
 import zipfile
+import tarfile
 import codecs
 
 from burpui.misc.utils import human_readable as _hr, BUIlogging
@@ -221,6 +222,8 @@ class Burp(BUIbackend, BUIlogging):
                 ap = ''
                 try:
                     ap = line.encode('utf-8')
+                except UnicodeDecodeError:
+                    ap = line
                 except UnicodeEncodeError:
                     ap = line
                 r.append(ap)
@@ -640,7 +643,7 @@ class Burp(BUIbackend, BUIlogging):
                     r.append(t)
         return r
 
-    def restore_files(self, name=None, backup=None, files=None, strip=None, agent=None):
+    def restore_files(self, name=None, backup=None, files=None, strip=None, archive='zip', agent=None):
         if not name or not backup or not files or not self.stripbin or not self.burpbin:
             return None
         flist = json.loads(files)
@@ -678,7 +681,7 @@ class Burp(BUIbackend, BUIlogging):
             os.remove(zip_file)
         zip_len = len(zip_dir) + 1
         stripping = True
-        with zipfile.ZipFile(zip_file, mode='w', compression=zipfile.ZIP_DEFLATED) as zf:
+        with BUIcompress(zip_file, archive) as zf:
             for dirname, subdirs, files in os.walk(zip_dir):
                 for filename in files:
                     path = os.path.join(dirname, filename)
@@ -695,7 +698,7 @@ class Burp(BUIbackend, BUIlogging):
                             os.remove(path+'.tmp')
 
                     entry = path[zip_len:]
-                    zf.write(path, entry)
+                    zf.append(path, entry)
 
         shutil.rmtree(self.tmpdir)
         return zip_file
@@ -714,3 +717,28 @@ class Burp(BUIbackend, BUIlogging):
         if not attr or not self.parser:
             return None
         return self.parser.get_priv_attr(attr)
+
+
+class BUIcompress():
+    def __init__(self, name, archive):
+        self.name = name
+        self.archive = archive
+
+    def __enter__(self):
+        self.arch = None
+        if self.archive == 'zip':
+            self.arch = zipfile.ZipFile(self.name, mode='w', compression=zipfile.ZIP_DEFLATED)
+        elif self.archive == 'tar.gz':
+            self.arch = tarfile.open(self.name, 'w:gz')
+        elif self.archive == 'tar.bz2':
+            self.arch = tarfile.open(self.name, 'w:bz2')
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.arch.close()
+
+    def append(self, path, arcname):
+        if self.archive == 'zip':
+            self.arch.write(path, arcname)
+        elif self.archive in ['tar.gz', 'tar.bz2']:
+            self.arch.add(path, arcname=arcname, recursive=False)
