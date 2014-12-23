@@ -62,7 +62,7 @@ def currentframe():
     except:
         return sys.exc_info()[2].tb_frame.f_back
 
-class BUIlogging:
+class BUIlogging(object):
     def _logger(self, level, *args):
         if self.app:
             logs = {
