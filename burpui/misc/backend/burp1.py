@@ -12,6 +12,8 @@ import zipfile
 import tarfile
 import codecs
 
+from pipes import quote
+
 from burpui.misc.utils import human_readable as _hr, BUIlogging
 from burpui.misc.backend.interface import BUIbackend, BUIserverException
 from burpui.misc.parser.burp1 import Parser
@@ -660,7 +662,7 @@ class Burp(BUIbackend, BUIlogging):
                 reg += '^'+re.escape(r['key'])+'$|'
             full_reg += reg
 
-        cmd = [self.burpbin, '-C', name, '-a', 'r', '-b', str(backup), '-r', full_reg.rstrip('|'), '-d', self.tmpdir]
+        cmd = [self.burpbin, '-C', quote(name), '-a', 'r', '-b', quote(str(backup)), '-r', full_reg.rstrip('|'), '-d', self.tmpdir]
         if self.burpconfcli:
             cmd.append('-c')
             cmd.append(self.burpconfcli)
