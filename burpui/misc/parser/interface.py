@@ -1,6 +1,6 @@
 # -*- coding: utf8 -*-
 
-class BUIparser:
+class BUIparser(object):
     def __init__(self, app=None, conf=None):
         self.app = app
         self.conf = conf

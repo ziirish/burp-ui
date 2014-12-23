@@ -333,9 +333,10 @@ class Parser(BUIparser,BUIlogging):
             u'hard_quota': "Do not back up the client if the estimated size of all files is greater than the specified size. Example: 'hard_quota = 100Gb'. Set to 0 (the default) to have no limit.",
         }
 
-    #def __init__(self, app=None, conf=None):
-        #self._logger('info', 'temporary dir: %s', self.tmpdir)
-
+    def __init__(self, app=None, conf=None):
+        super(Parser, self).__init__(app, conf)
+        self._logger('info', 'Parser initialized with: %s', self.conf)
+        self.clientconfdir = None
 
     def _readfile(self, f=None, sourced=False):
         if not f:
@@ -381,6 +382,8 @@ class Parser(BUIparser,BUIlogging):
                     if not found:
                         multi.append({'name': key, 'value': [val]})
                     continue
+                if key == u'clientconfdir':
+                    self.clientconfdir = val
                 dic.append({'name': key, 'value': val})
 
         return dic, boolean, multi, integer, other_files
