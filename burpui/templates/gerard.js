@@ -31,7 +31,14 @@ var notif = function(type, message, timeout) {
 			i+message+
 		  '</div>');
 	$('#bui-notifications').append(e).show();
-	e.animate({opacity:1}, timeout, 'linear', function() { e.animate({opacity:0}, 2000, 'linear', function() {e.remove(); }); });
+	anim(e);
+};
+
+var anim = function(elem) {
+	elem.delay(5000)
+		.fadeOut(2000, function() {elem.remove(); })
+		.mouseover(function(){ elem.stop(true, false); })
+		.mouseout(function(){ anim(elem); });
 };
 
 {% if not login -%}
@@ -199,7 +206,7 @@ $(function() {
 	 */
 	$('#bui-notifications > div').each(function() {
 		var e = $(this);
-		e.animate({opacity:1}, 5000, 'linear', function() { e.animate({opacity:0}, 2000, 'linear', function() {e.remove(); }); });
+		anim(e);
 	});
 
 	/***
