@@ -77,6 +77,14 @@ Then we install the module itself:
     pip install simpleldap
 
 
+If you would like to use SSL, you will need the ``python-openssl`` package.
+On Debian:
+
+::
+
+    aptitude install python-openssl
+
+
 Installation
 ------------
 
