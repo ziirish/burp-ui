@@ -4,6 +4,8 @@ import struct
 import select
 import json
 import time
+import sys
+import pickle
 import ConfigParser
 import SocketServer
 from threading import Thread
@@ -65,8 +67,10 @@ class BUIAgent:
                 'get_client': self.backend.get_client,
                 'get_tree': self.backend.get_tree,
                 'restore_files': self.backend.restore_files,
-                'read_conf': self.backend.read_conf,
-                'store_conf': self.backend.store_conf,
+                'read_conf_cli': self.backend.read_conf_cli,
+                'store_conf_cli': self.backend.store_conf_cli,
+                'read_conf_srv': self.backend.read_conf_srv,
+                'store_conf_srv': self.backend.store_conf_srv,
                 'get_parser_attr': self.backend.get_parser_attr
             }
 
@@ -90,7 +94,7 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
         try:
             r, _, _ = select.select([self.request], [], [], 5)
             if not r:
-                raise Exception ('Socket timed-out')
+                raise Exception ('Socket timed-out 1')
             lengthbuf = self.request.recv(8)
             length, = struct.unpack('!Q', lengthbuf)
             data = self.recvall(length)
@@ -114,6 +118,8 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
                 res = self.server.agent.methods[j['func']](**j['args'])
             else:
                 if j['args']:
+                    if 'pickled' in j and j['pickled']:
+                        j['args'] = pickle.loads(j['args'])
                     res = json.dumps(self.server.agent.methods[j['func']](**j['args']))
                 else:
                     res = json.dumps(self.server.agent.methods[j['func']]())
@@ -122,7 +128,7 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
             self.server.agent.debug('####################')
             _, w, _ = select.select([], [self.request], [], 5)
             if not w:
-                raise Exception ('Socket timed-out')
+                raise Exception ('Socket timed-out 2')
             if j['func'] == 'restore_files':
                 size = os.path.getsize(res)
                 self.request.sendall(struct.pack('!Q', size))
@@ -134,7 +140,7 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
                         buf = f.read(1024)
                         _, w, _ = select.select([], [self.request], [], 5)
                         if not w:
-                            raise Exception ('Socket timed-out')
+                            raise Exception ('Socket timed-out 3')
             else:
                 self.request.sendall(struct.pack('!Q', len(res)))
                 self.request.sendall(res)
