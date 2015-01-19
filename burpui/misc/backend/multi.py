@@ -7,6 +7,7 @@ import sys
 import json
 import time
 import struct
+import pickle
 import ConfigParser
 
 from burpui.misc.backend.interface import BUIbackend, BUIserverException
@@ -112,11 +113,17 @@ class Burp(BUIbackend):
     def restore_files(self, name=None, backup=None, files=None, strip=None, archive='zip', agent=None):
         return self.servers[agent].restore_files(name, backup, files, strip, archive)
 
-    def read_conf(self, agent=None):
-        return self.servers[agent].read_conf()
+    def read_conf_cli(self, agent=None):
+        return self.servers[agent].read_conf_cli()
 
-    def store_conf(self, data, agent=None):
-        return self.servers[agent].store_conf(data)
+    def read_conf_srv(self, agent=None):
+        return self.servers[agent].read_conf_srv()
+
+    def store_conf_cli(self, data, agent=None):
+        return self.servers[agent].store_conf_cli(data)
+
+    def store_conf_srv(self, data, agent=None):
+        return self.servers[agent].store_conf_srv(data)
 
     def get_parser_attr(self, attr=None, agent=None):
         return self.servers[agent].get_parser_attr(attr)
@@ -171,7 +178,7 @@ class NClient(BUIbackend):
         self.conn()
         res = '[]'
         toclose = True
-        if not data:
+        if not data or not self.connected:
             return res
         try:
             data['password'] = self.password
@@ -182,7 +189,7 @@ class NClient(BUIbackend):
             self.app.logger.debug("Sending: %s", raw)
             r, _, _ = select.select([self.sock], [], [], 5)
             if not r:
-                raise Exception ('Socket timed-out')
+                raise Exception ('Socket timed-out 1')
             tmp = self.sock.recv(2)
             self.app.logger.debug("recv: '%s'", tmp)
             if 'OK' != tmp:
@@ -191,7 +198,7 @@ class NClient(BUIbackend):
             self.app.logger.debug("Data sent successfully")
             r, _, _ = select.select([self.sock], [], [], 5)
             if not r:
-                raise Exception ('Socket timed-out')
+                raise Exception ('Socket timed-out 2')
             lengthbuf = self.sock.recv(8)
             length, = struct.unpack('!Q', lengthbuf)
             if data['func'] == 'restore_files':
@@ -200,13 +207,27 @@ class NClient(BUIbackend):
             else:
                 r, _, _ = select.select([self.sock], [], [], 5)
                 if not r:
-                    raise Exception ('Socket timed-out')
-                res = self.sock.recv(length)
+                    raise Exception ('Socket timed-out 3')
+                res = self.recvall(length)
         except Exception, e:
             self.app.logger.error(str(e))
         finally:
             self.close(toclose)
             return res
+
+    def recvall(self, length=1024):
+        buf = b''
+        bsize = 1024
+        received = 0
+        if length < bsize:
+            bsize = length
+        while received < length:
+            newbuf = self.sock.recv(bsize)
+            if not newbuf:
+                return None
+            buf += newbuf
+            received += len(newbuf)
+        return buf
 
     """
     Utilities functions
@@ -280,13 +301,22 @@ class NClient(BUIbackend):
         data = {'func': 'restore_files', 'args': {'name': name, 'backup': backup, 'files': files, 'strip': strip, 'archive': archive}}
         return self.do_command(data)
 
-    def read_conf(self, agent=None):
-        data = {'func': 'read_conf', 'args': None}
+    def read_conf_cli(self, agent=None):
+        data = {'func': 'read_conf_cli', 'args': None}
         return json.loads(self.do_command(data))
 
-    def store_conf(self, data, agent=None):
-        data = {'func': 'store_conf', 'args': {'data': data}}
-        return json.loads(self.do_comman(data))
+    def read_conf_srv(self, agent=None):
+        data = {'func': 'read_conf_srv', 'args': None}
+        return json.loads(self.do_command(data))
+
+    def store_conf_cli(self, data, agent=None):
+        data = {'func': 'store_conf_cli', 'args': pickle.dumps({'data': data}), 'pickled': True}
+        return json.loads(self.do_command(data))
+
+    def store_conf_srv(self, data, agent=None):
+        data = {'func': 'store_conf_srv', 'args': pickle.dumps({'data': data}), 'pickled': True}
+        print data
+        return json.loads(self.do_command(data))
 
     def get_parser_attr(self, attr=None, agent=None):
         data = {'func': 'get_parser_attr', 'args': {'attr': attr}}
