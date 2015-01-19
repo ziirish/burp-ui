@@ -8,13 +8,11 @@ import datetime
 import ConfigParser
 import shutil
 import subprocess
-import zipfile
-import tarfile
 import codecs
 
 from pipes import quote
 
-from burpui.misc.utils import human_readable as _hr, BUIlogging
+from burpui.misc.utils import human_readable as _hr, BUIlogging, BUIcompress
 from burpui.misc.backend.interface import BUIbackend, BUIserverException
 from burpui.misc.parser.burp1 import Parser
 
@@ -705,12 +703,22 @@ class Burp(BUIbackend, BUIlogging):
         shutil.rmtree(self.tmpdir)
         return zip_file
 
-    def read_conf(self, agent=None):
+    def read_conf_cli(self, agent=None):
+        if not self.parser:
+            return []
+        return self.parser.read_client_conf()
+
+    def read_conf_srv(self, agent=None):
         if not self.parser:
             return []
         return self.parser.read_server_conf()
 
-    def store_conf(self, data, agent=None):
+    def store_conf_cli(self, data, agent=None):
+        if not self.parser:
+            return []
+        return self.parser.store_client_conf(data)
+
+    def store_conf_srv(self, data, agent=None):
         if not self.parser:
             return []
         return self.parser.store_server_conf(data)
@@ -720,27 +728,3 @@ class Burp(BUIbackend, BUIlogging):
             return None
         return self.parser.get_priv_attr(attr)
 
-
-class BUIcompress():
-    def __init__(self, name, archive):
-        self.name = name
-        self.archive = archive
-
-    def __enter__(self):
-        self.arch = None
-        if self.archive == 'zip':
-            self.arch = zipfile.ZipFile(self.name, mode='w', compression=zipfile.ZIP_DEFLATED)
-        elif self.archive == 'tar.gz':
-            self.arch = tarfile.open(self.name, 'w:gz')
-        elif self.archive == 'tar.bz2':
-            self.arch = tarfile.open(self.name, 'w:bz2')
-        return self
-
-    def __exit__(self, type, value, traceback):
-        self.arch.close()
-
-    def append(self, path, arcname):
-        if self.archive == 'zip':
-            self.arch.write(path, arcname)
-        elif self.archive in ['tar.gz', 'tar.bz2']:
-            self.arch.add(path, arcname=arcname, recursive=False)
