@@ -7,8 +7,6 @@ It was found on the Internet...
 
 import math
 import string
-import sys
-import inspect
 
 # code from here: http://code.activestate.com/recipes/578323-human-readable-filememory-sizes-v2/
 class human_readable( long ):
@@ -55,12 +53,16 @@ class human_readable( long ):
 
         return "{0:{1}}".format(t,width) if width != "" else t
 
+import sys
+
 def currentframe():
     """Return the frame object for the caller's stack frame."""
     try:
         raise Exception
     except:
         return sys.exc_info()[2].tb_frame.f_back
+
+import inspect
 
 class BUIlogging(object):
     def _logger(self, level, *args):
@@ -90,3 +92,29 @@ class BUIlogging(object):
                     args = tuple(ar)
                 logs[level](*args)
 
+import zipfile
+import tarfile
+
+class BUIcompress():
+    def __init__(self, name, archive):
+        self.name = name
+        self.archive = archive
+
+    def __enter__(self):
+        self.arch = None
+        if self.archive == 'zip':
+            self.arch = zipfile.ZipFile(self.name, mode='w', compression=zipfile.ZIP_DEFLATED)
+        elif self.archive == 'tar.gz':
+            self.arch = tarfile.open(self.name, 'w:gz')
+        elif self.archive == 'tar.bz2':
+            self.arch = tarfile.open(self.name, 'w:bz2')
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.arch.close()
+
+    def append(self, path, arcname):
+        if self.archive == 'zip':
+            self.arch.write(path, arcname)
+        elif self.archive in ['tar.gz', 'tar.bz2']:
+            self.arch.add(path, arcname=arcname, recursive=False)
