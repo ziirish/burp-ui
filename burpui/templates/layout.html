@@ -33,7 +33,7 @@
     {% include "topbar.html" %}
 
     <div class="container-fluid">
-      <div class="row">
+      <div class="row" {% if settings %}ng-controller="ConfigCtrl"{% endif %}>
         {% if not live and not login -%}
         {% include "sidebar.html" %}
         {% endif -%}
@@ -71,6 +71,7 @@
     <script src="{{ url_for('static', filename='lodash/lodash.min.js') }}"></script>
     <script src="{{ url_for('static', filename='angularjs/angular.min.js') }}"></script>
     <script src="{{ url_for('static', filename='angularjs/angular-sanitize.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='angularjs/angular-animate.min.js') }}"></script>
     <script src="{{ url_for('static', filename='bootstrap-switch/bootstrap-switch.min.js') }}"></script>
     <script src="{{ url_for('static', filename='angular-bootstrap-switch/angular-bootstrap-switch.js') }}"></script>
     <script src="{{ url_for('static', filename='angular-ui-select/select.min.js') }}"></script>

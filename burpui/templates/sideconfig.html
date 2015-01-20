@@ -1,10 +1,26 @@
 
-          <h4>Configuration navigation</h4>
           <div id="navbar-config" bs-scrollspy-list>
+            <h4>Configuration navigation</h4>
             <ul class="nav nav-sidebar">
               <li class="active" bs-scrollspy data-target="#boolean"><a href="#boolean">Booleans</a></li>
               <li bs-scrollspy data-target="#string"><a href="#string">Strings</a></li>
               <li bs-scrollspy data-target="#integer"><a href="#integer">Integers</a></li>
               <li bs-scrollspy data-target="#multi"><a href="#multi">Multi</a></li>
+            </ul>
+            <h4>Client to configure</h4>
+            <ul class="nav nav-sidebar">
+              {% raw %}
+              <li>
+                <ui-select ng-model="client.selected" style="width: 100%;" on-select="selectClient($item, $select)">
+                  <ui-select-match placeholder="Select a client">{{ $select.selected.name }}</ui-select-match>
+                  <ui-select-choices repeat="client in clients | filter: {name: $select.search}">
+                    <div ng-bind-html="client.name | highlight: $select.search"></div>
+                    <small>
+                      config: <span ng-bind-html="''+client.value | highlight: $select.search"></span>
+                    </small>
+                  </ui-select-choices>
+                </ui-select>
+              </li>
+              {% endraw %}
             </ul>
           </div>
