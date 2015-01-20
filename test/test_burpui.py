@@ -53,18 +53,18 @@ class BurpuiAPITestCase(TestCase):
 	def test_no_clients(self):
 		response = self.client.get('/api/clients.json')
 		self.assertEquals(response.json, {u'notif':[[2, u'Cannot contact burp server at 127.0.0.1:9999']]})
-	
+
 	def test_config_parsing(self):
 		response = self.client.get('/api/server-config')
 		self.assertEquals(response.json, dict(results=[],
-												 boolean=bui.cli.get_parser_attr('boolean'),
-												 string=bui.cli.get_parser_attr('string'),
-												 integer=bui.cli.get_parser_attr('integer'),
-												 multi=bui.cli.get_parser_attr('multi'),
-												 server_doc=bui.cli.get_parser_attr('server_doc'),
-												 suggest=bui.cli.get_parser_attr('values_server'),
+												 boolean=bui.cli.get_parser_attr('boolean_srv'),
+												 string=bui.cli.get_parser_attr('string_srv'),
+												 integer=bui.cli.get_parser_attr('integer_srv'),
+												 multi=bui.cli.get_parser_attr('multi_srv'),
+												 server_doc=bui.cli.get_parser_attr('doc'),
+												 suggest=bui.cli.get_parser_attr('values'),
 												 placeholders=bui.cli.get_parser_attr('placeholders'),
-												 defaults=bui.cli.get_parser_attr('defaults_server')))
+												 defaults=bui.cli.get_parser_attr('defaults')))
 	
 	def test_restore(self):
 		response = self.client.post('/api/restore/dummy/1', data=dict(strip=False))
