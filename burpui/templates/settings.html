@@ -13,8 +13,16 @@
           </ul>
           <br />
 
-          <div class="form-container">
-            <form class="form-horizontal" action="{{ url_for('settings', server=server) }}" method="POST" ng-controller="ConfigCtrl" ng-submit="submit($event)" name="setSettings" onbeforeunload>
+          <div id="waiting-container" class="row">
+            <span class="icon-refresh-animate glyphicon glyphicon-refresh"></span>&nbsp;Loading, Please wait...
+            <br />
+            <div class="progress progress-striped active">
+              <div class="progress-bar progress-bar-info" style="width: 100%"></div>
+            </div>
+          </div>
+
+          <div id="settings-panel" class="form-container" style="display:none;">
+            <form class="form-horizontal" action="{{ url_for('settings', server=server) }}" method="POST" ng-submit="submit($event)" name="setSettings" onbeforeunload>
               {# From here, the jinja syntax is escaped because we use the angularjs syntax #}
               {% raw %}
               <fieldset>
