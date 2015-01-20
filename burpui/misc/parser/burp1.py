@@ -8,7 +8,7 @@ from burpui.misc.utils import human_readable as _hr, BUIlogging
 from burpui.misc.parser.interface import BUIparser
 
 class Parser(BUIparser,BUIlogging):
-    defaults_server = {
+    defaults = {
             u'mode': '',
             u'address': '', #IP
             u'port': 4971, #int
@@ -156,7 +156,7 @@ class Parser(BUIparser,BUIlogging):
             u'ca_server_name': "name",
             u'ca_burp_ca': "path",
         }
-    values_server = {
+    values = {
             u'mode': ['client', 'server'],
             u'status_address': ['127.0.0.1', '::1'], #127.0.0.1 / ::1
             u'compression': ['gzip{0}'.format(x) for x in range(1, 10)],
@@ -177,7 +177,7 @@ class Parser(BUIparser,BUIlogging):
             u'ca_conf',
             u'ca_burp_ca',
         ]
-    multi = [
+    multi_srv = [
             u'keep',
             u'restore_client',
             u'notify_success_arg',
@@ -187,7 +187,7 @@ class Parser(BUIparser,BUIlogging):
             u'server_script_pre_arg',
             u'server_script_post_arg',
         ]
-    boolean = [
+    boolean_srv = [
             u'daemon',
             u'fork',
             u'directory_tree',
@@ -212,7 +212,7 @@ class Parser(BUIparser,BUIlogging):
             u'server_script_post_run_on_fail',
             u'monitor_browse_cache',
         ]
-    integer = [
+    integer_srv = [
             u'port',
             u'status_port',
             u'max_hardlinks',
@@ -223,7 +223,7 @@ class Parser(BUIparser,BUIlogging):
             u'max_status_children',
             u'max_storage_subdirs',
         ]
-    string = [
+    string_srv = [
             u'mode',
             u'address',
             u'status_address',
@@ -256,7 +256,7 @@ class Parser(BUIparser,BUIlogging):
             u'hard_quota',
             u'soft_quota',
         ]
-    server_doc = {
+    doc = {
             u'ssl_compression': "Choose the level of zlib compression over SSL. Setting 0 or zlib0 turnsSSL compression off. Setting non-zero gives zlib5 compression (it is not currently possible for openssl to set any other level). The default is 5. 'gzip' is a synonym of 'zlib'.is a synonym of 'zlib'.",
             u'address': "Defines the main TCP address that the server listens on. The default is either '::' or '0.0.0.0', dependent upon compile time options.",
             u'status_address': "Defines the main TCP address that the server listens on for status requests. The default is either '::1' or '127.0.0.1', dependent upon compile time options.",
@@ -337,13 +337,17 @@ class Parser(BUIparser,BUIlogging):
         super(Parser, self).__init__(app, conf)
         self._logger('info', 'Parser initialized with: %s', self.conf)
         self.clientconfdir = None
+        self.root = None
+        if self.conf:
+            self.root = os.path.dirname(self.conf)
 
-    def _readfile(self, f=None, sourced=False):
+    def _readfile(self, f=None, sourced=False, root=None):
         if not f:
             return []
-        if (f != self.conf or sourced) and not f.startswith('/'):
-            root = os.path.dirname(self.conf)
+        if root:
             f = os.path.join(root, f)
+        if (f != self.conf or sourced) and not f.startswith('/'):
+            f = os.path.join(self.root, f)
         self._logger('debug', 'reading file: %s', f)
         with codecs.open(f, 'r', 'utf-8') as ff:
             ret = [x.strip('\n') for x in ff.readlines()]
@@ -363,16 +367,16 @@ class Parser(BUIparser,BUIlogging):
             if r:
                 key = r.group(1)
                 val = r.group(2)
-                if key in self.boolean:
-                    boolean.append({'name': key, 'value': bool(val)})
+                if key in self.boolean_srv:
+                    boolean.append({'name': key, 'value': int(val) == 1})
                     continue
-                elif key in self.integer:
+                elif key in self.integer_srv:
                     integer.append({'name': key, 'value': int(val)})
                     continue
                 if key == u'.':
                     other_files.append(val)
                     continue
-                if key in self.multi:
+                if key in self.multi_srv:
                     found = False
                     for m in multi:
                         if m['name'] == key:
@@ -383,7 +387,7 @@ class Parser(BUIparser,BUIlogging):
                         multi.append({'name': key, 'value': [val]})
                     continue
                 if key == u'clientconfdir':
-                    self.clientconfdir = val
+                    self.clientconfdir = os.path.join(self.root, val)
                 dic.append({'name': key, 'value': val})
 
         return dic, boolean, multi, integer, other_files
@@ -418,11 +422,24 @@ class Parser(BUIparser,BUIlogging):
                 else:
                     break
 
+        res['clients'] = self.list_clients()
+
+        return res
+
+    def list_clients(self):
+        if not self.clientconfdir:
+            return []
+        res = []
+        for f in os.listdir(self.clientconfdir):
+            ff = os.path.join(self.clientconfdir, f)
+            if os.path.isfile(ff) and not f.startswith('.') and not f.endswith('~'):
+                res.append({'name': f, 'value': os.path.join(self.clientconfdir, f)})
+
         return res
 
     def store_server_conf(self, data):
         if not self.conf:
-            return [[0, 'Sorry, no configuration file defined']]
+            return [[1, 'Sorry, no configuration file defined']]
         ref = '{}.bui.init.back'.format(self.conf)
         if not os.path.isfile(ref):
             try:
@@ -430,15 +447,23 @@ class Parser(BUIparser,BUIlogging):
             except Exception, e:
                 return [[2, str(e)]]
 
+        errs = []
+        for key in data.keys():
+            if key in self.files:
+                d = data.get(key)
+                if not os.path.isfile(d):
+                    errs.append([2, "Sorry, the file '%s' does not exist" % (d)])
+        if errs:
+            return errs
         with codecs.open(self.conf, 'w', 'utf-8') as f:
             f.write('# Auto-generated configuration using Burp-UI\n')
             for key in data.keys():
-                if key in self.boolean:
+                if key in self.boolean_srv:
                     val = 0
-                    if data.get(key):
+                    if data.get(key) == 'true':
                         val = 1
                     f.write('{} = {}\n'.format(key, val))
-                elif key in self.multi:
+                elif key in self.multi_srv:
                     for val in data.getlist(key):
                         f.write('{} = {}\n'.format(key, val))
                 else:
