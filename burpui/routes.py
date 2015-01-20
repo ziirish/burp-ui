@@ -21,27 +21,41 @@ def load_user(userid):
 
 @app.route('/settings', methods=['GET', 'POST'])
 @app.route('/<server>/settings', methods=['GET', 'POST'])
+@app.route('/settings/<client>', methods=['GET', 'POST'])
+@app.route('/<server>/settings/<client>', methods=['GET', 'POST'])
 @login_required
-def settings(server=None):
+def settings(server=None, client=None):
+    if not client:
+        client = request.args.get('client')
     if request.method == 'POST':
-        noti = bui.cli.store_conf(request.form)
+        if not client:
+            noti = bui.cli.store_conf_srv(request.form, server)
+        else:
+            noti = bui.cli.store_conf_cli(request.form, server)
         return jsonify(notif=noti)
-    return render_template('settings.html', settings=True, server=server)
+    return render_template('settings.html', settings=True, server=server, client=client)
+
+@app.route('/api/client-config/<client>')
+@app.route('/api/<server>/client-config/<client>')
+@login_required
+def read_conf_cli(server=None, client=None):
+    r = bui.cli.read_conf_cli(client, server)
+    return jsonify(results=r)
 
 @app.route('/api/server-config')
 @app.route('/api/<server>/server-config')
 @login_required
 def read_conf_srv(server=None):
-    r = bui.cli.read_conf(server)
+    r = bui.cli.read_conf_srv(server)
     return jsonify(results=r,
-                   boolean=bui.cli.get_parser_attr('boolean'),
-                   string=bui.cli.get_parser_attr('string'),
-                   integer=bui.cli.get_parser_attr('integer'),
-                   multi=bui.cli.get_parser_attr('multi'),
-                   server_doc=bui.cli.get_parser_attr('server_doc'),
-                   suggest=bui.cli.get_parser_attr('values_server'),
-                   placeholders=bui.cli.get_parser_attr('placeholders'),
-                   defaults=bui.cli.get_parser_attr('defaults_server'))
+                   boolean=bui.cli.get_parser_attr('boolean_srv', server),
+                   string=bui.cli.get_parser_attr('string_srv', server),
+                   integer=bui.cli.get_parser_attr('integer_srv', server),
+                   multi=bui.cli.get_parser_attr('multi_srv', server),
+                   server_doc=bui.cli.get_parser_attr('doc', server),
+                   suggest=bui.cli.get_parser_attr('values', server),
+                   placeholders=bui.cli.get_parser_attr('placeholders', server),
+                   defaults=bui.cli.get_parser_attr('defaults', server))
 
 
 """
