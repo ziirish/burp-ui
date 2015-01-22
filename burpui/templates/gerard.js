@@ -31,14 +31,15 @@ var notif = function(type, message, timeout) {
 			i+message+
 		  '</div>');
 	$('#bui-notifications').append(e).show();
-	anim(e);
+	anim(e, timeout);
 };
 
-var anim = function(elem) {
-	elem.delay(5000)
+var anim = function(elem, timeout) {
+	timeout = (typeof timeout === "undefined") ? 5000 : timeout;
+	elem.delay(timeout)
 		.fadeOut(2000, function() {elem.remove(); })
-		.mouseover(function(){ elem.stop(true, false); })
-		.mouseout(function(){ anim(elem); });
+		.mouseover(function(){ elem.stop(true, false); elem.fadeIn(); })
+		.mouseout(function(){ anim(elem, timeout); });
 };
 
 {% if not login -%}

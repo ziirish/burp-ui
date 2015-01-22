@@ -59,7 +59,7 @@
               </fieldset>
               <fieldset>
                 <legend id="string">Strings</legend>
-                <div class="form-group" ng-repeat="string in strings">
+                <div class="form-group" ng-repeat="string in strings" ng-class="{'has-error': invalid[string.name] }">
                   <label for="{{ ::string.name }}" class="col-lg-3 control-label">{{ ::string.name }}</label>
                   <div ng-if="!suggest[string.name]" class="col-lg-2">
                     <input class="form-control" type="text" id="{{ ::string.name }}" name="{{ ::string.name }}" ng-model="string.value" ng-focus="focusIn($event)" ng-blur="focusOut($event)" placeholder="{{ ::placeholders[string.name] }}">
