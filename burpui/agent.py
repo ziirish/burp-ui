@@ -16,6 +16,7 @@ g_ssl  = 'False'
 g_version = '1'
 g_sslcert = ''
 g_sslkey  = ''
+g_timeout = '5'
 g_password = 'password'
 
 class BUIAgent:
@@ -37,6 +38,7 @@ class BUIAgent:
                 self.port = config.getint('Global', 'port')
                 self.bind = config.get('Global', 'bind')
                 self.vers = config.getint('Global', 'version')
+                self.timeout = config.getint('Global', 'timeout')
                 try:
                     self.ssl = config.getboolean('Global', 'ssl')
                 except ValueError:
@@ -91,8 +93,9 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
     def handle(self):
         # self.request is the client connection
         self.server.agent.debug('===============>')
+        timeout = self.server.agent.timeout
         try:
-            r, _, _ = select.select([self.request], [], [], 5)
+            r, _, _ = select.select([self.request], [], [], timeout)
             if not r:
                 raise Exception ('Socket timed-out 1')
             lengthbuf = self.request.recv(8)
@@ -102,9 +105,9 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
             self.server.agent.debug('recv: %s', data)
             self.server.agent.debug('####################')
             j = json.loads(data)
-            _, w, _ = select.select([], [self.request], [], 5)
+            _, w, _ = select.select([], [self.request], [], timeout)
             if not w:
-                raise Exception ('Socket timed-out')
+                raise Exception ('Socket timed-out 2')
             if j['password'] != self.server.agent.password:
                 self.server.agent.debug('-----> Wrong Password <-----')
                 self.request.sendall('KO')
@@ -126,9 +129,9 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
             self.server.agent.debug('####################')
             self.server.agent.debug('result: %s', res)
             self.server.agent.debug('####################')
-            _, w, _ = select.select([], [self.request], [], 5)
+            _, w, _ = select.select([], [self.request], [], timeout)
             if not w:
-                raise Exception ('Socket timed-out 2')
+                raise Exception ('Socket timed-out 3')
             if j['func'] == 'restore_files':
                 size = os.path.getsize(res)
                 self.request.sendall(struct.pack('!Q', size))
@@ -138,9 +141,9 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
                         self.server.agent.debug('sending %d Bytes', len(buf))
                         self.request.sendall(buf)
                         buf = f.read(1024)
-                        _, w, _ = select.select([], [self.request], [], 5)
+                        _, w, _ = select.select([], [self.request], [], timeout)
                         if not w:
-                            raise Exception ('Socket timed-out 3')
+                            raise Exception ('Socket timed-out 4')
             else:
                 self.request.sendall(struct.pack('!Q', len(res)))
                 self.request.sendall(res)
