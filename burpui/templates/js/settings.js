@@ -103,6 +103,7 @@ app.controller('ConfigCtrl', function($scope, $http) {
 	$scope.all = {};
 	$scope.avail = {};
 	$scope.suggest = {};
+	$scope.invalid = {};
 	$scope.old = {};
 	$scope.new = {
 			'bools': undefined,
@@ -164,6 +165,7 @@ app.controller('ConfigCtrl', function($scope, $http) {
 				form.find('#'+value.name).val(value.value);
 				form.find('#'+value.name+'_view').attr('disabled', true);
 			});
+			$scope.invalid = {};
 			/* UX tweak: disable the submit button + change text */
 			submit = form.find('button[type="submit"]');
 			sav = submit.text();
@@ -191,6 +193,7 @@ app.controller('ConfigCtrl', function($scope, $http) {
 				if (data.notif) {
 					$.each(data.notif, function(i, n) {
 						notif(n[0], n[1]);
+						$scope.invalid[n[2]] = true;
 					});
 				}
 				$scope.setSettings.$setPristine();

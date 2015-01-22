@@ -452,7 +452,14 @@ class Parser(BUIparser,BUIlogging):
             if key in self.files:
                 d = data.get(key)
                 if not os.path.isfile(d):
-                    errs.append([2, "Sorry, the file '%s' does not exist" % (d)])
+                    typ = 'strings'
+                    if key in self.multi_srv:
+                        typ = 'multis'
+                    elif key in self.boolean_srv:
+                        typ = 'bools'
+                    elif key in self.integer_srv:
+                        typ = 'integers'
+                    errs.append([2, "Sorry, the file '%s' does not exist" % (d), key, typ])
         if errs:
             return errs
         with codecs.open(self.conf, 'w', 'utf-8') as f:
