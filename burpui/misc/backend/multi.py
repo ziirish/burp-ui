@@ -26,14 +26,18 @@ class Burp(BUIbackend):
                 for sec in config.sections():
                     r = re.match('^Agent:(.+)$', sec)
                     if r:
+                        timeout = 5
+                        ssl = False
                         try:
                             host = config.get(sec, 'host')
                             port = config.getint(sec, 'port')
                             password = config.get(sec, 'password')
                             ssl = config.getboolean(sec, 'ssl')
+                            timeout = config.getint(sec, 'timeout')
                         except Exception, e:
                             self.app.logger.error(str(e))
-                        self.servers[r.group(1)] = NClient(app, host, port, password, ssl)
+
+                        self.servers[r.group(1)] = NClient(app, host, port, password, ssl, timeout)
 
         self.app.logger.debug(self.servers)
         for key, serv in self.servers.iteritems():
@@ -130,13 +134,16 @@ class Burp(BUIbackend):
 
 class NClient(BUIbackend):
 
-    def __init__(self, app=None, host=None, port=None, password=None, ssl=None):
+    def __init__(self, app=None, host=None, port=None, password=None, ssl=None, timeout=5):
         self.host = host
         self.port = port
         self.password = password
         self.ssl = ssl
         self.connected = False
         self.app = app
+        self.timeout = 5
+        if timeout:
+            self.timeout = timeout
 
     def conn(self):
         try:
@@ -187,7 +194,7 @@ class NClient(BUIbackend):
             self.sock.sendall(struct.pack('!Q', length))
             self.sock.sendall(raw)
             self.app.logger.debug("Sending: %s", raw)
-            r, _, _ = select.select([self.sock], [], [], 5)
+            r, _, _ = select.select([self.sock], [], [], self.timeout)
             if not r:
                 raise Exception ('Socket timed-out 1')
             tmp = self.sock.recv(2)
@@ -196,7 +203,7 @@ class NClient(BUIbackend):
                 self.app.logger.debug('Ooops, unsuccessful!')
                 return res
             self.app.logger.debug("Data sent successfully")
-            r, _, _ = select.select([self.sock], [], [], 5)
+            r, _, _ = select.select([self.sock], [], [], self.timeout)
             if not r:
                 raise Exception ('Socket timed-out 2')
             lengthbuf = self.sock.recv(8)
@@ -205,11 +212,12 @@ class NClient(BUIbackend):
                 toclose = False
                 res = (self.sock, length)
             else:
-                r, _, _ = select.select([self.sock], [], [], 5)
+                r, _, _ = select.select([self.sock], [], [], self.timeout)
                 if not r:
                     raise Exception ('Socket timed-out 3')
                 res = self.recvall(length)
         except Exception, e:
+            self.close(True)
             self.app.logger.error(str(e))
         finally:
             self.close(toclose)
