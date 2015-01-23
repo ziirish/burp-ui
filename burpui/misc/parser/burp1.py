@@ -4,7 +4,7 @@ import os
 import shutil
 import codecs
 
-from burpui.misc.utils import human_readable as _hr, BUIlogging
+from burpui.misc.utils import BUIlogging
 from burpui.misc.parser.interface import BUIparser
 
 class Parser(BUIparser,BUIlogging):
