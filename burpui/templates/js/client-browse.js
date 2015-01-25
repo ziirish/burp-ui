@@ -200,6 +200,12 @@
 			},
 			failCallback: function (responseHtml, url) {
 				$preparingFileModal.modal('hide');
+				if (responseHtml == 'encrypted') {
+					msg = 'The backup seem encrypted, please provide the encryption key in the \'restoration options\' form.';
+				} else {
+					msg = responseHtml;
+				}
+				$("#error-response").empty().html(msg);
 				$("#error-modal").modal('toggle');
 			},
 			httpMethod: "POST",

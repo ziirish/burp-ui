@@ -114,8 +114,8 @@ class Burp(BUIbackend):
         """
         return self.servers[agent].get_tree(name, backup, root)
 
-    def restore_files(self, name=None, backup=None, files=None, strip=None, archive='zip', agent=None):
-        return self.servers[agent].restore_files(name, backup, files, strip, archive)
+    def restore_files(self, name=None, backup=None, files=None, strip=None, archive='zip', password=None, agent=None):
+        return self.servers[agent].restore_files(name, backup, files, strip, archive, password)
 
     def read_conf_cli(self, agent=None):
         return self.servers[agent].read_conf_cli()
@@ -206,11 +206,17 @@ class NClient(BUIbackend):
             r, _, _ = select.select([self.sock], [], [], self.timeout)
             if not r:
                 raise Exception ('Socket timed-out 2')
+            tmp = 'OK'
+            if data['func'] == 'restore_files':
+                tmp = self.sock.recv(2)
             lengthbuf = self.sock.recv(8)
             length, = struct.unpack('!Q', lengthbuf)
             if data['func'] == 'restore_files':
+                err = None
+                if tmp == 'KO':
+                    err = self.recvall(length)
                 toclose = False
-                res = (self.sock, length)
+                res = (self.sock, length, err)
             else:
                 r, _, _ = select.select([self.sock], [], [], self.timeout)
                 if not r:
@@ -305,8 +311,8 @@ class NClient(BUIbackend):
         data = {'func': 'get_tree', 'args': {'name': name, 'backup': backup, 'root': root}}
         return json.loads(self.do_command(data))
 
-    def restore_files(self, name=None, backup=None, files=None, strip=None, archive='zip', agent=None):
-        data = {'func': 'restore_files', 'args': {'name': name, 'backup': backup, 'files': files, 'strip': strip, 'archive': archive}}
+    def restore_files(self, name=None, backup=None, files=None, strip=None, archive='zip', password=None, agent=None):
+        data = {'func': 'restore_files', 'args': {'name': name, 'backup': backup, 'files': files, 'strip': strip, 'archive': archive, 'password': password}}
         return self.do_command(data)
 
     def read_conf_cli(self, agent=None):

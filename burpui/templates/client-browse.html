@@ -69,6 +69,7 @@
                   <ul class="dropdown-menu browse">
                     <li><label for="strip">Number of leading path components to strip:&nbsp;</label><input type="text" id="strip" name="strip" placeholder="0" autocomplete="off" maxlength="2" size="2"></li>
                     <li><label for="format">Archive format:&nbsp;</label><select id="format" name="format" style="color: #000;"><option>zip</option><option>tar.gz</option><option>tar.bz2</option></select></li>
+                    <li><label for="pass">Encryption password:&nbsp;</label><input type="password" id="pass" name="pass" placeholder="password" autocomplete="off" size="20"></li>
                   </ul>
                 </div>
                 <button type="button" id="btn-clear" class="btn btn-info"><span class="glyphicon glyphicon-trash"></span>&nbsp;Clear selection</button>
@@ -106,6 +107,7 @@
               <div class="modal-body">
                 <div class="alert alert-danger">
                   <span class="glyphicon glyphicon-exclamation-sign"></span>&nbsp;An error occurred while processing the restoration.
+                  <pre id="error-response"></pre>
                 </div>
               </div>
               <div class="modal-footer">
