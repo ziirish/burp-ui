@@ -8,6 +8,7 @@ import datetime
 import ConfigParser
 import shutil
 import subprocess
+import tempfile
 import codecs
 
 from pipes import quote
@@ -616,7 +617,6 @@ class Burp(BUIbackend, BUIlogging):
         f = self.status('c:{0}:b:{1}:p:{2}\n'.format(name, backup, top))
         useful = False
         for line in f:
-            self._logger('debug', "line: '{0}'".format(line))
             if not useful and re.match('^-list begin-$', line):
                 useful = True
                 continue
@@ -643,12 +643,13 @@ class Burp(BUIbackend, BUIlogging):
                     r.append(t)
         return r
 
-    def restore_files(self, name=None, backup=None, files=None, strip=None, archive='zip', agent=None):
+    def restore_files(self, name=None, backup=None, files=None, strip=None, archive='zip', password=None, agent=None):
         if not name or not backup or not files or not self.stripbin or not self.burpbin:
-            return None
+            return None, 'At least one argument is missing'
         flist = json.loads(files)
+        fh, tmpfile = tempfile.mkstemp()
         if 'restore' not in flist:
-            return None
+            return None, 'Wrong call'
         if os.path.isdir(self.tmpdir):
             shutil.rmtree(self.tmpdir)
         full_reg = u''
@@ -661,19 +662,40 @@ class Burp(BUIbackend, BUIlogging):
             full_reg += reg
 
         cmd = [self.burpbin, '-C', quote(name), '-a', 'r', '-b', quote(str(backup)), '-r', full_reg.rstrip('|'), '-d', self.tmpdir]
-        if self.burpconfcli:
+        if password:
+            if not self.burpconfcli:
+                return None, 'No client configuration file specified'
+            content = []
+            fdh = os.fdopen(fh, 'w+')
+            with open(self.burpconfcli) as f:
+                shutil.copyfileobj(f, fdh)
+
+            fdh.write('encryption_password = {}\n'.format(password))
+            fdh.close()
+            cmd.append('-c')
+            cmd.append(tmpfile)
+        elif self.burpconfcli:
             cmd.append('-c')
             cmd.append(self.burpconfcli)
         if strip and strip.isdigit() and int(strip) > 0:
             cmd.append('-s')
             cmd.append(strip)
         self._logger('debug', cmd)
-        status = subprocess.call(cmd)
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        status = p.wait()
+        out, err = p.communicate()
+        os.remove(tmpfile)
+        self._logger('debug', out)
         self._logger('debug', 'command returned: %d', status)
+        # FIXME: temporary hack to handle client-side encrypted backups
+        if 'zstrm inflate error: -3' in out and 'transfer file returning: -1' in out:
+            status = 1
+            out = 'encrypted'
         # a return code of 2 means there were some warnings during restoration
         # so we can assume the restoration was successful anyway
         if status not in [0, 2]:
-            return None
+            #out, err = p.communicate()
+            return None, out
 
         zip_dir = self.tmpdir.rstrip(os.sep)
         zip_file = zip_dir+'.zip'
@@ -701,7 +723,7 @@ class Burp(BUIbackend, BUIlogging):
                     zf.append(path, entry)
 
         shutil.rmtree(self.tmpdir)
-        return zip_file
+        return zip_file, None
 
     def read_conf_cli(self, agent=None):
         if not self.parser:

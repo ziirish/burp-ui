@@ -4,7 +4,7 @@ import select
 from zlib import adler32
 from time import gmtime, strftime, time
 
-from flask import Flask, Response, request, render_template, jsonify, redirect, url_for, abort, flash, send_file
+from flask import Flask, Response, request, render_template, jsonify, redirect, url_for, abort, flash, send_file, make_response
 from flask.ext.login import login_user, login_required, logout_user 
 from werkzeug.datastructures import Headers
 
@@ -71,6 +71,7 @@ def restore(server=None, name=None, backup=None):
     l = request.form.get('list')
     s = request.form.get('strip')
     f = request.form.get('format')
+    p = request.form.get('pass')
     resp = None
     if not f:
         f = 'zip'
@@ -81,8 +82,10 @@ def restore(server=None, name=None, backup=None):
     else:
         filename = 'restoration_%d_%s_at_%s.%s' % (backup, name, strftime("%Y-%m-%d_%H_%M_%S", gmtime()), f)
     if not server:
-        archive = bui.cli.restore_files(name, backup, l, s, f)
+        archive, err = bui.cli.restore_files(name, backup, l, s, f, p)
         if not archive:
+            if err:
+                abort(make_response(err, 500))
             abort(500)
         try:
             resp = send_file(archive, as_attachment=True, attachment_filename=filename, mimetype='application/zip')
@@ -93,7 +96,7 @@ def restore(server=None, name=None, backup=None):
     else:
         socket = None
         try:
-            socket, length = bui.cli.restore_files(name, backup, l, s, f, server)
+            socket, length, err = bui.cli.restore_files(name, backup, l, s, f, p, server)
             app.logger.debug('Need to get %d Bytes : %s', length, socket)
             def stream_file(sock, l):
                 bsize = 1024
@@ -112,6 +115,10 @@ def restore(server=None, name=None, backup=None):
                     app.logger.debug('%d/%d', received, l)
                     yield buf
                 sock.close()
+
+            if err:
+                socket.close()
+                abort(make_response(err, 500))
 
             headers = Headers()
             headers.add('Content-Disposition', 'attachment', filename=filename)

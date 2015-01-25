@@ -95,6 +95,7 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
         self.server.agent.debug('===============>')
         timeout = self.server.agent.timeout
         try:
+            err = None
             r, _, _ = select.select([self.request], [], [], timeout)
             if not r:
                 raise Exception ('Socket timed-out 1')
@@ -118,7 +119,7 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
                 return
             self.request.sendall('OK')
             if j['func'] == 'restore_files':
-                res = self.server.agent.methods[j['func']](**j['args'])
+                res, err = self.server.agent.methods[j['func']](**j['args'])
             else:
                 if j['args']:
                     if 'pickled' in j and j['pickled']:
@@ -133,6 +134,13 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
             if not w:
                 raise Exception ('Socket timed-out 3')
             if j['func'] == 'restore_files':
+                if err:
+                    self.request.sendall('KO')
+                    size = len(err)
+                    self.request.sendall(struct.pack('!Q', size))
+                    self.request.sendall(err)
+                    raise Exception ('Restoration failed')
+                self.request.sendall('OK')
                 size = os.path.getsize(res)
                 self.request.sendall(struct.pack('!Q', size))
                 with open(res, 'rb') as f:
