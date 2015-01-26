@@ -7,6 +7,7 @@ from time import gmtime, strftime, time
 from flask import Flask, Response, request, render_template, jsonify, redirect, url_for, abort, flash, send_file, make_response
 from flask.ext.login import login_user, login_required, logout_user 
 from werkzeug.datastructures import Headers
+from werkzeug.exceptions import HTTPException
 
 from burpui import app, bui, login_manager
 from burpui.forms import LoginForm
@@ -98,6 +99,12 @@ def restore(server=None, name=None, backup=None):
         try:
             socket, length, err = bui.cli.restore_files(name, backup, l, s, f, p, server)
             app.logger.debug('Need to get %d Bytes : %s', length, socket)
+
+            if err:
+                app.logger.debug('Something went wrong: %s', err)
+                socket.close()
+                abort(make_response(err, 500))
+
             def stream_file(sock, l):
                 bsize = 1024
                 received = 0
@@ -116,10 +123,6 @@ def restore(server=None, name=None, backup=None):
                     yield buf
                 sock.close()
 
-            if err:
-                socket.close()
-                abort(make_response(err, 500))
-
             headers = Headers()
             headers.add('Content-Disposition', 'attachment', filename=filename)
             headers['Content-Length'] = length
@@ -131,6 +134,8 @@ def restore(server=None, name=None, backup=None):
                     time(),
                     length,
                     adler32(filename.encode('utf-8')) & 0xffffffff))
+        except HTTPException, e:
+            raise e
         except Exception, e:
             app.logger.error(str(e))
             abort(500)
