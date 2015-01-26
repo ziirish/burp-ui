@@ -136,7 +136,7 @@ class Burp(BUIbackend, BUIlogging):
                     elif not re.match('^\S+$', tdir):
                         self._logger('warning', "Incorrect value for the 'tmpdir' option. Fallback to '%s'", g_tmpdir)
                         tdir = g_tmpdir
-                    elif os.path.isdir(tdir) and os.listdir(tdir) and not self.app.config.get('TESTING'):
+                    elif os.path.isdir(tdir) and os.listdir(tdir) and (self.app and not self.app.config.get('TESTING')):
                         raise Exception("'{0}' is not empty!".format(tdir))
                     elif os.path.isdir(tdir) and not os.access(tdir, os.W_OK|os.X_OK):
                         self._logger('warning', "'%s' is not writable. Fallback to '%s'", tdir, g_tmpdir)
