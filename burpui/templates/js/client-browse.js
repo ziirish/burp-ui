@@ -201,7 +201,7 @@
 			failCallback: function (responseHtml, url) {
 				$preparingFileModal.modal('hide');
 				if (responseHtml == 'encrypted') {
-					msg = 'The backup seem encrypted, please provide the encryption key in the \'restoration options\' form.';
+					msg = 'The backup seems encrypted, please provide the encryption key in the \'Download options\' form.';
 				} else {
 					msg = responseHtml;
 				}
