@@ -425,17 +425,21 @@ def live_monitor(server=None, name=None):
 @app.route('/<server>/client-browse/<name>', methods=['GET'])
 @app.route('/client-browse/<name>/<int:backup>')
 @app.route('/<server>/client-browse/<name>/<int:backup>')
+@app.route('/client-browse/<name>/<int:backup>/<int:encrypted>')
+@app.route('/<server>/client-browse/<name>/<int:backup>/<int:encrypted>')
 @login_required
-def client_browse(server=None, name=None, backup=None):
+def client_browse(server=None, name=None, backup=None, encrypted=None):
     """
     Browse a specific backup of a specific client
     """
+    if request.args.get('encrypted') == '1':
+        encrypted = 1
     if not server:
         server = request.args.get('server')
     bkp = request.args.get('backup')
     if bkp and not backup:
-        return redirect(url_for('client_browse', name=name, backup=bkp, server=server))
-    return render_template('client-browse.html', tree=True, backup=True, overview=True, cname=name, nbackup=backup, server=server)
+        return redirect(url_for('client_browse', name=name, backup=bkp, encrypted=encrypted, server=server))
+    return render_template('client-browse.html', tree=True, backup=True, overview=True, cname=name, nbackup=backup, encrypted=encrypted, server=server)
 
 @app.route('/client-report/<name>')
 @app.route('/<server>/client-report/<name>')

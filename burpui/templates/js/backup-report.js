@@ -36,8 +36,13 @@ var _client = function() {
 	}
 	url = '{{ url_for("client_stat_json", name=cname, backup=nbackup, server=server) }}';
 	$.getJSON(url, function(d) {
-		var _fields = [ 'dir', 'files', 'hardlink', 'softlink' ];
 		j = d.results;
+		var _fields = [];
+		if (j && j.encrypted) {
+			_fields = [ 'dir', 'files_enc', 'hardlink', 'softlink' ];
+		} else {
+			_fields = [ 'dir', 'files', 'hardlink', 'softlink' ];
+		}
 		if (!j) {
 			if (d.notif) {
 				$.each(d.notif, function(i, n) {

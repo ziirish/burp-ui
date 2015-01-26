@@ -41,7 +41,7 @@ var _client = function() {
 			$('#client-alert').show();
 		} else {
 			$.each(data.results.reverse(), function(j, c) {
-				$('#table-client> tbody:last').append('<tr class="clickable" style="cursor: pointer;"><td><a href="{{ url_for("client_browse", name=cname, server=server) }}?backup='+c.number+'" style="color: inherit; text-decoration: inherit;">'+pad(c.number, 7)+'</a></td><td>'+c.date+'</td></tr>');
+				$('#table-client> tbody:last').append('<tr class="clickable" style="cursor: pointer;"><td><a href="{{ url_for("client_browse", name=cname, server=server) }}?backup='+c.number+(c.encrypted?'&encrypted=1':'')+'" style="color: inherit; text-decoration: inherit;">'+pad(c.number, 7)+'</a></td><td>'+c.date+'</td><td><span class="glyphicon glyphicon-'+(c.encrypted?'lock':'globe')+'"></span></td></tr>');
 			});
 		}
 	});

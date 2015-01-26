@@ -63,8 +63,20 @@
             <form id="form-restore" class="form-inline" method="POST" role="form" action="{{ url_for("restore", name=cname, backup=nbackup, server=server) }}">
               <input type="hidden" name="list">
               <div id="restore-form" style="display:none;">
+                {% if encrypted -%}
+                <div id="notice">
+                  <div class="panel panel-warning">
+                    <div class="panel-heading">
+                      <h3 class="panel-title"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;Information</h3>
+                    </div>
+                    <div class="panel-body">
+                      This backup is encrypted, please provide the encryption password in order to perform an online restoration.
+                    </div>
+                  </div>
+                </div>
+                {% endif -%}
                 <div class="btn-group">
-                  <button type="submit" class="btn btn-info"><span class="glyphicon glyphicon-cloud-download"></span>&nbsp;Download selected files</button>
+                  <button type="submit" class="btn btn-info" id="perform"><span class="glyphicon glyphicon-cloud-download"></span>&nbsp;Download selected files</button>
                   <button class="btn btn-info dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
                   <ul class="dropdown-menu browse">
                     <li><label for="strip">Number of leading path components to strip:&nbsp;</label><input type="text" id="strip" name="strip" placeholder="0" autocomplete="off" maxlength="2" size="2"></li>
