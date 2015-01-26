@@ -240,6 +240,7 @@ class Burp(BUIbackend, BUIlogging):
 
         f = self.status('c:{0}:b:{1}\n'.format(c, n), agent=agent)
         found = False
+        ret = {}
         for line in f:
             if line == 'backup_stats':
                 found = True
@@ -251,9 +252,14 @@ class Burp(BUIbackend, BUIlogging):
                 cl = c
 
             f = self.status('c:{0}:b:{1}:f:log.gz\n'.format(c, n), agent=agent)
-            return self._parse_backup_log(f, n, cl, agent=agent)
+            ret = self._parse_backup_log(f, n, cl, agent=agent)
+        else:
+            ret = self._parse_backup_stats(n, c, forward, agent=agent)
 
-        return self._parse_backup_stats(n, c, forward, agent=agent)
+        ret['encrypted'] = False
+        if 'files_enc' in ret and ret['files_enc']['total'] > 0:
+            ret['encrypted'] = True
+        return ret
 
     def _parse_backup_stats(self, n, c, forward=False, agent=None):
         backup = { 'windows': 'unknown', 'number': int(n) }
@@ -582,7 +588,7 @@ class Burp(BUIbackend, BUIlogging):
         for line in f:
             if not re.match('^{0}\t'.format(c), line):
                 continue
-            self._logger('debug', "line: '{0}'".format(line))
+            #self._logger('debug', "line: '{0}'".format(line))
             regex = re.compile('\s*(\S+)\s+\d\s+(\S)\s+(.+)')
             m = regex.search(line)
             if m.group(3) == "0" or m.group(2) not in [ 'i', 'c', 'C' ]:
@@ -593,6 +599,8 @@ class Burp(BUIbackend, BUIlogging):
                 sp = b.split()
                 ba['number'] = sp[0]
                 ba['date'] = datetime.datetime.fromtimestamp(int(sp[2])).strftime('%Y-%m-%d %H:%M:%S')
+                log = self.get_backup_logs(sp[0], name)
+                ba['encrypted'] = log['encrypted']
                 r.append(ba)
         # Here we need to reverse the array so the backups are sorted by date ASC
         r.reverse()

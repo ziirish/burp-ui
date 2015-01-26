@@ -224,3 +224,15 @@
 		e.stopPropagation();
 	});
 
+	{%if encrypted -%}
+	$("#perform").attr("disabled", "disabled");
+	$("#pass").on('change', function() {
+		if ($(this).val().length > 0) {
+			$("#perform").removeAttr("disabled");
+			$("#notice").hide();
+		} else {
+			$("#perform").attr("disabled", "disabled");
+			$("#notice").show();
+		}
+	});
+	{% endif -%}
