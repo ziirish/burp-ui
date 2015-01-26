@@ -6,6 +6,7 @@ import json
 import time
 import sys
 import pickle
+import traceback
 import ConfigParser
 import SocketServer
 from threading import Thread
@@ -56,7 +57,8 @@ class BUIAgent:
             Client = mod.Burp
             self.backend = Client(conf=conf)
         except Exception, e:
-            self.app.logger.error('Failed loading backend for Burp version %d: %s', self.vers, str(e))
+            traceback.print_exc()
+            self.debug('Failed loading backend for Burp version %d: %s', self.vers, str(e))
             sys.exit(2)
 
         self.methods = {

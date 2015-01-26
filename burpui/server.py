@@ -1,5 +1,6 @@
 # -*- coding: utf8 -*-
 import ConfigParser
+import traceback
 import sys
 
 g_port = '5000'
@@ -55,6 +56,7 @@ class BUIServer:
                         UserHandler = mod.UserHandler
                         self.uhandler = UserHandler(self.app)
                     except Exception, e:
+                        traceback.print_exc()
                         self.app.logger.error('Import Exception, module \'%s\': %s', config.get('Global', 'auth'), str(e))
                         sys.exit(1)
                 else:
@@ -85,6 +87,7 @@ class BUIServer:
             Client = mod.Burp
             self.cli = Client(self.app, conf=conf)
         except Exception, e:
+            traceback.print_exc()
             self.app.logger.error('Failed loading backend for Burp version %d: %s', self.vers, str(e))
             sys.exit(2)
 
