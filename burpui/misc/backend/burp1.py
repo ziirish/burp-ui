@@ -655,7 +655,8 @@ class Burp(BUIbackend, BUIlogging):
         if not name or not backup or not files or not self.stripbin or not self.burpbin:
             return None, 'At least one argument is missing'
         flist = json.loads(files)
-        fh, tmpfile = tempfile.mkstemp()
+        if password:
+            fh, tmpfile = tempfile.mkstemp()
         if 'restore' not in flist:
             return None, 'Wrong call'
         if os.path.isdir(self.tmpdir):
@@ -692,7 +693,8 @@ class Burp(BUIbackend, BUIlogging):
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         status = p.wait()
         out, err = p.communicate()
-        os.remove(tmpfile)
+        if password:
+            os.remove(tmpfile)
         self._logger('debug', out)
         self._logger('debug', 'command returned: %d', status)
         # FIXME: temporary hack to handle client-side encrypted backups
