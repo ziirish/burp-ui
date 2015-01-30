@@ -300,7 +300,10 @@ def clients_report_json(server=None):
         cl.append( { 'name': c['name'], 'stats': bui.cli.get_backup_logs(client[-1]['number'], c['name'], agent=server) } )
         for b in client:
             ba.append(bui.cli.get_backup_logs(b['number'], c['name'], True, agent=server))
-    j.append( { 'clients': cl, 'backups': sorted(ba, key=lambda k: k['end']) } )
+    if 'end' in ba:
+        j.append( { 'clients': cl, 'backups': sorted(ba, key=lambda k: k['end']) } )
+    else:
+        j.append( { 'clients': cl, 'backups': ba } )
     return jsonify(results=j)
 
 @app.route('/api/client-stat.json/<name>')

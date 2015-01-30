@@ -456,7 +456,7 @@ class Burp(BUIbackend, BUIlogging):
             for key, regex in lookup_complex.iteritems():
                 r = re.search(regex, line)
                 if r:
-                    self._logger('debug', "match[1]: '{0}'".format(r.group(1)))
+                    #self._logger('debug', "match[1]: '{0}'".format(r.group(1)))
                     sp = re.split('\s+', r.group(1))
                     backup[key] = {
                             'new':       int(sp[0]),
