@@ -12,6 +12,7 @@ g_sslcert = ''
 g_sslkey = ''
 g_version = '1'
 g_auth = 'basic'
+g_acl = ''
 
 class BUIServer:
     def __init__(self, app=None):
@@ -19,7 +20,7 @@ class BUIServer:
         self.app = app
 
     def setup(self, conf=None):
-        global g_refresh, g_port, g_bind, g_ssl, g_sslcert, g_sslkey, g_version, g_auth, g_standalone
+        global g_refresh, g_port, g_bind, g_ssl, g_sslcert, g_sslkey, g_version, g_auth, g_standalone, g_acl
         self.sslcontext = None
         if not conf:
             conf = self.app.config['CFG']
@@ -30,7 +31,7 @@ class BUIServer:
         config = ConfigParser.ConfigParser({'port': g_port,'bind': g_bind,
                     'refresh': g_refresh, 'ssl': g_ssl, 'sslcert': g_sslcert,
                     'sslkey': g_sslkey, 'version': g_version, 'auth': g_auth,
-                    'standalone': g_standalone})
+                    'standalone': g_standalone, 'acl': g_acl})
         with open(conf) as fp:
             config.readfp(fp)
             try:
@@ -52,16 +53,28 @@ class BUIServer:
                 self.auth = config.get('Global', 'auth')
                 if self.auth != 'none':
                     try:
-                        mod = __import__('burpui.misc.auth.{0}'.format(config.get('Global', 'auth')), fromlist=['UserHandler'])
+                        mod = __import__('burpui.misc.auth.{0}'.format(self.auth), fromlist=['UserHandler'])
                         UserHandler = mod.UserHandler
                         self.uhandler = UserHandler(self.app)
                     except Exception, e:
                         traceback.print_exc()
-                        self.app.logger.error('Import Exception, module \'%s\': %s', config.get('Global', 'auth'), str(e))
+                        self.app.logger.error('Import Exception, module \'%s\': %s', self.auth, str(e))
                         sys.exit(1)
                 else:
                     # I know that's ugly, but hey, I need it!
                     self.app.login_manager._login_disabled = True
+                self.acl_engine = config.get('Global', 'acl')
+                if self.acl_engine and self.acl_engine != 'none':
+                    try:
+                        mod = __import__('burpui.misc.acl.{0}'.format(self.acl_engine), fromlist=['ACLloader'])
+                        ACLloader = mod.ACLloader
+                        self.acl = ACLloader(self.app)
+                    except Exception, e:
+                        traceback.print_exc()
+                        self.app.logger.error('Import Exception, module \'%s\': %s', self.acl_engine, str(e))
+                        sys.exit(1)
+                else:
+                    self.acl = False
             except ConfigParser.NoOptionError, e:
                 self.app.logger.error(str(e))
 
