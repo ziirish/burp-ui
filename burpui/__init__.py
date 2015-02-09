@@ -37,7 +37,7 @@ login_manager.login_message_category = 'info'
 # Then we load our routes
 import burpui.routes
 
-def init(conf=None, debug=False, gunicorn=True):
+def init(conf=None, debug=False, gunicorn=True, logfile=None):
     app.config['DEBUG'] = debug
     if debug:
         app.config['TESTING'] = True
@@ -55,6 +55,14 @@ def init(conf=None, debug=False, gunicorn=True):
                 app.config['CFG'] = p
                 app.logger.debug('Using file \'%s\'', p)
                 break
+
+    if logfile:
+        import logging
+        from logging.handlers import RotatingFileHandler
+        file_handler = RotatingFileHandler(logfile, maxBytes=1024 * 1024 * 100, backupCount=20)
+        file_handler.setLevel(logging.DEBUG)
+        app.logger.addHandler(file_handler)
+
 
     bui.setup(app.config['CFG'])
 
