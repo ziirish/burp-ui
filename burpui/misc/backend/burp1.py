@@ -598,6 +598,7 @@ class Burp(BUIbackend, BUIlogging):
                 ba = {}
                 sp = b.split()
                 ba['number'] = sp[0]
+                ba['deletable'] = (sp[1] == '1')
                 ba['date'] = datetime.datetime.fromtimestamp(int(sp[2])).strftime('%Y-%m-%d %H:%M:%S')
                 log = self.get_backup_logs(sp[0], name)
                 ba['encrypted'] = log['encrypted']
