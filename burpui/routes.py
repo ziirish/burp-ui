@@ -1,6 +1,7 @@
 # -*- coding: utf8 -*-
 import math
 import select
+import json
 from zlib import adler32
 from time import gmtime, strftime, time
 
@@ -300,6 +301,7 @@ def clients_report_json(server=None):
         cl.append( { 'name': c['name'], 'stats': bui.cli.get_backup_logs(client[-1]['number'], c['name'], agent=server) } )
         for b in client:
             ba.append(bui.cli.get_backup_logs(b['number'], c['name'], True, agent=server))
+    app.logger.debug(json.dumps(ba))
     if 'end' in ba:
         j.append( { 'clients': cl, 'backups': sorted(ba, key=lambda k: k['end']) } )
     else:
