@@ -66,9 +66,10 @@ class Burp(BUIbackend, BUIlogging):
         'path'
        ]
 
-    def __init__(self, app=None, conf=None):
+    def __init__(self, server=None, conf=None):
         global g_burpport, g_burphost, g_tmpdir, g_burpbin, g_stripbin, g_burpconfcli, g_burpconfsrv
-        self.app = app
+        self.app = server.app
+        self.acl = server.acl
         self.host = g_burphost
         self.port = int(g_burpport)
         self.burpbin = g_burpbin
@@ -234,11 +235,11 @@ class Burp(BUIbackend, BUIlogging):
             self._logger('error', 'Cannot contact burp server at %s:%s', self.host, self.port)
             raise BUIserverException('Cannot contact burp server at {0}:{1}'.format(self.host, self.port))
 
-    def get_backup_logs(self, n, c, forward=False, agent=None):
-        if not c or not n:
+    def get_backup_logs(self, number, client, forward=False, agent=None):
+        if not client or not number:
             return []
 
-        f = self.status('c:{0}:b:{1}\n'.format(c, n), agent=agent)
+        f = self.status('c:{0}:b:{1}\n'.format(client, number), agent=agent)
         found = False
         ret = {}
         for line in f:
@@ -251,20 +252,20 @@ class Burp(BUIbackend, BUIlogging):
             if forward:
                 cl = c
 
-            f = self.status('c:{0}:b:{1}:f:log.gz\n'.format(c, n), agent=agent)
+            f = self.status('c:{0}:b:{1}:f:log.gz\n'.format(client, number), agent=agent)
             ret = self._parse_backup_log(f, n, cl, agent=agent)
         else:
-            ret = self._parse_backup_stats(n, c, forward, agent=agent)
+            ret = self._parse_backup_stats(number, client, forward, agent=agent)
 
         ret['encrypted'] = False
         if 'files_enc' in ret and ret['files_enc']['total'] > 0:
             ret['encrypted'] = True
         return ret
 
-    def _parse_backup_stats(self, n, c, forward=False, agent=None):
-        backup = { 'windows': 'unknown', 'number': int(n) }
+    def _parse_backup_stats(self, number, client, forward=False, agent=None):
+        backup = { 'windows': 'unknown', 'number': int(number) }
         if forward:
-            backup['name'] = c
+            backup['name'] = client
         keys = {
                 'time_start':                    'start',
                 'time_end':                      'end',
@@ -356,7 +357,7 @@ class Burp(BUIbackend, BUIlogging):
                 'total_scanned':                 [ 'total', 'scanned' ],
                 'total_total':                   [ 'total', 'total' ]
             }
-        f = self.status('c:{0}:b:{1}:f:backup_stats\n'.format(c, n), agent=agent)
+        f = self.status('c:{0}:b:{1}:f:backup_stats\n'.format(client, number), agent=agent)
         for line in f:
             if line == '-list begin-' or line == '-list end-':
                 continue
@@ -378,7 +379,7 @@ class Burp(BUIbackend, BUIlogging):
                 backup[rk] = int(val)
         return backup
 
-    def _parse_backup_log(self, f, n, c=None, agent=None):
+    def _parse_backup_log(self, fh, number, client=None, agent=None):
         """
         parse_backup_log parses the log.gz of a given backup and returns a dict
         containing different stats used to render the charts in the reporting view
@@ -406,11 +407,11 @@ class Burp(BUIbackend, BUIlogging):
                 'vssfooter_enc': '^\s*VSS footers \(enc\):?\s+(.+)\s+\|\s+(\d+)$',
                 'total':         '^\s*Grand total:?\s+(.+)\s+\|\s+(\d+)$'
                 }
-        backup = { 'windows': 'false', 'number': int(n) }
-        if c is not None:
-            backup['name'] = c 
+        backup = { 'windows': 'false', 'number': int(number) }
+        if client is not None:
+            backup['name'] = client
         useful = False
-        for line in f:
+        for line in fh:
             if re.match('^\d{4}-\d{2}-\d{2} (\d{2}:){3} \w+\[\d+\] Client is Windows$', line):
                 backup['windows'] = 'true'
             elif not useful and not re.match('^-+$', line):

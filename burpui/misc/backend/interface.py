@@ -9,7 +9,7 @@ class BUIbackend:
     def status(self, query='\n', agent=None):
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")
 
-    def get_backup_logs(self, n, c, forward=False, agent=None):
+    def get_backup_logs(self, number, client, forward=False, agent=None):
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")
 
     def get_counters(self, name=None, agent=None):

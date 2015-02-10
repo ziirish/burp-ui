@@ -14,8 +14,9 @@ from burpui.misc.backend.interface import BUIbackend, BUIserverException
 
 class Burp(BUIbackend):
 
-    def __init__(self, app=None, conf=None):
-        self.app = app
+    def __init__(self, server=None, conf=None):
+        self.app = server.app
+        self.acl = server.acl
         self.servers = {}
         self.app.config['SERVERS'] = []
         self.running = {}
@@ -54,12 +55,12 @@ class Burp(BUIbackend):
         """
         return self.servers[agent].status(query)
 
-    def get_backup_logs(self, n, c, forward=False, agent=None):
+    def get_backup_logs(self, number, client, forward=False, agent=None):
         """
         parse_backup_log parses the log.gz of a given backup and returns a dict
         containing different stats used to render the charts in the reporting view
         """
-        return self.servers[agent].get_backup_logs(n, c, forward)
+        return self.servers[agent].get_backup_logs(number, client, forward)
 
     def get_counters(self, name=None, agent=None):
         """
@@ -255,12 +256,12 @@ class NClient(BUIbackend):
         data = {'func': 'status', 'args': {'query': query}}
         return json.loads(self.do_command(data))
 
-    def get_backup_logs(self, n, c, forward=False, agent=None):
+    def get_backup_logs(self, number, client, forward=False, agent=None):
         """
         parse_backup_log parses the log.gz of a given backup and returns a dict
         containing different stats used to render the charts in the reporting view
         """
-        data = {'func': 'get_backup_logs', 'args': {'n': n, 'c': c, 'forward': forward}}
+        data = {'func': 'get_backup_logs', 'args': {'number': number, 'client': client, 'forward': forward}}
         return json.loads(self.do_command(data))
 
     def get_counters(self, name=None, agent=None):
