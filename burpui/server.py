@@ -98,7 +98,7 @@ class BUIServer:
         try:
             mod = __import__(module, fromlist=['Burp'])
             Client = mod.Burp
-            self.cli = Client(self.app, conf=conf)
+            self.cli = Client(self, conf=conf)
         except Exception, e:
             traceback.print_exc()
             self.app.logger.error('Failed loading backend for Burp version %d: %s', self.vers, str(e))
