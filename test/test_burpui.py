@@ -129,10 +129,6 @@ class BurpuiRoutesTestCase(TestCase):
 		login_manager.init_app(app)
 		return app
 	
-	def test_config_render(self):
-		response = self.client.get('/settings')
-		assert 'Burp Configuration' in response.data
-	
 	def test_live_monitor(self):
 		response = self.client.get('/live-monitor', follow_redirects=True)
 		assert 'Sorry, there are no running backups' in response.data
@@ -160,6 +156,11 @@ class BurpuiLoginTestCase(TestCase):
 		bui.cli.port = 9999
 		login_manager.init_app(app)
 		return app
+
+	def test_config_render(self):
+		rv = self.login('admin', 'admin')
+		response = self.client.get('/settings')
+		assert 'Burp Configuration' in response.data
 
 	def test_login_ok(self):
 		rv = self.login('admin', 'admin')
