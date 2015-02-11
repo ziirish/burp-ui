@@ -6,7 +6,7 @@ from zlib import adler32
 from time import gmtime, strftime, time
 
 from flask import Flask, Response, request, render_template, jsonify, redirect, url_for, abort, flash, send_file, make_response
-from flask.ext.login import login_user, login_required, logout_user 
+from flask.ext.login import login_user, login_required, logout_user, current_user
 from werkzeug.datastructures import Headers
 from werkzeug.exceptions import HTTPException
 
@@ -27,6 +27,8 @@ def load_user(userid):
 @app.route('/<server>/settings/<client>', methods=['GET', 'POST'])
 @login_required
 def settings(server=None, client=None):
+    if bui.acl and not bui.acl.get_acl().is_admin(current_user.name):
+        abort(403)
     if not client:
         client = request.args.get('client')
     if request.method == 'POST':
@@ -41,6 +43,8 @@ def settings(server=None, client=None):
 @app.route('/api/<server>/client-config/<client>')
 @login_required
 def read_conf_cli(server=None, client=None):
+    if bui.acl and not bui.acl.get_acl().is_admin(current_user.name):
+        abort(403)
     r = bui.cli.read_conf_cli(client, server)
     return jsonify(results=r)
 
@@ -48,6 +52,8 @@ def read_conf_cli(server=None, client=None):
 @app.route('/api/<server>/server-config')
 @login_required
 def read_conf_srv(server=None):
+    if bui.acl and not bui.acl.get_acl().is_admin(current_user.name):
+        abort(403)
     r = bui.cli.read_conf_srv(server)
     return jsonify(results=r,
                    boolean=bui.cli.get_parser_attr('boolean_srv', server),
@@ -79,6 +85,8 @@ def restore(server=None, name=None, backup=None):
         f = 'zip'
     if not l or not name or not backup:
         abort(500)
+    if bui.acl and not bui.acl.get_acl().is_client_allowed(current_user.name, name):
+        abort(403)
     if server:
         filename = 'restoration_%d_%s_on_%s_at_%s.%s' % (backup, name, server, strftime("%Y-%m-%d_%H_%M_%S", gmtime()), f)
     else:
@@ -322,6 +330,9 @@ def client_stat_json(server=None, name=None, backup=None):
     j = []
     if not name:
         err = [[1, 'No client defined']]
+        return jsonify(notif=err)
+    if bui.acl and not bui.acl.get_acl().is_client_allowed(current_user.name, name):
+        err = [[2, 'You don\'t have rights to view this client stats']]
         return jsonify(notif=err)
     if backup:
         try:

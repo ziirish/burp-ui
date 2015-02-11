@@ -9,3 +9,5 @@ class BUIacl:
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")
     def clients(self, username=None):
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")
+    def is_client_allowed(self, username=None, client=None):
+        raise NotImplementedError("Sorry, the current Backend does not implement this method!")

@@ -250,10 +250,10 @@ class Burp(BUIbackend, BUIlogging):
         if not found:
             cl = None
             if forward:
-                cl = c
+                cl = client
 
             f = self.status('c:{0}:b:{1}:f:log.gz\n'.format(client, number), agent=agent)
-            ret = self._parse_backup_log(f, n, cl, agent=agent)
+            ret = self._parse_backup_log(f, number, cl, agent=agent)
         else:
             ret = self._parse_backup_stats(number, client, forward, agent=agent)
 
