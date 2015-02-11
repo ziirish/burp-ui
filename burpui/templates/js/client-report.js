@@ -104,7 +104,7 @@ var _client = function() {
 						values.push([ parseInt(j.end)*1000, val ]);
 						push = true;
 					} else {
-						values.push([ parseInt(j.end), 0 ]);
+						values.push([ parseInt(j.end)*1000, 0 ]);
 					}
 					if (stats) {
 						size.push([ parseInt(j.end)*1000, j.received ]);
