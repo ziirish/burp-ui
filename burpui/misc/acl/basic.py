@@ -47,17 +47,22 @@ class ACLloader(BUIaclLoader):
 class BasicACL(BUIacl):
     def __init__(self, admins=[], clients={}):
         self.admins = admins
-        self.clients = clients
+        self.cls = clients
 
     def is_admin(self, username=None):
         if not username:
             return False
         return username in self.admins
 
-    def clients(selt, username=None):
+    def clients(self, username=None):
         if not username:
             return []
-        if username in self.clients:
-            return self.clients[username]
-        return username
+        if username in self.cls:
+            return self.cls[username]
+        return [username]
 
+    def is_client_allowed(self, username=None, client=None):
+        if not username or not client:
+            return False
+        cls = self.clients(username)
+        return (cls and client in cls) or self.is_admin(username)
