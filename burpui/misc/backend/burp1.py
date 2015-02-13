@@ -69,7 +69,7 @@ class Burp(BUIbackend, BUIlogging):
     def __init__(self, server=None, conf=None):
         global g_burpport, g_burphost, g_tmpdir, g_burpbin, g_stripbin, g_burpconfcli, g_burpconfsrv
         self.app = server.app
-        self.acl = server.acl
+        self.acl_handler = server.acl_handler
         self.host = g_burphost
         self.port = int(g_burpport)
         self.burpbin = g_burpbin
