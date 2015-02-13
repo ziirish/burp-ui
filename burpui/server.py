@@ -51,7 +51,7 @@ class BUIServer:
                 self.sslcert = config.get('Global', 'sslcert')
                 self.sslkey = config.get('Global', 'sslkey')
                 self.auth = config.get('Global', 'auth')
-                if self.auth != 'none':
+                if self.auth and self.auth != 'none':
                     try:
                         mod = __import__('burpui.misc.auth.{0}'.format(self.auth), fromlist=['UserHandler'])
                         UserHandler = mod.UserHandler
@@ -68,13 +68,13 @@ class BUIServer:
                     try:
                         mod = __import__('burpui.misc.acl.{0}'.format(self.acl_engine), fromlist=['ACLloader'])
                         ACLloader = mod.ACLloader
-                        self.acl = ACLloader(self.app)
+                        self.acl_handler = ACLloader(self.app, self.standalone)
                     except Exception, e:
                         traceback.print_exc()
                         self.app.logger.error('Import Exception, module \'%s\': %s', self.acl_engine, str(e))
                         sys.exit(1)
                 else:
-                    self.acl = False
+                    self.acl_handler = False
             except ConfigParser.NoOptionError, e:
                 self.app.logger.error(str(e))
 

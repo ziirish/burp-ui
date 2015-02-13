@@ -27,7 +27,8 @@ def load_user(userid):
 @app.route('/<server>/settings/<client>', methods=['GET', 'POST'])
 @login_required
 def settings(server=None, client=None):
-    if bui.acl and not bui.acl.get_acl().is_admin(current_user.name):
+    # Only the admin can edit the configuration
+    if bui.acl_handler and not bui.acl.get_acl().is_admin(current_user.name):
         abort(403)
     if not client:
         client = request.args.get('client')
@@ -43,7 +44,8 @@ def settings(server=None, client=None):
 @app.route('/api/<server>/client-config/<client>')
 @login_required
 def read_conf_cli(server=None, client=None):
-    if bui.acl and not bui.acl.get_acl().is_admin(current_user.name):
+    # Only the admin can edit the configuration
+    if bui.acl_handler and not bui.acl.get_acl().is_admin(current_user.name):
         abort(403)
     r = bui.cli.read_conf_cli(client, server)
     return jsonify(results=r)
@@ -52,7 +54,8 @@ def read_conf_cli(server=None, client=None):
 @app.route('/api/<server>/server-config')
 @login_required
 def read_conf_srv(server=None):
-    if bui.acl and not bui.acl.get_acl().is_admin(current_user.name):
+    # Only the admin can edit the configuration
+    if bui.acl_handler and not bui.acl.get_acl().is_admin(current_user.name):
         abort(403)
     r = bui.cli.read_conf_srv(server)
     return jsonify(results=r,
@@ -83,9 +86,13 @@ def restore(server=None, name=None, backup=None):
     resp = None
     if not f:
         f = 'zip'
+    # Check params
     if not l or not name or not backup:
         abort(500)
-    if bui.acl and not bui.acl.get_acl().is_client_allowed(current_user.name, name):
+    # Manage ACL
+    if bui.acl_handler and \
+            (not bui.acl_handler.get_acl().is_client_allowed(current_user.name, name, server) \
+            and not bui.acl_handler.get_acl().is_admin(current_user.name)):
         abort(403)
     if server:
         filename = 'restoration_%d_%s_on_%s_at_%s.%s' % (backup, name, server, strftime("%Y-%m-%d_%H_%M_%S", gmtime()), f)
@@ -161,6 +168,17 @@ def running_clients(server=None):
     if not server:
         server = request.args.get('server')
     r = bui.cli.is_one_backup_running(server)
+    # Manage ACL
+    if bui.acl_handler and not bui.acl.get_acl().is_admin(current_user.name):
+        if isinstance(r, dict):
+            new = {}
+            for serv in bui.acl_handler.get_acl().servers(current_user.name):
+                allowed = bui.acl_handler.get_acl().clients(current_user.name, serv)
+                new[serv] = [x for x in r[serv] if x in allowed]
+            r = new
+        else:
+            allowed = bui.acl_handler.get_acl().clients(current_user.name, server)
+            r = [x for x in r if x in allowed]
     return jsonify(results=r)
 
 @app.route('/api/render-live-template', methods=['GET'])
@@ -179,8 +197,14 @@ def render_live_tpl(server=None, name=None):
         server = request.args.get('server')
     if not name:
         name = request.args.get('name')
+    # Check params
     if not name:
         abort(500)
+    # Manage ACL
+    if bui.acl_handler \
+        and (not bui.acl_handler.get_acl().is_client_allowed(current_user.name, name, server) \
+        or not bui.acl_handler.get_acl().is_admin(current_user.name)):
+        abort(403)
     if isinstance(bui.cli.running, dict):
         if server and name not in bui.cli.running[server]:
             abort(404)
@@ -204,8 +228,17 @@ def render_live_tpl(server=None, name=None):
 def servers_json():
     r = []
     if hasattr(bui.cli, 'servers'):
+        check = False
+        allowed = []
+        if bui.acl_handler:
+            check = True
+            allowed = bui.acl_handler.get_acl().servers(current_user.name)
         for serv in bui.cli.servers:
-            r.append({'name': serv, 'clients': len(bui.cli.servers[serv].get_all_clients(serv)), 'alive': bui.cli.servers[serv].ping()})
+            if check:
+                if serv in allowed:
+                    r.append({'name': serv, 'clients': len(bui.cli.servers[serv].get_all_clients(serv)), 'alive': bui.cli.servers[serv].ping()})
+            else:
+                r.append({'name': serv, 'clients': len(bui.cli.servers[serv].get_all_clients(serv)), 'alive': bui.cli.servers[serv].ping()})
     return jsonify(results=r)
 
 @app.route('/api/live.json')
@@ -254,9 +287,22 @@ def backup_running(server=None):
     :returns: true if at least one backup is running
     """
     j = bui.cli.is_one_backup_running(server)
+    # Manage ACL
+    if bui.acl_handler and not bui.acl_handler.get_acl().is_admin(current_user.name):
+        if isinstance(j, dict):
+            new = {}
+            for serv in bui.acl_handler.get_acl().servers(current_user.name):
+                allowed = bui.acl_handler.get_acl().clients(current_user.name, serv)
+                new[serv] = [x for x in j[serv] if x in allowed]
+            j = new
+        else:
+            allowed = bui.acl_handler.get_acl().clients(current_user.name, server)
+            j = [x for x in j if x in allowed]
     r = False
     if isinstance(j, dict):
         for k, v in j.iteritems():
+            if r:
+                break
             r = r or (len(v) > 0)
     else:
         r = len(j) > 0
@@ -279,6 +325,10 @@ def client_tree(server=None, name=None, backup=None):
         return jsonify(results=j)
     root = request.args.get('root')
     try:
+        if bui.acl_handler and\
+                (not bui.acl_handler.get_acl().is_admin(current_user.name)\
+                and not bui.acl_handler.get_acl().is_client_allowed(current_user.name, name, server)):
+            raise BUIserverException('Sorry, you are not allowed to view this client')
         j = bui.cli.get_tree(name, backup, root, agent=server)
     except BUIserverException, e:
         err = [[2, str(e)]]
@@ -296,20 +346,33 @@ def clients_report_json(server=None):
         server = request.args.get('server')
     j = []
     try:
+        # Manage ACL
+        if not bui.standalone and bui.acl_handler and \
+                (not bui.acl_handler.get_acl().is_admin(current_user.name) \
+                or server not in bui.acl_handler.get_acl().servers(current_user.name)):
+            raise BUIserverException('Sorry, you don\'t have rights on this server')
         clients = bui.cli.get_all_clients(agent=server)
     except BUIserverException, e:
         err = [[2, str(e)]]
         return jsonify(notif=err)
     cl = []
     ba = []
+    # Filter only allowed clients
+    allowed = []
+    check = False
+    if bui.acl_handler and not bui.acl_handler.get_acl().is_admin(current_user.name):
+        check = True
+        allowed = bui.acl_handler.get_acl().clients(current_user.name, server)
     for c in clients:
+        if check and c['name'] not in allowed:
+            continue
         client = bui.cli.get_client(c['name'], agent=server)
         if not client:
             continue
         cl.append( { 'name': c['name'], 'stats': bui.cli.get_backup_logs(client[-1]['number'], c['name'], agent=server) } )
         for b in client:
             ba.append(bui.cli.get_backup_logs(b['number'], c['name'], True, agent=server))
-    app.logger.debug(json.dumps(ba))
+    #app.logger.debug(json.dumps(ba))
     if 'end' in ba:
         j.append( { 'clients': cl, 'backups': sorted(ba, key=lambda k: k['end']) } )
     else:
@@ -331,7 +394,7 @@ def client_stat_json(server=None, name=None, backup=None):
     if not name:
         err = [[1, 'No client defined']]
         return jsonify(notif=err)
-    if bui.acl and not bui.acl.get_acl().is_client_allowed(current_user.name, name):
+    if bui.acl_handler and not bui.acl_handler.get_acl().is_client_allowed(current_user.name, name, server):
         err = [[2, 'You don\'t have rights to view this client stats']]
         return jsonify(notif=err)
     if backup:
@@ -360,6 +423,10 @@ def client_json(server=None, name=None):
     if not server:
         server = request.args.get('server')
     try:
+        if bui.acl_handler and ( \
+                not bui.acl_handler.get_acl().is_admin(current_user.name) \
+                and not bui.acl_handler.get_acl().is_client_allowed(current_user.name, name, server)):
+            raise BUIserverException('Sorry, you cannot access this client')
         j = bui.cli.get_client(name, agent=server)
     except BUIserverException, e:
         err = [[2, str(e)]]
@@ -376,7 +443,13 @@ def clients_json(server=None):
     if not server:
         server = request.args.get('server')
     try:
+        if not bui.standalone and bui.acl_handler and \
+                (not bui.acl_handler.get_acl().is_admin(current_user.name) \
+                or server not in bui.acl_handler.get_acl().servers(current_user.name)):
+            raise BUIserverException('Sorry, you don\'t have any rights on this server')
         j = bui.cli.get_all_clients(agent=server)
+        if bui.acl_handler and not bui.acl_handler.get_acl().is_admin(current_user.name):
+            j = [x for x in j if x['name'] in bui.acl_handler.get_acl().clients(current_user.name, server)]
     except BUIserverException, e:
         err = [[2, str(e)]]
         return jsonify(notif=err)
