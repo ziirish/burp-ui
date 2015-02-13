@@ -28,7 +28,7 @@ def load_user(userid):
 @login_required
 def settings(server=None, client=None):
     # Only the admin can edit the configuration
-    if bui.acl_handler and not bui.acl.get_acl().is_admin(current_user.name):
+    if bui.acl_handler and not bui.acl_handler.get_acl().is_admin(current_user.name):
         abort(403)
     if not client:
         client = request.args.get('client')
@@ -45,7 +45,7 @@ def settings(server=None, client=None):
 @login_required
 def read_conf_cli(server=None, client=None):
     # Only the admin can edit the configuration
-    if bui.acl_handler and not bui.acl.get_acl().is_admin(current_user.name):
+    if bui.acl_handler and not bui.acl_handler.get_acl().is_admin(current_user.name):
         abort(403)
     r = bui.cli.read_conf_cli(client, server)
     return jsonify(results=r)
@@ -55,7 +55,7 @@ def read_conf_cli(server=None, client=None):
 @login_required
 def read_conf_srv(server=None):
     # Only the admin can edit the configuration
-    if bui.acl_handler and not bui.acl.get_acl().is_admin(current_user.name):
+    if bui.acl_handler and not bui.acl_handler.get_acl().is_admin(current_user.name):
         abort(403)
     r = bui.cli.read_conf_srv(server)
     return jsonify(results=r,
@@ -169,7 +169,7 @@ def running_clients(server=None):
         server = request.args.get('server')
     r = bui.cli.is_one_backup_running(server)
     # Manage ACL
-    if bui.acl_handler and not bui.acl.get_acl().is_admin(current_user.name):
+    if bui.acl_handler and not bui.acl_handler.get_acl().is_admin(current_user.name):
         if isinstance(r, dict):
             new = {}
             for serv in bui.acl_handler.get_acl().servers(current_user.name):
