@@ -445,7 +445,7 @@ def clients_json(server=None):
     try:
         if not bui.standalone and bui.acl_handler and \
                 (not bui.acl_handler.get_acl().is_admin(current_user.name) \
-                or server not in bui.acl_handler.get_acl().servers(current_user.name)):
+                and server not in bui.acl_handler.get_acl().servers(current_user.name)):
             raise BUIserverException('Sorry, you don\'t have any rights on this server')
         j = bui.cli.get_all_clients(agent=server)
         if bui.acl_handler and not bui.acl_handler.get_acl().is_admin(current_user.name):
