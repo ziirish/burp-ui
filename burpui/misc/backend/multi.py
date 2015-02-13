@@ -15,8 +15,12 @@ from burpui.misc.backend.interface import BUIbackend, BUIserverException
 class Burp(BUIbackend):
 
     def __init__(self, server=None, conf=None):
-        self.app = server.app
-        self.acl = server.acl
+        self.app = None
+        self.acl_handler = False
+        if server:
+            if hasattr(server, 'app'):
+                self.app = server.app
+            self.acl_handler = server.acl_handler
         self.servers = {}
         self.app.config['SERVERS'] = []
         self.running = {}
@@ -38,7 +42,7 @@ class Burp(BUIbackend):
                         except Exception, e:
                             self.app.logger.error(str(e))
 
-                        self.servers[r.group(1)] = NClient(app, host, port, password, ssl, timeout)
+                        self.servers[r.group(1)] = NClient(self.app, host, port, password, ssl, timeout)
 
         self.app.logger.debug(self.servers)
         for key, serv in self.servers.iteritems():
