@@ -230,7 +230,7 @@ def servers_json():
     if hasattr(bui.cli, 'servers'):
         check = False
         allowed = []
-        if bui.acl_handler:
+        if bui.acl_handler and not bui.acl_handler.get_acl().is_admin(current_user.name):
             check = True
             allowed = bui.acl_handler.get_acl().servers(current_user.name)
         for serv in bui.cli.servers:
@@ -349,7 +349,7 @@ def clients_report_json(server=None):
         # Manage ACL
         if not bui.standalone and bui.acl_handler and \
                 (not bui.acl_handler.get_acl().is_admin(current_user.name) \
-                or server not in bui.acl_handler.get_acl().servers(current_user.name)):
+                and server not in bui.acl_handler.get_acl().servers(current_user.name)):
             raise BUIserverException('Sorry, you don\'t have rights on this server')
         clients = bui.cli.get_all_clients(agent=server)
     except BUIserverException, e:
