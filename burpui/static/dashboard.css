@@ -299,3 +299,7 @@ legend[id] {
   color: #ffffff;
   text-decoration: none;
 }
+
+.clickable {
+  cursor: pointer;
+}
