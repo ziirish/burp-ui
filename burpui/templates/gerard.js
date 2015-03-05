@@ -188,11 +188,11 @@ var _fit_menu = function() {
 		target.hover(
 			// mouse in
 			function() {
-				$(this).find('.dtl').animate({width: 'toggle'});
+				$(this).find('.dtl').finish().animate({width: 'toggle'});
 			},
 			// mouse out
 			function() {
-				$(this).find('.dtl').animate({width: 'toggle'});
+				$(this).find('.dtl').finish().animate({width: 'toggle'});
 			}
 		);
 		target.find('.dtl').hide();
