@@ -32,10 +32,38 @@ var __status = {
  * }
  *  The JSON is then parsed into a table
  */
+
+/*
+var _clients_table = $('#table-clients').DataTable( {
+	ajax: '{{ url_for("clients_json", server=server) }}',
+	columns: [
+*/
+var _clients_table = $('#table-clients').dataTable( {
+	ajax: {
+		url: '{{ url_for("clients_json", server=server) }}',
+		dataSrc: 'results'
+	},
+	destroy: true,
+	rowCallback: function( row, data ) {
+		if (__status[data.state] != undefined) {
+			row.className += ' '+__status[data.state];
+		}
+		row.className += ' clickable';
+	},
+	columns: [
+		{ data: null, render: function ( data, type, row ) {
+				return '<a href="{{ url_for("client", server=server) }}?name='+data.name+'" style="color: inherit; text-decoration: inherit;">'+data.name+'</a>';
+			}
+		},
+		{ data: 'state' },
+		{ data: 'last' }
+	]
+});
+var first = true;
+
 var _clients = function() {
 	url = '{{ url_for("clients_json", server=server) }}';
 	$.getJSON(url, function(data) {
-		$('#table-clients > tbody:last').empty();
 		if (!data.results) {
 			if (data.notif) {
 				$.each(data.notif, function(i, n) {
@@ -44,12 +72,10 @@ var _clients = function() {
 			}
 			return;
 		}
-		$.each(data.results, function(j, c) {
-			clas = '';
-			if (__status[c.state] != undefined) {
-				clas = ' '+__status[c.state];
-			}
-			$('#table-clients > tbody:last').append('<tr class="clickable'+clas+'" style="cursor: pointer;"><td><a href="{{ url_for("client", server=server) }}?name='+c.name+'" style="color: inherit; text-decoration: inherit;">'+c.name+'</a></td><td>'+c.state+'</td><td>'+c.last+'</td></tr>');
-		});
+		if (first) {
+			first = false;
+		} else {
+			_clients_table.api().ajax.reload( null, false );
+		}
 	});
 };
