@@ -627,6 +627,8 @@ class Burp(BUIbackend, BUIlogging):
                 top = root.encode('utf-8')
             except UnicodeEncodeError:
                 top = root
+            except UnicodeDecodeError:
+                top = root
 
         f = self.status('c:{0}:b:{1}:p:{2}\n'.format(name, backup, top))
         useful = False
@@ -641,7 +643,7 @@ class Burp(BUIbackend, BUIlogging):
                 t = {}
                 m = re.search('^(.{10})\s', line)
                 if m:
-                    if re.match('^d', m.group(1)):
+                    if re.match('^(d|l)', m.group(1)):
                         t['type'] = 'd'
                     else:
                         t['type'] = 'f'
