@@ -14,6 +14,13 @@ var __status = {
 };
 
 /***
+ * Show the row as warning if there are no backups
+ */
+var __date = {
+	'never': 'warning',
+};
+
+/***
  * _clients: function that retrieve up-to-date informations from the burp server
  * JSON format:
  * {
@@ -33,20 +40,29 @@ var __status = {
  *  The JSON is then parsed into a table
  */
 
-/*
-var _clients_table = $('#table-clients').DataTable( {
-	ajax: '{{ url_for("clients_json", server=server) }}',
-	columns: [
-*/
 var _clients_table = $('#table-clients').dataTable( {
 	ajax: {
 		url: '{{ url_for("clients_json", server=server) }}',
-		dataSrc: 'results'
+		dataSrc: function (data) {
+			if (!data.results) {
+				if (data.notif) {
+					$.each(data.notif, function(i, n) {
+						notif(n[0], n[1]);
+					});
+				}
+				return {};
+			}
+			return data.results;
+		}
 	},
+	order: [[2, 'desc']],
 	destroy: true,
 	rowCallback: function( row, data ) {
 		if (__status[data.state] != undefined) {
 			row.className += ' '+__status[data.state];
+		}
+		if (__date[data.last] != undefined) {
+			row.className += ' '+__date[data.last];
 		}
 		row.className += ' clickable';
 	},
@@ -62,20 +78,9 @@ var _clients_table = $('#table-clients').dataTable( {
 var first = true;
 
 var _clients = function() {
-	url = '{{ url_for("clients_json", server=server) }}';
-	$.getJSON(url, function(data) {
-		if (!data.results) {
-			if (data.notif) {
-				$.each(data.notif, function(i, n) {
-					notif(n[0], n[1]);
-				});
-			}
-			return;
-		}
-		if (first) {
-			first = false;
-		} else {
-			_clients_table.api().ajax.reload( null, false );
-		}
-	});
+	if (first) {
+		first = false;
+	} else {
+		_clients_table.api().ajax.reload( null, false );
+	}
 };
