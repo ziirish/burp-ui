@@ -19,7 +19,6 @@ from burpui.misc.parser.burp1 import Parser
 
 g_burpport    = '4972'
 g_burphost    = '::1'
-g_tmpdir      = u'/tmp/buirestore'
 g_burpbin     = u'/usr/sbin/burp'
 g_stripbin    = u'/usr/sbin/vss_strip'
 g_burpconfcli = None
@@ -67,7 +66,7 @@ class Burp(BUIbackend, BUIlogging):
        ]
 
     def __init__(self, server=None, conf=None):
-        global g_burpport, g_burphost, g_tmpdir, g_burpbin, g_stripbin, g_burpconfcli, g_burpconfsrv
+        global g_burpport, g_burphost, g_burpbin, g_stripbin, g_burpconfcli, g_burpconfsrv
         self.app = None
         self.acl_handler = False
         if server:
@@ -78,18 +77,16 @@ class Burp(BUIbackend, BUIlogging):
         self.port = int(g_burpport)
         self.burpbin = g_burpbin
         self.stripbin = g_stripbin
-        self.tmpdir = g_tmpdir
         self.burpconfcli = g_burpconfcli
         self.burpconfsrv = g_burpconfsrv
         self.running = []
         if conf:
-            config = ConfigParser.ConfigParser({'bport': g_burpport, 'bhost': g_burphost, 'tmpdir': g_tmpdir, 'burpbin': g_burpbin, 'stripbin': g_stripbin, 'bconfcli': g_burpconfcli, 'bconfsrv': g_burpconfsrv})
+            config = ConfigParser.ConfigParser({'bport': g_burpport, 'bhost': g_burphost, 'burpbin': g_burpbin, 'stripbin': g_stripbin, 'bconfcli': g_burpconfcli, 'bconfsrv': g_burpconfsrv})
             with codecs.open(conf, 'r', 'utf-8') as fp:
                 config.readfp(fp)
                 try:
                     self.port = config.getint('Burp1', 'bport')
                     self.host = config.get('Burp1', 'bhost')
-                    tdir = config.get('Burp1', 'tmpdir')
                     bbin = config.get('Burp1', 'burpbin')
                     strip = config.get('Burp1', 'stripbin')
                     confcli = config.get('Burp1', 'bconfcli')
@@ -135,20 +132,7 @@ class Burp(BUIbackend, BUIlogging):
                         self._logger('error', "Ooops, '%s' not found or is not executable", bbin)
                         bbin = None
 
-                    if not tdir.startswith('/'):
-                        self._logger('warning', "Please provide an absolute path for the 'tmpdir' option. Fallback to '%s'", g_tmpdir)
-                        tdir = g_tmpdir
-                    elif not re.match('^\S+$', tdir):
-                        self._logger('warning', "Incorrect value for the 'tmpdir' option. Fallback to '%s'", g_tmpdir)
-                        tdir = g_tmpdir
-                    elif os.path.isdir(tdir) and os.listdir(tdir) and (self.app and not self.app.config.get('TESTING')):
-                        raise Exception("'{0}' is not empty!".format(tdir))
-                    elif os.path.isdir(tdir) and not os.access(tdir, os.W_OK|os.X_OK):
-                        self._logger('warning', "'%s' is not writable. Fallback to '%s'", tdir, g_tmpdir)
-                        tdir = g_tmpdir
-
                     self.burpbin = bbin
-                    self.tmpdir = tdir
                     self.stripbin = strip
                     self.burpconfcli = confcli
                     self.burpconfsrv = confsrv
@@ -166,7 +150,6 @@ class Burp(BUIbackend, BUIlogging):
         self._logger('info', 'burp host: %s', self.host)
         self._logger('info', 'burp binary: %s', self.burpbin)
         self._logger('info', 'strip binary: %s', self.stripbin)
-        self._logger('info', 'temporary dir: %s', self.tmpdir)
         self._logger('info', 'burp conf cli: %s', self.burpconfcli)
         self._logger('info', 'burp conf srv: %s', self.burpconfsrv)
 
@@ -665,10 +648,11 @@ class Burp(BUIbackend, BUIlogging):
         flist = json.loads(files)
         if password:
             fh, tmpfile = tempfile.mkstemp()
+        tmpdir = tempfile.mkdtemp()
         if 'restore' not in flist:
             return None, 'Wrong call'
-        if os.path.isdir(self.tmpdir):
-            shutil.rmtree(self.tmpdir)
+        if os.path.isdir(tmpdir):
+            shutil.rmtree(tmpdir)
         full_reg = u''
         for r in flist['restore']:
             reg = u''
@@ -678,7 +662,7 @@ class Burp(BUIbackend, BUIlogging):
                 reg += '^'+re.escape(r['key'])+'$|'
             full_reg += reg
 
-        cmd = [self.burpbin, '-C', quote(name), '-a', 'r', '-b', quote(str(backup)), '-r', full_reg.rstrip('|'), '-d', self.tmpdir]
+        cmd = [self.burpbin, '-C', quote(name), '-a', 'r', '-b', quote(str(backup)), '-r', full_reg.rstrip('|'), '-d', tmpdir]
         if password:
             if not self.burpconfcli:
                 return None, 'No client configuration file specified'
@@ -715,7 +699,7 @@ class Burp(BUIbackend, BUIlogging):
             #out, err = p.communicate()
             return None, out
 
-        zip_dir = self.tmpdir.rstrip(os.sep)
+        zip_dir = tmpdir.rstrip(os.sep)
         zip_file = zip_dir+'.zip'
         if os.path.isfile(zip_file):
             os.remove(zip_file)
@@ -740,7 +724,7 @@ class Burp(BUIbackend, BUIlogging):
                     entry = path[zip_len:]
                     zf.append(path, entry)
 
-        shutil.rmtree(self.tmpdir)
+        shutil.rmtree(tmpdir)
         return zip_file, None
 
     def read_conf_cli(self, agent=None):
