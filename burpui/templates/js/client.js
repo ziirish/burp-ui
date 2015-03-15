@@ -21,28 +21,56 @@
  * }
  * The JSON is then parsed into a table
  */
-var _client = function() {
-	url = '{{ url_for("client_json", name=cname, server=server) }}';
-	$.getJSON(url, function(data) {
-		$('#table-client >tbody:last').empty();
-		$('#client-alert').hide();
-		if (!data.results) {
-			$('#table-client').hide();
-			$('#client-alert').show();
-			if (data.notif) {
-				$.each(data.notif, function(i, n) {
-					notif(n[0], n[1]);
-				});
+
+var _client_table = $('#table-client').dataTable( {
+	ajax: {
+		url: '{{ url_for("client_json", name=cname, server=server) }}',
+		dataSrc: function (data) {
+			if (!data.results) {
+				$('#table-client').hide();
+				$('#client-alert').show();
+				if (data.notif) {
+					$.each(data.notif, function(i, n) {
+						notif(n[0], n[1]);
+					});
+				}
+				return {};
 			}
-			return;
+			if (data.results.length == 0) {
+				$('#table-client').hide();
+				$('#client-alert').show();
+			} else {
+				return data.results;
+			}
 		}
-		if (data.results.length == 0) {
-			$('#table-client').hide();
-			$('#client-alert').show();
-		} else {
-			$.each(data.results.reverse(), function(j, c) {
-				$('#table-client> tbody:last').append('<tr class="clickable" style="cursor: pointer;"><td><a href="{{ url_for("client_browse", name=cname, server=server) }}?backup='+c.number+(c.encrypted?'&encrypted=1':'')+'" style="color: inherit; text-decoration: inherit;">'+pad(c.number, 7)+'</a></td><td>'+c.date+'</td><td><span class="glyphicon glyphicon-'+(c.deletable?'ok':'remove')+'"></span></td><td><span class="glyphicon glyphicon-'+(c.encrypted?'lock':'globe')+'"></span>&nbsp;'+(c.encrypted?'Encrypted':'Unencrypted')+' backup</td></tr>');
-			});
+	},
+	order: [[0, 'desc']],
+	destroy: true,
+	rowCallback: function( row, data ) {
+		row.className += ' clickable';
+	},
+	columns: [
+		{ data: null, render: function ( data, type, row ) {
+				return '<a href="{{ url_for("client_browse", name=cname, server=server) }}?backup='+data.number+(data.encrypted?'&encrypted=1':'')+'" style="color: inherit; text-decoration: inherit;">'+pad(data.number, 7)+'</a>';
+			}
+		},
+		{ data: 'date' },
+		{ data: null, render: function (data, type, row ) {
+				return '<span class="glyphicon glyphicon-'+(data.deletable?'ok':'remove')+'"></span>';
+			}
+		},
+		{ data: null, render: function (data, type, row ) {
+				return '<span class="glyphicon glyphicon-'+(data.encrypted?'lock':'globe')+'"></span>&nbsp;'+(data.encrypted?'Encrypted':'Unencrypted')+' backup';
+			}
 		}
-	});
+	]
+});
+var first = true;
+
+var _client = function() {
+	if (first) {
+		first = false;
+	} else {
+		_client_table.api().ajax.reload( null, false );
+	}
 };
