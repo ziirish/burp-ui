@@ -2,10 +2,8 @@
 import math
 import select
 import json
-from zlib import adler32
-from time import gmtime, strftime, time
 
-from flask import Flask, Response, request, render_template, jsonify, redirect, url_for, abort, flash, send_file, make_response
+from flask import Flask, Response, request, render_template, jsonify, redirect, url_for, abort, flash
 from flask.ext.login import login_user, login_required, logout_user, current_user
 from werkzeug.datastructures import Headers
 from werkzeug.exceptions import HTTPException
@@ -14,6 +12,10 @@ from burpui import app, bui, login_manager
 from burpui.forms import LoginForm
 from burpui.misc.utils import human_readable as _hr
 from burpui.misc.backend.interface import BUIserverException
+
+from burpui.api import api
+from burpui.api.restore import Restore
+from burpui.api.settings import ServerSettings, ClientSettings
 
 @login_manager.user_loader
 def load_user(userid):
@@ -40,34 +42,6 @@ def settings(server=None, client=None):
         return jsonify(notif=noti)
     return render_template('settings.html', settings=True, server=server, client=client)
 
-@app.route('/api/client-config/<client>')
-@app.route('/api/<server>/client-config/<client>')
-@login_required
-def read_conf_cli(server=None, client=None):
-    # Only the admin can edit the configuration
-    if bui.acl_handler and not bui.acl_handler.get_acl().is_admin(current_user.name):
-        abort(403)
-    r = bui.cli.read_conf_cli(client, server)
-    return jsonify(results=r)
-
-@app.route('/api/server-config')
-@app.route('/api/<server>/server-config')
-@login_required
-def read_conf_srv(server=None):
-    # Only the admin can edit the configuration
-    if bui.acl_handler and not bui.acl_handler.get_acl().is_admin(current_user.name):
-        abort(403)
-    r = bui.cli.read_conf_srv(server)
-    return jsonify(results=r,
-                   boolean=bui.cli.get_parser_attr('boolean_srv', server),
-                   string=bui.cli.get_parser_attr('string_srv', server),
-                   integer=bui.cli.get_parser_attr('integer_srv', server),
-                   multi=bui.cli.get_parser_attr('multi_srv', server),
-                   server_doc=bui.cli.get_parser_attr('doc', server),
-                   suggest=bui.cli.get_parser_attr('values', server),
-                   placeholders=bui.cli.get_parser_attr('placeholders', server),
-                   defaults=bui.cli.get_parser_attr('defaults', server))
-
 
 """
 Here is the API
@@ -75,87 +49,15 @@ Here is the API
 The whole API returns JSON-formated data
 """
 
-@app.route('/api/restore/<name>/<int:backup>', methods=['POST'])
-@app.route('/api/<server>/restore/<name>/<int:backup>', methods=['POST'])
-@login_required
-def restore(server=None, name=None, backup=None):
-    l = request.form.get('list')
-    s = request.form.get('strip')
-    f = request.form.get('format')
-    p = request.form.get('pass')
-    resp = None
-    if not f:
-        f = 'zip'
-    # Check params
-    if not l or not name or not backup:
-        abort(500)
-    # Manage ACL
-    if bui.acl_handler and \
-            (not bui.acl_handler.get_acl().is_client_allowed(current_user.name, name, server) \
-            and not bui.acl_handler.get_acl().is_admin(current_user.name)):
-        abort(403)
-    if server:
-        filename = 'restoration_%d_%s_on_%s_at_%s.%s' % (backup, name, server, strftime("%Y-%m-%d_%H_%M_%S", gmtime()), f)
-    else:
-        filename = 'restoration_%d_%s_at_%s.%s' % (backup, name, strftime("%Y-%m-%d_%H_%M_%S", gmtime()), f)
-    if not server:
-        archive, err = bui.cli.restore_files(name, backup, l, s, f, p)
-        if not archive:
-            if err:
-                abort(make_response(err, 500))
-            abort(500)
-        try:
-            resp = send_file(archive, as_attachment=True, attachment_filename=filename, mimetype='application/zip')
-            resp.set_cookie('fileDownload', 'true')
-        except Exception, e:
-            app.logger.error(str(e))
-            abort(500)
-    else:
-        socket = None
-        try:
-            socket, length, err = bui.cli.restore_files(name, backup, l, s, f, p, server)
-            app.logger.debug('Need to get %d Bytes : %s', length, socket)
 
-            if err:
-                app.logger.debug('Something went wrong: %s', err)
-                socket.close()
-                abort(make_response(err, 500))
+api.add_resource(Restore, '/api/restore/<name>/<int:backup>', '/api/<server>/restore/<name>/<int:backup>')
+app.jinja_env.globals.update(Restore=Restore)
 
-            def stream_file(sock, l):
-                bsize = 1024
-                received = 0
-                if l < bsize:
-                    bsize = l
-                while received < l:
-                    buf = b''
-                    r, _, _ = select.select([sock], [], [], 5)
-                    if not r:
-                        raise Exception ('Socket timed-out')
-                    buf += sock.recv(bsize)
-                    if not buf:
-                        continue
-                    received += len(buf)
-                    app.logger.debug('%d/%d', received, l)
-                    yield buf
-                sock.close()
+api.add_resource(ServerSettings, '/api/server-config', '/api/<server>/server-config')
+app.jinja_env.globals.update(ServerSettings=ServerSettings)
 
-            headers = Headers()
-            headers.add('Content-Disposition', 'attachment', filename=filename)
-            headers['Content-Length'] = length
-
-            resp = Response(stream_file(socket, length), mimetype='application/zip',
-                            headers=headers, direct_passthrough=True)
-            resp.set_cookie('fileDownload', 'true')
-            resp.set_etag('flask-%s-%s-%s' % (
-                    time(),
-                    length,
-                    adler32(filename.encode('utf-8')) & 0xffffffff))
-        except HTTPException, e:
-            raise e
-        except Exception, e:
-            app.logger.error(str(e))
-            abort(500)
-    return resp
+api.add_resource(ClientSettings, '/api/client-config/<client>', '/api/<server>/client-config/<client>')
+app.jinja_env.globals.update(ClientSettings=ClientSettings)
 
 @app.route('/api/running-clients.json')
 @app.route('/api/<server>/running-clients.json')
