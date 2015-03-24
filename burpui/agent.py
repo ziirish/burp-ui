@@ -64,6 +64,7 @@ class BUIAgent:
         self.methods = {
                 'status': self.backend.status,
                 'get_backup_logs': self.backend.get_backup_logs,
+                'get_clients_report': self.backend.get_clients_report,
                 'get_counters': self.backend.get_counters,
                 'is_backup_running': self.backend.is_backup_running,
                 'is_one_backup_running': self.backend.is_one_backup_running,

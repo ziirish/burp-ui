@@ -457,6 +457,26 @@ class Burp(BUIbackend, BUIlogging):
                     break
         return backup
 
+    def get_clients_report(self, clients, agent=None):
+        """
+        get_clients_report returns the computed/compacted data to display clients
+        report.
+        It returns an array containing two dicts
+        """
+        ret = []
+        cl = []
+        ba = []
+        for c in clients:
+            client = self.get_client(c['name'], agent=agent)
+            if not client:
+                continue
+            stats = self.get_backup_logs(client[-1]['number'], c['name'], agent=agent)
+            cl.append( { 'name': c['name'], 'stats': { 'windows': stats['windows'], 'totsize': stats['totsize'], 'total': stats['total']['total'] } } )
+            ba.append( { 'name': c['name'], 'number': len(client) } )
+        ret.append( { 'clients': cl, 'backups': ba } )
+        return ret
+
+
     def get_counters(self, name=None, agent=None):
         """
         get_counters parses the stats of the live status for a given client and

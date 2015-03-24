@@ -66,6 +66,14 @@ class Burp(BUIbackend):
         """
         return self.servers[agent].get_backup_logs(number, client, forward)
 
+    def get_clients_report(self, clients, agent=None):
+        """
+        get_clients_report returns the computed/compacted data to display clients
+        report.
+        It returns an array containing two dicts
+        """
+        return self.servers[agent].get_clients_report(clients)
+
     def get_counters(self, name=None, agent=None):
         """
         get_counters parses the stats of the live status for a given client and
@@ -266,6 +274,15 @@ class NClient(BUIbackend):
         containing different stats used to render the charts in the reporting view
         """
         data = {'func': 'get_backup_logs', 'args': {'number': number, 'client': client, 'forward': forward}}
+        return json.loads(self.do_command(data))
+
+    def get_clients_report(self, clients, agent=None):
+        """
+        get_clients_report returns the computed/compacted data to display clients
+        report.
+        It returns an array containing two dicts
+        """
+        data = {'func': 'get_clients_report', 'args': {'clients': clients}}
         return json.loads(self.do_command(data))
 
     def get_counters(self, name=None, agent=None):
