@@ -12,6 +12,10 @@ __license__      = 'BSD 3-clause'
 __version__      = '0.0.6'
 
 import os
+import sys
+
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 from flask import Flask
 from flask.ext.login import LoginManager
