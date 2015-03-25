@@ -8,28 +8,54 @@
  * _servers: function that retrieve up-to-date informations from the burp server
  *  The JSON is then parsed into a table
  */
-var _servers = function() {
-	url = '{{ url_for("servers_json") }}';
-	$.getJSON(url, function(data) {
-		$('#table-servers > tbody:last').empty();
-		if (!data.results) {
-			if (data.notif) {
-				$.each(data.notif, function(i, n) {
-					notif(n[0], n[1]);
-				});
+var _servers_table = $('#table-servers').dataTable( {
+	ajax: {
+		url: '{{ api.url_for(ServersStats) }}',
+		dataSrc: function (data) {
+			if (!data.results) {
+				if (data.notif) {
+					$.each(data.notif, function(i, n) {
+						notif(n[0], n[1]);
+					});
+				}
+				return {};
 			}
-			return;
+			return data.results;
 		}
-		$.each(data.results, function(j, c) {
-			cl = '';
-			glyph = 'glyphicon-ok';
-			href = '{{ url_for("clients") }}?server='+c.name;
-			if (!c.alive) {
-				cl = ' danger';
-				glyph = 'glyphicon-remove';
-				href = '#';
+	},
+	destroy: true,
+	rowCallback: function( row, data ) {
+		if (!data.alive) {
+			row.className += ' danger';
+		}
+		row.className += ' clickable';
+	},
+	columns: [
+		{ data: null, render: function ( data, type, row ) {
+				href = '{{ url_for("clients") }}?server='+data.name;
+				if (!data.alive) {
+					href = '#';
+				}
+				return '<a href="'+href+'" style="color: inherit; text-decoration: inherit;">'+data.name+'</a>';
 			}
-			$('#table-servers > tbody:last').append('<tr class="clickable'+cl+'" style="cursor: pointer;"><td><a href="'+href+'" style="color: inherit; text-decoration: inherit;">'+c.name+'</a></td><td>'+c.clients+'</td><td><span class="glyphicon '+glyph+'"></span></td></tr>');
-		});
-	});
+		},
+		{ data: 'clients' },
+		{ data: null, render: function (data, type, row ) {
+				glyph = 'glyphicon-ok';
+				if (!data.alive) {
+					glyph = 'glyphicon-remove';
+				}
+				return '<span class="glyphicon '+glyph+'"></span>';
+			}
+		}
+	]
+});
+var first = true;
+
+var _servers = function() {
+	if (first) {
+		first = false;
+	} else {
+		_servers_table.api().ajax.reload( null, false );
+	}
 };
