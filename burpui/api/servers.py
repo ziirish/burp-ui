@@ -2,6 +2,7 @@
 
 from burpui import bui
 from burpui.api import api
+from burpui.misc.backend.interface import BUIserverException
 from flask.ext.restful import reqparse, Resource
 from flask.ext.login import current_user, login_required
 from flask import jsonify
