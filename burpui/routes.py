@@ -18,6 +18,7 @@ from burpui.api.restore import Restore
 from burpui.api.settings import ServerSettings, ClientSettings
 from burpui.api.clients import RunningClients, BackupRunning, ClientsReport, ClientsStats
 from burpui.api.client import ClientTree, ClientStats, ClientReport
+from burpui.api.servers import ServersStats, Live
 
 @login_manager.user_loader
 def load_user(userid):
@@ -63,6 +64,8 @@ app.jinja_env.globals.update(ClientsStats=ClientsStats)
 app.jinja_env.globals.update(ClientTree=ClientTree)
 app.jinja_env.globals.update(ClientStats=ClientStats)
 app.jinja_env.globals.update(ClientReport=ClientReport)
+app.jinja_env.globals.update(ServersStats=ServersStats)
+app.jinja_env.globals.update(Live=Live)
 
 @app.route('/api/render-live-template', methods=['GET'])
 @app.route('/api/<server>/render-live-template', methods=['GET'])
