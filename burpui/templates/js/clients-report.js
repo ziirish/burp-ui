@@ -35,7 +35,7 @@ var _clients = function() {
 			_charts_obj.push({ 'key': 'chart_'+j, 'obj': tmp, 'data': [] });
 		});
 	}
-	url = '{{ url_for("clients_report_json", server=server) }}';
+	url = '{{ api.url_for(ClientsReport, server=server) }}';
 	$.getJSON(url, function(d) {
 		rep = [];
 		size = [];
@@ -67,14 +67,10 @@ var _clients = function() {
 				nonwin++;
 			}
 			size.push({'label': c.name, 'value': c.stats.totsize});
-			files.push({'label': c.name, 'value': c.stats.total.total});
+			files.push({'label': c.name, 'value': c.stats.total});
 		});
 		$.each(d.results[0]['backups'], function(k, c) {
-			if (c.name in backups) {
-				backups[c.name]++;
-			} else {
-				backups[c.name] = 1;
-			}
+			backups[c.name] = c.number;
 		});
 		rep = [{'label': 'Windows', 'value': windows}, {'label': 'Unix/Linux', 'value': nonwin}, {'label': 'Unknown', 'value': unknown}];
 		$.each(_charts_obj, function(i, c) {
