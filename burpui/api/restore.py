@@ -3,10 +3,12 @@ from zlib import adler32
 from time import gmtime, strftime, time
 
 from burpui import app, bui, login_manager
+from burpui.api import api
 from flask.ext.restful import reqparse, Resource, abort
 from flask.ext.login import current_user, login_required
-from flask import request, render_template, jsonify, send_file, make_response, after_this_request
+from flask import jsonify, send_file, make_response, after_this_request
 
+@api.resource('/api/restore/<name>/<int:backup>', '/api/<server>/restore/<name>/<int:backup>')
 class Restore(Resource):
 
     def __init__(self):
