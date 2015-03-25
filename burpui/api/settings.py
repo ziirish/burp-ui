@@ -1,10 +1,12 @@
 # -*- coding: utf8 -*-
 
 from burpui import app, bui, login_manager
+from burpui.api import api
 from flask.ext.restful import reqparse, abort, Resource
 from flask.ext.login import current_user, login_required
 from flask import request, render_template, jsonify
 
+@api.resource('/api/server-config', '/api/<server>/server-config')
 class ServerSettings(Resource):
     
     @login_required
@@ -23,6 +25,7 @@ class ServerSettings(Resource):
                        placeholders=bui.cli.get_parser_attr('placeholders', server),
                        defaults=bui.cli.get_parser_attr('defaults', server))
 
+@api.resource('/api/client-config/<client>', '/api/<server>/client-config/<client>')
 class ClientSettings(Resource):
     
     @login_required
