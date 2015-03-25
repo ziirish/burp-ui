@@ -16,6 +16,8 @@ from burpui.misc.backend.interface import BUIserverException
 from burpui.api import api
 from burpui.api.restore import Restore
 from burpui.api.settings import ServerSettings, ClientSettings
+from burpui.api.clients import RunningClients, BackupRunning, ClientsReport, ClientsStats
+from burpui.api.client import ClientTree, ClientStats, ClientReport
 
 @login_manager.user_loader
 def load_user(userid):
@@ -47,41 +49,20 @@ def settings(server=None, client=None):
 Here is the API
 
 The whole API returns JSON-formated data
+
+The API has been split-out into several files and now uses Flask-Restful
 """
 
-
-api.add_resource(Restore, '/api/restore/<name>/<int:backup>', '/api/<server>/restore/<name>/<int:backup>')
 app.jinja_env.globals.update(Restore=Restore)
-
-api.add_resource(ServerSettings, '/api/server-config', '/api/<server>/server-config')
 app.jinja_env.globals.update(ServerSettings=ServerSettings)
-
-api.add_resource(ClientSettings, '/api/client-config/<client>', '/api/<server>/client-config/<client>')
 app.jinja_env.globals.update(ClientSettings=ClientSettings)
-
-@app.route('/api/running-clients.json')
-@app.route('/api/<server>/running-clients.json')
-@login_required
-def running_clients(server=None):
-    """
-    API: running_clients
-    :returns: a list of running clients
-    """
-    if not server:
-        server = request.args.get('server')
-    r = bui.cli.is_one_backup_running(server)
-    # Manage ACL
-    if bui.acl_handler and not bui.acl_handler.get_acl().is_admin(current_user.name):
-        if isinstance(r, dict):
-            new = {}
-            for serv in bui.acl_handler.get_acl().servers(current_user.name):
-                allowed = bui.acl_handler.get_acl().clients(current_user.name, serv)
-                new[serv] = [x for x in r[serv] if x in allowed]
-            r = new
-        else:
-            allowed = bui.acl_handler.get_acl().clients(current_user.name, server)
-            r = [x for x in r if x in allowed]
-    return jsonify(results=r)
+app.jinja_env.globals.update(RunningClients=RunningClients)
+app.jinja_env.globals.update(BackupRunning=BackupRunning)
+app.jinja_env.globals.update(ClientsReport=ClientsReport)
+app.jinja_env.globals.update(ClientsStats=ClientsStats)
+app.jinja_env.globals.update(ClientTree=ClientTree)
+app.jinja_env.globals.update(ClientStats=ClientStats)
+app.jinja_env.globals.update(ClientReport=ClientReport)
 
 @app.route('/api/render-live-template', methods=['GET'])
 @app.route('/api/<server>/render-live-template', methods=['GET'])
@@ -124,238 +105,6 @@ def render_live_tpl(server=None, name=None):
     except BUIserverException:
         counters = []
     return render_template('live-monitor-template.html', cname=name, counters=counters, server=server)
-
-@app.route('/api/servers.json')
-@login_required
-def servers_json():
-    r = []
-    if hasattr(bui.cli, 'servers'):
-        check = False
-        allowed = []
-        if bui.acl_handler and not bui.acl_handler.get_acl().is_admin(current_user.name):
-            check = True
-            allowed = bui.acl_handler.get_acl().servers(current_user.name)
-        for serv in bui.cli.servers:
-            if check:
-                if serv in allowed:
-                    r.append({'name': serv, 'clients': len(bui.cli.servers[serv].get_all_clients(serv)), 'alive': bui.cli.servers[serv].ping()})
-            else:
-                r.append({'name': serv, 'clients': len(bui.cli.servers[serv].get_all_clients(serv)), 'alive': bui.cli.servers[serv].ping()})
-    return jsonify(results=r)
-
-@app.route('/api/live.json')
-@app.route('/api/<server>/live.json')
-@login_required
-def live(server=None):
-    """
-    API: live
-    :returns: the live status of the server
-    """
-    if not server:
-        server = request.args.get('server')
-    r = []
-    if server:
-        l = (bui.cli.is_one_backup_running(server))[server]
-    else:
-        l = bui.cli.is_one_backup_running()
-    if isinstance(l, dict):
-        for k, a in l.iteritems():
-            for c in a:
-                s = {}
-                s['client'] = c
-                s['agent'] = k
-                try:
-                    s['status'] = bui.cli.get_counters(c, agent=k)
-                except BUIserverException:
-                    s['status'] = []
-                r.append(s)
-    else:
-        for c in l:
-            s = {}
-            s['client'] = c
-            try:
-                s['status'] = bui.cli.get_counters(c, agent=server)
-            except BUIserverException:
-                s['status'] = []
-            r.append(s)
-    return jsonify(results=r)
-
-@app.route('/api/running.json')
-@app.route('/api/<server>/running.json')
-@login_required
-def backup_running(server=None):
-    """
-    API: backup_running
-    :returns: true if at least one backup is running
-    """
-    j = bui.cli.is_one_backup_running(server)
-    # Manage ACL
-    if bui.acl_handler and not bui.acl_handler.get_acl().is_admin(current_user.name):
-        if isinstance(j, dict):
-            new = {}
-            for serv in bui.acl_handler.get_acl().servers(current_user.name):
-                allowed = bui.acl_handler.get_acl().clients(current_user.name, serv)
-                new[serv] = [x for x in j[serv] if x in allowed]
-            j = new
-        else:
-            allowed = bui.acl_handler.get_acl().clients(current_user.name, server)
-            j = [x for x in j if x in allowed]
-    r = False
-    if isinstance(j, dict):
-        for k, v in j.iteritems():
-            if r:
-                break
-            r = r or (len(v) > 0)
-    else:
-        r = len(j) > 0
-    return jsonify(results=r)
-
-@app.route('/api/client-tree.json/<name>/<int:backup>', methods=['GET'])
-@app.route('/api/<server>/client-tree.json/<name>/<int:backup>', methods=['GET'])
-@login_required
-def client_tree(server=None, name=None, backup=None):
-    """
-    WebService: return a specific client files tree
-    :param name: the client name (mandatory)
-    :param backup: the backup number (mandatory)
-
-    """
-    if not server:
-        server = request.args.get('server')
-    j = []
-    if not name or not backup:
-        return jsonify(results=j)
-    root = request.args.get('root')
-    try:
-        if bui.acl_handler and\
-                (not bui.acl_handler.get_acl().is_admin(current_user.name)\
-                and not bui.acl_handler.get_acl().is_client_allowed(current_user.name, name, server)):
-            raise BUIserverException('Sorry, you are not allowed to view this client')
-        j = bui.cli.get_tree(name, backup, root, agent=server)
-    except BUIserverException, e:
-        err = [[2, str(e)]]
-        return jsonify(notif=err)
-    return jsonify(results=j)
-
-@app.route('/api/clients-report.json')
-@app.route('/api/<server>/clients-report.json')
-@login_required
-def clients_report_json(server=None):
-    """
-    WebService: return a JSON with global stats
-    """
-    if not server:
-        server = request.args.get('server')
-    j = []
-    try:
-        # Manage ACL
-        if not bui.standalone and bui.acl_handler and \
-                (not bui.acl_handler.get_acl().is_admin(current_user.name) \
-                and server not in bui.acl_handler.get_acl().servers(current_user.name)):
-            raise BUIserverException('Sorry, you don\'t have rights on this server')
-        clients = bui.cli.get_all_clients(agent=server)
-    except BUIserverException, e:
-        err = [[2, str(e)]]
-        return jsonify(notif=err)
-    cl = []
-    ba = []
-    # Filter only allowed clients
-    allowed = []
-    check = False
-    if bui.acl_handler and not bui.acl_handler.get_acl().is_admin(current_user.name):
-        check = True
-        allowed = bui.acl_handler.get_acl().clients(current_user.name, server)
-    for c in clients:
-        if check and c['name'] not in allowed:
-            continue
-        client = bui.cli.get_client(c['name'], agent=server)
-        if not client:
-            continue
-        cl.append( { 'name': c['name'], 'stats': bui.cli.get_backup_logs(client[-1]['number'], c['name'], agent=server) } )
-        for b in client:
-            ba.append(bui.cli.get_backup_logs(b['number'], c['name'], True, agent=server))
-    app.logger.debug(json.dumps(ba))
-    if 'end' in ba:
-        j.append( { 'clients': cl, 'backups': sorted(ba, key=lambda k: k['end']) } )
-    else:
-        j.append( { 'clients': cl, 'backups': ba } )
-    return jsonify(results=j)
-
-@app.route('/api/client-stat.json/<name>')
-@app.route('/api/<server>/client-stat.json/<name>')
-@app.route('/api/client-stat.json/<name>/<int:backup>')
-@app.route('/api/<server>/client-stat.json/<name>/<int:backup>')
-@login_required
-def client_stat_json(server=None, name=None, backup=None):
-    """
-    WebService: return a specific client detailed report
-    """
-    if not server:
-        server = request.args.get('server')
-    j = []
-    if not name:
-        err = [[1, 'No client defined']]
-        return jsonify(notif=err)
-    if bui.acl_handler and not bui.acl_handler.get_acl().is_client_allowed(current_user.name, name, server):
-        err = [[2, 'You don\'t have rights to view this client stats']]
-        return jsonify(notif=err)
-    if backup:
-        try:
-            j = bui.cli.get_backup_logs(backup, name, agent=server)
-        except BUIserverException, e:
-            err = [[2, str(e)]]
-            return jsonify(notif=err)
-    else:
-        try:
-            cl = bui.cli.get_client(name, agent=server)
-        except BUIserverException, e:
-            err = [[2, str(e)]]
-            return jsonify(notif=err)
-        for c in cl:
-            j.append(bui.cli.get_backup_logs(c['number'], name, agent=server))
-    return jsonify(results=j)
-
-@app.route('/api/client.json/<name>')
-@app.route('/api/<server>/client.json/<name>')
-@login_required
-def client_json(server=None, name=None):
-    """
-    WebService: return a specific client backups overview
-    """
-    if not server:
-        server = request.args.get('server')
-    try:
-        if bui.acl_handler and ( \
-                not bui.acl_handler.get_acl().is_admin(current_user.name) \
-                and not bui.acl_handler.get_acl().is_client_allowed(current_user.name, name, server)):
-            raise BUIserverException('Sorry, you cannot access this client')
-        j = bui.cli.get_client(name, agent=server)
-    except BUIserverException, e:
-        err = [[2, str(e)]]
-        return jsonify(notif=err)
-    return jsonify(results=j)
-
-@app.route('/api/clients.json')
-@app.route('/api/<server>/clients.json')
-@login_required
-def clients_json(server=None):
-    """
-    WebService: return a JSON listing all clients
-    """
-    if not server:
-        server = request.args.get('server')
-    try:
-        if not bui.standalone and bui.acl_handler and \
-                (not bui.acl_handler.get_acl().is_admin(current_user.name) \
-                and server not in bui.acl_handler.get_acl().servers(current_user.name)):
-            raise BUIserverException('Sorry, you don\'t have any rights on this server')
-        j = bui.cli.get_all_clients(agent=server)
-        if bui.acl_handler and not bui.acl_handler.get_acl().is_admin(current_user.name):
-            j = [x for x in j if x['name'] in bui.acl_handler.get_acl().clients(current_user.name, server)]
-    except BUIserverException, e:
-        err = [[2, str(e)]]
-        return jsonify(notif=err)
-    return jsonify(results=j)
 
 """
 Here are some custom filters
