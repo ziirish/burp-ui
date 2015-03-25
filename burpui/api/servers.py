@@ -30,37 +30,41 @@ class ServersStats(Resource):
 @api.resource('/api/live.json', '/api/<server>/live.json')
 class Live(Resource):
 
-@login_required
-def live(server=None):
-    """
-    API: live
-    :returns: the live status of the server
-    """
-    if not server:
-        server = request.args.get('server')
-    r = []
-    if server:
-        l = (bui.cli.is_one_backup_running(server))[server]
-    else:
-        l = bui.cli.is_one_backup_running()
-    if isinstance(l, dict):
-        for k, a in l.iteritems():
-            for c in a:
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument('server', type=str)
+
+    @login_required
+    def get(self, server=None):
+        """
+        API: live
+        :returns: the live status of the server
+        """
+        if not server:
+            server = self.parser.parse_args()['server']
+        r = []
+        if server:
+            l = (bui.cli.is_one_backup_running(server))[server]
+        else:
+            l = bui.cli.is_one_backup_running()
+        if isinstance(l, dict):
+            for k, a in l.iteritems():
+                for c in a:
+                    s = {}
+                    s['client'] = c
+                    s['agent'] = k
+                    try:
+                        s['status'] = bui.cli.get_counters(c, agent=k)
+                    except BUIserverException:
+                        s['status'] = []
+                    r.append(s)
+        else:
+            for c in l:
                 s = {}
                 s['client'] = c
-                s['agent'] = k
                 try:
-                    s['status'] = bui.cli.get_counters(c, agent=k)
+                    s['status'] = bui.cli.get_counters(c, agent=server)
                 except BUIserverException:
                     s['status'] = []
                 r.append(s)
-    else:
-        for c in l:
-            s = {}
-            s['client'] = c
-            try:
-                s['status'] = bui.cli.get_counters(c, agent=server)
-            except BUIserverException:
-                s['status'] = []
-            r.append(s)
-    return jsonify(results=r)
+        return jsonify(results=r)
