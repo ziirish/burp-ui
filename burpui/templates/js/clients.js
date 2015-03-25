@@ -42,7 +42,7 @@ var __date = {
 
 var _clients_table = $('#table-clients').dataTable( {
 	ajax: {
-		url: '{{ url_for("clients_json", server=server) }}',
+		url: '{{ api.url_for(ClientsStats, server=server) }}',
 		dataSrc: function (data) {
 			if (!data.results) {
 				if (data.notif) {
