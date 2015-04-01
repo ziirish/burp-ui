@@ -224,7 +224,7 @@ class Burp(BUIbackend, BUIlogging):
 
     def get_backup_logs(self, number, client, forward=False, agent=None):
         if not client or not number:
-            return []
+            return {}
 
         f = self.status('c:{0}:b:{1}\n'.format(client, number), agent=agent)
         found = False
@@ -446,6 +446,8 @@ class Burp(BUIbackend, BUIlogging):
                 if r:
                     #self._logger('debug', "match[1]: '{0}'".format(r.group(1)))
                     sp = re.split('\s+', r.group(1))
+                    if len(sp) < 5:
+                        return {}
                     backup[key] = {
                             'new':       int(sp[0]),
                             'changed':   int(sp[1]),
