@@ -20,11 +20,15 @@ class ServersStats(Resource):
                 check = True
                 allowed = bui.acl_handler.get_acl().servers(current_user.name)
             for serv in bui.cli.servers:
-                if check:
-                    if serv in allowed:
+                try:
+                    if check:
+                        if serv in allowed:
+                            r.append({'name': serv, 'clients': len(bui.cli.servers[serv].get_all_clients(serv)), 'alive': bui.cli.servers[serv].ping()})
+                    else:
                         r.append({'name': serv, 'clients': len(bui.cli.servers[serv].get_all_clients(serv)), 'alive': bui.cli.servers[serv].ping()})
-                else:
-                    r.append({'name': serv, 'clients': len(bui.cli.servers[serv].get_all_clients(serv)), 'alive': bui.cli.servers[serv].ping()})
+                except BUIserverException, e:
+                    err = [[2, str(e)]]
+                    return jsonify(notif=err)
         return jsonify(results=r)
 
 @api.resource('/api/live.json', '/api/<server>/live.json')
