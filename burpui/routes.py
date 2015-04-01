@@ -243,7 +243,7 @@ def client(server=None, name=None):
     if not server:
         server = request.args.get('server')
     if bui.cli.is_backup_running(c, agent=server):
-        return redirect(url_for('live_monitor', name=name, server=server))
+        return redirect(url_for('live_monitor', name=c, server=server))
     return render_template('client.html', client=True, overview=True, cname=c, server=server)
 
 @app.route('/clients', methods=['GET'])

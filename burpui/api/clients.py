@@ -8,7 +8,7 @@ from flask.ext.restful import reqparse, Resource
 from flask.ext.login import current_user, login_required
 from flask import jsonify, make_response
 
-@api.resource('/api/running-clients.json', '/api/<server>/running-clients.json')
+@api.resource('/api/running-clients.json', '/api/<server>/running-clients.json', '/api/<client>/running-clients.json', '/api/<server>/<client>/running-clients.json')
 class RunningClients(Resource):
 
     def __init__(self):
@@ -16,13 +16,25 @@ class RunningClients(Resource):
         self.parser.add_argument('server', type=str)
 
     @login_required
-    def get(self, server=None):
+    def get(self, client=None, server=None):
         """
         API: running_clients
         :returns: a list of running clients
         """
         if not server:
             server = self.parser.parse_args()['server']
+        if client:
+            if bui.acl_handler:
+                if not bui.acl_handler.get_acl().is_admin(current_user.name) and not bui.acl_handler.get_acl().is_client_allowed(current_user.name, client, server):
+                    r = []
+                    return jsonify(results=r)
+            if bui.cli.is_backup_running(client, server):
+                r = [bui.cli.get_client(client, server)]
+                return jsonify(results=r)
+            else:
+                r = []
+                return jsonify(results=r)
+
         r = bui.cli.is_one_backup_running(server)
         # Manage ACL
         if bui.acl_handler and not bui.acl_handler.get_acl().is_admin(current_user.name):

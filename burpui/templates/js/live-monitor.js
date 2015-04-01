@@ -48,7 +48,7 @@ _parse_live_result = function(data, serv) {
 _live = function() {
 	urls = Array();
 	{% for s in config.SERVERS -%}
-	urls.push({'url': '{{ api.url_for(RunningClients) }}?server={{ s }}', 'serv': '{{ s }}'});
+	urls.push({'url': '{{ api.url_for(RunningClients, client=cname) }}?server={{ s }}', 'serv': '{{ s }}'});
 	{% endfor -%}
 	html = '';
 	$.each(urls, function(i, rec) {
@@ -69,9 +69,9 @@ _live = function() {
 {% else -%}
 _live = function() {
 	{% if config.STANDALONE -%}
-	url = '{{ api.url_for(RunningClients) }}';
+	url = '{{ api.url_for(RunningClients, client=cname) }}';
 	{% else -%}
-	url = '{{ api.url_for(RunningClients, server=server) }}';
+	url = '{{ api.url_for(RunningClients, server=server, client=cname) }}';
 	{% endif -%}
 	html = ''
 	$.getJSON(url, function(data) {
