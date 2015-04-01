@@ -74,8 +74,16 @@ class ClientStats(Resource):
             except BUIserverException, e:
                 err = [[2, str(e)]]
                 return jsonify(notif=err)
+            err = []
             for c in cl:
-                j.append(bui.cli.get_backup_logs(c['number'], name, agent=server))
+                try:
+                    j.append(bui.cli.get_backup_logs(c['number'], name, agent=server))
+                except BUIserverException, e:
+                    temp = [2, str(e)]
+                    if temp not in err:
+                        err.append(temp)
+            if err:
+                return jsonify(notif=err)
         return jsonify(results=j)
 
 @api.resource('/api/client.json/<name>', '/api/<server>/client.json/<name>')

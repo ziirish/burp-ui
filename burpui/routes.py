@@ -193,7 +193,10 @@ def client_report(server=None, name=None):
     """
     if not server:
         server = request.args.get('server')
-    l = bui.cli.get_client(name, agent=server)
+    try:
+        l = bui.cli.get_client(name, agent=server)
+    except BUIserverException:
+        l = []
     if len(l) == 1:
         return redirect(url_for('backup_report', name=name, backup=l[0]['number'], server=server))
     return render_template('client-report.html', client=True, report=True, cname=name, server=server)
