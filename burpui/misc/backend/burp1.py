@@ -139,7 +139,7 @@ class Burp(BUIbackend, BUIlogging):
                 except ConfigParser.NoOptionError, e:
                     self._logger('error', str(e))
                 except ConfigParser.NoSectionError, e:
-                    self._logger('error', str(e))
+                    self._logger('warning', str(e))
 
         self.parser = Parser(self.app, self.burpconfsrv)
 
