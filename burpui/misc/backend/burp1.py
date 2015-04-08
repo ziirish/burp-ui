@@ -211,9 +211,7 @@ class Burp(BUIbackend, BUIlogging):
                 ap = ''
                 try:
                     ap = line.encode('utf-8')
-                except UnicodeDecodeError:
-                    ap = line
-                except UnicodeEncodeError:
+                except (UnicodeDecodeError, UnicodeEncodeError):
                     ap = line
                 r.append(ap)
             f.close()
@@ -630,9 +628,7 @@ class Burp(BUIbackend, BUIlogging):
         else:
             try:
                 top = root.encode('utf-8')
-            except UnicodeEncodeError:
-                top = root
-            except UnicodeDecodeError:
+            except (UnicodeEncodeError, UnicodeDecodeError):
                 top = root
 
         f = self.status('c:{0}:b:{1}:p:{2}\n'.format(name, backup, top))
@@ -665,8 +661,12 @@ class Burp(BUIbackend, BUIlogging):
         return r
 
     def restore_files(self, name=None, backup=None, files=None, strip=None, archive='zip', password=None, agent=None):
-        if not name or not backup or not files or not self.stripbin or not self.burpbin:
+        if not name or not backup or not files:
             return None, 'At least one argument is missing'
+        if not self.stripbin:
+            return None, 'Missing \'strip\' binary'
+        if not self.burpbin:
+            return None, 'Missing \'burp\' binary'
         flist = json.loads(files)
         if password:
             fh, tmpfile = tempfile.mkstemp()
