@@ -346,10 +346,12 @@ class NClient(BUIbackend):
         return json.loads(self.do_command(data))
 
     def store_conf_cli(self, data, agent=None):
+        # serialize data as it is a nested dict
         data = {'func': 'store_conf_cli', 'args': pickle.dumps({'data': data}), 'pickled': True}
         return json.loads(self.do_command(data))
 
     def store_conf_srv(self, data, agent=None):
+        # serialize data as it is a nested dict
         data = {'func': 'store_conf_srv', 'args': pickle.dumps({'data': data}), 'pickled': True}
         print data
         return json.loads(self.do_command(data))
