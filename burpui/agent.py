@@ -126,6 +126,7 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
             else:
                 if j['args']:
                     if 'pickled' in j and j['pickled']:
+                        # de-serialize arguments if needed
                         j['args'] = pickle.loads(j['args'])
                     res = json.dumps(self.server.agent.methods[j['func']](**j['args']))
                 else:

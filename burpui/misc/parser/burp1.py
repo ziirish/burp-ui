@@ -459,6 +459,7 @@ class Parser(BUIparser,BUIlogging):
                         typ = 'bools'
                     elif key in self.integer_srv:
                         typ = 'integers'
+                    # highlight the wrong parameters
                     errs.append([2, "Sorry, the file '%s' does not exist" % (d), key, typ])
         if errs:
             return errs
