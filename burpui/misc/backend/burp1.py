@@ -210,8 +210,8 @@ class Burp(BUIbackend, BUIlogging):
                     continue
                 ap = ''
                 try:
-                    ap = line.encode('utf-8')
-                except (UnicodeDecodeError, UnicodeEncodeError):
+                    ap = line.decode('utf-8', 'replace')
+                except UnicodeDecodeError:
                     ap = line
                 r.append(ap)
             f.close()
@@ -627,8 +627,8 @@ class Burp(BUIbackend, BUIlogging):
             top = ''
         else:
             try:
-                top = root.encode('utf-8')
-            except (UnicodeEncodeError, UnicodeDecodeError):
+                top = root.decode('utf-8', 'replace')
+            except UnicodeDecodeError:
                 top = root
 
         f = self.status('c:{0}:b:{1}:p:{2}\n'.format(name, backup, top))
