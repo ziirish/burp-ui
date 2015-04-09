@@ -4,11 +4,14 @@ Changelog
 * version `current <https://git.ziirish.me/ziirish/burp-ui/>`_:
 
   - Fix issue `#35 <https://git.ziirish.me/ziirish/burp-ui/issues/35>`_
+  - Fix issue `#46 <https://git.ziirish.me/ziirish/burp-ui/issues/46>`_
+  - Fix issue `#49 <https://git.ziirish.me/ziirish/burp-ui/issues/49>`_
   - Fix issue `#53 <https://git.ziirish.me/ziirish/burp-ui/issues/53>`_
-  - Add `multiple archive format <https://git.ziirish.me/ziirish/burp-ui/issues/31>`_
-  - Add `support client-side encrypted backups while performing an online restoration <https://git.ziirish.me/ziirish/burp-ui/issues/44>`_
-  - Add `ACL support <https://git.ziirish.me/ziirish/burp-ui/issues/47>`_
+  - Fix issue `#54 <https://git.ziirish.me/ziirish/burp-ui/issues/54>`_
   - Add `sortable table in clients overview for <https://git.ziirish.me/ziirish/burp-ui/issues/51>`_
+  - Add `ACL support <https://git.ziirish.me/ziirish/burp-ui/issues/47>`_
+  - Add `support client-side encrypted backups while performing an online restoration <https://git.ziirish.me/ziirish/burp-ui/issues/44>`_
+  - Add `multiple archive format <https://git.ziirish.me/ziirish/burp-ui/issues/31>`_
   - Security fixes
   - Bufixes
   - `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/v0.0.6...master>`__
