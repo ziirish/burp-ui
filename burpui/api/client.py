@@ -32,8 +32,8 @@ class ClientTree(Resource):
         root = self.parser.parse_args()['root']
         try:
             if bui.acl_handler and\
-                    (not bui.acl_handler.get_acl().is_admin(current_user.name)\
-                    and not bui.acl_handler.get_acl().is_client_allowed(current_user.name, name, server)):
+                    (not bui.acl_handler.acl.is_admin(current_user.name)\
+                    and not bui.acl_handler.acl.is_client_allowed(current_user.name, name, server)):
                 raise BUIserverException('Sorry, you are not allowed to view this client')
             j = bui.cli.get_tree(name, backup, root, agent=server)
         except BUIserverException, e:
@@ -59,7 +59,7 @@ class ClientStats(Resource):
         if not name:
             err = [[1, 'No client defined']]
             return jsonify(notif=err)
-        if bui.acl_handler and not bui.acl_handler.get_acl().is_client_allowed(current_user.name, name, server):
+        if bui.acl_handler and not bui.acl_handler.acl.is_client_allowed(current_user.name, name, server):
             err = [[2, 'You don\'t have rights to view this client stats']]
             return jsonify(notif=err)
         if backup:
@@ -102,8 +102,8 @@ class ClientReport(Resource):
             server = self.parser.parse_args()['server']
         try:
             if bui.acl_handler and ( \
-                    not bui.acl_handler.get_acl().is_admin(current_user.name) \
-                    and not bui.acl_handler.get_acl().is_client_allowed(current_user.name, name, server)):
+                    not bui.acl_handler.acl.is_admin(current_user.name) \
+                    and not bui.acl_handler.acl.is_client_allowed(current_user.name, name, server)):
                 raise BUIserverException('Sorry, you cannot access this client')
             j = bui.cli.get_client(name, agent=server)
         except BUIserverException, e:

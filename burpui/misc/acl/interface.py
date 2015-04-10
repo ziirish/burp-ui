@@ -1,7 +1,8 @@
 # -*- coding: utf8 -*-
 
 class BUIaclLoader:
-    def get_acl(self):
+    @property
+    def acl(self):
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")
 
 class BUIacl:

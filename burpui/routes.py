@@ -33,7 +33,7 @@ def load_user(userid):
 @login_required
 def settings(server=None, client=None):
     # Only the admin can edit the configuration
-    if bui.acl_handler and not bui.acl_handler.get_acl().is_admin(current_user.name):
+    if bui.acl_handler and not bui.acl_handler.acl.is_admin(current_user.name):
         abort(403)
     if not client:
         client = request.args.get('client')
@@ -88,8 +88,8 @@ def render_live_tpl(server=None, name=None):
         abort(500)
     # Manage ACL
     if bui.acl_handler \
-        and (not bui.acl_handler.get_acl().is_client_allowed(current_user.name, name, server) \
-        or not bui.acl_handler.get_acl().is_admin(current_user.name)):
+        and (not bui.acl_handler.acl.is_client_allowed(current_user.name, name, server) \
+        or not bui.acl_handler.acl.is_admin(current_user.name)):
         abort(403)
     if isinstance(bui.cli.running, dict):
         if server and name not in bui.cli.running[server]:
