@@ -41,13 +41,14 @@ class ACLloader(BUIaclLoader):
 
         if adms:
             self.admins = adms
-        self.acl = BasicACL(self)
+        self._acl = BasicACL(self)
         self.app.logger.debug('admins: '+str(self.admins))
         self.app.logger.debug('clients: '+str(self.clients))
         self.app.logger.debug('servers: '+str(self.servers))
 
-    def get_acl(self):
-        return self.acl
+    @property
+    def acl(self):
+        return self._acl
 
 class BasicACL(BUIacl):
     def __init__(self, handler=None):
