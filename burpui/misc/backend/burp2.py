@@ -294,7 +294,7 @@ class Burp(Burp1):
                 'changed': 'changed',
                 'unchanged': 'same',
                 'deleted': 'deleted',
-                'total': 'scanned'
+                'total': 'scanned',
                 'scanned': 'scanned',
             }
         single = ['time_start', 'time_end', 'time_taken', 'bytes_received']
