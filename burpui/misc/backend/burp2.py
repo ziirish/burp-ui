@@ -34,6 +34,7 @@ class Burp(Burp1):
 
     def __init__(self, server=None, conf=None):
         global g_burpbin, g_stripbin, g_burpconfcli, g_burpconfsrv, BURP_LOWEST_VERSION
+        self.proc = None
         self.app = None
         self.acl_handler = False
         if server:
@@ -134,7 +135,11 @@ class Burp(Burp1):
 
     def _proc_is_alive(self):
         if self.proc:
-            return self.proc.poll() != None
+            try:
+                os.kill(self.proc.pid, 0)
+                return True
+            except:
+                return False
         return False
 
     def _is_ignored(self, js):
@@ -143,7 +148,7 @@ class Burp(Burp1):
         """
         return 'logline' in js
 
-    def _is_valide_json(self, doc):
+    def _is_valid_json(self, doc):
         """
         Determine if the retrieved string is a valid json document or not
         """
@@ -208,19 +213,20 @@ class Burp(Burp1):
                 try:
                     signal.alarm(5)
                     doc += self.proc.stdout.readline().rstrip('\n')
-                    js = self.is_json(doc)
+                    js = self._is_valid_json(doc)
                     # if the string is a valid json and looks like a logline, we
                     # simply ignore it
-                    if js and self.is_logline(js):
+                    if js and self._is_ignored(js):
                         doc = ''
                         continue
                     elif js:
                         break
-                    signal.alarm(0)
                 except IOError as e:
                     # the os throws an exception if there is no data or timeout
                     self._logger('warning', str(e))
                     break
+                finally:
+                    signal.alarm(0)
             return js
         except (OSError, Exception) as e:
             msg = 'Cannot launch burp process: {}'.format(str(e))
@@ -270,6 +276,7 @@ class Burp(Burp1):
                 'time_taken':                    'duration',
                 'bytes':                         'totsize',
                 'bytes_received':                'received',
+                'bytes_estimated':               'estimated_bytes',
                 'files':                         'files',
                 'files_encrypted':               'files_enc',
                 'directories':                   'dir',
@@ -284,6 +291,7 @@ class Burp(Burp1):
                 'vss_footers':                   'vssfooter',
                 'vss_footers_encrypted':         'vssfooter_enc',
                 'total':                         'total',
+                'grand_total':                   'total',
             }
         counts = {
                 'new': 'count',
@@ -293,8 +301,8 @@ class Burp(Burp1):
                 'total': 'scanned',
                 'scanned': 'scanned',
             }
-        single = ['time_start', 'time_end', 'time_taken', 'bytes_received']
-        query = self.status('c:{0}:b:{1}:f:backup_stats\n'.format(client, number), agent=agent)
+        single = ['time_start', 'time_end', 'time_taken', 'bytes_received', 'bytes_estimated', 'bytes']
+        query = self.status('c:{0}:b:{1}:l:backup_stats\n'.format(client, number), agent=agent)
         if not query:
             return {}
         clients = query['clients']
@@ -304,10 +312,10 @@ class Burp(Burp1):
         backups = client['backups']
         if not backups:
             return {}
-        backup = backups[0]
-        if 'backup_stats' not in backup['logs']:
+        back = backups[0]
+        if 'backup_stats' not in back['logs']:
             return {}
-        stats = json.loads(''.join(backup['logs']['backup_stats']))
+        stats = json.loads(''.join(back['logs']['backup_stats']))
         if not stats:
             return {}
         counters = stats['counters']
@@ -318,8 +326,9 @@ class Burp(Burp1):
             if counter['name'] in single:
                 backup[name] = counter['count']
             else:
+                backup[name] = {}
                 for k, v in counts.iteritems():
-                    backup[k] = counter[v]
+                    backup[name][k] = counter[v]
         if 'start' in backup and 'end' in backup:
             backup['duration'] = backup['end'] - backup['start']
 
@@ -406,13 +415,16 @@ class Burp(Burp1):
         if not name:
             return False
         try:
-            client = self.status('c:{0}\n'.format(name))
+            query = self.status('c:{0}\n'.format(name))
         except BUIserverException:
             return False
-        if not client:
+        if not query:
             return False
-        client = client[0]
-        if client['state'] in ['running']:
+        clients = query['clients']
+        if not clients:
+            return False
+        client = clients[0]
+        if client['run_status'] in ['running']:
             return True
         return False
 
@@ -438,9 +450,10 @@ class Burp(Burp1):
         name, state and last backup date
         """
         j = []
-        clients = self.status()
-        if not clients:
+        query = self.status()
+        if not query:
             return j
+        clients = query['clients']
         for cl in clients:
             c = {}
             c['name'] = cl['name']
@@ -451,6 +464,7 @@ class Burp(Burp1):
             elif not infos:
                 c['last'] = 'never'
             else:
+                infos = infos[0]
                 c['last'] = datetime.datetime.fromtimestamp(infos['timestamp']).strftime('%Y-%m-%d %H:%M:%S')
             j.append(c)
         return j
@@ -464,10 +478,10 @@ class Burp(Burp1):
         if not name:
             return r
         c = name
-        clients = self.status('c:{0}\n'.format(c))
-        if not clients:
+        query = self.status('c:{0}\n'.format(c))
+        if not query:
             return r
-        clients = clients['clients']
+        clients = query['clients']
         if not clients:
             return r
         client = clients[0]
@@ -509,7 +523,13 @@ class Burp(Burp1):
         result = self.status('c:{0}:b:{1}:p:{2}\n'.format(name, backup, top))
         if not result:
             return r
-        backups = result[0]['backups']
+        clients = result['clients']
+        if not clients:
+            return r
+        client = clients[0]
+        if 'backups' not in client:
+            return r
+        backups = client['backups']
         if not backups:
             return r
         backup = backups[0]
