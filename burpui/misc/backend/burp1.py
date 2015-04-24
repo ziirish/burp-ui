@@ -224,7 +224,7 @@ class Burp(BUIbackend, BUIlogging):
         if not client or not number:
             return {}
 
-        f = self.status('c:{0}:b:{1}\n'.format(client, number), agent=agent)
+        f = self.status('c:{0}:b:{1}\n'.format(client, number))
         found = False
         ret = {}
         for line in f:
@@ -237,10 +237,10 @@ class Burp(BUIbackend, BUIlogging):
             if forward:
                 cl = client
 
-            f = self.status('c:{0}:b:{1}:f:log.gz\n'.format(client, number), agent=agent)
-            ret = self._parse_backup_log(f, number, cl, agent=agent)
+            f = self.status('c:{0}:b:{1}:f:log.gz\n'.format(client, number))
+            ret = self._parse_backup_log(f, number, cl)
         else:
-            ret = self._parse_backup_stats(number, client, forward, agent=agent)
+            ret = self._parse_backup_stats(number, client, forward)
 
         ret['encrypted'] = False
         if 'files_enc' in ret and ret['files_enc']['total'] > 0:
@@ -467,10 +467,10 @@ class Burp(BUIbackend, BUIlogging):
         cl = []
         ba = []
         for c in clients:
-            client = self.get_client(c['name'], agent=agent)
+            client = self.get_client(c['name'])
             if not client:
                 continue
-            stats = self.get_backup_logs(client[-1]['number'], c['name'], agent=agent)
+            stats = self.get_backup_logs(client[-1]['number'], c['name'])
             cl.append( { 'name': c['name'], 'stats': { 'windows': stats['windows'], 'totsize': stats['totsize'], 'total': stats['total']['total'] } } )
             ba.append( { 'name': c['name'], 'number': len(client) } )
         ret.append( { 'clients': cl, 'backups': ba } )
@@ -551,7 +551,7 @@ class Burp(BUIbackend, BUIlogging):
         except BUIserverException:
             return r
         for c in cls:
-            if self.is_backup_running(c['name'], agent):
+            if self.is_backup_running(c['name']):
                 r.append(c['name'])
         self.running = r
         return r
