@@ -382,7 +382,7 @@ class Burp(Burp1):
         # list of single counters (type CNTR_SINGLE_FIELD in cntr.c)
         single = ['bytes_estimated', 'bytes', 'bytes_received', 'bytes_sent', 'time_start', 'time_end', 'warnings', 'errors']
         # translation table to be compatible with burp1
-        transate = { 'bytes_estimated': 'estimated_bytes' }
+        translate = { 'bytes_estimated': 'estimated_bytes' }
         for counter in backup['counters']:
             name = counter['name']
             if name in translate:
@@ -392,6 +392,8 @@ class Burp(Burp1):
             else:
                 r[name] = counter['count']
 
+        if 'bytes' not in r:
+            r['bytes'] = 0
         if r.viewkeys() & {'time_start', 'estimated_bytes', 'bytes'}:
             diff = time.time() - int(r['time_start'])
             byteswant = int(r['estimated_bytes'])
