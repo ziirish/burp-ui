@@ -64,10 +64,6 @@ class Burp(Burp1):
                         self._logger('warning', "The file '%s' does not exist", confsrv)
                         confsrv = None
 
-                    if self.host not in ['127.0.0.1', '::1']:
-                        self._logger('warning', "Invalid value for 'bhost'. Must be '127.0.0.1' or '::1'. Falling back to '%s'", g_burphost)
-                        self.host = g_burphost
-
                     if not strip.startswith('/'):
                         self._logger('warning', "Please provide an absolute path for the 'stripbin' option. Fallback to '%s'", g_stripbin)
                         strip = g_stripbin
