@@ -23,6 +23,7 @@
  */
 
 var _client_table = $('#table-client').dataTable( {
+	responsive: true,
 	ajax: {
 		url: '{{ api.url_for(ClientReport, name=cname, server=server) }}',
 		dataSrc: function (data) {

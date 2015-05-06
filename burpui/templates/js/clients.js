@@ -41,6 +41,7 @@ var __date = {
  */
 
 var _clients_table = $('#table-clients').dataTable( {
+	responsive: true,
 	ajax: {
 		url: '{{ api.url_for(ClientsStats, server=server) }}',
 		dataSrc: function (data) {
