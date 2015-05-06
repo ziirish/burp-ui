@@ -9,6 +9,7 @@
  *  The JSON is then parsed into a table
  */
 var _servers_table = $('#table-servers').dataTable( {
+	responsive: true,
 	ajax: {
 		url: '{{ api.url_for(ServersStats) }}',
 		dataSrc: function (data) {
