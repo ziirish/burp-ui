@@ -3,7 +3,10 @@ import re
 import os
 import socket
 import time
-import json
+try:
+    import ujson as json
+except ImportError:
+    import json
 import datetime
 import ConfigParser
 import shutil
@@ -227,6 +230,7 @@ class Burp(Burp1):
                     break
                 finally:
                     signal.alarm(0)
+
             return js
         except (OSError, Exception) as e:
             msg = 'Cannot launch burp process: {}'.format(str(e))
