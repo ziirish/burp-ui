@@ -254,7 +254,12 @@ $(function() {
 	 * add a listener to the '.clickable' element dynamically added in the document (see _client and _clients function)
 	 */
 	$( document ).on('click', '.clickable', function() {
-		window.location = $(this).find('a').attr('href');
+		if ($(this).find('td').length > 1) {
+			window.location = $(this).find('a').attr('href');
+		}
+	});
+	$( document ).on('click', 'td.child', function() {
+		window.location = $(this).parent().prev().find('a').attr('href');
 	});
 
 	/***
