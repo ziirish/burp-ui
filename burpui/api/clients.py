@@ -119,7 +119,6 @@ class ClientsReport(Resource):
                 continue
             aclients.append(c)
         j = bui.cli.get_clients_report(aclients, server)
-        app.logger.debug(j)
         return jsonify(results=j)
 
 @api.resource('/api/clients.json', '/api/<server>/clients.json')
