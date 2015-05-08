@@ -135,6 +135,10 @@ class Burp(Burp1):
         self.proc = subprocess.Popen(cmd, stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.STDOUT, shell = False)
         if not self._proc_is_alive():
             raise Exception('Unable to spawn burp process')
+        self.proc.stdin.write('j:pretty-print-off\n')
+        js = self._read_proc_stdout()
+        if self._is_warning(js):
+            self._logger('info', js['warning'])
 
     def _proc_is_alive(self):
         if self.proc:
@@ -149,7 +153,17 @@ class Burp(Burp1):
         """
         We ignore the 'logline' lines
         """
+        if not js:
+            return True
         return 'logline' in js
+
+    def _is_warning(self, js):
+        """
+        Returns True if the document is a warning
+        """
+        if not js:
+            return False
+        return 'warning' in js
 
     def _is_valid_json(self, doc):
         """
@@ -196,6 +210,32 @@ class Burp(Burp1):
 
         return hr
 
+    def _read_proc_stdout(self):
+        """
+        reads the burp process stdout and returns a document or None
+        """
+        doc = ''
+        js = None
+        while True:
+            try:
+                signal.alarm(5)
+                doc += self.proc.stdout.readline().rstrip('\n')
+                js = self._is_valid_json(doc)
+                # if the string is a valid json and looks like a logline, we
+                # simply ignore it
+                if js and self._is_ignored(js):
+                    doc = ''
+                    continue
+                elif js:
+                    break
+            except IOError as e:
+                # the os throws an exception if there is no data or timeout
+                self._logger('warning', str(e))
+                break
+            finally:
+                signal.alarm(0)
+        return js
+
     def status(self, query='c:\n', agent=None):
         """
         status spawns a burp process in monitor mode, ask the given 'question'
@@ -210,26 +250,10 @@ class Burp(Burp1):
                 self._spawn_burp()
 
             self.proc.stdin.write(q)
-            doc = ''
-            js = None
-            while True:
-                try:
-                    signal.alarm(5)
-                    doc += self.proc.stdout.readline().rstrip('\n')
-                    js = self._is_valid_json(doc)
-                    # if the string is a valid json and looks like a logline, we
-                    # simply ignore it
-                    if js and self._is_ignored(js):
-                        doc = ''
-                        continue
-                    elif js:
-                        break
-                except IOError as e:
-                    # the os throws an exception if there is no data or timeout
-                    self._logger('warning', str(e))
-                    break
-                finally:
-                    signal.alarm(0)
+            js = self._read_proc_stdout()
+            if self._is_warning(js):
+                self._logger('warning', js['warning'])
+                return None
 
             return js
         except (OSError, Exception) as e:
