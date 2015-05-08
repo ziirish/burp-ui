@@ -143,7 +143,9 @@ class Burp(Burp1):
     def _proc_is_alive(self):
         if self.proc:
             try:
-                os.kill(self.proc.pid, 0)
+                r = self.proc.poll()
+                if r is not None:
+                    return False
                 return True
             except:
                 return False
