@@ -142,13 +142,7 @@ class Burp(Burp1):
 
     def _proc_is_alive(self):
         if self.proc:
-            try:
-                r = self.proc.poll()
-                if r is not None:
-                    return False
-                return True
-            except:
-                return False
+            return self.proc.poll() == None
         return False
 
     def _is_ignored(self, js):
