@@ -5,7 +5,7 @@ import sys
 
 g_port = '5000'
 g_bind = '::'
-g_refresh = '15'
+g_refresh = '30'
 g_ssl = 'False'
 g_standalone = 'True'
 g_sslcert = ''
