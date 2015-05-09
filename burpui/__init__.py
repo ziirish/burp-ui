@@ -53,7 +53,7 @@ def init(conf=None, debug=False, gunicorn=True, logfile=None):
         else:
             raise IOError('File not found: \'{0}\''.format(conf))
     else:
-        conf_files = ['/etc/burp/burpui.cfg', os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', '..', 'share', 'burpui', 'etc', 'burpui.cfg')]
+        conf_files = ['/etc/burp/burpui.cfg', os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', '..', '..', 'share', 'burpui', 'etc', 'burpui.cfg')]
         for p in conf_files:
             app.logger.debug('Trying file \'%s\'', p)
             if os.path.isfile(p):
