@@ -22,7 +22,7 @@ from burpui.misc.backend.interface import BUIserverException
 from burpui.misc.backend.burp1 import Burp as Burp1
 from burpui.misc.parser.burp1 import Parser
 
-BURP_LOWEST_VERSION = 'burp-2.0.17'
+BURP_MINIMAL_VERSION = 'burp-2.0.18'
 
 g_burpbin     = u'/usr/sbin/burp'
 g_stripbin    = u'/usr/sbin/vss_strip'
@@ -36,7 +36,7 @@ def sighandler(signum, frame):
 class Burp(Burp1):
 
     def __init__(self, server=None, conf=None):
-        global g_burpbin, g_stripbin, g_burpconfcli, g_burpconfsrv, BURP_LOWEST_VERSION
+        global g_burpbin, g_stripbin, g_burpconfcli, g_burpconfsrv, BURP_MINIMAL_VERSION
         self.proc = None
         self.app = None
         self.acl_handler = False
@@ -110,8 +110,8 @@ class Burp(Burp1):
         try:
             cmd = [self.burpbin, '-v']
             version = subprocess.check_output(cmd).rstrip('\n')
-            if version < BURP_LOWEST_VERSION:
-                raise Exception('Your burp version ({}) does not fit the minimal requirements: {}'.format(version, BURP_LOWEST_VERSION))
+            if version < BURP_MINIMAL_VERSION:
+                raise Exception('Your burp version ({}) does not fit the minimal requirements: {}'.format(version, BURP_MINIMAL_VERSION))
         except subprocess.CalledProcessError, e:
             raise Exception('Unable to determine your burp version: {}'.format(str(e)))
 
