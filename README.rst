@@ -203,6 +203,18 @@ non-exhaustive list of things I'd like to add.
 Also note that in the future, I'd like to write a burp-client GUI.
 But I didn't think yet of what to do.
 
+Known Issues
+------------
+
+My new SSL certificate seem to be unknown on older systems like debian wheezy.
+Thus, you may have some SSL failure while trying to clone my repository.
+In order to fix this error, you can run the following command that will add my
+certificate in your trust list:
+
+::
+
+   echo -n | openssl s_client -showcerts -connect git.ziirish.me:443 2>/dev/null | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' >>/etc/ssl/certs/ca-certificates.crt
+
 
 Changelog
 ---------
