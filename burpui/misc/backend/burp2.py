@@ -133,6 +133,8 @@ class Burp(Burp1):
     def _spawn_burp(self):
         cmd = [ self.burpbin, '-c', self.burpconfcli, '-a', 'm' ]
         self.proc = subprocess.Popen(cmd, stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.STDOUT, shell = False)
+        # wait a little bit in case the process dies
+        time.sleep(0.5)
         if not self._proc_is_alive():
             raise Exception('Unable to spawn burp process')
         self.proc.stdin.write('j:pretty-print-off\n')
