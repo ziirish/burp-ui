@@ -106,7 +106,7 @@ class Burp(Burp1):
                 except ConfigParser.NoSectionError, e:
                     self._logger('warning', str(e))
 
-        # check the burp version because this backend only supports clients newer than 2.0.17
+        # check the burp version because this backend only supports clients newer than BURP_MINIMAL_VERSION
         try:
             cmd = [self.burpbin, '-v']
             version = subprocess.check_output(cmd).rstrip('\n')
@@ -129,6 +129,7 @@ class Burp(Burp1):
         if self._proc_is_alive():
             self.proc.stdin.close()
             self.proc.communicate()
+            self.proc.wait()
 
     def _spawn_burp(self):
         cmd = [ self.burpbin, '-c', self.burpconfcli, '-a', 'm' ]
