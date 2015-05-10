@@ -350,7 +350,7 @@ class Parser(BUIparser,BUIlogging):
             f = os.path.join(self.root, f)
         self._logger('debug', 'reading file: %s', f)
         with codecs.open(f, 'r', 'utf-8') as ff:
-            ret = [x.strip('\n') for x in ff.readlines()]
+            ret = [x.rstrip('\n') for x in ff.readlines()]
 
         return ret
 
@@ -440,6 +440,7 @@ class Parser(BUIparser,BUIlogging):
     def store_server_conf(self, data):
         if not self.conf:
             return [[1, 'Sorry, no configuration file defined']]
+        orig = []
         ref = '{}.bui.init.back'.format(self.conf)
         if not os.path.isfile(ref):
             try:
@@ -463,21 +464,74 @@ class Parser(BUIparser,BUIlogging):
                     errs.append([2, "Sorry, the file '%s' does not exist" % (d), key, typ])
         if errs:
             return errs
+
+        with codecs.open(self.conf, 'r', 'utf-8') as ff:
+            orig = [x.rstrip('\n') for x in ff.readlines()]
+
+        oldkeys = [self._get_line_key(x) for x in orig]
+        newkeys = list(set(data.viewkeys()) - set(oldkeys))
+
+        already_multi = []
+        written = []
+
         with codecs.open(self.conf, 'w', 'utf-8') as f:
-            f.write('# Auto-generated configuration using Burp-UI\n')
-            for key in data.keys():
-                if key in self.boolean_srv:
-                    val = 0
-                    if data.get(key) == 'true':
-                        val = 1
-                    f.write('{} = {}\n'.format(key, val))
-                elif key in self.multi_srv:
-                    for val in data.getlist(key):
-                        f.write('{} = {}\n'.format(key, val))
+            #f.write('# Auto-generated configuration using Burp-UI\n')
+            for line in orig:
+                if self._line_removed(line, data.viewkeys()) and not self._line_is_comment(line):
+                    # The line was removed, we comment it
+                    f.write('#{}\n'.format(line))
+                elif self._get_line_key(line, False) in data.viewkeys():
+                    # The line is still present or has been un-commented, rewrite it with eventual changes
+                    key = self._get_line_key(line, False)
+                    if key not in already_multi:
+                        self._write_key(f, key, data)
+                    if key in self.multi_srv:
+                        already_multi.append(key)
+                    written.append(key)
+                elif self._line_is_comment(line):
+                    f.write('{}\n'.format(line))
                 else:
-                    f.write('{} = {}\n'.format(key, data.get(key)))
+                    # The line was a empty or something...
+                    f.write('{}\n'.format(line))
+            for key in newkeys:
+                if key not in written:
+                    self._write_key(f, key, data)
 
         return [[0, 'Configuration successfully saved.']]
+
+    def _write_key(self, f, key, data):
+        if key in self.boolean_srv:
+            val = 0
+            if data.get(key) == 'true':
+                val = 1
+            f.write('{} = {}\n'.format(key, val))
+        elif key in self.multi_srv:
+            for val in data.getlist(key):
+                f.write('{} = {}\n'.format(key, val))
+        else:
+            f.write('{} = {}\n'.format(key, data.get(key)))
+
+    def _line_is_comment(self, line):
+        if not line:
+            return False
+        return line.startswith('#')
+
+    def _get_line_key(self, line, ignore_comments=True):
+        if not line:
+            return ''
+        if '=' not in line:
+            return line
+        (key, rest) = line.split('=', 1)
+        if not ignore_comments:
+            key = key.strip('#')
+        return key.strip()
+
+    def _line_removed(self, line, keys):
+        if not line or '=' not in line:
+            return False
+        (key, rest) = line.split('=', 1)
+        key = key.strip()
+        return key not in keys
 
     def get_priv_attr(self, key):
         try:
