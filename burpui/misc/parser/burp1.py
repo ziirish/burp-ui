@@ -477,8 +477,9 @@ class Parser(BUIparser,BUIlogging):
         with codecs.open(self.conf, 'w', 'utf-8') as f:
             #f.write('# Auto-generated configuration using Burp-UI\n')
             for line in orig:
-                if self._line_removed(line, data.viewkeys()) and not self._line_is_comment(line):
+                if self._line_removed(line, data.viewkeys()) and not self._line_is_comment(line) or self._line_is_file_include(line):
                     # The line was removed, we comment it
+                    # we also comment file inclusions as we don't support them yet TODO / FIXME
                     f.write('#{}\n'.format(line))
                 elif self._get_line_key(line, False) in data.viewkeys():
                     # The line is still present or has been un-commented, rewrite it with eventual changes
@@ -488,8 +489,6 @@ class Parser(BUIparser,BUIlogging):
                     if key in self.multi_srv:
                         already_multi.append(key)
                     written.append(key)
-                elif self._line_is_comment(line):
-                    f.write('{}\n'.format(line))
                 else:
                     # The line was a empty or something...
                     f.write('{}\n'.format(line))
@@ -515,6 +514,11 @@ class Parser(BUIparser,BUIlogging):
         if not line:
             return False
         return line.startswith('#')
+
+    def _line_is_file_include(self, line):
+        if not line:
+            return False
+        return line.startswith('.')
 
     def _get_line_key(self, line, ignore_comments=True):
         if not line:
