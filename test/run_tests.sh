@@ -23,9 +23,10 @@ echo "test requirements"
     echo "python2.7 is missing... Installing it"
     [ $ISROOT -eq 1 ] && apt-get -y install python2.7 python
 }
-#echo "install lib devel..."
-#apt-get update
-#apt-get -y install python-pip python
+
+echo "install lib devel..."
+apt-get update
+apt-get -y install python-pip python
 ##apt-get -y install python2.7-dev python2.6-dev libsasl2-dev
 
 echo "check files"

@@ -19,12 +19,15 @@ class ACLloader(BUIaclLoader):
         with open(conf) as fp:
             c.readfp(fp)
             if c.has_section('BASIC:ACL'):
-                temp = c.get('BASIC:ACL', 'admin')
                 try:
-                    adms = json.loads(temp)
-                except Exception, e:
-                    self.app.logger.error(str(e))
-                    adms = [temp]
+                    temp = c.get('BASIC:ACL', 'admin')
+                    try:
+                        adms = json.loads(temp)
+                    except Exception as e:
+                        self.app.logger.error(str(e))
+                        adms = [temp]
+                except Exception as e:
+                    self.app.logger.warning(str(e))
                 for opt in c.options('BASIC:ACL'):
                     if opt == 'admin':
                         continue
@@ -34,7 +37,7 @@ class ACLloader(BUIaclLoader):
                         rec = json.loads(lit)
                         if isinstance(rec, dict):
                             self.servers[opt] = rec.keys()
-                    except Exception, e:
+                    except Exception as e:
                         self.app.logger.error(str(e))
                         rec = [lit]
                     self.clients[opt] = rec
