@@ -4,7 +4,6 @@ import sys
 import os
 import unittest
 import urllib2
-import pprint
 from flask.ext.testing import LiveServerTestCase, TestCase
 
 sys.path.append('{0}/..'.format(os.path.join(os.path.dirname(os.path.realpath(__file__)))))
@@ -173,6 +172,44 @@ class BurpuiLoginTestCase(TestCase):
 	def test_login_no_user(self):
 		rv = self.login('toto', 'toto')
 		assert 'Wrong username or password' in rv.data
+
+class BurpuiACLTestCase(TestCase):
+
+	def setUp(self):
+		print '\nBegin Test 5\n'
+
+	def tearDown(self):
+		print '\nTest 5 Finished!\n'
+
+	def login(self, username, password):
+		return self.client.post('/login', data=dict(
+			username=username,
+			password=password
+		), follow_redirects=True)
+
+	def create_app(self):
+		conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test5.cfg')
+		BUIinit(conf, False, False)
+		app.config['TESTING'] = True
+		app.config['LIVESERVER_PORT'] = 5001
+		app.config['WTF_CSRF_ENABLED'] = False
+		bui.cli.port = 9999
+		login_manager.init_app(app)
+		return app
+
+	def test_login_ko(self):
+		rv = self.login('admin', 'toto')
+		assert 'Wrong username or password' in rv.data
+
+	def test_config_render(self):
+		rv = self.login('admin', 'admin')
+		response = self.client.get('/settings')
+		assert 'Burp Configuration' in response.data
+
+	def test_config_render_ko(self):
+		rv = self.login('user1', 'password')
+		response = self.client.get('/settings')
+		self.assert403(response)
 
 if __name__ == '__main__':
 	unittest.main()
