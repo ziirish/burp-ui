@@ -10,6 +10,12 @@ from flask import jsonify, make_response
 
 @api.resource('/api/running-clients.json', '/api/<server>/running-clients.json', '/api/<client>/running-clients.json', '/api/<server>/<client>/running-clients.json')
 class RunningClients(Resource):
+    """
+    The :class:`burpui.api.clients.ClientsReport` resource allows you to access
+    general reports about your clients.
+
+    This resource is part of the :mod:`burpui.api` module.
+    """
 
     def __init__(self):
         self.parser = reqparse.RequestParser()
@@ -51,6 +57,12 @@ class RunningClients(Resource):
 
 @api.resource('/api/running.json', '/api/<server>/running.json')
 class BackupRunning(Resource):
+    """
+    The :class:`burpui.api.clients.ClientsReport` resource allows you to access
+    general reports about your clients.
+
+    This resource is part of the :mod:`burpui.api` module.
+    """
 
     @login_required
     def get(self, server=None):
@@ -82,6 +94,12 @@ class BackupRunning(Resource):
 
 @api.resource('/api/clients-report.json', '/api/<server>/clients-report.json')
 class ClientsReport(Resource):
+    """
+    The :class:`burpui.api.clients.ClientsReport` resource allows you to access
+    general reports about your clients.
+
+    This resource is part of the :mod:`burpui.api` module.
+    """
 
     def __init__(self):
         self.parser = reqparse.RequestParser()
@@ -90,8 +108,52 @@ class ClientsReport(Resource):
     @login_required
     def get(self, server=None):
         """
-        WebService: return a JSON with global stats
+        **GET** method provided by the webservice.
+
+        The *JSON* returned is:
+        ::
+            {
+              "results": [
+                {
+                  "backups": [
+                    {
+                      "name": "client1",
+                      "number": 15
+                    },
+                    {
+                      "name": "client2",
+                      "number": 1
+                    }
+                  ],
+                  "clients": [
+                    {
+                      "name": "client1",
+                      "stats": {
+                        "total": 296377,
+                        "totsize": 57055793698,
+                        "windows": "false"
+                      }
+                    }, 
+                    {
+                      "name": "client2",
+                      "stats": {
+                        "total": 3117,
+                        "totsize": 5345361,
+                        "windows": "true"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+
+        The output is filtered by the :mod:`burpui.misc.acl` module so that you
+        only see stats about the clients you are authorized to.
+
+        :param server: Which server to collect data from when in multi-agent mode
+        :return: The *JSON* described above
         """
+
         if not server:
             server = self.parser.parse_args()['server']
         j = []
@@ -123,6 +185,12 @@ class ClientsReport(Resource):
 
 @api.resource('/api/clients.json', '/api/<server>/clients.json')
 class ClientsStats(Resource):
+    """
+    The :class:`burpui.api.clients.ClientsStats` resource allows you to access
+    general statistics about your clients.
+
+    This resource is part of the :mod:`burpui.api` module.
+    """
 
     def __init__(self):
         self.parser = reqparse.RequestParser()
@@ -131,8 +199,32 @@ class ClientsStats(Resource):
     @login_required
     def get(self, server=None):
         """
-        WebService: return a JSON listing all clients
+        **GET** method provided by the webservice.
+
+        The *JSON* returned is:
+        ::
+            {
+              "results": [
+                {
+                  "last": "2015-05-17 11:40:02",
+                  "name": "client1",
+                  "state": "idle"
+                },
+                {
+                  "last": "never",
+                  "name": "client2",
+                  "state": "idle"
+                }
+              ]
+            }
+
+        The output is filtered by the :mod:`burpui.misc.acl` module so that you
+        only see stats about the clients you are authorized to.
+
+        :param server: Which server to collect data from when in multi-agent mode
+        :return: The *JSON* described above
         """
+
         if not server:
             server = self.parser.parse_args()['server']
         try:
