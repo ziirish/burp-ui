@@ -31,7 +31,7 @@ do_start()
         #   2 if daemon could not be started
         start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON --test > /dev/null \
                 || return 1
-        start-stop-daemon --start --quiet --pidfile $PIDFILE --make-pidfile --exec $DAEMON -- \
+        start-stop-daemon --start --quiet --pidfile $PIDFILE --make-pidfile --background --exec $DAEMON -- \
                 || return 2
 }
 
