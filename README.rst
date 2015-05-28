@@ -1,8 +1,11 @@
 Build Status
-------------
+============
 
 .. image:: https://ci.ziirish.me/projects/1/status.png?ref=master
     :target: https://ci.ziirish.me/projects/1?ref=master
+
+Introduction
+============
 
 Screenshots
 -----------
@@ -34,7 +37,7 @@ external commands to your burp status port.
 Who are you?
 ------------
 
-I'm `Ziirish <http://ziirish.info>`_, a French sysadmin that loves `Burp`_ and
+I'm `Ziirish <http://ziirish.info>`_, a French sysadmin who loves `Burp`_ and
 would like to help its adoption by providing it a nice and powerful interface.  
 If you like my work, you can:
 
@@ -44,7 +47,7 @@ If you like my work, you can:
 
 
 Contributing
-------------
+============
 
 Contributions are welcome. You can help in any way you want, for instance by
 opening issues on the `bug tracker <https://git.ziirish.me/ziirish/burp-ui/issues>`__,
@@ -56,7 +59,7 @@ The address is: `http://burpui.ziirish.me/ <http://burpui.ziirish.me/>`__
 
 
 Requirements
-------------
+============
 
 Please note that currently, ``Burp-UI`` must be running on the same server that
 runs the burp-server.
@@ -86,7 +89,7 @@ On Debian:
 
 
 Installation
-------------
+============
 
 ``Burp-UI`` is written in Python with the `Flask`_ micro-framework.  
 The easiest way to install Flask is to use ``pip``.
@@ -117,9 +120,25 @@ By default, ``burp-ui`` listens on all interfaces (including IPv6) on port 5000.
 
 You can then point your browser to http://127.0.0.1:5000/
 
+Instructions
+------------
+
+In order to make the *on the fly* restoration/download functionality work, you
+need to check a few things:
+
+1. Provide the full path of the burp (client) binary file
+2. Provide the full path of an empty directory where a temporary restoration
+   will be made. This involves you have enough space left on that location on
+   the server that runs ``Burp-UI``
+3. Launch ``Burp-UI`` with a user that can proceed restorations and that can
+   write in the directory above
+4. Make sure to configure a client on the server that runs ``Burp-UI`` that can
+   restore files of other clients (option *restore_client* in burp-server
+   configuration)
+
 
 Development
------------
+===========
 
 If you wish to use the latest and yet unstable version (eg. `master <https://git.ziirish.me/ziirish/burp-ui/tree/master>`__),
 you can install it using ``pip`` too, but I would recommend you to use a 
@@ -141,7 +160,7 @@ removing the ``/opt/bui-venv`` directory.
 
 
 Gunicorn
---------
+========
 
 Starting from v0.0.6, ``Burp-UI`` supports `Gunicorn <http://gunicorn.org>`_ in
 order to handle multiple users simultaneously.
@@ -160,25 +179,9 @@ You will then be able to launch ``Burp-UI`` this way:
     gunicorn -k eventlet -w 4 'burpui:init(conf="/path/to/burpui.cfg")'
 
 
-Instructions
-------------
-
-In order to make the *on the fly* restoration/download functionality work, you
-need to check a few things:
-
-1. Provide the full path of the burp (client) binary file
-2. Provide the full path of an empty directory where a temporary restoration
-   will be made. This involves you have enough space left on that location on
-   the server that runs ``Burp-UI``
-3. Launch ``Burp-UI`` with a user that can proceed restorations and that can
-   write in the directory above
-4. Make sure to configure a client on the server that runs ``Burp-UI`` that can
-   restore files of other clients (option *restore_client* in burp-server
-   configuration)
-
 
 Troubleshooting
----------------
+===============
 
 In case you encounter troubles with ``Burp-UI``, you should run it with the
 ``-d`` flag and paste the relevant output within your bug-report.  
@@ -188,14 +191,14 @@ version number.
 
 
 Notes
------
+=====
 
 Please feel free to report any issues on my `gitlab <https://git.ziirish.me/ziirish/burp-ui/issues>`_.  
 I have closed the *github tracker* to have a unique tracker system.
 
 
 TODO
-----
+====
 
 `Here <https://git.ziirish.me/ziirish/burp-ui/issues?label_name=todo>`_ is a
 non-exhaustive list of things I'd like to add.
@@ -204,7 +207,7 @@ Also note that in the future, I'd like to write a burp-client GUI.
 But I didn't think yet of what to do.
 
 Known Issues
-------------
+============
 
 1. SSL issue
 
@@ -233,14 +236,9 @@ lines in your ``~/.ssh/config`` file:
       Port 2222
 
 
-Changelog
----------
-
-The Changelog has been replaced by `this file <https://git.ziirish.me/ziirish/burp-ui/blob/master/CHANGELOG.rst>`_.
-
 
 Licenses
---------
+========
 
 ``Burp-UI`` is released under the BSD 3-clause `License`_.
 
@@ -266,7 +264,7 @@ Also note that this project is made with the Awesome `Flask`_ micro-framework.
 
 
 Thanks
-------
+======
 
 Special Thanks to Graham Keeling for its great software! This project would not
 exist without `Burp`_.
