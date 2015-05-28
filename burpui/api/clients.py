@@ -16,7 +16,7 @@ from flask.ext.restful import reqparse, Resource
 from flask.ext.login import current_user, login_required
 from flask import jsonify, make_response
 
-@api.resource('/api/running-clients.json', '/api/<server>/running-clients.json', '/api/<client>/running-clients.json', '/api/<server>/<client>/running-clients.json')
+@api.resource('/api/running-clients.json', '/api/<server>/running-clients.json', '/api/<client>/running-clients.json', '/api/<server>/<client>/running-clients.json', endpoint='api.running_clients')
 class RunningClients(Resource):
     """
     The :class:`burpui.api.clients.RunningClients` resource allows you to
@@ -83,10 +83,10 @@ class RunningClients(Resource):
                 r = [x for x in r if x in allowed]
         return jsonify(results=r)
 
-@api.resource('/api/running.json', '/api/<server>/running.json')
-class BackupRunning(Resource):
+@api.resource('/api/running.json', '/api/<server>/running.json', endpoint='api.running_backup')
+class RunningBackup(Resource):
     """
-    The :class:`burpui.api.clients.BackupRunning` resource allows you to access
+    The :class:`burpui.api.clients.RunningBackup` resource allows you to access
     the status of the server in order to know if there is a running backup
     currently.
 
@@ -135,7 +135,7 @@ class BackupRunning(Resource):
             r = len(j) > 0
         return jsonify(results=r)
 
-@api.resource('/api/clients-report.json', '/api/<server>/clients-report.json')
+@api.resource('/api/clients-report.json', '/api/<server>/clients-report.json', endpoint='api.clients_report')
 class ClientsReport(Resource):
     """
     The :class:`burpui.api.clients.ClientsReport` resource allows you to access
@@ -232,7 +232,7 @@ class ClientsReport(Resource):
         j = bui.cli.get_clients_report(aclients, server)
         return jsonify(results=j)
 
-@api.resource('/api/clients.json', '/api/<server>/clients.json')
+@api.resource('/api/clients.json', '/api/<server>/clients.json', endpoint='api.clients_stats')
 class ClientsStats(Resource):
     """
     The :class:`burpui.api.clients.ClientsStats` resource allows you to access
