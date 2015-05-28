@@ -16,7 +16,6 @@ from burpui.misc.backend.interface import BUIserverException
 from burpui.api import api
 from burpui.api.restore import Restore
 from burpui.api.settings import ServerSettings, ClientSettings
-from burpui.api.clients import RunningClients, BackupRunning, ClientsReport, ClientsStats
 from burpui.api.client import ClientTree, ClientStats, ClientReport
 from burpui.api.servers import ServersStats, Live
 
@@ -57,10 +56,6 @@ The API has been split-out into several files and now uses Flask-Restful
 app.jinja_env.globals.update(Restore=Restore)
 app.jinja_env.globals.update(ServerSettings=ServerSettings)
 app.jinja_env.globals.update(ClientSettings=ClientSettings)
-app.jinja_env.globals.update(RunningClients=RunningClients)
-app.jinja_env.globals.update(BackupRunning=BackupRunning)
-app.jinja_env.globals.update(ClientsReport=ClientsReport)
-app.jinja_env.globals.update(ClientsStats=ClientsStats)
 app.jinja_env.globals.update(ClientTree=ClientTree)
 app.jinja_env.globals.update(ClientStats=ClientStats)
 app.jinja_env.globals.update(ClientReport=ClientReport)

@@ -45,9 +45,9 @@ var anim = function(elem, timeout) {
 {% if not login -%}
 var _check_running = function() {
 	{% if server -%}
-	url = '{{ api.url_for(BackupRunning, server=server) }}';
+	url = '{{ url_for("api.running_backup", server=server) }}';
 	{% else -%}
-	url = '{{ api.url_for(BackupRunning) }}';
+	url = '{{ url_for("api.running_backup") }}';
 	{% endif -%}
 	$.getJSON(url, function(data) {
 		if (data.results) {
@@ -69,7 +69,7 @@ var _clients_bh = new Bloodhound({
 	queryTokenizer: Bloodhound.tokenizers.whitespace,
 	limit: 10,
 	prefetch: {
-		url: '{{ api.url_for(ClientsStats) }}',
+		url: '{{ url_for("api.clients_stats") }}',
 		filter: function(list) {
 			if (list.results) {
 				return list.results;
@@ -100,7 +100,7 @@ var _{{ srv }}_bh = new Bloodhound({
 	queryTokenizer: Bloodhound.tokenizers.whitespace,
 	limit: 10,
 	prefetch: {
-		url: '{{ api.url_for(ClientsStats, server=srv) }}',
+		url: '{{ url_for("api.clients_stats", server=srv) }}',
 		filter: function(list) {
 			if (list.results) {
 				return list.results;

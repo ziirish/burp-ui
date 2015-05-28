@@ -35,7 +35,7 @@ var _clients = function() {
 			_charts_obj.push({ 'key': 'chart_'+j, 'obj': tmp, 'data': [] });
 		});
 	}
-	url = '{{ api.url_for(ClientsReport, server=server) }}';
+	url = '{{ url_for("api.clients_report", server=server) }}';
 	$.getJSON(url, function(d) {
 		rep = [];
 		size = [];
