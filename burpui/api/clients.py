@@ -51,8 +51,7 @@ class RunningClients(Resource):
         :param server: Which server to collect data from when in multi-agent mode
         :type server: str
 
-        :param client: Ask a specific client in order to know if it is running
-        a backup
+        :param client: Ask a specific client in order to know if it is running a backup
         :type client: str
 
         :returns: The *JSON* described above.
