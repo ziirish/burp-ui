@@ -1,4 +1,12 @@
 # -*- coding: utf8 -*-
+"""
+.. module:: clients
+    :platform: Unix
+    :synopsis: Burp-UI clients api module.
+
+.. moduleauthor:: Ziirish <ziirish@ziirish.info>
+
+"""
 import json
 
 from burpui import app, bui
@@ -11,10 +19,13 @@ from flask import jsonify, make_response
 @api.resource('/api/running-clients.json', '/api/<server>/running-clients.json', '/api/<client>/running-clients.json', '/api/<server>/<client>/running-clients.json')
 class RunningClients(Resource):
     """
-    The :class:`burpui.api.clients.ClientsReport` resource allows you to access
-    general reports about your clients.
+    The :class:`burpui.api.clients.RunningClients` resource allows you to
+    retrieve a list of clients that are currently running a backup.
 
-    This resource is part of the :mod:`burpui.api` module.
+    This resource is part of the :mod:`burpui.api.clients` module.
+
+    An optional ``GET`` parameter called ``server`` is supported when running
+    in multi-agent mode.
     """
 
     def __init__(self):
@@ -24,8 +35,25 @@ class RunningClients(Resource):
     @login_required
     def get(self, client=None, server=None):
         """
-        API: running_clients
-        :returns: a list of running clients
+        **GET** method provided by the webservice.
+
+        The *JSON* returned is:
+        ::
+
+            {
+                "results": [ ]
+            }
+
+
+        The output is filtered by the :mod:`burpui.misc.acl` module so that you
+        only see stats about the clients you are authorized to.
+
+        :param server: Which server to collect data from when in multi-agent mode
+        :type server: str
+        :param client: Ask a specific client in order to know if it is running
+        a backup
+        :type client: str
+        :returns: The *JSON* described above.
         """
         if not server:
             server = self.parser.parse_args()['server']
@@ -58,17 +86,32 @@ class RunningClients(Resource):
 @api.resource('/api/running.json', '/api/<server>/running.json')
 class BackupRunning(Resource):
     """
-    The :class:`burpui.api.clients.ClientsReport` resource allows you to access
-    general reports about your clients.
+    The :class:`burpui.api.clients.BackupRunning` resource allows you to access
+    the status of the server in order to know if there is a running backup
+    currently.
 
-    This resource is part of the :mod:`burpui.api` module.
+    This resource is part of the :mod:`burpui.api.clients` module.
     """
 
     @login_required
     def get(self, server=None):
         """
-        API: backup_running
-        :returns: true if at least one backup is running
+        **GET** method provided by the webservice.
+
+        The *JSON* returned is:
+        ::
+
+            {
+                "results": false
+            }
+
+
+        The output is filtered by the :mod:`burpui.misc.acl` module so that you
+        only see stats about the clients you are authorized to.
+
+        :param server: Which server to collect data from when in multi-agent mode
+        :type server: str
+        :returns: The *JSON* described above.
         """
         j = bui.cli.is_one_backup_running(server)
         # Manage ACL
@@ -98,7 +141,10 @@ class ClientsReport(Resource):
     The :class:`burpui.api.clients.ClientsReport` resource allows you to access
     general reports about your clients.
 
-    This resource is part of the :mod:`burpui.api` module.
+    This resource is part of the :mod:`burpui.api.clients` module.
+
+    An optional ``GET`` parameter called ``server`` is supported when running
+    in multi-agent mode.
     """
 
     def __init__(self):
@@ -112,6 +158,7 @@ class ClientsReport(Resource):
 
         The *JSON* returned is:
         ::
+
             {
               "results": [
                 {
@@ -147,11 +194,13 @@ class ClientsReport(Resource):
               ]
             }
 
+
         The output is filtered by the :mod:`burpui.misc.acl` module so that you
         only see stats about the clients you are authorized to.
 
         :param server: Which server to collect data from when in multi-agent mode
-        :return: The *JSON* described above
+        :type server: str
+        :returns: The *JSON* described above
         """
 
         if not server:
@@ -189,7 +238,10 @@ class ClientsStats(Resource):
     The :class:`burpui.api.clients.ClientsStats` resource allows you to access
     general statistics about your clients.
 
-    This resource is part of the :mod:`burpui.api` module.
+    This resource is part of the :mod:`burpui.api.clients` module.
+
+    An optional ``GET`` parameter called ``server`` is supported when running
+    in multi-agent mode.
     """
 
     def __init__(self):
@@ -203,6 +255,7 @@ class ClientsStats(Resource):
 
         The *JSON* returned is:
         ::
+
             {
               "results": [
                 {
@@ -218,11 +271,13 @@ class ClientsStats(Resource):
               ]
             }
 
+
         The output is filtered by the :mod:`burpui.misc.acl` module so that you
         only see stats about the clients you are authorized to.
 
         :param server: Which server to collect data from when in multi-agent mode
-        :return: The *JSON* described above
+        :type server: str
+        :returns: The *JSON* described above
         """
 
         if not server:
