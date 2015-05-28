@@ -50,9 +50,11 @@ class RunningClients(Resource):
 
         :param server: Which server to collect data from when in multi-agent mode
         :type server: str
+
         :param client: Ask a specific client in order to know if it is running
         a backup
         :type client: str
+
         :returns: The *JSON* described above.
         """
         if not server:
@@ -111,6 +113,7 @@ class RunningBackup(Resource):
 
         :param server: Which server to collect data from when in multi-agent mode
         :type server: str
+
         :returns: The *JSON* described above.
         """
         j = bui.cli.is_one_backup_running(server)
@@ -200,6 +203,7 @@ class ClientsReport(Resource):
 
         :param server: Which server to collect data from when in multi-agent mode
         :type server: str
+
         :returns: The *JSON* described above
         """
 
@@ -277,6 +281,7 @@ class ClientsStats(Resource):
 
         :param server: Which server to collect data from when in multi-agent mode
         :type server: str
+
         :returns: The *JSON* described above
         """
 
