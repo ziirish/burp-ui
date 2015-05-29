@@ -189,8 +189,15 @@ class Burp(BUIbackend, BUIlogging):
 
     def status(self, query='\n', agent=None):
         """
-        status connects to the burp status port, ask the given 'question' and
-        parses the output in an array
+        Send queries to the Burp server
+
+        :param query: Query to send to the server
+        :type query: str
+
+        :param agent: What server to ask (only in multi-agent mode)
+        :type agent: str
+
+        :returns: The output returned by the server parsed as an array
         """
         r = []
         try:
