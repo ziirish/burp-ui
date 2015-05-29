@@ -32,6 +32,6 @@ class ClientSettings(Resource):
     def get(self, server=None, client=None):
         # Only the admin can edit the configuration
         if bui.acl_handler and not bui.acl_handler.acl.is_admin(current_user.name):
-            abort(403)
+            abort(403, message='Sorry, you don\'t have rights to access the setting panel')
         r = bui.cli.read_conf_cli(client, server)
         return jsonify(results=r)
