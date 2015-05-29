@@ -14,7 +14,6 @@ from burpui.misc.utils import human_readable as _hr
 from burpui.misc.backend.interface import BUIserverException
 
 from burpui.api import api
-from burpui.api.restore import Restore
 from burpui.api.settings import ServerSettings, ClientSettings
 from burpui.api.servers import ServersStats, Live
 
@@ -52,7 +51,6 @@ The whole API returns JSON-formated data
 The API has been split-out into several files and now uses Flask-Restful
 """
 
-app.jinja_env.globals.update(Restore=Restore)
 app.jinja_env.globals.update(ServerSettings=ServerSettings)
 app.jinja_env.globals.update(ClientSettings=ClientSettings)
 app.jinja_env.globals.update(ServersStats=ServersStats)
