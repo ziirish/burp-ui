@@ -1,4 +1,12 @@
 # -*- coding: utf8 -*-
+"""
+.. module:: restore
+    :platform: Unix
+    :synopsis: Burp-UI restore api module.
+
+.. moduleauthor:: Ziirish <ziirish@ziirish.info>
+
+"""
 from zlib import adler32
 from time import gmtime, strftime, time
 
@@ -8,8 +16,20 @@ from flask.ext.restful import reqparse, Resource, abort
 from flask.ext.login import current_user, login_required
 from flask import jsonify, send_file, make_response, after_this_request
 
-@api.resource('/api/restore/<name>/<int:backup>', '/api/<server>/restore/<name>/<int:backup>')
+@api.resource('/api/restore/<name>/<int:backup>', '/api/<server>/restore/<name>/<int:backup>', endpoint='api.restore')
 class Restore(Resource):
+    """
+    The :class:`burpui.api.restore.Restore` resource allows you to
+    perform a file restoration.
+
+    This resource is part of the :mod:`burpui.api.restore` module.
+
+    The following ``GET`` parameters are supported:
+    - ``list``: list of files/directories to restore
+    - ``strip``: number of elements to strip in the path
+    - ``format``: returning archive format
+    - ``pass``: password to use for encrypted backups
+    """
 
     def __init__(self):
         self.parser = reqparse.RequestParser()
@@ -20,6 +40,21 @@ class Restore(Resource):
 
     @login_required
     def post(self, server=None, name=None, backup=None):
+        """
+        **POST** method provided by the webservice.
+        This method returns a :mod:`flask.Response` object.
+
+        :param server: Which server to collect data from when in multi-agent mode
+        :type server: str
+
+        :param name: The client we are working on
+        :type name: str
+
+        :param backup: The backup we are working on
+        :type backup: int
+
+        :returns: A :mod:`flask.Response` object representing an archive of the restored files
+        """
         args = self.parser.parse_args()
         l = args['list']
         s = args['strip']
@@ -41,12 +76,19 @@ class Restore(Resource):
         else:
             filename = 'restoration_%d_%s_at_%s.%s' % (backup, name, strftime("%Y-%m-%d_%H_%M_%S", gmtime()), f)
         if not server:
+            # Standalone mode, we can just return the file unless there were errors
             archive, err = bui.cli.restore_files(name, backup, l, s, f, p)
             if not archive:
                 if err:
                     return make_response(err, 500)
                 abort(500)
             try:
+                # Trick to delete the file while sending it to the client.
+                # First, we open the file in reading mode so that a file handler
+                # is open on the file. Then we delete it as soon as the request
+                # ended. Because the fh is open, the file will be actually removed
+                # when the transfert is done and the send_file method has closed
+                # the fh.
                 fh = open(archive, 'r')
                 @after_this_request
                 def remove_file(response):
@@ -59,6 +101,7 @@ class Restore(Resource):
                 app.logger.error(str(e))
                 abort(500)
         else:
+            # Multi-agent mode
             socket = None
             try:
                 socket, length, err = bui.cli.restore_files(name, backup, l, s, f, p, server)
@@ -69,6 +112,8 @@ class Restore(Resource):
                     socket.close()
                     return make_response(err, 500)
 
+                # The retoration took place on another server so we need to stream
+                # the file that is not present on the current machine.
                 def stream_file(sock, l):
                     bsize = 1024
                     received = 0
