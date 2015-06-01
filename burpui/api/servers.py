@@ -7,6 +7,7 @@ from flask.ext.restful import reqparse, Resource
 from flask.ext.login import current_user, login_required
 from flask import jsonify
 
+
 @api.resource('/api/servers.json')
 class ServersStats(Resource):
 
@@ -16,22 +17,29 @@ class ServersStats(Resource):
         if hasattr(bui.cli, 'servers'):
             check = False
             allowed = []
-            if bui.acl_handler and not bui.acl_handler.acl.is_admin(current_user.name):
+            if (bui.acl_handler and not
+                    bui.acl_handler.acl.is_admin(current_user.name)):
                 check = True
                 allowed = bui.acl_handler.acl.servers(current_user.name)
             for serv in bui.cli.servers:
                 try:
                     if check:
                         if serv in allowed:
-                            r.append({'name': serv, 'clients': len(bui.cli.servers[serv].get_all_clients(serv)), 'alive': bui.cli.servers[serv].ping()})
+                            r.append({'name': serv,
+                                      'clients': len(bui.cli.servers[serv].get_all_clients(serv)),
+                                      'alive': bui.cli.servers[serv].ping()})
                     else:
-                        r.append({'name': serv, 'clients': len(bui.cli.servers[serv].get_all_clients(serv)), 'alive': bui.cli.servers[serv].ping()})
+                        r.append({'name': serv,
+                                  'clients': len(bui.cli.servers[serv].get_all_clients(serv)),
+                                  'alive': bui.cli.servers[serv].ping()})
                 except BUIserverException, e:
                     err = [[2, str(e)]]
                     return jsonify(notif=err)
         return jsonify(results=r)
 
-@api.resource('/api/live.json', '/api/<server>/live.json')
+
+@api.resource('/api/live.json',
+              '/api/<server>/live.json')
 class Live(Resource):
 
     def __init__(self):

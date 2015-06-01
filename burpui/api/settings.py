@@ -6,13 +6,16 @@ from flask.ext.restful import reqparse, abort, Resource
 from flask.ext.login import current_user, login_required
 from flask import request, render_template, jsonify
 
-@api.resource('/api/server-config', '/api/<server>/server-config')
+
+@api.resource('/api/server-config',
+              '/api/<server>/server-config')
 class ServerSettings(Resource):
-    
+
     @login_required
     def get(self, server=None):
         # Only the admin can edit the configuration
-        if bui.acl_handler and not bui.acl_handler.acl.is_admin(current_user.name):
+        if (bui.acl_handler and not
+                bui.acl_handler.acl.is_admin(current_user.name)):
             abort(403, message='Sorry, you don\'t have rights to access the setting panel')
         r = bui.cli.read_conf_srv(server)
         return jsonify(results=r,
@@ -25,13 +28,16 @@ class ServerSettings(Resource):
                        placeholders=bui.cli.get_parser_attr('placeholders', server),
                        defaults=bui.cli.get_parser_attr('defaults', server))
 
-@api.resource('/api/client-config/<client>', '/api/<server>/client-config/<client>')
+
+@api.resource('/api/client-config/<client>',
+              '/api/<server>/client-config/<client>')
 class ClientSettings(Resource):
-    
+
     @login_required
     def get(self, server=None, client=None):
         # Only the admin can edit the configuration
-        if bui.acl_handler and not bui.acl_handler.acl.is_admin(current_user.name):
+        if (bui.acl_handler and not
+                bui.acl_handler.acl.is_admin(current_user.name)):
             abort(403, message='Sorry, you don\'t have rights to access the setting panel')
         r = bui.cli.read_conf_cli(client, server)
         return jsonify(results=r)

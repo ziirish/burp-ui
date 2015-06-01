@@ -16,7 +16,10 @@ from flask.ext.restful import reqparse, Resource, abort
 from flask.ext.login import current_user, login_required
 from flask import jsonify, send_file, make_response, after_this_request
 
-@api.resource('/api/restore/<name>/<int:backup>', '/api/<server>/restore/<name>/<int:backup>', endpoint='api.restore')
+
+@api.resource('/api/restore/<name>/<int:backup>',
+              '/api/<server>/restore/<name>/<int:backup>',
+              endpoint='api.restore')
 class Restore(Resource):
     """
     The :class:`burpui.api.restore.Restore` resource allows you to
@@ -67,14 +70,25 @@ class Restore(Resource):
         if not l or not name or not backup:
             abort(500)
         # Manage ACL
-        if bui.acl_handler and \
-                (not bui.acl_handler.acl.is_client_allowed(current_user.name, name, server) \
-                and not bui.acl_handler.acl.is_admin(current_user.name)):
+        if (bui.acl_handler and
+                (not bui.acl_handler.acl.is_client_allowed(current_user.name,
+                                                           name,
+                                                           server) and not
+                 bui.acl_handler.acl.is_admin(current_user.name))):
             abort(403)
         if server:
-            filename = 'restoration_%d_%s_on_%s_at_%s.%s' % (backup, name, server, strftime("%Y-%m-%d_%H_%M_%S", gmtime()), f)
+            filename = 'restoration_%d_%s_on_%s_at_%s.%s' % (
+                    backup,
+                    name,
+                    server,
+                    strftime("%Y-%m-%d_%H_%M_%S", gmtime()),
+                    f)
         else:
-            filename = 'restoration_%d_%s_at_%s.%s' % (backup, name, strftime("%Y-%m-%d_%H_%M_%S", gmtime()), f)
+            filename = 'restoration_%d_%s_at_%s.%s' % (
+                    backup,
+                    name,
+                    strftime("%Y-%m-%d_%H_%M_%S", gmtime()),
+                    f)
         if not server:
             # Standalone mode, we can just return the file unless there were errors
             archive, err = bui.cli.restore_files(name, backup, l, s, f, p)
@@ -90,12 +104,16 @@ class Restore(Resource):
                 # when the transfert is done and the send_file method has closed
                 # the fh.
                 fh = open(archive, 'r')
+
                 @after_this_request
                 def remove_file(response):
                     import os
                     os.remove(archive)
                     return response
-                resp = send_file(fh, as_attachment=True, attachment_filename=filename, mimetype='application/zip')
+                resp = send_file(fh,
+                                 as_attachment=True,
+                                 attachment_filename=filename,
+                                 mimetype='application/zip')
                 resp.set_cookie('fileDownload', 'true')
             except Exception, e:
                 app.logger.error(str(e))
@@ -104,7 +122,13 @@ class Restore(Resource):
             # Multi-agent mode
             socket = None
             try:
-                socket, length, err = bui.cli.restore_files(name, backup, l, s, f, p, server)
+                socket, length, err = bui.cli.restore_files(name,
+                                                            backup,
+                                                            l,
+                                                            s,
+                                                            f,
+                                                            p,
+                                                            server)
                 app.logger.debug('Need to get %d Bytes : %s', length, socket)
 
                 if err:
@@ -123,7 +147,7 @@ class Restore(Resource):
                         buf = b''
                         r, _, _ = select.select([sock], [], [], 5)
                         if not r:
-                            raise Exception ('Socket timed-out')
+                            raise Exception('Socket timed-out')
                         buf += sock.recv(bsize)
                         if not buf:
                             continue
@@ -133,11 +157,15 @@ class Restore(Resource):
                     sock.close()
 
                 headers = Headers()
-                headers.add('Content-Disposition', 'attachment', filename=filename)
+                headers.add('Content-Disposition',
+                            'attachment',
+                            filename=filename)
                 headers['Content-Length'] = length
 
-                resp = Response(stream_file(socket, length), mimetype='application/zip',
-                                headers=headers, direct_passthrough=True)
+                resp = Response(stream_file(socket, length),
+                                mimetype='application/zip',
+                                headers=headers,
+                                direct_passthrough=True)
                 resp.set_cookie('fileDownload', 'true')
                 resp.set_etag('flask-%s-%s-%s' % (
                         time(),
