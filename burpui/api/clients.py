@@ -16,7 +16,12 @@ from flask.ext.restful import reqparse, Resource
 from flask.ext.login import current_user, login_required
 from flask import jsonify, make_response
 
-@api.resource('/api/running-clients.json', '/api/<server>/running-clients.json', '/api/<client>/running-clients.json', '/api/<server>/<client>/running-clients.json', endpoint='api.running_clients')
+
+@api.resource('/api/running-clients.json',
+              '/api/<server>/running-clients.json',
+              '/api/<client>/running-clients.json',
+              '/api/<server>/<client>/running-clients.json',
+              endpoint='api.running_clients')
 class RunningClients(Resource):
     """
     The :class:`burpui.api.clients.RunningClients` resource allows you to
@@ -60,7 +65,10 @@ class RunningClients(Resource):
             server = self.parser.parse_args()['server']
         if client:
             if bui.acl_handler:
-                if not bui.acl_handler.acl.is_admin(current_user.name) and not bui.acl_handler.acl.is_client_allowed(current_user.name, client, server):
+                if (not bui.acl_handler.acl.is_admin(current_user.name) and not
+                        bui.acl_handler.acl.is_client_allowed(current_user.name,
+                                                              client,
+                                                              server)):
                     r = []
                     return jsonify(results=r)
             if bui.cli.is_backup_running(client, server):
@@ -72,7 +80,8 @@ class RunningClients(Resource):
 
         r = bui.cli.is_one_backup_running(server)
         # Manage ACL
-        if bui.acl_handler and not bui.acl_handler.acl.is_admin(current_user.name):
+        if (bui.acl_handler and not
+                bui.acl_handler.acl.is_admin(current_user.name)):
             if isinstance(r, dict):
                 new = {}
                 for serv in bui.acl_handler.acl.servers(current_user.name):
@@ -84,7 +93,10 @@ class RunningClients(Resource):
                 r = [x for x in r if x in allowed]
         return jsonify(results=r)
 
-@api.resource('/api/running.json', '/api/<server>/running.json', endpoint='api.running_backup')
+
+@api.resource('/api/running.json',
+              '/api/<server>/running.json',
+              endpoint='api.running_backup')
 class RunningBackup(Resource):
     """
     The :class:`burpui.api.clients.RunningBackup` resource allows you to access
@@ -117,7 +129,8 @@ class RunningBackup(Resource):
         """
         j = bui.cli.is_one_backup_running(server)
         # Manage ACL
-        if bui.acl_handler and not bui.acl_handler.acl.is_admin(current_user.name):
+        if (bui.acl_handler and not
+                bui.acl_handler.acl.is_admin(current_user.name)):
             if isinstance(j, dict):
                 new = {}
                 for serv in bui.acl_handler.acl.servers(current_user.name):
@@ -137,7 +150,10 @@ class RunningBackup(Resource):
             r = len(j) > 0
         return jsonify(results=r)
 
-@api.resource('/api/clients-report.json', '/api/<server>/clients-report.json', endpoint='api.clients_report')
+
+@api.resource('/api/clients-report.json',
+              '/api/<server>/clients-report.json',
+              endpoint='api.clients_report')
 class ClientsReport(Resource):
     """
     The :class:`burpui.api.clients.ClientsReport` resource allows you to access
@@ -182,7 +198,7 @@ class ClientsReport(Resource):
                         "totsize": 57055793698,
                         "windows": "false"
                       }
-                    }, 
+                    },
                     {
                       "name": "client2",
                       "stats": {
@@ -211,9 +227,10 @@ class ClientsReport(Resource):
         j = []
         try:
             # Manage ACL
-            if not bui.standalone and bui.acl_handler and \
-                    (not bui.acl_handler.acl.is_admin(current_user.name) \
-                    and server not in bui.acl_handler.acl.servers(current_user.name)):
+            if (not bui.standalone and bui.acl_handler and
+                    (not bui.acl_handler.acl.is_admin(current_user.name) and
+                     server not in
+                     bui.acl_handler.acl.servers(current_user.name))):
                 raise BUIserverException('Sorry, you don\'t have rights on this server')
             clients = bui.cli.get_all_clients(agent=server)
         except BUIserverException, e:
@@ -224,7 +241,8 @@ class ClientsReport(Resource):
         # Filter only allowed clients
         allowed = []
         check = False
-        if bui.acl_handler and not bui.acl_handler.acl.is_admin(current_user.name):
+        if (bui.acl_handler and not
+                bui.acl_handler.acl.is_admin(current_user.name)):
             check = True
             allowed = bui.acl_handler.acl.clients(current_user.name, server)
         aclients = []
@@ -235,7 +253,10 @@ class ClientsReport(Resource):
         j = bui.cli.get_clients_report(aclients, server)
         return jsonify(results=j)
 
-@api.resource('/api/clients.json', '/api/<server>/clients.json', endpoint='api.clients_stats')
+
+@api.resource('/api/clients.json',
+              '/api/<server>/clients.json',
+              endpoint='api.clients_stats')
 class ClientsStats(Resource):
     """
     The :class:`burpui.api.clients.ClientsStats` resource allows you to access
@@ -287,12 +308,15 @@ class ClientsStats(Resource):
         if not server:
             server = self.parser.parse_args()['server']
         try:
-            if not bui.standalone and bui.acl_handler and \
-                    (not bui.acl_handler.acl.is_admin(current_user.name) \
-                    and server not in bui.acl_handler.acl.servers(current_user.name)):
+            if (not bui.standalone and
+                    bui.acl_handler and
+                    (not bui.acl_handler.acl.is_admin(current_user.name) and
+                     server not in
+                     bui.acl_handler.acl.servers(current_user.name))):
                 raise BUIserverException('Sorry, you don\'t have any rights on this server')
             j = bui.cli.get_all_clients(agent=server)
-            if bui.acl_handler and not bui.acl_handler.acl.is_admin(current_user.name):
+            if (bui.acl_handler and not
+                    bui.acl_handler.acl.is_admin(current_user.name)):
                 j = [x for x in j if x['name'] in bui.acl_handler.acl.clients(current_user.name, server)]
         except BUIserverException, e:
             err = [[2, str(e)]]
