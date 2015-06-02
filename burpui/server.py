@@ -3,6 +3,8 @@ import ConfigParser
 import traceback
 import sys
 
+from burpui.misc.backend.burp1 import Burp as BurpGeneric
+
 g_port = '5000'
 g_bind = '::'
 g_refresh = '30'
@@ -13,6 +15,7 @@ g_sslkey = ''
 g_version = '1'
 g_auth = 'basic'
 g_acl = ''
+
 
 class BUIServer:
     def __init__(self, app=None):
@@ -28,7 +31,7 @@ class BUIServer:
         if not conf:
             raise IOError('No configuration file found')
 
-        config = ConfigParser.ConfigParser({'port': g_port,'bind': g_bind,
+        config = ConfigParser.ConfigParser({'port': g_port, 'bind': g_bind,
                     'refresh': g_refresh, 'ssl': g_ssl, 'sslcert': g_sslcert,
                     'sslkey': g_sslkey, 'version': g_version, 'auth': g_auth,
                     'standalone': g_standalone, 'acl': g_acl})
@@ -95,6 +98,7 @@ class BUIServer:
             module = 'burpui.misc.backend.burp{0}'.format(self.vers)
         else:
             module = 'burpui.misc.backend.multi'
+        self.cli = BurpGeneric(dummy=True)
         try:
             mod = __import__(module, fromlist=['Burp'])
             Client = mod.Burp
@@ -121,4 +125,3 @@ class BUIServer:
             self.app.run(host=self.bind, port=self.port, debug=debug, ssl_context=self.sslcontext)
         else:
             self.app.run(host=self.bind, port=self.port, debug=debug)
-
