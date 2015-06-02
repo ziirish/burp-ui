@@ -1,4 +1,12 @@
 # -*- coding: utf8 -*-
+"""
+.. module:: burp1
+    :platform: Unix
+    :synopsis: Burp-UI burp1 backend module.
+
+.. moduleauthor:: Ziirish <ziirish@ziirish.info>
+
+"""
 import re
 import os
 import socket
@@ -17,12 +25,14 @@ from burpui.misc.utils import human_readable as _hr, BUIlogging, BUIcompress
 from burpui.misc.backend.interface import BUIbackend, BUIserverException
 from burpui.misc.parser.burp1 import Parser
 
+
 g_burpport    = '4972'
 g_burphost    = '::1'
 g_burpbin     = u'/usr/sbin/burp'
 g_stripbin    = u'/usr/sbin/vss_strip'
 g_burpconfcli = None
 g_burpconfsrv = u'/etc/burp/burp-server.conf'
+
 
 class Burp(BUIbackend, BUIlogging):
     states = {
@@ -65,8 +75,23 @@ class Burp(BUIbackend, BUIlogging):
         'path'
        ]
 
-    def __init__(self, server=None, conf=None):
+    def __init__(self, server=None, conf=None, dummy=False):
+        """
+        The :class:`burpui.misc.backend.Burp1` module provides a consistent
+        backend for ``burp-1`` servers.
+
+        :param server: ``Burp-UI`` server instance in order to access logger and/or some global settings
+        :type server: :class:`burpui.server.BUIServer`
+
+        :param conf: Configuration file to use
+        :type conf: str
+
+        :param dummy: Does not instanciate the object (used for development purpose)
+        :type dummy: boolean
+        """
         global g_burpport, g_burphost, g_burpbin, g_stripbin, g_burpconfcli, g_burpconfsrv
+        if dummy:
+            return
         self.app = None
         self.acl_handler = False
         if server:
@@ -117,7 +142,7 @@ class Burp(BUIbackend, BUIlogging):
                     if not os.path.isfile(strip) or not os.access(strip, os.X_OK):
                         self._logger('error', "Ooops, '%s' not found or is not executable", strip)
                         strip = None
-                        
+
                     if not bbin.startswith('/'):
                         self._logger('warning', "Please provide an absolute path for the 'burpbin' option. Fallback to '%s'", g_burpbin)
                         bbin = g_burpbin
@@ -780,4 +805,3 @@ class Burp(BUIbackend, BUIlogging):
         if not attr or not self.parser:
             return None
         return self.parser.get_priv_attr(attr)
-
