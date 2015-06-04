@@ -152,7 +152,7 @@ app.controller('ConfigCtrl', function($scope, $http) {
 				return;
 			}
 		});
-		/* The below forEach is a function, as we cannot exit two levels at once
+		/* The above forEach is a function, as we cannot exit two levels at once
 		 * we need this check & return */
 		if (!sbm) {
 			return;
