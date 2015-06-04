@@ -35,6 +35,10 @@ g_burpconfsrv = u'/etc/burp/burp-server.conf'
 
 
 class Burp(BUIbackend, BUIlogging):
+    """
+    The :class:`burpui.misc.backend.Burp1` module provides a consistent
+    backend for ``burp-1`` servers.
+    """
     states = {
         'i': 'idle',
         'r': 'running',
@@ -169,7 +173,7 @@ class Burp(BUIbackend, BUIlogging):
         self.parser = Parser(self.app, self.burpconfsrv)
 
         self.family = self._get_inet_family(self.host)
-        self._test_burp_settings(self.host)
+        self._test_burp_server_address(self.host)
 
         self._logger('info', 'burp port: %d', self.port)
         self._logger('info', 'burp host: %s', self.host)
@@ -183,12 +187,33 @@ class Burp(BUIbackend, BUIlogging):
     """
 
     def _get_inet_family(self, addr):
+        """
+        The :func:`burpui.misc.backend.Burp1._get_inet_family` function
+        determines the inet family of a given address.
+
+        :param addr: Address to look at
+        :type addr: str
+
+        :returns: Inet family of the given address: :const:`socket.AF_INET` of :const:`socket.AF_INET6`
+        """
         if addr == '127.0.0.1':
             return socket.AF_INET
         else:
             return socket.AF_INET6
 
-    def _test_burp_settings(self, addr, retry=False):
+    def _test_burp_server_address(self, addr, retry=False):
+        """
+        The :func:`burpui.misc.backend.Burp1._test_burp_server_address` function
+        determines if the given address is reachable or not.
+
+        :param addr: Address to look at
+        :type addr: str
+
+        :param retry: Flag to stop trying because this function is recursive
+        :type retry: bool
+
+        :returns: True or False wether we could find a valid address or not
+        """
         family = self._get_inet_family(addr)
         try:
             s = socket.socket(family, socket.SOCK_STREAM)
@@ -204,7 +229,7 @@ class Burp(BUIbackend, BUIlogging):
                 else:
                     new_addr = '127.0.0.1'
                 self._logger('info', 'Trying %s:%s instead', new_addr, self.port)
-                if self._test_burp_settings(new_addr, True):
+                if self._test_burp_server_address(new_addr, True):
                     self._logger('info', '%s:%s is reachable, switching to it for this runtime', new_addr, self.port)
                     self.host = new_addr
                     self.family = self._get_inet_family(new_addr)
@@ -253,6 +278,25 @@ class Burp(BUIbackend, BUIlogging):
             raise BUIserverException('Cannot contact burp server at {0}:{1}'.format(self.host, self.port))
 
     def get_backup_logs(self, number, client, forward=False, agent=None):
+        """
+        The :func:`burpui.misc.backend.Burp1.get_backup_logs` function is used
+        to retrieve the burp logs based on the :func:`_parse_backup_stats` or
+        :func:`_parse_backup_log` functions depending the burp-server version.
+
+        :param number: Backup number to work on
+        :type number: int
+
+        :param client: Client name to work on
+        :type client: str
+
+        :param forward: Is the client name needed in later process
+        :type forward: bool
+
+        :param agent: What server to ask (only in multi-agent mode)
+        :type agent: str
+
+        :returns: Dict containing the backup log
+        """
         if not client or not number:
             return {}
 
@@ -280,6 +324,24 @@ class Burp(BUIbackend, BUIlogging):
         return ret
 
     def _parse_backup_stats(self, number, client, forward=False, agent=None):
+        """
+        The :func:`burpui.misc.backend.Burp1._parse_backup_stats` function is
+        used to parse the burp logs.
+
+        :param number: Backup number to work on
+        :type number: int
+
+        :param client: Client name to work on
+        :type client: str
+
+        :param forward: Is the client name needed in later process
+        :type forward: bool
+
+        :param agent: What server to ask (only in multi-agent mode)
+        :type agent: str
+
+        :returns: Dict containing the backup log
+        """
         backup = { 'windows': 'unknown', 'number': int(number) }
         if forward:
             backup['name'] = client
@@ -398,8 +460,24 @@ class Burp(BUIbackend, BUIlogging):
 
     def _parse_backup_log(self, fh, number, client=None, agent=None):
         """
-        parse_backup_log parses the log.gz of a given backup and returns a dict
-        containing different stats used to render the charts in the reporting view
+        The :func:`burpui.misc.backend.Burp1._parse_backup_log` function is
+        used to parse the log.gz of a given backup and returns a dict
+        containing different stats used to render the charts in the reporting
+        view.
+
+        :param fh: List representing the content of the log file
+        :type fh: list
+
+        :param number: Backup number to work on
+        :type number: int
+
+        :param client: Client name to work on
+        :type client: str
+
+        :param agent: What server to ask (only in multi-agent mode)
+        :type agent: str
+
+        :returns: Dict containing the backup log
         """
         lookup_easy = {
                 'start':         '^Start time: (.+)$',
