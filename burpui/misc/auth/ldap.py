@@ -86,7 +86,10 @@ class LdapLoader:
 
         for record in r:
             if record[self.attr][0] == searchval:
-                dn = record['distinguishedname'][0]
+                if 'distinguishedname' in record:
+                    dn = record['distinguishedname'][0]
+                else:
+                    dn = record['uid'][0]
                 self.app.logger.info('Found DN: {0}'.format(dn))
                 return {'dn': dn, 'cn': record['cn'][0]}
 
@@ -104,7 +107,7 @@ class LdapLoader:
         :returns: True if bind was successful, otherwise False
         """
         try:
-            l = simpleldap.Connection(self.host, dn='{0}'.format(dn), password=passwd)
+            l = simpleldap.Connection(self.host, dn='uid={0},{1}'.format(dn, self.base), password=passwd)
             self.app.logger.info('Bound as user: {0}'.format(dn))
         except Exception, e:
             self.app.logger.error('Failed to authenticate user: {0}, {1}'.format(dn, str(e)))
