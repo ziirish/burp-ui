@@ -171,12 +171,15 @@ class LdapUser(UserMixin, BUIuser):
         :param passwd: password to bind to the LDAP server with
         :type passwd: str
 
-        :returns: True if successful, otherwise de-activates the user and returns None
+        :returns: True if found and bind was successful;
+                  False if found but bind failed;
+                  otherwise de-activates the user and returns False
         """
         if self.ldap.fetch(name):
             return self.ldap.check(self.id, passwd)
         else:
             self.active = False
+            return False
 
     def is_active(self):
         """
