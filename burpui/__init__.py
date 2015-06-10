@@ -3,6 +3,18 @@
 Burp-UI is a web-ui for burp backup written in python with Flask and
 jQuery/Bootstrap
 """
+
+import os
+import sys
+import logging
+
+from flask import Flask
+from flask.ext.login import LoginManager
+from burpui.server import BUIServer as BurpUI
+
+reload(sys)
+sys.setdefaultencoding('utf-8')
+
 __title__        = 'burp-ui'
 __author__       = 'Benjamin SANS (Ziirish)'
 __author_email__ = 'ziirish+burpui@ziirish.info'
@@ -10,16 +22,6 @@ __url__          = 'https://git.ziirish.me/ziirish/burp-ui'
 __description__  = 'Burp-UI is a web-ui for burp backup written in python with Flask and jQuery/Bootstrap'
 __license__      = 'BSD 3-clause'
 __version__      = '0.0.7-dev'
-
-import os
-import sys
-
-reload(sys)
-sys.setdefaultencoding('utf-8')
-
-from flask import Flask
-from flask.ext.login import LoginManager
-from burpui.server import BUIServer as BurpUI
 
 # First, we setup the app
 app = Flask(__name__)
@@ -39,12 +41,13 @@ login_manager.login_view = 'login'
 login_manager.login_message_category = 'info'
 
 # Then we load our routes
+# This import cannot take place earlier because the modules relies on app that must be initialized first
 import burpui.routes
 
 
 def init(conf=None, debug=False, gunicorn=True, logfile=None):
-    app.config['DEBUG'] = debug
-    if debug:
+    if debug and not gunicorn:
+        app.config['DEBUG'] = debug
         app.config['TESTING'] = True
 
     if conf:
@@ -62,12 +65,22 @@ def init(conf=None, debug=False, gunicorn=True, logfile=None):
                 break
 
     if logfile:
-        import logging
+        from logging import Formatter
         from logging.handlers import RotatingFileHandler
         file_handler = RotatingFileHandler(logfile, maxBytes=1024 * 1024 * 100, backupCount=20)
-        file_handler.setLevel(logging.DEBUG)
+        if debug:
+            LOG_FORMAT = (
+                '-' * 80 + '\n' +
+                '%(levelname)s in %(module)s [%(pathname)s:%(lineno)d]:\n' +
+                '%(message)s\n' +
+                '-' * 80
+            )
+            file_handler.setLevel(logging.DEBUG)
+        else:
+            LOG_FORMAT = '[%(asctime)s] %(levelname)s in %(module)s: %(message)s'
+            file_handler.setLevel(logging.INFO)
+        file_handler.setFormatter(Formatter(LOG_FORMAT))
         app.logger.addHandler(file_handler)
-
 
     bui.setup(app.config['CFG'])
 
