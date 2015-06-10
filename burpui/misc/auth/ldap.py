@@ -25,22 +25,18 @@ class LdapLoader:
         self.app = app
         self.attr = 'uid' # default search attr
         conf = self.app.config['CFG']
-        c = ConfigParser.ConfigParser({'host': 'localhost', 'port': None, 'encryption': None, 'binddn': '', 'bindpw': '', 'filter': '', 'base': ''})
+        defaults = {'host': 'localhost', 'port': None, 'encryption': None, 'binddn': None, 'bindpw': None, 'filter': None, 'base': None}
+        mapping = {'host': 'host', 'port': 'port', 'encryption': 'encryption', 'filt': 'filter', 'base': 'base', 'attr': 'searchattr', 'binddn': 'binddn', 'bindpw': 'bindpw'}
+        c = ConfigParser.ConfigParser(defaults)
         with open(conf) as fp:
             c.readfp(fp)
-            try:
-                self.host = c.get('LDAP', 'host')
-                self.port = c.get('LDAP', 'port')
-                self.encryption = c.get('LDAP', 'encryption')
-                self.filt = c.get('LDAP', 'filter')
-                self.base = c.get('LDAP', 'base')
-                self.attr = c.get('LDAP', 'searchattr')
-                self.binddn = c.get('LDAP', 'binddn')
-                self.bindpw = c.get('LDAP', 'bindpw')
-            except ConfigParser.NoOptionError, e:
-                self.app.logger.info(str(e))
-            except ConfigParser.NoSectionError, e:
-                self.app.logger.error(str(e))
+            for opt, key in mapping.viewitems():
+                try:
+                    setattr(self, opt, c.get('LDAP', key))
+                except ConfigParser.NoOptionError, e:
+                    self.app.logger.info(str(e))
+                except ConfigParser.NoSectionError, e:
+                    self.app.logger.error(str(e))
 
         self.app.logger.info('LDAP host: %s', self.host)
         self.app.logger.info('LDAP port: %s', self.port)
