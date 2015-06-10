@@ -17,11 +17,13 @@ from burpui.api import api
 from burpui.api.settings import ServerSettings, ClientSettings
 from burpui.api.servers import ServersStats, Live
 
+
 @login_manager.user_loader
 def load_user(userid):
     if bui.auth != 'none':
         return bui.uhandler.user(userid)
     return None
+
 
 @app.route('/settings', methods=['GET', 'POST'])
 @app.route('/<server>/settings', methods=['GET', 'POST'])
@@ -56,6 +58,7 @@ app.jinja_env.globals.update(ClientSettings=ClientSettings)
 app.jinja_env.globals.update(ServersStats=ServersStats)
 app.jinja_env.globals.update(Live=Live)
 
+
 @app.route('/api/render-live-template', methods=['GET'])
 @app.route('/api/<server>/render-live-template', methods=['GET'])
 @app.route('/api/render-live-template/<name>')
@@ -76,9 +79,9 @@ def render_live_tpl(server=None, name=None):
     if not name:
         abort(500)
     # Manage ACL
-    if bui.acl_handler \
-        and (not bui.acl_handler.acl.is_client_allowed(current_user.name, name, server) \
-        or not bui.acl_handler.acl.is_admin(current_user.name)):
+    if (bui.acl_handler and
+        (not bui.acl_handler.acl.is_client_allowed(current_user.name, name, server) or
+         not bui.acl_handler.acl.is_admin(current_user.name))):
         abort(403)
     if isinstance(bui.cli.running, dict):
         if server and name not in bui.cli.running[server]:
@@ -101,14 +104,17 @@ def render_live_tpl(server=None, name=None):
 """
 Here are some custom filters
 """
+
+
 @app.template_filter()
-def mypad (s):
+def mypad(s):
     """
     Filter: used to pad 0's to backup numbers as in the burp's status monitor
     """
     if not s:
         return '0000000'
     return '{0:07d}'.format(int(s))
+
 
 @app.template_filter()
 def time_human(d):
@@ -120,6 +126,7 @@ def time_human(d):
         s = '%02dH' % hours
     return '%s %02dm %02ds' % (s, minutes, seconds)
 
+
 @app.template_filter()
 def bytes_human(b):
     return '{0:.1eM}'.format(_hr(b))
@@ -127,6 +134,7 @@ def bytes_human(b):
 """
 And here is the main site
 """
+
 
 @app.route('/live-monitor')
 @app.route('/<server>/live-monitor')
@@ -150,8 +158,9 @@ def live_monitor(server=None, name=None):
         if not run:
             flash('Sorry, there are no running backups', 'warning')
             return redirect(url_for('home'))
-            
+
     return render_template('live-monitor.html', live=True, cname=name, server=server)
+
 
 @app.route('/client-browse/<name>', methods=['GET'])
 @app.route('/<server>/client-browse/<name>', methods=['GET'])
@@ -173,6 +182,7 @@ def client_browse(server=None, name=None, backup=None, encrypted=None):
         return redirect(url_for('client_browse', name=name, backup=bkp, encrypted=encrypted, server=server))
     return render_template('client-browse.html', tree=True, backup=True, overview=True, cname=name, nbackup=backup, encrypted=encrypted, server=server)
 
+
 @app.route('/client-report/<name>')
 @app.route('/<server>/client-report/<name>')
 @login_required
@@ -190,6 +200,7 @@ def client_report(server=None, name=None):
         return redirect(url_for('backup_report', name=name, backup=l[0]['number'], server=server))
     return render_template('client-report.html', client=True, report=True, cname=name, server=server)
 
+
 @app.route('/clients-report')
 @app.route('/<server>/clients-report')
 @login_required
@@ -200,6 +211,7 @@ def clients_report(server=None):
     if not server:
         server = request.args.get('server')
     return render_template('clients-report.html', clients=True, report=True, server=server)
+
 
 @app.route('/backup-report/<name>', methods=['GET'])
 @app.route('/<server>/backup-report/<name>', methods=['GET'])
@@ -215,6 +227,7 @@ def backup_report(server=None, name=None, backup=None):
     if not server:
         server = request.args.get('server')
     return render_template('backup-report.html', client=True, backup=True, report=True, cname=name, nbackup=backup, server=server)
+
 
 @app.route('/client', methods=['GET'])
 @app.route('/<server>/client', methods=['GET'])
@@ -235,6 +248,7 @@ def client(server=None, name=None):
         return redirect(url_for('live_monitor', name=c, server=server))
     return render_template('client.html', client=True, overview=True, cname=c, server=server)
 
+
 @app.route('/clients', methods=['GET'])
 @app.route('/<server>/clients', methods=['GET'])
 @login_required
@@ -243,10 +257,12 @@ def clients(server=None):
         server = request.args.get('server')
     return render_template('clients.html', clients=True, overview=True, server=server)
 
+
 @app.route('/servers', methods=['GET'])
 @login_required
 def servers():
     return render_template('servers.html', servers=True, overview=True)
+
 
 @app.route('/login', methods=['POST', 'GET'])
 def login():
@@ -261,11 +277,13 @@ def login():
             flash('Wrong username or password', 'danger')
     return render_template('login.html', form=form, login=True)
 
+
 @app.route('/logout')
 @login_required
 def logout():
     logout_user()
     return redirect(url_for('home'))
+
 
 @app.route('/')
 @login_required
