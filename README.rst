@@ -25,11 +25,8 @@ you to edit/manage your burp-server's conf file very soon.
 
 It is actually an improvement of the burp status monitor (``burp -c /etc/burp/burp-server.conf -a s``).
 
-It currently supports only the burp-1.x branch but it is totally modular so
-supporting burp-2.x won't be a big deal.
-So in order to work properly, you must be running ``Burp-UI`` on the same host
-that runs your burp-server (because the burp status port only listen on
-*localhost*).
+In order to work properly, you must be running ``Burp-UI`` on the same host that
+runs your burp-server (because the burp status port only listen on *localhost*).
 If you don't want to, I developed a ``bui-agent`` that allows you to *proxify*
 external commands to your burp status port.
 
@@ -136,6 +133,23 @@ need to check a few things:
    restore files of other clients (option *restore_client* in burp-server
    configuration)
 
+Options
+-------
+
+::
+
+    Usage: burp-ui [options]
+
+    Options:
+      -h, --help            show this help message and exit
+      -v, --verbose         verbose output
+      -d, --debug           verbose output (alias)
+      -V, --version         print version and exit
+      -c CONFIG, --config=CONFIG
+                            configuration file
+      -l FILE, --logfile=FILE
+                            output logs in defined file
+
 
 Development
 ===========
@@ -178,7 +192,6 @@ You will then be able to launch ``Burp-UI`` this way:
 
     gunicorn -k eventlet -w 4 'burpui:init(conf="/path/to/burpui.cfg")'
 
-
 When using ``gunicorn``, the command line options are not available. Instead,
 run the ``Burp-UI`` ``init`` method directly. Here are the parameters you can
 play with:
@@ -186,23 +199,6 @@ play with:
 - conf: Path to the ``Burp-UI`` configuration file
 - debug: Whether to run ``Burp-UI`` in debug mode or not to get some extra logging
 - logfile: Path to a logfile in order to log ``Burp-UI`` internal messages
-
-Options
-=======
-
-::
-
-    Usage: burp-ui [options]
-
-    Options:
-      -h, --help            show this help message and exit
-      -v, --verbose         verbose output
-      -d, --debug           verbose output (alias)
-      -V, --version         print version and exit
-      -c CONFIG, --config=CONFIG
-                            configuration file
-      -l FILE, --logfile=FILE
-                            output logs in defined file
 
 
 Troubleshooting
@@ -227,9 +223,6 @@ TODO
 
 `Here <https://git.ziirish.me/ziirish/burp-ui/issues?label_name=todo>`_ is a
 non-exhaustive list of things I'd like to add.
-
-Also note that in the future, I'd like to write a burp-client GUI.
-But I didn't think yet of what to do.
 
 Known Issues
 ============
