@@ -45,24 +45,10 @@ login_manager.login_message_category = 'info'
 import burpui.routes
 
 
-def init(conf=None, debug=False, gunicorn=True, logfile=None):
+def init(conf=None, debug=False, logfile=None, gunicorn=True):
     if debug and not gunicorn:
         app.config['DEBUG'] = debug
         app.config['TESTING'] = True
-
-    if conf:
-        if os.path.isfile(conf):
-            app.config['CFG'] = conf
-        else:
-            raise IOError('File not found: \'{0}\''.format(conf))
-    else:
-        conf_files = ['/etc/burp/burpui.cfg', os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', '..', '..', 'share', 'burpui', 'etc', 'burpui.cfg')]
-        for p in conf_files:
-            app.logger.debug('Trying file \'%s\'', p)
-            if os.path.isfile(p):
-                app.config['CFG'] = p
-                app.logger.debug('Using file \'%s\'', p)
-                break
 
     if logfile:
         from logging import Formatter
@@ -81,6 +67,20 @@ def init(conf=None, debug=False, gunicorn=True, logfile=None):
             file_handler.setLevel(logging.INFO)
         file_handler.setFormatter(Formatter(LOG_FORMAT))
         app.logger.addHandler(file_handler)
+
+    if conf:
+        if os.path.isfile(conf):
+            app.config['CFG'] = conf
+        else:
+            raise IOError('File not found: \'{0}\''.format(conf))
+    else:
+        conf_files = ['/etc/burp/burpui.cfg', os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', '..', '..', 'share', 'burpui', 'etc', 'burpui.cfg')]
+        for p in conf_files:
+            app.logger.debug('Trying file \'%s\'', p)
+            if os.path.isfile(p):
+                app.config['CFG'] = p
+                app.logger.debug('Using file \'%s\'', p)
+                break
 
     bui.setup(app.config['CFG'])
 
