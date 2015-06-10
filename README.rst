@@ -18,19 +18,19 @@ What's that?
 ------------
 
 Let me introduce you ``Burp-UI``. It is a web-based UI to manage your
-burp-servers.  
-You can view different reports about burp-servers, burp-clients, backups, etc.  
+burp-servers.
+You can view different reports about burp-servers, burp-clients, backups, etc.
 ``Burp-UI`` allows you to perform *on-the-fly* restorations and should allow
 you to edit/manage your burp-server's conf file very soon.
 
 It is actually an improvement of the burp status monitor (``burp -c /etc/burp/burp-server.conf -a s``).
 
-It currently supports only the burp-1.x branch but it is totally modular so 
-supporting burp-2.x won't be a big deal.  
+It currently supports only the burp-1.x branch but it is totally modular so
+supporting burp-2.x won't be a big deal.
 So in order to work properly, you must be running ``Burp-UI`` on the same host
-that runs your burp-server (because the burp status port only listen on 
-*localhost*).  
-If you don't want to, I developed a ``bui-agent`` that allows you to *proxify* 
+that runs your burp-server (because the burp status port only listen on
+*localhost*).
+If you don't want to, I developed a ``bui-agent`` that allows you to *proxify*
 external commands to your burp status port.
 
 
@@ -38,7 +38,7 @@ Who are you?
 ------------
 
 I'm `Ziirish <http://ziirish.info>`_, a French sysadmin who loves `Burp`_ and
-would like to help its adoption by providing it a nice and powerful interface.  
+would like to help its adoption by providing it a nice and powerful interface.
 If you like my work, you can:
 
 * Thank me by sending me an email or writing a nice comment
@@ -51,10 +51,10 @@ Contributing
 
 Contributions are welcome. You can help in any way you want, for instance by
 opening issues on the `bug tracker <https://git.ziirish.me/ziirish/burp-ui/issues>`__,
-sending patches, etc.  
+sending patches, etc.
 There is also a dedicated website. Currently it only hosts a `Discourse <http://www.discourse.org/>`__
-instance where you ca discuss with each other.  
-Feel free to use it and post your tips and remarks.  
+instance where you ca discuss with each other.
+Feel free to use it and post your tips and remarks.
 The address is: `http://burpui.ziirish.me/ <http://burpui.ziirish.me/>`__
 
 
@@ -65,7 +65,7 @@ Please note that currently, ``Burp-UI`` must be running on the same server that
 runs the burp-server.
 
 
-For LDAP authentication (optional), we need the ``simpleldap`` module that 
+For LDAP authentication (optional), we need the ``simpleldap`` module that
 requires the following packages on Debian:
 
 ::
@@ -80,7 +80,7 @@ Then we install the module itself:
     pip install simpleldap
 
 
-If you would like to use SSL, you will need the ``python-openssl`` package.  
+If you would like to use SSL, you will need the ``python-openssl`` package.
 On Debian:
 
 ::
@@ -91,7 +91,7 @@ On Debian:
 Installation
 ============
 
-``Burp-UI`` is written in Python with the `Flask`_ micro-framework.  
+``Burp-UI`` is written in Python with the `Flask`_ micro-framework.
 The easiest way to install Flask is to use ``pip``.
 
 On Debian, you can install ``pip`` with the following command:
@@ -108,9 +108,9 @@ Once ``pip`` is installed, you can install ``Burp-UI`` this way:
     pip install burp-ui
 
 
-You can setup various parameters in the `burpui.cfg`_ file.  
+You can setup various parameters in the `burpui.cfg`_ file.
 This file can be specified with the ``-c`` flag or should be present in
-``/etc/burp/burpui.cfg``.  
+``/etc/burp/burpui.cfg``.
 By default ``Burp-UI`` ships with a default file located in
 ``$BURPUIDIR/../share/burpui/etc/burpui.cfg``.
 
@@ -141,7 +141,7 @@ Development
 ===========
 
 If you wish to use the latest and yet unstable version (eg. `master <https://git.ziirish.me/ziirish/burp-ui/tree/master>`__),
-you can install it using ``pip`` too, but I would recommend you to use a 
+you can install it using ``pip`` too, but I would recommend you to use a
 ``virtualenv``.
 
 To do so, run the following commands:
@@ -179,13 +179,38 @@ You will then be able to launch ``Burp-UI`` this way:
     gunicorn -k eventlet -w 4 'burpui:init(conf="/path/to/burpui.cfg")'
 
 
+When using ``gunicorn``, the command line options are not available. Instead,
+run the ``Burp-UI`` ``init`` method directly. Here are the parameters you can
+play with:
+
+- conf: Path to the ``Burp-UI`` configuration file
+- debug: Whether to run ``Burp-UI`` in debug mode or not to get some extra logging
+- logfile: Path to a logfile in order to log ``Burp-UI`` internal messages
+
+Options
+=======
+
+::
+
+    Usage: burp-ui [options]
+
+    Options:
+      -h, --help            show this help message and exit
+      -v, --verbose         verbose output
+      -d, --debug           verbose output (alias)
+      -V, --version         print version and exit
+      -c CONFIG, --config=CONFIG
+                            configuration file
+      -l FILE, --logfile=FILE
+                            output logs in defined file
+
 
 Troubleshooting
 ===============
 
 In case you encounter troubles with ``Burp-UI``, you should run it with the
-``-d`` flag and paste the relevant output within your bug-report.  
-Please also give the version of ``burp`` AND ``Burp-UI``.  
+``-d`` flag and paste the relevant output within your bug-report.
+Please also give the version of ``burp`` AND ``Burp-UI``.
 Since v0.0.6 you can use the ``-V`` or ``--version`` flag in order to get your
 version number.
 
@@ -193,7 +218,7 @@ version number.
 Notes
 =====
 
-Please feel free to report any issues on my `gitlab <https://git.ziirish.me/ziirish/burp-ui/issues>`_.  
+Please feel free to report any issues on my `gitlab <https://git.ziirish.me/ziirish/burp-ui/issues>`_.
 I have closed the *github tracker* to have a unique tracker system.
 
 
@@ -203,7 +228,7 @@ TODO
 `Here <https://git.ziirish.me/ziirish/burp-ui/issues?label_name=todo>`_ is a
 non-exhaustive list of things I'd like to add.
 
-Also note that in the future, I'd like to write a burp-client GUI.  
+Also note that in the future, I'd like to write a burp-client GUI.
 But I didn't think yet of what to do.
 
 Known Issues
@@ -212,7 +237,7 @@ Known Issues
 1. SSL issue
 
 My new SSL certificate seem to be unknown on older systems like debian wheezy.
-Thus, you may have some SSL failure while trying to clone my repository.  
+Thus, you may have some SSL failure while trying to clone my repository.
 In order to fix this error, you can run the following command as root that will
 add my certificate in your trust list:
 
@@ -224,9 +249,9 @@ add my certificate in your trust list:
 
 People that would like to clone the repository over SSH will face an
 authentication failure even if they added a valid SSH key in their user
-settings.  
+settings.
 The reason is I only have *one* public IP address so I must use port
-redirections to have multiple SSH instances running.  
+redirections to have multiple SSH instances running.
 To fix the issue, you should configure your SSH client by adding the following
 lines in your ``~/.ssh/config`` file:
 
