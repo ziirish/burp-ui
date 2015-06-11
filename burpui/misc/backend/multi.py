@@ -12,6 +12,7 @@ import ConfigParser
 
 from burpui.misc.backend.interface import BUIbackend, BUIserverException
 
+
 class Burp(BUIbackend):
 
     def __init__(self, server=None, conf=None):

@@ -29,8 +29,10 @@ g_stripbin    = u'/usr/sbin/vss_strip'
 g_burpconfcli = u'/etc/burp/burp.conf'
 g_burpconfsrv = u'/etc/burp/burp-server.conf'
 
+
 def sighandler(signum, frame):
     raise IOError('Client read timed out')
+
 
 # Some functions are the same as in Burp1 backend
 class Burp(Burp1):
@@ -55,10 +57,10 @@ class Burp(Burp1):
             with codecs.open(conf, 'r', 'utf-8') as fp:
                 config.readfp(fp)
                 try:
-                    bbin = config.get('Burp2', 'burpbin')
-                    strip = config.get('Burp2', 'stripbin')
-                    confcli = config.get('Burp2', 'bconfcli')
-                    confsrv = config.get('Burp2', 'bconfsrv')
+                    bbin = self._safe_config_get(config.get, 'burpbin', sect='Burp2')
+                    strip = self._safe_config_get(config.get, 'stripbin', sect='Burp2')
+                    confcli = self._safe_config_get(config.get, 'bconfcli', sect='Burp2')
+                    confsrv = self._safe_config_get(config.get, 'bconfsrv', sect='Burp2')
 
                     if confcli and not os.path.isfile(confcli):
                         self._logger('warning', "The file '%s' does not exist", confcli)
@@ -68,31 +70,31 @@ class Burp(Burp1):
                         self._logger('warning', "The file '%s' does not exist", confsrv)
                         confsrv = None
 
-                    if not strip.startswith('/'):
+                    if strip and not strip.startswith('/'):
                         self._logger('warning', "Please provide an absolute path for the 'stripbin' option. Fallback to '%s'", g_stripbin)
                         strip = g_stripbin
-                    elif not re.match('^\S+$', strip):
+                    elif strip and not re.match('^\S+$', strip):
                         self._logger('warning', "Incorrect value for the 'stripbin' option. Fallback to '%s'", g_stripbin)
                         strip = g_stripbin
-                    elif not os.path.isfile(strip) or not os.access(strip, os.X_OK):
+                    elif strip and (not os.path.isfile(strip) or not os.access(strip, os.X_OK)):
                         self._logger('warning', "'%s' does not exist or is not executable. Fallback to '%s'", strip, g_stripbin)
                         strip = g_stripbin
 
-                    if not os.path.isfile(strip) or not os.access(strip, os.X_OK):
+                    if strip and (not os.path.isfile(strip) or not os.access(strip, os.X_OK)):
                         self._logger('error', "Ooops, '%s' not found or is not executable", strip)
                         strip = None
-                        
-                    if not bbin.startswith('/'):
+
+                    if bbin and not bbin.startswith('/'):
                         self._logger('warning', "Please provide an absolute path for the 'burpbin' option. Fallback to '%s'", g_burpbin)
                         bbin = g_burpbin
-                    elif not re.match('^\S+$', bbin):
+                    elif bbin and not re.match('^\S+$', bbin):
                         self._logger('warning', "Incorrect value for the 'burpbin' option. Fallback to '%s'", g_burpbin)
                         bbin = g_burpbin
-                    elif not os.path.isfile(bbin) or not os.access(bbin, os.X_OK):
+                    elif bbin and (not os.path.isfile(bbin) or not os.access(bbin, os.X_OK)):
                         self._logger('warning', "'%s' does not exist or is not executable. Fallback to '%s'", bbin, g_burpbin)
                         bbin = g_burpbin
 
-                    if not os.path.isfile(bbin) or not os.access(bbin, os.X_OK):
+                    if bbin and (not os.path.isfile(bbin) or not os.access(bbin, os.X_OK)):
                         self._logger('error', "Ooops, '%s' not found or is not executable", bbin)
                         # The burp binary is mandatory for this backend
                         raise Exception('This backend *CAN NOT* work without a burp binary')
@@ -132,8 +134,8 @@ class Burp(Burp1):
             self.proc.wait()
 
     def _spawn_burp(self):
-        cmd = [ self.burpbin, '-c', self.burpconfcli, '-a', 'm' ]
-        self.proc = subprocess.Popen(cmd, stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.STDOUT, shell = False)
+        cmd = [self.burpbin, '-c', self.burpconfcli, '-a', 'm']
+        self.proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False)
         # wait a little bit in case the process dies
         time.sleep(0.5)
         if not self._proc_is_alive():
@@ -200,9 +202,9 @@ class Burp(Burp1):
         else:
             hr = '-'
 
-        for who in 'USR','GRP','OTH':
-            for perm in 'R','W','X':
-                if mode & getattr(os.path.stat,'S_I'+perm+who):
+        for who in 'USR', 'GRP', 'OTH':
+            for perm in 'R', 'W', 'X':
+                if mode & getattr(os.path.stat, 'S_I' + perm + who):
                     hr += perm.lower()
                 else:
                     hr += '-'
@@ -280,7 +282,7 @@ class Burp(Burp1):
         logs = backups[0]['logs']['list']
         if 'backup_stats' in logs:
             ret = self._parse_backup_stats(number, client, forward)
-        #else:
+        # else:
         #    cl = None
         #    if forward:
         #        cl = client
@@ -294,40 +296,40 @@ class Burp(Burp1):
         return ret
 
     def _parse_backup_stats(self, number, client, forward=False, agent=None):
-        backup = { 'windows': 'unknown', 'number': int(number) }
+        backup = {'windows': 'unknown', 'number': int(number)}
         if forward:
             backup['name'] = client
         translate = {
-                'time_start':                    'start',
-                'time_end':                      'end',
-                'time_taken':                    'duration',
-                'bytes':                         'totsize',
-                'bytes_received':                'received',
-                'bytes_estimated':               'estimated_bytes',
-                'files':                         'files',
-                'files_encrypted':               'files_enc',
-                'directories':                   'dir',
-                'soft_links':                    'softlink',
-                'hard_links':                    'hardlink',
-                'meta_data':                     'meta',
-                'meta_data_encrypted':           'meta_enc',
-                'special_files':                 'special',
-                'efs_files':                     'efs',
-                'vss_headers':                   'vssheader',
-                'vss_headers_encrypted':         'vssheader_enc',
-                'vss_footers':                   'vssfooter',
-                'vss_footers_encrypted':         'vssfooter_enc',
-                'total':                         'total',
-                'grand_total':                   'total',
-            }
+            'time_start':                    'start',
+            'time_end':                      'end',
+            'time_taken':                    'duration',
+            'bytes':                         'totsize',
+            'bytes_received':                'received',
+            'bytes_estimated':               'estimated_bytes',
+            'files':                         'files',
+            'files_encrypted':               'files_enc',
+            'directories':                   'dir',
+            'soft_links':                    'softlink',
+            'hard_links':                    'hardlink',
+            'meta_data':                     'meta',
+            'meta_data_encrypted':           'meta_enc',
+            'special_files':                 'special',
+            'efs_files':                     'efs',
+            'vss_headers':                   'vssheader',
+            'vss_headers_encrypted':         'vssheader_enc',
+            'vss_footers':                   'vssfooter',
+            'vss_footers_encrypted':         'vssfooter_enc',
+            'total':                         'total',
+            'grand_total':                   'total',
+        }
         counts = {
-                'new': 'count',
-                'changed': 'changed',
-                'unchanged': 'same',
-                'deleted': 'deleted',
-                'total': 'scanned',
-                'scanned': 'scanned',
-            }
+            'new': 'count',
+            'changed': 'changed',
+            'unchanged': 'same',
+            'deleted': 'deleted',
+            'total': 'scanned',
+            'scanned': 'scanned',
+        }
         single = ['time_start', 'time_end', 'time_taken', 'bytes_received', 'bytes_estimated', 'bytes']
         query = self.status('c:{0}:b:{1}:l:backup_stats\n'.format(client, number), agent=agent)
         if not query:
@@ -368,7 +370,7 @@ class Burp(Burp1):
         """
         return {}
 
-    #def get_clients_report(self, clients, agent=None):
+    # def get_clients_report(self, clients, agent=None):
 
     def get_counters(self, name=None, agent=None):
         """
@@ -409,7 +411,7 @@ class Burp(Burp1):
         # list of single counters (type CNTR_SINGLE_FIELD in cntr.c)
         single = ['bytes_estimated', 'bytes', 'bytes_received', 'bytes_sent', 'time_start', 'time_end', 'warnings', 'errors']
         # translation table to be compatible with burp1
-        translate = { 'bytes_estimated': 'estimated_bytes' }
+        translate = {'bytes_estimated': 'estimated_bytes'}
         for counter in backup['counters']:
             name = counter['name']
             if name in translate:
@@ -583,15 +585,14 @@ class Burp(Burp1):
         return r
 
     # Same as in Burp1 backend
-    #def restore_files(self, name=None, backup=None, files=None, strip=None, archive='zip', password=None, agent=None):
+    # def restore_files(self, name=None, backup=None, files=None, strip=None, archive='zip', password=None, agent=None):
 
-    #def read_conf_cli(self, agent=None):
+    # def read_conf_cli(self, agent=None):
 
-    #def read_conf_srv(self, agent=None):
+    # def read_conf_srv(self, agent=None):
 
-    #def store_conf_cli(self, data, agent=None):
+    # def store_conf_cli(self, data, agent=None):
 
-    #def store_conf_srv(self, data, agent=None):
+    # def store_conf_srv(self, data, agent=None):
 
-    #def get_parser_attr(self, attr=None, agent=None):
-
+    # def get_parser_attr(self, attr=None, agent=None):
