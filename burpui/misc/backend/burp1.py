@@ -109,66 +109,63 @@ class Burp(BUIbackend, BUIlogging):
         self.burpconfcli = g_burpconfcli
         self.burpconfsrv = g_burpconfsrv
         self.running = []
+        self.defaults = {'bport': g_burpport, 'bhost': g_burphost, 'burpbin': g_burpbin, 'stripbin': g_stripbin, 'bconfcli': g_burpconfcli, 'bconfsrv': g_burpconfsrv}
         if conf:
-            config = ConfigParser.ConfigParser({'bport': g_burpport, 'bhost': g_burphost, 'burpbin': g_burpbin, 'stripbin': g_stripbin, 'bconfcli': g_burpconfcli, 'bconfsrv': g_burpconfsrv})
+            config = ConfigParser.ConfigParser(self.defaults)
             with codecs.open(conf, 'r', 'utf-8') as fp:
                 config.readfp(fp)
-                try:
-                    self.port = config.getint('Burp1', 'bport')
-                    self.host = config.get('Burp1', 'bhost')
-                    bbin = config.get('Burp1', 'burpbin')
-                    strip = config.get('Burp1', 'stripbin')
-                    confcli = config.get('Burp1', 'bconfcli')
-                    confsrv = config.get('Burp1', 'bconfsrv')
 
-                    if confcli and not os.path.isfile(confcli):
-                        self._logger('warning', "The file '%s' does not exist", confcli)
-                        confcli = None
+                self.port = self._safe_config_get(config.getint, 'bport', cast=int)
+                self.host = self._safe_config_get(config.get, 'bhost')
+                bbin = self._safe_config_get(config.get, 'burpbin')
+                strip = self._safe_config_get(config.get, 'stripbin')
+                confcli = self._safe_config_get(config.get, 'bconfcli')
+                confsrv = self._safe_config_get(config.get, 'bconfsrv')
 
-                    if confsrv and not os.path.isfile(confsrv):
-                        self._logger('warning', "The file '%s' does not exist", confsrv)
-                        confsrv = None
+                if confcli and not os.path.isfile(confcli):
+                    self._logger('warning', "The file '%s' does not exist", confcli)
+                    confcli = None
 
-                    if self.host not in ['127.0.0.1', '::1']:
-                        self._logger('warning', "Invalid value for 'bhost'. Must be '127.0.0.1' or '::1'. Falling back to '%s'", g_burphost)
-                        self.host = g_burphost
+                if confsrv and not os.path.isfile(confsrv):
+                    self._logger('warning', "The file '%s' does not exist", confsrv)
+                    confsrv = None
 
-                    if not strip.startswith('/'):
-                        self._logger('warning', "Please provide an absolute path for the 'stripbin' option. Fallback to '%s'", g_stripbin)
-                        strip = g_stripbin
-                    elif not re.match('^\S+$', strip):
-                        self._logger('warning', "Incorrect value for the 'stripbin' option. Fallback to '%s'", g_stripbin)
-                        strip = g_stripbin
-                    elif not os.path.isfile(strip) or not os.access(strip, os.X_OK):
-                        self._logger('warning', "'%s' does not exist or is not executable. Fallback to '%s'", strip, g_stripbin)
-                        strip = g_stripbin
+                if self.host not in ['127.0.0.1', '::1']:
+                    self._logger('warning', "Invalid value for 'bhost'. Must be '127.0.0.1' or '::1'. Falling back to '%s'", g_burphost)
+                    self.host = g_burphost
 
-                    if not os.path.isfile(strip) or not os.access(strip, os.X_OK):
-                        self._logger('error', "Ooops, '%s' not found or is not executable", strip)
-                        strip = None
+                if strip and not strip.startswith('/'):
+                    self._logger('warning', "Please provide an absolute path for the 'stripbin' option. Fallback to '%s'", g_stripbin)
+                    strip = g_stripbin
+                elif strip and not re.match('^\S+$', strip):
+                    self._logger('warning', "Incorrect value for the 'stripbin' option. Fallback to '%s'", g_stripbin)
+                    strip = g_stripbin
+                elif strip and (not os.path.isfile(strip) or not os.access(strip, os.X_OK)):
+                    self._logger('warning', "'%s' does not exist or is not executable. Fallback to '%s'", strip, g_stripbin)
+                    strip = g_stripbin
 
-                    if not bbin.startswith('/'):
-                        self._logger('warning', "Please provide an absolute path for the 'burpbin' option. Fallback to '%s'", g_burpbin)
-                        bbin = g_burpbin
-                    elif not re.match('^\S+$', bbin):
-                        self._logger('warning', "Incorrect value for the 'burpbin' option. Fallback to '%s'", g_burpbin)
-                        bbin = g_burpbin
-                    elif not os.path.isfile(bbin) or not os.access(bbin, os.X_OK):
-                        self._logger('warning', "'%s' does not exist or is not executable. Fallback to '%s'", bbin, g_burpbin)
-                        bbin = g_burpbin
+                if strip and (not os.path.isfile(strip) or not os.access(strip, os.X_OK)):
+                    self._logger('error', "Ooops, '%s' not found or is not executable", strip)
+                    strip = None
 
-                    if not os.path.isfile(bbin) or not os.access(bbin, os.X_OK):
-                        self._logger('error', "Ooops, '%s' not found or is not executable", bbin)
-                        bbin = None
+                if bbin and not bbin.startswith('/'):
+                    self._logger('warning', "Please provide an absolute path for the 'burpbin' option. Fallback to '%s'", g_burpbin)
+                    bbin = g_burpbin
+                elif bbin and not re.match('^\S+$', bbin):
+                    self._logger('warning', "Incorrect value for the 'burpbin' option. Fallback to '%s'", g_burpbin)
+                    bbin = g_burpbin
+                elif bbin and (not os.path.isfile(bbin) or not os.access(bbin, os.X_OK)):
+                    self._logger('warning', "'%s' does not exist or is not executable. Fallback to '%s'", bbin, g_burpbin)
+                    bbin = g_burpbin
 
-                    self.burpbin = bbin
-                    self.stripbin = strip
-                    self.burpconfcli = confcli
-                    self.burpconfsrv = confsrv
-                except ConfigParser.NoOptionError, e:
-                    self._logger('error', str(e))
-                except ConfigParser.NoSectionError, e:
-                    self._logger('warning', str(e))
+                if bbin and (not os.path.isfile(bbin) or not os.access(bbin, os.X_OK)):
+                    self._logger('error', "Ooops, '%s' not found or is not executable", bbin)
+                    bbin = None
+
+                self.burpbin = bbin
+                self.stripbin = strip
+                self.burpconfcli = confcli
+                self.burpconfsrv = confsrv
 
         self.parser = Parser(self.app, self.burpconfsrv)
 
@@ -185,6 +182,37 @@ class Burp(BUIbackend, BUIlogging):
     """
     Utilities functions
     """
+
+    def _safe_config_get(self, callback, key, sect='Burp1', cast=None):
+        """
+        :func:`burpui.misc.backend.Burp1._safe_config_get` is a wrapper to handle
+        Exceptions throwed by :mod:`ConfigParser`.
+
+        :param callback: Function to wrap
+        :type callback: callable
+
+        :param key: Key to retrieve
+        :type key: str
+
+        :param sect: Section of the config file to read
+        :type sect: str
+
+        :param cast: Cast the returned value if provided
+        :type case: callable
+
+        :returns: The value returned by the `callback`
+        """
+        try:
+            return callback(sect, key)
+        except ConfigParser.NoOptionError as e:
+            self._logger('error', str(e))
+        except ConfigParser.NoSectionError as e:
+            self._logger('warning', str(e))
+            if key in self.defaults:
+                if cast:
+                    return cast(self.defaults[key])
+                return self.defaults[key]
+        return None
 
     def _get_inet_family(self, addr):
         """
