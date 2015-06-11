@@ -23,9 +23,8 @@ class LdapLoader:
         :type app: :class:`burpui.server.BUIServer`
         """
         self.app = app
-        self.attr = 'uid' # default search attr
         conf = self.app.config['CFG']
-        defaults = {'host': 'localhost', 'port': None, 'encryption': None, 'binddn': None, 'bindpw': None, 'filter': None, 'base': None}
+        defaults = {'host': 'localhost', 'port': None, 'encryption': None, 'binddn': None, 'bindpw': None, 'filter': None, 'base': None, 'attr': 'uid'}
         mapping = {'host': 'host', 'port': 'port', 'encryption': 'encryption', 'filt': 'filter', 'base': 'base', 'attr': 'searchattr', 'binddn': 'binddn', 'bindpw': 'bindpw'}
         c = ConfigParser.ConfigParser(defaults)
         with open(conf) as fp:
@@ -79,26 +78,22 @@ class LdapLoader:
             else:
                 query = '{0}={1}'.format(self.attr, searchval)
             self.app.logger.info('filter: %s | base: %s', query, self.base)
-            r = self.ldap.search(query, base_dn=self.base, attrs=['distinguishedname', 'cn', self.attr])
+            r = self.ldap.search(query, base_dn=self.base, attrs=['cn', self.attr])
         except Exception, e:
             self.app.logger.error('Ooops, LDAP lookup failed: {0}'.format(str(e)))
             return None
 
         for record in r:
-            if record[self.attr][0] == searchval:
-                if 'distinguishedname' in record:
-                    dn = record['distinguishedname'][0]
-                else:
-                    dn = record['uid'][0]
-                self.app.logger.info('Found DN: {0}'.format(dn))
-                return {'dn': dn, 'cn': record['cn'][0]}
+            if searchval in record[self.attr]:
+                self.app.logger.info('Found DN: {0}'.format(record.dn))
+                return {'dn': record.dn, 'cn': record['cn'][0]}
 
     def check(self, dn=None, passwd=None):
         """
         :func:`burpui.misc.auth.ldap.LdapLoader.check` authenticates a user against the
         LDAP server.
 
-        :param dn: `distinguishedName` attribute of the user to authenticate as
+        :param dn: canonical `dn` of the user to authenticate as
         :type dn: str
 
         :param passwd: password of the user to authenticate as
@@ -107,7 +102,7 @@ class LdapLoader:
         :returns: True if bind was successful, otherwise False
         """
         try:
-            l = simpleldap.Connection(self.host, dn='uid={0},{1}'.format(dn, self.base), password=passwd)
+            l = simpleldap.Connection(self.host, dn='{0}'.format(dn), password=passwd)
             self.app.logger.info('Bound as user: {0}'.format(dn))
         except Exception, e:
             self.app.logger.error('Failed to authenticate user: {0}, {1}'.format(dn, str(e)))
