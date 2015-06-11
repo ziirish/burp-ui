@@ -24,7 +24,7 @@ class LdapLoader:
         """
         self.app = app
         conf = self.app.config['CFG']
-        defaults = {'host': 'localhost', 'port': None, 'encryption': None, 'binddn': None, 'bindpw': None, 'filter': None, 'base': None, 'attr': 'uid'}
+        defaults = {'host': 'localhost', 'port': None, 'encryption': None, 'binddn': None, 'bindpw': None, 'filter': None, 'base': None, 'searchattr': 'uid'}
         mapping = {'host': 'host', 'port': 'port', 'encryption': 'encryption', 'filt': 'filter', 'base': 'base', 'attr': 'searchattr', 'binddn': 'binddn', 'bindpw': 'bindpw'}
         c = ConfigParser.ConfigParser(defaults)
         with open(conf) as fp:
