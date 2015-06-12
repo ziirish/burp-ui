@@ -123,18 +123,14 @@ class LdapLoader:
         :returns: True if bind was successful, otherwise False
         """
         try:
-            l = Connection(self.server, user='{0}'.format(dn), password=passwd, raise_exceptions=True)
-            b = l.bind()
+            with Connection(self.server, user='{0}'.format(dn), password=passwd, raise_exceptions=True) as l:
+                self.app.logger.info('Bound as user: {0}'.format(dn))
+                return True
         except Exception as e:
             self.app.logger.error('Failed to authenticate user: {0}, {1}'.format(dn, str(e)))
-            return False
 
-        if b:
-            self.app.logger.info('Bound as user: {0}'.format(dn))
-            l.unbind()
-        else:
-            self.app.logger.error('Failed to authenticate user: {0}, {1}'.format(dn, str(e)))
-        return b
+        self.app.logger.error('Bind as \'{0}\' failed'.format(dn))
+        return False
 
 
 class UserHandler(BUIhandler):
