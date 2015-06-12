@@ -62,19 +62,11 @@ Please note that currently, ``Burp-UI`` must be running on the same server that
 runs the burp-server.
 
 
-For LDAP authentication (optional), we need the ``simpleldap`` module that
-requires the following packages on Debian:
+For LDAP authentication (optional), we need the ``ldap3`` module.
 
 ::
 
-    aptitude install libsasl2-dev libldap2-dev python-dev
-
-
-Then we install the module itself:
-
-::
-
-    pip install simpleldap
+    pip install ldap3
 
 
 If you would like to use SSL, you will need the ``python-openssl`` package.
