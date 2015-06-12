@@ -20,8 +20,9 @@ app.jinja_env.globals.update(api=api)
 
 # hack to automatically import api modules
 for f in os.listdir(__path__[0]):
+    name, ext = os.path.splitext(f)
     if (os.path.isfile(os.path.join(__path__[0], f)) and
-            re.search('\.py$', f) and not
-            re.match('__init__', f)):
-        mod = 'burpui.api.'+f[:-3]
+            ext == '.py' and
+            name not in ['__init__', '.', '..']):
+        mod = 'burpui.api.' + f[:-3]
         __import__(mod)
