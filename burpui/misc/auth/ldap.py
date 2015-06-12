@@ -9,6 +9,7 @@ except ImportError:
 
 import ConfigParser
 
+
 class LdapLoader:
     """
     The :class:`burpui.misc.auth.ldap.LdapLoader` handles searching for and binding as
@@ -112,7 +113,6 @@ class LdapLoader:
         return True
 
 
-
 class UserHandler(BUIhandler):
     """
     The :class:`burpui.misc.auth.ldap.UserHandler` class maintains a list of ``Burp-UI`` users.
@@ -125,7 +125,6 @@ class UserHandler(BUIhandler):
         if name not in self.users:
             self.users[name] = LdapUser(self.ldap, name)
         return self.users[name]
-
 
 
 class LdapUser(UserMixin, BUIuser):
@@ -190,4 +189,3 @@ class LdapUser(UserMixin, BUIuser):
         :returns: login name of the user
         """
         return self.name
-
