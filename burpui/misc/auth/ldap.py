@@ -56,7 +56,10 @@ class LdapLoader:
         try:
             self.server = Server(host=self.host, port=self.port, use_ssl=self.ssl, get_info=ALL, tls=self.tls)
             self.ldap = Connection(self.server, user=self.binddn, password=self.bindpw, raise_exceptions=True)
-            if self.ldap.bind():
+            binded = False
+            with self.ldap:
+                binded = True
+            if binded:
                 self.app.logger.info('OK, connected to LDAP')
             else:
                 raise Exception('Not connected')
@@ -70,7 +73,7 @@ class LdapLoader:
         :func:`burpui.misc.auth.ldap.LdapLoader.__exit__` closes the connection to the
         LDAP server.
         """
-        if self.ldap:
+        if self.ldap and self.ldap.bound:
             self.ldap.unbind()
 
     def fetch(self, searchval=None):
@@ -90,8 +93,12 @@ class LdapLoader:
             else:
                 query = '{0}={1}'.format(self.attr, searchval)
             self.app.logger.info('filter: %s | base: %s', query, self.base)
-            self.ldap.search(self.base, query, attributes=['cn', self.attr])
-            r = self.ldap.response
+            r = None
+            with self.ldap:
+                self.ldap.search(self.base, query, attributes=['cn', self.attr])
+                r = self.ldap.response
+            if not r:
+                raise Exception('no results')
         except Exception as e:
             self.app.logger.error('Ooops, LDAP lookup failed: {0}'.format(str(e)))
             return None
