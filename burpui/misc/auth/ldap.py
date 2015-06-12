@@ -3,9 +3,9 @@ from flask.ext.login import UserMixin
 from burpui.misc.auth.interface import BUIhandler, BUIuser
 
 try:
-    import simpleldap
+    from ldap3 import Server, Connection, ALL
 except ImportError:
-    raise ImportError('Unable to load \'simpleldap\' module')
+    raise ImportError('Unable to load \'ldap3\' module')
 
 import ConfigParser
 
@@ -38,6 +38,12 @@ class LdapLoader:
                 except ConfigParser.NoSectionError, e:
                     self.app.logger.error(str(e))
 
+        self.tls = False
+        self.ssl = False
+        if self.encryption == 'ssl':
+            self.ssl = True
+        elif self.encryption == 'tls':
+            selt.tls = True
         self.app.logger.info('LDAP host: %s', self.host)
         self.app.logger.info('LDAP port: %s', self.port)
         self.app.logger.info('LDAP encryption: %s', self.encryption)
@@ -48,10 +54,15 @@ class LdapLoader:
         self.app.logger.info('LDAP bindpw: %s', '*****' if self.bindpw else 'None')
 
         try:
-            self.ldap = simpleldap.Connection(hostname=self.host, port=self.port, dn=self.binddn, password=self.bindpw, encryption=self.encryption)
-            self.app.logger.info('OK, connected to LDAP')
+            self.server = Server(host=self.host, port=self.port, use_ssl=self.ssl, get_info=ALL, tls=self.tls)
+            self.ldap = Connection(self.server, user=self.binddn, password=self.bindpw, raise_exceptions=True)
+            if self.ldap.bind():
+                self.app.logger.info('OK, connected to LDAP')
+            else:
+                raise Exception('Not connected')
         except:
             self.app.logger.error('Could not connect to LDAP')
+            self.server = None
             self.ldap = None
 
     def __exit__(self, exc_type, exc_value, traceback):
@@ -60,7 +71,7 @@ class LdapLoader:
         LDAP server.
         """
         if self.ldap:
-            self.ldap.close()
+            self.ldap.unbind()
 
     def fetch(self, searchval=None):
         """
@@ -79,8 +90,8 @@ class LdapLoader:
             else:
                 query = '{0}={1}'.format(self.attr, searchval)
             self.app.logger.info('filter: %s | base: %s', query, self.base)
-            r = self.ldap.search(query, base_dn=self.base, attrs=['cn', self.attr])
-        except Exception, e:
+            r = self.ldap.search(self.base, query, attributes=['cn', self.attr])
+        except Exception as e:
             self.app.logger.error('Ooops, LDAP lookup failed: {0}'.format(str(e)))
             return None
 
@@ -103,14 +114,16 @@ class LdapLoader:
         :returns: True if bind was successful, otherwise False
         """
         try:
-            l = simpleldap.Connection(self.host, dn='{0}'.format(dn), password=passwd)
-            self.app.logger.info('Bound as user: {0}'.format(dn))
-        except Exception, e:
+            l = Connection(self.server, user='{0}'.format(dn), password=passwd, raise_exceptions=True)
+            l.bind()
+            b = self.app.logger.info('Bound as user: {0}'.format(dn))
+        except Exception as e:
             self.app.logger.error('Failed to authenticate user: {0}, {1}'.format(dn, str(e)))
             return False
 
-        l.close()
-        return True
+        if b:
+            l.unbind()
+        return b
 
 
 class UserHandler(BUIhandler):
