@@ -90,15 +90,17 @@ class LdapLoader:
             else:
                 query = '{0}={1}'.format(self.attr, searchval)
             self.app.logger.info('filter: %s | base: %s', query, self.base)
-            r = self.ldap.search(self.base, query, attributes=['cn', self.attr])
+            self.ldap.search(self.base, query, attributes=['cn', self.attr])
+            r = self.ldap.response
         except Exception as e:
             self.app.logger.error('Ooops, LDAP lookup failed: {0}'.format(str(e)))
             return None
 
         for record in r:
-            if searchval in record[self.attr]:
-                self.app.logger.info('Found DN: {0}'.format(record.dn))
-                return {'dn': record.dn, 'cn': record['cn'][0]}
+            attrs = record['attributes']
+            if self.attr in attrs and searchval in attrs[self.attr]:
+                self.app.logger.info('Found DN: {0}'.format(record['dn']))
+                return {'dn': record['dn'], 'cn': attrs['cn'][0]}
 
     def check(self, dn=None, passwd=None):
         """
@@ -115,14 +117,16 @@ class LdapLoader:
         """
         try:
             l = Connection(self.server, user='{0}'.format(dn), password=passwd, raise_exceptions=True)
-            l.bind()
-            b = self.app.logger.info('Bound as user: {0}'.format(dn))
+            b = l.bind()
         except Exception as e:
             self.app.logger.error('Failed to authenticate user: {0}, {1}'.format(dn, str(e)))
             return False
 
         if b:
+            self.app.logger.info('Bound as user: {0}'.format(dn))
             l.unbind()
+        else:
+            self.app.logger.error('Failed to authenticate user: {0}, {1}'.format(dn, str(e)))
         return b
 
 
