@@ -78,17 +78,17 @@ class Restore(Resource):
             abort(403)
         if server:
             filename = 'restoration_%d_%s_on_%s_at_%s.%s' % (
-                    backup,
-                    name,
-                    server,
-                    strftime("%Y-%m-%d_%H_%M_%S", gmtime()),
-                    f)
+                backup,
+                name,
+                server,
+                strftime("%Y-%m-%d_%H_%M_%S", gmtime()),
+                f)
         else:
             filename = 'restoration_%d_%s_at_%s.%s' % (
-                    backup,
-                    name,
-                    strftime("%Y-%m-%d_%H_%M_%S", gmtime()),
-                    f)
+                backup,
+                name,
+                strftime("%Y-%m-%d_%H_%M_%S", gmtime()),
+                f)
         if not server:
             # Standalone mode, we can just return the file unless there were errors
             archive, err = bui.cli.restore_files(name, backup, l, s, f, p)
@@ -136,7 +136,7 @@ class Restore(Resource):
                     socket.close()
                     return make_response(err, 500)
 
-                # The retoration took place on another server so we need to stream
+                # The restoration took place on another server so we need to stream
                 # the file that is not present on the current machine.
                 def stream_file(sock, l):
                     bsize = 1024
@@ -168,9 +168,9 @@ class Restore(Resource):
                                 direct_passthrough=True)
                 resp.set_cookie('fileDownload', 'true')
                 resp.set_etag('flask-%s-%s-%s' % (
-                        time(),
-                        length,
-                        adler32(filename.encode('utf-8')) & 0xffffffff))
+                    time(),
+                    length,
+                    adler32(filename.encode('utf-8')) & 0xffffffff))
             except HTTPException, e:
                 raise e
             except Exception, e:
