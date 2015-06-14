@@ -32,6 +32,7 @@ g_burpbin     = u'/usr/sbin/burp'
 g_stripbin    = u'/usr/sbin/vss_strip'
 g_burpconfcli = None
 g_burpconfsrv = u'/etc/burp/burp-server.conf'
+g_tmpdir      = u'/tmp'
 
 
 class Burp(BUIbackend, BUIlogging):
@@ -93,7 +94,7 @@ class Burp(BUIbackend, BUIlogging):
         :param dummy: Does not instanciate the object (used for development purpose)
         :type dummy: boolean
         """
-        global g_burpport, g_burphost, g_burpbin, g_stripbin, g_burpconfcli, g_burpconfsrv
+        global g_burpport, g_burphost, g_burpbin, g_stripbin, g_burpconfcli, g_burpconfsrv, g_tmpdir
         if dummy:
             return
         self.app = None
@@ -108,8 +109,9 @@ class Burp(BUIbackend, BUIlogging):
         self.stripbin = g_stripbin
         self.burpconfcli = g_burpconfcli
         self.burpconfsrv = g_burpconfsrv
+        self.tmpdir = g_tmpdir
         self.running = []
-        self.defaults = {'bport': g_burpport, 'bhost': g_burphost, 'burpbin': g_burpbin, 'stripbin': g_stripbin, 'bconfcli': g_burpconfcli, 'bconfsrv': g_burpconfsrv}
+        self.defaults = {'bport': g_burpport, 'bhost': g_burphost, 'burpbin': g_burpbin, 'stripbin': g_stripbin, 'bconfcli': g_burpconfcli, 'bconfsrv': g_burpconfsrv, 'tmpdir' = g_tmpdir}
         if conf:
             config = ConfigParser.ConfigParser(self.defaults)
             with codecs.open(conf, 'r', 'utf-8') as fp:
@@ -121,6 +123,11 @@ class Burp(BUIbackend, BUIlogging):
                 strip = self._safe_config_get(config.get, 'stripbin')
                 confcli = self._safe_config_get(config.get, 'bconfcli')
                 confsrv = self._safe_config_get(config.get, 'bconfsrv')
+                tmpdir = self._safe_config_get(config.get, 'tmpdir')
+
+                if tmpdir and not os.path.isdir(tmpdir):
+                    self._logger('warning', "'%s' is not a directory", tmpdir)
+                    tmpdir = g_tmpdir
 
                 if confcli and not os.path.isfile(confcli):
                     self._logger('warning', "The file '%s' does not exist", confcli)
@@ -166,6 +173,7 @@ class Burp(BUIbackend, BUIlogging):
                 self.stripbin = strip
                 self.burpconfcli = confcli
                 self.burpconfsrv = confsrv
+                self.tmpdir = tmpdir
 
         self.parser = Parser(self.app, self.burpconfsrv)
 
@@ -178,6 +186,7 @@ class Burp(BUIbackend, BUIlogging):
         self._logger('info', 'strip binary: %s', self.stripbin)
         self._logger('info', 'burp conf cli: %s', self.burpconfcli)
         self._logger('info', 'burp conf srv: %s', self.burpconfsrv)
+        self._logger('info', 'tmpdir: %s', self.tmpdir)
 
     """
     Utilities functions
@@ -807,7 +816,7 @@ class Burp(BUIbackend, BUIlogging):
         flist = json.loads(files)
         if password:
             fh, tmpfile = tempfile.mkstemp()
-        tmpdir = tempfile.mkdtemp()
+        tmpdir = tempfile.mkdtemp(prefix=self.tmpdir)
         if 'restore' not in flist:
             return None, 'Wrong call'
         if os.path.isdir(tmpdir):
