@@ -111,7 +111,7 @@ class Burp(BUIbackend, BUIlogging):
         self.burpconfsrv = g_burpconfsrv
         self.tmpdir = g_tmpdir
         self.running = []
-        self.defaults = {'bport': g_burpport, 'bhost': g_burphost, 'burpbin': g_burpbin, 'stripbin': g_stripbin, 'bconfcli': g_burpconfcli, 'bconfsrv': g_burpconfsrv, 'tmpdir' = g_tmpdir}
+        self.defaults = {'bport': g_burpport, 'bhost': g_burphost, 'burpbin': g_burpbin, 'stripbin': g_stripbin, 'bconfcli': g_burpconfcli, 'bconfsrv': g_burpconfsrv, 'tmpdir': g_tmpdir}
         if conf:
             config = ConfigParser.ConfigParser(self.defaults)
             with codecs.open(conf, 'r', 'utf-8') as fp:
