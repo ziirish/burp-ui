@@ -52,7 +52,7 @@ class Burp(BUIbackend, BUIlogging):
         '8': 'restoring',
         '9': 'verifying',
         '0': 'deleting'
-        }
+    }
 
     counters = [
         'phase',
@@ -77,7 +77,7 @@ class Burp(BUIbackend, BUIlogging):
         'bytes_out',
         'start',
         'path'
-       ]
+    ]
 
     def __init__(self, server=None, conf=None, dummy=False):
         """
@@ -370,100 +370,100 @@ class Burp(BUIbackend, BUIlogging):
 
         :returns: Dict containing the backup log
         """
-        backup = { 'windows': 'unknown', 'number': int(number) }
+        backup = {'windows': 'unknown', 'number': int(number)}
         if forward:
             backup['name'] = client
         keys = {
-                'time_start':                    'start',
-                'time_end':                      'end',
-                'time_taken':                    'duration',
-                'bytes_in_backup':               'totsize',
-                'bytes_received':                'received',
-                'files':                         [ 'files', 'new' ],
-                'files_changed':                 [ 'files', 'changed' ],
-                'files_same':                    [ 'files', 'unchanged' ],
-                'files_deleted':                 [ 'files', 'deleted' ],
-                'files_scanned':                 [ 'files', 'scanned' ],
-                'files_total':                   [ 'files', 'total' ],
-                'files_encrypted':               [ 'files_enc', 'new' ],
-                'files_encrypted_changed':       [ 'files_enc', 'changed' ],
-                'files_encrypted_same':          [ 'files_enc', 'unchanged' ],
-                'files_encrypted_deleted':       [ 'files_enc', 'deleted' ],
-                'files_encrypted_scanned':       [ 'files_enc', 'scanned' ],
-                'files_encrypted_total':         [ 'files_enc', 'total' ],
-                'directories':                   [ 'dir', 'new' ],
-                'directories_changed':           [ 'dir', 'changed' ],
-                'directories_same':              [ 'dir', 'unchanged' ],
-                'directories_deleted':           [ 'dir', 'deleted' ],
-                'directories_scanned':           [ 'dir', 'scanned' ],
-                'directories_total':             [ 'dir', 'total' ],
-                'soft_links':                    [ 'softlink', 'new' ],
-                'soft_links_changed':            [ 'softlink', 'changed' ],
-                'soft_links_same':               [ 'softlink', 'unchanged' ],
-                'soft_links_deleted':            [ 'softlink', 'deleted' ],
-                'soft_links_scanned':            [ 'softlink', 'scanned' ],
-                'soft_links_total':              [ 'softlink', 'total' ],
-                'hard_links':                    [ 'hardlink', 'new' ],
-                'hard_links_changed':            [ 'hardlink', 'changed' ],
-                'hard_links_same':               [ 'hardlink', 'unchanged' ],
-                'hard_links_deleted':            [ 'hardlink', 'deleted' ],
-                'hard_links_scanned':            [ 'hardlink', 'scanned' ],
-                'hard_links_total':              [ 'hardlink', 'total' ],
-                'meta_data':                     [ 'meta', 'new' ],
-                'meta_data_changed':             [ 'meta', 'changed' ],
-                'meta_data_same':                [ 'meta', 'unchanged' ],
-                'meta_data_deleted':             [ 'meta', 'deleted' ],
-                'meta_data_scanned':             [ 'meta', 'scanned' ],
-                'meta_data_total':               [ 'meta', 'total' ],
-                'meta_data_encrypted':           [ 'meta_enc', 'new' ],
-                'meta_data_encrypted_changed':   [ 'meta_enc', 'changed' ],
-                'meta_data_encrypted_same':      [ 'meta_enc', 'unchanged' ],
-                'meta_data_encrypted_deleted':   [ 'meta_enc', 'deleted' ],
-                'meta_data_encrypted_scanned':   [ 'meta_enc', 'scanned' ],
-                'meta_data_encrypted_total':     [ 'meta_enc', 'total' ],
-                'special_files':                 [ 'special', 'new' ],
-                'special_files_changed':         [ 'special', 'changed' ],
-                'special_files_same':            [ 'special', 'unchanged' ],
-                'special_files_deleted':         [ 'special', 'deleted' ],
-                'special_files_scanned':         [ 'special', 'scanned' ],
-                'special_files_total':           [ 'special', 'total' ],
-                'efs_files':                     [ 'efs', 'new' ],
-                'efs_files_changed':             [ 'efs', 'changed' ],
-                'efs_files_same':                [ 'efs', 'unchanged' ],
-                'efs_files_deleted':             [ 'efs', 'deleted' ],
-                'efs_files_scanned':             [ 'efs', 'scanned' ],
-                'efs_files_total':               [ 'efs', 'total' ],
-                'vss_headers':                   [ 'vssheader', 'new' ],
-                'vss_headers_changed':           [ 'vssheader', 'changed' ],
-                'vss_headers_same':              [ 'vssheader', 'unchanged' ],
-                'vss_headers_deleted':           [ 'vssheader', 'deleted' ],
-                'vss_headers_scanned':           [ 'vssheader', 'scanned' ],
-                'vss_headers_total':             [ 'vssheader', 'total' ],
-                'vss_headers_encrypted':         [ 'vssheader_enc', 'new' ],
-                'vss_headers_encrypted_changed': [ 'vssheader_enc', 'changed' ],
-                'vss_headers_encrypted_same':    [ 'vssheader_enc', 'unchanged' ],
-                'vss_headers_encrypted_deleted': [ 'vssheader_enc', 'deleted' ],
-                'vss_headers_encrypted_scanned': [ 'vssheader_enc', 'scanned' ],
-                'vss_headers_encrypted_total':   [ 'vssheader_enc', 'total' ],
-                'vss_footers':                   [ 'vssfooter', 'new' ],
-                'vss_footers_changed':           [ 'vssfooter', 'changed' ],
-                'vss_footers_same':              [ 'vssfooter', 'unchanged' ],
-                'vss_footers_deleted':           [ 'vssfooter', 'deleted' ],
-                'vss_footers_scanned':           [ 'vssfooter', 'scanned' ],
-                'vss_footers_total':             [ 'vssfooter', 'total' ],
-                'vss_footers_encrypted':         [ 'vssfooter_enc', 'new' ],
-                'vss_footers_encrypted_changed': [ 'vssfooter_enc', 'changed' ],
-                'vss_footers_encrypted_same':    [ 'vssfooter_enc', 'unchanged' ],
-                'vss_footers_encrypted_deleted': [ 'vssfooter_enc', 'deleted' ],
-                'vss_footers_encrypted_scanned': [ 'vssfooter_enc', 'scanned' ],
-                'vss_footers_encrypted_total':   [ 'vssfooter_enc', 'total' ],
-                'total':                         [ 'total', 'new' ],
-                'total_changed':                 [ 'total', 'changed' ],
-                'total_same':                    [ 'total', 'unchanged' ],
-                'total_deleted':                 [ 'total', 'deleted' ],
-                'total_scanned':                 [ 'total', 'scanned' ],
-                'total_total':                   [ 'total', 'total' ]
-            }
+            'time_start': 'start',
+            'time_end': 'end',
+            'time_taken': 'duration',
+            'bytes_in_backup': 'totsize',
+            'bytes_received': 'received',
+            'files': ['files', 'new'],
+            'files_changed': ['files', 'changed'],
+            'files_same': ['files', 'unchanged'],
+            'files_deleted': ['files', 'deleted'],
+            'files_scanned': ['files', 'scanned'],
+            'files_total': ['files', 'total'],
+            'files_encrypted': ['files_enc', 'new'],
+            'files_encrypted_changed': ['files_enc', 'changed'],
+            'files_encrypted_same': ['files_enc', 'unchanged'],
+            'files_encrypted_deleted': ['files_enc', 'deleted'],
+            'files_encrypted_scanned': ['files_enc', 'scanned'],
+            'files_encrypted_total': ['files_enc', 'total'],
+            'directories': ['dir', 'new'],
+            'directories_changed': ['dir', 'changed'],
+            'directories_same': ['dir', 'unchanged'],
+            'directories_deleted': ['dir', 'deleted'],
+            'directories_scanned': ['dir', 'scanned'],
+            'directories_total': ['dir', 'total'],
+            'soft_links': ['softlink', 'new'],
+            'soft_links_changed': ['softlink', 'changed'],
+            'soft_links_same': ['softlink', 'unchanged'],
+            'soft_links_deleted': ['softlink', 'deleted'],
+            'soft_links_scanned': ['softlink', 'scanned'],
+            'soft_links_total': ['softlink', 'total'],
+            'hard_links': ['hardlink', 'new'],
+            'hard_links_changed': ['hardlink', 'changed'],
+            'hard_links_same': ['hardlink', 'unchanged'],
+            'hard_links_deleted': ['hardlink', 'deleted'],
+            'hard_links_scanned': ['hardlink', 'scanned'],
+            'hard_links_total': ['hardlink', 'total'],
+            'meta_data': ['meta', 'new'],
+            'meta_data_changed': ['meta', 'changed'],
+            'meta_data_same': ['meta', 'unchanged'],
+            'meta_data_deleted': ['meta', 'deleted'],
+            'meta_data_scanned': ['meta', 'scanned'],
+            'meta_data_total': ['meta', 'total'],
+            'meta_data_encrypted': ['meta_enc', 'new'],
+            'meta_data_encrypted_changed': ['meta_enc', 'changed'],
+            'meta_data_encrypted_same': ['meta_enc', 'unchanged'],
+            'meta_data_encrypted_deleted': ['meta_enc', 'deleted'],
+            'meta_data_encrypted_scanned': ['meta_enc', 'scanned'],
+            'meta_data_encrypted_total': ['meta_enc', 'total'],
+            'special_files': ['special', 'new'],
+            'special_files_changed': ['special', 'changed'],
+            'special_files_same': ['special', 'unchanged'],
+            'special_files_deleted': ['special', 'deleted'],
+            'special_files_scanned': ['special', 'scanned'],
+            'special_files_total': ['special', 'total'],
+            'efs_files': ['efs', 'new'],
+            'efs_files_changed': ['efs', 'changed'],
+            'efs_files_same': ['efs', 'unchanged'],
+            'efs_files_deleted': ['efs', 'deleted'],
+            'efs_files_scanned': ['efs', 'scanned'],
+            'efs_files_total': ['efs', 'total'],
+            'vss_headers': ['vssheader', 'new'],
+            'vss_headers_changed': ['vssheader', 'changed'],
+            'vss_headers_same': ['vssheader', 'unchanged'],
+            'vss_headers_deleted': ['vssheader', 'deleted'],
+            'vss_headers_scanned': ['vssheader', 'scanned'],
+            'vss_headers_total': ['vssheader', 'total'],
+            'vss_headers_encrypted': ['vssheader_enc', 'new'],
+            'vss_headers_encrypted_changed': ['vssheader_enc', 'changed'],
+            'vss_headers_encrypted_same': ['vssheader_enc', 'unchanged'],
+            'vss_headers_encrypted_deleted': ['vssheader_enc', 'deleted'],
+            'vss_headers_encrypted_scanned': ['vssheader_enc', 'scanned'],
+            'vss_headers_encrypted_total': ['vssheader_enc', 'total'],
+            'vss_footers': ['vssfooter', 'new'],
+            'vss_footers_changed': ['vssfooter', 'changed'],
+            'vss_footers_same': ['vssfooter', 'unchanged'],
+            'vss_footers_deleted': ['vssfooter', 'deleted'],
+            'vss_footers_scanned': ['vssfooter', 'scanned'],
+            'vss_footers_total': ['vssfooter', 'total'],
+            'vss_footers_encrypted': ['vssfooter_enc', 'new'],
+            'vss_footers_encrypted_changed': ['vssfooter_enc', 'changed'],
+            'vss_footers_encrypted_same': ['vssfooter_enc', 'unchanged'],
+            'vss_footers_encrypted_deleted': ['vssfooter_enc', 'deleted'],
+            'vss_footers_encrypted_scanned': ['vssfooter_enc', 'scanned'],
+            'vss_footers_encrypted_total': ['vssfooter_enc', 'total'],
+            'total': ['total', 'new'],
+            'total_changed': ['total', 'changed'],
+            'total_same': ['total', 'unchanged'],
+            'total_deleted': ['total', 'deleted'],
+            'total_scanned': ['total', 'scanned'],
+            'total_total': ['total', 'total']
+        }
         f = self.status('c:{0}:b:{1}:f:backup_stats\n'.format(client, number), agent=agent)
         for line in f:
             if line == '-list begin-' or line == '-list end-':
@@ -475,7 +475,7 @@ class Burp(BUIbackend, BUIlogging):
                 else:
                     backup['windows'] = 'false'
                 continue
-            if not key in keys:
+            if key not in keys:
                 continue
             rk = keys[key]
             if isinstance(rk, list):
@@ -508,29 +508,29 @@ class Burp(BUIbackend, BUIlogging):
         :returns: Dict containing the backup log
         """
         lookup_easy = {
-                'start':         '^Start time: (.+)$',
-                'end':           '^\s*End time: (.+)$',
-                'duration':      '^Time taken: (.+)$',
-                'totsize':       '^\s*Bytes in backup:\s+(\d+)',
-                'received':      '^\s*Bytes received:\s+(\d+)'
-                }
+            'start': '^Start time: (.+)$',
+            'end': '^\s*End time: (.+)$',
+            'duration': '^Time taken: (.+)$',
+            'totsize': '^\s*Bytes in backup:\s+(\d+)',
+            'received': '^\s*Bytes received:\s+(\d+)'
+        }
         lookup_complex = {
-                'files':         '^\s*Files:?\s+(.+)\s+\|\s+(\d+)$',
-                'files_enc':     '^\s*Files \(encrypted\):?\s+(.+)\s+\|\s+(\d+)$',
-                'dir':           '^\s*Directories:?\s+(.+)\s+\|\s+(\d+)$',
-                'softlink':      '^\s*Soft links:?\s+(.+)\s+\|\s+(\d+)$',
-                'hardlink':      '^\s*Hard links:?\s+(.+)\s+\|\s+(\d+)$',
-                'meta':          '^\s*Meta data:?\s+(.+)\s+\|\s+(\d+)$',
-                'meta_enc':      '^\s*Meta data\(enc\):?\s+(.+)\s+\|\s+(\d+)$',
-                'special':       '^\s*Special files:?\s+(.+)\s+\|\s+(\d+)$',
-                'efs':           '^\s*EFS files:?\s+(.+)\s+\|\s+(\d+)$',
-                'vssheader':     '^\s*VSS headers:?\s+(.+)\s+\|\s+(\d+)$',
-                'vssheader_enc': '^\s*VSS headers \(enc\):?\s+(.+)\s+\|\s+(\d+)$',
-                'vssfooter':     '^\s*VSS footers:?\s+(.+)\s+\|\s+(\d+)$',
-                'vssfooter_enc': '^\s*VSS footers \(enc\):?\s+(.+)\s+\|\s+(\d+)$',
-                'total':         '^\s*Grand total:?\s+(.+)\s+\|\s+(\d+)$'
-                }
-        backup = { 'windows': 'false', 'number': int(number) }
+            'files': '^\s*Files:?\s+(.+)\s+\|\s+(\d+)$',
+            'files_enc': '^\s*Files \(encrypted\):?\s+(.+)\s+\|\s+(\d+)$',
+            'dir': '^\s*Directories:?\s+(.+)\s+\|\s+(\d+)$',
+            'softlink': '^\s*Soft links:?\s+(.+)\s+\|\s+(\d+)$',
+            'hardlink': '^\s*Hard links:?\s+(.+)\s+\|\s+(\d+)$',
+            'meta': '^\s*Meta data:?\s+(.+)\s+\|\s+(\d+)$',
+            'meta_enc': '^\s*Meta data\(enc\):?\s+(.+)\s+\|\s+(\d+)$',
+            'special': '^\s*Special files:?\s+(.+)\s+\|\s+(\d+)$',
+            'efs': '^\s*EFS files:?\s+(.+)\s+\|\s+(\d+)$',
+            'vssheader': '^\s*VSS headers:?\s+(.+)\s+\|\s+(\d+)$',
+            'vssheader_enc': '^\s*VSS headers \(enc\):?\s+(.+)\s+\|\s+(\d+)$',
+            'vssfooter': '^\s*VSS footers:?\s+(.+)\s+\|\s+(\d+)$',
+            'vssfooter_enc': '^\s*VSS footers \(enc\):?\s+(.+)\s+\|\s+(\d+)$',
+            'total': '^\s*Grand total:?\s+(.+)\s+\|\s+(\d+)$'
+        }
+        backup = {'windows': 'false', 'number': int(number)}
         if client is not None:
             backup['name'] = client
         useful = False
@@ -580,18 +580,18 @@ class Burp(BUIbackend, BUIlogging):
             for key, regex in lookup_complex.iteritems():
                 r = re.search(regex, line)
                 if r:
-                    #self._logger('debug', "match[1]: '{0}'".format(r.group(1)))
+                    # self._logger('debug', "match[1]: '{0}'".format(r.group(1)))
                     sp = re.split('\s+', r.group(1))
                     if len(sp) < 5:
                         return {}
                     backup[key] = {
-                            'new':       int(sp[0]),
-                            'changed':   int(sp[1]),
-                            'unchanged': int(sp[2]),
-                            'deleted':   int(sp[3]),
-                            'total':     int(sp[4]),
-                            'scanned':   int(r.group(2))
-                            }
+                        'new': int(sp[0]),
+                        'changed': int(sp[1]),
+                        'unchanged': int(sp[2]),
+                        'deleted': int(sp[3]),
+                        'total': int(sp[4]),
+                        'scanned': int(r.group(2))
+                    }
                     break
         return backup
 
@@ -609,11 +609,10 @@ class Burp(BUIbackend, BUIlogging):
             if not client:
                 continue
             stats = self.get_backup_logs(client[-1]['number'], c['name'])
-            cl.append( { 'name': c['name'], 'stats': { 'windows': stats['windows'], 'totsize': stats['totsize'], 'total': stats['total']['total'] } } )
-            ba.append( { 'name': c['name'], 'number': len(client) } )
-        ret.append( { 'clients': cl, 'backups': ba } )
+            cl.append({'name': c['name'], 'stats': {'windows': stats['windows'], 'totsize': stats['totsize'], 'total': stats['total']['total']}})
+            ba.append({'name': c['name'], 'number': len(client)})
+        ret.append({'clients': cl, 'backups': ba})
         return ret
-
 
     def get_counters(self, name=None, agent=None):
         """
@@ -674,7 +673,7 @@ class Burp(BUIbackend, BUIlogging):
             return False
         for line in f:
             r = re.search('^{0}\s+\d\s+(\w)'.format(name), line)
-            if r and r.group(1) not in [ 'i', 'c', 'C' ]:
+            if r and r.group(1) not in ['i', 'c', 'C']:
                 return True
         return False
 
@@ -717,7 +716,7 @@ class Burp(BUIbackend, BUIlogging):
                 c['last'] = datetime.datetime.fromtimestamp(int(sp[2])).strftime('%Y-%m-%d %H:%M:%S')
             else:
                 sp = infos.split('\t')
-                c['last'] = datetime.datetime.fromtimestamp(int(sp[len(sp)-2])).strftime('%Y-%m-%d %H:%M:%S')
+                c['last'] = datetime.datetime.fromtimestamp(int(sp[len(sp) - 2])).strftime('%Y-%m-%d %H:%M:%S')
             j.append(c)
         return j
 
@@ -734,10 +733,10 @@ class Burp(BUIbackend, BUIlogging):
         for line in f:
             if not re.match('^{0}\t'.format(c), line):
                 continue
-            #self._logger('debug', "line: '{0}'".format(line))
+            # self._logger('debug', "line: '{0}'".format(line))
             regex = re.compile('\s*(\S+)\s+\d\s+(\S)\s+(.+)')
             m = regex.search(line)
-            if m.group(3) == "0" or m.group(2) not in [ 'i', 'c', 'C' ]:
+            if m.group(3) == "0" or m.group(2) not in ['i', 'c', 'C']:
                 continue
             backups = m.group(3).split('\t')
             for b in backups:
@@ -817,9 +816,9 @@ class Burp(BUIbackend, BUIlogging):
         for r in flist['restore']:
             reg = u''
             if r['folder'] and r['key'] != '/':
-                reg += '^'+re.escape(r['key'])+'/|'
+                reg += '^' + re.escape(r['key']) + '/|'
             else:
-                reg += '^'+re.escape(r['key'])+'$|'
+                reg += '^' + re.escape(r['key']) + '$|'
             full_reg += reg
 
         cmd = [self.burpbin, '-C', quote(name), '-a', 'r', '-b', quote(str(backup)), '-r', full_reg.rstrip('|'), '-d', tmpdir]
@@ -856,11 +855,11 @@ class Burp(BUIbackend, BUIlogging):
         # a return code of 2 means there were some warnings during restoration
         # so we can assume the restoration was successful anyway
         if status not in [0, 2]:
-            #out, err = p.communicate()
+            # out, err = p.communicate()
             return None, out
 
         zip_dir = tmpdir.rstrip(os.sep)
-        zip_file = zip_dir+'.zip'
+        zip_file = zip_dir + '.zip'
         if os.path.isfile(zip_file):
             os.remove(zip_file)
         zip_len = len(zip_dir) + 1
@@ -871,15 +870,15 @@ class Burp(BUIbackend, BUIlogging):
                     path = os.path.join(dirname, filename)
                     if stripping and os.path.isfile(path):
                         self._logger('debug', "stripping file: %s", path)
-                        shutil.move(path, path+'.tmp')
-                        status = subprocess.call([self.stripbin, '-i', path+'.tmp', '-o', path])
+                        shutil.move(path, path + '.tmp')
+                        status = subprocess.call([self.stripbin, '-i', path + '.tmp', '-o', path])
                         if status != 0:
                             os.remove(path)
-                            shutil.move(path+'.tmp', path)
+                            shutil.move(path + '.tmp', path)
                             stripping = False
                             self._logger('debug', "Disable stripping since this file does not seem to embed VSS headers")
                         else:
-                            os.remove(path+'.tmp')
+                            os.remove(path + '.tmp')
 
                     entry = path[zip_len:]
                     zf.append(path, entry)
