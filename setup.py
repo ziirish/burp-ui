@@ -47,7 +47,7 @@ setup(
     ],
     install_requires=requires,
     extras_require={
-        'ldap_authentication': ['simpleldap==0.8']
+        'ldap_authentication': ['ldap3']
     },
     tests_require=test_requires,
     classifiers=[
