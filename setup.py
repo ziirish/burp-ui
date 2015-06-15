@@ -42,9 +42,10 @@ setup(
         'templates': 'burpui/templates/*'
     },
     scripts=['bin/burp-ui', 'bin/bui-agent'],
-    data_files=[(datadir, [os.path.join(datadir, 'burpui.cfg')]),
-                (datadir, [os.path.join(datadir, 'buiagent.cfg')])
-                ],
+    data_files=[
+        (datadir, [os.path.join(datadir, 'burpui.sample.cfg')]),
+        (datadir, [os.path.join(datadir, 'buiagent.sample.cfg')])
+    ],
     install_requires=requires,
     extras_require={
         'ldap_authentication': ['ldap3']
