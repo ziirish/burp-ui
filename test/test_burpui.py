@@ -13,7 +13,7 @@ from burpui import app, bui, login_manager, init as BUIinit
 class BurpuiLiveTestCase(LiveServerTestCase):
 
 	def create_app(self):
-		conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../burpui.cfg')
+		conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../burpui.sample.cfg')
 		app.config['TESTING'] = True
 		app.config['LOGIN_DISABLED'] = True
 		app.config['LIVESERVER_PORT'] = 5001
@@ -118,7 +118,7 @@ class BurpuiRoutesTestCase(TestCase):
 		print '\nTest 3 Finished!\n'
 
 	def create_app(self):
-		conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../burpui.cfg')
+		conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../burpui.sample.cfg')
 		app.config['TESTING'] = True
 		app.config['LOGIN_DISABLED'] = True
 		app.config['LIVESERVER_PORT'] = 5001
@@ -147,7 +147,7 @@ class BurpuiLoginTestCase(TestCase):
 		), follow_redirects=True)
 
 	def create_app(self):
-		conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../burpui.cfg')
+		conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../burpui.sample.cfg')
 		BUIinit(conf, False, False)
 		app.config['TESTING'] = True
 		app.config['LIVESERVER_PORT'] = 5001
