@@ -1,8 +1,13 @@
-Build Status
-============
+Badges
+======
 
 .. image:: https://ci.ziirish.me/projects/1/status.png?ref=master
     :target: https://ci.ziirish.me/projects/1?ref=master
+    :alt: Build Status
+
+.. image:: https://readthedocs.org/projects/burp-ui/badge/?version=latest
+    :target: https://readthedocs.org/projects/burp-ui/?badge=latest
+    :alt: Documentation Status
 
 Introduction
 ============
