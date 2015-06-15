@@ -43,7 +43,7 @@ class LdapLoader:
         if self.encryption == 'ssl':
             self.ssl = True
         elif self.encryption == 'tls':
-            selt.tls = True
+            self.tls = True
         self.app.logger.info('LDAP host: %s', self.host)
         self.app.logger.info('LDAP port: %s', self.port)
         self.app.logger.info('LDAP encryption: %s', self.encryption)
@@ -54,17 +54,17 @@ class LdapLoader:
         self.app.logger.info('LDAP bindpw: %s', '*****' if self.bindpw else 'None')
 
         try:
-            self.server = Server(host=self.host, port=self.port, use_ssl=self.ssl, get_info=ALL, tls=self.tls)
+            self.server = Server(host=self.host, port=int(self.port), use_ssl=self.ssl, get_info=ALL, tls=self.tls)
+            self.app.logger.debug('LDAP Server = {0}'.format(str(self.server)))
             self.ldap = Connection(self.server, user=self.binddn, password=self.bindpw, raise_exceptions=True)
-            binded = False
-            with self.ldap:
-                binded = True
-            if binded:
+            if self.ldap.bind():
+                self.app.logger.debug('LDAP Connection = {0}'.format(str(self.ldap)))
                 self.app.logger.info('OK, connected to LDAP')
             else:
                 raise Exception('Not connected')
-        except:
-            self.app.logger.error('Could not connect to LDAP')
+            self.app.logger.debug('LDAP Connection = {0}'.format(str(self.ldap)))
+        except Exception as e:
+            self.app.logger.error('Could not connect to LDAP: {0}'.format(str(e)))
             self.server = None
             self.ldap = None
 
@@ -95,6 +95,7 @@ class LdapLoader:
             self.app.logger.info('filter: %s | base: %s', query, self.base)
             r = None
             with self.ldap:
+                self.app.logger.debug('LDAP Connection = {0}'.format(str(self.ldap)))
                 self.ldap.search(self.base, query, attributes=['cn', self.attr])
                 r = self.ldap.response
             if not r:
@@ -124,6 +125,7 @@ class LdapLoader:
         """
         try:
             with Connection(self.server, user='{0}'.format(dn), password=passwd, raise_exceptions=True) as l:
+                self.app.logger.debug('LDAP Connection = {0}'.format(str(l)))
                 self.app.logger.info('Bound as user: {0}'.format(dn))
                 return True
         except Exception as e:
