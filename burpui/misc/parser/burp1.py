@@ -478,7 +478,9 @@ class Parser(BUIparser, BUIlogging):
         with codecs.open(self.conf, 'w', 'utf-8') as f:
             # f.write('# Auto-generated configuration using Burp-UI\n')
             for line in orig:
-                if self._line_removed(line, data.viewkeys()) and not self._line_is_comment(line) or self._line_is_file_include(line):
+                if (self._line_removed(line, data.viewkeys()) and
+                        not self._line_is_comment(line) or
+                        self._line_is_file_include(line)):
                     # The line was removed, we comment it
                     # we also comment file inclusions as we don't support them yet TODO / FIXME
                     f.write('#{}\n'.format(line))
