@@ -15,19 +15,22 @@ Documentation
 .. toctree::
    :maxdepth: 2
 
-   readme
-   api
+   requirements
+   installation
+   usage
+   gunicorn
+   development
+   contributing
    changelog
+   api
 
 
 Indices and tables
 ==================
 
-* :ref:`genindex`
-* :ref:`modindex`
 * :ref:`search`
 
-.. _Flask: http://flask.pocoo.org/                                              
-.. _License: https://git.ziirish.me/ziirish/burp-ui/blob/master/LICENSE         
-.. _Burp: http://burp.grke.org/                                                 
-.. _burpui.cfg: https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui.cfg
+.. _Flask: http://flask.pocoo.org/
+.. _License: https://git.ziirish.me/ziirish/burp-ui/blob/master/LICENSE
+.. _Burp: http://burp.grke.org/
+.. _burpui.cfg: https://git.ziirish.me/ziirish/burp-ui/blob/master/share/burpui/etc/burpui.sample.cfg
