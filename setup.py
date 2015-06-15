@@ -44,7 +44,7 @@ setup(
     scripts=['bin/burp-ui', 'bin/bui-agent'],
     data_files=[(datadir, [os.path.join(datadir, 'burpui.cfg')]),
                 (datadir, [os.path.join(datadir, 'buiagent.cfg')])
-    ],
+                ],
     install_requires=requires,
     extras_require={
         'ldap_authentication': ['ldap3']
