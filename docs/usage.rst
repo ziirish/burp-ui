@@ -51,7 +51,7 @@ The configuration file contains a *Global* section as follow:
     acl: basic
 
 
-Each option is documented, but here is a more detailed documentation:
+Each option is commented, but here is a more detailed documentation:
 
 - *port*: On which port is ``Burp-UI`` listening. This option is ignored when
   using `Gunicorn`_.
