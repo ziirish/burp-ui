@@ -44,25 +44,31 @@ class LdapLoader:
             self.ssl = True
         elif self.encryption == 'tls':
             self.tls = True
-        self.app.logger.info('LDAP host: %s', self.host)
-        self.app.logger.info('LDAP port: %s', self.port)
-        self.app.logger.info('LDAP encryption: %s', self.encryption)
-        self.app.logger.info('LDAP filter: %s', self.filt)
-        self.app.logger.info('LDAP base: %s', self.base)
-        self.app.logger.info('LDAP search attr: %s', self.attr)
-        self.app.logger.info('LDAP binddn: %s', self.binddn)
-        self.app.logger.info('LDAP bindpw: %s', '*****' if self.bindpw else 'None')
+        if self.port:
+            try:
+                self.port = int(self.port)
+            except ValueError:
+                self.app.logger.error('LDAP port must be a valid integer')
+                self.port = None
+        self.app.logger.info('LDAP host: {0}'.format(self.host))
+        self.app.logger.info('LDAP port: {0}'.format(self.port))
+        self.app.logger.info('LDAP encryption: {0}'.format(self.encryption))
+        self.app.logger.info('LDAP filter: {0}'.format(self.filt))
+        self.app.logger.info('LDAP base: {0}'.format(self.base))
+        self.app.logger.info('LDAP search attr: {0}'.format(self.attr))
+        self.app.logger.info('LDAP binddn: {0}'.format(self.binddn))
+        self.app.logger.info('LDAP bindpw: {0}'.format('*****' if self.bindpw else 'None'))
 
         try:
-            self.server = Server(host=self.host, port=int(self.port), use_ssl=self.ssl, get_info=ALL, tls=self.tls)
+            self.server = Server(host=self.host, port=self.port, use_ssl=self.ssl, get_info=ALL, tls=self.tls)
             self.app.logger.debug('LDAP Server = {0}'.format(str(self.server)))
             self.ldap = Connection(self.server, user=self.binddn, password=self.bindpw, raise_exceptions=True, client_strategy=RESTARTABLE)
-            if self.ldap.bind():
+            with self.ldap:
                 self.app.logger.debug('LDAP Connection = {0}'.format(str(self.ldap)))
                 self.app.logger.info('OK, connected to LDAP')
-            else:
-                raise Exception('Not connected')
-            self.app.logger.debug('LDAP Connection = {0}'.format(str(self.ldap)))
+                return
+
+            raise Exception('Not connected')
         except Exception as e:
             self.app.logger.error('Could not connect to LDAP: {0}'.format(str(e)))
             self.server = None
@@ -92,7 +98,7 @@ class LdapLoader:
                 query = self.filt.format(self.attr, searchval)
             else:
                 query = '{0}={1}'.format(self.attr, searchval)
-            self.app.logger.info('filter: %s | base: %s', query, self.base)
+            self.app.logger.info('filter: {0} | base: {1}'.format(query, self.base))
             r = None
             with self.ldap:
                 self.app.logger.debug('LDAP Connection = {0}'.format(str(self.ldap)))
