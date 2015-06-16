@@ -3,7 +3,7 @@ from flask.ext.login import UserMixin
 from burpui.misc.auth.interface import BUIhandler, BUIuser
 
 try:
-    from ldap3 import Server, Connection, ALL
+    from ldap3 import Server, Connection, ALL, RESTARTABLE
 except ImportError:
     raise ImportError('Unable to load \'ldap3\' module')
 
@@ -56,7 +56,7 @@ class LdapLoader:
         try:
             self.server = Server(host=self.host, port=int(self.port), use_ssl=self.ssl, get_info=ALL, tls=self.tls)
             self.app.logger.debug('LDAP Server = {0}'.format(str(self.server)))
-            self.ldap = Connection(self.server, user=self.binddn, password=self.bindpw, raise_exceptions=True)
+            self.ldap = Connection(self.server, user=self.binddn, password=self.bindpw, raise_exceptions=True, client_strategy=RESTARTABLE)
             if self.ldap.bind():
                 self.app.logger.debug('LDAP Connection = {0}'.format(str(self.ldap)))
                 self.app.logger.info('OK, connected to LDAP')
