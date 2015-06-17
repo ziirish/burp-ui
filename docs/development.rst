@@ -16,5 +16,8 @@ To do so, run the following commands:
     pip install git+https://git.ziirish.me/ziirish/burp-ui.git
 
 
-You can uninstall/disable this ``Burp-UI`` setup by typing ``deactivate`` and
+You can uninstall/disable this `Burp-UI` setup by typing ``deactivate`` and
 removing the ``/opt/bui-venv`` directory.
+
+
+.. _Burp-UI: https://git.ziirish.me/ziirish/burp-ui

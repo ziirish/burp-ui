@@ -6,7 +6,7 @@
 Burp-UI
 =======
 
-Burp-UI is a web-ui for burp backup written in python with Flask and jQuery/Bootstrap.
+`Burp-UI`_ is a web-ui for `Burp`_ backup written in python with Flask and jQuery/Bootstrap.
 
 
 Documentation
@@ -33,4 +33,5 @@ Indices and tables
 .. _Flask: http://flask.pocoo.org/
 .. _License: https://git.ziirish.me/ziirish/burp-ui/blob/master/LICENSE
 .. _Burp: http://burp.grke.org/
+.. _Burp-UI: https://git.ziirish.me/ziirish/burp-ui
 .. _burpui.cfg: https://git.ziirish.me/ziirish/burp-ui/blob/master/share/burpui/etc/burpui.sample.cfg

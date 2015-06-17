@@ -1,7 +1,7 @@
 Requirements
 ============
 
-Please note that currently, ``Burp-UI`` must be running on the same server that
+Please note that currently, `Burp-UI`_ must be running on the same server that
 runs the burp-server.
 
 
@@ -18,3 +18,6 @@ On Debian:
 ::
 
     aptitude install python-openssl
+
+
+.. _Burp-UI: https://git.ziirish.me/ziirish/burp-ui
