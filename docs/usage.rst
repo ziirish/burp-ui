@@ -12,8 +12,14 @@ Both versions are supported by ``Burp-UI`` thanks to its modular design.
 The consequence is you have various options in the configuration file to suite
 every bodies needs.
 
-There are also different modules to support authentication and ACL within the
-web-interface.
+There are also different modules to support `Authentication`_ and `ACL`_ support
+within the web-interface.
+
+``Burp-UI`` tries to be the less intrusive possible, nevertheless it ships with
+the ability to manage `Burp`_'s configuration files. This feature requires
+``Burp-UI`` to be launched on the same server that hosts your `Burp`_ instance.
+You also have to make sure the user that runs ``Burp-UI`` has enough privileges
+to edit those files.
 
 
 Configuration
@@ -72,12 +78,238 @@ Each option is commented, but here is a more detailed documentation:
   you to address multiple `Burp`_ servers. In this mode, you need to configure
   **at least one** *Agent* section in your configuration file. You also need to
   run one ``bui-agent`` per server.
-- *auth*: What authentication backend to use.
-- *acl*: What ACL module to use.
+- *auth*: What `Authentication`_ backend to use.
+- *acl*: What `ACL`_ module to use.
 
 
 Burp1
 -----
+
+The *burp-1* backend can be enabled by setting the *version* option to *1* in
+your ``[Global]`` section:
+
+::
+
+    [Global]
+    version: 1
+
+
+Now you can add a *burp-1* backend specific options:
+
+::
+
+    # burp1 backend specific options
+    [Burp1]
+    # burp status address (can only be '127.0.0.1' or '::1')
+    bhost: ::1
+    # burp status port
+    bport: 4972
+    # burp binary
+    burpbin: /usr/sbin/burp
+    # vss_strip binary
+    stripbin: /usr/sbin/vss_strip
+    # burp client configuration file used for the restoration (Default: None)
+    bconfcli: /etc/burp/burp.conf
+    # burp server configuration file used for the setting page
+    bconfsrv: /etc/burp/burp-server.conf
+    # temporary directory to use for restoration
+    tmpdir: /tmp
+
+
+Each option is commented, but here is a more detailed documentation:
+
+- *bhost*: The address of the `Burp`_ server. In burp-1.x.x, it can only be
+  *127.0.0.1* or *::1*
+- *bport*: The port of `Burp`_'s status port.
+- *burpbin*: Path to the `Burp`_ binary (used for restorations).
+- *stripbin*: Path to the `Burp`_ *vss_strip* binary (used for restorations).
+- *bconfcli*: Path to the `Burp`_ client configuration file.
+- *bconfsrv*: Path to the `Burp`_ server configuration file.
+- *tmpdir*: Path to a temporary directory where to perform restorations.
+
+
+Burp2
+-----
+
+The *burp-2* backend can be enabled by setting the *version* option to *2* in
+your ``[Global]`` section:
+
+::
+
+    [Global]
+    version: 2
+
+
+Now you can add *burp-2* backend specific options:
+
+::
+
+    # burp2 backend specific options
+    [Burp2]
+    # burp binary
+    burpbin: /usr/sbin/burp
+    # vss_strip binary
+    stripbin: /usr/sbin/vss_strip
+    # burp client configuration file used for the restoration (Default: None)
+    bconfcli: /etc/burp/burp.conf
+    # burp server configuration file used for the setting page
+    bconfsrv: /etc/burp/burp-server.conf
+    # temporary directory to use for restoration
+    tmpdir: /tmp
+
+
+Each option is commented, but here is a more detailed documentation:
+
+- *burpbin*: Path to the `Burp`_ binary (used for restorations).
+- *stripbin*: Path to the `Burp`_ *vss_strip* binary (used for restorations).
+- *bconfcli*: Path to the `Burp`_ client configuration file.
+- *bconfsrv*: Path to the `Burp`_ server configuration file.
+- *tmpdir*: Path to a temporary directory where to perform restorations.
+
+
+Authentication
+--------------
+
+``Burp-UI`` provides some authentication backends in order to restrict access
+only to granted users.
+There are currently two different backends:
+
+- `LDAP`_
+- `Basic`_
+
+To disable the *authentication* backend, set the *auth* option of the *[Global]*
+section to *none*:
+
+::
+
+    [Global]
+    auth: none
+
+
+LDAP
+^^^^
+
+The *ldap* authentication backend has some dependencies, please refer to the
+`requirements <requirements.html>`_ page. To enable this backend, you need to
+set the *auth* option of the *[Global]* section to *ldap*:
+
+::
+
+    [Global]
+    auth: ldap
+
+
+Now you can add *ldap* specific options:
+
+::
+
+    # ldapauth specific options
+    [LDAP]
+    # LDAP host
+    host: 127.0.0.1
+    # LDAP port
+    port: 389
+    # Encryption type to LDAP server (none, ssl or tls)
+    # - try tls if unsure, otherwise ssl on port 636
+    encryption: ssl
+    # Attribute to use when searching the LDAP repository
+    #searchattr: sAMAccountName
+    searchattr: uid
+    # LDAP filter to find users in the LDAP repository
+    # - {0} will be replaced by the search attribute
+    # - {1} will be replaced by the login name
+    filter: (&({0}={1})(burpui=1))
+    #filter: (&({0}={1})(|(userAccountControl=512)(userAccountControl=66048)))
+    # LDAP base
+    base: ou=users,dc=example,dc=com
+    # Binddn to list existing users
+    binddn: cn=admin,dc=example,dc=com
+    # Bindpw to list existing users
+    bindpw: Sup3rS3cr3tPa$$w0rd
+
+
+.. note:: The *host* options accepts URI style (ex: ldap://127.0.0.1:389)
+
+
+Basic
+^^^^^
+
+In order for the *basic* authentication backend to be enabled, you need to set
+the *auth* option of the *[Global]* section to *basic*:
+
+::
+
+    [Global]
+    auth: basic
+
+
+Now you can add *basic* specific options:
+
+::
+
+    # basicauth specific options
+    # Note: in case you leave this section commented, the default login/password
+    # is admin/admin
+    [BASIC]
+    admin: password
+    user1: otherpassword
+
+
+.. note:: Each line defines a new user with the *key* as the username and the *value* as the password
+
+
+ACL
+---
+
+``Burp-UI`` implements some mechanisms to restrict access on some resources only
+for some users.
+There is currently only one backend:
+
+- `Basic ACL`_
+
+To disable the *acl* backend, set the *acl* option of the *[Global]* section to
+*none*:
+
+::
+
+    [Global]
+    acl: none
+
+
+Basic ACL
+^^^^^^^^^
+
+
+The *basic* acl backend can be enabled by setting the *acl* option of the
+*[Global]* section to *basic*:
+
+::
+
+    [Global]
+    acl: basic
+
+
+Now you can add *basic acl* specific options:
+
+::
+
+    # basicacl specific options
+    # Note: in case you leave this section commented, the user 'admin' will have
+    # access to all clients whereas other users will only see the client that have
+    # the same name
+    [BASIC:ACL]
+    # Please note the double-quote around the username on the admin line are
+    # mandatory!
+    admin: ["user1","user2"]
+    # You can also overwrite the default behavior by specifying which clients a
+    # user can access
+    user3: ["client4", "client5"]
+    # In case you are not in a standalone mode, you can also specify which clients
+    # a user can access on a specific Agent
+    user4: {"agent1": ["client6", "client7"], "agent2": ["client8"]}
+
+
+.. warning:: The double-quotes are **mendatory**
 
 
 .. _Burp: http://burp.grke.org/

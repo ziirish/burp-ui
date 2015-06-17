@@ -1,4 +1,4 @@
-Burp-UI's API
-=============
+API doc (for dev)
+=================
 
 .. autoflask:: burpui:app
