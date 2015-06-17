@@ -4,6 +4,14 @@ Changelog
 Current
 -------
 
+- Add `Burp-2 backend <https://git.ziirish.me/ziirish/burp-ui/issues/52>`_
+- Add `sortable tables <https://git.ziirish.me/ziirish/burp-ui/issues/51>`_
+- Add `ACL support <https://git.ziirish.me/ziirish/burp-ui/issues/47>`_
+- Add `support client-side encrypted backups while performing an online restoration <https://git.ziirish.me/ziirish/burp-ui/issues/44>`_
+- Add `multiple archive format <https://git.ziirish.me/ziirish/burp-ui/issues/31>`_
+- Add `better Active Directory support <https://git.ziirish.me/ziirish/burp-ui/issues/64>`__
+- Improvement `better config file parser <https://git.ziirish.me/ziirish/burp-ui/issues/50>`_
+- Improvement `better logging with Gunicorn <https://git.ziirish.me/ziirish/burp-ui/issues/65>`_
 - Fix issue `#35 <https://git.ziirish.me/ziirish/burp-ui/issues/35>`_
 - Fix issue `#41 <https://git.ziirish.me/ziirish/burp-ui/issues/41>`_
 - Fix issue `#46 <https://git.ziirish.me/ziirish/burp-ui/issues/46>`_
@@ -12,14 +20,10 @@ Current
 - Fix issue `#54 <https://git.ziirish.me/ziirish/burp-ui/issues/54>`_
 - Fix issue `#59 <https://git.ziirish.me/ziirish/burp-ui/issues/59>`_
 - Fix issue `#62 <https://git.ziirish.me/ziirish/burp-ui/issues/62>`_
-- Add `Burp-2 backend <https://git.ziirish.me/ziirish/burp-ui/issues/52>`_
-- Add `sortable tables <https://git.ziirish.me/ziirish/burp-ui/issues/51>`_
-- Add `ACL support <https://git.ziirish.me/ziirish/burp-ui/issues/47>`_
-- Add `support client-side encrypted backups while performing an online restoration <https://git.ziirish.me/ziirish/burp-ui/issues/44>`_
-- Add `multiple archive format <https://git.ziirish.me/ziirish/burp-ui/issues/31>`_
-- Improvements `better config file parser <https://git.ziirish.me/ziirish/burp-ui/issues/50>`_
+- Fix issue `#64 <https://git.ziirish.me/ziirish/burp-ui/issues/64>`__
+- doc on `readthedocs <http://burp-ui.readthedocs.org/en/latest/>`_
+- Two merge requests from Wade Fitzpatrick (`!1 <https://git.ziirish.me/ziirish/burp-ui/merge_requests/1>`_ and `!2 <https://git.ziirish.me/ziirish/burp-ui/merge_requests/2>`_)
 - API refactoring
-- doc
 - Security fixes
 - Bufixes
 - `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/v0.0.6...master>`__
