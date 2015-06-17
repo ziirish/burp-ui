@@ -25,7 +25,7 @@ to edit those files.
 Configuration
 -------------
 
-The configuration file contains a *Global* section as follow:
+The configuration file contains a ``[Global]`` section as follow:
 
 ::
 
@@ -177,8 +177,8 @@ There are currently two different backends:
 - `LDAP`_
 - `Basic`_
 
-To disable the *authentication* backend, set the *auth* option of the *[Global]*
-section to *none*:
+To disable the *authentication* backend, set the *auth* option of the
+``[Global]`` section to *none*:
 
 ::
 
@@ -191,7 +191,7 @@ LDAP
 
 The *ldap* authentication backend has some dependencies, please refer to the
 `requirements <requirements.html>`_ page. To enable this backend, you need to
-set the *auth* option of the *[Global]* section to *ldap*:
+set the *auth* option of the ``[Global]`` section to *ldap*:
 
 ::
 
@@ -235,7 +235,7 @@ Basic
 ^^^^^
 
 In order for the *basic* authentication backend to be enabled, you need to set
-the *auth* option of the *[Global]* section to *basic*:
+the *auth* option of the ``[Global]`` section to *basic*:
 
 ::
 
@@ -267,7 +267,7 @@ There is currently only one backend:
 
 - `Basic ACL`_
 
-To disable the *acl* backend, set the *acl* option of the *[Global]* section to
+To disable the *acl* backend, set the *acl* option of the ``[Global]`` section to
 *none*:
 
 ::
@@ -281,7 +281,7 @@ Basic ACL
 
 
 The *basic* acl backend can be enabled by setting the *acl* option of the
-*[Global]* section to *basic*:
+``[Global]`` section to *basic*:
 
 ::
 
