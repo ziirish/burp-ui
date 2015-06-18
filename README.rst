@@ -25,8 +25,8 @@ What's that?
 Let me introduce you ``Burp-UI``. It is a web-based UI to manage your
 burp-servers.
 You can view different reports about burp-servers, burp-clients, backups, etc.
-``Burp-UI`` allows you to perform *on-the-fly* restorations and should allow
-you to edit/manage your burp-server's conf file very soon.
+``Burp-UI`` allows you to perform *on-the-fly* restorations and to edit/manage
+your burp-server's configuration files.
 
 It is actually an improvement of the burp status monitor (``burp -c /etc/burp/burp-server.conf -a s``).
 
@@ -39,13 +39,13 @@ external commands to your burp status port.
 Who are you?
 ------------
 
-I'm `Ziirish <http://ziirish.info>`_, a French sysadmin who loves `Burp`_ and
-would like to help its adoption by providing it a nice and powerful interface.
+I'm `Ziirish <http://ziirish.info>`__, a French sysadmin who loves `Burp`_ and
+who'd like to help its adoption by providing it a nice and powerful interface.
 If you like my work, you can:
 
-* Thank me by sending me an email or writing a nice comment
-* Buy me a beer or some fries or both!
-* Make a donation on my Paypal
+* Thank me by sending me an email or writing nice comments
+* Buy me a beer or some fries (or both!)
+* Make a donation on my `Paypal <http://ziirish.info>`__
 
 
 Documentation
@@ -90,7 +90,11 @@ add my certificate in your trust list:
 
 ::
 
-   echo -n | openssl s_client -showcerts -connect git.ziirish.me:443 -servername git.ziirish.me 2>/dev/null | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' >>/etc/ssl/certs/ca-certificates.crt
+   echo -n | \
+   openssl s_client -showcerts -connect git.ziirish.me:443 \
+   -servername git.ziirish.me 2>/dev/null | \
+   sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' >>/etc/ssl/certs/ca-certificates.crt
+
 
 2. SSH issue
 
@@ -106,7 +110,6 @@ lines in your ``~/.ssh/config`` file:
 
    Host git.ziirish.me
       Port 2222
-
 
 
 Licenses
@@ -140,6 +143,7 @@ Thanks
 
 Special Thanks to Graham Keeling for its great software! This project would not
 exist without `Burp`_.
+
 
 .. _Flask: http://flask.pocoo.org/
 .. _License: https://git.ziirish.me/ziirish/burp-ui/blob/master/LICENSE
