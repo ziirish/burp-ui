@@ -21,7 +21,7 @@ Once ``pip`` is installed, you can install ``Burp-UI`` this way:
 You can setup various parameters in the `burpui.cfg`_ file.
 This file can be specified with the ``-c`` flag or should be present in
 ``/etc/burp/burpui.cfg``.
-By default `Burp-UI`_ ships with a default file located in
+By default `Burp-UI`_ ships with a sample file located in
 ``$BURPUIDIR/../share/burpui/etc/burpui.sample.cfg``.
 
 Then you can run ``burp-ui``: ``burp-ui``
