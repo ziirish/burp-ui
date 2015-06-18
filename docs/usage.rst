@@ -3,17 +3,17 @@ Usage
 
 `Burp-UI`_ has been written with modularity in mind. The aim is to support
 `Burp`_ from the stable to the latest versions. `Burp`_ exists in two major
-versions: 1.x.x and 2.x.x. The version 2.x.x is currently in heavy development
-and should bring a lot of improvements, but also a lot of rework especially
-regarding the ``status port`` which is the main communication system between
-`Burp`_ and `Burp-UI`_.
+versions: 1.x.x and 2.x.x.
+The version 2.x.x is currently in heavy development and should bring a lot of
+improvements, but also a lot of rework especially regarding the ``status port``
+which is the main communication system between `Burp`_ and `Burp-UI`_.
 
-Both versions are supported by `Burp-UI`_ thanks to its modular design.
+Both `Versions`_ are supported by `Burp-UI`_ thanks to its modular design.
 The consequence is you have various options in the configuration file to suite
 every bodies needs.
 
-There are also different modules to support `Authentication`_ and `ACL`_ support
-within the web-interface.
+There are also different modules to support `Authentication`_ and `ACL`_ within
+the web-interface.
 
 `Burp-UI`_ tries to be the less intrusive possible, nevertheless it ships with
 the ability to manage `Burp`_'s configuration files. This feature requires
@@ -69,7 +69,7 @@ Each option is commented, but here is a more detailed documentation:
 - *sslkey*: SSL key to use when SSL support is enabled.
 - *version*: What version of `Burp`_ this `Burp-UI`_ instance manages. Can
   either be *1* or *2*. This parameter determines which backend is loaded at
-  runtime.
+  runtime. (see `Versions`_ for more details)
 - *standalone*: `Burp-UI`_ can run in two different modes. If it runs in
   standalone mode (meaning you set this parameter to *true*), you can only
   address **one** `Burp`_ server of the version specified by the previous
@@ -82,8 +82,158 @@ Each option is commented, but here is a more detailed documentation:
 - *acl*: What `ACL`_ module to use.
 
 
-Burp1
+Modes
 -----
+
+`Burp-UI`_ provides two modes:
+
+- `Standalone`_
+- `Multi-Agent`_
+
+These modes allow you to either access a single `Burp`_ server or multiple
+`Burp`_ servers hosted on separated hosts.
+
+
+Standalone
+^^^^^^^^^^
+
+This mode is the **default** and the easiest one. It can be activated by setting
+the *standalone* parameter in the ``[Global]`` section to *true*:
+
+::
+
+    [Global]
+    standalone: true
+
+
+That's all you need to do for this mode to work.
+
+
+Multi-Agent
+^^^^^^^^^^^
+
+This mode allows you access multiple `Burp`_ servers through the
+`bui-agent`_. Here is a schema to illustrate the architecture:
+
+::
+
+    +--------------------+       +--------------------+       +--------------------+       +--------------------+
+    |                    |       |                    |       |                    |       |                    |
+    |  burp-server 1     |       |  burp-server 2     |       |        ...         |       |  burp-server n     |
+    |                    |       |                    |       |                    |       |                    |
+    +--------------------+       +--------------------+       +--------------------+       +--------------------+
+    |                    |       |                    |       |                    |       |                    |
+    |                    |       |                    |       |                    |       |                    |
+    |                    |       |                    |       |                    |       |                    |
+    |                    |       |                    |       |                    |       |                    |
+    | +----------------+ |       | +----------------+ |       | +----------------+ |       | +----------------+ |
+    | |                | |       | |                | |       | |                | |       | |                | |
+    | |  bui-agent 1   | |       | |  bui-agent 2   | |       | |      ...       | |       | |  bui-agent n   | |
+    | |                | |       | |                | |       | |                | |       | |                | |
+    | +-------^--------+ |       | +-------^--------+ |       | +--------^-------+ |       | +-------^--------+ |
+    +---------|----------+       +---------|----------+       +----------|---------+       +---------|----------+
+              |                            |                             |                           |
+              |                            |                             |                           |
+              |                            |                             |                           |
+              |                            |                             |                           |
+              |                            |                             |                           |
+              |                            |                             |                           |
+              |                            |                             |                           |
+              |                            |                             |                           |
+              |                            |      +--------------------+ |                           |
+              |                            |      |                    | |                           |
+              |                            |      |   front-server     | |                           |
+              |                            |      |                    | |                           |
+              |                            |      +--------------------+ |                           |
+              |                            |      |                    | |                           |
+              |                            |      |                    | |                           |
+              |                            |      |                    | |                           |
+              |                            |      |                    | |                           |
+              |                            |      | +----------------+ | |                           |
+              |                            |      | |                | | |                           |
+              |                            +--------+  burp-ui front +---+                           |
+              +-------------------------------------+                +-------------------------------+
+                                                  | +--------^-------+ |
+                                                  +----------|---------+
+                                                             |
+                                                             |
+                                                  +----------+---------+
+                                                  |                    |
+                                                  |      client        |
+                                                  |                    |
+                                                  +--------------------+
+                                                  |                    |
+                                                  |                    |
+                                                  |                    |
+                                                  |                    |
+                                                  |                    |
+                                                  |                    |
+                                                  |                    |
+                                                  |                    |
+                                                  |                    |
+                                                  +--------------------+
+
+
+To enable this mode, you need to set the *standalone* parameter of the
+`[Global]` section to *false*:
+
+::
+
+    [Global]
+    standalone: false
+
+
+Once this mode is enabled, you have to create **one** `[Agent]` section per
+agent you want to connect to:
+
+.. note:: The section must be called `[Agent:<label>]`
+
+::
+
+    # If you set standalone to 'false', add at least one section like this per
+    # bui-agent
+    [Agent:agent1]
+    # bui-agent address
+    host: 192.168.1.1
+    # bui-agent port
+    port: 10000
+    # bui-agent password
+    password: azerty
+    # enable SSL
+    ssl: true
+    # socket timeout (in seconds)
+    timeout: 5
+
+    [Agent:agent2]
+    # bui-agent address
+    host: 192.168.2.1
+    # bui-agent port
+    port: 10000
+    # bui-agent password
+    password: ytreza
+    # enable SSL
+    ssl: true
+    # socket timeout (in seconds)
+    timeout: 5
+
+
+To configure your agents, please refer to the `bui-agent`_ page.
+
+
+Versions
+--------
+
+`Burp-UI`_ ships with two different backends:
+
+- `Burp1`_
+- `Burp2`_
+
+These backends allow you to either connect to a `Burp`_ server version 1.x.x or
+2.x.x.
+
+
+Burp1
+^^^^^
 
 The *burp-1* backend can be enabled by setting the *version* option to *1* in
 your ``[Global]`` section:
@@ -94,7 +244,7 @@ your ``[Global]`` section:
     version: 1
 
 
-Now you can add a *burp-1* backend specific options:
+Now you can add *burp-1* backend specific options:
 
 ::
 
@@ -129,7 +279,7 @@ Each option is commented, but here is a more detailed documentation:
 
 
 Burp2
------
+^^^^^
 
 The *burp-2* backend can be enabled by setting the *version* option to *2* in
 your ``[Global]`` section:
@@ -315,3 +465,4 @@ Now you can add *basic acl* specific options:
 .. _Burp: http://burp.grke.org/
 .. _Gunicorn: http://gunicorn.org/
 .. _Burp-UI: https://git.ziirish.me/ziirish/burp-ui
+.. _bui-agent: buiagent.html
