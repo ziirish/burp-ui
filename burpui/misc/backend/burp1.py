@@ -37,7 +37,7 @@ g_tmpdir      = u'/tmp'
 
 class Burp(BUIbackend, BUIlogging):
     """
-    The :class:`burpui.misc.backend.Burp1` module provides a consistent
+    The :class:`burpui.misc.backend.Burp1` class provides a consistent
     backend for ``burp-1`` servers.
     """
     states = {
@@ -82,7 +82,7 @@ class Burp(BUIbackend, BUIlogging):
 
     def __init__(self, server=None, conf=None, dummy=False):
         """
-        The :class:`burpui.misc.backend.Burp1` module provides a consistent
+        The :class:`burpui.misc.backend.Burp1` class provides a consistent
         backend for ``burp-1`` servers.
 
         :param server: ``Burp-UI`` server instance in order to access logger and/or some global settings
