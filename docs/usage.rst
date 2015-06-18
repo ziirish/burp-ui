@@ -15,11 +15,13 @@ every bodies needs.
 There are also different modules to support `Authentication`_ and `ACL`_ within
 the web-interface.
 
-`Burp-UI`_ tries to be the less intrusive possible, nevertheless it ships with
-the ability to manage `Burp`_'s configuration files. This feature requires
-`Burp-UI`_ to be launched on the same server that hosts your `Burp`_ instance.
-You also have to make sure the user that runs `Burp-UI`_ has enough privileges
-to edit those files.
+.. warning::
+   `Burp-UI`_ tries to be the less intrusive as possible, nevertheless it ships
+   with the ability to manage `Burp`_'s configuration files.
+   This feature **requires** `Burp-UI`_ to be launched on the **same** server
+   that hosts your `Burp`_ instance.
+   You also have to make sure the user that runs `Burp-UI`_ has **enough**
+   privileges to edit those files.
 
 
 Configuration
