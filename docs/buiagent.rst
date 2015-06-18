@@ -6,7 +6,8 @@ server.
 These agents must be launched on every server hosting a `Burp`_ instance you'd
 like to monitor.
 
-They have a specific configuration file with a `[Global]` section as below:
+They have a specific `buiagent.cfg`_ configuration file with a ``[Global]``
+section as below:
 
 ::
 
@@ -48,4 +49,5 @@ for more details.
 
 .. _Burp: http://burp.grke.org/
 .. _Burp-UI: https://git.ziirish.me/ziirish/burp-ui
+.. _buiagent.cfg: https://git.ziirish.me/ziirish/burp-ui/blob/master/share/burpui/etc/buiagent.sample.cfg
 .. _bui-agent: buiagent.html

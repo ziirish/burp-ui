@@ -27,7 +27,7 @@ the web-interface.
 Configuration
 -------------
 
-The configuration file contains a ``[Global]`` section as follow:
+The `burpui.cfg`_ configuration file contains a ``[Global]`` section as follow:
 
 ::
 
@@ -71,15 +71,20 @@ Each option is commented, but here is a more detailed documentation:
 - *sslkey*: SSL key to use when SSL support is enabled.
 - *version*: What version of `Burp`_ this `Burp-UI`_ instance manages. Can
   either be *1* or *2*. This parameter determines which backend is loaded at
-  runtime. (see `Versions`_ for more details)
+  runtime.
+
+  (see `Versions`_ for more details)
 - *standalone*: `Burp-UI`_ can run in two different modes. If it runs in
   standalone mode (meaning you set this parameter to *true*), you can only
   address **one** `Burp`_ server of the version specified by the previous
   parameter.
+
   If this option is set to *false*, `Burp-UI`_ will run as a *proxy* allowing
   you to address multiple `Burp`_ servers. In this mode, you need to configure
   **at least one** *Agent* section in your configuration file. You also need to
   run one ``bui-agent`` per server.
+
+  (see `Modes`_ for more details)
 - *auth*: What `Authentication`_ backend to use.
 - *acl*: What `ACL`_ module to use.
 
@@ -100,7 +105,8 @@ Standalone
 ^^^^^^^^^^
 
 This mode is the **default** and the easiest one. It can be activated by setting
-the *standalone* parameter in the ``[Global]`` section to *true*:
+the *standalone* parameter in the ``[Global]`` section of your `burpui.cfg`_
+file to *true*:
 
 ::
 
@@ -114,8 +120,8 @@ That's all you need to do for this mode to work.
 Multi-Agent
 ^^^^^^^^^^^
 
-This mode allows you access multiple `Burp`_ servers through the
-`bui-agent`_. Here is a schema to illustrate the architecture:
+This mode allows you access multiple `Burp`_ servers through the `bui-agent`_.
+Here is a schema to illustrate the architecture:
 
 ::
 
@@ -177,7 +183,7 @@ This mode allows you access multiple `Burp`_ servers through the
 
 
 To enable this mode, you need to set the *standalone* parameter of the
-``[Global]`` section to *false*:
+``[Global]`` section of your `burpui.cfg`_ file to *false*:
 
 ::
 
@@ -185,10 +191,8 @@ To enable this mode, you need to set the *standalone* parameter of the
     standalone: false
 
 
-Once this mode is enabled, you have to create **one** ``[Agent]`` section per
-agent you want to connect to:
-
-.. note:: The sections must be called ``[Agent:<label>]`` (case sensitive)
+Once this mode is enabled, you have to create **one** ``[Agent]`` section
+**per** agent you want to connect to in your `burpui.cfg`_ file:
 
 ::
 
@@ -219,6 +223,8 @@ agent you want to connect to:
     timeout: 5
 
 
+.. note:: The sections must be called ``[Agent:<label>]`` (case sensitive)
+
 To configure your agents, please refer to the `bui-agent`_ page.
 
 
@@ -238,7 +244,7 @@ Burp1
 ^^^^^
 
 The *burp-1* backend can be enabled by setting the *version* option to *1* in
-your ``[Global]`` section:
+the ``[Global]`` section of your `burpui.cfg`_ file:
 
 ::
 
@@ -284,7 +290,7 @@ Burp2
 ^^^^^
 
 The *burp-2* backend can be enabled by setting the *version* option to *2* in
-your ``[Global]`` section:
+the ``[Global]`` section of your `burpui.cfg`_ file:
 
 ::
 
@@ -330,7 +336,7 @@ There are currently two different backends:
 - `Basic`_
 
 To disable the *authentication* backend, set the *auth* option of the
-``[Global]`` section to *none*:
+``[Global]`` section of your `burpui.cfg`_ file to *none*:
 
 ::
 
@@ -343,7 +349,8 @@ LDAP
 
 The *ldap* authentication backend has some dependencies, please refer to the
 `requirements <requirements.html>`_ page. To enable this backend, you need to
-set the *auth* option of the ``[Global]`` section to *ldap*:
+set the *auth* option of the ``[Global]`` section of your `burpui.cfg`_ file to
+*ldap*:
 
 ::
 
@@ -387,7 +394,8 @@ Basic
 ^^^^^
 
 In order for the *basic* authentication backend to be enabled, you need to set
-the *auth* option of the ``[Global]`` section to *basic*:
+the *auth* option of the ``[Global]`` section of your `burpui.cfg`_ file to
+*basic*:
 
 ::
 
@@ -419,8 +427,8 @@ There is currently only one backend:
 
 - `Basic ACL`_
 
-To disable the *acl* backend, set the *acl* option of the ``[Global]`` section to
-*none*:
+To disable the *acl* backend, set the *acl* option of the ``[Global]`` section
+of your `burpui.cfg`_ file to *none*:
 
 ::
 
@@ -433,7 +441,7 @@ Basic ACL
 
 
 The *basic* acl backend can be enabled by setting the *acl* option of the
-``[Global]`` section to *basic*:
+``[Global]`` section of your `burpui.cfg`_ file to *basic*:
 
 ::
 
@@ -467,4 +475,5 @@ Now you can add *basic acl* specific options:
 .. _Burp: http://burp.grke.org/
 .. _Gunicorn: http://gunicorn.org/
 .. _Burp-UI: https://git.ziirish.me/ziirish/burp-ui
+.. _burpui.cfg: https://git.ziirish.me/ziirish/burp-ui/blob/master/share/burpui/etc/burpui.sample.cfg
 .. _bui-agent: buiagent.html
