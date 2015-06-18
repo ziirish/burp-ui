@@ -47,6 +47,28 @@ value. Please refer to the `Burp-UI versions <usage.html#versions>`__ section
 for more details.
 
 
+Example
+-------
+
+Here is a full usage example:
+
+::
+
+    # On the server called 'agent1'
+    agent1:~$ python path/to/bui-agent.py -c path/to/buiagent.cfg
+
+    # On the server called 'agent2'
+    agent2:~$ python path/to/bui-agent.py -c path/to/buiagent.cfg
+
+    # On the server called 'front'
+    front:~$ python path/to/burp-ui.py -c path/to/burpui.cfg
+
+
+This example uses three servers. You then only need to point your brother to
+http://front:5000/ for instance, and the `Burp-UI`_ instance will *proxify* the
+requests to the two agents for you.
+
+
 .. _Burp: http://burp.grke.org/
 .. _Burp-UI: https://git.ziirish.me/ziirish/burp-ui
 .. _buiagent.cfg: https://git.ziirish.me/ziirish/burp-ui/blob/master/share/burpui/etc/buiagent.sample.cfg
