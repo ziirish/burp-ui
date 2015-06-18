@@ -1,0 +1,51 @@
+bui-agent
+=========
+
+The `bui-agent`_ is a kind of proxy between a `Burp`_ server and your `Burp-UI`_
+server.
+These agents must be launched on every server hosting a `Burp`_ instance you'd
+like to monitor.
+
+They have a specific configuration file with a `[Global]` section as below:
+
+::
+
+    [Global]
+    # On which port is the application listening
+    port: 10000
+    # On which address is the application listening
+    # '0.0.0.0' is the default for all IPv4
+    bind: 0.0.0.0
+    # enable SSL
+    ssl: true
+    # ssl cert
+    sslcert: /etc/burp/ssl_cert-server.pem
+    # ssl key
+    sslkey: /etc/burp/ssl_cert-server.key
+    # burp server version (currently only burp 1.x is implemented)
+    version: 1
+    # agent password
+    password: password
+    # socket timeout (in seconds)
+    timeout: 5
+
+
+Each option is commented, but here is a more detailed documentation:
+
+- *port*: On which port is `bui-agent`_ listening.
+- *bind*: On which address is `bui-agent`_ listening.
+- *ssl*: Whether to communicate with the `Burp-UI`_ server over SSL or not.
+- *sslcert*: What SSL certificate to use when SSL is enabled.
+- *sslkey*: What SSL key to use when SSL is enabled.
+- *version*: What version of `Burp`_ this `bui-agent`_ instance manages. (see
+  `Burp-UI versions <usage.html#versions>`__ for more details)
+- *password*: The shared secret between the `Burp-UI`_ server and `bui-agent`_.
+
+As with `Burp-UI`_, you need a specific section depending on the *version*
+value. Please refer to the `Burp-UI versions <usage.html#versions>`__ section
+for more details.
+
+
+.. _Burp: http://burp.grke.org/
+.. _Burp-UI: https://git.ziirish.me/ziirish/burp-ui
+.. _bui-agent: buiagent.html

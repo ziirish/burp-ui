@@ -21,6 +21,7 @@ Documentation
    installation
    usage
    gunicorn
+   buiagent
    development
    contributing
    changelog
