@@ -175,7 +175,7 @@ This mode allows you access multiple `Burp`_ servers through the
 
 
 To enable this mode, you need to set the *standalone* parameter of the
-`[Global]` section to *false*:
+``[Global]`` section to *false*:
 
 ::
 
@@ -183,10 +183,10 @@ To enable this mode, you need to set the *standalone* parameter of the
     standalone: false
 
 
-Once this mode is enabled, you have to create **one** `[Agent]` section per
+Once this mode is enabled, you have to create **one** ``[Agent]`` section per
 agent you want to connect to:
 
-.. note:: The section must be called `[Agent:<label>]`
+.. note:: The sections must be called ``[Agent:<label>]`` (case sensitive)
 
 ::
 
