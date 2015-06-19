@@ -55,6 +55,12 @@ The documentation is hosted on `readthedocs <https://readthedocs.org>`_ at the
 following address: `burp-ui.readthedocs.org <https://burp-ui.readthedocs.org>`_
 
 
+Community
+=========
+
+Please refer to the `Contributing <https://burp-ui.readthedocs.org/en/latest/contributing.html>`_ page.
+
+
 Troubleshooting
 ===============
 
