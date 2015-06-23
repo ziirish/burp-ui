@@ -916,6 +916,9 @@ class Burp(BUIbackend, BUIlogging):
         return self.parser.store_server_conf(data)
 
     def get_parser_attr(self, attr=None, agent=None):
+        """
+        Using a method because of the bui-agent
+        """
         if not attr or not self.parser:
             return None
         return self.parser.get_priv_attr(attr)

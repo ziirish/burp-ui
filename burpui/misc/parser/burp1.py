@@ -4,6 +4,8 @@ import os
 import shutil
 import codecs
 
+from glob import glob
+
 from burpui.misc.utils import BUIlogging
 from burpui.misc.parser.interface import BUIparser
 
@@ -156,6 +158,7 @@ class Parser(BUIparser, BUIlogging):
         u'ca_name': "name",
         u'ca_server_name': "name",
         u'ca_burp_ca': "path",
+        u'includes': "path or glob",
     }
     values = {
         u'mode': ['client', 'server'],
@@ -332,6 +335,7 @@ class Parser(BUIparser, BUIlogging):
         u'ca_burp_ca': "Path to the burp_ca script when using the ca_conf option.",
         u'soft_quota': "A warning will be issued when the estimated size of all files is greater than the specified size and smaller than hard_quota. Example: 'soft_quota = 95Gb'. Set to 0 (the default) to have no warning.",
         u'hard_quota': "Do not back up the client if the estimated size of all files is greater than the specified size. Example: 'hard_quota = 100Gb'. Set to 0 (the default) to have no limit.",
+        u'includes': "Configuration files inclusions (source)",
     }
 
     def __init__(self, app=None, conf=None):
@@ -361,6 +365,8 @@ class Parser(BUIparser, BUIlogging):
         boolean = []
         multi = []
         integer = []
+        includes = []
+        includes_ext = []
         for l in fi:
             if re.match('^\s*#', l):
                 continue
@@ -375,7 +381,11 @@ class Parser(BUIparser, BUIlogging):
                     integer.append({'name': key, 'value': int(val)})
                     continue
                 if key == u'.':
-                    other_files.append(val)
+                    if val.startswith('/'):
+                        includes_ext += glob(val)
+                    else:
+                        includes_ext += glob(os.path.join(self.root, val))
+                    includes.append(val)
                     continue
                 if key in self.multi_srv:
                     found = False
@@ -391,7 +401,7 @@ class Parser(BUIparser, BUIlogging):
                     self.clientconfdir = os.path.join(self.root, val)
                 dic.append({'name': key, 'value': val})
 
-        return dic, boolean, multi, integer, other_files
+        return dic, boolean, multi, integer, includes, includes_ext
 
     def read_server_conf(self):
         if not self.conf:
@@ -401,28 +411,13 @@ class Parser(BUIparser, BUIlogging):
         other_files = []
         f = self._readfile(self.conf)
 
-        tmp, boolean, multi, integer, other_files = self._parse_lines_srv(f)
+        tmp, boolean, multi, integer, includes, includes_ext = self._parse_lines_srv(f)
         res['common'] = tmp
         res['boolean'] = boolean
         res['integer'] = integer
         res['multi'] = multi
-
-        if other_files:
-            while True:
-                other_files2 = []
-                for fi in other_files:
-                    f = self._readfile(fi)
-                    tmp, boolean, multi, integer, dummy2 = self._parse_lines_srv(f)
-                    res['common'].update(tmp)
-                    res['boolean'] += boolean
-                    res['multi'].update(multi)
-                    res['integer'] += integer
-                    other_files2 += dummy2
-                if other_files2:
-                    other_files = other_files2
-                else:
-                    break
-
+        res['includes'] = includes
+        res['includes_ext'] = includes_ext
         res['clients'] = self.list_clients()
 
         return res
@@ -443,10 +438,16 @@ class Parser(BUIparser, BUIlogging):
             return [[1, 'Sorry, no configuration file defined']]
         orig = []
         ref = '{}.bui.init.back'.format(self.conf)
+        bak = '{}.bak'.format(self.conf)
         if not os.path.isfile(ref):
             try:
                 shutil.copy(self.conf, ref)
-            except Exception, e:
+            except Exception as e:
+                return [[2, str(e)]]
+        else:
+            try:
+                shutil.copy(self.conf, bak)
+            except Exception as e:
                 return [[2, str(e)]]
 
         errs = []
@@ -462,7 +463,7 @@ class Parser(BUIparser, BUIlogging):
                     elif key in self.integer_srv:
                         typ = 'integers'
                     # highlight the wrong parameters
-                    errs.append([2, "Sorry, the file '%s' does not exist" % (d), key, typ])
+                    errs.append([2, "Sorry, the file '{}' does not exist".format(d), key, typ])
         if errs:
             return errs
 
@@ -473,17 +474,27 @@ class Parser(BUIparser, BUIlogging):
         newkeys = list(set(data.viewkeys()) - set(oldkeys))
 
         already_multi = []
+        already_file = []
         written = []
 
         with codecs.open(self.conf, 'w', 'utf-8') as f:
             # f.write('# Auto-generated configuration using Burp-UI\n')
             for line in orig:
                 if (self._line_removed(line, data.viewkeys()) and
-                        not self._line_is_comment(line) or
-                        self._line_is_file_include(line)):
+                        not self._line_is_comment(line) and
+                        not self._line_is_file_include(line)):
                     # The line was removed, we comment it
-                    # we also comment file inclusions as we don't support them yet TODO / FIXME
                     f.write('#{}\n'.format(line))
+                elif self._line_is_file_include(line):
+                    # The line is a file inclusion, we check if the line was already present
+                    ori = self._include_get_file(line)
+                    if ori in data.getlist('includes_ori'):
+                        idx = data.getlist('includes_ori').index(ori)
+                        file = data.getlist('includes')[idx]
+                        self._write_key(f, '.', file)
+                        already_file.append(file)
+                    else:
+                        f.write('#{}\n'.format(line))
                 elif self._get_line_key(line, False) in data.viewkeys():
                     # The line is still present or has been un-commented, rewrite it with eventual changes
                     key = self._get_line_key(line, False)
@@ -493,11 +504,16 @@ class Parser(BUIparser, BUIlogging):
                         already_multi.append(key)
                     written.append(key)
                 else:
-                    # The line was a empty or something...
+                    # The line was empty or a comment...
                     f.write('{}\n'.format(line))
+            # Write the new keys
             for key in newkeys:
-                if key not in written:
+                if key not in written and key not in ['includes', 'includes_ori']:
                     self._write_key(f, key, data)
+            # Write the rest of file inclusions
+            for file in data.getlist('includes'):
+                if file not in already_file:
+                    self._write_key(f, '.', file)
 
         return [[0, 'Configuration successfully saved.']]
 
@@ -507,6 +523,8 @@ class Parser(BUIparser, BUIlogging):
             if data.get(key) == 'true':
                 val = 1
             f.write('{} = {}\n'.format(key, val))
+        elif key == '.':
+            f.write('. {}\n'.format(data))
         elif key in self.multi_srv:
             for val in data.getlist(key):
                 f.write('{} = {}\n'.format(key, val))
@@ -523,20 +541,26 @@ class Parser(BUIparser, BUIlogging):
             return False
         return line.startswith('.')
 
+    def _include_get_file(self, line):
+        if not line:
+            return None
+        _, file = re.split('\s+', line, 1)
+        return file
+
     def _get_line_key(self, line, ignore_comments=True):
         if not line:
             return ''
         if '=' not in line:
             return line
-        (key, rest) = line.split('=', 1)
+        (key, rest) = re.split('\s+|=', line, 1)
         if not ignore_comments:
             key = key.strip('#')
         return key.strip()
 
     def _line_removed(self, line, keys):
-        if not line or '=' not in line:
+        if not line:
             return False
-        (key, rest) = line.split('=', 1)
+        (key, _) = re.split('\s+|=', line, 1)
         key = key.strip()
         return key not in keys
 

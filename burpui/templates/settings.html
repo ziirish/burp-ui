@@ -160,6 +160,28 @@
                   </div>
                 </div>
               </fieldset>
+              <fieldset>
+                <legend id="includes">Includes</legend>
+                <div class="well">
+                  <div class="form-group" ng-repeat="inc in includes track by $index">
+                    <label for="include-{{ $index }}" class="col-lg-3 control-label">source</label>
+                    <div class="col-lg-2">
+                      <input class="form-control" type="text" id="include-{{ $index }}" name="includes" ng-model="inc" ng-focus="focusIn($event)" ng-blur="focusOut($event)" placeholder="{{ ::placeholders['includes'] }}">
+                      <input type="hidden" ng-disabled="{{ includes_ori[$index] === false }}" name="includes_ori" value="{{ includes_ori[$index] }}">
+                    </div>
+                    <div class="col-lg-1">
+                      <button type="button" class="btn btn-danger" ng-click="removeIncludes($index)"><span class="glyphicon glyphicon-minus"></span></button>
+                    </div>
+                    <div class="col-lg-6" ng-if="$first" ng-bind-html="::server_doc['includes']"></div>
+                  </div>
+                  <div class="form-group">
+                    <label for="btn-add-include" class="col-lg-3 control-label">Add include</label>
+                    <div class="col-lg-9">
+                      <button type="button" class="btn btn-success btn-primary" ng-click="clickAddIncludes()"><span class="glyphicon glyphicon-plus"></span></button>
+                    </div>
+                  </div>
+                </div>
+              </fieldset>
               <div class="form-group">
                 <div class="col-lg-3 col-lg-offset-3">
                   <button type="submit" class="btn btn-primary" ng-disabled="!setSettings.$valid">Submit</button>
