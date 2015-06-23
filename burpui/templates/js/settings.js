@@ -66,7 +66,18 @@
  * 				]
  * 			},
  * 			...
- * 		]
+ * 		],
+ *    "includes": [
+ *      "glob",
+ *      "example*.conf",
+ *      ...
+ *    ],
+ *    "includes_ext": [
+ *      "glob",
+ *      "example1.conf",
+ *      "example_toto.conf",
+ *      ...
+ *    ]
  * 	},
  * 	"server_doc": {
  * 		"key": "documentations of the specified key from the manpage",
@@ -133,6 +144,9 @@ app.controller('ConfigCtrl', function($scope, $http) {
 			$scope.suggest = data.suggest;
 			$scope.placeholders = data.placeholders;
 			$scope.defaults = data.defaults;
+			$scope.includes = data.results.includes;
+			$scope.includes_ori = angular.copy($scope.includes);
+			$scope.includes_ext = data.results.includes_ext;
 			$('#waiting-container').hide();
 			$('#settings-panel').show();
 		});
@@ -219,21 +233,6 @@ app.controller('ConfigCtrl', function($scope, $http) {
 		$scope.new[key] = undefined;
 		$scope.changed = true;
 	};
-	$scope.removeMulti = function(pindex, cindex) {
-		$scope.multis[pindex].value.splice(cindex, 1);
-		if ($scope.multis[pindex].value.length <= 0) {
-			$scope.multis.splice(pindex, 1);
-		}
-		$scope.add.multis = false;
-		$scope.new.multis = false;
-		$scope.changed = true;
-	};
-	$scope.addMulti = function(pindex) {
-		$scope.multis[pindex].value.push('');
-		$scope.add.multis = false;
-		$scope.new.multis = false;
-		$scope.changed = true;
-	};
 	$scope.clickAdd = function(type) {
 		if ($scope.new[type]) {
 			$scope.new[type] = undefined;
@@ -249,6 +248,45 @@ app.controller('ConfigCtrl', function($scope, $http) {
 			}
 			$scope.avail[type].push({'name': n, 'value': v});
 		});
+	};
+	$scope.removeMulti = function(pindex, cindex) {
+		$scope.multis[pindex].value.splice(cindex, 1);
+		if ($scope.multis[pindex].value.length <= 0) {
+			$scope.multis.splice(pindex, 1);
+		}
+		$scope.add.multis = false;
+		$scope.new.multis = false;
+		$scope.changed = true;
+	};
+	$scope.addMulti = function(pindex) {
+		$scope.multis[pindex].value.push('');
+		$scope.add.multis = false;
+		$scope.new.multis = false;
+		$scope.changed = true;
+	};
+	$scope.removeIncludes = function(index) {
+		if (!$scope.old.includes) {
+			$scope.old.includes = [];
+		}
+		if (!$scope.old.includes_ori) {
+			$scope.old.includes_ori = [];
+		}
+		$scope.old.includes.push($scope.includes[index]);
+		$scope.old.includes_ori.push($scope.includes_ori[index]);
+		$scope.includes.splice(index, 1);
+		$scope.includes_ori.splice(index, 1);
+	};
+	$scope.clickAddIncludes = function() {
+		val = '';
+		val2 = false;
+		if ($scope.old.includes) {
+			val = $scope.old.includes.pop();
+		}
+		if ($scope.old.includes_ori) {
+			val2 = $scope.old.includes_ori.pop();
+		}
+		$scope.includes.push(val);
+		$scope.includes_ori.push(val2);
 	};
 	$scope.select = function(selected, select, type) {
 		select.search = undefined;
@@ -270,8 +308,11 @@ app.controller('ConfigCtrl', function($scope, $http) {
 	/* These callbacks expand/reduce the input for a better readability */
 	$scope.focusIn = function(ev) {
 		el = $( ev.target ).parent();
+		/* Hide the button */
 		el.next('div').hide();
+		/* Hide the legend */
 		el.next('div').next('div').hide();
+		/* Expand the input */
 		el.removeClass('col-lg-2').addClass('col-lg-9');
 	};
 	$scope.focusOut = function(ev) {
