@@ -1,0 +1,7 @@
+dev:
+  script:
+  - bash test/run_tests.sh
+  tags: 
+  except:
+  - tags
+
