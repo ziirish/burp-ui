@@ -639,12 +639,12 @@ class Burp(BUIbackend, BUIlogging):
         if not f:
             return r
         for line in f:
-            self._logger('debug', 'line: {0}'.format(line))
+            # self._logger('debug', 'line: {0}'.format(line))
             rs = re.search('^{0}\s+(\d)\s+(\S)\s+(.+)$'.format(name), line)
             if rs and rs.group(2) == 'r' and int(rs.group(1)) == 2:
                 c = 0
                 for v in rs.group(3).split('\t'):
-                    self._logger('debug', '{0}: {1}'.format(self.counters[c], v))
+                    # self._logger('debug', '{0}: {1}'.format(self.counters[c], v))
                     if c > 0 and c < 15:
                         val = map(int, v.split('/'))
                         if val[0] > 0 or val[1] > 0 or val[2] or val[3] > 0:
