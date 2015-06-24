@@ -32,7 +32,7 @@ g_burpbin     = u'/usr/sbin/burp'
 g_stripbin    = u'/usr/sbin/vss_strip'
 g_burpconfcli = None
 g_burpconfsrv = u'/etc/burp/burp-server.conf'
-g_tmpdir      = u'/tmp'
+g_tmpdir      = u'/tmp/bui'
 
 
 class Burp(BUIbackend, BUIlogging):

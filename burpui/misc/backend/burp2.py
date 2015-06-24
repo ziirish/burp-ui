@@ -28,6 +28,7 @@ g_burpbin     = u'/usr/sbin/burp'
 g_stripbin    = u'/usr/sbin/vss_strip'
 g_burpconfcli = u'/etc/burp/burp.conf'
 g_burpconfsrv = u'/etc/burp/burp-server.conf'
+g_tmpdir      = u'/tmp/bui'
 
 
 def sighandler(signum, frame):
@@ -38,7 +39,7 @@ def sighandler(signum, frame):
 class Burp(Burp1):
 
     def __init__(self, server=None, conf=None):
-        global g_burpbin, g_stripbin, g_burpconfcli, g_burpconfsrv, BURP_MINIMAL_VERSION
+        global g_burpbin, g_stripbin, g_burpconfcli, g_burpconfsrv, g_tmpdir, BURP_MINIMAL_VERSION
         self.proc = None
         self.app = None
         self.acl_handler = False
@@ -52,7 +53,7 @@ class Burp(Burp1):
         self.burpconfsrv = g_burpconfsrv
         self.running = []
         if conf:
-            config = ConfigParser.ConfigParser({'burpbin': g_burpbin, 'stripbin': g_stripbin, 'bconfcli': g_burpconfcli, 'bconfsrv': g_burpconfsrv})
+            config = ConfigParser.ConfigParser({'burpbin': g_burpbin, 'stripbin': g_stripbin, 'bconfcli': g_burpconfcli, 'bconfsrv': g_burpconfsrv, 'tmpdir': g_tmpdir})
             version = ''
             with codecs.open(conf, 'r', 'utf-8') as fp:
                 config.readfp(fp)
@@ -61,6 +62,11 @@ class Burp(Burp1):
                     strip = self._safe_config_get(config.get, 'stripbin', sect='Burp2')
                     confcli = self._safe_config_get(config.get, 'bconfcli', sect='Burp2')
                     confsrv = self._safe_config_get(config.get, 'bconfsrv', sect='Burp2')
+                    tmpdir = self._safe_config_get(config.get, 'tmpdir')
+
+                    if tmpdir and os.path.exists(tmpdir) and not os.path.isdir(tmpdir):
+                        self._logger('warning', "'%s' is not a directory", tmpdir)
+                        tmpdir = g_tmpdir
 
                     if confcli and not os.path.isfile(confcli):
                         self._logger('warning', "The file '%s' does not exist", confcli)
@@ -99,6 +105,7 @@ class Burp(Burp1):
                         # The burp binary is mandatory for this backend
                         raise Exception('This backend *CAN NOT* work without a burp binary')
 
+                    self.tmpdir = tmpdir
                     self.burpbin = bbin
                     self.stripbin = strip
                     self.burpconfcli = confcli
@@ -300,27 +307,27 @@ class Burp(Burp1):
         if forward:
             backup['name'] = client
         translate = {
-            'time_start':                    'start',
-            'time_end':                      'end',
-            'time_taken':                    'duration',
-            'bytes':                         'totsize',
-            'bytes_received':                'received',
-            'bytes_estimated':               'estimated_bytes',
-            'files':                         'files',
-            'files_encrypted':               'files_enc',
-            'directories':                   'dir',
-            'soft_links':                    'softlink',
-            'hard_links':                    'hardlink',
-            'meta_data':                     'meta',
-            'meta_data_encrypted':           'meta_enc',
-            'special_files':                 'special',
-            'efs_files':                     'efs',
-            'vss_headers':                   'vssheader',
-            'vss_headers_encrypted':         'vssheader_enc',
-            'vss_footers':                   'vssfooter',
-            'vss_footers_encrypted':         'vssfooter_enc',
-            'total':                         'total',
-            'grand_total':                   'total',
+            'time_start': 'start',
+            'time_end': 'end',
+            'time_taken': 'duration',
+            'bytes': 'totsize',
+            'bytes_received': 'received',
+            'bytes_estimated': 'estimated_bytes',
+            'files': 'files',
+            'files_encrypted': 'files_enc',
+            'directories': 'dir',
+            'soft_links': 'softlink',
+            'hard_links': 'hardlink',
+            'meta_data': 'meta',
+            'meta_data_encrypted': 'meta_enc',
+            'special_files': 'special',
+            'efs_files': 'efs',
+            'vss_headers': 'vssheader',
+            'vss_headers_encrypted': 'vssheader_enc',
+            'vss_footers': 'vssfooter',
+            'vss_footers_encrypted': 'vssfooter_enc',
+            'total': 'total',
+            'grand_total': 'total',
         }
         counts = {
             'new': 'count',
