@@ -873,10 +873,22 @@ class Burp(BUIbackend, BUIlogging):
             os.remove(zip_file)
         zip_len = len(zip_dir) + 1
         stripping = True
+        test_strip = True
         with BUIcompress(zip_file, archive) as zf:
             for dirname, subdirs, files in os.walk(zip_dir):
                 for filename in files:
                     path = os.path.join(dirname, filename)
+                    # try to detect if the file contains vss headers
+                    if test_strip:
+                        test_strip = False
+                        otp = None
+                        try:
+                            otp = subprocess.check_output([self.stripbin, '-p', '-i', path])
+                        except subprocess.CalledProcessError as e:
+                            self.logger('debug', "Stripping failed on '{}': {}".format(path, str(e)))
+                        if not otp:
+                            stripping = False
+
                     if stripping and os.path.isfile(path):
                         self._logger('debug', "stripping file: %s", path)
                         shutil.move(path, path + '.tmp')
