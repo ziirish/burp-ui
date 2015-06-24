@@ -125,7 +125,7 @@ class Burp(BUIbackend, BUIlogging):
                 confsrv = self._safe_config_get(config.get, 'bconfsrv')
                 tmpdir = self._safe_config_get(config.get, 'tmpdir')
 
-                if tmpdir and not os.path.isdir(tmpdir):
+                if tmpdir and os.path.exists(tmpdir) and not os.path.isdir(tmpdir):
                     self._logger('warning', "'%s' is not a directory", tmpdir)
                     tmpdir = g_tmpdir
 
