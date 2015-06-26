@@ -885,7 +885,7 @@ class Burp(BUIbackend, BUIlogging):
                         try:
                             otp = subprocess.check_output([self.stripbin, '-p', '-i', path])
                         except subprocess.CalledProcessError as e:
-                            self.logger('debug', "Stripping failed on '{}': {}".format(path, str(e)))
+                            self._logger('debug', "Stripping failed on '{}': {}".format(path, str(e)))
                         if not otp:
                             stripping = False
 
