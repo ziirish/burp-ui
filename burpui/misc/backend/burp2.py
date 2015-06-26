@@ -51,9 +51,10 @@ class Burp(Burp1):
         self.stripbin = g_stripbin
         self.burpconfcli = g_burpconfcli
         self.burpconfsrv = g_burpconfsrv
+        self.defaults = {'burpbin': g_burpbin, 'stripbin': g_stripbin, 'bconfcli': g_burpconfcli, 'bconfsrv': g_burpconfsrv, 'tmpdir': g_tmpdir}
         self.running = []
         if conf:
-            config = ConfigParser.ConfigParser({'burpbin': g_burpbin, 'stripbin': g_stripbin, 'bconfcli': g_burpconfcli, 'bconfsrv': g_burpconfsrv, 'tmpdir': g_tmpdir})
+            config = ConfigParser.ConfigParser(self.defaults)
             version = ''
             with codecs.open(conf, 'r', 'utf-8') as fp:
                 config.readfp(fp)
