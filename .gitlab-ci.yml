@@ -1,7 +1,15 @@
 dev:
   script:
   - bash test/run_tests.sh
-  tags: 
+  tags:
   except:
   - tags
 
+docker:
+  image: python:2.7
+  script:
+  - bash test/run_tests.sh
+  tags:
+  - docker
+  except:
+  - tags
