@@ -381,10 +381,11 @@ class Parser(BUIparser, BUIlogging):
                     integer.append({'name': key, 'value': int(val)})
                     continue
                 if key == u'.':
-                    if val.startswith('/'):
-                        includes_ext += glob(val)
-                    else:
-                        includes_ext += glob(os.path.join(self.root, val))
+                    i = val
+                    if not val.startswith('/'):
+                        i = os.path.join(self.root, val)
+                    for p in glob(i):
+                        includes_ext.append({'name': p, 'value': val})
                     includes.append(val)
                     continue
                 if key in self.multi_srv:
