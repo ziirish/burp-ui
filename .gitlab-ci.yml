@@ -2,6 +2,7 @@ dev:
   script:
   - bash test/run_tests.sh
   tags:
+  - plain
   except:
   - tags
 
@@ -13,3 +14,4 @@ docker:
   - docker
   except:
   - tags
+  allow_failure: true
