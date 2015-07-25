@@ -14,4 +14,3 @@ docker:
   - docker
   except:
   - tags
-  allow_failure: true
