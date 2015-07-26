@@ -13,8 +13,7 @@ from burpui.forms import LoginForm
 from burpui.misc.utils import human_readable as _hr
 from burpui.misc.backend.interface import BUIserverException
 
-from burpui.api import api
-from burpui.api.settings import ServerSettings, ClientSettings
+import burpui.api
 from burpui.api.servers import ServersStats, Live
 
 
@@ -53,8 +52,6 @@ The whole API returns JSON-formated data
 The API has been split-out into several files and now uses Flask-Restful
 """
 
-app.jinja_env.globals.update(ServerSettings=ServerSettings)
-app.jinja_env.globals.update(ClientSettings=ClientSettings)
 app.jinja_env.globals.update(ServersStats=ServersStats)
 app.jinja_env.globals.update(Live=Live)
 
