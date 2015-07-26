@@ -24,5 +24,5 @@ for f in os.listdir(__path__[0]):
     if (os.path.isfile(os.path.join(__path__[0], f)) and
             ext == '.py' and
             name not in ['__init__', '.', '..']):
-        mod = 'burpui.api.' + f[:-3]
+        mod = 'burpui.api.' + name
         __import__(mod)
