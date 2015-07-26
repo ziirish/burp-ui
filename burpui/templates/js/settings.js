@@ -129,7 +129,7 @@ app.controller('ConfigCtrl', function($scope, $http) {
 			'multis': false
 		};
 	$scope.changed = false;
-	$http.get('{{ api.url_for(ServerSettings, server=server) }}').
+	$http.get('{{ url_for("api.server_settings", server=server) }}').
 		success(function(data, status, headers, config) {
 			$scope.bools = data.results.boolean;
 			$scope.all.bools = data.boolean;
