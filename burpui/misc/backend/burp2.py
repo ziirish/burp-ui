@@ -14,6 +14,7 @@ import subprocess
 import tempfile
 import codecs
 import signal
+import sys
 
 from pipes import quote
 from select import select
@@ -22,6 +23,9 @@ from burpui.misc.utils import human_readable as _hr
 from burpui.misc.backend.interface import BUIserverException
 from burpui.misc.backend.burp1 import Burp as Burp1
 from burpui.misc.parser.burp1 import Parser
+
+if sys.version_info < (3, 3):
+    TimeoutError = OSError
 
 BURP_MINIMAL_VERSION = 'burp-2.0.18'
 
@@ -33,7 +37,7 @@ g_tmpdir      = u'/tmp/bui'
 
 
 def sighandler(signum, frame):
-    raise IOError('Client read timed out')
+    raise TimeoutError('Operation timed out')
 
 
 # Some functions are the same as in Burp1 backend
@@ -146,7 +150,7 @@ class Burp(Burp1):
         cmd = [self.burpbin, '-c', self.burpconfcli, '-a', 'm']
         self.proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False)
         # wait a little bit in case the process dies on a network timeout
-        time.sleep(5)
+        time.sleep(0.5)
         if not self._proc_is_alive():
             raise Exception('Unable to spawn burp process')
         self.proc.stdin.write('j:pretty-print-off\n')
@@ -229,6 +233,8 @@ class Burp(Burp1):
         while True:
             try:
                 signal.alarm(5)
+                if not self._proc_is_alive():
+                    raise Exception('process died while reading its output')
                 doc += self.proc.stdout.readline().rstrip('\n')
                 js = self._is_valid_json(doc)
                 # if the string is a valid json and looks like a logline, we
@@ -238,7 +244,7 @@ class Burp(Burp1):
                     continue
                 elif js:
                     break
-            except IOError as e:
+            except (TimeoutError, IOError, Exception) as e:
                 # the os throws an exception if there is no data or timeout
                 self._logger('warning', str(e))
                 break
