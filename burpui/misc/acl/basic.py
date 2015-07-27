@@ -52,7 +52,9 @@ class ACLloader(BUIaclLoader):
 
     @property
     def acl(self):
-        return self._acl
+        if self._acl:
+            return self._acl
+        return None
 
 
 class BasicACL(BUIacl):

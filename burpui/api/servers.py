@@ -17,10 +17,10 @@ class ServersStats(Resource):
         if hasattr(bui.cli, 'servers'):
             check = False
             allowed = []
-            if (bui.acl_handler and not
-                    bui.acl_handler.acl.is_admin(current_user.name)):
+            if (bui.acl and not
+                    bui.acl.is_admin(current_user.name)):
                 check = True
-                allowed = bui.acl_handler.acl.servers(current_user.name)
+                allowed = bui.acl.servers(current_user.name)
             for serv in bui.cli.servers:
                 try:
                     if check:

@@ -12,7 +12,7 @@ from burpui import app, bui, login_manager
 from burpui.api import api
 from flask.ext.restful import reqparse, abort, Resource
 from flask.ext.login import current_user, login_required
-from flask import request, render_template, jsonify
+from flask import jsonify
 
 
 @api.resource('/api/server-config',
@@ -158,8 +158,8 @@ class ServerSettings(Resource):
         :returns: The *JSON* described above.
         """
         # Only the admin can edit the configuration
-        if (bui.acl_handler and not
-                bui.acl_handler.acl.is_admin(current_user.name)):
+        if (bui.acl and not
+                bui.acl.is_admin(current_user.name)):
             abort(403, message='Sorry, you don\'t have rights to access the setting panel')
         r = bui.cli.read_conf_srv(server)
         return jsonify(results=r,
@@ -180,8 +180,8 @@ class ClientSettings(Resource):
     @login_required
     def get(self, server=None, client=None):
         # Only the admin can edit the configuration
-        if (bui.acl_handler and not
-                bui.acl_handler.acl.is_admin(current_user.name)):
+        if (bui.acl and not
+                bui.acl.is_admin(current_user.name)):
             abort(403, message='Sorry, you don\'t have rights to access the setting panel')
         r = bui.cli.read_conf_cli(client, server)
         return jsonify(results=r)

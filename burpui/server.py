@@ -97,6 +97,10 @@ class BUIServer:
                         )
                         ACLloader = mod.ACLloader
                         self.acl_handler = ACLloader(self.app, self.standalone)
+                        # for development purpose only
+                        from burpui.misc.acl.interface import BUIacl
+                        self.acl = BUIacl
+                        self.acl = self.acl_handler.acl
                     except Exception as e:
                         traceback.print_exc()
                         self.app.logger.error('Import Exception, module \'{0}\': {1}'.format(self.acl_engine, str(e)))
