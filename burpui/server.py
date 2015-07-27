@@ -107,6 +107,7 @@ class BUIServer:
                         sys.exit(1)
                 else:
                     self.acl_handler = False
+                    self.acl = False
             except ConfigParser.NoOptionError as e:
                 self.app.logger.error(str(e))
 
