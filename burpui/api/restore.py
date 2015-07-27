@@ -70,11 +70,11 @@ class Restore(Resource):
         if not l or not name or not backup:
             abort(500)
         # Manage ACL
-        if (bui.acl_handler and
-                (not bui.acl_handler.acl.is_client_allowed(current_user.name,
-                                                           name,
-                                                           server) and not
-                 bui.acl_handler.acl.is_admin(current_user.name))):
+        if (bui.acl and
+                (not bui.acl.is_client_allowed(current_user.name,
+                                               name,
+                                               server) and not
+                 bui.acl.is_admin(current_user.name))):
             abort(403)
         if server:
             filename = 'restoration_%d_%s_on_%s_at_%s.%s' % (
