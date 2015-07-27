@@ -4,12 +4,13 @@ from burpui.misc.acl.interface import BUIacl, BUIaclLoader
 import ConfigParser
 import json
 
+
 class ACLloader(BUIaclLoader):
     def __init__(self, app=None, standalone=False):
         self.app = app
         self.admins = [
-                'admin'
-                ]
+            'admin'
+        ]
         self.clients = {}
         self.servers = {}
         self.standalone = standalone
@@ -45,13 +46,14 @@ class ACLloader(BUIaclLoader):
         if adms:
             self.admins = adms
         self._acl = BasicACL(self)
-        self.app.logger.debug('admins: '+str(self.admins))
-        self.app.logger.debug('clients: '+str(self.clients))
-        self.app.logger.debug('servers: '+str(self.servers))
+        self.app.logger.debug('admins: ' + str(self.admins))
+        self.app.logger.debug('clients: ' + str(self.clients))
+        self.app.logger.debug('servers: ' + str(self.servers))
 
     @property
     def acl(self):
         return self._acl
+
 
 class BasicACL(BUIacl):
     def __init__(self, handler=None):
