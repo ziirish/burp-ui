@@ -118,7 +118,7 @@ def time_human(d):
     s = ''
     seconds = (((d % 31536000) % 86400) % 3600) % 60
     minutes = math.floor((((d % 31536000) % 86400) % 3600) / 60)
-    hours   = math.floor(((d % 31536000) % 86400) / 3600)
+    hours = math.floor(((d % 31536000) % 86400) / 3600)
     if hours > 0:
         s = '%02dH' % hours
     return '%s %02dm %02ds' % (s, minutes, seconds)
