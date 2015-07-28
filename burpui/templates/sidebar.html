@@ -5,26 +5,26 @@
           <ul class="nav nav-sidebar">
             <li {% if overview %}class="active"{% endif %}>
             {% if backup %}
-            <a href="{{ url_for('client_browse', name=cname, server=server) }}?backup={{ nbackup }}"><span class="glyphicon glyphicon-th"></span>&nbsp;Overview</a>
+            <a href="{{ url_for('view.client_browse', name=cname, server=server) }}?backup={{ nbackup }}"><span class="glyphicon glyphicon-th"></span>&nbsp;Overview</a>
             {% elif client %}
-            <a href="{{ url_for('client', name=cname, server=server) }}"><span class="glyphicon glyphicon-th"></span>&nbsp;Overview</a>
+            <a href="{{ url_for('view.client', name=cname, server=server) }}"><span class="glyphicon glyphicon-th"></span>&nbsp;Overview</a>
             {% elif clients %}
-            <a href="{{ url_for('clients', server=server) }}"><span class="glyphicon glyphicon-th"></span>&nbsp;Overview</a>
+            <a href="{{ url_for('view.clients', server=server) }}"><span class="glyphicon glyphicon-th"></span>&nbsp;Overview</a>
             {% elif servers %}
-            <a href="{{ url_for('servers') }}"><span class="glyphicon glyphicon-th"></span>&nbsp;Overview</a>
+            <a href="{{ url_for('view.servers') }}"><span class="glyphicon glyphicon-th"></span>&nbsp;Overview</a>
             {% else %}
             <a href="#"><span class="glyphicon glyphicon-th"></span>&nbsp;Overview</a>
             {% endif %}
             </li>
             <li {% if report %}class="active"{% endif %}>
             {% if client and not backup %}
-            <a href="{{ url_for('client_report', name=cname, server=server) }}"><span class="glyphicon glyphicon-stats"></span>&nbsp;Reports</a>
+            <a href="{{ url_for('view.client_report', name=cname, server=server) }}"><span class="glyphicon glyphicon-stats"></span>&nbsp;Reports</a>
             {% elif clients %}
-            <a href="{{ url_for('clients_report', server=server) }}"><span class="glyphicon glyphicon-stats"></span>&nbsp;Reports</a>
+            <a href="{{ url_for('view.clients_report', server=server) }}"><span class="glyphicon glyphicon-stats"></span>&nbsp;Reports</a>
             {% elif backup %}
-            <a href="{{ url_for('backup_report', name=cname, backup=nbackup, server=server) }}"><span class="glyphicon glyphicon-stats"></span>&nbsp;Reports</a>
+            <a href="{{ url_for('view.backup_report', name=cname, backup=nbackup, server=server) }}"><span class="glyphicon glyphicon-stats"></span>&nbsp;Reports</a>
             {% elif servers %}
-            <a href="{{ url_for('servers') }}"><span class="glyphicon glyphicon-stats"></span>&nbsp;Reports</a>
+            <a href="{{ url_for('view.servers') }}"><span class="glyphicon glyphicon-stats"></span>&nbsp;Reports</a>
             {% else %}
             <a href="#"><span class="glyphicon glyphicon-stats"></span>&nbsp;Reports</a>
             {% endif %}

@@ -9,7 +9,6 @@
 """
 import json
 
-from burpui import app, bui
 from burpui.api import api
 from burpui.misc.backend.interface import BUIserverException
 from flask.ext.restful import reqparse, Resource
@@ -84,13 +83,13 @@ class ClientTree(Resource):
             return jsonify(results=j)
         root = self.parser.parse_args()['root']
         try:
-            if (bui.acl and
-                    (not bui.acl.is_admin(current_user.name) and not
-                     bui.acl.is_client_allowed(current_user.name,
-                                               name,
-                                               server))):
+            if (api.bui.acl and
+                    (not api.bui.acl.is_admin(current_user.name) and not
+                     api.bui.acl.is_client_allowed(current_user.name,
+                                                   name,
+                                                   server))):
                 raise BUIserverException('Sorry, you are not allowed to view this client')
-            j = bui.cli.get_tree(name, backup, root, agent=server)
+            j = api.bui.cli.get_tree(name, backup, root, agent=server)
         except BUIserverException, e:
             err = [[2, str(e)]]
             return jsonify(notif=err)
@@ -271,28 +270,28 @@ class ClientStats(Resource):
         if not name:
             err = [[1, 'No client defined']]
             return jsonify(notif=err)
-        if (bui.acl and not
-                bui.acl.is_client_allowed(current_user.name,
-                                          name,
-                                          server)):
+        if (api.bui.acl and not
+                api.bui.acl.is_client_allowed(current_user.name,
+                                              name,
+                                              server)):
             err = [[2, 'You don\'t have rights to view this client stats']]
             return jsonify(notif=err)
         if backup:
             try:
-                j = bui.cli.get_backup_logs(backup, name, agent=server)
+                j = api.bui.cli.get_backup_logs(backup, name, agent=server)
             except BUIserverException, e:
                 err = [[2, str(e)]]
                 return jsonify(notif=err)
         else:
             try:
-                cl = bui.cli.get_client(name, agent=server)
+                cl = api.bui.cli.get_client(name, agent=server)
             except BUIserverException, e:
                 err = [[2, str(e)]]
                 return jsonify(notif=err)
             err = []
             for c in cl:
                 try:
-                    j.append(bui.cli.get_backup_logs(c['number'], name, agent=server))
+                    j.append(api.bui.cli.get_backup_logs(c['number'], name, agent=server))
                 except BUIserverException, e:
                     temp = [2, str(e)]
                     if temp not in err:
@@ -353,13 +352,13 @@ class ClientReport(Resource):
         if not server:
             server = self.parser.parse_args()['server']
         try:
-            if (bui.acl and (
-                    not bui.acl.is_admin(current_user.name) and
-                    not bui.acl.is_client_allowed(current_user.name,
-                                                  name,
-                                                  server))):
+            if (api.bui.acl and (
+                    not api.bui.acl.is_admin(current_user.name) and
+                    not api.bui.acl.is_client_allowed(current_user.name,
+                                                      name,
+                                                      server))):
                 raise BUIserverException('Sorry, you cannot access this client')
-            j = bui.cli.get_client(name, agent=server)
+            j = api.bui.cli.get_client(name, agent=server)
         except BUIserverException, e:
             err = [[2, str(e)]]
             return jsonify(notif=err)

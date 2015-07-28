@@ -10,7 +10,6 @@
 from zlib import adler32
 from time import gmtime, strftime, time
 
-from burpui import app, bui, login_manager
 from burpui.api import api
 from flask.ext.restful import reqparse, Resource, abort
 from flask.ext.login import current_user, login_required
@@ -70,11 +69,11 @@ class Restore(Resource):
         if not l or not name or not backup:
             abort(500)
         # Manage ACL
-        if (bui.acl and
-                (not bui.acl.is_client_allowed(current_user.name,
-                                               name,
-                                               server) and not
-                 bui.acl.is_admin(current_user.name))):
+        if (api.bui.acl and
+                (not api.bui.acl.is_client_allowed(current_user.name,
+                                                   name,
+                                                   server) and not
+                 api.bui.acl.is_admin(current_user.name))):
             abort(403)
         if server:
             filename = 'restoration_%d_%s_on_%s_at_%s.%s' % (
@@ -91,7 +90,7 @@ class Restore(Resource):
                 f)
         if not server:
             # Standalone mode, we can just return the file unless there were errors
-            archive, err = bui.cli.restore_files(name, backup, l, s, f, p)
+            archive, err = api.bui.cli.restore_files(name, backup, l, s, f, p)
             if not archive:
                 if err:
                     return make_response(err, 500)
@@ -116,23 +115,23 @@ class Restore(Resource):
                                  mimetype='application/zip')
                 resp.set_cookie('fileDownload', 'true')
             except Exception, e:
-                app.logger.error(str(e))
+                api.app.logger.error(str(e))
                 abort(500)
         else:
             # Multi-agent mode
             socket = None
             try:
-                socket, length, err = bui.cli.restore_files(name,
-                                                            backup,
-                                                            l,
-                                                            s,
-                                                            f,
-                                                            p,
-                                                            server)
-                app.logger.debug('Need to get %d Bytes : %s', length, socket)
+                socket, length, err = api.bui.cli.restore_files(name,
+                                                                backup,
+                                                                l,
+                                                                s,
+                                                                f,
+                                                                p,
+                                                                server)
+                api.app.logger.debug('Need to get %d Bytes : %s', length, socket)
 
                 if err:
-                    app.logger.debug('Something went wrong: %s', err)
+                    api.app.logger.debug('Something went wrong: %s', err)
                     socket.close()
                     return make_response(err, 500)
 
@@ -152,7 +151,7 @@ class Restore(Resource):
                         if not buf:
                             continue
                         received += len(buf)
-                        app.logger.debug('%d/%d', received, l)
+                        api.app.logger.debug('%d/%d', received, l)
                         yield buf
                     sock.close()
 
@@ -174,6 +173,6 @@ class Restore(Resource):
             except HTTPException, e:
                 raise e
             except Exception, e:
-                app.logger.error(str(e))
+                api.app.logger.error(str(e))
                 abort(500)
         return resp
