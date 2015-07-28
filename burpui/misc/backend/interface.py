@@ -1,5 +1,6 @@
 # -*- coding: utf8 -*-
 
+
 class BUIbackend:
     def __init__(self, app=None, host='127.0.0.1', port=4972):
         self.app = app
@@ -51,6 +52,6 @@ class BUIbackend:
     def get_parser_attr(self, attr=None, agent=None):
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")
 
+
 class BUIserverException(Exception):
     pass
-

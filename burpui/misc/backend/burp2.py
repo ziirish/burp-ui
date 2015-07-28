@@ -29,11 +29,11 @@ if sys.version_info < (3, 3):
 
 BURP_MINIMAL_VERSION = 'burp-2.0.18'
 
-g_burpbin     = u'/usr/sbin/burp'
-g_stripbin    = u'/usr/sbin/vss_strip'
+g_burpbin = u'/usr/sbin/burp'
+g_stripbin = u'/usr/sbin/vss_strip'
 g_burpconfcli = u'/etc/burp/burp.conf'
 g_burpconfsrv = u'/etc/burp/burp-server.conf'
-g_tmpdir      = u'/tmp/bui'
+g_tmpdir = u'/tmp/bui'
 
 
 def sighandler(signum, frame):

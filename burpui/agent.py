@@ -13,26 +13,29 @@ from threading import Thread
 
 g_port = '10000'
 g_bind = '::'
-g_ssl  = 'False'
+g_ssl = 'False'
 g_version = '1'
 g_sslcert = ''
-g_sslkey  = ''
+g_sslkey = ''
 g_timeout = '5'
 g_password = 'password'
+
 
 class BUIAgent:
     def __init__(self, conf=None, debug=False):
         global g_port, g_bind, g_ssl, g_version, g_sslcert, g_sslkey, g_password
         self.conf = conf
         self.dbg = debug
-        print 'conf: '+self.conf
-        print 'debug: '+str(self.dbg)
+        print 'conf: ' + self.conf
+        print 'debug: ' + str(self.dbg)
         if not conf:
             raise IOError('No configuration file found')
 
-        config = ConfigParser.ConfigParser({'port': g_port,'bind': g_bind,
-                    'ssl': g_ssl, 'sslcert': g_sslcert, 'sslkey': g_sslkey,
-                    'version': g_version, 'password': g_password})
+        config = ConfigParser.ConfigParser({
+            'port': g_port, 'bind': g_bind,
+            'ssl': g_ssl, 'sslcert': g_sslcert, 'sslkey': g_sslkey,
+            'version': g_version, 'password': g_password
+        })
         with open(conf) as fp:
             config.readfp(fp)
             try:
@@ -62,22 +65,22 @@ class BUIAgent:
             sys.exit(2)
 
         self.methods = {
-                'status': self.backend.status,
-                'get_backup_logs': self.backend.get_backup_logs,
-                'get_clients_report': self.backend.get_clients_report,
-                'get_counters': self.backend.get_counters,
-                'is_backup_running': self.backend.is_backup_running,
-                'is_one_backup_running': self.backend.is_one_backup_running,
-                'get_all_clients': self.backend.get_all_clients,
-                'get_client': self.backend.get_client,
-                'get_tree': self.backend.get_tree,
-                'restore_files': self.backend.restore_files,
-                'read_conf_cli': self.backend.read_conf_cli,
-                'store_conf_cli': self.backend.store_conf_cli,
-                'read_conf_srv': self.backend.read_conf_srv,
-                'store_conf_srv': self.backend.store_conf_srv,
-                'get_parser_attr': self.backend.get_parser_attr
-            }
+            'status': self.backend.status,
+            'get_backup_logs': self.backend.get_backup_logs,
+            'get_clients_report': self.backend.get_clients_report,
+            'get_counters': self.backend.get_counters,
+            'is_backup_running': self.backend.is_backup_running,
+            'is_one_backup_running': self.backend.is_one_backup_running,
+            'get_all_clients': self.backend.get_all_clients,
+            'get_client': self.backend.get_client,
+            'get_tree': self.backend.get_tree,
+            'restore_files': self.backend.restore_files,
+            'read_conf_cli': self.backend.read_conf_cli,
+            'store_conf_cli': self.backend.store_conf_cli,
+            'read_conf_srv': self.backend.read_conf_srv,
+            'store_conf_srv': self.backend.store_conf_srv,
+            'get_parser_attr': self.backend.get_parser_attr
+        }
 
         self.server = AgentServer((self.bind, self.port), AgentTCPHandler, self)
 
@@ -91,6 +94,7 @@ class BUIAgent:
         if self.dbg:
             print msg % (args)
 
+
 class AgentTCPHandler(SocketServer.BaseRequestHandler):
     "One instance per connection.  Override handle(self) to customize action."
     def handle(self):
@@ -101,7 +105,7 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
             err = None
             r, _, _ = select.select([self.request], [], [], timeout)
             if not r:
-                raise Exception ('Socket timed-out 1')
+                raise Exception('Socket timed-out 1')
             lengthbuf = self.request.recv(8)
             length, = struct.unpack('!Q', lengthbuf)
             data = self.recvall(length)
@@ -111,7 +115,7 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
             j = json.loads(data)
             _, w, _ = select.select([], [self.request], [], timeout)
             if not w:
-                raise Exception ('Socket timed-out 2')
+                raise Exception('Socket timed-out 2')
             if j['password'] != self.server.agent.password:
                 self.server.agent.debug('-----> Wrong Password <-----')
                 self.request.sendall('KO')
@@ -136,14 +140,14 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
             self.server.agent.debug('####################')
             _, w, _ = select.select([], [self.request], [], timeout)
             if not w:
-                raise Exception ('Socket timed-out 3')
+                raise Exception('Socket timed-out 3')
             if j['func'] == 'restore_files':
                 if err:
                     self.request.sendall('KO')
                     size = len(err)
                     self.request.sendall(struct.pack('!Q', size))
                     self.request.sendall(err)
-                    raise Exception ('Restoration failed')
+                    raise Exception('Restoration failed')
                 self.request.sendall('OK')
                 size = os.path.getsize(res)
                 self.request.sendall(struct.pack('!Q', size))
@@ -155,12 +159,12 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
                         buf = f.read(1024)
                         _, w, _ = select.select([], [self.request], [], timeout)
                         if not w:
-                            raise Exception ('Socket timed-out 4')
+                            raise Exception('Socket timed-out 4')
             else:
                 self.request.sendall(struct.pack('!Q', len(res)))
                 self.request.sendall(res)
             self.request.close()
-        except Exception, e:
+        except Exception as e:
             self.server.agent.debug('ERROR: %s', str(e))
         finally:
             self.server.agent.debug('<===============')
@@ -180,6 +184,7 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
             received += len(newbuf)
         return buf
 
+
 class AgentServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
     # Ctrl-C will cleanly kill all spawned threads
     daemon_threads = True
@@ -191,15 +196,16 @@ class AgentServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
         SocketServer.TCPServer.__init__(self, server_address, RequestHandlerClass)
 
     def get_request(self):
-        if self.agent.ssl: 
+        if self.agent.ssl:
             import ssl
             (newsocket, fromaddr) = SocketServer.TCPServer.get_request(self)
-            connstream = ssl.wrap_socket(newsocket,
-                                        server_side=True,
-                                        certfile=self.agent.sslcert,
-                                        keyfile=self.agent.sslkey,
-                                        ssl_version=ssl.PROTOCOL_SSLv23)
+            connstream = ssl.wrap_socket(
+                newsocket,
+                server_side=True,
+                certfile=self.agent.sslcert,
+                keyfile=self.agent.sslkey,
+                ssl_version=ssl.PROTOCOL_SSLv23
+            )
             return connstream, fromaddr
         # if we don't use ssl, use the 'super' method
         return SocketServer.TCPServer.get_request(self)
-

@@ -146,6 +146,7 @@ class Burp(BUIbackend):
     def get_parser_attr(self, attr=None, agent=None):
         return self.servers[agent].get_parser_attr(attr)
 
+
 class NClient(BUIbackend):
 
     def __init__(self, app=None, host=None, port=None, password=None, ssl=None, timeout=5):
@@ -174,7 +175,7 @@ class NClient(BUIbackend):
         ret = None
         if self.ssl:
             import ssl
-            s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             ret = ssl.wrap_socket(s, cert_reqs=ssl.CERT_NONE, ssl_version=ssl.PROTOCOL_SSLv23)
             try:
                 ret.connect((self.host, self.port))
@@ -210,7 +211,7 @@ class NClient(BUIbackend):
             self.app.logger.debug("Sending: %s", raw)
             r, _, _ = select.select([self.sock], [], [], self.timeout)
             if not r:
-                raise Exception ('Socket timed-out 1')
+                raise Exception('Socket timed-out 1')
             tmp = self.sock.recv(2)
             self.app.logger.debug("recv: '%s'", tmp)
             if 'OK' != tmp:
@@ -219,7 +220,7 @@ class NClient(BUIbackend):
             self.app.logger.debug("Data sent successfully")
             r, _, _ = select.select([self.sock], [], [], self.timeout)
             if not r:
-                raise Exception ('Socket timed-out 2')
+                raise Exception('Socket timed-out 2')
             tmp = 'OK'
             if data['func'] == 'restore_files':
                 tmp = self.sock.recv(2)
@@ -234,7 +235,7 @@ class NClient(BUIbackend):
             else:
                 r, _, _ = select.select([self.sock], [], [], self.timeout)
                 if not r:
-                    raise Exception ('Socket timed-out 3')
+                    raise Exception('Socket timed-out 3')
                 res = self.recvall(length)
         except Exception, e:
             self.close(True)
