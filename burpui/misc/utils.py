@@ -12,6 +12,9 @@ import inspect
 import zipfile
 import tarfile
 
+if sys.version_info >= (3, 0):
+    long = int
+
 
 class human_readable(long):
     """ define a human_readable class to allow custom formatting

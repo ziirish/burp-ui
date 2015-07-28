@@ -90,7 +90,7 @@ class ClientTree(Resource):
                                                    server))):
                 raise BUIserverException('Sorry, you are not allowed to view this client')
             j = api.bui.cli.get_tree(name, backup, root, agent=server)
-        except BUIserverException, e:
+        except BUIserverException as e:
             err = [[2, str(e)]]
             return jsonify(notif=err)
         return jsonify(results=j)
@@ -279,20 +279,20 @@ class ClientStats(Resource):
         if backup:
             try:
                 j = api.bui.cli.get_backup_logs(backup, name, agent=server)
-            except BUIserverException, e:
+            except BUIserverException as e:
                 err = [[2, str(e)]]
                 return jsonify(notif=err)
         else:
             try:
                 cl = api.bui.cli.get_client(name, agent=server)
-            except BUIserverException, e:
+            except BUIserverException as e:
                 err = [[2, str(e)]]
                 return jsonify(notif=err)
             err = []
             for c in cl:
                 try:
                     j.append(api.bui.cli.get_backup_logs(c['number'], name, agent=server))
-                except BUIserverException, e:
+                except BUIserverException as e:
                     temp = [2, str(e)]
                     if temp not in err:
                         err.append(temp)
@@ -359,7 +359,7 @@ class ClientReport(Resource):
                                                       server))):
                 raise BUIserverException('Sorry, you cannot access this client')
             j = api.bui.cli.get_client(name, agent=server)
-        except BUIserverException, e:
+        except BUIserverException as e:
             err = [[2, str(e)]]
             return jsonify(notif=err)
         return jsonify(results=j)

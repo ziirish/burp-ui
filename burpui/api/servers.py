@@ -37,7 +37,7 @@ class ServersStats(Resource):
                         r.append({'name': serv,
                                   'clients': len(api.bui.cli.servers[serv].get_all_clients(serv)),
                                   'alive': api.bui.cli.servers[serv].ping()})
-                except BUIserverException, e:
+                except BUIserverException as e:
                     err = [[2, str(e)]]
                     return jsonify(notif=err)
         return jsonify(results=r)

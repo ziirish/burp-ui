@@ -7,7 +7,10 @@ try:
 except ImportError:
     raise ImportError('Unable to load \'ldap3\' module')
 
-import ConfigParser
+try:
+    import ConfigParser
+except ImportError:
+    import configparser as ConfigParser
 
 
 class LdapLoader:

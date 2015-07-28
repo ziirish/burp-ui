@@ -1,7 +1,10 @@
 # -*- coding: utf8 -*-
 from burpui.misc.acl.interface import BUIacl, BUIaclLoader
 
-import ConfigParser
+try:
+    import ConfigParser
+except ImportError:
+    import configparser as ConfigParser
 import json
 
 
