@@ -11,6 +11,8 @@ import logging
 from flask import Flask
 from flask.ext.login import LoginManager
 from burpui.server import BUIServer as BurpUI
+from burpui.routes import view
+from burpui.api import api
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -30,19 +32,32 @@ app.config['CFG'] = None
 
 app.secret_key = 'VpgOXNXAgcO81xFPyWj07ppN6kExNZeCDRShseNzFKV7ZCgmW2/eLn6xSlt7pYAVBj12zx2Vv9Kw3Q3jd1266A=='
 app.jinja_env.globals.update(isinstance=isinstance, list=list)
+app.jinja_env.globals.update(api=api)
 
 # We initialize the core
 bui = BurpUI(app)
 
+# Then we load our routes
+view.bui = bui
+app.register_blueprint(view)
+
+# We initialize the API
+api.app = app
+api.bui = bui
+api.init_app(app)
+
 # And the login_manager
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = 'login'
+login_manager.login_view = 'view.login'
 login_manager.login_message_category = 'info'
 
-# Then we load our routes
-# This import cannot take place earlier because the modules relies on app that must be initialized first
-import burpui.routes
+
+@login_manager.user_loader
+def load_user(userid):
+    if bui.auth != 'none':
+        return bui.uhandler.user(userid)
+    return None
 
 
 def init(conf=None, debug=False, logfile=None, gunicorn=True):

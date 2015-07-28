@@ -64,7 +64,7 @@ var _check_running = function() {
 /***
  * _clients_bh: Bloodhound object used for the autocompletion of the input field
  */
-var _clients_bh = new Bloodhound({	
+var _clients_bh = new Bloodhound({
 	datumTokenizer: Bloodhound.tokenizers.obj.whitespace('name'),
 	queryTokenizer: Bloodhound.tokenizers.whitespace,
 	limit: 10,
@@ -135,7 +135,7 @@ $('#input-client').typeahead({
 			{% endif -%}
 		{% endfor -%}
 ).on('typeahead:selected', function(obj, datum, name) {
-	window.location = '{{ url_for("client") }}?name='+datum.name+'&server='+name;
+	window.location = '{{ url_for("view.client") }}?name='+datum.name+'&server='+name;
 });
 	{% endif -%}
 {% endif -%}
@@ -245,7 +245,7 @@ $(function() {
 	var search = $('input[id="input-client"]');
 	search.keypress(function(e) {
 		if (e.which == 13) {
-			window.location = '{{ url_for("client", server=server) }}?name='+search.val();
+			window.location = '{{ url_for("view.client", server=server) }}?name='+search.val();
 		}
 	});
 	{% endif -%}

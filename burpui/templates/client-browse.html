@@ -3,15 +3,15 @@
         {% include "notifications.html" %}
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
           {% include "small_topbar.html" %}
-          <ul class="breadcrumb" style="margin-bottom: 5px;">                      
+          <ul class="breadcrumb" style="margin-bottom: 5px;">
             {% if server -%}
-            <li><a href="{{ url_for('home') }}">Home</a></li>
-            <li><a href="{{ url_for('clients', server=server) }}">{{ server }} clients</a></li>
-            <li><a href="{{ url_for('client', name=cname, server=server) }}">{{ cname }} overview</a></li>
+            <li><a href="{{ url_for('view.home') }}">Home</a></li>
+            <li><a href="{{ url_for('view.clients', server=server) }}">{{ server }} clients</a></li>
+            <li><a href="{{ url_for('view.client', name=cname, server=server) }}">{{ cname }} overview</a></li>
             <li class="active">Backup n°{{ nbackup|mypad }} overview</li>
             {% else -%}
-            <li><a href="{{ url_for('home') }}">Home</a></li>
-            <li><a href="{{ url_for('client', name=cname) }}">{{ cname }} overview</a></li>
+            <li><a href="{{ url_for('view.home') }}">Home</a></li>
+            <li><a href="{{ url_for('view.client', name=cname) }}">{{ cname }} overview</a></li>
             <li class="active">Backup n°{{ nbackup|mypad }} overview</li>
             {% endif -%}
           </ul>
@@ -24,7 +24,7 @@
                   <input type="text" class="form-control" placeholder="filter..." name="search-tree" autocomplete="off">
                   <div class="input-group-btn">
                     <button class="btn btn-default dropdown-toggle" data-toggle="dropdown" type="button">
-                      <span class="glyphicon glyphicon-cog"></span> options 
+                      <span class="glyphicon glyphicon-cog"></span> options
                       <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu browse">

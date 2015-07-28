@@ -69,7 +69,7 @@ var _clients_table = $('#table-clients').dataTable( {
 	},
 	columns: [
 		{ data: null, render: function ( data, type, row ) {
-				return '<a href="{{ url_for("client", server=server) }}?name='+data.name+'" style="color: inherit; text-decoration: inherit;">'+data.name+'</a>';
+				return '<a href="{{ url_for("view.client", server=server) }}?name='+data.name+'" style="color: inherit; text-decoration: inherit;">'+data.name+'</a>';
 			}
 		},
 		{ data: 'state' },

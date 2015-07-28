@@ -7,12 +7,12 @@ _parse_live_result = function(data, serv) {
 	$.each(data.results, function(i, c) {
 		if (c instanceof String || typeof c == 'string') {
 			{% if server -%}
-			u = '{{ url_for("render_live_tpl", server=server) }}?name='+c;
+			u = '{{ url_for("view.render_live_tpl", server=server) }}?name='+c;
 			{% else -%}
 			if (serv) {
-				u = '{{ url_for("render_live_tpl") }}?name='+c+'&server='+serv;
+				u = '{{ url_for("view.render_live_tpl") }}?name='+c+'&server='+serv;
 			} else {
-				u = '{{ url_for("render_live_tpl") }}?name='+c;
+				u = '{{ url_for("view.render_live_tpl") }}?name='+c;
 			}
 			{% endif -%}
 			$.get(u, function(d) {
@@ -24,12 +24,12 @@ _parse_live_result = function(data, serv) {
 			$.each(c, function(j, a) {
 				$.each(a, function(k, cl) {
 					{% if server -%}
-					u = '{{ url_for("render_live_tpl", server=server) }}?name='+cl;
+					u = '{{ url_for("view.render_live_tpl", server=server) }}?name='+cl;
 					{% else -%}
 					if (serv) {
-						u = '{{ url_for("render_live_tpl") }}?name='+cl+'&server='+serv;
+						u = '{{ url_for("view.render_live_tpl") }}?name='+cl+'&server='+serv;
 					} else {
-						u = '{{ url_for("render_live_tpl") }}?name='+cl;
+						u = '{{ url_for("view.render_live_tpl") }}?name='+cl;
 					}
 					{% endif -%}
 					$.get(u, function(d) {
@@ -57,9 +57,9 @@ _live = function() {
 		});
 	});
 	{% if server -%}
-	redirect = '{{ url_for("home", server=server) }}';
+	redirect = '{{ url_for("view.home", server=server) }}';
 	{% else -%}
-	redirect = '{{ url_for("home") }}';
+	redirect = '{{ url_for("view.home") }}';
 	{% endif -%}
 	if (!html) {
 		document.location = redirect;
@@ -78,9 +78,9 @@ _live = function() {
 		html += _parse_live_result(data);
 	});
 	{% if server -%}
-	redirect = '{{ url_for("home", server=server) }}';
+	redirect = '{{ url_for("view.home", server=server) }}';
 	{% else -%}
-	redirect = '{{ url_for("home") }}';
+	redirect = '{{ url_for("view.home") }}';
 	{% endif -%}
 	if (!html) {
 		document.location = redirect;

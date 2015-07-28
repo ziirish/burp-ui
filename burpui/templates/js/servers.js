@@ -11,7 +11,7 @@
 var _servers_table = $('#table-servers').dataTable( {
 	responsive: true,
 	ajax: {
-		url: '{{ api.url_for(ServersStats) }}',
+		url: '{{ url_for("api.servers_stats") }}',
 		dataSrc: function (data) {
 			if (!data.results) {
 				if (data.notif) {
@@ -33,7 +33,7 @@ var _servers_table = $('#table-servers').dataTable( {
 	},
 	columns: [
 		{ data: null, render: function ( data, type, row ) {
-				href = '{{ url_for("clients") }}?server='+data.name;
+				href = '{{ url_for("view.clients") }}?server='+data.name;
 				if (!data.alive) {
 					href = '#';
 				}

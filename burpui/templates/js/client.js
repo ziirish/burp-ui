@@ -52,7 +52,7 @@ var _client_table = $('#table-client').dataTable( {
 	},
 	columns: [
 		{ data: null, render: function ( data, type, row ) {
-				return '<a href="{{ url_for("client_browse", name=cname, server=server) }}?backup='+data.number+(data.encrypted?'&encrypted=1':'')+'" style="color: inherit; text-decoration: inherit;">'+pad(data.number, 7)+'</a>';
+				return '<a href="{{ url_for("view.client_browse", name=cname, server=server) }}?backup='+data.number+(data.encrypted?'&encrypted=1':'')+'" style="color: inherit; text-decoration: inherit;">'+pad(data.number, 7)+'</a>';
 			}
 		},
 		{ data: 'date' },

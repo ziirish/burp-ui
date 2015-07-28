@@ -11,12 +11,10 @@
 import os
 import re
 
-from burpui import app
 from flask.ext.restful import Api
 
-api = Api(app)
-
-app.jinja_env.globals.update(api=api)
+api = Api()
+api.bui = None
 
 # hack to automatically import api modules
 for f in os.listdir(__path__[0]):

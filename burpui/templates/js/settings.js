@@ -300,7 +300,7 @@ app.controller('ConfigCtrl', function($scope, $http) {
 	/* A client has been selected, we redirect to the client config page */
 	$scope.selectClient = function(selected, select) {
 		select.search = undefined;
-		document.location = '{{ url_for("settings", server=server) }}?client='+selected.name;
+		document.location = '{{ url_for("view.settings", server=server) }}?client='+selected.name;
 	};
 	$scope.undoAdd = function(type) {
 		$scope.add[type] = false;

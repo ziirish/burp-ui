@@ -5,11 +5,11 @@
           {% include "small_topbar.html" %}
           <ul class="breadcrumb" style="margin-bottom: 5px;">
             {% if server -%}
-            <li><a href="{{ url_for('home') }}">Home</a></li>
-            <li><a href="{{ url_for('clients', server=server) }}">{{ server }} clients</a></li>
+            <li><a href="{{ url_for('view.home') }}">Home</a></li>
+            <li><a href="{{ url_for('view.clients', server=server) }}">{{ server }} clients</a></li>
             <li class="active">{{ cname }} overview</li>
             {% else -%}
-            <li><a href="{{ url_for('home') }}">Home</a></li>
+            <li><a href="{{ url_for('view.home') }}">Home</a></li>
             <li class="active">{{ cname }} overview</li>
             {% endif -%}
           </ul>
