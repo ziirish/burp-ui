@@ -14,8 +14,9 @@ from burpui.server import BUIServer as BurpUI
 from burpui.routes import view
 from burpui.api import api
 
-reload(sys)
-sys.setdefaultencoding('utf-8')
+if sys.version_info < (3, 0):
+    reload(sys)
+    sys.setdefaultencoding('utf-8')
 
 __title__ = 'burp-ui'
 __author__ = 'Benjamin SANS (Ziirish)'

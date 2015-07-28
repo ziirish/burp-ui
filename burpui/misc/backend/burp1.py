@@ -13,7 +13,10 @@ import socket
 import time
 import json
 import datetime
-import ConfigParser
+try:
+    import ConfigParser
+except ImportError:
+    import configparser as ConfigParser
 import shutil
 import subprocess
 import tempfile

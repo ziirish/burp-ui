@@ -7,7 +7,10 @@
 .. moduleauthor:: Ziirish <ziirish@ziirish.info>
 
 """
-import ConfigParser
+try:
+    import ConfigParser
+except ImportError:
+    import configparser as ConfigParser
 import traceback
 import sys
 
@@ -134,7 +137,7 @@ class BUIServer:
             mod = __import__(module, fromlist=['Burp'])
             Client = mod.Burp
             self.cli = Client(self, conf=conf)
-        except Exception, e:
+        except Exception as e:
             traceback.print_exc()
             self.app.logger.error('Failed loading backend for Burp version {0}: {1}'.format(self.vers, str(e)))
             sys.exit(2)

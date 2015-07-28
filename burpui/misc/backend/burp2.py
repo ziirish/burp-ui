@@ -8,7 +8,10 @@ try:
 except ImportError:
     import json
 import datetime
-import ConfigParser
+try:
+    import ConfigParser
+except ImportError:
+    import configparser as ConfigParser
 import shutil
 import subprocess
 import tempfile
@@ -116,18 +119,18 @@ class Burp(Burp1):
                     self.stripbin = strip
                     self.burpconfcli = confcli
                     self.burpconfsrv = confsrv
-                except ConfigParser.NoOptionError, e:
+                except ConfigParser.NoOptionError as e:
                     self._logger('error', str(e))
-                except ConfigParser.NoSectionError, e:
+                except ConfigParser.NoSectionError as e:
                     self._logger('warning', str(e))
 
         # check the burp version because this backend only supports clients newer than BURP_MINIMAL_VERSION
         try:
             cmd = [self.burpbin, '-v']
-            version = subprocess.check_output(cmd).rstrip('\n')
+            version = subprocess.check_output(cmd, universal_newlines=True).rstrip('\n')
             if version < BURP_MINIMAL_VERSION:
                 raise Exception('Your burp version ({}) does not fit the minimal requirements: {}'.format(version, BURP_MINIMAL_VERSION))
-        except subprocess.CalledProcessError, e:
+        except subprocess.CalledProcessError as e:
             raise Exception('Unable to determine your burp version: {}'.format(str(e)))
 
         self.parser = Parser(self.app, self.burpconfsrv)
@@ -148,7 +151,7 @@ class Burp(Burp1):
 
     def _spawn_burp(self):
         cmd = [self.burpbin, '-c', self.burpconfcli, '-a', 'm']
-        self.proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False)
+        self.proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
         # wait a little bit in case the process dies on a network timeout
         time.sleep(0.5)
         if not self._proc_is_alive():
@@ -228,7 +231,7 @@ class Burp(Burp1):
         """
         reads the burp process stdout and returns a document or None
         """
-        doc = ''
+        doc = u''
         js = None
         while True:
             try:

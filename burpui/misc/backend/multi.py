@@ -8,7 +8,10 @@ import json
 import time
 import struct
 import pickle
-import ConfigParser
+try:
+    import ConfigParser
+except ImportError:
+    import configparser as ConfigParser
 
 from burpui.misc.backend.interface import BUIbackend, BUIserverException
 

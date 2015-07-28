@@ -114,7 +114,7 @@ class Restore(Resource):
                                  attachment_filename=filename,
                                  mimetype='application/zip')
                 resp.set_cookie('fileDownload', 'true')
-            except Exception, e:
+            except Exception as e:
                 api.app.logger.error(str(e))
                 abort(500)
         else:
@@ -170,9 +170,9 @@ class Restore(Resource):
                     time(),
                     length,
                     adler32(filename.encode('utf-8')) & 0xffffffff))
-            except HTTPException, e:
+            except HTTPException as e:
                 raise e
-            except Exception, e:
+            except Exception as e:
                 api.app.logger.error(str(e))
                 abort(500)
         return resp

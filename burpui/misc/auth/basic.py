@@ -2,7 +2,10 @@
 from flask.ext.login import UserMixin
 from burpui.misc.auth.interface import BUIhandler, BUIuser
 
-import ConfigParser
+try:
+    import ConfigParser
+except ImportError:
+    import configparser as ConfigParser
 
 
 class BasicLoader:

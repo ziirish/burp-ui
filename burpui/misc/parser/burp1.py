@@ -38,7 +38,7 @@ class Parser(BUIparser, BUIlogging):
         u'client_lockdir': '',
         u'user': '',
         u'group': '',
-        u'umask': 0022,  # mode
+        u'umask': '0022',  # mode
         u'ratelimit': False,  # int
         u'network_timeout': 7200,  # int
         u'working_dir_recovery_method': '',

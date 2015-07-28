@@ -232,7 +232,7 @@ class ClientsReport(Resource):
                      api.bui.acl.servers(current_user.name))):
                 raise BUIserverException('Sorry, you don\'t have rights on this server')
             clients = api.bui.cli.get_all_clients(agent=server)
-        except BUIserverException, e:
+        except BUIserverException as e:
             err = [[2, str(e)]]
             return jsonify(notif=err)
         cl = []
@@ -317,7 +317,7 @@ class ClientsStats(Resource):
             if (api.bui.acl and not
                     api.bui.acl.is_admin(current_user.name)):
                 j = [x for x in j if x['name'] in api.bui.acl.clients(current_user.name, server)]
-        except BUIserverException, e:
+        except BUIserverException as e:
             err = [[2, str(e)]]
             return jsonify(notif=err)
         return jsonify(results=j)
