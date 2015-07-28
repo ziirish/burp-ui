@@ -13,6 +13,7 @@ class BasicLoader:
         }
         conf = self.app.config['CFG']
         c = ConfigParser.ConfigParser()
+        c.optionxform = str
         with open(conf) as fp:
             c.readfp(fp)
             if c.has_section('BASIC'):
