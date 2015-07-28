@@ -1,5 +1,6 @@
 # -*- coding: utf8 -*-
 
+
 class BUIparser(object):
     def __init__(self, app=None, conf=None):
         self.app = app
