@@ -4,12 +4,13 @@ from burpui.misc.auth.interface import BUIhandler, BUIuser
 
 import ConfigParser
 
+
 class BasicLoader:
     def __init__(self, app=None):
         self.app = app
         self.users = {
-                'admin': 'admin'
-                }
+            'admin': 'admin'
+        }
         conf = self.app.config['CFG']
         c = ConfigParser.ConfigParser()
         with open(conf) as fp:
@@ -30,7 +31,6 @@ class BasicLoader:
         return uid in self.users and self.users[uid] == passwd
 
 
-
 class UserHandler(BUIhandler):
     def __init__(self, app=None):
         self.basic = BasicLoader(app)
@@ -40,7 +40,6 @@ class UserHandler(BUIhandler):
         if name not in self.users:
             self.users[name] = BasicUser(self.basic, name)
         return self.users[name]
-
 
 
 class BasicUser(UserMixin, BUIuser):
@@ -63,4 +62,3 @@ class BasicUser(UserMixin, BUIuser):
 
     def get_id(self):
         return self.id
-
