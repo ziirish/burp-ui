@@ -37,7 +37,7 @@ class ServerSettings(Resource):
               "boolean": [
                 "daemon",
                 "fork",
-                ...
+                "..."
               ],
               "defaults": {
                 "address": "",
@@ -47,17 +47,17 @@ class ServerSettings(Resource):
                 "ca_name": "",
                 "ca_server_name": "",
                 "client_can_delete": true,
-                ...
+                "...": "..."
               },
               "integer": [
                 "port",
                 "status_port",
-                ...
+                "..."
               ],
               "multi": [
                 "keep",
                 "restore_client",
-                ...
+                "..."
               ],
               "placeholders": {
                 "autoupgrade_dir": "path",
@@ -66,7 +66,7 @@ class ServerSettings(Resource):
                 "ca_name": "name",
                 "ca_server_name": "name",
                 "client_can_delete": "0|1",
-                ...
+                "...": "..."
               },
               "results": {
                 "boolean": [
@@ -78,7 +78,7 @@ class ServerSettings(Resource):
                     "name": "syslog",
                     "value": true
                   },
-                  ...
+                  { "...": "..." }
                 ],
                 "clients": [
                   {
@@ -95,7 +95,7 @@ class ServerSettings(Resource):
                     "name": "directory",
                     "value": "/var/spool/burp"
                   },
-                  ...
+                  { "...": "..." }
                 ],
                 "includes": [],
                 "includes_ext": [],
@@ -108,7 +108,7 @@ class ServerSettings(Resource):
                     "name": "status_port",
                     "value": 4972
                   },
-                  ...
+                  { "...": "..." }
                 ],
                 "multi": [
                   {
@@ -118,17 +118,17 @@ class ServerSettings(Resource):
                       "4"
                     ]
                   },
-                  ...
+                  { "...": "..." }
                 ]
               },
               "server_doc": {
                 "address": "Defines the main TCP address that the server listens on. The default is either '::' or '0.0.0.0', dependent upon compile time options.",
-                ...
+                "...": "..."
               },
               "string": [
                 "mode",
                 "address",
-                ...
+                "..."
               ],
               "suggest": {
                 "compression": [
@@ -146,7 +146,7 @@ class ServerSettings(Resource):
                   "client",
                   "server"
                 ],
-                ...
+                "...": []
               }
             }
 
