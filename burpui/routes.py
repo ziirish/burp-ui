@@ -20,24 +20,34 @@ view.bui = None
 
 
 @view.route('/settings', methods=['GET', 'POST'])
+@view.route('/settings/<path:conf>', methods=['GET', 'POST'])
 @view.route('/<server>/settings', methods=['GET', 'POST'])
-@view.route('/settings/<client>', methods=['GET', 'POST'])
-@view.route('/<server>/settings/<client>', methods=['GET', 'POST'])
+@view.route('/<server>/settings/<path:conf>', methods=['GET', 'POST'])
 @login_required
-def settings(server=None, client=None):
+def settings(server=None, conf=None):
     # Only the admin can edit the configuration
     if view.bui.acl and not view.bui.acl.is_admin(current_user.name):
         abort(403)
-    if not client:
-        client = request.args.get('client')
     if request.method == 'POST':
-        if not client:
-            noti = view.bui.cli.store_conf_srv(request.form, server)
-        else:
-            noti = view.bui.cli.store_conf_cli(request.form, server)
+        noti = view.bui.cli.store_conf_srv(request.form, conf, server)
         return jsonify(notif=noti)
-    return render_template('settings.html', settings=True, server=server, client=client)
+    if not conf:
+        conf = request.args.get('conf')
+    return render_template('settings.html', settings=True, server=server, conf=conf)
 
+
+@view.route('/client/settings/<client>', methods=['GET', 'POST'])
+@view.route('/client/settings/<client>/<path:conf>', methods=['GET', 'POST'])
+@view.route('/<server>/client/settings/<client>', methods=['GET', 'POST'])
+@view.route('/<server>/client/settings/<client>/<path:conf>', methods=['GET', 'POST'])
+def cli_settings(server=None, client=None, conf=None):
+    # Only the admin can edit the configuration
+    if view.bui.acl and not view.bui.acl.is_admin(current_user.name):
+        abort(403)
+    if request.method == 'POST':
+        noti = view.bui.cli.store_conf_cli(request.form, server)
+        return jsonify(notif=noti)
+    return render_template('settings.html', settings=True, client=client, server=server, conf=conf)
 
 """
 Here is the API

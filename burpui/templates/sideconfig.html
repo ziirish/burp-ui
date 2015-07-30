@@ -24,22 +24,4 @@
               </li>
               {% endraw %}
             </ul>
-            {% raw %}
-            <div ng-if="includes_ext">
-            <h4>Files included</h4>
-            <ul class="nav nav-sidebar">
-              <li>
-                <ui-select ng-model="file.selected" style="width: 100%;" on-select="selectFile($item, $select)">
-                  <ui-select-match placeholder="Select a file">{{ $select.selected.name }}</ui-select-match>
-                  <ui-select-choices repeat="file in includes_ext | filter: {name: $select.search}">
-                    <div ng-bind-html="file.value | highlight: $select.search"></div>
-                    <small>
-                      config: <span ng-bind-html="''+file.name | highlight: $select.search"></span>
-                    </small>
-                  </ui-select-choices>
-                </ui-select>
-              </li>
-            </ul>
-            </div>
-            {% endraw %}
           </div>
