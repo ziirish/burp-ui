@@ -39,10 +39,6 @@ g_burpconfsrv = u'/etc/burp/burp-server.conf'
 g_tmpdir = u'/tmp/bui'
 
 
-def sighandler(signum, frame):
-    raise TimeoutError('Operation timed out')
-
-
 # Some functions are the same as in Burp1 backend
 class Burp(Burp1):
 
@@ -134,13 +130,16 @@ class Burp(Burp1):
             raise Exception('Unable to determine your burp version: {}'.format(str(e)))
 
         self.parser = Parser(self.app, self.burpconfsrv)
-        signal.signal(signal.SIGALRM, sighandler)
+        signal.signal(signal.SIGALRM, self._sighandler)
 
         self._logger('info', 'burp binary: %s', self.burpbin)
         self._logger('info', 'strip binary: %s', self.stripbin)
         self._logger('info', 'burp conf cli: %s', self.burpconfcli)
         self._logger('info', 'burp conf srv: %s', self.burpconfsrv)
         self._logger('info', 'burp version: %s', version)
+
+    def _sighandler(self, signum, frame):
+        raise TimeoutError('Operation timed out')
 
     # try not to leave child process server side
     def __exit__(self, type, value, traceback):
@@ -187,11 +186,7 @@ class Burp(Burp1):
         Determine if the retrieved string is a valid json document or not
         """
         try:
-            try:
-                d = doc.decode('utf-8', 'replace')
-            except UnicodeDecodeError:
-                d = doc
-            js = json.loads(d)
+            js = json.loads(doc)
             return js
         except ValueError:
             return None
@@ -500,7 +495,7 @@ class Burp(Burp1):
         """
         j = []
         query = self.status()
-        if not query:
+        if not query or 'clients' not in query:
             return j
         clients = query['clients']
         for cl in clients:
