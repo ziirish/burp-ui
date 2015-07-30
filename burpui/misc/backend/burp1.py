@@ -915,20 +915,20 @@ class Burp(BUIbackend, BUIlogging):
             return []
         return self.parser.read_client_conf()
 
-    def read_conf_srv(self, agent=None):
+    def read_conf_srv(self, conf=None, agent=None):
         if not self.parser:
             return []
-        return self.parser.read_server_conf()
+        return self.parser.read_server_conf(conf)
 
     def store_conf_cli(self, data, agent=None):
         if not self.parser:
             return []
         return self.parser.store_client_conf(data)
 
-    def store_conf_srv(self, data, agent=None):
+    def store_conf_srv(self, data, conf=None, agent=None):
         if not self.parser:
             return []
-        return self.parser.store_server_conf(data)
+        return self.parser.store_server_conf(data, conf)
 
     def get_parser_attr(self, attr=None, agent=None):
         """

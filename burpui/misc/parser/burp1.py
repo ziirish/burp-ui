@@ -346,12 +346,12 @@ class Parser(BUIparser, BUIlogging):
         if self.conf:
             self.root = os.path.dirname(self.conf)
 
-    def _readfile(self, f=None, sourced=False, root=None):
+    def _readfile(self, f=None, root=None):
         if not f:
             return []
         if root:
             f = os.path.join(root, f)
-        if (f != self.conf or sourced) and not f.startswith('/'):
+        if f != self.conf and not f.startswith('/'):
             f = os.path.join(self.root, f)
         self._logger('debug', 'reading file: %s', f)
         with codecs.open(f, 'r', 'utf-8') as ff:
@@ -404,13 +404,20 @@ class Parser(BUIparser, BUIlogging):
 
         return dic, boolean, multi, integer, includes, includes_ext
 
-    def read_server_conf(self):
-        if not self.conf:
+    def read_server_conf(self, conf=None):
+        mconf = None
+        if not conf:
+            mconf = self.conf
+        else:
+            mconf = conf
+        if not mconf:
             return []
-        self.content = []
         res = {}
-        other_files = []
-        f = self._readfile(self.conf)
+
+        try:
+            f = self._readfile(mconf)
+        except Exception as e:
+            return res
 
         tmp, boolean, multi, integer, includes, includes_ext = self._parse_lines_srv(f)
         res['common'] = tmp
@@ -434,20 +441,27 @@ class Parser(BUIparser, BUIlogging):
 
         return res
 
-    def store_server_conf(self, data):
-        if not self.conf:
+    def store_server_conf(self, data, conf=None):
+        mconf = None
+        if not conf:
+            mconf = self.conf
+        else:
+            mconf = conf
+            if mconf != self.conf and not mconf.startswith('/'):
+                mconf = os.path.join(self.root, mconf)
+        if not mconf:
             return [[1, 'Sorry, no configuration file defined']]
         orig = []
-        ref = '{}.bui.init.back'.format(self.conf)
-        bak = '{}.bak'.format(self.conf)
+        ref = '{}.bui.init.back'.format(mconf)
+        bak = '{}.bak'.format(mconf)
         if not os.path.isfile(ref):
             try:
-                shutil.copy(self.conf, ref)
+                shutil.copy(mconf, ref)
             except Exception as e:
                 return [[2, str(e)]]
         else:
             try:
-                shutil.copy(self.conf, bak)
+                shutil.copy(mconf, bak)
             except Exception as e:
                 return [[2, str(e)]]
 
@@ -468,7 +482,7 @@ class Parser(BUIparser, BUIlogging):
         if errs:
             return errs
 
-        with codecs.open(self.conf, 'r', 'utf-8') as ff:
+        with codecs.open(mconf, 'r', 'utf-8') as ff:
             orig = [x.rstrip('\n') for x in ff.readlines()]
 
         oldkeys = [self._get_line_key(x) for x in orig]
@@ -478,7 +492,7 @@ class Parser(BUIparser, BUIlogging):
         already_file = []
         written = []
 
-        with codecs.open(self.conf, 'w', 'utf-8') as f:
+        with codecs.open(mconf, 'w', 'utf-8') as f:
             # f.write('# Auto-generated configuration using Burp-UI\n')
             for line in orig:
                 if (self._line_removed(line, data.viewkeys()) and

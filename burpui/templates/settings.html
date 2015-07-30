@@ -22,7 +22,11 @@
           </div>
 
           <div id="settings-panel" class="form-container" style="display:none;">
-            <form class="form-horizontal" action="{{ url_for('view.settings', server=server) }}" method="POST" ng-submit="submit($event)" name="setSettings" onbeforeunload>
+            {% if client -%}
+            <form class="form-horizontal" action="{{ url_for('view.cli_settings', client=client, conf=conf, server=server) }}" method="POST" ng-submit="submit($event)" name="setSettings" onbeforeunload>
+            {% else -%}
+            <form class="form-horizontal" action="{{ url_for('view.settings', conf=conf, server=server) }}" method="POST" ng-submit="submit($event)" name="setSettings" onbeforeunload>
+            {% endif -%}
               {# From here, the jinja syntax is escaped because we use the angularjs syntax #}
               {% raw %}
               <fieldset>
@@ -163,16 +167,17 @@
               <fieldset>
                 <legend id="includes_source">Includes</legend>
                 <div class="well">
-                  <div class="form-group" ng-repeat="inc in includes track by $index">
+                  <div class="form-group" ng-repeat="(i, val) in includes track by $index">
                     <label for="include-{{ $index }}" class="col-lg-3 control-label">source</label>
                     <div class="col-lg-2">
-                      <input class="form-control" type="text" id="include-{{ $index }}" name="includes" ng-model="inc" ng-focus="focusIn($event)" ng-blur="focusOut($event)" placeholder="{{ ::placeholders['includes'] }}">
+                      <input class="form-control" type="text" id="include-{{ $index }}" name="includes" ng-model="includes[i]" ng-focus="focusIn($event)" ng-blur="focusOut($event)" placeholder="{{ ::placeholders['includes'] }}">
                       <input type="hidden" ng-disabled="{{ includes_ori[$index] === false }}" name="includes_ori" value="{{ includes_ori[$index] }}">
                     </div>
-                    <div class="col-lg-1">
+                    <div class="col-lg-2 btn-toolbar">
                       <button type="button" class="btn btn-danger" ng-click="removeIncludes($index)"><span class="glyphicon glyphicon-minus"></span></button>
+                      <button type="button" class="btn btn-info" ng-disabled="!includes[i]" ng-click="editInclude($index)"><span class="glyphicon glyphicon-pencil"></span></button>
                     </div>
-                    <div class="col-lg-6" ng-if="$first" ng-bind-html="::server_doc['includes']"></div>
+                    <div class="col-lg-5" ng-if="$first" ng-bind-html="::server_doc['includes']"></div>
                   </div>
                   <div class="form-group">
                     <label for="btn-add-include" class="col-lg-3 control-label">Add include</label>

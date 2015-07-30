@@ -16,6 +16,8 @@ from flask import jsonify
 
 @api.resource('/api/server-config',
               '/api/<server>/server-config',
+              '/api/server-config/<path:conf>',
+              '/api/<server>/server-config/<path:conf>',
               endpoint='api.server_settings')
 class ServerSettings(Resource):
     """
@@ -26,7 +28,7 @@ class ServerSettings(Resource):
     """
 
     @login_required
-    def get(self, server=None):
+    def get(self, conf=None, server=None):
         """
         **GET** method provided by the webservice.
 
@@ -160,7 +162,8 @@ class ServerSettings(Resource):
         if (api.bui.acl and not
                 api.bui.acl.is_admin(current_user.name)):
             abort(403, message='Sorry, you don\'t have rights to access the setting panel')
-        r = api.bui.cli.read_conf_srv(server)
+
+        r = api.bui.cli.read_conf_srv(conf, server)
         return jsonify(results=r,
                        boolean=api.bui.cli.get_parser_attr('boolean_srv', server),
                        string=api.bui.cli.get_parser_attr('string_srv', server),
