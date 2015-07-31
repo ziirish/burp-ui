@@ -656,19 +656,25 @@ class Burp(BUIbackend, BUIlogging):
                         if 'path' == self.counters[c]:
                             r[self.counters[c]] = v
                         else:
-                            r[self.counters[c]] = int(v)
+                            try:
+                                r[self.counters[c]] = int(v)
+                            except ValueError:
+                                continue
                     c += 1
         if r.viewkeys() & {'start', 'estimated_bytes', 'bytes_in'}:
-            diff = time.time() - int(r['start'])
-            byteswant = int(r['estimated_bytes'])
-            bytesgot = int(r['bytes_in'])
-            bytespersec = bytesgot / diff
-            bytesleft = byteswant - bytesgot
-            r['speed'] = bytespersec
-            if (bytespersec > 0):
-                timeleft = int(bytesleft / bytespersec)
-                r['timeleft'] = timeleft
-            else:
+            try:
+                diff = time.time() - int(r['start'])
+                byteswant = int(r['estimated_bytes'])
+                bytesgot = int(r['bytes_in'])
+                bytespersec = bytesgot / diff
+                bytesleft = byteswant - bytesgot
+                r['speed'] = bytespersec
+                if (bytespersec > 0):
+                    timeleft = int(bytesleft / bytespersec)
+                    r['timeleft'] = timeleft
+                else:
+                    r['timeleft'] = -1
+            except:
                 r['timeleft'] = -1
         return r
 
