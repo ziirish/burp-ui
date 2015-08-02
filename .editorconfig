@@ -11,11 +11,11 @@ end_of_line = lf
 insert_final_newline = true
 charset = utf-8
 
-[**/*.{js,html,css}]
+[*.{js,html,css}]
 indent_style = tab
 indent_size = 2
 
-[**/*.py]
+[*.py]
 indent_style = space
 indent_size = 4
 
