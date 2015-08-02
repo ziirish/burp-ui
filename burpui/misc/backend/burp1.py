@@ -916,20 +916,20 @@ class Burp(BUIbackend, BUIlogging):
         shutil.rmtree(tmpdir)
         return zip_file, None
 
-    def read_conf_cli(self, agent=None):
+    def read_conf_cli(self, client=None, conf=None, agent=None):
         if not self.parser:
             return []
-        return self.parser.read_client_conf()
+        return self.parser.read_client_conf(client, conf)
 
     def read_conf_srv(self, conf=None, agent=None):
         if not self.parser:
             return []
         return self.parser.read_server_conf(conf)
 
-    def store_conf_cli(self, data, agent=None):
+    def store_conf_cli(self, data, client=None, conf=None, agent=None):
         if not self.parser:
             return []
-        return self.parser.store_client_conf(data)
+        return self.parser.store_client_conf(data, client, conf)
 
     def store_conf_srv(self, data, conf=None, agent=None):
         if not self.parser:

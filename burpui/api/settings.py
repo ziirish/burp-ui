@@ -175,15 +175,27 @@ class ServerSettings(Resource):
                        defaults=api.bui.cli.get_parser_attr('defaults', server))
 
 
-@api.resource('/api/client-config/<client>',
-              '/api/<server>/client-config/<client>')
+@api.resource('/api/<client>/client-config',
+              '/api/<client>/client-config/<path:conf>',
+              '/api/<server>/<client>/client-config',
+              '/api/<server>/<client>/client-config/<path:conf>',
+              endpoint='api.client_settings')
 class ClientSettings(Resource):
 
     @login_required
-    def get(self, server=None, client=None):
+    def get(self, server=None, client=None, conf=None):
         # Only the admin can edit the configuration
         if (api.bui.acl and not
                 api.bui.acl.is_admin(current_user.name)):
             abort(403, message='Sorry, you don\'t have rights to access the setting panel')
-        r = api.bui.cli.read_conf_cli(client, server)
-        return jsonify(results=r)
+
+        r = api.bui.cli.read_conf_cli(client, conf, server)
+        return jsonify(results=r,
+                       boolean=api.bui.cli.get_parser_attr('boolean_cli', server),
+                       string=api.bui.cli.get_parser_attr('string_cli', server),
+                       integer=api.bui.cli.get_parser_attr('integer_cli', server),
+                       multi=api.bui.cli.get_parser_attr('multi_cli', server),
+                       server_doc=api.bui.cli.get_parser_attr('doc', server),
+                       suggest=api.bui.cli.get_parser_attr('values', server),
+                       placeholders=api.bui.cli.get_parser_attr('placeholders', server),
+                       defaults=api.bui.cli.get_parser_attr('defaults', server))

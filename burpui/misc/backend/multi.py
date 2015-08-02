@@ -134,17 +134,17 @@ class Burp(BUIbackend):
     def restore_files(self, name=None, backup=None, files=None, strip=None, archive='zip', password=None, agent=None):
         return self.servers[agent].restore_files(name, backup, files, strip, archive, password)
 
-    def read_conf_cli(self, agent=None):
-        return self.servers[agent].read_conf_cli()
+    def read_conf_cli(self, client=None, conf=None, agent=None):
+        return self.servers[agent].read_conf_cli(client, conf)
 
-    def read_conf_srv(self, agent=None):
-        return self.servers[agent].read_conf_srv()
+    def read_conf_srv(self, conf=None, agent=None):
+        return self.servers[agent].read_conf_srv(conf)
 
-    def store_conf_cli(self, data, agent=None):
-        return self.servers[agent].store_conf_cli(data)
+    def store_conf_cli(self, data, client=None, conf=None, agent=None):
+        return self.servers[agent].store_conf_cli(data, client, conf)
 
-    def store_conf_srv(self, data, agent=None):
-        return self.servers[agent].store_conf_srv(data)
+    def store_conf_srv(self, data, conf=None, agent=None):
+        return self.servers[agent].store_conf_srv(data, conf)
 
     def get_parser_attr(self, attr=None, agent=None):
         return self.servers[agent].get_parser_attr(attr)
@@ -342,22 +342,24 @@ class NClient(BUIbackend):
         data = {'func': 'restore_files', 'args': {'name': name, 'backup': backup, 'files': files, 'strip': strip, 'archive': archive, 'password': password}}
         return self.do_command(data)
 
-    def read_conf_cli(self, agent=None):
-        data = {'func': 'read_conf_cli', 'args': None}
+    def read_conf_cli(self, client=None, conf=None, agent=None):
+        data = {'func': 'read_conf_cli', 'args': {'conf': conf, 'client': client}}
         return json.loads(self.do_command(data))
 
-    def read_conf_srv(self, agent=None):
-        data = {'func': 'read_conf_srv', 'args': None}
+    def read_conf_srv(self, conf=None, agent=None):
+        data = {'func': 'read_conf_srv', 'args': {'conf': conf}}
         return json.loads(self.do_command(data))
 
-    def store_conf_cli(self, data, agent=None):
+    def store_conf_cli(self, data, client=None, conf=None, agent=None):
         # serialize data as it is a nested dict
-        data = {'func': 'store_conf_cli', 'args': pickle.dumps({'data': data}), 'pickled': True}
+        # TODO: secure the serialization
+        data = {'func': 'store_conf_cli', 'args': pickle.dumps({'data': data, 'conf': conf, 'client': client}), 'pickled': True}
         return json.loads(self.do_command(data))
 
-    def store_conf_srv(self, data, agent=None):
+    def store_conf_srv(self, data, conf=None, agent=None):
         # serialize data as it is a nested dict
-        data = {'func': 'store_conf_srv', 'args': pickle.dumps({'data': data}), 'pickled': True}
+        # TODO: secure the serialization
+        data = {'func': 'store_conf_srv', 'args': pickle.dumps({'data': data, 'conf': conf}), 'pickled': True}
         print data
         return json.loads(self.do_command(data))
 

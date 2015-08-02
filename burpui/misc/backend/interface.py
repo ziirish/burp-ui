@@ -37,16 +37,16 @@ class BUIbackend:
     def restore_files(self, name=None, backup=None, files=None, strip=None, archive='zip', password=None, agent=None):
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")
 
-    def read_conf_srv(self, agent=None):
+    def read_conf_srv(self, conf=None, agent=None):
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")
 
-    def read_conf_cli(self, agent=None):
+    def read_conf_cli(self, client=None, conf=None, agent=None):
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")
 
-    def store_conf_srv(self, data, agent=None):
+    def store_conf_srv(self, data, conf=None, agent=None):
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")
 
-    def store_conf_cli(self, data, agent=None):
+    def store_conf_cli(self, data, client=None, conf=None, agent=None):
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")
 
     def get_parser_attr(self, attr=None, agent=None):
