@@ -36,10 +36,12 @@ def settings(server=None, conf=None):
     return render_template('settings.html', settings=True, server=server, conf=conf)
 
 
-@view.route('/client/settings/<client>', methods=['GET', 'POST'])
-@view.route('/client/settings/<client>/<path:conf>', methods=['GET', 'POST'])
-@view.route('/<server>/client/settings/<client>', methods=['GET', 'POST'])
-@view.route('/<server>/client/settings/<client>/<path:conf>', methods=['GET', 'POST'])
+@view.route('/client/settings', methods=['GET', 'POST'])
+@view.route('/<client>/settings', methods=['GET', 'POST'])
+@view.route('/<client>/settings/<path:conf>', methods=['GET', 'POST'])
+@view.route('/<server>/<client>/settings', methods=['GET', 'POST'])
+@view.route('/<server>/<client>/settings/<path:conf>', methods=['GET', 'POST'])
+@login_required
 def cli_settings(server=None, client=None, conf=None):
     # Only the admin can edit the configuration
     if view.bui.acl and not view.bui.acl.is_admin(current_user.name):
@@ -47,6 +49,10 @@ def cli_settings(server=None, client=None, conf=None):
     if request.method == 'POST':
         noti = view.bui.cli.store_conf_cli(request.form, server)
         return jsonify(notif=noti)
+    if not conf:
+        conf = request.args.get('conf')
+    if not client:
+        client = request.args.get('client')
     return render_template('settings.html', settings=True, client=client, server=server, conf=conf)
 
 """

@@ -129,7 +129,11 @@ app.controller('ConfigCtrl', function($scope, $http) {
 			'multis': false
 		};
 	$scope.changed = false;
+{% if client -%}
+	$http.get('{{ url_for("api.client_settings", client=client, conf=conf, server=server) }}').
+{% else -%}
 	$http.get('{{ url_for("api.server_settings", conf=conf, server=server) }}').
+{% endif -%}
 		success(function(data, status, headers, config) {
 			$scope.bools = data.results.boolean;
 			$scope.all.bools = data.boolean;
@@ -300,12 +304,16 @@ app.controller('ConfigCtrl', function($scope, $http) {
 	/* A client has been selected, we redirect to the client config page */
 	$scope.selectClient = function(selected, select) {
 		select.search = undefined;
-		document.location = '{{ url_for("view.settings", server=server) }}?client='+selected.name;
+		document.location = '{{ url_for("view.cli_settings", server=server) }}?client='+selected.name;
 	};
 	/* A config file has been selected for edition, we redirect the client */
 	$scope.editInclude = function(index) {
 		file = $scope.includes[index];
+{% if client -%}
+		document.location = '{{ url_for("view.cli_settings", client=client, server=server) }}?conf='+file;
+{% else -%}
 		document.location = '{{ url_for("view.settings", server=server) }}?conf='+file;
+{% endif -%}
 	};
 	$scope.undoAdd = function(type) {
 		$scope.add[type] = false;
