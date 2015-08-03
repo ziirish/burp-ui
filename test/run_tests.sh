@@ -39,9 +39,9 @@ update
 [ $ISROOT -eq 1 ] && apt-get install -y uthash-dev g++ make libssl-dev librsync-dev
 
 echo "downloading and compiling burp v${BURP_VERSION}"
-OLD_PWD=`pwd`
-TEMP=$(mktemp -d)
-cd $TEMP
+ROOT_PWD=`pwd`
+BURP_DIR=$(mktemp -d)
+cd $BURP_DIR
 
 git clone $BURP
 cd burp
@@ -49,8 +49,19 @@ git checkout tags/${BURP_VERSION}
 ./configure --disable-ipv6
 make
 
-cd $OLD_PWD
-rm -rf $TEMP
+cd $ROOT_PWD
+WORKING_DIR=$(mktemp -d)
+
+echo "copying configuration files"
+cp -a test/burp/config $WORKING_DIR/
+sed -i "s|@WORKING_DIR@|${WORKING_DIR}|" $WORKING_DIR/config/burp.conf
+sed -i "s|@WORKING_DIR@|${WORKING_DIR}|" $WORKING_DIR/config/CA/CA.cnf
+
+echo "launching background burp-server"
+$BURP_DIR/burp/src/burp -F -c $WORKING_DIR/config/burp.conf -g
+$BURP_DIR/burp/src/burp -F -c $WORKING_DIR/config/burp.conf &
+
+BURP_PID=$?
 
 ##echo "install lib devel..."
 ##apt-get update
@@ -78,7 +89,11 @@ pip install -r test-requirements.txt
 nosetests --with-coverage --cover-package=burpui test/test_burpui.py
 ret=$?
 
+echo "cleanup"
 deactivate
+kill $BURP_PID
+rm -rf $BURP_DIR
+rm -rf $WORKING_DIR
 
 echo "That's it!"
 
