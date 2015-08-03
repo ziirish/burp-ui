@@ -135,19 +135,23 @@ class BurpuiRoutesTestCase(TestCase):
         print '\nTest 3 Finished!\n'
 
     def create_app(self):
-        conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../burpui.sample.cfg')
+        conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test3.cfg')
         app.config['TESTING'] = True
         app.config['LOGIN_DISABLED'] = True
         app.config['LIVESERVER_PORT'] = 5001
         app.config['CFG'] = conf
         bui.setup(conf)
-        bui.cli.port = 9999
         login_manager.init_app(app)
         return app
 
     def test_live_monitor(self):
         response = self.client.get('/live-monitor', follow_redirects=True)
         assert 'Sorry, there are no running backups' in response.data
+
+    def test_get_clients(self):
+        response = self.client.get('/api/clients.json')
+        print response.json
+        self.assertEqual(response.json, {u'results': [{u'state': u'idle', u'last': u'never', u'name': u'testclient'}]})
 
 
 class BurpuiLoginTestCase(TestCase):
