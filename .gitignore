@@ -6,3 +6,4 @@ devel.sh
 dist
 py2.7
 _build
+.tags

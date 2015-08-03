@@ -55,7 +55,7 @@ class BurpuiAPITestCase(TestCase):
         response = self.client.get('/api/clients.json')
         self.assertEquals(response.json, {u'notif': [[2, u'Cannot contact burp server at 127.0.0.1:9999']]})
 
-    def test_config_parsing(self):
+    def test_server_config_parsing(self):
         response = self.client.get('/api/server-config')
         asse = dict(((u'results', {}),
                     (u'boolean', bui.cli.get_parser_attr('boolean_srv')),
@@ -66,8 +66,19 @@ class BurpuiAPITestCase(TestCase):
                     (u'suggest', bui.cli.get_parser_attr('values')),
                     (u'placeholders', bui.cli.get_parser_attr('placeholders')),
                     (u'defaults', bui.cli.get_parser_attr('defaults'))))
-        print(asse)
-        print(response.json)
+        self.assertEquals(response.json, asse)
+
+    def test_client_config_parsing(self):
+        response = self.client.get('/api/toto/client-config')
+        asse = dict(((u'results', {}),
+                    (u'boolean', bui.cli.get_parser_attr('boolean_cli')),
+                    (u'string', bui.cli.get_parser_attr('string_cli')),
+                    (u'integer', bui.cli.get_parser_attr('integer_cli')),
+                    (u'multi', bui.cli.get_parser_attr('multi_cli')),
+                    (u'server_doc', bui.cli.get_parser_attr('doc')),
+                    (u'suggest', bui.cli.get_parser_attr('values')),
+                    (u'placeholders', bui.cli.get_parser_attr('placeholders')),
+                    (u'defaults', bui.cli.get_parser_attr('defaults'))))
         self.assertEquals(response.json, asse)
 
     def test_restore(self):
@@ -217,6 +228,11 @@ class BurpuiACLTestCase(TestCase):
     def test_config_render_ko(self):
         rv = self.login('user1', 'password')
         response = self.client.get('/settings')
+        self.assert403(response)
+
+    def test_cli_settings_ko(self):
+        rv = self.login('user1', 'password')
+        response = self.client.get('/api/toto/client-config')
         self.assert403(response)
 
 if __name__ == '__main__':

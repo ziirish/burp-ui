@@ -591,6 +591,8 @@ class Parser(BUIparser, BUIlogging):
 
         mconf = conf
         if not conf:
+            if not self.clientconfdir:
+                return res
             mconf = os.path.join(self.clientconfdir, client)
 
         try:

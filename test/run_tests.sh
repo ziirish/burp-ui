@@ -4,6 +4,8 @@ PIP=$(which pip)
 PYTHON=$(which python2.7)
 ISROOT=0
 UPDATED=0
+BURP="https://git.ziirish.me/ziirish/burp.git"
+BURP_VERSION="1.4.40"
 
 function update() {
     [ $UPDATED -eq 0 ] && [ $ISROOT -eq 1 ] && {
@@ -31,6 +33,24 @@ echo "test requirements"
     echo "python2.7 is missing... Installing it"
     [ $ISROOT -eq 1 ] && update && apt-get -y install python2.7 python
 }
+
+echo "install build requirements"
+update
+[ $ISROOT -eq 1 ] && apt-get install -y uthash-dev g++ make libssl-dev
+
+echo "downloading and compiling burp v${BURP_VERSION}"
+OLD_PWD=`pwd`
+TEMP=$(mktemp -d)
+cd $TEMP
+
+git clone $BURP
+cd burp
+git checkout tags/${BURP_VERSION}
+./configure --disable-ipv6
+make
+
+cd $OLD_PWD
+rm -rf $TEMP
 
 ##echo "install lib devel..."
 ##apt-get update
