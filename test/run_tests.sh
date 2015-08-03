@@ -61,7 +61,7 @@ echo "launching background burp-server"
 LOGFILE=$(mktemp)
 $BURP_DIR/burp/src/burp -F -c $WORKING_DIR/config/burp.conf -g >$LOGFILE 2>&1
 $BURP_DIR/burp/src/burp -F -c $WORKING_DIR/config/burp.conf >$LOGFILE >2&1 &
-BURP_PID=$?
+BURP_PID=$!
 
 ##echo "install lib devel..."
 ##apt-get update
