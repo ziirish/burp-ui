@@ -36,7 +36,7 @@ echo "test requirements"
 
 echo "install build requirements"
 update
-[ $ISROOT -eq 1 ] && apt-get install -y uthash-dev g++ make libssl-dev
+[ $ISROOT -eq 1 ] && apt-get install -y uthash-dev g++ make libssl-dev librsync-dev
 
 echo "downloading and compiling burp v${BURP_VERSION}"
 OLD_PWD=`pwd`
