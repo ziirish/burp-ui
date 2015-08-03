@@ -91,9 +91,9 @@ ret=$?
 
 echo "cleanup"
 deactivate
-kill $BURP_PID
-rm -rf $BURP_DIR
-rm -rf $WORKING_DIR
+kill $BURP_PID || /bin/true
+rm -rf $BURP_DIR || /bin/true
+rm -rf $WORKING_DIR || /bin/true
 
 echo "That's it!"
 
