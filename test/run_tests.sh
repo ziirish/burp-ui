@@ -2,6 +2,7 @@
 
 PIP=$(which pip)
 PYTHON=$(which python2.7)
+VIRTUALENV=$(which virtualenv)
 ISROOT=0
 UPDATED=0
 BURP="https://git.ziirish.me/ziirish/burp.git"
@@ -80,7 +81,7 @@ $PIP install virtualenv
 mkdir py2.7
 
 echo "test python2.7"
-virtualenv -p $PYTHON py2.7
+$VIRTUALENV -p $PYTHON py2.7
 source py2.7/bin/activate
 pip install -r requirements.txt
 pip install -r test-requirements.txt
