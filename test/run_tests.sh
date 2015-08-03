@@ -58,9 +58,9 @@ sed -i "s|@WORKING_DIR@|${WORKING_DIR}|" $WORKING_DIR/config/burp.conf
 sed -i "s|@WORKING_DIR@|${WORKING_DIR}|" $WORKING_DIR/config/CA/CA.cnf
 
 echo "launching background burp-server"
-$BURP_DIR/burp/src/burp -F -c $WORKING_DIR/config/burp.conf -g
-$BURP_DIR/burp/src/burp -F -c $WORKING_DIR/config/burp.conf &
-
+LOGFILE=$(mktemp)
+$BURP_DIR/burp/src/burp -F -c $WORKING_DIR/config/burp.conf -g >$LOGFILE 2>&1
+$BURP_DIR/burp/src/burp -F -c $WORKING_DIR/config/burp.conf >$LOGFILE >2&1 &
 BURP_PID=$?
 
 ##echo "install lib devel..."
@@ -91,9 +91,13 @@ ret=$?
 
 echo "cleanup"
 deactivate
-kill $BURP_PID || /bin/true
-rm -rf $BURP_DIR || /bin/true
-rm -rf $WORKING_DIR || /bin/true
+
+echo "Killing burp-server"
+kill $BURP_PID || echo "Ooops KILL"
+cat $LOGFILE
+
+echo "removing temp files/dirs"
+rm -rf $LOGFILE $BURP_DIR $WORKING_DIR || echo "Ooops RM"
 
 echo "That's it!"
 
