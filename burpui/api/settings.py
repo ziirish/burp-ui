@@ -11,7 +11,7 @@
 from burpui.api import api
 from flask.ext.restful import reqparse, abort, Resource
 from flask.ext.login import current_user, login_required
-from flask import jsonify
+from flask import jsonify, flash, request, redirect, url_for
 
 
 @api.resource('/api/server-config',
@@ -199,3 +199,25 @@ class ClientSettings(Resource):
                        suggest=api.bui.cli.get_parser_attr('values', server),
                        placeholders=api.bui.cli.get_parser_attr('placeholders', server),
                        defaults=api.bui.cli.get_parser_attr('defaults', server))
+
+
+@api.resource('/api/new-client',
+              '/api/<server>',
+              endpoint='api.new_client')
+class NewClient(Resource):
+
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument('newclient', type=str)
+
+    @login_required
+    def post(self, server=None):
+        newclient = self.parser.parse_args()['newclient']
+        if not newclient:
+            flash('No client name provided', 'danger')
+            return redirect(request.referrer)
+        # clientconfdir = api.bui.cli.get_parser_attr('clientconfdir', server)
+        # if not clientconfdir:
+        #    flash('Could not proceed, no \'clientconfdir\' find', 'warning')
+        #    return redirect(request.referrer)
+        return redirect(url_for('view.cli_settings', server=server, client=newclient))

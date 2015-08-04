@@ -69,12 +69,12 @@ def settings(server=None, conf=None):
     return render_template('settings.html', settings=True, server=server, conf=conf)
 
 
-@view.route('/client/settings', methods=['GET', 'POST'])
-@view.route('/<client>/settings', methods=['GET', 'POST'])
-@view.route('/<client>/settings/<path:conf>', methods=['GET', 'POST'])
-@view.route('/<server>/client/settings', methods=['GET', 'POST'])
-@view.route('/<server>/<client>/settings', methods=['GET', 'POST'])
-@view.route('/<server>/<client>/settings/<path:conf>', methods=['GET', 'POST'])
+@view.route('/client/client-settings', methods=['GET', 'POST'])
+@view.route('/<client>/client-settings', methods=['GET', 'POST'])
+@view.route('/<client>/client-settings/<path:conf>', methods=['GET', 'POST'])
+@view.route('/<server>/client/client-settings', methods=['GET', 'POST'])
+@view.route('/<server>/<client>/client-settings', methods=['GET', 'POST'])
+@view.route('/<server>/<client>/client-settings/<path:conf>', methods=['GET', 'POST'])
 @login_required
 def cli_settings(server=None, client=None, conf=None):
     # Only the admin can edit the configuration

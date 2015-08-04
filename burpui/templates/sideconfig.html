@@ -24,4 +24,16 @@
               </li>
               {% endraw %}
             </ul>
+            <ul class="nav nav-sidebar">
+              <li>
+                <form action="{{ url_for('api.new_client') }}" method="POST">
+                  <div class="input-group">
+                    <input class="form-control" type="text" name="newclient" id="newclient" placeholder="Create new client">
+                    <span class="input-group-btn">
+                      <button class="btn btn-success" type="submit"><span class="glyphicon glyphicon-plus"></span></button>
+                    </span>
+                  </div>
+                </form>
+              </li>
+            </ul>
           </div>

@@ -943,5 +943,5 @@ class Burp(BUIbackend, BUIlogging):
         Using a method because of the bui-agent
         """
         if not attr or not self.parser:
-            return None
+            return []
         return self.parser.get_priv_attr(attr)
