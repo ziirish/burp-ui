@@ -37,14 +37,11 @@ class Burp(BUIbackend):
                     if r:
                         timeout = 5
                         ssl = False
-                        try:
-                            host = config.get(sec, 'host')
-                            port = config.getint(sec, 'port')
-                            password = config.get(sec, 'password')
-                            ssl = config.getboolean(sec, 'ssl')
-                            timeout = config.getint(sec, 'timeout')
-                        except Exception, e:
-                            self.app.logger.error(str(e))
+                        host = self._safe_config_get(config.get, 'host', sec)
+                        port = self._safe_config_get(config.getint, 'port', sec, cast=int)
+                        password = self._safe_config_get(config.get, 'password', sec)
+                        ssl = self._safe_config_get(config.getboolean, 'ssl', sec, cast=bool)
+                        timeout = self._safe_config_get(config.getint, 'timeout', sec, cast=int)
 
                         self.servers[r.group(1)] = NClient(self.app, host, port, password, ssl, timeout)
 
@@ -55,6 +52,37 @@ class Burp(BUIbackend):
     """
     Utilities functions
     """
+
+    def _safe_config_get(self, callback, key, sect='Burp1', cast=None):
+        """
+        :func:`burpui.misc.backend.Multi._safe_config_get` is a wrapper to handle
+        Exceptions throwed by :mod:`ConfigParser`.
+
+        :param callback: Function to wrap
+        :type callback: callable
+
+        :param key: Key to retrieve
+        :type key: str
+
+        :param sect: Section of the config file to read
+        :type sect: str
+
+        :param cast: Cast the returned value if provided
+        :type case: callable
+
+        :returns: The value returned by the `callback`
+        """
+        try:
+            return callback(sect, key)
+        except ConfigParser.NoOptionError as e:
+            self._logger('error', str(e))
+        except ConfigParser.NoSectionError as e:
+            self._logger('warning', str(e))
+            if key in self.defaults:
+                if cast:
+                    return cast(self.defaults[key])
+                return self.defaults[key]
+        return None
 
     def status(self, query='\n', agent=None):
         """
