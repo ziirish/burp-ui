@@ -11,7 +11,7 @@ from burpui.api import api
 from burpui.misc.backend.interface import BUIserverException
 from flask.ext.restful import reqparse, Resource
 from flask.ext.login import current_user, login_required
-from flask import jsonify, render_template
+from flask import jsonify, render_template, make_response
 
 
 @api.resource('/api/render-live-template',
@@ -73,4 +73,6 @@ class RenderLiveTpl(Resource):
             counters = api.bui.cli.get_counters(name, agent=server)
         except BUIserverException:
             counters = []
-        return render_template('live-monitor-template.html', cname=name, counters=counters, server=server)
+        response = make_response(render_template('live-monitor-template.html', cname=name, counters=counters, server=server))
+        response.headers['content-type'] = 'text/html'
+        return response
