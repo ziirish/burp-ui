@@ -29,12 +29,15 @@ def settings(server=None, conf=None):
         return jsonify(notif=noti)
     if not conf:
         conf = request.args.get('conf')
+    if not server:
+        server = request.args.get('server')
     return render_template('settings.html', settings=True, server=server, conf=conf)
 
 
 @view.route('/client/settings', methods=['GET', 'POST'])
 @view.route('/<client>/settings', methods=['GET', 'POST'])
 @view.route('/<client>/settings/<path:conf>', methods=['GET', 'POST'])
+@view.route('/<server>/client/settings', methods=['GET', 'POST'])
 @view.route('/<server>/<client>/settings', methods=['GET', 'POST'])
 @view.route('/<server>/<client>/settings/<path:conf>', methods=['GET', 'POST'])
 @login_required
@@ -49,6 +52,8 @@ def cli_settings(server=None, client=None, conf=None):
         conf = request.args.get('conf')
     if not client:
         client = request.args.get('client')
+    if not server:
+        server = request.args.get('server')
     return render_template('settings.html', settings=True, client=client, server=server, conf=conf)
 
 """
