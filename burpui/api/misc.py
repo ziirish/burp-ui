@@ -38,7 +38,7 @@ class RenderLiveTpl(Resource):
         self.parser.add_argument('name', type=str)
 
     @login_required
-    def get(server=None, name=None):
+    def get(self, server=None, name=None):
         """
         API: render_live_tpl
         :param name: the client name if any. You can also use the GET parameter
