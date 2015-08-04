@@ -11,7 +11,7 @@ from burpui.api import api
 from burpui.misc.backend.interface import BUIserverException
 from flask.ext.restful import reqparse, Resource
 from flask.ext.login import current_user, login_required
-from flask import jsonify, render_template, make_response
+from flask import jsonify, render_template, make_response, abort
 
 
 @api.resource('/api/render-live-template',
