@@ -197,7 +197,7 @@ class Burp(BUIbackend, BUIlogging):
 
     def _safe_config_get(self, callback, key, sect='Burp1', cast=None):
         """
-        :func:`burpui.misc.backend.Burp1._safe_config_get` is a wrapper to handle
+        :func:`burpui.misc.backend.burp1._safe_config_get` is a wrapper to handle
         Exceptions throwed by :mod:`ConfigParser`.
 
         :param callback: Function to wrap
@@ -866,7 +866,9 @@ class Burp(BUIbackend, BUIlogging):
             os.remove(tmpfile)
         self._logger('debug', out)
         self._logger('debug', 'command returned: %d', status)
-        # FIXME: temporary hack to handle client-side encrypted backups
+        # hack to handle client-side encrypted backups
+        # this is now handled client-side, but we should never trust user input
+        # so we need to handle it server-side too
         if 'zstrm inflate error: -3' in out and 'transfer file returning: -1' in out:
             status = 1
             out = 'encrypted'
