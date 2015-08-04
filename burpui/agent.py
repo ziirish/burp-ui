@@ -160,6 +160,7 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
                         _, w, _ = select.select([], [self.request], [], timeout)
                         if not w:
                             raise Exception('Socket timed-out 4')
+                os.unlink(res)
             else:
                 self.request.sendall(struct.pack('!Q', len(res)))
                 self.request.sendall(res)
