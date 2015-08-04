@@ -7,8 +7,6 @@
 .. moduleauthor:: Ziirish <ziirish@ziirish.info>
 
 """
-import json
-
 from burpui.api import api
 from burpui.misc.backend.interface import BUIserverException
 from flask.ext.restful import reqparse, Resource

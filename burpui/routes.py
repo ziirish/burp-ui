@@ -15,6 +15,41 @@ view = Blueprint('view', __name__, template_folder='templates')
 view.bui = None
 
 
+"""
+Here are some custom filters
+"""
+
+
+@view.app_template_filter()
+def mypad(s):
+    """
+    Filter: used to pad 0's to backup numbers as in the burp's status monitor
+    """
+    if not s:
+        return '0000000'
+    return '{0:07d}'.format(int(s))
+
+
+@view.app_template_filter()
+def time_human(d):
+    s = ''
+    seconds = (((d % 31536000) % 86400) % 3600) % 60
+    minutes = math.floor((((d % 31536000) % 86400) % 3600) / 60)
+    hours = math.floor(((d % 31536000) % 86400) / 3600)
+    if hours > 0:
+        s = '%02dH' % hours
+    return '%s %02dm %02ds' % (s, minutes, seconds)
+
+
+@view.app_template_filter()
+def bytes_human(b):
+    return '{0:.1eM}'.format(_hr(b))
+
+"""
+And here is the main site
+"""
+
+
 @view.route('/settings', methods=['GET', 'POST'])
 @view.route('/settings/<path:conf>', methods=['GET', 'POST'])
 @view.route('/<server>/settings', methods=['GET', 'POST'])
@@ -55,91 +90,6 @@ def cli_settings(server=None, client=None, conf=None):
     if not server:
         server = request.args.get('server')
     return render_template('settings.html', settings=True, client=client, server=server, conf=conf)
-
-"""
-Here is the API
-
-The whole API returns JSON-formated data
-
-The API has been split-out into several files and now uses Flask-Restful
-"""
-
-
-@view.route('/api/render-live-template', methods=['GET'])
-@view.route('/api/<server>/render-live-template', methods=['GET'])
-@view.route('/api/render-live-template/<name>')
-@view.route('/api/<server>/render-live-template/<name>')
-@login_required
-def render_live_tpl(server=None, name=None):
-    """
-    API: render_live_tpl
-    :param name: the client name if any. You can also use the GET parameter
-    'name' to achieve the same thing
-    :returns: HTML that should be included directly into the page
-    """
-    if not server:
-        server = request.args.get('server')
-    if not name:
-        name = request.args.get('name')
-    # Check params
-    if not name:
-        abort(500)
-    # Manage ACL
-    if (view.bui.acl and
-        (not view.bui.acl.is_client_allowed(current_user.name, name, server) or
-         not view.bui.acl.is_admin(current_user.name))):
-        abort(403)
-    if isinstance(view.bui.cli.running, dict):
-        if server and name not in view.bui.cli.running[server]:
-            abort(404)
-        else:
-            found = False
-            for k, a in view.bui.cli.running.iteritems():
-                found = found or (name in a)
-            if not found:
-                abort(404)
-    else:
-        if name not in view.bui.cli.running:
-            abort(404)
-    try:
-        counters = view.bui.cli.get_counters(name, agent=server)
-    except BUIserverException:
-        counters = []
-    return render_template('live-monitor-template.html', cname=name, counters=counters, server=server)
-
-"""
-Here are some custom filters
-"""
-
-
-@view.app_template_filter()
-def mypad(s):
-    """
-    Filter: used to pad 0's to backup numbers as in the burp's status monitor
-    """
-    if not s:
-        return '0000000'
-    return '{0:07d}'.format(int(s))
-
-
-@view.app_template_filter()
-def time_human(d):
-    s = ''
-    seconds = (((d % 31536000) % 86400) % 3600) % 60
-    minutes = math.floor((((d % 31536000) % 86400) % 3600) / 60)
-    hours = math.floor(((d % 31536000) % 86400) / 3600)
-    if hours > 0:
-        s = '%02dH' % hours
-    return '%s %02dm %02ds' % (s, minutes, seconds)
-
-
-@view.app_template_filter()
-def bytes_human(b):
-    return '{0:.1eM}'.format(_hr(b))
-
-"""
-And here is the main site
-"""
 
 
 @view.route('/live-monitor')
