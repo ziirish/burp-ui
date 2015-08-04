@@ -7,13 +7,17 @@
 .. moduleauthor:: Ziirish <ziirish@ziirish.info>
 
 """
+import select
+
 from zlib import adler32
 from time import gmtime, strftime, time
 
 from burpui.api import api
 from flask.ext.restful import reqparse, Resource, abort
 from flask.ext.login import current_user, login_required
-from flask import jsonify, send_file, make_response, after_this_request
+from flask import Response, send_file, make_response, after_this_request
+from werkzeug.datastructures import Headers
+from werkzeug.exceptions import HTTPException
 
 
 @api.resource('/api/restore/<name>/<int:backup>',

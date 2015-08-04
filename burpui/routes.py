@@ -1,12 +1,8 @@
 # -*- coding: utf8 -*-
 import math
-import select
-import json
 
-from flask import Flask, Response, request, render_template, jsonify, redirect, url_for, abort, flash, Blueprint
+from flask import request, render_template, jsonify, redirect, url_for, abort, flash, Blueprint
 from flask.ext.login import login_user, login_required, logout_user, current_user
-from werkzeug.datastructures import Headers
-from werkzeug.exceptions import HTTPException
 
 from burpui.forms import LoginForm
 from burpui.misc.utils import human_readable as _hr
