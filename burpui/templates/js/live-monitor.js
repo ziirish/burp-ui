@@ -56,11 +56,7 @@ _live = function() {
 			html += _parse_live_result(data, rec['serv']);
 		});
 	});
-	{% if server -%}
 	redirect = '{{ url_for("view.home", server=server) }}';
-	{% else -%}
-	redirect = '{{ url_for("view.home") }}';
-	{% endif -%}
 	if (!html) {
 		document.location = redirect;
 	}
@@ -77,11 +73,7 @@ _live = function() {
 	$.getJSON(url, function(data) {
 		html += _parse_live_result(data);
 	});
-	{% if server -%}
 	redirect = '{{ url_for("view.home", server=server) }}';
-	{% else -%}
-	redirect = '{{ url_for("view.home") }}';
-	{% endif -%}
 	if (!html) {
 		document.location = redirect;
 	}
