@@ -16,8 +16,8 @@ from flask import jsonify, make_response
 
 @api.resource('/api/running-clients.json',
               '/api/<server>/running-clients.json',
-              '/api/<client>/running-clients.json',
-              '/api/<server>/<client>/running-clients.json',
+              '/api/running-clients.json/<client>',
+              '/api/<server>/running-clients.json/<client>',
               endpoint='api.running_clients')
 class RunningClients(Resource):
     """
@@ -69,7 +69,7 @@ class RunningClients(Resource):
                     r = []
                     return jsonify(results=r)
             if api.bui.cli.is_backup_running(client, server):
-                r = [api.bui.cli.get_client(client, server)]
+                r = [client]
                 return jsonify(results=r)
             else:
                 r = []

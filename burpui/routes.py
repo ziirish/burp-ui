@@ -250,4 +250,7 @@ def home():
     if view.bui.standalone:
         return redirect(url_for('.clients'))
     else:
+        server = request.args.get('server')
+        if server:
+            return redirect(url_for('.clients', server=server))
         return redirect(url_for('.servers'))
