@@ -8,6 +8,26 @@ import sys
 
 from setuptools import setup, find_packages
 
+
+def readme():
+    """
+    Function used to skip the screenshots part
+    """
+    desc = ''
+    cpt = 0
+    with open('README.rst') as f:
+        for l in f.readlines():
+            if l.rstrip() == 'Screenshots':
+                cpt += 1
+            elif cpt > 0:
+                cpt += 1
+            if cpt > 7:
+                cpt = 0
+            if cpt > 0:
+                continue
+            desc += l
+    return desc
+
 with open(os.path.join(os.path.dirname(__file__), 'burpui', '__init__.py')) as f:
     data = f.read()
 
@@ -29,7 +49,7 @@ setup(
     name=name,
     version=open('VERSION').read().rstrip(),
     description=description,
-    long_description=open('README.rst').read(),
+    long_description=readme(),
     license=open('LICENSE').read(),
     author=author,
     author_email=author_email,
@@ -58,7 +78,6 @@ setup(
         'License :: OSI Approved :: BSD License',
         'Operating System :: POSIX :: Linux',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
         'Topic :: System :: Archiving :: Backup',
         'Topic :: System :: Monitoring'
