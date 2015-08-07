@@ -70,7 +70,19 @@ class BurpuiAPITestCase(TestCase):
 
     def test_client_config_parsing(self):
         response = self.client.get('/api/toto/client-config')
-        asse = dict(((u'results', {}),
+        asse = dict((
+                    (
+                        u'results',
+                        {
+                            u'common': [],
+                            u'boolean': [],
+                            u'integer': [],
+                            u'multi': [],
+                            u'includes': [],
+                            u'includes_ext': [],
+                            u'clients': []
+                        }
+                    ),
                     (u'boolean', bui.cli.get_parser_attr('boolean_cli')),
                     (u'string', bui.cli.get_parser_attr('string_cli')),
                     (u'integer', bui.cli.get_parser_attr('integer_cli')),
@@ -237,6 +249,7 @@ class BurpuiACLTestCase(TestCase):
     def test_cli_settings_ko(self):
         rv = self.login('user1', 'password')
         response = self.client.get('/api/toto/client-config')
+        print response.json
         self.assert403(response)
 
 if __name__ == '__main__':

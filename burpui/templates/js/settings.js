@@ -115,6 +115,8 @@ app.controller('ConfigCtrl', function($scope, $http) {
 	$scope.avail = {};
 	$scope.suggest = {};
 	$scope.invalid = {};
+	$scope.paths = {};
+	$scope.inc_invalid = {};
 	$scope.old = {};
 	$scope.new = {
 			'bools': undefined,
@@ -253,6 +255,9 @@ app.controller('ConfigCtrl', function($scope, $http) {
 			$scope.avail[type].push({'name': n, 'value': v});
 		});
 	};
+	$scope.undoAdd = function(type) {
+		$scope.add[type] = false;
+	};
 	$scope.removeMulti = function(pindex, cindex) {
 		$scope.multis[pindex].value.splice(cindex, 1);
 		if ($scope.multis[pindex].value.length <= 0) {
@@ -307,16 +312,77 @@ app.controller('ConfigCtrl', function($scope, $http) {
 		document.location = '{{ url_for("view.cli_settings", server=server) }}?client='+selected.name;
 	};
 	/* A config file has been selected for edition, we redirect the client */
-	$scope.editInclude = function(index) {
-		file = $scope.includes[index];
+	$scope.editInclude = function(parent, index) {
+		file = $scope.paths[parent][index];
 		{% if client -%}
 		document.location = '{{ url_for("view.cli_settings", client=client, server=server) }}?conf='+file;
 		{% else -%}
 		document.location = '{{ url_for("view.settings", server=server) }}?conf='+file;
 		{% endif -%}
 	};
-	$scope.undoAdd = function(type) {
-		$scope.add[type] = false;
+	$scope.expandPath = function(index) {
+		path = $scope.includes[index];
+		{% if client -%}
+		api = '{{ url_for("api.path_expander", client=client, server=server) }}';
+		{% else -%}
+		api = '{{ url_for("api.path_expander", server=server) }}';
+		{% endif -%}
+		$scope.inc_invalid = {};
+		$.ajax({
+					url: api,
+					type: 'POST',
+					data: {'path': path}
+		}).fail(function(xhr, stat, err) {
+			/* display errors if something went wrong HTTP side */
+			var msg = '<strong>ERROR:</strong> ';
+			if (stat && err) {
+				msg +=	'<p>'+stat+'</p><pre>'+err+'</pre>';
+			} else if (stat) {
+				msg += '<p>'+stat+'</p>';
+			} else if (err) {
+				msg += '<pre>'+err+'</pre>';
+			}
+			notif(2, msg, 10000);
+		}).done(function(data) {
+			/* The server answered correctly but some errors may have occurred server
+			 * side so we display them */
+			if (data.notif) {
+				notif(data.notif[0], data.notif[1])
+				$scope.inc_invalid[index] = true;
+			} else if (data.result) {
+				$scope.paths[index] = [];
+				$.each(data.result, function(i, p) {
+					$scope.paths[index].push(p);
+				});
+			}
+		});
+	};
+	$scope.deleteClient = function() {
+		api = '{{ url_for("api.delete_client", client=client, server=server) }}';
+		$.ajax({
+					url: api,
+					type: 'POST'
+		}).fail(function(xhr, stat, err) {
+			/* display errors if something went wrong HTTP side */
+			var msg = '<strong>ERROR:</strong> ';
+			if (stat && err) {
+				msg +=	'<p>'+stat+'</p><pre>'+err+'</pre>';
+			} else if (stat) {
+				msg += '<p>'+stat+'</p>';
+			} else if (err) {
+				msg += '<pre>'+err+'</pre>';
+			}
+			notif(2, msg, 10000);
+		}).done(function(data) {
+			/* The server answered correctly but some errors may have occurred server
+			 * side so we display them */
+			if (data.notif) {
+				notif(data.notif[0], data.notif[1])
+				if (data.notif[0] == 0) {
+					document.location = '{{ url_for("view.settings", server=server) }}';
+				}
+			}
+		});
 	};
 	/* These callbacks expand/reduce the input for a better readability */
 	$scope.focusIn = function(ev) {

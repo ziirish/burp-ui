@@ -2,7 +2,10 @@
 import os
 import struct
 import select
-import json
+try:
+    import ujson as json
+except ImportError:
+    import json
 import time
 import sys
 import pickle
@@ -79,6 +82,8 @@ class BUIAgent:
             'store_conf_cli': self.backend.store_conf_cli,
             'read_conf_srv': self.backend.read_conf_srv,
             'store_conf_srv': self.backend.store_conf_srv,
+            'expand_path': self.backend.expand_path,
+            'delete_client': self.backend.delete_client,
             'get_parser_attr': self.backend.get_parser_attr
         }
 
