@@ -167,7 +167,7 @@
               <fieldset>
                 <legend id="includes_source">Includes</legend>
                 <div class="well">
-                  <div class="form-group" ng-repeat="(i, val) in includes track by $index">
+                  <div class="form-group" ng-repeat="(i, val) in includes track by $index" ng-class="{'has-error': inc_invalid[$index] }">
                     <label for="include-{{ $index }}" class="col-lg-3 control-label">source</label>
                     <div class="col-lg-2">
                       <input class="form-control" type="text" id="include-{{ $index }}" name="includes" ng-model="includes[i]" ng-focus="focusIn($event)" ng-blur="focusOut($event)" placeholder="{{ ::placeholders['.'] }}">
@@ -175,7 +175,15 @@
                     </div>
                     <div class="col-lg-2 btn-toolbar">
                       <button type="button" class="btn btn-danger" ng-click="removeIncludes($index)"><span class="glyphicon glyphicon-minus"></span></button>
-                      <button type="button" class="btn btn-info" ng-disabled="!includes[i]" ng-click="editInclude($index)"><span class="glyphicon glyphicon-pencil"></span></button>
+                      <div class="btn-group">
+                        <button class="btn btn-info" type="button" ng-disabled="!includes[i]"><span class="glyphicon glyphicon-pencil"></span></button>
+                        <button aria-expanded="false" aria-haspopup="true" data-toggle="dropdown" class="btn btn-info dropdown-toggle" type="button" ng-click="expandPath($index)" ng-disabled="!includes[i]">
+                          <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu browse">
+                          <li style="cursor: pointer;" ng-repeat="(j, path) in paths[$index] track by $index" ng-click="editInclude($parent.$index, $index)">{{ path }}</li>
+                      </ul>
+                    </div>
                     </div>
                     <div class="col-lg-5" ng-if="$first" ng-bind-html="::server_doc['.']"></div>
                   </div>
@@ -187,12 +195,15 @@
                   </div>
                 </div>
               </fieldset>
+              {% endraw %}
               <div class="form-group">
                 <div class="col-lg-3 col-lg-offset-3">
                   <button type="submit" class="btn btn-primary" ng-disabled="!setSettings.$valid">Submit</button>
+                  {% if client and not conf -%}
+                  <button type="button" class="btn btn-danger" ng-click="deleteClient()">Remove '{{ client }}'</button>
+                  {% endif -%}
                 </div>
               </div>
-              {% endraw %}
             </form>
           </div>
         </div>

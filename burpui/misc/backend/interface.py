@@ -52,6 +52,11 @@ class BUIbackend:
     def get_parser_attr(self, attr=None, agent=None):
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")
 
+    def expand_path(self, path=None, client=None, agent=None):
+        raise NotImplementedError("Sorry, the current Backend does not implement this method!")
+
+    def delete_client(self, client=None, agent=None):
+        raise NotImplementedError("Sorry, the current Backend does not implement this method!")
 
 class BUIserverException(Exception):
     pass

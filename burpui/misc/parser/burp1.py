@@ -395,7 +395,7 @@ class Parser(BUIparser, BUIlogging):
         u'working_dir_recovery_method',
     ]
     string_cli = list(set(string_srv) & set(fields_cli))
-    string_cli += [u'ssl_peer_cn']
+    string_cli += [u'ssl_peer_cn', u'password']
     boolean_cli = list(set(boolean_srv) & set(fields_cli))
     integer_cli = list(set(integer_srv) & set(fields_cli))
     multi_cli = list(set(multi_srv) & set(fields_cli))
@@ -584,8 +584,42 @@ class Parser(BUIparser, BUIlogging):
 
         return dic, boolean, multi, integer, includes, includes_ext
 
+    def path_expander(self, pattern=None, client=None):
+        """
+        This method returns a list of files matching the given pattern
+        """
+        # TODO: enhance security by allowing only some paths (ie. remove '..' if needed)
+        if not pattern:
+            return []
+        if not pattern.startswith('/'):
+            if client:
+                pattern = os.path.join(self.clientconfdir, pattern)
+            else:
+                pattern = os.path.join(self.root, pattern)
+        if not re.search('\?|\*|\[.*\]', pattern):
+            return [pattern]
+        else:
+            return [x for x in glob(pattern) if os.path.isfile(x)]
+
+    def remove_client(self, client=None):
+        if not client:
+            return [2, "No client provided"]
+        try:
+            os.unlink(os.path.join(self.clientconfdir, client))
+            return [0, "'{}' successfully removed".format(client)]
+        except Exception as e:
+            return [2, str(e)]
+
     def read_client_conf(self, client=None, conf=None):
-        res = {}
+        res = {
+            u'common': [],
+            u'boolean': [],
+            u'integer': [],
+            u'multi': [],
+            u'includes': [],
+            u'includes_ext': [],
+            u'clients': self._list_clients()
+        }
         if not client and not conf:
             return res
 
@@ -607,7 +641,6 @@ class Parser(BUIparser, BUIlogging):
         res[u'multi'] = multi
         res[u'includes'] = includes
         res[u'includes_ext'] = includes_ext
-        res[u'clients'] = self.list_clients()
 
         return res
 
@@ -633,11 +666,11 @@ class Parser(BUIparser, BUIlogging):
         res[u'multi'] = multi
         res[u'includes'] = includes
         res[u'includes_ext'] = includes_ext
-        res[u'clients'] = self.list_clients()
+        res[u'clients'] = self._list_clients()
 
         return res
 
-    def list_clients(self):
+    def _list_clients(self):
         if not self.clientconfdir:
             return []
         res = []
@@ -648,7 +681,7 @@ class Parser(BUIparser, BUIlogging):
 
         return res
 
-    def store_server_conf(self, data, conf=None):
+    def store_conf(self, data, conf=None):
         mconf = None
         if not conf:
             mconf = self.conf
