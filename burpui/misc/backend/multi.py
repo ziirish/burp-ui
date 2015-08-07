@@ -4,7 +4,10 @@ import copy
 import socket
 import select
 import sys
-import json
+try:
+    import ujson as json
+except ImportError:
+    import json
 import time
 import struct
 import pickle
@@ -173,6 +176,12 @@ class Burp(BUIbackend):
 
     def store_conf_srv(self, data, conf=None, agent=None):
         return self.servers[agent].store_conf_srv(data, conf)
+
+    def expand_path(self, path=None, client=None, agent=None):
+        return self.servers[agent].expand_path(path, client)
+
+    def delete_client(self, client=None, agent=None):
+        return self.servers[agent].delete_client(client)
 
     def get_parser_attr(self, attr=None, agent=None):
         return self.servers[agent].get_parser_attr(attr)
@@ -389,6 +398,14 @@ class NClient(BUIbackend):
         # TODO: secure the serialization
         data = {'func': 'store_conf_srv', 'args': pickle.dumps({'data': data, 'conf': conf}), 'pickled': True}
         print data
+        return json.loads(self.do_command(data))
+
+    def expand_path(self, path=None, client=None, agent=None):
+        data = {'func': 'expand_path', 'args': {'path': path, 'client': client}}
+        return json.loads(self.do_command(data))
+
+    def delete_client(self, client=None, agent=None):
+        data = {'func': 'delete_client', 'args': {'client': client}}
         return json.loads(self.do_command(data))
 
     def get_parser_attr(self, attr=None, agent=None):

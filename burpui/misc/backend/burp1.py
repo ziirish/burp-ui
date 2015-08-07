@@ -936,7 +936,17 @@ class Burp(BUIbackend, BUIlogging):
     def store_conf_srv(self, data, conf=None, agent=None):
         if not self.parser:
             return []
-        return self.parser.store_server_conf(data, conf)
+        return self.parser.store_conf(data, conf)
+
+    def expand_path(self, path=None, client=None, agent=None):
+        if not path:
+            return []
+        return self.parser.path_expander(path, client)
+
+    def delete_client(self, client=None, agent=None):
+        if not client:
+            return [2, "No client provided"]
+        return self.parser.remove_client(client)
 
     def get_parser_attr(self, attr=None, agent=None):
         """

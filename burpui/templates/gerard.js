@@ -154,14 +154,17 @@ $('#input-client').typeahead({
 
 {% if client and overview -%}
 {% include "js/client.js" %}
+{% set is_client_func = True %}
 {% endif -%}
 
 {% if backup and report and client -%}
 {% include "js/backup-report.js" %}
+{% set is_client_func = True %}
 {% endif -%}
 
 {% if not backup and report and client -%}
 {% include "js/client-report.js" %}
+{% set is_client_func = True %}
 {% endif -%}
 
 {% if live -%}
@@ -224,7 +227,7 @@ $(function() {
 		{% if clients -%}
 		_clients();
 		{% endif -%}
-		{% if client -%}
+		{% if client and is_client_func -%}
 		_client();
 		{% endif -%}
 		{% if live -%}
@@ -271,7 +274,7 @@ $(function() {
 	{% if clients -%}
 	_clients();
 	{% endif -%}
-	{% if client -%}
+	{% if client and is_client_func -%}
 	_client();
 	{% endif -%}
 	{% if live -%}

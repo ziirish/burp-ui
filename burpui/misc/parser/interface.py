@@ -9,8 +9,14 @@ class BUIparser(object):
     def read_server_conf(self):
         raise NotImplementedError("Sorry, the current Parser does not implement this method!")
 
-    def store_server_conf(self, data):
+    def store_conf(self, data):
         raise NotImplementedError("Sorry, the current Parser does not implement this method!")
 
     def get_priv_attr(self, key):
+        raise NotImplementedError("Sorry, the current Parser does not implement this method!")
+
+    def path_expander(self, pattern=None):
+        raise NotImplementedError("Sorry, the current Parser does not implement this method!")
+
+    def read_client_conf(self, client=None, conf=None):
         raise NotImplementedError("Sorry, the current Parser does not implement this method!")
