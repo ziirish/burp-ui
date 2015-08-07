@@ -658,6 +658,12 @@ class Parser(BUIparser, BUIlogging):
                 mconf = os.path.join(self.root, mconf)
         if not mconf:
             return [[1, 'Sorry, no configuration file defined']]
+        dirname = os.path.dirname(mconf)
+        if not os.path.exists(dirname):
+            try:
+                os.makedirs(dirname)
+            except OSError as e:
+                return [[1, str(e)]]
         orig = []
         ref = '{}.bui.init.back'.format(mconf)
         bak = '{}.bak'.format(mconf)
