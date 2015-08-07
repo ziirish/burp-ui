@@ -202,7 +202,7 @@ class ClientSettings(Resource):
 
 
 @api.resource('/api/new-client',
-              '/api/<server>',
+              '/api/<server>/new-client',
               endpoint='api.new_client')
 class NewClient(Resource):
 
@@ -212,6 +212,11 @@ class NewClient(Resource):
 
     @login_required
     def post(self, server=None):
+        # Only the admin can edit the configuration
+        if (api.bui.acl and not
+                api.bui.acl.is_admin(current_user.name)):
+            abort(403, message='Sorry, you don\'t have rights to access the setting panel')
+
         newclient = self.parser.parse_args()['newclient']
         if not newclient:
             flash('No client name provided', 'danger')
@@ -221,3 +226,48 @@ class NewClient(Resource):
         #    flash('Could not proceed, no \'clientconfdir\' find', 'warning')
         #    return redirect(request.referrer)
         return redirect(url_for('view.cli_settings', server=server, client=newclient))
+
+
+@api.resource('/api/path-expander',
+              '/api/<server>/path-expander',
+              '/api/path-expander/<client>',
+              '/api/<server>/path-expander/<client>',
+              endpoint='api.path_expander')
+class PathExpander(Resource):
+
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument('path')
+
+    @login_required
+    def post(self, server=None, client=None):
+        # Only the admin can edit the configuration
+        if (api.bui.acl and not
+                api.bui.acl.is_admin(current_user.name)):
+            noti = [2, 'Sorry, you don\'t have rights to access the setting panel']
+            return jsonify(notif=noti)
+
+        path = self.parser.parse_args()['path']
+        paths = api.bui.cli.expand_path(path, client, server)
+        if not paths:
+            noti = [2, "Path not found"]
+            return jsonify(notif=noti)
+        return jsonify(result=paths)
+
+
+@api.resource('/api/delete-client',
+              '/api/<server>/delete-client',
+              '/api/delete-client/<client>',
+              '/api/<server>/delete-client/<client>',
+              endpoint='api.delete_client')
+class DeleteClient(Resource):
+
+    @login_required
+    def post(self, server=None, client=None):
+        # Only the admin can edit the configuration
+        if (api.bui.acl and not
+                api.bui.acl.is_admin(current_user.name)):
+            noti = [2, 'Sorry, you don\'t have rights to access the setting panel']
+            return jsonify(notif=noti)
+
+        return jsonify(notif=api.bui.cli.delete_client(client, server))
