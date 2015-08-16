@@ -3,7 +3,7 @@ from flask.ext.login import UserMixin
 from burpui.misc.auth.interface import BUIhandler, BUIuser
 
 try:
-    from ldap3 import Server, Connection, ALL, RESTARTABLE
+    from ldap3 import Server, Connection, ALL, RESTARTABLE, AUTO_BIND_TLS_BEFORE_BIND
 except ImportError:
     raise ImportError('Unable to load \'ldap3\' module')
 
@@ -43,10 +43,8 @@ class LdapLoader:
 
         self.tls = False
         self.ssl = False
-        if self.encryption == 'ssl':
+        if self.encryption == 'ssl' or self.encryption == 'tls':
             self.ssl = True
-        elif self.encryption == 'tls':
-            self.tls = True
         if self.port:
             try:
                 self.port = int(self.port)
@@ -63,9 +61,9 @@ class LdapLoader:
         self.app.logger.info('LDAP bindpw: {0}'.format('*****' if self.bindpw else 'None'))
 
         try:
-            self.server = Server(host=self.host, port=self.port, use_ssl=self.ssl, get_info=ALL, tls=self.tls)
+            self.server = Server(host=self.host, port=self.port, use_ssl=self.ssl, get_info=ALL)
             self.app.logger.debug('LDAP Server = {0}'.format(str(self.server)))
-            self.ldap = Connection(self.server, user=self.binddn, password=self.bindpw, raise_exceptions=True, client_strategy=RESTARTABLE)
+            self.ldap = Connection(self.server, user=self.binddn, password=self.bindpw, raise_exceptions=True, client_strategy=RESTARTABLE, auto_bind=AUTO_BIND_TLS_BEFORE_BIND)
             with self.ldap:
                 self.app.logger.debug('LDAP Connection = {0}'.format(str(self.ldap)))
                 self.app.logger.info('OK, connected to LDAP')
@@ -133,7 +131,7 @@ class LdapLoader:
         :returns: True if bind was successful, otherwise False
         """
         try:
-            with Connection(self.server, user='{0}'.format(dn), password=passwd, raise_exceptions=True) as l:
+            with Connection(self.server, user='{0}'.format(dn), password=passwd, raise_exceptions=True, auto_bind=AUTO_BIND_TLS_BEFORE_BIND) as l:
                 self.app.logger.debug('LDAP Connection = {0}'.format(str(l)))
                 self.app.logger.info('Bound as user: {0}'.format(dn))
                 return True
