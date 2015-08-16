@@ -3,7 +3,7 @@ from flask.ext.login import UserMixin
 from burpui.misc.auth.interface import BUIhandler, BUIuser
 
 try:
-    from ldap3 import Server, Connection, ALL, RESTARTABLE, AUTO_BIND_TLS_BEFORE_BIND
+    from ldap3 import Server, Connection, ALL, RESTARTABLE
 except ImportError:
     raise ImportError('Unable to load \'ldap3\' module')
 
@@ -63,7 +63,7 @@ class LdapLoader:
         try:
             self.server = Server(host=self.host, port=self.port, use_ssl=self.ssl, get_info=ALL)
             self.app.logger.debug('LDAP Server = {0}'.format(str(self.server)))
-            self.ldap = Connection(self.server, user=self.binddn, password=self.bindpw, raise_exceptions=True, client_strategy=RESTARTABLE, auto_bind=AUTO_BIND_TLS_BEFORE_BIND)
+            self.ldap = Connection(self.server, user=self.binddn, password=self.bindpw, raise_exceptions=True, client_strategy=RESTARTABLE)
             with self.ldap:
                 self.app.logger.debug('LDAP Connection = {0}'.format(str(self.ldap)))
                 self.app.logger.info('OK, connected to LDAP')
@@ -131,7 +131,7 @@ class LdapLoader:
         :returns: True if bind was successful, otherwise False
         """
         try:
-            with Connection(self.server, user='{0}'.format(dn), password=passwd, raise_exceptions=True, auto_bind=AUTO_BIND_TLS_BEFORE_BIND) as l:
+            with Connection(self.server, user='{0}'.format(dn), password=passwd, raise_exceptions=True) as l:
                 self.app.logger.debug('LDAP Connection = {0}'.format(str(l)))
                 self.app.logger.info('Bound as user: {0}'.format(dn))
                 return True
