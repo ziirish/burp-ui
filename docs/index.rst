@@ -25,6 +25,7 @@ Documentation
    development
    contributing
    changelog
+   faq
    api
 
 

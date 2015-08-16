@@ -22,7 +22,9 @@ You can setup various parameters in the `burpui.cfg`_ file.
 This file can be specified with the ``-c`` flag or should be present in
 ``/etc/burp/burpui.cfg``.
 By default `Burp-UI`_ ships with a sample file located in
-``$BURPUIDIR/../share/burpui/etc/burpui.sample.cfg``.
+``$INSTALLDIR/share/burpui/etc/burpui.sample.cfg``.
+(*$INSTALLDIR* defaults to */usr/local* when using pip **outside** a
+virtualenv)
 
 Then you can run ``burp-ui``: ``burp-ui``
 
