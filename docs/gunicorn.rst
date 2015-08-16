@@ -32,5 +32,37 @@ There is a sample configuration file available
 `here <https://git.ziirish.me/ziirish/burp-ui/blob/master/contrib/gunicorn.d/burp-ui>`__.
 
 
+Reverse Proxy
+-------------
+
+You may want to add a reverse proxy so `Burp-UI`_ can be accessed on port 80 (or
+443) along with other applications.
+
+Here is a sample configuration for nginx:
+
+::
+
+    server {
+        listen 80;
+        server_name burpui.example.com;
+
+        access_log  /var/log/nginx/burpui.access.log;
+        error_log   /var/log/nginx/burpui.error.log;
+
+        location / {
+
+            # you need to change this to "https", if you set "ssl" directive to "on"
+            proxy_set_header   X-FORWARDED_PROTO http;
+            proxy_set_header   Host              $http_host;
+            proxy_set_header   X-Forwarded-For   $remote_addr;
+
+            proxy_read_timeout 300;
+            proxy_connect_timeout 300;
+
+            proxy_pass http://localhost:5000;
+        }
+    }
+
+
 .. _Gunicorn: http://gunicorn.org/
 .. _Burp-UI: https://git.ziirish.me/ziirish/burp-ui
