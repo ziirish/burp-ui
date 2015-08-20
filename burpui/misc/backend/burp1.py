@@ -23,6 +23,7 @@ import tempfile
 import codecs
 
 from pipes import quote
+from urllib import unquote
 
 from burpui.misc.utils import human_readable as _hr, BUIlogging, BUIcompress
 from burpui.misc.backend.interface import BUIbackend, BUIserverException
@@ -931,11 +932,19 @@ class Burp(BUIbackend, BUIlogging):
     def store_conf_cli(self, data, client=None, conf=None, agent=None):
         if not self.parser:
             return []
+        try:
+            conf = unquote(conf)
+        except:
+            pass
         return self.parser.store_client_conf(data, client, conf)
 
     def store_conf_srv(self, data, conf=None, agent=None):
         if not self.parser:
             return []
+        try:
+            conf = unquote(conf)
+        except:
+            pass
         return self.parser.store_conf(data, conf)
 
     def expand_path(self, path=None, client=None, agent=None):

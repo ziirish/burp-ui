@@ -542,7 +542,7 @@ class Parser(BUIparser, BUIlogging):
         for l in fi:
             if re.match('^\s*#', l):
                 continue
-            r = re.search('\s*(\S+)\s*=?\s*(.*)$', l)
+            r = re.search('\s*([^=\s]+)\s*=?\s*(.*)$', l)
             if r:
                 key = r.group(1)
                 val = r.group(2)
@@ -599,7 +599,7 @@ class Parser(BUIparser, BUIlogging):
         if not re.search('\?|\*|\[.*\]', pattern):
             return [pattern]
         else:
-            return [x for x in glob(pattern) if os.path.isfile(x)]
+            return [x for x in glob(pattern) if os.path.isfile(x) and not x.endswith('~')]
 
     def remove_client(self, client=None):
         if not client:
@@ -681,6 +681,15 @@ class Parser(BUIparser, BUIlogging):
 
         return res
 
+    def store_client_conf(self, data, client=None, conf=None):
+        if conf and not conf.startswith('/'):
+            conf = os.path.join(self.clientconfdir, conf)
+        if not conf and not client:
+            return [[2, 'Sorry, no client defined']]
+        elif client and not conf:
+            conf = os.path.join(self.clientconfdir, client)
+        return self.store_conf(data, conf)
+
     def store_conf(self, data, conf=None):
         mconf = None
         if not conf:
@@ -691,6 +700,7 @@ class Parser(BUIparser, BUIlogging):
                 mconf = os.path.join(self.root, mconf)
         if not mconf:
             return [[1, 'Sorry, no configuration file defined']]
+
         dirname = os.path.dirname(mconf)
         if not os.path.exists(dirname):
             try:
@@ -698,8 +708,12 @@ class Parser(BUIparser, BUIlogging):
             except OSError as e:
                 return [[1, str(e)]]
         orig = []
-        ref = '{}.bui.init.back'.format(mconf)
-        bak = '{}.bak'.format(mconf)
+        if self.clientconfdir in dirname:
+            ref = '{}.bui.init.back~'.format(mconf)
+            bak = '{}.bak~'.format(mconf)
+        else:
+            ref = '{}.bui.init.back'.format(mconf)
+            bak = '{}.bak'.format(mconf)
         if not os.path.isfile(ref):
             try:
                 shutil.copy(mconf, ref)

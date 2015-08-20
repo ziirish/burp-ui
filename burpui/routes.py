@@ -3,6 +3,7 @@ import math
 
 from flask import request, render_template, jsonify, redirect, url_for, abort, flash, Blueprint
 from flask.ext.login import login_user, login_required, logout_user, current_user
+from urllib import quote
 
 from burpui.forms import LoginForm
 from burpui.misc.utils import human_readable as _hr
@@ -59,13 +60,16 @@ def settings(server=None, conf=None):
     # Only the admin can edit the configuration
     if view.bui.acl and not view.bui.acl.is_admin(current_user.name):
         abort(403)
+    if not conf:
+        try:
+            conf = quote(request.args.get('conf'), safe='')
+        except:
+            pass
+    if not server:
+        server = request.args.get('server')
     if request.method == 'POST':
         noti = view.bui.cli.store_conf_srv(request.form, conf, server)
         return jsonify(notif=noti)
-    if not conf:
-        conf = request.args.get('conf')
-    if not server:
-        server = request.args.get('server')
     return render_template('settings.html', settings=True, server=server, conf=conf)
 
 
@@ -80,15 +84,18 @@ def cli_settings(server=None, client=None, conf=None):
     # Only the admin can edit the configuration
     if view.bui.acl and not view.bui.acl.is_admin(current_user.name):
         abort(403)
-    if request.method == 'POST':
-        noti = view.bui.cli.store_conf_cli(request.form, server)
-        return jsonify(notif=noti)
     if not conf:
-        conf = request.args.get('conf')
+        try:
+            conf = quote(request.args.get('conf'), safe='')
+        except:
+            pass
     if not client:
         client = request.args.get('client')
     if not server:
         server = request.args.get('server')
+    if request.method == 'POST':
+        noti = view.bui.cli.store_conf_cli(request.form, client, conf, server)
+        return jsonify(notif=noti)
     return render_template('settings.html', settings=True, client=client, server=server, conf=conf)
 
 
