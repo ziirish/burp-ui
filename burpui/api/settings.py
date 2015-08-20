@@ -12,6 +12,7 @@ from burpui.api import api
 from flask.ext.restful import reqparse, abort, Resource
 from flask.ext.login import current_user, login_required
 from flask import jsonify, flash, request, redirect, url_for
+from urllib import unquote
 
 
 @api.resource('/api/server-config',
@@ -163,6 +164,10 @@ class ServerSettings(Resource):
                 api.bui.acl.is_admin(current_user.name)):
             abort(403, message='Sorry, you don\'t have rights to access the setting panel')
 
+        try:
+            conf = unquote(conf)
+        except:
+            pass
         r = api.bui.cli.read_conf_srv(conf, server)
         return jsonify(results=r,
                        boolean=api.bui.cli.get_parser_attr('boolean_srv', server),
@@ -189,6 +194,10 @@ class ClientSettings(Resource):
                 api.bui.acl.is_admin(current_user.name)):
             abort(403, message='Sorry, you don\'t have rights to access the setting panel')
 
+        try:
+            conf = unquote(conf)
+        except:
+            pass
         r = api.bui.cli.read_conf_cli(client, conf, server)
         return jsonify(results=r,
                        boolean=api.bui.cli.get_parser_attr('boolean_cli', server),
