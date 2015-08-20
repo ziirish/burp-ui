@@ -75,11 +75,11 @@ class Burp(Burp1):
 
                     if confcli and not os.path.isfile(confcli):
                         self._logger('warning', "The file '%s' does not exist", confcli)
-                        confcli = None
+                        confcli = g_burpconfcli
 
                     if confsrv and not os.path.isfile(confsrv):
                         self._logger('warning', "The file '%s' does not exist", confsrv)
-                        confsrv = None
+                        confsrv = g_burpconfsrv
 
                     if strip and not strip.startswith('/'):
                         self._logger('warning', "Please provide an absolute path for the 'stripbin' option. Fallback to '%s'", g_stripbin)
