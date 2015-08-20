@@ -2,11 +2,14 @@
 from flask.ext.login import UserMixin
 from burpui.misc.auth.interface import BUIhandler, BUIuser
 
+import ssl
+
 try:
-    from ldap3 import Server, Connection, ALL, RESTARTABLE
+    from ldap3 import Server, Connection, Tls, ALL, RESTARTABLE, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_NONE
 except ImportError:
     raise ImportError('Unable to load \'ldap3\' module')
 
+# python 3 compatibility
 try:
     import ConfigParser
 except ImportError:
@@ -28,8 +31,32 @@ class LdapLoader:
         """
         self.app = app
         conf = self.app.config['CFG']
-        defaults = {'host': 'localhost', 'port': None, 'encryption': None, 'binddn': None, 'bindpw': None, 'filter': None, 'base': None, 'searchattr': 'uid'}
-        mapping = {'host': 'host', 'port': 'port', 'encryption': 'encryption', 'filt': 'filter', 'base': 'base', 'attr': 'searchattr', 'binddn': 'binddn', 'bindpw': 'bindpw'}
+        defaults = {
+            'host': 'localhost',
+            'port': None,
+            'encryption': None,
+            'binddn': None,
+            'bindpw': None,
+            'filter': None,
+            'base': None,
+            'searchattr': 'uid',
+            'validate': 'none',
+            'version': None,
+            'cafile': None
+        }
+        mapping = {
+            'host': 'host',
+            'port': 'port',
+            'encryption': 'encryption',
+            'filt': 'filter',
+            'base': 'base',
+            'attr': 'searchattr',
+            'binddn': 'binddn',
+            'bindpw': 'bindpw',
+            'validate': 'validate',
+            'version': 'version',
+            'cafile': 'cafile'
+        }
         c = ConfigParser.ConfigParser(defaults)
         with open(conf) as fp:
             c.readfp(fp)
@@ -41,10 +68,22 @@ class LdapLoader:
                 except ConfigParser.NoSectionError, e:
                     self.app.logger.error(str(e))
 
-        self.tls = False
+        if self.validate and self.validate.lower() in ['none', 'optional', 'required']:
+            self.validate = getattr(ssl, 'CERT_{}'.format(self.validate.upper()))
+        else:
+            self.validate = None
+        if self.version and self.version in ['SSLv2', 'SSLv3', 'SSLv23', 'TLSv1', 'TLSv1_1']:
+            self.version = getattr(ssl, 'PROTOCOL_{}'.format(self.version))
+        else:
+            self.version = None
+        self.tls = None
         self.ssl = False
-        if self.encryption == 'ssl' or self.encryption == 'tls':
+        self.auto_bind = AUTO_BIND_NONE
+        if self.encryption == 'ssl':
             self.ssl = True
+        elif self.encryption == 'tls':
+            self.tls = Tls(local_certificate_file=self.cafile, validate=self.validate, version=self.version)
+            self.auto_bind = AUTO_BIND_TLS_BEFORE_BIND
         if self.port:
             try:
                 self.port = int(self.port)
@@ -59,11 +98,12 @@ class LdapLoader:
         self.app.logger.info('LDAP search attr: {0}'.format(self.attr))
         self.app.logger.info('LDAP binddn: {0}'.format(self.binddn))
         self.app.logger.info('LDAP bindpw: {0}'.format('*****' if self.bindpw else 'None'))
+        self.app.logger.info('TLS object: {0}'.format(self.tls))
 
         try:
-            self.server = Server(host=self.host, port=self.port, use_ssl=self.ssl, get_info=ALL)
+            self.server = Server(host=self.host, port=self.port, use_ssl=self.ssl, get_info=ALL, tls=self.tls)
             self.app.logger.debug('LDAP Server = {0}'.format(str(self.server)))
-            self.ldap = Connection(self.server, user=self.binddn, password=self.bindpw, raise_exceptions=True, client_strategy=RESTARTABLE)
+            self.ldap = Connection(self.server, user=self.binddn, password=self.bindpw, raise_exceptions=True, client_strategy=RESTARTABLE, auto_bind=self.auto_bind)
             with self.ldap:
                 self.app.logger.debug('LDAP Connection = {0}'.format(str(self.ldap)))
                 self.app.logger.info('OK, connected to LDAP')
@@ -131,7 +171,7 @@ class LdapLoader:
         :returns: True if bind was successful, otherwise False
         """
         try:
-            with Connection(self.server, user='{0}'.format(dn), password=passwd, raise_exceptions=True) as l:
+            with Connection(self.server, user='{0}'.format(dn), password=passwd, raise_exceptions=True, auto_bind=self.auto_bind) as l:
                 self.app.logger.debug('LDAP Connection = {0}'.format(str(l)))
                 self.app.logger.info('Bound as user: {0}'.format(dn))
                 return True
