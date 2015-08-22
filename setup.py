@@ -44,6 +44,7 @@ with open('test-requirements.txt', 'r') as f:
     test_requires = [x.strip() for x in f if x.strip()]
 
 datadir = os.path.join('share', 'burpui', 'etc')
+contrib = os.path.join('share', 'burpui', 'contrib')
 
 setup(
     name=name,
@@ -64,7 +65,8 @@ setup(
     scripts=['bin/burp-ui', 'bin/bui-agent'],
     data_files=[
         (datadir, [os.path.join(datadir, 'burpui.sample.cfg')]),
-        (datadir, [os.path.join(datadir, 'buiagent.sample.cfg')])
+        (datadir, [os.path.join(datadir, 'buiagent.sample.cfg')]),
+        (contrib, ['contrib/centos/init.sh', 'contrib/debian/init.sh', 'contrib/gunicorn.d/burp-ui'])
     ],
     install_requires=requires,
     extras_require={
