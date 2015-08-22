@@ -12,7 +12,7 @@ class BUIparser(object):
     def store_client_conf(self, data, client=None, conf=None):
         raise NotImplementedError("Sorry, the current Parser does not implement this method!")
 
-    def store_conf(self, data, conf=None):
+    def store_conf(self, data, conf=None, mode='srv'):
         raise NotImplementedError("Sorry, the current Parser does not implement this method!")
 
     def get_priv_attr(self, key):
