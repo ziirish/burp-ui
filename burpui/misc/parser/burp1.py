@@ -743,8 +743,11 @@ class Parser(BUIparser, BUIlogging):
             return errs
 
         orig = []
-        with codecs.open(mconf, 'r', 'utf-8') as ff:
-            orig = [x.rstrip('\n') for x in ff.readlines()]
+        try:
+            with codecs.open(mconf, 'r', 'utf-8') as ff:
+                orig = [x.rstrip('\n') for x in ff.readlines()]
+        except:
+            pass
 
         oldkeys = [self._get_line_key(x) for x in orig]
         newkeys = list(set(data.viewkeys()) - set(oldkeys))
