@@ -422,7 +422,16 @@ class Burp(Burp1):
             return r
 
         # list of single counters (type CNTR_SINGLE_FIELD in cntr.c)
-        single = ['bytes_estimated', 'bytes', 'bytes_received', 'bytes_sent', 'time_start', 'time_end', 'warnings', 'errors']
+        single = [
+            'bytes_estimated',
+            'bytes',
+            'bytes_received',
+            'bytes_sent',
+            'time_start',
+            'time_end',
+            'warnings',
+            'errors'
+        ]
         # translation table to be compatible with burp1
         translate = {'bytes_estimated': 'estimated_bytes'}
         for counter in backup['counters']:
@@ -488,6 +497,15 @@ class Burp(Burp1):
         self.running = r
         return r
 
+    def _status_human_readable(self, status):
+        if not status:
+            return None
+        if status == 'c crashed':
+            return 'client crashed'
+        if status == 's crashed':
+            return 'server crashed'
+        return status
+
     def get_all_clients(self, agent=None):
         """
         get_all_clients returns a list of dict representing each clients with their
@@ -501,7 +519,7 @@ class Burp(Burp1):
         for cl in clients:
             c = {}
             c['name'] = cl['name']
-            c['state'] = cl['run_status']
+            c['state'] = self._status_human_readable(cl['run_status'])
             infos = cl['backups']
             if c['state'] in ['running']:
                 c['last'] = 'now'
