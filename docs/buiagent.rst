@@ -64,7 +64,7 @@ Here is a full usage example:
     front:~$ python path/to/burp-ui.py -c path/to/burpui.cfg
 
 
-This example uses three servers. You then only need to point your brother to
+This example uses three servers. You then only need to point your browser to
 http://front:5000/ for instance, and the `Burp-UI`_ instance will *proxify* the
 requests to the two agents for you.
 
