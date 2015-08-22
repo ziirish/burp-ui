@@ -288,6 +288,11 @@ $(function() {
 	/***
 	 * auto-refresh our page if needed
 	 */
+	 {% if live -%}
+	 {% set autorefresh = config.LIVEREFRESH %}
+	 {% else -%}
+	 {% set autorefresh = config.REFRESH %}
+	 {% endif -%}
 	var auto_refresh = setInterval(function() {
 		{% if clients -%}
 		_clients();
@@ -302,7 +307,7 @@ $(function() {
 		_servers();
 		{% endif -%}
 		return;
-	}, {{ config.REFRESH * 1000 }});
+	}, {{ autorefresh * 1000 }});
 	{% endif -%}
 
 	{% if not login -%}

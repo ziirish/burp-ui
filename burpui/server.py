@@ -18,7 +18,8 @@ from burpui.misc.backend.burp1 import Burp as BurpGeneric
 
 g_port = '5000'
 g_bind = '::'
-g_refresh = '30'
+g_refresh = '180'
+g_liverefresh = '5'
 g_ssl = 'False'
 g_standalone = 'True'
 g_sslcert = ''
@@ -50,7 +51,7 @@ class BUIServer:
         :param conf: Path to a configuration file
         :type conf: str
         """
-        global g_refresh, g_port, g_bind, g_ssl, g_sslcert, g_sslkey, g_version, g_auth, g_standalone, g_acl
+        global g_refresh, g_port, g_bind, g_ssl, g_sslcert, g_sslkey, g_version, g_auth, g_standalone, g_acl, g_liverefresh
         self.sslcontext = None
         if not conf:
             conf = self.app.config['CFG']
@@ -62,7 +63,8 @@ class BUIServer:
             'port': g_port, 'bind': g_bind,
             'refresh': g_refresh, 'ssl': g_ssl, 'sslcert': g_sslcert,
             'sslkey': g_sslkey, 'version': g_version, 'auth': g_auth,
-            'standalone': g_standalone, 'acl': g_acl
+            'standalone': g_standalone, 'acl': g_acl,
+            'liverefresh': g_liverefresh
         }
         config = ConfigParser.ConfigParser(self.defaults)
         with open(conf) as fp:
@@ -111,10 +113,12 @@ class BUIServer:
                 else:
                     self.acl_handler = False
                     self.acl = False
+
+                self.app.config['REFRESH'] = self._safe_config_get(config.getint, 'refresh', 'UI', cast=int)
+                self.app.config['LIVEREFRESH'] = self._safe_config_get(config.getint, 'liverefresh', 'UI', cast=int)
+
             except ConfigParser.NoOptionError as e:
                 self.app.logger.error(str(e))
-
-            self.app.config['REFRESH'] = config.getint('UI', 'refresh')
 
         self.app.config['STANDALONE'] = self.standalone
 
@@ -126,6 +130,7 @@ class BUIServer:
         self.app.logger.info('sslcert: {}'.format(self.sslcert))
         self.app.logger.info('sslkey: {}'.format(self.sslkey))
         self.app.logger.info('refresh: {}'.format(self.app.config['REFRESH']))
+        self.app.logger.info('liverefresh: {}'.format(self.app.config['LIVEREFRESH']))
 
         if self.standalone:
             module = 'burpui.misc.backend.burp{0}'.format(self.vers)
@@ -166,9 +171,9 @@ class BUIServer:
         try:
             return callback(sect, key)
         except ConfigParser.NoOptionError as e:
-            self._logger('error', str(e))
+            self.app.logger.error(str(e))
         except ConfigParser.NoSectionError as e:
-            self._logger('warning', str(e))
+            self.app.logger.warning(str(e))
             if key in self.defaults:
                 if cast:
                     try:
