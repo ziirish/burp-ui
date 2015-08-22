@@ -688,9 +688,9 @@ class Parser(BUIparser, BUIlogging):
             return [[2, 'Sorry, no client defined']]
         elif client and not conf:
             conf = os.path.join(self.clientconfdir, client)
-        return self.store_conf(data, conf)
+        return self.store_conf(data, conf, mode='cli')
 
-    def store_conf(self, data, conf=None):
+    def store_conf(self, data, conf=None, mode='srv'):
         mconf = None
         if not conf:
             mconf = self.conf
@@ -707,19 +707,19 @@ class Parser(BUIparser, BUIlogging):
                 os.makedirs(dirname)
             except OSError as e:
                 return [[1, str(e)]]
-        orig = []
+
         if self.clientconfdir in dirname:
             ref = '{}.bui.init.back~'.format(mconf)
             bak = '{}.bak~'.format(mconf)
         else:
             ref = '{}.bui.init.back'.format(mconf)
             bak = '{}.bak'.format(mconf)
-        if not os.path.isfile(ref):
+        if not os.path.isfile(ref) and os.path.isfile(mconf):
             try:
                 shutil.copy(mconf, ref)
             except Exception as e:
                 return [[2, str(e)]]
-        else:
+        elif os.path.isfile(mconf):
             try:
                 shutil.copy(mconf, bak)
             except Exception as e:
@@ -731,17 +731,18 @@ class Parser(BUIparser, BUIlogging):
                 d = data.get(key)
                 if not os.path.isfile(d):
                     typ = 'strings'
-                    if key in self.multi_srv:
+                    if key in getattr(self, 'multi_{}'.format(mode)):
                         typ = 'multis'
-                    elif key in self.boolean_srv:
+                    elif key in getattr(self, 'boolean_{}'.format(mode)):
                         typ = 'bools'
-                    elif key in self.integer_srv:
+                    elif key in getattr(self, 'integer_{}'.format(mode)):
                         typ = 'integers'
                     # highlight the wrong parameters
                     errs.append([2, "Sorry, the file '{}' does not exist".format(d), key, typ])
         if errs:
             return errs
 
+        orig = []
         with codecs.open(mconf, 'r', 'utf-8') as ff:
             orig = [x.rstrip('\n') for x in ff.readlines()]
 
@@ -775,7 +776,7 @@ class Parser(BUIparser, BUIlogging):
                     key = self._get_line_key(line, False)
                     if key not in already_multi:
                         self._write_key(f, key, data)
-                    if key in self.multi_srv:
+                    if key in getattr(self, 'multi_{}'.format(mode)):
                         already_multi.append(key)
                     written.append(key)
                 else:
@@ -843,4 +844,4 @@ class Parser(BUIparser, BUIlogging):
         try:
             return getattr(self, key)
         except:
-            return None
+            return []
