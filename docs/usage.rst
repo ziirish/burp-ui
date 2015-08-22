@@ -89,6 +89,23 @@ Each option is commented, but here is a more detailed documentation:
 - *acl*: What `ACL`_ module to use.
 
 
+There is also a ``[UI]`` section in which you can configure some *UI*
+parameters:
+
+::
+
+    [UI]
+    # refresh interval of the pages in seconds
+    refresh: 180
+    # refresh interval of the live-monitoring page in seconds
+    liverefresh: 5
+
+
+Each option is commented, but here is a more detailed documentation:
+
+- *refresh*: Time in seconds between two refresh of the interface.
+- *liverefresh*: Time in seconds between two refresh of the *live-monitor* page.
+
 Modes
 -----
 
