@@ -20,4 +20,7 @@ On Debian:
     aptitude install python-openssl
 
 
+The `burp2 backend <usage.html#burp2>`_ supports only burp 2.0.18 and above.
+If you are using an older version of burp2 `Burp-UI`_ will fail to start.
+
 .. _Burp-UI: https://git.ziirish.me/ziirish/burp-ui

@@ -32,8 +32,19 @@ By default, ``burp-ui`` listens on all interfaces (including IPv6) on port 5000.
 
 You can then point your browser to http://127.0.0.1:5000/
 
-Instructions
-------------
+Upgrade
+-------
+
+In order to upgrade `Burp-UI`_ to the latest stable version, you can run the
+following command:
+
+::
+
+   pip install --upgrade burp-ui
+
+
+General Instructions
+--------------------
 
 In order to make the *on the fly* restoration/download functionality work, you
 need to check a few things:
@@ -41,12 +52,21 @@ need to check a few things:
 1. Provide the full path of the burp (client) binary file
 2. Provide the full path of an empty directory where a temporary restoration
    will be made. This involves you have enough space left on that location on
-   the server that runs ``Burp-UI``
+   the server that runs `Burp-UI`_
 3. Launch `Burp-UI`_ with a user that can proceed restorations and that can
-   write in the directory above
+   write in the directory mentioned above
 4. Make sure to configure a client on the server that runs `Burp-UI`_ that can
    restore files of other clients (option *restore_client* in burp-server
    configuration)
+
+
+
+When using the `burp2 backend <usage.html#burp2>`_, `Burp-UI`_ can be executed
+on any machine as long as you can access the burp status port, but you will not
+be able to edit the burp server configuration file within the *settings* view of
+`Burp-UI`_.
+You also need to configure a *restore_client* on your burp server corresponding
+to the client you will use through `Burp-UI`_
 
 Options
 -------
