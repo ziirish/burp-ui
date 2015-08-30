@@ -43,6 +43,15 @@ configuration file in */etc/gunicorn.d/*.
 There is a sample configuration file available
 `here <https://git.ziirish.me/ziirish/burp-ui/blob/master/contrib/gunicorn.d/burp-ui>`__.
 
+If you are using this sample configuration file, make sure to create the
+*burpui* user with the appropriate permissions first:
+
+::
+
+    useradd -r -d /var/lib/burpui -c 'Burp-UI daemon user' burpui
+    mkdir -p /var/log/gunicorn
+    chown -R burpui: /var/log/gunicorn
+
 
 Reverse Proxy
 -------------
