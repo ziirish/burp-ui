@@ -1,6 +1,12 @@
 FAQ
 ===
 
+How to start using Burp-UI?
+---------------------------
+
+You may find all the basic informations to get started with `Burp-UI`_ in the
+`README`_ file.
+
 How to configure my *firewall*?
 -------------------------------
 
@@ -22,8 +28,15 @@ There are several *init scripts* provided by some users available
 `here <https://git.ziirish.me/ziirish/burp-ui/tree/master/contrib>`__.
 
 The recommanded way to run `Burp-UI`_ in production is to use `Gunicorn`_. You
-can refer to the `gunicorn <gunicorn.html>`__ section of this documentation for
-more details.
+can refer to the `gunicorn <gunicorn.html#daemon>`__ section of this
+documentation for more details.
+
+How to setup a reverse-proxy in front of Burp-UI?
+-------------------------------------------------
+
+The only way to run `Burp-UI`_ behind a reverse-proxy is to use `Gunicorn`_.
+You can refer to the `gunicorn <gunicorn.html#reverse-proxy>`__ section of this
+documentation for more details.
 
 Are there any known issues?
 ---------------------------
