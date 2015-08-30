@@ -28,6 +28,18 @@ play with:
 - debug: Whether to run `Burp-UI`_ in debug mode or not to get some extra logging
 - logfile: Path to a logfile in order to log `Burp-UI`_ internal messages
 
+Daemon
+------
+
+If you wish to run `Burp-UI`_ as a daemon process, the recommanded way is to use
+`Gunicorn`_.
+
+When installing the *gunicorn* package on debian, there is a handler script that
+is able to start several instances of `Gunicorn`_ as daemons.
+
+All you need to do is installing the *gunicorn* package and adding a
+configuration file in */etc/gunicorn.d/*.
+
 There is a sample configuration file available
 `here <https://git.ziirish.me/ziirish/burp-ui/blob/master/contrib/gunicorn.d/burp-ui>`__.
 
