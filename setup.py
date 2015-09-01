@@ -67,7 +67,7 @@ setup(
         (datadir, [os.path.join(datadir, 'burpui.sample.cfg')]),
         (datadir, [os.path.join(datadir, 'buiagent.sample.cfg')]),
         (os.path.join(contrib, 'centos'), ['contrib/centos/init.sh']),
-        (os.path.join(contrib, 'debian'), ['contrib/centos/init.sh']),
+        (os.path.join(contrib, 'debian'), ['contrib/debian/init.sh']),
         (os.path.join(contrib, 'gunicorn.d'), ['contrib/gunicorn.d/burp-ui'])
     ],
     install_requires=requires,
