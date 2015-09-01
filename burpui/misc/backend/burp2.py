@@ -357,7 +357,10 @@ class Burp(Burp1):
         back = backups[0]
         if 'backup_stats' not in back['logs']:
             return {}
-        stats = json.loads(''.join(back['logs']['backup_stats']))
+        try:
+            stats = json.loads(''.join(back['logs']['backup_stats']))
+        except:
+            pass
         if not stats:
             return {}
         counters = stats['counters']
@@ -370,7 +373,10 @@ class Burp(Burp1):
             else:
                 backup[name] = {}
                 for k, v in counts.iteritems():
-                    backup[name][k] = counter[v]
+                    if v in counter:
+                        backup[name][k] = counter[v]
+                    else:
+                        backup[name][k] = 0
         if 'start' in backup and 'end' in backup:
             backup['duration'] = backup['end'] - backup['start']
 
