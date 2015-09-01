@@ -46,6 +46,9 @@ following command:
 General Instructions
 --------------------
 
+Restoration
+^^^^^^^^^^^
+
 In order to make the *on the fly* restoration/download functionality work, you
 need to check a few things:
 
@@ -59,7 +62,8 @@ need to check a few things:
    restore files of other clients (option *restore_client* in burp-server
    configuration)
 
-
+Burp 2
+^^^^^^
 
 When using the `burp2 backend <usage.html#burp2>`_, `Burp-UI`_ can be executed
 on any machine as long as you can access the burp status port, but you will not
