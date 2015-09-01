@@ -43,7 +43,7 @@ Why don't I see all my clients using the burp-2 backend?
 
 Starting with burp 2, you cannot see all the client through the status port
 unless you tell burp a particular client can see other clients statistics.
-See the `general instructions <installation.html#burp2>`_ for more details.
+See the `general instructions <installation.html#burp-2>`_ for more details.
 
 Are there any known issues?
 ---------------------------
