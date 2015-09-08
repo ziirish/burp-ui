@@ -1,12 +1,12 @@
 Badges
 ======
 
-.. image:: https://ci.ziirish.me/projects/1/status.png?ref=0.0.7
-    :target: https://ci.ziirish.me/projects/1?ref=0.0.7
+.. image:: https://ci.ziirish.me/projects/1/status.png?ref=master
+    :target: https://ci.ziirish.me/projects/1?ref=master
     :alt: Build Status
 
-.. image:: https://readthedocs.org/projects/burp-ui/badge/?version=stable
-    :target: https://readthedocs.org/projects/burp-ui/?badge=stable
+.. image:: https://readthedocs.org/projects/burp-ui/badge/?version=latest
+    :target: https://readthedocs.org/projects/burp-ui/?badge=latest
     :alt: Documentation Status
 
 Introduction
@@ -52,13 +52,13 @@ Documentation
 =============
 
 The documentation is hosted on `readthedocs <https://readthedocs.org>`_ at the
-following address: `burp-ui.readthedocs.org <https://burp-ui.readthedocs.org/en/stable/>`_
+following address: `burp-ui.readthedocs.org <https://burp-ui.readthedocs.org/en/latest/>`_
 
 
 Community
 =========
 
-Please refer to the `Contributing <https://burp-ui.readthedocs.org/en/stable/contributing.html>`_ page.
+Please refer to the `Contributing <https://burp-ui.readthedocs.org/en/latest/contributing.html>`_ page.
 
 
 Notes
