@@ -1,8 +1,11 @@
 Requirements
 ============
 
-Please note that currently, `Burp-UI`_ must be running on the same server that
-runs the burp-server.
+Please note that, `Burp-UI`_ must be running on the same server that runs the
+burp-server for some features.
+
+You need python **2.7** in order to run `Burp-UI`_. Python 3 is not yet
+officially supported.
 
 
 For LDAP authentication (optional), we need the ``ldap3`` module.
