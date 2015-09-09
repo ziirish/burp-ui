@@ -387,13 +387,27 @@ Now you can add *ldap* specific options:
     port: 389
     # Encryption type to LDAP server (none, ssl or tls)
     # - try tls if unsure, otherwise ssl on port 636
-    encryption: ssl
+    encryption: tls
+    # specifies if the server certificate must be validated, values can be:
+    #  - none (certificates are ignored)
+    #  - optional (not required, but validated if provided)
+    #  - required (required and validated)
+    validate: none
+    # SSL or TLS version to use, can be one of the following:
+    #  - SSLv2
+    #  - SSLv3
+    #  - SSLv23
+    #  - TLSv1
+    #  - TLSv1_1 (Available only with openssl version 1.0.1+, requires python 2.7.9 or higher)
+    version: TLSv1
+    # the file containing the certificates of the certification authorities
+    cafile: none
     # Attribute to use when searching the LDAP repository
     #searchattr: sAMAccountName
     searchattr: uid
     # LDAP filter to find users in the LDAP repository
-    # - {0} will be replaced by the search attribute
-    # - {1} will be replaced by the login name
+    #  - {0} will be replaced by the search attribute
+    #  - {1} will be replaced by the login name
     filter: (&({0}={1})(burpui=1))
     #filter: (&({0}={1})(|(userAccountControl=512)(userAccountControl=66048)))
     # LDAP base
