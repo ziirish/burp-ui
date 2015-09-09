@@ -24,7 +24,7 @@ __author_email__ = 'ziirish+burpui@ziirish.info'
 __url__ = 'https://git.ziirish.me/ziirish/burp-ui'
 __description__ = 'Burp-UI is a web-ui for burp backup written in python with Flask and jQuery/Bootstrap'
 __license__ = 'BSD 3-clause'
-__version__ = '0.0.7.1'
+__version__ = '0.1.0-dev'
 
 # First, we setup the app
 app = Flask(__name__)
