@@ -102,10 +102,12 @@ class Burp(BUIbackend, BUIlogging):
         if dummy:
             return
         self.app = None
+        self.logger = None
         self.acl_handler = False
         if server:
             if hasattr(server, 'app'):
                 self.app = server.app
+                self.set_logger(self.app.logger)
             self.acl_handler = server.acl_handler
         self.host = g_burphost
         self.port = int(g_burpport)

@@ -11,22 +11,24 @@ import sys
 import inspect
 import zipfile
 import tarfile
+import logging
 
 if sys.version_info >= (3, 0):
     long = int
 
 
 class human_readable(long):
-    """ define a human_readable class to allow custom formatting
-        format specifiers supported :
-            em : formats the size as bits in IEC format i.e. 1024 bits (128 bytes) = 1Kib
-            eM : formats the size as Bytes in IEC format i.e. 1024 bytes = 1KiB
-            sm : formats the size as bits in SI format i.e. 1000 bits = 1kb
-            sM : formats the size as bytes in SI format i.e. 1000 bytes = 1KB
-            cm : format the size as bit in the common format i.e. 1024 bits (128 bytes) = 1Kb
-            cM : format the size as bytes in the common format i.e. 1024 bytes = 1KB
+    """
+    define a human_readable class to allow custom formatting
+    format specifiers supported :
+        em : formats the size as bits in IEC format i.e. 1024 bits (128 bytes) = 1Kib
+        eM : formats the size as Bytes in IEC format i.e. 1024 bytes = 1KiB
+        sm : formats the size as bits in SI format i.e. 1000 bits = 1kb
+        sM : formats the size as bytes in SI format i.e. 1000 bytes = 1KB
+        cm : format the size as bit in the common format i.e. 1024 bits (128 bytes) = 1Kb
+        cM : format the size as bytes in the common format i.e. 1024 bytes = 1KB
 
-        code from: http://code.activestate.com/recipes/578323-human-readable-filememory-sizes-v2/
+    code from: http://code.activestate.com/recipes/578323-human-readable-filememory-sizes-v2/
     """
     def __format__(self, fmt):
         # is it an empty format or not a special format for the size class
@@ -73,31 +75,24 @@ def currentframe():
 
 class BUIlogging(object):
     def _logger(self, level, *args):
-        if self.app:
-            logs = {
-                'info': self.app.logger.info,
-                'error': self.app.logger.error,
-                'debug': self.app.logger.debug,
-                'warning': self.app.logger.warning
-            }
-            if level in logs:
+        if self.logger:
+            """
+            Try to guess where was call the function
+            """
+            cf = currentframe()
+            (frame, filename, line_number, function_name, lines, index) = inspect.getouterframes(cf)[1]
+            if cf is not None:
+                cf = cf.f_back
                 """
-                Try to guess where was call the function
+                Ugly hack to reformat the message
                 """
-                cf = currentframe()
-                (frame, filename, line_number, function_name, lines, index) = inspect.getouterframes(cf)[1]
-                if cf is not None:
-                    cf = cf.f_back
-                    """
-                    Ugly hack to reformat the message
-                    """
-                    ar = list(args)
-                    if isinstance(ar[0], str):
-                        ar[0] = filename + ':' + str(cf.f_lineno) + ' => ' + ar[0]
-                    else:
-                        ar = [filename + ':' + str(cf.f_lineno) + ' => {0}'.format(ar)]
-                    args = tuple(ar)
-                logs[level](*args)
+                ar = list(args)
+                if isinstance(ar[0], str):
+                    ar[0] = filename + ':' + str(cf.f_lineno) + ' => ' + ar[0]
+                else:
+                    ar = [filename + ':' + str(cf.f_lineno) + ' => {0}'.format(ar)]
+                args = tuple(ar)
+            self.logger.log(logging.getLevelName(level.upper()), *args)
 
 
 class BUIcompress():

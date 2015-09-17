@@ -6,13 +6,18 @@ try:
     import ujson as json
 except ImportError:
     import json
+import re
 import time
 import sys
+import logging
 import pickle
 import traceback
 import ConfigParser
 import SocketServer
 from threading import Thread
+from logging import Formatter, StreamHandler
+from logging.handlers import RotatingFileHandler
+from burpui.misc.utils import BUIlogging
 
 g_port = '10000'
 g_bind = '::'
@@ -24,13 +29,35 @@ g_timeout = '5'
 g_password = 'password'
 
 
-class BUIAgent:
-    def __init__(self, conf=None, debug=False):
+class BUIAgent(BUIlogging):
+    def __init__(self, conf=None, debug=False, logfile=None):
         global g_port, g_bind, g_ssl, g_version, g_sslcert, g_sslkey, g_password
         self.conf = conf
         self.dbg = debug
-        print 'conf: ' + self.conf
-        print 'debug: ' + str(self.dbg)
+        self.logger = None
+        if debug > logging.NOTSET:
+            levels = [0, logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG]
+            if debug >= len(levels):
+                debug = len(levels) - 1
+            lvl = levels[debug]
+            self.logger = logging.getLogger(__name__)
+            self.logger.setLevel(lvl)
+            if logfile:
+                handler = RotatingFileHandler(logfile, maxBytes=1024 * 1024 * 100, backupCount=20)
+                LOG_FORMAT = '[%(asctime)s] %(levelname)s in %(module)s: %(message)s'
+            else:
+                handler = StreamHandler()
+                LOG_FORMAT = (
+                    '-' * 80 + '\n' +
+                    '%(levelname)s in %(module)s [%(pathname)s:%(lineno)d]:\n' +
+                    '%(message)s\n' +
+                    '-' * 80
+                )
+            handler.setLevel(lvl)
+            handler.setFormatter(Formatter(LOG_FORMAT))
+            self.logger.addHandler(handler)
+            self.logger.info('conf: ' + self.conf)
+            self.logger.info('level: ' + logging.getLevelName(lvl))
         if not conf:
             raise IOError('No configuration file found')
 
@@ -42,18 +69,18 @@ class BUIAgent:
         with open(conf) as fp:
             config.readfp(fp)
             try:
-                self.port = config.getint('Global', 'port')
-                self.bind = config.get('Global', 'bind')
-                self.vers = config.getint('Global', 'version')
-                self.timeout = config.getint('Global', 'timeout')
+                self.port = self._safe_config_get(config.getint, 'port', cast=int)
+                self.bind = self._safe_config_get(config.get, 'bind')
+                self.vers = self._safe_config_get(config.getint, 'version', cast=int)
+                self.timeout = self._safe_config_get(config.getint, 'timeout', cast=int)
                 try:
                     self.ssl = config.getboolean('Global', 'ssl')
                 except ValueError:
                     self.app.logger.error("Wrong value for 'ssl' key! Assuming 'false'")
                     self.ssl = False
-                self.sslcert = config.get('Global', 'sslcert')
-                self.sslkey = config.get('Global', 'sslkey')
-                self.password = config.get('Global', 'password')
+                self.sslcert = self._safe_config_get(config.get, 'sslcert')
+                self.sslkey = self._safe_config_get(config.get, 'sslkey')
+                self.password = self._safe_config_get(config.get, 'password')
             except ConfigParser.NoOptionError, e:
                 raise e
 
@@ -62,6 +89,7 @@ class BUIAgent:
             mod = __import__(module, fromlist=['Burp'])
             Client = mod.Burp
             self.backend = Client(conf=conf)
+            self.backend.set_logger(self.logger)
         except Exception, e:
             traceback.print_exc()
             self.debug('Failed loading backend for Burp version %d: %s', self.vers, str(e))
@@ -89,22 +117,55 @@ class BUIAgent:
 
         self.server = AgentServer((self.bind, self.port), AgentTCPHandler, self)
 
+    def _safe_config_get(self, callback, key, sect='Global', cast=None):
+        """
+        :func:`burpui.agent._safe_config_get` is a wrapper to handle
+        Exceptions throwed by :mod:`ConfigParser`.
+
+        :param callback: Function to wrap
+        :type callback: callable
+
+        :param key: Key to retrieve
+        :type key: str
+
+        :param sect: Section of the config file to read
+        :type sect: str
+
+        :param cast: Cast the returned value if provided
+        :type case: callable
+
+        :returns: The value returned by the `callback`
+        """
+        try:
+            return callback(sect, key)
+        except ConfigParser.NoOptionError as e:
+            self._logger('error', str(e))
+        except ConfigParser.NoSectionError as e:
+            self._logger('warning', str(e))
+            if key in self.defaults:
+                if cast:
+                    return cast(self.defaults[key])
+                return self.defaults[key]
+        return None
+
     def run(self):
         try:
             self.server.serve_forever()
         except KeyboardInterrupt:
             sys.exit(0)
 
-    def debug(self, msg, *args):
-        if self.dbg:
-            print msg % (args)
+    def _logger(self, level, message):
+        # hide password from logs
+        msg = message
+        if self.logger.getEffectiveLevel() != logging.DEBUG:
+            msg = re.sub(r'"password": \S+', '"password": "*****",', message)
+        super(BUIAgent, self)._logger(level, msg)
 
 
 class AgentTCPHandler(SocketServer.BaseRequestHandler):
     "One instance per connection.  Override handle(self) to customize action."
     def handle(self):
         # self.request is the client connection
-        self.server.agent.debug('===============>')
         timeout = self.server.agent.timeout
         try:
             err = None
@@ -114,19 +175,17 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
             lengthbuf = self.request.recv(8)
             length, = struct.unpack('!Q', lengthbuf)
             data = self.recvall(length)
-            self.server.agent.debug('####################')
-            self.server.agent.debug('recv: %s', data)
-            self.server.agent.debug('####################')
+            self.server.agent._logger('info','recv: {}'.format(data))
             j = json.loads(data)
             _, w, _ = select.select([], [self.request], [], timeout)
             if not w:
                 raise Exception('Socket timed-out 2')
             if j['password'] != self.server.agent.password:
-                self.server.agent.debug('-----> Wrong Password <-----')
+                self.server.agent._logger('warning', '-----> Wrong Password <-----')
                 self.request.sendall('KO')
                 return
             if j['func'] not in self.server.agent.methods:
-                self.server.agent.debug('-----> Wrong method <-----')
+                self.server.agent._logger('warning', '-----> Wrong method <-----')
                 self.request.sendall('KO')
                 return
             self.request.sendall('OK')
@@ -140,9 +199,7 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
                     res = json.dumps(self.server.agent.methods[j['func']](**j['args']))
                 else:
                     res = json.dumps(self.server.agent.methods[j['func']]())
-            self.server.agent.debug('####################')
-            self.server.agent.debug('result: %s', res)
-            self.server.agent.debug('####################')
+            self.server.agent._logger('info', 'result: {}'.format(res))
             _, w, _ = select.select([], [self.request], [], timeout)
             if not w:
                 raise Exception('Socket timed-out 3')
@@ -159,7 +216,7 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
                 with open(res, 'rb') as f:
                     buf = f.read(1024)
                     while buf:
-                        self.server.agent.debug('sending %d Bytes', len(buf))
+                        self.server.agent._logger('info', 'sending {} Bytes'.format(len(buf)))
                         self.request.sendall(buf)
                         buf = f.read(1024)
                         _, w, _ = select.select([], [self.request], [], timeout)
@@ -171,9 +228,7 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
                 self.request.sendall(res)
             self.request.close()
         except Exception as e:
-            self.server.agent.debug('ERROR: %s', str(e))
-        finally:
-            self.server.agent.debug('<===============')
+            self.server.agent._logger('error', '{}'.format(str(e)))
 
     def recvall(self, length=1024):
         buf = b''

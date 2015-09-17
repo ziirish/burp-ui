@@ -7,6 +7,9 @@ class BUIbackend:
         self.host = host
         self.port = port
 
+    def set_logger(self, logger):
+        self.logger = logger
+
     def status(self, query='\n', agent=None):
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")
 

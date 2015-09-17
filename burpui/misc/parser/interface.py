@@ -5,6 +5,9 @@ class BUIparser(object):
     def __init__(self, app=None, conf=None):
         self.app = app
         self.conf = conf
+        self.logger = None
+        if self.app:
+            self.logger = self.app.logger
 
     def read_server_conf(self):
         raise NotImplementedError("Sorry, the current Parser does not implement this method!")

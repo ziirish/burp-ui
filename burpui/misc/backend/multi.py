@@ -17,16 +17,19 @@ except ImportError:
     import configparser as ConfigParser
 
 from burpui.misc.backend.interface import BUIbackend, BUIserverException
+from burpui.misc.utils import BUIlogging
 
 
-class Burp(BUIbackend):
+class Burp(BUIbackend,BUIlogging):
 
     def __init__(self, server=None, conf=None):
         self.app = None
+        self.logger = None
         self.acl_handler = False
         if server:
             if hasattr(server, 'app'):
                 self.app = server.app
+                self.set_logger(self.app.logger)
             self.acl_handler = server.acl_handler
         self.servers = {}
         self.app.config['SERVERS'] = []
