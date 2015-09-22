@@ -400,7 +400,6 @@ class NClient(BUIbackend):
         # serialize data as it is a nested dict
         # TODO: secure the serialization
         data = {'func': 'store_conf_srv', 'args': pickle.dumps({'data': data, 'conf': conf}), 'pickled': True}
-        print data
         return json.loads(self.do_command(data))
 
     def expand_path(self, path=None, client=None, agent=None):
