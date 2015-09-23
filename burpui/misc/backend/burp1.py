@@ -299,10 +299,11 @@ class Burp(BUIbackend, BUIlogging):
         """
         r = []
         try:
+            q = b''
             if not query.endswith('\n'):
-                q = '{0}\n'.format(query)
+                q += '{0}\n'.format(query).encode('utf-8')
             else:
-                q = query
+                q += query.encode('utf-8')
             s = socket.socket(self.family, socket.SOCK_STREAM)
             s.connect((self.host, self.port))
             s.send(q)
@@ -316,7 +317,7 @@ class Burp(BUIbackend, BUIlogging):
                 ap = ''
                 try:
                     ap = line.decode('utf-8', 'replace')
-                except UnicodeDecodeError:
+                except (Exception, UnicodeDecodeError):
                     ap = line
                 r.append(ap)
             f.close()
