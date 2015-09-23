@@ -195,10 +195,7 @@ class BUIServer:
             self.setup()
 
         if self.ssl:
-            from OpenSSL import SSL
-            self.sslcontext = SSL.Context(SSL.SSLv23_METHOD)
-            self.sslcontext.use_privatekey_file(self.sslkey)
-            self.sslcontext.use_certificate_file(self.sslcert)
+            self.sslcontext = (self.sslcert, self.sslkey)
 
         if self.sslcontext:
             self.app.config['SSL'] = True
