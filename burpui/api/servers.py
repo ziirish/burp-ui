@@ -2,6 +2,8 @@
 
 from burpui.api import api
 from burpui.misc.backend.interface import BUIserverException
+
+from future.utils import iteritems
 from flask.ext.restful import reqparse, Resource
 from flask.ext.login import current_user, login_required
 from flask import jsonify
@@ -75,7 +77,7 @@ class Live(Resource):
         else:
             l = api.bui.cli.is_one_backup_running()
         if isinstance(l, dict):
-            for k, a in l.iteritems():
+            for (k, a) in iteritems(l):
                 for c in a:
                     s = {}
                     s['client'] = c

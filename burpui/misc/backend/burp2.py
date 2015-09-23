@@ -19,6 +19,7 @@ import codecs
 import signal
 import sys
 
+from future.utils import iteritems
 from pipes import quote
 from select import select
 
@@ -374,7 +375,7 @@ class Burp(Burp1):
                 backup[name] = counter['count']
             else:
                 backup[name] = {}
-                for k, v in counts.iteritems():
+                for (k, v) in iteritems(counts):
                     if v in counter:
                         backup[name][k] = counter[v]
                     else:

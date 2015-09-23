@@ -7,12 +7,16 @@
 .. moduleauthor:: Ziirish <ziirish@ziirish.info>
 
 """
+import sys
 
 from burpui.api import api
 from flask.ext.restful import reqparse, abort, Resource
 from flask.ext.login import current_user, login_required
 from flask import jsonify, flash, request, redirect, url_for
-from urllib import unquote
+if sys.version_info >= (3, 0):
+    from urllib.parse import unquote
+else:
+    from urllib import unquote
 
 
 @api.resource('/api/server-config',

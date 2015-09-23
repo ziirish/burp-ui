@@ -9,6 +9,8 @@
 """
 from burpui.api import api
 from burpui.misc.backend.interface import BUIserverException
+
+from future.utils import iteritems
 from flask.ext.restful import reqparse, Resource
 from flask.ext.login import current_user, login_required
 from flask import jsonify, render_template, make_response, abort
@@ -62,7 +64,7 @@ class RenderLiveTpl(Resource):
                 abort(404)
             else:
                 found = False
-                for k, a in api.bui.cli.running.iteritems():
+                for (k, a) in iteritems(api.bui.cli.running):
                     found = found or (name in a)
                 if not found:
                     abort(404)

@@ -9,6 +9,7 @@
 """
 import re
 import os
+import sys
 import socket
 import time
 import json
@@ -22,8 +23,12 @@ import subprocess
 import tempfile
 import codecs
 
+from future.utils import iteritems
 from pipes import quote
-from urllib import unquote
+if sys.version_info >= (3, 0):
+    from urllib.parse import unquote
+else:
+    from urllib import unquote
 
 from burpui.misc.utils import human_readable as _hr, BUIlogging, BUIcompress
 from burpui.misc.backend.interface import BUIbackend, BUIserverException
@@ -563,7 +568,7 @@ class Burp(BUIbackend, BUIlogging):
 
             found = False
             # this method is not optimal, but it is easy to read and to maintain
-            for key, regex in lookup_easy.iteritems():
+            for (key, regex) in iteritems(lookup_easy):
                 r = re.search(regex, line)
                 if r:
                     found = True
@@ -592,7 +597,7 @@ class Burp(BUIbackend, BUIlogging):
             if found:
                 continue
 
-            for key, regex in lookup_complex.iteritems():
+            for (key, regex) in iteritems(lookup_complex):
                 r = re.search(regex, line)
                 if r:
                     # self._logger('debug', "match[1]: '{0}'".format(r.group(1)))

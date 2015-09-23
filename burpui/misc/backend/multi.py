@@ -16,6 +16,8 @@ try:
 except ImportError:
     import configparser as ConfigParser
 
+from future.utils import iteritems
+
 from burpui.misc.backend.interface import BUIbackend, BUIserverException
 from burpui.misc.utils import BUIlogging
 
@@ -52,7 +54,7 @@ class Burp(BUIbackend,BUIlogging):
                         self.servers[r.group(1)] = NClient(self.app, host, port, password, ssl, timeout)
 
         self.app.logger.debug(self.servers)
-        for key, serv in self.servers.iteritems():
+        for (key, serv) in iteritems(self.servers):
             self.app.config['SERVERS'].append(key)
 
     """

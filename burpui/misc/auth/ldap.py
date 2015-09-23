@@ -1,5 +1,6 @@
 # -*- coding: utf8 -*-
 from flask.ext.login import UserMixin
+from future.utils import viewitems
 from burpui.misc.auth.interface import BUIhandler, BUIuser
 
 import ssl
@@ -60,12 +61,12 @@ class LdapLoader:
         c = ConfigParser.ConfigParser(defaults)
         with open(conf) as fp:
             c.readfp(fp)
-            for opt, key in mapping.viewitems():
+            for (opt, key) in viewitems(mapping):
                 try:
                     setattr(self, opt, c.get('LDAP', key))
-                except ConfigParser.NoOptionError, e:
+                except ConfigParser.NoOptionError as e:
                     self.app.logger.info(str(e))
-                except ConfigParser.NoSectionError, e:
+                except ConfigParser.NoSectionError as e:
                     self.app.logger.error(str(e))
 
         if self.validate and self.validate.lower() in ['none', 'optional', 'required']:

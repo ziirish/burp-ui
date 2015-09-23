@@ -9,6 +9,8 @@
 """
 from burpui.api import api
 from burpui.misc.backend.interface import BUIserverException
+
+from future.utils import iteritems
 from flask.ext.restful import reqparse, Resource
 from flask.ext.login import current_user, login_required
 from flask import jsonify, make_response
@@ -139,7 +141,7 @@ class RunningBackup(Resource):
                 j = [x for x in j if x in allowed]
         r = False
         if isinstance(j, dict):
-            for k, v in j.iteritems():
+            for (k, v) in iteritems(j):
                 if r:
                     break
                 r = r or (len(v) > 0)
