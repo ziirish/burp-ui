@@ -1,8 +1,17 @@
 
-docker:
+py2.7:
   image: python:2.7
   script:
-  - bash test/run_tests.sh
+  - /bin/bash test/run_tests.sh
+  tags:
+  - docker
+  except:
+  - tags
+
+py3.4:
+  image: python:3.4
+  script:
+  - /bin/bash test/run_tests.sh
   tags:
   - docker
   except:

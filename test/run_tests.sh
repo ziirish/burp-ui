@@ -1,8 +1,8 @@
 #!/bin/bash
 
 PIP=$(which pip)
-PYTHON=$(which python2.7)
-VIRTUALENV=$(which virtualenv)
+PYTHON=$(which python)
+VERSION=$($PYTHON -V | cut -d' ' -f2)
 ISROOT=0
 UPDATED=0
 BURP="https://git.ziirish.me/ziirish/burp.git"
@@ -24,20 +24,20 @@ echo "test requirements"
 [ -x "$PIP" ] && {
     echo "python-pip seems to be installed"
 } || {
-    echo "python-pip is missing... Installing it"
-    [ $ISROOT -eq 1 ] && update && apt-get -y install python-pip
+    echo "python-pip is missing..."
+    exit 1
 }
 
 [ -x "$PYTHON" ] && {
-    echo "python2.7 seems to be installed"
+    echo "python seems to be installed"
 } || {
-    echo "python2.7 is missing... Installing it"
-    [ $ISROOT -eq 1 ] && update && apt-get -y install python2.7 python
+    echo "python is missing..."
+    exit 1
 }
 
 echo "install build requirements"
 update
-[ $ISROOT -eq 1 ] && apt-get install -y uthash-dev g++ make libssl-dev librsync-dev
+[ $ISROOT -eq 1 ] && apt-get install -y uthash-dev g++ make libssl-dev librsync-dev python$(perl -pe "s/\.\d+$//" <<<$VERSION)-dev
 
 echo "downloading and compiling burp v${BURP_VERSION}"
 ROOT_PWD=`pwd`
@@ -78,11 +78,12 @@ file test/test_burpui.py
 
 echo "install virtualenv"
 $PIP install virtualenv
-mkdir py2.7
+mkdir py$VERSION
+VIRTUALENV=$(which virtualenv)
 
-echo "test python2.7"
-$VIRTUALENV -p $PYTHON py2.7
-source py2.7/bin/activate
+echo "test python$VERSION"
+$VIRTUALENV -p $PYTHON py$VERSION
+source py${VERSION}/bin/activate
 pip install -r requirements.txt
 pip install -r test-requirements.txt
 
@@ -92,6 +93,7 @@ ret=$?
 
 echo "cleanup"
 deactivate
+rm -rf py$VERSION
 
 echo "Killing burp-server"
 kill $BURP_PID || echo "Ooops KILL"

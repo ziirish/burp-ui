@@ -3,7 +3,10 @@
 import sys
 import os
 import unittest
-import urllib2
+if sys.version_info > (3, 0):
+    from urllib.request import urlopen
+else:
+    from urllib2 import urlopen
 from flask.ext.testing import LiveServerTestCase, TestCase
 
 sys.path.append('{0}/..'.format(os.path.join(os.path.dirname(os.path.realpath(__file__)))))
@@ -24,23 +27,23 @@ class BurpuiLiveTestCase(LiveServerTestCase):
         return app
 
     def setUp(self):
-        print '\nBegin Test 1\n'
+        print ('\nBegin Test 1\n')
 
     def tearDown(self):
-        print '\nTest 1 Finished!\n'
+        print ('\nTest 1 Finished!\n')
 
     def test_server_is_up_and_running(self):
-        response = urllib2.urlopen(self.get_server_url())
+        response = urlopen(self.get_server_url())
         self.assertEqual(response.code, 200)
 
 
 class BurpuiAPITestCase(TestCase):
 
     def setUp(self):
-        print '\nBegin Test 2\n'
+        print ('\nBegin Test 2\n')
 
     def tearDown(self):
-        print '\nTest 2 Finished!\n'
+        print ('\nTest 2 Finished!\n')
 
     def create_app(self):
         conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test2.cfg')
@@ -141,10 +144,10 @@ class BurpuiAPITestCase(TestCase):
 class BurpuiRoutesTestCase(TestCase):
 
     def setUp(self):
-        print '\nBegin Test 3\n'
+        print ('\nBegin Test 3\n')
 
     def tearDown(self):
-        print '\nTest 3 Finished!\n'
+        print ('\nTest 3 Finished!\n')
 
     def create_app(self):
         conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test3.cfg')
@@ -158,21 +161,20 @@ class BurpuiRoutesTestCase(TestCase):
 
     def test_live_monitor(self):
         response = self.client.get('/live-monitor', follow_redirects=True)
-        assert 'Sorry, there are no running backups' in response.data
+        assert 'Sorry, there are no running backups' in response.data.decode('utf-8')
 
     def test_get_clients(self):
         response = self.client.get('/api/clients.json')
-        print response.json
         self.assertEqual(response.json, {u'results': [{u'state': u'idle', u'last': u'never', u'name': u'testclient'}]})
 
 
 class BurpuiLoginTestCase(TestCase):
 
     def setUp(self):
-        print '\nBegin Test 4\n'
+        print ('\nBegin Test 4\n')
 
     def tearDown(self):
-        print '\nTest 4 Finished!\n'
+        print ('\nTest 4 Finished!\n')
 
     def login(self, username, password):
         return self.client.post('/login', data=dict(
@@ -193,28 +195,28 @@ class BurpuiLoginTestCase(TestCase):
     def test_config_render(self):
         rv = self.login('admin', 'admin')
         response = self.client.get('/settings')
-        assert 'Burp Configuration' in response.data
+        assert 'Burp Configuration' in response.data.decode('utf-8')
 
     def test_login_ok(self):
         rv = self.login('admin', 'admin')
-        assert 'Logged in successfully' in rv.data
+        assert 'Logged in successfully' in rv.data.decode('utf-8')
 
     def test_login_ko(self):
         rv = self.login('admin', 'toto')
-        assert 'Wrong username or password' in rv.data
+        assert 'Wrong username or password' in rv.data.decode('utf-8')
 
     def test_login_no_user(self):
         rv = self.login('toto', 'toto')
-        assert 'Wrong username or password' in rv.data
+        assert 'Wrong username or password' in rv.data.decode('utf-8')
 
 
 class BurpuiACLTestCase(TestCase):
 
     def setUp(self):
-        print '\nBegin Test 5\n'
+        print ('\nBegin Test 5\n')
 
     def tearDown(self):
-        print '\nTest 5 Finished!\n'
+        print ('\nTest 5 Finished!\n')
 
     def login(self, username, password):
         return self.client.post('/login', data=dict(
@@ -234,12 +236,12 @@ class BurpuiACLTestCase(TestCase):
 
     def test_login_ko(self):
         rv = self.login('admin', 'toto')
-        assert 'Wrong username or password' in rv.data
+        assert 'Wrong username or password' in rv.data.decode('utf-8')
 
     def test_config_render(self):
         rv = self.login('admin', 'admin')
         response = self.client.get('/settings')
-        assert 'Burp Configuration' in response.data
+        assert 'Burp Configuration' in response.data.decode('utf-8')
 
     def test_config_render_ko(self):
         rv = self.login('user1', 'password')
@@ -249,7 +251,6 @@ class BurpuiACLTestCase(TestCase):
     def test_cli_settings_ko(self):
         rv = self.login('user1', 'password')
         response = self.client.get('/api/toto/client-config')
-        print response.json
         self.assert403(response)
 
 if __name__ == '__main__':
