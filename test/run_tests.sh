@@ -7,6 +7,7 @@ ISROOT=0
 UPDATED=0
 BURP="https://git.ziirish.me/ziirish/burp.git"
 BURP_VERSION="1.4.40"
+BURP2_VERSION="2.0.20"
 
 function update() {
     [ $UPDATED -eq 0 ] && [ $ISROOT -eq 1 ] && {
@@ -64,6 +65,31 @@ $BURP_DIR/burp/src/burp -F -c $WORKING_DIR/config/burp.conf -g >$LOGFILE 2>&1
 ($BURP_DIR/burp/src/burp -F -c $WORKING_DIR/config/burp.conf >>$LOGFILE 2>&1) &
 BURP_PID=$!
 
+echo "downloading and compiling burp v${BURP2_VERSION}"
+ROOT_PWD=`pwd`
+BURP2_DIR=$(mktemp -d)
+cd $BURP2_DIR
+
+git clone $BURP
+cd burp
+git checkout tags/${BURP2_VERSION}
+./configure
+make
+
+cd $ROOT_PWD
+WORKING_DIR2=$(mktemp -d)
+
+echo "copying configuration files"
+cp -a test/burp2/config $WORKING_DIR2/
+sed -i "s|@WORKING_DIR@|${WORKING_DIR2}|" $WORKING_DIR2/config/burp.conf
+sed -i "s|@WORKING_DIR@|${WORKING_DIR2}|" $WORKING_DIR2/config/CA/CA.cnf
+
+echo "launching background burp-server"
+LOGFILE2=$(mktemp)
+$BURP2_DIR/burp/src/burp -F -c $WORKING_DIR2/config/burp.conf -g >$LOGFILE2 2>&1
+($BURP2_DIR/burp/src/burp -F -c $WORKING_DIR2/config/burp.conf >>$LOGFILE2 2>&1) &
+BURP2_PID=$!
+
 ##echo "install lib devel..."
 ##apt-get update
 ##apt-get -y install python-pip python
@@ -99,8 +125,12 @@ echo "Killing burp-server"
 kill $BURP_PID || echo "Ooops KILL"
 cat $LOGFILE
 
+echo "Killing burp2-server"
+kill $BURP2_PID || echo "Ooops KILL"
+cat $LOGFILE2
+
 echo "removing temp files/dirs"
-rm -rf $LOGFILE $BURP_DIR $WORKING_DIR || echo "Ooops RM"
+rm -rf $LOGFILE $LOGFILE2 $BURP2_DIR $BURP_DIR $WORKING_DIR $WORKING_DIR2 || echo "Ooops RM"
 
 echo "That's it!"
 

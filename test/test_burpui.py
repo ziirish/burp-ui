@@ -3,7 +3,7 @@
 import sys
 import os
 import unittest
-if sys.version_info > (3, 0):
+if sys.version_info >= (3, 0):
     from urllib.request import urlopen
 else:
     from urllib2 import urlopen
