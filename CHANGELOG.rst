@@ -6,8 +6,21 @@ Current
 
 - `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/v0.0.7...master>`__
 
-0.0.7
------
+0.0.7.3
+-------
+
+- Fix issue `#77 <https://git.ziirish.me/ziirish/burp-ui/issues/77>`_
+- Doc
+
+0.0.7.2
+-------
+
+- Fix issue `#73 <https://git.ziirish.me/ziirish/burp-ui/issues/72>`_
+- Fix issue `#74 <https://git.ziirish.me/ziirish/burp-ui/issues/74>`_
+- Doc
+
+0.0.7.1
+-------
 
 - Add `Burp-2 backend <https://git.ziirish.me/ziirish/burp-ui/issues/52>`_
 - Add `sortable tables <https://git.ziirish.me/ziirish/burp-ui/issues/51>`_
@@ -38,7 +51,7 @@ Current
 - API refactoring
 - Security fixes
 - Bufixes
-- `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/v0.0.6...v0.0.7>`__
+- `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/v0.0.6...v0.0.7.1>`__
 
 0.0.6
 -----
