@@ -242,7 +242,8 @@ class Burp(BUIbackend, BUIlogging):
         :param addr: Address to look at
         :type addr: str
 
-        :returns: Inet family of the given address: :const:`socket.AF_INET` of :const:`socket.AF_INET6`
+        :returns: Inet family of the given address: :const:`socket.AF_INET` of
+                  :const:`socket.AF_INET6`
         """
         if addr == '127.0.0.1':
             return socket.AF_INET
@@ -618,9 +619,14 @@ class Burp(BUIbackend, BUIlogging):
 
     def get_clients_report(self, clients, agent=None):
         """
-        get_clients_report returns the computed/compacted data to display clients
-        report.
-        It returns an array containing two dicts
+        The :func:`burpui.misc.backend.Burp1.get_clients_report` function
+        returns the computed/compacted data to display clients report.
+
+        :param clients: List of clients as returned by
+                        :func:`burpui.misc.backend.Burp1.get_all_clients`
+        :type clients: list
+
+        :returns: An array containing one dict with the computed data
         """
         ret = []
         cl = []
