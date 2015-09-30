@@ -22,7 +22,7 @@ from burpui.misc.backend.interface import BUIbackend, BUIserverException
 from burpui.misc.utils import BUIlogging
 
 
-class Burp(BUIbackend,BUIlogging):
+class Burp(BUIbackend, BUIlogging):
 
     def __init__(self, server=None, conf=None):
         self.app = None

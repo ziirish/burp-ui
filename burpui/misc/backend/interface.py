@@ -114,5 +114,6 @@ class BUIbackend:
     def delete_client(self, client=None, agent=None):
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")
 
+
 class BUIserverException(Exception):
     pass

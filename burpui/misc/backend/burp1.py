@@ -25,15 +25,15 @@ import codecs
 
 from future.utils import iteritems
 from pipes import quote
-if sys.version_info >= (3, 0):
-    from urllib.parse import unquote
-else:
-    from urllib import unquote
 
 from burpui.misc.utils import human_readable as _hr, BUIlogging, BUIcompress
 from burpui.misc.backend.interface import BUIbackend, BUIserverException
 from burpui.misc.parser.burp1 import Parser
 
+if sys.version_info >= (3, 0):
+    from urllib.parse import unquote
+else:
+    from urllib import unquote
 
 g_burpport = '4972'
 g_burphost = '::1'

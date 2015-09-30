@@ -175,7 +175,7 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
             lengthbuf = self.request.recv(8)
             length, = struct.unpack('!Q', lengthbuf)
             data = self.recvall(length)
-            self.server.agent._logger('info','recv: {}'.format(data))
+            self.server.agent._logger('info', 'recv: {}'.format(data))
             j = json.loads(data)
             _, w, _ = select.select([], [self.request], [], timeout)
             if not w:
