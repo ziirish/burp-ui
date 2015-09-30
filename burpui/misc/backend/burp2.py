@@ -26,7 +26,7 @@ from select import select
 from burpui.misc.utils import human_readable as _hr
 from burpui.misc.backend.interface import BUIserverException
 from burpui.misc.backend.burp1 import Burp as Burp1
-from burpui.misc.parser.burp1 import Parser
+from burpui.misc.parser.burp2 import Parser
 
 if sys.version_info < (3, 3):
     TimeoutError = OSError
@@ -126,7 +126,7 @@ class Burp(Burp1):
         # check the burp version because this backend only supports clients newer than BURP_MINIMAL_VERSION
         try:
             cmd = [self.burpbin, '-v']
-            version = subprocess.check_output(cmd, universal_newlines=True).rstrip('\n')
+            version = subprocess.check_output(cmd, universal_newlines=True).rstrip()
             if version < BURP_MINIMAL_VERSION:
                 raise Exception('Your burp version ({}) does not fit the minimal requirements: {}'.format(version, BURP_MINIMAL_VERSION))
         except subprocess.CalledProcessError as e:

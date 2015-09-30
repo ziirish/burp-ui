@@ -11,6 +11,7 @@ from burpui.misc.parser.interface import BUIparser
 
 
 class Parser(BUIparser, BUIlogging):
+    pver = 1
     defaults = {
         u'address': u'',  # IP
         u'atime': False,  # bool

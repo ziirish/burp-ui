@@ -15,15 +15,16 @@ def readme():
     """
     desc = ''
     cpt = 0
+    skip = False
     with open('README.rst') as f:
         for l in f.readlines():
             if l.rstrip() == 'Screenshots':
-                cpt += 1
-            elif cpt > 0:
+                skip = True
+            if skip:
                 cpt += 1
             if cpt > 7:
-                cpt = 0
-            if cpt > 0:
+                skip = False
+            if skip:
                 continue
             desc += l
     return desc
@@ -36,6 +37,7 @@ with open(os.path.join(os.path.dirname(__file__), 'burpui', '__init__.py')) as f
     author_email = re.search("__author_email__ *= *'(.*)'", data).group(1)
     description = re.search("__description__ *= *'(.*)'", data).group(1)
     url = re.search("__url__ *= *'(.*)'", data).group(1)
+    version = re.search("__version__ *= *'(.*)'", data).group(1)
 
 with open('requirements.txt', 'r') as f:
     requires = [x.strip() for x in f if x.strip()]
@@ -48,7 +50,7 @@ contrib = os.path.join('share', 'burpui', 'contrib')
 
 setup(
     name=name,
-    version=open('VERSION').read().rstrip(),
+    version=version,
     description=description,
     long_description=readme(),
     license=open('LICENSE').read(),
@@ -60,7 +62,8 @@ setup(
     include_package_data=True,
     package_data={
         'static': 'burpui/static/*',
-        'templates': 'burpui/templates/*'
+        'templates': 'burpui/templates/*',
+        'VERSION': 'burpui/VERSION'
     },
     scripts=['bin/burp-ui', 'bin/bui-agent'],
     data_files=[
