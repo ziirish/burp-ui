@@ -49,18 +49,21 @@ General Instructions
 Restoration
 ^^^^^^^^^^^
 
+`Burp-UI`_ tries to be as less intrusive as possible with `Burp`_ internals.
 In order to make the *on the fly* restoration/download functionality work, you
 need to check a few things:
 
 1. Provide the full path of the burp (client) binary file
-2. Provide the full path of an empty directory where a temporary restoration
+2. Provide a burp-client configuration file
+3. Provide the full path of an empty directory where a temporary restoration
    will be made. This involves you have enough space left on that location on
    the server that runs `Burp-UI`_
-3. Launch `Burp-UI`_ with a user that can proceed restorations and that can
+4. Launch `Burp-UI`_ with a user that can proceed restorations and that can
    write in the directory mentioned above
-4. Make sure to configure a client on the server that runs `Burp-UI`_ that can
+5. Make sure to configure a client on the server that runs `Burp-UI`_ that can
    restore files of other clients (option *restore_client* in burp-server
-   configuration)
+   configuration). The *restore_client* is the *cname* you provided in your
+   client configuration file (see 2.)
 
 Burp 2
 ^^^^^^
@@ -93,3 +96,4 @@ Options
 .. _Flask: http://flask.pocoo.org/
 .. _burpui.cfg: https://git.ziirish.me/ziirish/burp-ui/blob/master/share/burpui/etc/burpui.sample.cfg
 .. _Burp-UI: https://git.ziirish.me/ziirish/burp-ui
+.. _Burp: http://burp.grke.net/
