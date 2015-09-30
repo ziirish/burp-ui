@@ -4,7 +4,7 @@ Changelog
 Current
 -------
 
-- `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/v0.0.7...master>`__
+- `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/0.0.7...master>`__
 
 0.0.7.3
 -------
