@@ -1,10 +1,4 @@
 # -*- coding: utf8 -*-
-
-"""
-The following code is used to convert bytes to be human readable.
-It was found on the Internet...
-"""
-
 import math
 import string
 import sys
@@ -76,27 +70,23 @@ def currentframe():
     except:
         return sys.exc_info()[2].tb_frame.f_back
 
+class BUIlogger(logging.Logger):
+    def makeRecord(self, name, level, fn, lno, msg, args, exc_info, func=None, extra=None):
+        """
+        Try to guess where was call the function
+        """
+        cf = currentframe()
+        (frame, filename, line_number, function_name, lines, index) = inspect.getouterframes(cf)[4]
+        if cf is not None:
+            cf = cf.f_back
+            return super(BUIlogger, self).makeRecord(name, level, filename, line_number, msg, args, exc_info, func=function_name, extra=extra)
+        return super(BUIlogger, self).makeRecord(name, level, fn, lno, msg, args, exc_info, func=func, extra=extra)
+
 
 class BUIlogging(object):
-    def _logger(self, level, *args):
+    def _logger(self, level, msg, *args):
         if self.logger:
-            """
-            Try to guess where was call the function
-            """
-            cf = currentframe()
-            (frame, filename, line_number, function_name, lines, index) = inspect.getouterframes(cf)[1]
-            if cf is not None:
-                cf = cf.f_back
-                """
-                Ugly hack to reformat the message
-                """
-                ar = list(args)
-                if isinstance(ar[0], str):
-                    ar[0] = filename + ':' + str(cf.f_lineno) + ' => ' + ar[0]
-                else:
-                    ar = [filename + ':' + str(cf.f_lineno) + ' => {0}'.format(ar)]
-                args = tuple(ar)
-            self.logger.log(logging.getLevelName(level.upper()), *args)
+            self.logger.log(logging.getLevelName(level.upper()), msg, *args)
 
 
 class BUIcompress():

@@ -13,6 +13,7 @@ from flask.ext.login import LoginManager
 from burpui.server import BUIServer as BurpUI
 from burpui.routes import view
 from burpui.api import api
+from burpui.misc.utils import BUIlogger
 
 if sys.version_info < (3, 0):
     reload(sys)
@@ -28,6 +29,10 @@ __version__ = '0.1.0-dev'
 
 # First, we setup the app
 app = Flask(__name__)
+
+# Monkey patch the logger
+dummy_logger = BUIlogger(__name__)
+app.logger.makeRecord = dummy_logger.makeRecord
 
 app.config['CFG'] = None
 
