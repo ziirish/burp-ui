@@ -2,21 +2,74 @@
 
 
 class BUIbackend:
-    def __init__(self, app=None, host='127.0.0.1', port=4972):
-        self.app = app
-        self.host = host
-        self.port = port
+    def __init__(self, server=None, conf=None):
+        """
+        The :class:`burpui.misc.backend.interface.BUIbackend` class provides a
+        consistent interface backend for any ``burp`` server.
+
+        :param server: ``Burp-UI`` server instance in order to access logger
+                       and/or some global settings
+        :type server: :class:`burpui.server.BUIServer`
+
+        :param conf: Configuration file to use
+        :type conf: str
+        """
+        self.app = None
+        if server:
+            if hasattr(server, 'app'):
+                self.app = server.app
 
     def set_logger(self, logger):
         self.logger = logger
 
     def status(self, query='\n', agent=None):
+        """
+        The :func:`burpui.misc.backend.interface.BUIbackend.status` method is
+        used to send queries to the Burp server
+
+        :param query: Query to send to the server
+        :type query: str
+
+        :param agent: What server to ask (only in multi-agent mode)
+        :type agent: str
+
+        :returns: The output returned by the server parsed as an array
+        """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")
 
     def get_backup_logs(self, number, client, forward=False, agent=None):
+        """
+        The :func:`burpui.misc.backend.interface.BUIbackend.get_backup_logs`
+        function is used to retrieve the burp logs depending the burp-server
+        version.
+
+        :param number: Backup number to work on
+        :type number: int
+
+        :param client: Client name to work on
+        :type client: str
+
+        :param forward: Is the client name needed in later process
+        :type forward: bool
+
+        :param agent: What server to ask (only in multi-agent mode)
+        :type agent: str
+
+        :returns: Dict containing the backup log
+        """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")
 
     def get_clients_report(self, clients, agent=None):
+        """
+        The :func:`burpui.misc.backend.interface.BUIbackend.get_clients_report`
+        function returns the computed/compacted data to display clients report.
+
+        :param clients: List of clients as returned by
+                        :func:`burpui.misc.backend.interface.BUIbackend.get_all_clients`
+        :type clients: list
+
+        :returns: An array containing one dict with the computed data
+        """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")
 
     def get_counters(self, name=None, agent=None):
