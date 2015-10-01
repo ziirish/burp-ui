@@ -614,8 +614,7 @@ class Burp(BUIbackend, BUIlogging):
 
     def get_counters(self, name=None, agent=None):
         """
-        get_counters parses the stats of the live status for a given client and
-        returns a dict
+        See :func:`burpui.misc.backend.interface.BUIbackend.get_counters`
         """
         r = {}
         if agent:
@@ -666,8 +665,7 @@ class Burp(BUIbackend, BUIlogging):
 
     def is_backup_running(self, name=None, agent=None):
         """
-        is_backup_running returns True if the given client is currently running a
-        backup
+        See :func:`burpui.misc.backend.interface.BUIbackend.is_backup_running`
         """
         if not name:
             return False
@@ -683,8 +681,7 @@ class Burp(BUIbackend, BUIlogging):
 
     def is_one_backup_running(self, agent=None):
         """
-        is_one_backup_running returns a list of clients name that are currently
-        running a backup
+        See :func:`burpui.misc.backend.interface.BUIbackend.is_one_backup_running`
         """
         r = []
         try:

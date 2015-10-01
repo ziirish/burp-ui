@@ -68,17 +68,54 @@ class BUIbackend:
                         :func:`burpui.misc.backend.interface.BUIbackend.get_all_clients`
         :type clients: list
 
+        :param agent: What server to ask (only in multi-agent mode)
+        :type agent: str
+
         :returns: An array containing one dict with the computed data
         """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")
 
     def get_counters(self, name=None, agent=None):
+        """
+        The :func:`burpui.misc.backend.interface.BUIbackend.get_counters`
+        function returns a dict of counters for a given client while it performs
+        a backup.
+
+        :param name: Name of the client for which you'd like stats
+        :type name: str
+
+        :param agent: What server to ask (only in multi-agent mode)
+        :type agent: str
+
+        :returns: A dict of counters
+        """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")
 
     def is_backup_running(self, name=None, agent=None):
+        """
+        The :func:`burpui.misc.backend.interface.BUIbackend.is_backup_running`
+        functions tells you if a given client is currently performing a backup.
+
+        :param name: Name of the client
+        :type name: str
+
+        :param agent: What server to ask (only in multi-agent mode)
+        :type agent: str
+
+        :returns: True or False
+        """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")
 
     def is_one_backup_running(self, agent=None):
+        """
+        The :func:`burpui.misc.backend.interface.BUIbackend.is_one_backup_running`
+        function tells you if at least one backup is running.
+
+        :param agent: What server to ask (only in multi-agent mode)
+        :type agent: str
+
+        :returns: A list of running clients
+        """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")
 
     def get_all_clients(self, agent=None):
