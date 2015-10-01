@@ -37,7 +37,6 @@ with open(os.path.join(os.path.dirname(__file__), 'burpui', '__init__.py')) as f
     author_email = re.search("__author_email__ *= *'(.*)'", data).group(1)
     description = re.search("__description__ *= *'(.*)'", data).group(1)
     url = re.search("__url__ *= *'(.*)'", data).group(1)
-    version = re.search("__version__ *= *'(.*)'", data).group(1)
 
 with open('requirements.txt', 'r') as f:
     requires = [x.strip() for x in f if x.strip()]
@@ -50,7 +49,7 @@ contrib = os.path.join('share', 'burpui', 'contrib')
 
 setup(
     name=name,
-    version=version,
+    version=open('VERSION').read().rstrip(),
     description=description,
     long_description=readme(),
     license=open('LICENSE').read(),
