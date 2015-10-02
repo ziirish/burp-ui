@@ -45,9 +45,11 @@ g_tmpdir = u'/tmp/bui'
 
 
 class Burp(BUIbackend, BUIlogging):
-    """
-    The :class:`burpui.misc.backend.Burp1` class provides a consistent
+    """The :class:`burpui.misc.backend.burp1.Burp` class provides a consistent
     backend for ``burp-1`` servers.
+
+    It implements the :class:`burpui.misc.backend.interface.BUIbackend` class
+    in order to have consistent data whatever backend is used.
     """
     states = {
         'i': 'idle',
@@ -90,9 +92,8 @@ class Burp(BUIbackend, BUIlogging):
     ]
 
     def __init__(self, server=None, conf=None, dummy=False):
-        """
-        The :class:`burpui.misc.backend.burp1.Burp` class provides a consistent
-        backend for ``burp-1`` servers.
+        """The :class:`burpui.misc.backend.burp1.Burp` class provides a
+        consistent backend for ``burp-1`` servers.
 
         :param server: ``Burp-UI`` server instance in order to access logger
                        and/or some global settings
@@ -206,9 +207,8 @@ class Burp(BUIbackend, BUIlogging):
     """
 
     def _safe_config_get(self, callback, key, sect='Burp1', cast=None):
-        """
-        :func:`burpui.misc.backend.burp1.Burp._safe_config_get` is a wrapper to
-        handle Exceptions throwed by :mod:`ConfigParser`.
+        """:func:`burpui.misc.backend.burp1.Burp._safe_config_get` is a wrapper
+        to handle Exceptions throwed by :mod:`ConfigParser`.
 
         :param callback: Function to wrap
         :type callback: callable
@@ -237,8 +237,7 @@ class Burp(BUIbackend, BUIlogging):
         return None
 
     def _get_inet_family(self, addr):
-        """
-        The :func:`burpui.misc.backend.burp1.Burp._get_inet_family` function
+        """The :func:`burpui.misc.backend.burp1.Burp._get_inet_family` function
         determines the inet family of a given address.
 
         :param addr: Address to look at
@@ -253,8 +252,7 @@ class Burp(BUIbackend, BUIlogging):
             return socket.AF_INET6
 
     def _test_burp_server_address(self, addr, retry=False):
-        """
-        The :func:`burpui.misc.backend.burp1.Burp._test_burp_server_address`
+        """The :func:`burpui.misc.backend.burp1.Burp._test_burp_server_address`
         function determines if the given address is reachable or not.
 
         :param addr: Address to look at
@@ -289,9 +287,7 @@ class Burp(BUIbackend, BUIlogging):
         return False
 
     def status(self, query='\n', agent=None):
-        """
-        See :func:`burpui.misc.backend.interface.BUIbackend.status`
-        """
+        """See :func:`burpui.misc.backend.interface.BUIbackend.status`"""
         r = []
         try:
             q = b''
@@ -322,9 +318,7 @@ class Burp(BUIbackend, BUIlogging):
             raise BUIserverException('Cannot contact burp server at {0}:{1}'.format(self.host, self.port))
 
     def get_backup_logs(self, number, client, forward=False, agent=None):
-        """
-        See :func:`burpui.misc.backend.interface.BUIbackend.get_backup_logs`
-        """
+        """See :func:`burpui.misc.backend.interface.BUIbackend.get_backup_logs`"""
         if not client or not number:
             return {}
 
@@ -352,9 +346,8 @@ class Burp(BUIbackend, BUIlogging):
         return ret
 
     def _parse_backup_stats(self, number, client, forward=False, agent=None):
-        """
-        The :func:`burpui.misc.backend.burp1.Burp._parse_backup_stats` function is
-        used to parse the burp logs.
+        """The :func:`burpui.misc.backend.burp1.Burp._parse_backup_stats`
+        function is used to parse the burp logs.
 
         :param number: Backup number to work on
         :type number: int
@@ -487,9 +480,8 @@ class Burp(BUIbackend, BUIlogging):
         return backup
 
     def _parse_backup_log(self, fh, number, client=None, agent=None):
-        """
-        The :func:`burpui.misc.backend.burp1.Burp._parse_backup_log` function is
-        used to parse the log.gz of a given backup and returns a dict
+        """The :func:`burpui.misc.backend.burp1.Burp._parse_backup_log` function
+        is used to parse the log.gz of a given backup and returns a dict
         containing different stats used to render the charts in the reporting
         view.
 
@@ -596,9 +588,7 @@ class Burp(BUIbackend, BUIlogging):
         return backup
 
     def get_clients_report(self, clients, agent=None):
-        """
-        See :func:`burpui.misc.backend.interface.BUIbackend.get_clients_report`
-        """
+        """See :func:`burpui.misc.backend.interface.BUIbackend.get_clients_report`"""
         ret = []
         cl = []
         ba = []
@@ -613,9 +603,7 @@ class Burp(BUIbackend, BUIlogging):
         return ret
 
     def get_counters(self, name=None, agent=None):
-        """
-        See :func:`burpui.misc.backend.interface.BUIbackend.get_counters`
-        """
+        """See :func:`burpui.misc.backend.interface.BUIbackend.get_counters`"""
         r = {}
         if agent:
             if not name or name not in self.running[agent]:
@@ -664,9 +652,7 @@ class Burp(BUIbackend, BUIlogging):
         return r
 
     def is_backup_running(self, name=None, agent=None):
-        """
-        See :func:`burpui.misc.backend.interface.BUIbackend.is_backup_running`
-        """
+        """See :func:`burpui.misc.backend.interface.BUIbackend.is_backup_running`"""
         if not name:
             return False
         try:
@@ -680,9 +666,7 @@ class Burp(BUIbackend, BUIlogging):
         return False
 
     def is_one_backup_running(self, agent=None):
-        """
-        See :func:`burpui.misc.backend.interface.BUIbackend.is_one_backup_running`
-        """
+        """See :func:`burpui.misc.backend.interface.BUIbackend.is_one_backup_running`"""
         r = []
         try:
             cls = self.get_all_clients()
@@ -695,10 +679,7 @@ class Burp(BUIbackend, BUIlogging):
         return r
 
     def get_all_clients(self, agent=None):
-        """
-        get_all_clients returns a list of dict representing each clients with their
-        name, state and last backup date
-        """
+        """See :func:`burpui.misc.backend.interface.BUIbackend.get_all_clients`"""
         j = []
         f = self.status()
         for line in f:
@@ -722,9 +703,8 @@ class Burp(BUIbackend, BUIlogging):
         return j
 
     def get_client(self, name=None, agent=None):
-        """
-        get_client returns a list of dict representing the backups (with its number
-        and date) of a given client
+        """get_client returns a list of dict representing the backups (with its
+        number and date) of a given client
         """
         r = []
         if not name:
@@ -754,9 +734,8 @@ class Burp(BUIbackend, BUIlogging):
         return r
 
     def get_tree(self, name=None, backup=None, root=None, agent=None):
-        """
-        get_tree returns a list of dict representing files/dir (with their attr)
-        within a given path
+        """get_tree returns a list of dict representing files/dir (with their
+        attr) within a given path
         """
         r = []
         if not name or not backup:
@@ -940,9 +919,7 @@ class Burp(BUIbackend, BUIlogging):
         return self.parser.remove_client(client)
 
     def get_parser_attr(self, attr=None, agent=None):
-        """
-        Using a method because of the bui-agent
-        """
+        """Using a method because of the bui-agent"""
         if not attr or not self.parser:
             return []
         return self.parser.get_priv_attr(attr)

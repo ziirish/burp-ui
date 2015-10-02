@@ -22,8 +22,7 @@ from flask import jsonify, render_template, make_response, abort
               '/api/<server>/render-live-template/<name>',
               endpoint='api.render_live_tpl')
 class RenderLiveTpl(Resource):
-    """
-    The :class:`burpui.api.misc.RenderLiveTpl` resource allows you to
+    """The :class:`burpui.api.misc.RenderLiveTpl` resource allows you to
     render the *live view* template of a given client.
 
     This resource is part of the :mod:`burpui.api.api` module.
@@ -41,8 +40,7 @@ class RenderLiveTpl(Resource):
 
     @login_required
     def get(self, server=None, name=None):
-        """
-        API: render_live_tpl
+        """API: render_live_tpl
         :param name: the client name if any. You can also use the GET parameter
         'name' to achieve the same thing
         :returns: HTML that should be included directly into the page

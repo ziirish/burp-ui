@@ -25,8 +25,7 @@ else:
               '/api/<server>/server-config/<path:conf>',
               endpoint='api.server_settings')
 class ServerSettings(Resource):
-    """
-    The :class:`burpui.api.settings.ServerSettings` resource allows you to
+    """The :class:`burpui.api.settings.ServerSettings` resource allows you to
     retrieve the server's configuration.
 
     This resource is part of the :mod:`burpui.api.settings` module.
@@ -34,8 +33,7 @@ class ServerSettings(Resource):
 
     @login_required
     def get(self, conf=None, server=None):
-        """
-        **GET** method provided by the webservice.
+        """**GET** method provided by the webservice.
 
         The *JSON* returned is:
         ::

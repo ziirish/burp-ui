@@ -18,14 +18,12 @@ except ImportError:
 
 
 class LdapLoader:
-    """
-    The :class:`burpui.misc.auth.ldap.LdapLoader` handles searching for and binding as
-    a :class:`burpui.misc.auth.ldap.LdapUser` user.
+    """The :class:`burpui.misc.auth.ldap.LdapLoader` handles searching for and
+    binding as a :class:`burpui.misc.auth.ldap.LdapUser` user.
     """
     def __init__(self, app=None):
-        """
-        :func:`burpui.misc.auth.ldap.LdapLoader.__init__` establishes a connection to the
-        LDAP server.
+        """:func:`burpui.misc.auth.ldap.LdapLoader.__init__` establishes a
+        connection to the LDAP server.
 
         :param app: Instance of the app we are running in
         :type app: :class:`burpui.server.BUIServer`
@@ -117,17 +115,15 @@ class LdapLoader:
             self.ldap = None
 
     def __exit__(self, exc_type, exc_value, traceback):
-        """
-        :func:`burpui.misc.auth.ldap.LdapLoader.__exit__` closes the connection to the
-        LDAP server.
+        """:func:`burpui.misc.auth.ldap.LdapLoader.__exit__` closes the
+        connection to the LDAP server.
         """
         if self.ldap and self.ldap.bound:
             self.ldap.unbind()
 
     def fetch(self, searchval=None):
-        """
-        :func:`burpui.misc.auth.ldap.LdapLoader.fetch` searches for a user object in the
-        LDAP server.
+        """:func:`burpui.misc.auth.ldap.LdapLoader.fetch` searches for a user
+        object in the LDAP server.
 
         :param searchval: attribute value to search for
         :type searchval: str
@@ -159,9 +155,8 @@ class LdapLoader:
                 return {'dn': record['dn'], 'cn': attrs['cn'][0]}
 
     def check(self, dn=None, passwd=None):
-        """
-        :func:`burpui.misc.auth.ldap.LdapLoader.check` authenticates a user against the
-        LDAP server.
+        """:func:`burpui.misc.auth.ldap.LdapLoader.check` authenticates a user
+        against the LDAP server.
 
         :param dn: canonical `dn` of the user to authenticate as
         :type dn: str
@@ -184,8 +179,8 @@ class LdapLoader:
 
 
 class UserHandler(BUIhandler):
-    """
-    The :class:`burpui.misc.auth.ldap.UserHandler` class maintains a list of ``Burp-UI`` users.
+    """The :class:`burpui.misc.auth.ldap.UserHandler` class maintains a list of
+    ``Burp-UI`` users.
     """
     def __init__(self, app=None):
         self.ldap = LdapLoader(app)
@@ -198,14 +193,12 @@ class UserHandler(BUIhandler):
 
 
 class LdapUser(UserMixin, BUIuser):
-    """
-    The :class:`burpui.misc.auth.ldap.LdapUser` class generates a ``Burp-UI`` user from
-    a user object found in the LDAP server.
+    """The :class:`burpui.misc.auth.ldap.LdapUser` class generates a ``Burp-UI``
+    user from a user object found in the LDAP server.
     """
     def __init__(self, ldap=None, name=None):
-        """
-        :func:`burpui.misc.auth.ldap.LdapUser.__init__` function finds a user in the
-        LDAP server and stores the DN of the user if found.
+        """:func:`burpui.misc.auth.ldap.LdapUser.__init__` function finds a user
+        in the LDAP server and stores the DN of the user if found.
 
         :param ldap: an ``LdapLoader`` instance
         :type ldap: :class:`burpui.misc.auth.ldap.LdapLoader`
@@ -224,9 +217,8 @@ class LdapUser(UserMixin, BUIuser):
             self.active = True
 
     def login(self, name=None, passwd=None):
-        """
-        :func:`burpui.misc.auth.ldap.LdapUser.login` function finds a user in the
-        LDAP server and authenticates that user using an LDAP bind.
+        """:func:`burpui.misc.auth.ldap.LdapUser.login` function finds a user in
+        the LDAP server and authenticates that user using an LDAP bind.
 
         :param name: login name of the user to authenticate as
         :type name: str
@@ -245,16 +237,14 @@ class LdapUser(UserMixin, BUIuser):
             return False
 
     def is_active(self):
-        """
-        :func:`burpui.misc.auth.ldap.LdapUser.is_active` function
+        """:func:`burpui.misc.auth.ldap.LdapUser.is_active` function
 
         :returns: True if user is active, otherwise False
         """
         return self.active
 
     def get_id(self):
-        """
-        :func:`burpui.misc.auth.ldap.LdapUser.get_id` function
+        """:func:`burpui.misc.auth.ldap.LdapUser.get_id` function
 
         :returns: login name of the user
         """

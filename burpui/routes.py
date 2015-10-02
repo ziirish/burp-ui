@@ -110,9 +110,7 @@ def cli_settings(server=None, client=None, conf=None):
 @view.route('/<server>/live-monitor/<name>')
 @login_required
 def live_monitor(server=None, name=None):
-    """
-    Live status monitor view
-    """
+    """Live status monitor view"""
     if not server:
         server = request.args.get('server')
     if view.bui.standalone:
@@ -138,9 +136,7 @@ def live_monitor(server=None, name=None):
 @view.route('/<server>/client-browse/<name>/<int:backup>/<int:encrypted>')
 @login_required
 def client_browse(server=None, name=None, backup=None, encrypted=None):
-    """
-    Browse a specific backup of a specific client
-    """
+    """Browse a specific backup of a specific client"""
     if request.args.get('encrypted') == '1':
         encrypted = 1
     if not server:
@@ -155,9 +151,7 @@ def client_browse(server=None, name=None, backup=None, encrypted=None):
 @view.route('/<server>/client-report/<name>')
 @login_required
 def client_report(server=None, name=None):
-    """
-    Specific client report
-    """
+    """Specific client report"""
     if not server:
         server = request.args.get('server')
     try:
@@ -173,9 +167,7 @@ def client_report(server=None, name=None):
 @view.route('/<server>/clients-report')
 @login_required
 def clients_report(server=None):
-    """
-    Global report
-    """
+    """Global report"""
     if not server:
         server = request.args.get('server')
     return render_template('clients-report.html', clients=True, report=True, server=server)
@@ -187,9 +179,7 @@ def clients_report(server=None):
 @view.route('/<server>/backup-report/<name>/<int:backup>', methods=['GET'])
 @login_required
 def backup_report(server=None, name=None, backup=None):
-    """
-    Backup specific report
-    """
+    """Backup specific report"""
     if not backup:
         backup = request.args.get('backup')
     if not server:
@@ -203,9 +193,7 @@ def backup_report(server=None, name=None, backup=None):
 @view.route('/<server>/client/<name>')
 @login_required
 def client(server=None, name=None):
-    """
-    Specific client overview
-    """
+    """Specific client overview"""
     if name:
         c = name
     else:
@@ -256,9 +244,7 @@ def logout():
 @view.route('/')
 @login_required
 def home():
-    """
-    Home page
-    """
+    """Home page"""
     if view.bui.standalone:
         return redirect(url_for('.clients'))
     else:

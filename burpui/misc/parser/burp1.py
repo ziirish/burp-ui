@@ -586,9 +586,7 @@ class Parser(BUIparser, BUIlogging):
         return dic, boolean, multi, integer, includes, includes_ext
 
     def path_expander(self, pattern=None, client=None):
-        """
-        This method returns a list of files matching the given pattern
-        """
+        """This method returns a list of files matching the given pattern"""
         # TODO: enhance security by allowing only some paths (ie. remove '..' if needed)
         if not pattern:
             return []

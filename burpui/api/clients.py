@@ -22,8 +22,7 @@ from flask import jsonify, make_response
               '/api/<server>/running-clients.json/<client>',
               endpoint='api.running_clients')
 class RunningClients(Resource):
-    """
-    The :class:`burpui.api.clients.RunningClients` resource allows you to
+    """The :class:`burpui.api.clients.RunningClients` resource allows you to
     retrieve a list of clients that are currently running a backup.
 
     This resource is part of the :mod:`burpui.api.clients` module.
@@ -38,8 +37,7 @@ class RunningClients(Resource):
 
     @login_required
     def get(self, client=None, server=None):
-        """
-        **GET** method provided by the webservice.
+        """**GET** method provided by the webservice.
 
         The *JSON* returned is:
         ::
@@ -97,18 +95,16 @@ class RunningClients(Resource):
               '/api/<server>/running.json',
               endpoint='api.running_backup')
 class RunningBackup(Resource):
-    """
-    The :class:`burpui.api.clients.RunningBackup` resource allows you to access
-    the status of the server in order to know if there is a running backup
-    currently.
+    """The :class:`burpui.api.clients.RunningBackup` resource allows you to
+    access the status of the server in order to know if there is a running
+    backup currently.
 
     This resource is part of the :mod:`burpui.api.clients` module.
     """
 
     @login_required
     def get(self, server=None):
-        """
-        **GET** method provided by the webservice.
+        """**GET** method provided by the webservice.
 
         The *JSON* returned is:
         ::
@@ -154,9 +150,8 @@ class RunningBackup(Resource):
               '/api/<server>/clients-report.json',
               endpoint='api.clients_report')
 class ClientsReport(Resource):
-    """
-    The :class:`burpui.api.clients.ClientsReport` resource allows you to access
-    general reports about your clients.
+    """The :class:`burpui.api.clients.ClientsReport` resource allows you to
+    access general reports about your clients.
 
     This resource is part of the :mod:`burpui.api.clients` module.
 
@@ -170,8 +165,7 @@ class ClientsReport(Resource):
 
     @login_required
     def get(self, server=None):
-        """
-        **GET** method provided by the webservice.
+        """**GET** method provided by the webservice.
 
         The *JSON* returned is:
         ::
@@ -257,9 +251,8 @@ class ClientsReport(Resource):
               '/api/<server>/clients.json',
               endpoint='api.clients_stats')
 class ClientsStats(Resource):
-    """
-    The :class:`burpui.api.clients.ClientsStats` resource allows you to access
-    general statistics about your clients.
+    """The :class:`burpui.api.clients.ClientsStats` resource allows you to
+    access general statistics about your clients.
 
     This resource is part of the :mod:`burpui.api.clients` module.
 
@@ -273,8 +266,7 @@ class ClientsStats(Resource):
 
     @login_required
     def get(self, server=None):
-        """
-        **GET** method provided by the webservice.
+        """**GET** method provided by the webservice.
 
         The *JSON* returned is:
         ::

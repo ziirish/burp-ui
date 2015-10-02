@@ -24,8 +24,7 @@ from werkzeug.exceptions import HTTPException
               '/api/<server>/restore/<name>/<int:backup>',
               endpoint='api.restore')
 class Restore(Resource):
-    """
-    The :class:`burpui.api.restore.Restore` resource allows you to
+    """The :class:`burpui.api.restore.Restore` resource allows you to
     perform a file restoration.
 
     This resource is part of the :mod:`burpui.api.restore` module.
@@ -46,8 +45,7 @@ class Restore(Resource):
 
     @login_required
     def post(self, server=None, name=None, backup=None):
-        """
-        **POST** method provided by the webservice.
+        """**POST** method provided by the webservice.
         This method returns a :mod:`flask.Response` object.
 
         :param server: Which server to collect data from when in multi-agent mode

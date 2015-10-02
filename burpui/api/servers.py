@@ -11,8 +11,7 @@ from flask import jsonify
 
 @api.resource('/api/servers.json', endpoint='api.servers_stats')
 class ServersStats(Resource):
-    """
-    The :class:`burpui.api.servers.ServersStats` resource allows you to
+    """The :class:`burpui.api.servers.ServersStats` resource allows you to
     retrieve statistics about servers/agents.
 
     This resource is part of the :mod:`burpui.api.servers` module.
@@ -49,8 +48,7 @@ class ServersStats(Resource):
               '/api/<server>/live.json',
               endpoint='api.live')
 class Live(Resource):
-    """
-    The :class:`burpui.api.servers.Live` resource allows you to
+    """The :class:`burpui.api.servers.Live` resource allows you to
     retrieve a list of servers that are currently *alive*.
 
     This resource is part of the :mod:`burpui.api.servers` module.
@@ -65,8 +63,7 @@ class Live(Resource):
 
     @login_required
     def get(self, server=None):
-        """
-        API: live
+        """API: live
         :returns: the live status of the server
         """
         if not server:

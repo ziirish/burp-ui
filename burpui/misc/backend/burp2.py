@@ -169,25 +169,19 @@ class Burp(Burp1):
         return False
 
     def _is_ignored(self, js):
-        """
-        We ignore the 'logline' lines
-        """
+        """We ignore the 'logline' lines"""
         if not js:
             return True
         return 'logline' in js
 
     def _is_warning(self, js):
-        """
-        Returns True if the document is a warning
-        """
+        """Returns True if the document is a warning"""
         if not js:
             return False
         return 'warning' in js
 
     def _is_valid_json(self, doc):
-        """
-        Determine if the retrieved string is a valid json document or not
-        """
+        """Determine if the retrieved string is a valid json document or not"""
         try:
             js = json.loads(doc)
             return js
@@ -195,9 +189,7 @@ class Burp(Burp1):
             return None
 
     def _human_st_mode(self, mode):
-        """
-        Convert the st_mode returned by stat in human readable (ls-like) format
-        """
+        """Convert the st_mode returned by stat in human readable (ls-like) format"""
         hr = ''
         if os.path.stat.S_ISREG(mode):
             hr = '-'
@@ -226,9 +218,7 @@ class Burp(Burp1):
         return hr
 
     def _read_proc_stdout(self):
-        """
-        reads the burp process stdout and returns a document or None
-        """
+        """reads the burp process stdout and returns a document or None"""
         doc = u''
         js = None
         while True:
@@ -254,9 +244,8 @@ class Burp(Burp1):
         return js
 
     def status(self, query='c:\n', agent=None):
-        """
-        status spawns a burp process in monitor mode, ask the given 'question'
-        and parses the output in an array
+        """status spawns a burp process in monitor mode, ask the given
+        'question' and parses the output in an array
         """
         try:
             if not query.endswith('\n'):

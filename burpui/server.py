@@ -34,8 +34,8 @@ class BUIServer:
     The :class:`burpui.server.BUIServer` class provides the ``Burp-UI`` server.
     """
     def __init__(self, app=None):
-        """
-        The :class:`burpui.server.BUIServer` class provides the ``Burp-UI`` server.
+        """The :class:`burpui.server.BUIServer` class provides the ``Burp-UI``
+        server.
 
         :param app: The Flask application to launch
         """
@@ -43,10 +43,9 @@ class BUIServer:
         self.app = app
 
     def setup(self, conf=None):
-        """
-        The :func:`burpui.server.BUIServer.setup` functions is used to setup the
-        whole server by parsing the configuration file and loading the different
-        backends.
+        """The :func:`burpui.server.BUIServer.setup` functions is used to setup
+        the whole server by parsing the configuration file and loading the
+        different backends.
 
         :param conf: Path to a configuration file
         :type conf: str
@@ -153,9 +152,8 @@ class BUIServer:
         self.init = True
 
     def _safe_config_get(self, callback, key, sect='Global', cast=None):
-        """
-        :func:`burpui.server.BUIServer._safe_config_get` is a wrapper to handle
-        Exceptions throwed by :mod:`ConfigParser`.
+        """:func:`burpui.server.BUIServer._safe_config_get` is a wrapper to
+        handle Exceptions throwed by :mod:`ConfigParser`.
 
         :param callback: Function to wrap
         :type callback: callable
@@ -187,8 +185,7 @@ class BUIServer:
         return None
 
     def run(self, debug=False):
-        """
-        The :func:`burpui.server.BUIServer.run` functions is used to actually
+        """The :func:`burpui.server.BUIServer.run` functions is used to actually
         launch the ``Burp-UI`` server.
 
         :param debug: Enable debug mode

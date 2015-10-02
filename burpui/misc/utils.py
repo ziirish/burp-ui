@@ -7,13 +7,14 @@ import zipfile
 import tarfile
 import logging
 
+from inspect import getmembers, isfunction
+
 if sys.version_info >= (3, 0):
     long = int
 
 
 class human_readable(long):
-    """
-    define a human_readable class to allow custom formatting
+    """define a human_readable class to allow custom formatting
     format specifiers supported :
         em : formats the size as bits in IEC format i.e. 1024 bits (128 bytes) = 1Kib
         eM : formats the size as Bytes in IEC format i.e. 1024 bytes = 1KiB
@@ -63,6 +64,15 @@ class human_readable(long):
         return "{0:{1}}".format(t, width) if width != "" else t
 
 
+def inherit_docstrings(cls):
+    for name, func in getmembers(cls, isfunction):
+        if func.__doc__: continue
+        for parent in cls.__mro__[1:]:
+            if hasattr(parent, name):
+                func.__doc__ = getattr(parent, name).__doc__
+    return cls
+
+
 def currentframe():
     """Return the frame object for the caller's stack frame."""
     try:
@@ -85,9 +95,7 @@ if sys.version_info >= (3, 0):
 else:
     class BUIlogger(logging.Logger):
         def makeRecord(self, name, level, fn, lno, msg, args, exc_info, func=None, extra=None):
-            """
-            Try to guess where was call the function
-            """
+            """Try to guess where was call the function"""
             cf = currentframe()
             (frame, filename, line_number, function_name, lines, index) = inspect.getouterframes(cf)[4]
             if cf is not None:

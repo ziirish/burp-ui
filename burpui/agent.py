@@ -118,8 +118,7 @@ class BUIAgent(BUIlogging):
         self.server = AgentServer((self.bind, self.port), AgentTCPHandler, self)
 
     def _safe_config_get(self, callback, key, sect='Global', cast=None):
-        """
-        :func:`burpui.agent._safe_config_get` is a wrapper to handle
+        """:func:`burpui.agent._safe_config_get` is a wrapper to handle
         Exceptions throwed by :mod:`ConfigParser`.
 
         :param callback: Function to wrap

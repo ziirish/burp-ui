@@ -18,8 +18,7 @@ from flask import jsonify
               '/api/<server>/client-tree.json/<name>/<int:backup>',
               endpoint='api.client_tree')
 class ClientTree(Resource):
-    """
-    The :class:`burpui.api.client.ClientTree` resource allows you to
+    """The :class:`burpui.api.client.ClientTree` resource allows you to
     retrieve a list of files in a given backup.
 
     This resource is part of the :mod:`burpui.api.client` module.
@@ -37,8 +36,7 @@ class ClientTree(Resource):
 
     @login_required
     def get(self, server=None, name=None, backup=None):
-        """
-        **GET** method provided by the webservice.
+        """**GET** method provided by the webservice.
 
         The *JSON* returned is:
         ::
@@ -100,8 +98,7 @@ class ClientTree(Resource):
               '/api/<server>/client-stat.json/<name>/<int:backup>',
               endpoint='api.client_stats')
 class ClientStats(Resource):
-    """
-    The :class:`burpui.api.client.ClientStats` resource allows you to
+    """The :class:`burpui.api.client.ClientStats` resource allows you to
     retrieve a statistics on a given backup for a given client.
 
     This resource is part of the :mod:`burpui.api.client` module.
@@ -116,8 +113,7 @@ class ClientStats(Resource):
 
     @login_required
     def get(self, server=None, name=None, backup=None):
-        """
-        **GET** method provided by the webservice.
+        """**GET** method provided by the webservice.
 
         The *JSON* returned is:
         ::
@@ -303,8 +299,7 @@ class ClientStats(Resource):
               '/api/<server>/client.json/<name>',
               endpoint='api.client_report')
 class ClientReport(Resource):
-    """
-    The :class:`burpui.api.client.ClientReport` resource allows you to
+    """The :class:`burpui.api.client.ClientReport` resource allows you to
     retrieve a list of backups for a given client.
 
     This resource is part of the :mod:`burpui.api.client` module.
@@ -319,8 +314,7 @@ class ClientReport(Resource):
 
     @login_required
     def get(self, server=None, name=None):
-        """
-        **GET** method provided by the webservice.
+        """**GET** method provided by the webservice.
 
         The *JSON* returned is:
         ::
