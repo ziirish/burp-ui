@@ -703,9 +703,7 @@ class Burp(BUIbackend, BUIlogging):
         return j
 
     def get_client(self, name=None, agent=None):
-        """get_client returns a list of dict representing the backups (with its
-        number and date) of a given client
-        """
+        """See :func:`burpui.misc.backend.interface.BUIbackend.get_client`"""
         r = []
         if not name:
             return r
@@ -778,6 +776,7 @@ class Burp(BUIbackend, BUIlogging):
         return r
 
     def restore_files(self, name=None, backup=None, files=None, strip=None, archive='zip', password=None, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.restore_client`"""
         if not name or not backup or not files:
             return None, 'At least one argument is missing'
         if not self.stripbin:
@@ -881,16 +880,19 @@ class Burp(BUIbackend, BUIlogging):
         return zip_file, None
 
     def read_conf_cli(self, client=None, conf=None, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.read_conf_cli`"""
         if not self.parser:
             return []
         return self.parser.read_client_conf(client, conf)
 
     def read_conf_srv(self, conf=None, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.read_conf_srv`"""
         if not self.parser:
             return []
         return self.parser.read_server_conf(conf)
 
     def store_conf_cli(self, data, client=None, conf=None, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.store_conf_cli`"""
         if not self.parser:
             return []
         try:
@@ -900,6 +902,7 @@ class Burp(BUIbackend, BUIlogging):
         return self.parser.store_client_conf(data, client, conf)
 
     def store_conf_srv(self, data, conf=None, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.store_conf_srv`"""
         if not self.parser:
             return []
         try:

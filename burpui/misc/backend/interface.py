@@ -270,24 +270,229 @@ class BUIbackend:
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")
 
     def get_client(self, name=None, agent=None):
+        """The :func:`burpui.misc.backend.interface.BUIbackend.get_client`
+        function returns a list of dict representing the backups of a given
+        client.
+
+        :param name: Client name
+        :type name: str
+
+        :param agent: What server to ask (only in multi-agent mode)
+        :type agent: str
+
+        :returns: A list of backups
+
+        Example::
+
+            [
+                {
+                    "date": "2015-01-25 13:32:00",
+                    "deletable": true,
+                    "encrypted": true,
+                    "number": "1"
+                }
+            ]
+        """
+
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")
 
     def get_tree(self, name=None, backup=None, root=None, agent=None):
+        """The :func:`burpui.misc.backend.interface.BUIbackend.get_tree`
+        function returns a list of dict representing files/dir (with their
+        attr) within a given path
+
+        :param name: Client name
+        :type name: str
+
+        :param backup: Backup number
+        :type backup: int
+
+        :param root: Root path to look into
+        :type root: str
+
+        :param agent: What server to ask (only in multi-agent mode)
+        :type agent: str
+
+        :returns: A list of files/dir within the given path with their attr
+
+        Example::
+
+            [
+                {
+                    "date": "2015-01-23 20:00:07",
+                    "gid": "0",
+                    "inodes": "168",
+                    "mode": "drwxr-xr-x",
+                    "name": "/",
+                    "parent": "",
+                    "size": "12.0KiB",
+                    "type": "d",
+                    "uid": "0"
+                }
+            ]
+        """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")
 
     def restore_files(self, name=None, backup=None, files=None, strip=None, archive='zip', password=None, agent=None):
+        """The :func:`burpui.misc.backend.interface.BUIbackend.restore_files`
+        function performs a restoration and returns a tuple containing the path
+        of the generated archive and/or a message if an error happened.
+
+        :param name: Client name
+        :type name: str
+
+        :param backup: Backup number
+        :type backup: int
+
+        :param files: A string representing a list of files to restore
+        :type files: str
+
+        Example::
+
+            ['/etc/passwd', '/etc/shadow']
+
+        :param strip: Number of parent directories to strip while restoring
+                      files
+        :type strip: int
+
+        :param archive: Format of the generated archive (may be zip, tar.gz or
+                        tar.bz2)
+        :type archive: str
+
+        :param password: Password for encrypted backups
+        :type password: str
+
+        :param agent: What server to ask (only in multi-agent mode)
+        :type agent: str
+
+        :returns: A tuple with the generated archive path and/or an error message
+        """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")
 
     def read_conf_srv(self, conf=None, agent=None):
+        """The :func:`burpui.misc.backend.interface.BUIbackend.read_conf_srv`
+        function returns a dict of options present in the server config file.
+
+        :param conf: Complementary configuration file (for instance, file
+                     inclusions)
+        :type conf: str
+
+        :param agent: What server to ask (only in multi-agent mode)
+        :type agent: str
+
+        :returns: Dict of options
+
+        Example::
+
+            {
+                "boolean": [
+                    {
+                        "name": "hardlinked_archive",
+                        "value": false
+                    },
+                    {
+                        "name": "syslog",
+                        "value": true
+                    },
+                ],
+                "clients": [
+                    {
+                        "name": "client1",
+                        "value": "/etc/burp/clientconfdir/client1"
+                    },
+                    {
+                        "name": "client2",
+                        "value": "/etc/burp/clientconfdir/client2"
+                    },
+                ],
+                "common": [
+                    {
+                        "name": "mode",
+                        "value": "server"
+                    },
+                    {
+                        "name": "directory",
+                        "value": "/srv/burp"
+                    },
+                ],
+                "includes": [],
+                "includes_ext": [],
+                "integer": [
+                    {
+                        "name": "port",
+                        "value": 4971
+                    },
+                    {
+                        "name": "status_port",
+                        "value": 4972
+                    },
+                    {
+                        "name": "max_children",
+                        "value": 5
+                    },
+                    {
+                        "name": "max_status_children",
+                        "value": 5
+                    }
+                ],
+                "multi": [
+                    {
+                        "name": "keep",
+                        "value": [
+                            "7",
+                            "4",
+                            "4"
+                        ]
+                    },
+                    {
+                        "name": "timer_arg",
+                        "value": [
+                            "12h",
+                            "Mon,Tue,Thu,Fri,17,18,19,20,21,22,23",
+                            "Wed,Sat,Sun,06,07,08,09,10,11,12,13,14,15,16,17,18,19,20,21,22,23"
+                        ]
+                    },
+                ],
+            }
+        """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")
 
     def read_conf_cli(self, client=None, conf=None, agent=None):
+        """The :func:`burpui.misc.backend.interface.BUIbackend.read_conf_cli`
+        function works the same way as the
+        :func:`burpui.misc.backend.interface.BUIbackend.read_conf_srv` function
+        but for the client config file.
+        """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")
 
     def store_conf_srv(self, data, conf=None, agent=None):
+        """The :func:`burpui.misc.backend.interface.BUIbackend.store_conf_srv`
+        functions is used to save the new settings in the configuration file.
+
+        :param data: Data as sent by the web-form
+        :type data: dict
+
+        :param conf: force the file path (for file inclusions for instance)
+        :type conf: str
+
+        :param agent: What server to ask (only in multi-agent mode)
+        :type agent: str
+
+        :returns: A list of notifications to return to the UI (success or
+                  failure)
+        """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")
 
     def store_conf_cli(self, data, client=None, conf=None, agent=None):
+        """The :func:`burpui.misc.backend.interface.BUIbackend.store_conf_cli`
+        function works the same way as the
+        :func:`burpui.misc.backend.interface.BUIbackend.store_conf_srv` function
+        but for the client config file.
+        It takes an extra parameter:
+
+        :param client: Name of the client for which to apply this config
+        :type client: str
+        """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")
 
     def get_parser_attr(self, attr=None, agent=None):
