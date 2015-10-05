@@ -163,7 +163,7 @@ class ServerSettings(Resource):
         """
         # Only the admin can edit the configuration
         if (api.bui.acl and not
-                api.bui.acl.is_admin(current_user.name)):
+                api.bui.acl.is_admin(current_user.get_id())):
             abort(403, message='Sorry, you don\'t have rights to access the setting panel')
 
         try:
@@ -193,7 +193,7 @@ class ClientSettings(Resource):
     def get(self, server=None, client=None, conf=None):
         # Only the admin can edit the configuration
         if (api.bui.acl and not
-                api.bui.acl.is_admin(current_user.name)):
+                api.bui.acl.is_admin(current_user.get_id())):
             abort(403, message='Sorry, you don\'t have rights to access the setting panel')
 
         try:
@@ -225,7 +225,7 @@ class NewClient(Resource):
     def post(self, server=None):
         # Only the admin can edit the configuration
         if (api.bui.acl and not
-                api.bui.acl.is_admin(current_user.name)):
+                api.bui.acl.is_admin(current_user.get_id())):
             abort(403, message='Sorry, you don\'t have rights to access the setting panel')
 
         newclient = self.parser.parse_args()['newclient']
@@ -254,7 +254,7 @@ class PathExpander(Resource):
     def post(self, server=None, client=None):
         # Only the admin can edit the configuration
         if (api.bui.acl and not
-                api.bui.acl.is_admin(current_user.name)):
+                api.bui.acl.is_admin(current_user.get_id())):
             noti = [2, 'Sorry, you don\'t have rights to access the setting panel']
             return jsonify(notif=noti)
 
@@ -277,7 +277,7 @@ class DeleteClient(Resource):
     def post(self, server=None, client=None):
         # Only the admin can edit the configuration
         if (api.bui.acl and not
-                api.bui.acl.is_admin(current_user.name)):
+                api.bui.acl.is_admin(current_user.get_id())):
             noti = [2, 'Sorry, you don\'t have rights to access the setting panel']
             return jsonify(notif=noti)
 

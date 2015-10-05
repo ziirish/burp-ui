@@ -1,5 +1,4 @@
 # -*- coding: utf8 -*-
-from flask.ext.login import UserMixin
 from burpui.misc.auth.interface import BUIhandler, BUIuser
 
 try:
@@ -46,11 +45,13 @@ class UserHandler(BUIhandler):
         return self.users[name]
 
 
-class BasicUser(UserMixin, BUIuser):
+class BasicUser(BUIuser):
     def __init__(self, basic=None, name=None):
         self.active = False
+        self.authenticated = False
         self.basic = basic
         self.name = name
+        self.id = None
 
         res = self.basic.fetch(self.name)
 
@@ -59,10 +60,14 @@ class BasicUser(UserMixin, BUIuser):
             self.active = True
 
     def login(self, name=None, passwd=None):
-        return self.basic.check(name, passwd)
+        self.authenticated = self.basic.check(name, passwd)
+        return self.authenticated
 
     def is_active(self):
         return self.active
+
+    def is_authenticated(self):
+        return self.authenticated
 
     def get_id(self):
         return self.id

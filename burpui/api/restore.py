@@ -72,10 +72,10 @@ class Restore(Resource):
             abort(500)
         # Manage ACL
         if (api.bui.acl and
-                (not api.bui.acl.is_client_allowed(current_user.name,
+                (not api.bui.acl.is_client_allowed(current_user.get_id(),
                                                    name,
                                                    server) and not
-                 api.bui.acl.is_admin(current_user.name))):
+                 api.bui.acl.is_admin(current_user.get_id()))):
             abort(403)
         if server:
             filename = 'restoration_%d_%s_on_%s_at_%s.%s' % (
@@ -108,6 +108,9 @@ class Restore(Resource):
 
                 @after_this_request
                 def remove_file(response):
+                    """Callback function to run after the client has handled
+                    the request to remove temporary files.
+                    """
                     import os
                     os.remove(archive)
                     return response
@@ -137,9 +140,11 @@ class Restore(Resource):
                     socket.close()
                     return make_response(err, 500)
 
-                # The restoration took place on another server so we need to stream
-                # the file that is not present on the current machine.
                 def stream_file(sock, l):
+                    """The restoration took place on another server so we need
+                    to stream the file that is not present on the current
+                    machine.
+                    """
                     bsize = 1024
                     received = 0
                     if l < bsize:

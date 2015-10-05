@@ -54,8 +54,8 @@ class RenderLiveTpl(Resource):
             abort(500)
         # Manage ACL
         if (api.bui.acl and
-            (not api.bui.acl.is_client_allowed(current_user.name, name, server) or
-             not api.bui.acl.is_admin(current_user.name))):
+            (not api.bui.acl.is_client_allowed(current_user.get_id(), name, server) or
+             not api.bui.acl.is_admin(current_user.get_id()))):
             abort(403)
         if isinstance(api.bui.cli.running, dict):
             if server and name not in api.bui.cli.running[server]:

@@ -1,5 +1,4 @@
 # -*- coding: utf8 -*-
-from flask.ext.login import UserMixin
 from future.utils import viewitems
 from burpui.misc.auth.interface import BUIhandler, BUIuser
 
@@ -207,6 +206,7 @@ class LdapUser(UserMixin, BUIuser):
         :param type: str
         """
         self.active = False
+        self.authenticated = False
         self.ldap = ldap
         self.name = name
 
@@ -231,8 +231,10 @@ class LdapUser(UserMixin, BUIuser):
                   otherwise de-activates the user and returns False
         """
         if self.ldap.fetch(name):
-            return self.ldap.check(self.id, passwd)
+            self.authenticated = self.ldap.check(self.id, passwd)
+            return self.authenticated
         else:
+            self.authenticated = False
             self.active = False
             return False
 
@@ -242,6 +244,13 @@ class LdapUser(UserMixin, BUIuser):
         :returns: True if user is active, otherwise False
         """
         return self.active
+
+    def is_authenticated(self):
+        """:func:`burpui.misc.auth.ldap.LdapUser.is_authenticated` function
+
+        :returns: True if a user is authenticated, otherwise False
+        """
+        return self.authenticated
 
     def get_id(self):
         """:func:`burpui.misc.auth.ldap.LdapUser.get_id` function

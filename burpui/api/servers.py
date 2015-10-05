@@ -24,9 +24,9 @@ class ServersStats(Resource):
             check = False
             allowed = []
             if (api.bui.acl and not
-                    api.bui.acl.is_admin(current_user.name)):
+                    api.bui.acl.is_admin(current_user.get_id())):
                 check = True
-                allowed = api.bui.acl.servers(current_user.name)
+                allowed = api.bui.acl.servers(current_user.get_id())
             for serv in api.bui.cli.servers:
                 try:
                     if check:

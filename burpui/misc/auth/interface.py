@@ -1,5 +1,5 @@
 # -*- coding: utf8 -*-
-
+from flask.ext.login import UserMixin, AnonymousUserMixin
 
 class BUIhandler:
     def __init__(self, app=None):
@@ -9,6 +9,6 @@ class BUIhandler:
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")
 
 
-class BUIuser:
+class BUIuser(UserMixin):
     def login(self, name=None, passwd=None):
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")

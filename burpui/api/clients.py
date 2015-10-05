@@ -62,8 +62,8 @@ class RunningClients(Resource):
             server = self.parser.parse_args()['server']
         if client:
             if api.bui.acl:
-                if (not api.bui.acl.is_admin(current_user.name) and not
-                        api.bui.acl.is_client_allowed(current_user.name,
+                if (not api.bui.acl.is_admin(current_user.get_id()) and not
+                        api.bui.acl.is_client_allowed(current_user.get_id(),
                                                       client,
                                                       server)):
                     r = []
@@ -78,15 +78,15 @@ class RunningClients(Resource):
         r = api.bui.cli.is_one_backup_running(server)
         # Manage ACL
         if (api.bui.acl and not
-                api.bui.acl.is_admin(current_user.name)):
+                api.bui.acl.is_admin(current_user.get_id())):
             if isinstance(r, dict):
                 new = {}
-                for serv in api.bui.acl.servers(current_user.name):
-                    allowed = api.bui.acl.clients(current_user.name, serv)
+                for serv in api.bui.acl.servers(current_user.get_id()):
+                    allowed = api.bui.acl.clients(current_user.get_id(), serv)
                     new[serv] = [x for x in r[serv] if x in allowed]
                 r = new
             else:
-                allowed = api.bui.acl.clients(current_user.name, server)
+                allowed = api.bui.acl.clients(current_user.get_id(), server)
                 r = [x for x in r if x in allowed]
         return jsonify(results=r)
 
@@ -125,15 +125,15 @@ class RunningBackup(Resource):
         j = api.bui.cli.is_one_backup_running(server)
         # Manage ACL
         if (api.bui.acl and not
-                api.bui.acl.is_admin(current_user.name)):
+                api.bui.acl.is_admin(current_user.get_id())):
             if isinstance(j, dict):
                 new = {}
-                for serv in api.bui.acl.servers(current_user.name):
-                    allowed = api.bui.acl.clients(current_user.name, serv)
+                for serv in api.bui.acl.servers(current_user.get_id()):
+                    allowed = api.bui.acl.clients(current_user.get_id(), serv)
                     new[serv] = [x for x in j[serv] if x in allowed]
                 j = new
             else:
-                allowed = api.bui.acl.clients(current_user.name, server)
+                allowed = api.bui.acl.clients(current_user.get_id(), server)
                 j = [x for x in j if x in allowed]
         r = False
         if isinstance(j, dict):
@@ -221,9 +221,9 @@ class ClientsReport(Resource):
         try:
             # Manage ACL
             if (not api.bui.standalone and api.bui.acl and
-                    (not api.bui.acl.is_admin(current_user.name) and
+                    (not api.bui.acl.is_admin(current_user.get_id()) and
                      server not in
-                     api.bui.acl.servers(current_user.name))):
+                     api.bui.acl.servers(current_user.get_id()))):
                 raise BUIserverException('Sorry, you don\'t have rights on this server')
             clients = api.bui.cli.get_all_clients(agent=server)
         except BUIserverException as e:
@@ -235,9 +235,9 @@ class ClientsReport(Resource):
         allowed = []
         check = False
         if (api.bui.acl and not
-                api.bui.acl.is_admin(current_user.name)):
+                api.bui.acl.is_admin(current_user.get_id())):
             check = True
-            allowed = api.bui.acl.clients(current_user.name, server)
+            allowed = api.bui.acl.clients(current_user.get_id(), server)
         aclients = []
         for c in clients:
             if check and c['name'] not in allowed:
@@ -301,14 +301,14 @@ class ClientsStats(Resource):
         try:
             if (not api.bui.standalone and
                     api.bui.acl and
-                    (not api.bui.acl.is_admin(current_user.name) and
+                    (not api.bui.acl.is_admin(current_user.get_id()) and
                      server not in
-                     api.bui.acl.servers(current_user.name))):
+                     api.bui.acl.servers(current_user.get_id()))):
                 raise BUIserverException('Sorry, you don\'t have any rights on this server')
             j = api.bui.cli.get_all_clients(agent=server)
             if (api.bui.acl and not
-                    api.bui.acl.is_admin(current_user.name)):
-                j = [x for x in j if x['name'] in api.bui.acl.clients(current_user.name, server)]
+                    api.bui.acl.is_admin(current_user.get_id())):
+                j = [x for x in j if x['name'] in api.bui.acl.clients(current_user.get_id(), server)]
         except BUIserverException as e:
             err = [[2, str(e)]]
             return jsonify(notif=err)

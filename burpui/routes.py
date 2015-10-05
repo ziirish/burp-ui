@@ -63,7 +63,7 @@ And here is the main site
 @login_required
 def settings(server=None, conf=None):
     # Only the admin can edit the configuration
-    if view.bui.acl and not view.bui.acl.is_admin(current_user.name):
+    if view.bui.acl and not view.bui.acl.is_admin(current_user.get_id()):
         abort(403)
     if not conf:
         try:
@@ -87,7 +87,7 @@ def settings(server=None, conf=None):
 @login_required
 def cli_settings(server=None, client=None, conf=None):
     # Only the admin can edit the configuration
-    if view.bui.acl and not view.bui.acl.is_admin(current_user.name):
+    if view.bui.acl and not view.bui.acl.is_admin(current_user.get_id()):
         abort(403)
     if not conf:
         try:
