@@ -2,23 +2,29 @@
 
 
 class BUIbackend:
+    """The :class:`burpui.misc.backend.interface.BUIbackend` class provides
+    a consistent interface backend for any ``burp`` server.
+
+    :param server: ``Burp-UI`` server instance in order to access logger
+                   and/or some global settings
+    :type server: :class:`burpui.server.BUIServer`
+
+    :param conf: Configuration file to use
+    :type conf: str
+    """
     def __init__(self, server=None, conf=None):
-        """The :class:`burpui.misc.backend.interface.BUIbackend` class provides
-        a consistent interface backend for any ``burp`` server.
-
-        :param server: ``Burp-UI`` server instance in order to access logger
-                       and/or some global settings
-        :type server: :class:`burpui.server.BUIServer`
-
-        :param conf: Configuration file to use
-        :type conf: str
-        """
         self.app = None
         if server:
             if hasattr(server, 'app'):
                 self.app = server.app
 
     def set_logger(self, logger):
+        """The :func:`burpui.misc.backend.interface.BUIbackend.set_logger`
+        function is used to set the global logger of the application.
+
+        :param logger: Logger object
+        :type logger: Logger
+        """
         self.logger = logger
 
     def status(self, query='\n', agent=None):
@@ -480,6 +486,10 @@ class BUIbackend:
 
         :returns: A list of notifications to return to the UI (success or
                   failure)
+
+        Example::
+
+            [[0, "Success"]]
         """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")
 
@@ -496,14 +506,58 @@ class BUIbackend:
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")
 
     def get_parser_attr(self, attr=None, agent=None):
+        """The :func:`burpui.misc.backend.interface.BUIbackend.get_parser_attr`
+        function is used to retrieve some attributes from the Parser.
+        This function is useful in multi-agent mode because the front-end needs
+        to access the backend attributes through the agents.
+
+        :param attr: Name of the attribute to retrieve
+        :type attr: str
+
+        :param agent: What server to ask (only in multi-agent mode)
+        :type agent: str
+
+        :returns: The requested attribute or an empty list
+        """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")
 
     def expand_path(self, path=None, client=None, agent=None):
+        """The :func:`burpui.misc.backend.interface.BUIbackend.expand_path`
+        function is used to expand path of file inclusions glob the user can
+        set in the setting panel.
+        This function is also a *proxy* for multi-agent setup.
+
+        :param path: The glob/path to expand
+        :type path: str
+
+        :param client: The client name when working on client files
+        :type client: str
+
+        :param agent: What server to ask (only in multi-agent mode)
+        :type agent: str
+
+        :returns: A list of files or an empty list
+        """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")
 
     def delete_client(self, client=None, agent=None):
+        """The :func:`burpui.misc.backend.interface.BUIbackend.delete_client`
+        function is used to delete a client from burp's configuration.
+
+        :param client: The name of the client to remove
+        :type client: str
+
+        :param agent: What server to ask (only in multi-agent mode)
+        :type agent: str
+
+        :returns: A list of notifications to return to the UI (success or
+                  failure)
+        """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")
 
 
 class BUIserverException(Exception):
+    """Raised in case of internal error. This exception should never reach the
+    end-user.
+    """
     pass

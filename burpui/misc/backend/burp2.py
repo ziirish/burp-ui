@@ -42,6 +42,19 @@ g_tmpdir = u'/tmp/bui'
 
 # Some functions are the same as in Burp1 backend
 class Burp(Burp1):
+    """The :class:`burpui.misc.backend.burp2.Burp` class provides a consistent
+    backend for ``burp-2`` servers.
+
+    It extends the :class:`burpui.misc.backend.burp1.Burp` class because a few
+    functions can be reused. The rest is just overrided.
+
+    :param server: ``Burp-UI`` server instance in order to access logger
+                   and/or some global settings
+    :type server: :class:`burpui.server.BUIServer`
+
+    :param conf: Configuration file to use
+    :type conf: str
+    """
 
     def __init__(self, server=None, conf=None):
         global g_burpbin, g_stripbin, g_burpconfcli, g_burpconfsrv, g_tmpdir, BURP_MINIMAL_VERSION
@@ -142,16 +155,18 @@ class Burp(Burp1):
         self._logger('info', 'burp version: %s', version)
 
     def _sighandler(self, signum, frame):
+        """Catch SIGALRM"""
         raise TimeoutError('Operation timed out')
 
-    # try not to leave child process server side
     def __exit__(self, type, value, traceback):
+        """try not to leave child process server side"""
         if self._proc_is_alive():
             self.proc.stdin.close()
             self.proc.communicate()
             self.proc.wait()
 
     def _spawn_burp(self):
+        """Launch the burp client process"""
         cmd = [self.burpbin, '-c', self.burpconfcli, '-a', 'm']
         self.proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
         # wait a little bit in case the process dies on a network timeout
@@ -164,6 +179,7 @@ class Burp(Burp1):
             self._logger('info', js['warning'])
 
     def _proc_is_alive(self):
+        """Check if the burp client process is still alive"""
         if self.proc:
             return self.proc.poll() == None
         return False
@@ -219,6 +235,12 @@ class Burp(Burp1):
 
     def _read_proc_stdout(self):
         """reads the burp process stdout and returns a document or None"""
+        # Here are a few things to try to avoid the sigalrm thing
+        # http://blog.webapps.ie/2013/04/10/non-blocking-readline-in-python/
+        # http://stackoverflow.com/questions/10756383/timeout-on-subprocess-readline-in-python
+        # http://stackoverflow.com/questions/1191374/subprocess-with-timeout
+        # https://pypi.python.org/pypi/subprocess32/
+        # http://stackoverflow.com/questions/18581174/max-execution-time-for-function-in-python-flask
         doc = u''
         js = None
         while True:
@@ -244,9 +266,7 @@ class Burp(Burp1):
         return js
 
     def status(self, query='c:\n', agent=None):
-        """status spawns a burp process in monitor mode, ask the given
-        'question' and parses the output in an array
-        """
+        """See :func:`burpui.misc.backend.interface.BUIbackend.status`"""
         try:
             if not query.endswith('\n'):
                 q = '{0}\n'.format(query)
@@ -268,6 +288,7 @@ class Burp(Burp1):
             raise BUIserverException(msg)
 
     def get_backup_logs(self, number, client, forward=False, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.get_backup_logs`"""
         if not client or not number:
             return {}
 
@@ -287,6 +308,7 @@ class Burp(Burp1):
         logs = backups[0]['logs']['list']
         if 'backup_stats' in logs:
             ret = self._parse_backup_stats(number, client, forward)
+        # TODO: support clients that were upgraded to 2.x
         # else:
         #    cl = None
         #    if forward:
@@ -301,6 +323,23 @@ class Burp(Burp1):
         return ret
 
     def _parse_backup_stats(self, number, client, forward=False, agent=None):
+        """The :func:`burpui.misc.backend.burp2.Burp._parse_backup_stats`
+        function is used to parse the burp logs.
+
+        :param number: Backup number to work on
+        :type number: int
+
+        :param client: Client name to work on
+        :type client: str
+
+        :param forward: Is the client name needed in later process
+        :type forward: bool
+
+        :param agent: What server to ask (only in multi-agent mode)
+        :type agent: str
+
+        :returns: Dict containing the backup log
+        """
         backup = {'windows': 'unknown', 'number': int(number)}
         if forward:
             backup['name'] = client
@@ -374,20 +413,18 @@ class Burp(Burp1):
 
         return backup
 
-    def _parse_backup_log(self, fh, number, client=None, agent=None):
-        """
-        parse_backup_log parses the log.gz of a given backup and returns a dict
-        containing different stats used to render the charts in the reporting view
-        """
-        return {}
+    # TODO: support old clients
+    # def _parse_backup_log(self, fh, number, client=None, agent=None):
+    #    """
+    #    parse_backup_log parses the log.gz of a given backup and returns a dict
+    #    containing different stats used to render the charts in the reporting view
+    #    """
+    #    return {}
 
     # def get_clients_report(self, clients, agent=None):
 
     def get_counters(self, name=None, agent=None):
-        """
-        get_counters parses the stats of the live status for a given client and
-        returns a dict
-        """
+        """See :func:`burpui.misc.backend.interface.BUIbackend.get_counters`"""
         r = {}
         if agent:
             if not name or name not in self.running[agent]:
@@ -459,10 +496,7 @@ class Burp(Burp1):
         return r
 
     def is_backup_running(self, name=None, agent=None):
-        """
-        is_backup_running returns True if the given client is currently running a
-        backup
-        """
+        """See :func:`burpui.misc.backend.interface.BUIbackend.is_backup_running`"""
         if not name:
             return False
         try:
@@ -480,10 +514,7 @@ class Burp(Burp1):
         return False
 
     def is_one_backup_running(self, agent=None):
-        """
-        is_one_backup_running returns a list of clients name that are currently
-        running a backup
-        """
+        """See :func:`burpui.misc.backend.interface.BUIbackend.is_one_backup_running`"""
         r = []
         try:
             cls = self.get_all_clients()
@@ -496,6 +527,14 @@ class Burp(Burp1):
         return r
 
     def _status_human_readable(self, status):
+        """The label has changed in burp2, we override it to be compatible with
+        burp1's format
+
+        :param status: The status returned by the burp2 server
+        :type status: str
+
+        :returns: burp1 status compatible
+        """
         if not status:
             return None
         if status == 'c crashed':
@@ -505,10 +544,7 @@ class Burp(Burp1):
         return status
 
     def get_all_clients(self, agent=None):
-        """
-        get_all_clients returns a list of dict representing each clients with their
-        name, state and last backup date
-        """
+        """See :func:`burpui.misc.backend.interface.BUIbackend.get_all_clients`"""
         j = []
         query = self.status()
         if not query or 'clients' not in query:
@@ -530,10 +566,7 @@ class Burp(Burp1):
         return j
 
     def get_client(self, name=None, agent=None):
-        """
-        get_client returns a list of dict representing the backups (with its number
-        and date) of a given client
-        """
+        """See :func:`burpui.misc.backend.interface.BUIbackend.get_client`"""
         r = []
         if not name:
             return r
@@ -565,10 +598,7 @@ class Burp(Burp1):
         return r
 
     def get_tree(self, name=None, backup=None, root=None, agent=None):
-        """
-        get_tree returns a list of dict representing files/dir (with their attr)
-        within a given path
-        """
+        """See :func:`burpui.misc.backend.interface.BUIbackend.get_tree`"""
         r = []
         if not name or not backup:
             return r

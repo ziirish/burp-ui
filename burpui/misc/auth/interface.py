@@ -1,6 +1,7 @@
 # -*- coding: utf8 -*-
 from flask.ext.login import UserMixin, AnonymousUserMixin
 
+
 class BUIhandler:
     def __init__(self, app=None):
         pass

@@ -64,15 +64,6 @@ class human_readable(long):
         return "{0:{1}}".format(t, width) if width != "" else t
 
 
-def inherit_docstrings(cls):
-    for name, func in getmembers(cls, isfunction):
-        if func.__doc__: continue
-        for parent in cls.__mro__[1:]:
-            if hasattr(parent, name):
-                func.__doc__ = getattr(parent, name).__doc__
-    return cls
-
-
 def currentframe():
     """Return the frame object for the caller's stack frame."""
     try:

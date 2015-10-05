@@ -50,6 +50,17 @@ class Burp(BUIbackend, BUIlogging):
 
     It implements the :class:`burpui.misc.backend.interface.BUIbackend` class
     in order to have consistent data whatever backend is used.
+
+    :param server: ``Burp-UI`` server instance in order to access logger
+                   and/or some global settings
+    :type server: :class:`burpui.server.BUIServer`
+
+    :param conf: Configuration file to use
+    :type conf: str
+
+    :param dummy: Does not instanciate the object (used for development
+                  purpose)
+    :type dummy: boolean
     """
     states = {
         'i': 'idle',
@@ -92,20 +103,6 @@ class Burp(BUIbackend, BUIlogging):
     ]
 
     def __init__(self, server=None, conf=None, dummy=False):
-        """The :class:`burpui.misc.backend.burp1.Burp` class provides a
-        consistent backend for ``burp-1`` servers.
-
-        :param server: ``Burp-UI`` server instance in order to access logger
-                       and/or some global settings
-        :type server: :class:`burpui.server.BUIServer`
-
-        :param conf: Configuration file to use
-        :type conf: str
-
-        :param dummy: Does not instanciate the object (used for development
-                      purpose)
-        :type dummy: boolean
-        """
         global g_burpport, g_burphost, g_burpbin, g_stripbin, g_burpconfcli, g_burpconfsrv, g_tmpdir
         if dummy:
             return
@@ -732,9 +729,7 @@ class Burp(BUIbackend, BUIlogging):
         return r
 
     def get_tree(self, name=None, backup=None, root=None, agent=None):
-        """get_tree returns a list of dict representing files/dir (with their
-        attr) within a given path
-        """
+        """See :func:`burpui.misc.backend.interface.BUIbackend.get_tree`"""
         r = []
         if not name or not backup:
             return r
@@ -776,7 +771,7 @@ class Burp(BUIbackend, BUIlogging):
         return r
 
     def restore_files(self, name=None, backup=None, files=None, strip=None, archive='zip', password=None, agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.restore_client`"""
+        """See :func:`burpui.misc.backend.interface.BUIbackend.restore_files`"""
         if not name or not backup or not files:
             return None, 'At least one argument is missing'
         if not self.stripbin:
@@ -912,17 +907,19 @@ class Burp(BUIbackend, BUIlogging):
         return self.parser.store_conf(data, conf)
 
     def expand_path(self, path=None, client=None, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.expand_path`"""
         if not path:
             return []
         return self.parser.path_expander(path, client)
 
     def delete_client(self, client=None, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.delete_client`"""
         if not client:
             return [2, "No client provided"]
         return self.parser.remove_client(client)
 
     def get_parser_attr(self, attr=None, agent=None):
-        """Using a method because of the bui-agent"""
+        """See :func:`burpui.misc.backend.interface.BUIbackend.get_parser_attr`"""
         if not attr or not self.parser:
             return []
         return self.parser.get_priv_attr(attr)
