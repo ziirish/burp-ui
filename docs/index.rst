@@ -26,7 +26,7 @@ Documentation
    contributing
    changelog
    faq
-   api
+   developer
 
 
 Indices and tables

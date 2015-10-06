@@ -1,4 +1,12 @@
 # -*- coding: utf8 -*-
+"""
+.. module:: burpui.misc.backend.interface
+    :platform: Unix
+    :synopsis: Burp-UI settings api module.
+
+.. moduleauthor:: Ziirish <ziirish@ziirish.info>
+
+"""
 
 
 class BUIbackend:

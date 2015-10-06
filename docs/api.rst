@@ -1,4 +1,4 @@
-API doc (for dev)
-=================
+API
+===
 
 .. autoflask:: burpui:app

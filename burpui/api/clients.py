@@ -1,6 +1,6 @@
 # -*- coding: utf8 -*-
 """
-.. module:: clients
+.. module:: burpui.api.clients
     :platform: Unix
     :synopsis: Burp-UI clients api module.
 

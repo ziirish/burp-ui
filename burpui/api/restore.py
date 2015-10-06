@@ -1,6 +1,6 @@
 # -*- coding: utf8 -*-
 """
-.. module:: restore
+.. module:: burpui.api.restore
     :platform: Unix
     :synopsis: Burp-UI restore api module.
 
