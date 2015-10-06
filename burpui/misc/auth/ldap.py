@@ -182,16 +182,23 @@ class UserHandler(BUIhandler):
     ``Burp-UI`` users.
     """
     def __init__(self, app=None):
+        """:func:`burpui.misc.auth.ldap.UserHandler.__init__` creates the
+        handler instance
+
+        :param app: Instance of the app we are running in
+        :type app: :class:`burpui.server.BUIServer`
+        """
         self.ldap = LdapLoader(app)
         self.users = {}
 
     def user(self, name=None):
+        """See :func:`burpui.misc.auth.interface.BUIhandler.user`"""
         if name not in self.users:
             self.users[name] = LdapUser(self.ldap, name)
         return self.users[name]
 
 
-class LdapUser(UserMixin, BUIuser):
+class LdapUser(BUIuser):
     """The :class:`burpui.misc.auth.ldap.LdapUser` class generates a ``Burp-UI``
     user from a user object found in the LDAP server.
     """
@@ -238,6 +245,7 @@ class LdapUser(UserMixin, BUIuser):
             self.active = False
             return False
 
+    @property
     def is_active(self):
         """:func:`burpui.misc.auth.ldap.LdapUser.is_active` function
 
@@ -245,6 +253,7 @@ class LdapUser(UserMixin, BUIuser):
         """
         return self.active
 
+    @property
     def is_authenticated(self):
         """:func:`burpui.misc.auth.ldap.LdapUser.is_authenticated` function
 

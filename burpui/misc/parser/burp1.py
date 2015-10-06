@@ -506,6 +506,7 @@ class Parser(BUIparser, BUIlogging):
         super(Parser, self).__init__(app, conf)
         self._logger('info', 'Parser initialized with: %s', self.conf)
         self.clientconfdir = None
+        self.workingdir = None
         self.root = None
         if self.conf:
             self.root = os.path.dirname(self.conf)
@@ -547,6 +548,9 @@ class Parser(BUIparser, BUIlogging):
             if r:
                 key = r.group(1)
                 val = r.group(2)
+                # We are gonna use this for server-side initiated restoration
+                if mode == 'srv' and key == u'directory':
+                    self.workingdir = val
                 if key in getattr(self, 'boolean_{}'.format(mode)):
                     boolean.append({'name': key, 'value': int(val) == 1})
                     continue
@@ -645,7 +649,15 @@ class Parser(BUIparser, BUIlogging):
 
     def read_server_conf(self, conf=None):
         mconf = None
-        res = {}
+        res = {
+            u'common': [],
+            u'boolean': [],
+            u'integer': [],
+            u'multi': [],
+            u'includes': [],
+            u'includes_ext': [],
+            u'clients': self._list_clients()
+        }
         if not conf:
             mconf = self.conf
         else:
@@ -665,7 +677,6 @@ class Parser(BUIparser, BUIlogging):
         res[u'multi'] = multi
         res[u'includes'] = includes
         res[u'includes_ext'] = includes_ext
-        res[u'clients'] = self._list_clients()
 
         return res
 

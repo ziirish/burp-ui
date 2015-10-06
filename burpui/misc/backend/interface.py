@@ -2,7 +2,7 @@
 """
 .. module:: burpui.misc.backend.interface
     :platform: Unix
-    :synopsis: Burp-UI settings api module.
+    :synopsis: Burp-UI backend interface.
 
 .. moduleauthor:: Ziirish <ziirish@ziirish.info>
 
