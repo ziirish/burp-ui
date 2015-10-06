@@ -60,7 +60,19 @@ class BurpuiAPITestCase(TestCase):
 
     def test_server_config_parsing(self):
         response = self.client.get('/api/server-config')
-        asse = dict(((u'results', {}),
+        asse = dict((
+                    (
+                        u'results',
+                        {
+                            u'common': [],
+                            u'boolean': [],
+                            u'integer': [],
+                            u'multi': [],
+                            u'includes': [],
+                            u'includes_ext': [],
+                            u'clients': []
+                        }
+                    ),
                     (u'boolean', bui.cli.get_parser_attr('boolean_srv')),
                     (u'string', bui.cli.get_parser_attr('string_srv')),
                     (u'integer', bui.cli.get_parser_attr('integer_srv')),
