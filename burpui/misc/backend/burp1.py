@@ -26,7 +26,7 @@ import codecs
 from future.utils import iteritems
 from pipes import quote
 
-from burpui.misc.utils import human_readable as _hr, BUIlogging, BUIcompress
+from burpui.misc.utils import human_readable as _hr, BUIcompress
 from burpui.misc.backend.interface import BUIbackend, BUIserverException
 from burpui.misc.parser.burp1 import Parser
 
@@ -44,7 +44,7 @@ g_burpconfsrv = u'/etc/burp/burp-server.conf'
 g_tmpdir = u'/tmp/bui'
 
 
-class Burp(BUIbackend, BUIlogging):
+class Burp(BUIbackend):
     """The :class:`burpui.misc.backend.burp1.Burp` class provides a consistent
     backend for ``burp-1`` servers.
 

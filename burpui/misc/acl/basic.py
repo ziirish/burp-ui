@@ -9,7 +9,9 @@ import json
 
 
 class ACLloader(BUIaclLoader):
+    """See :class:`burpui.misc.acl.interface.BUIaclLoader`"""
     def __init__(self, app=None, standalone=False):
+        """See :func:`burpui.misc.acl.interface.BUIaclLoader.__init__`"""
         self.app = app
         self.admins = [
             'admin'
@@ -55,13 +57,21 @@ class ACLloader(BUIaclLoader):
 
     @property
     def acl(self):
+        """Property to retrieve the backend"""
         if self._acl:
             return self._acl
         return None
 
 
 class BasicACL(BUIacl):
+    """See :class:`burpui.misc.acl.interface.BUIacl`"""
     def __init__(self, handler=None):
+        """:func:`burpui.misc.acl.interface.BUIacl.__init__` instanciate ACL
+        engine.
+
+        :param handler: ACL handler
+        :type handler: :class:`burpui.misc.acl.interface.BUIaclLoader`
+        """
         if not handler:
             return
         self.handler = handler
@@ -71,11 +81,13 @@ class BasicACL(BUIacl):
         self.srv = handler.servers
 
     def is_admin(self, username=None):
+        """See :func:`burpui.misc.acl.interface.BUIacl.is_admin`"""
         if not username:
             return False
         return username in self.admins
 
     def clients(self, username=None, server=None):
+        """See :func:`burpui.misc.acl.interface.BUIacl.clients`"""
         if not username:
             return []
         if username in self.cls:
@@ -91,11 +103,13 @@ class BasicACL(BUIacl):
         return [username]
 
     def servers(self, username=None):
+        """See :func:`burpui.misc.acl.interface.BUIacl.servers`"""
         if username and username in self.srv:
             return self.srv[username]
         return []
 
     def is_client_allowed(self, username=None, client=None, server=None):
+        """See :func:`burpui.misc.acl.interface.BUIacl.is_client_allowed`"""
         if not username or not client:
             return False
         # No server defined whereas we have an extended ACL

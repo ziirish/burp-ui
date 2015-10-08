@@ -6,3 +6,6 @@ Developer Guide
 
    api
    backend
+   parser
+   auth
+   acl

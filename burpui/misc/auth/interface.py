@@ -32,7 +32,7 @@ class BUIhandler:
 
         :returns: The corresponding user object
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")
+        return None
 
 
 class BUIuser(UserMixin):
@@ -51,4 +51,4 @@ class BUIuser(UserMixin):
 
         :returns: True if the name and password match, otherwise False
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")
+        return False

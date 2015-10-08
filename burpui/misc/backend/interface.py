@@ -7,9 +7,10 @@
 .. moduleauthor:: Ziirish <ziirish@ziirish.info>
 
 """
+from burpui.misc.utils import BUIlogging
 
 
-class BUIbackend:
+class BUIbackend(BUIlogging):
     """The :class:`burpui.misc.backend.interface.BUIbackend` class provides
     a consistent interface backend for any ``burp`` server.
 
@@ -47,7 +48,7 @@ class BUIbackend:
 
         :returns: The output returned by the server parsed as an array
 
-        example::
+        Example::
 
             [
                 "client1\t2\ti\t576 0 1443766803",
@@ -75,7 +76,7 @@ class BUIbackend:
 
         :returns: Dict containing the backup log
 
-        example::
+        Example::
 
             {
                 "dir": {
@@ -486,7 +487,7 @@ class BUIbackend:
         :param data: Data as sent by the web-form
         :type data: dict
 
-        :param conf: force the file path (for file inclusions for instance)
+        :param conf: Force the file path (for file inclusions for instance)
         :type conf: str
 
         :param agent: What server to ask (only in multi-agent mode)

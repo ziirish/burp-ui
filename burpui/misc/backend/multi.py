@@ -19,10 +19,9 @@ except ImportError:
 from future.utils import iteritems
 
 from burpui.misc.backend.interface import BUIbackend, BUIserverException
-from burpui.misc.utils import BUIlogging
 
 
-class Burp(BUIbackend, BUIlogging):
+class Burp(BUIbackend):
     """The :class:`burpui.misc.backend.multi.Burp` class provides a consistent
     backend to interact with ``agents``.
 

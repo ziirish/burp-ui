@@ -10,7 +10,12 @@ from burpui.misc.utils import BUIlogging
 from burpui.misc.parser.interface import BUIparser
 
 
-class Parser(BUIparser, BUIlogging):
+class Parser(BUIparser):
+    """:class:`burpui.misc.parser.burp1.Parser` provides a consistent interface
+    to parse burp configuration files.
+
+    It implements :class:`burpui.misc.parser.interface.BUIparser`.
+    """
     pver = 1
     defaults = {
         u'address': u'',  # IP
@@ -503,6 +508,7 @@ class Parser(BUIparser, BUIlogging):
     }
 
     def __init__(self, app=None, conf=None):
+        """See :func:`burpui.misc.parser.interface.BUIparser.__init__`"""
         super(Parser, self).__init__(app, conf)
         self._logger('info', 'Parser initialized with: %s', self.conf)
         self.clientconfdir = None
@@ -590,7 +596,7 @@ class Parser(BUIparser, BUIlogging):
         return dic, boolean, multi, integer, includes, includes_ext
 
     def path_expander(self, pattern=None, client=None):
-        """This method returns a list of files matching the given pattern"""
+        """See :func:`burpui.misc.parser.interface.BUIparser.path_expander`"""
         # TODO: enhance security by allowing only some paths (ie. remove '..' if needed)
         if not pattern:
             return []
@@ -605,6 +611,7 @@ class Parser(BUIparser, BUIlogging):
             return [x for x in glob(pattern) if os.path.isfile(x) and not x.endswith('~')]
 
     def remove_client(self, client=None):
+        """See :func:`burpui.misc.parser.interface.BUIparser.remove_client`"""
         if not client:
             return [2, "No client provided"]
         try:
@@ -614,6 +621,7 @@ class Parser(BUIparser, BUIlogging):
             return [2, str(e)]
 
     def read_client_conf(self, client=None, conf=None):
+        """See :func:`burpui.misc.parser.interface.BUIparser.read_client_conf`"""
         res = {
             u'common': [],
             u'boolean': [],
@@ -648,6 +656,7 @@ class Parser(BUIparser, BUIlogging):
         return res
 
     def read_server_conf(self, conf=None):
+        """See :func:`burpui.misc.parser.interface.BUIparser.read_server_conf`"""
         mconf = None
         res = {
             u'common': [],
@@ -692,6 +701,7 @@ class Parser(BUIparser, BUIlogging):
         return res
 
     def store_client_conf(self, data, client=None, conf=None):
+        """See :func:`burpui.misc.parser.interface.BUIparser.store_client_conf`"""
         if conf and not conf.startswith('/'):
             conf = os.path.join(self.clientconfdir, conf)
         if not conf and not client:
@@ -701,6 +711,7 @@ class Parser(BUIparser, BUIlogging):
         return self.store_conf(data, conf, mode='cli')
 
     def store_conf(self, data, conf=None, mode='srv'):
+        """See :func:`burpui.misc.parser.interface.BUIparser.store_conf`"""
         mconf = None
         if not conf:
             mconf = self.conf
@@ -853,7 +864,10 @@ class Parser(BUIparser, BUIlogging):
         key = key.strip()
         return key not in keys
 
-    def get_priv_attr(self, key):
+    def get_priv_attr(self, key=None):
+        """See :func:`burpui.misc.parser.interface.BUIparser.get_priv_attr`"""
+        if not key:
+            return []
         try:
             return getattr(self, key)
         except:
