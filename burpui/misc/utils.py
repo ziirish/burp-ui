@@ -1,4 +1,12 @@
 # -*- coding: utf8 -*-
+"""
+.. module:: burpui.misc.utils
+    :platform: Unix
+    :synopsis: Burp-UI utils module.
+
+.. moduleauthor:: Ziirish <ziirish@ziirish.info>
+
+"""
 import math
 import string
 import sys
@@ -7,7 +15,7 @@ import zipfile
 import tarfile
 import logging
 
-from inspect import getmembers, isfunction
+from inspect import getmembers, isfunction, currentframe
 
 if sys.version_info >= (3, 0):
     long = int
@@ -64,44 +72,72 @@ class human_readable(long):
         return "{0:{1}}".format(t, width) if width != "" else t
 
 
-def currentframe():
-    """Return the frame object for the caller's stack frame."""
-    try:
-        raise Exception
-    except:
-        return sys.exc_info()[2].tb_frame.f_back
-
 if sys.version_info >= (3, 0):
     class BUIlogger(logging.Logger):
+        """Logger class for more convenience"""
         def makeRecord(self, name, level, fn, lno, msg, args, exc_info, func=None, extra=None, sinfo=None):
             """
             Try to guess where was call the function
             """
             cf = currentframe()
-            (frame, filename, line_number, function_name, lines, index) = inspect.getouterframes(cf)[4]
-            if cf is not None:
-                cf = cf.f_back
-                return super(BUIlogger, self).makeRecord(name, level, filename, line_number, msg, args, exc_info, func=function_name, extra=extra, sinfo=sinfo)
-            return super(BUIlogger, self).makeRecord(name, level, fn, lno, msg, args, exc_info, func=func, extra=extra, sinfo=sinfo)
+            caller = inspect.getouterframes(cf)
+            cpt = 0
+            size = len(caller)
+            me = __file__
+            if me.endswith('.pyc'):
+                me = me[:-1]
+            # It's easy to get the _logger parent function because it's the
+            # following frame
+            while cpt < size-1:
+                (_, filename, _, function_name, _, _) = caller[cpt]
+                if function_name == '_logger' and filename == me:
+                    cpt += 1
+                    break
+                cpt += 1
+            (frame, filename, line_number, function_name, lines, index) = caller[cpt]
+            return super(BUIlogger, self).makeRecord(name, level, filename, line_number, msg, args, exc_info, func=function_name, extra=extra, sinfo=sinfo)
 else:
     class BUIlogger(logging.Logger):
+        """Logger class for more convenience"""
         def makeRecord(self, name, level, fn, lno, msg, args, exc_info, func=None, extra=None):
             """Try to guess where was call the function"""
             cf = currentframe()
-            (frame, filename, line_number, function_name, lines, index) = inspect.getouterframes(cf)[4]
-            if cf is not None:
-                cf = cf.f_back
-                return super(BUIlogger, self).makeRecord(name, level, filename, line_number, msg, args, exc_info, func=function_name, extra=extra)
-            return super(BUIlogger, self).makeRecord(name, level, fn, lno, msg, args, exc_info, func=func, extra=extra)
+            caller = inspect.getouterframes(cf)
+            cpt = 0
+            size = len(caller)
+            me = __file__
+            if me.endswith('.pyc'):
+                me = me[:-1]
+            # It's easy to get the _logger parent function because it's the
+            # following frame
+            while cpt < size-1:
+                (_, filename, _, function_name, _, _) = caller[cpt]
+                if function_name == '_logger' and filename == me:
+                    cpt += 1
+                    break
+                cpt += 1
+            (frame, filename, line_number, function_name, lines, index) = caller[cpt]
+            return super(BUIlogger, self).makeRecord(name, level, filename, line_number, msg, args, exc_info, func=function_name, extra=extra)
 
 
 class BUIlogging(object):
+    monkey = None
+    """Provides a generic logging method for all modules"""
     def _logger(self, level, msg, *args):
+        """generic logging method so that the logging is backend-independent"""
         if self.logger:
+            sav = None
+            if not self.monkey:
+                self.monkey = BUIlogger(__name__)
+            # dynamically monkey-patch the makeRecord function
+            sav = self.app.logger.makeRecord
+            self.app.logger.makeRecord = self.monkey.makeRecord
             self.logger.log(logging.getLevelName(level.upper()), msg, *args)
+            self.app.logger.makeRecord = sav
 
 
 class BUIcompress():
+    """Provides a context to generate any kind of archive supported by burp-ui"""
     def __init__(self, name, archive):
         self.name = name
         self.archive = archive
