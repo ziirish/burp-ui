@@ -11,11 +11,19 @@
  *   "results": [
  *     {
  *       "date": "2014-05-12 19:40:02",
- *       "number": "254"
+ *       "number": "254",
+ *       "deletable": true,
+ *       "encrypted": true,
+ *       "received": 889818873,
+ *       "size": 35612321050,
  *     },
  *     {
  *       "date": "2014-05-11 21:20:03",
- *       "number": "253"
+ *       "number": "253",
+ *       "deletable": true,
+ *       "encrypted": true,
+ *       "received": 889818873,
+ *       "size": 35612321050,
  *     }
  *   ]
  * }
@@ -56,11 +64,19 @@ var _client_table = $('#table-client').dataTable( {
 			}
 		},
 		{ data: 'date' },
-		{ data: null, render: function (data, type, row ) {
+		{ data: null, render: function ( data, type, row ) {
+				return _bytes_human_readable(data.received, false);
+			}
+		},
+		{ data: null, render: function ( data, type, row ) {
+				return _bytes_human_readable(data.size, false);
+			}
+		},
+		{ data: null, render: function ( data, type, row ) {
 				return '<span class="glyphicon glyphicon-'+(data.deletable?'ok':'remove')+'"></span>';
 			}
 		},
-		{ data: null, render: function (data, type, row ) {
+		{ data: null, render: function ( data, type, row ) {
 				return '<span class="glyphicon glyphicon-'+(data.encrypted?'lock':'globe')+'"></span>&nbsp;'+(data.encrypted?'Encrypted':'Unencrypted')+' backup';
 			}
 		}
@@ -75,3 +91,15 @@ var _client = function() {
 		_client_table.api().ajax.reload( null, false );
 	}
 };
+
+$(document).ready(function() {
+	$('a.toggle-vis').on( 'click', function (e) {
+		e.preventDefault();
+
+		// Get the column API object
+		var column = _client_table.api().column( $(this).attr('data-column') );
+
+		// Toggle the visibility
+		column.visible( ! column.visible() );
+	});
+});

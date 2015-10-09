@@ -591,6 +591,8 @@ class Burp(Burp1):
             ba['date'] = datetime.datetime.fromtimestamp(backup['timestamp']).strftime('%Y-%m-%d %H:%M:%S')
             log = self.get_backup_logs(backup['number'], name)
             ba['encrypted'] = log['encrypted']
+            ba['received'] = log['received']
+            ba['size'] = log['totsize']
             r.append(ba)
 
         # Here we need to reverse the array so the backups are sorted by date ASC

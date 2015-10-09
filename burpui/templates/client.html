@@ -17,12 +17,22 @@
           <h1 class="page-header">{{ cname }}</h1>
 
           <h2 class="sub-header">Backups</h2>
+          <p>
+            Toggle column: <a class="toggle-vis" data-column="0" href="#">Number</a> -
+            <a class="toggle-vis" data-column="1" href="#">Date</a> -
+            <a class="toggle-vis" data-column="2" href="#">Bytes received</a> -
+            <a class="toggle-vis" data-column="3" href="#">Estimated size</a> -
+            <a class="toggle-vis" data-column="4" href="#">Deletable</a> -
+            <a class="toggle-vis" data-column="5" href="#">Status</a>
+          </p>
           <div class="table-responsive">
             <table class="table table-striped table-hover nowrap" id="table-client" width="100%">
               <thead>
                 <tr>
                   <th>Number</th>
                   <th class="desktop">Date</th>
+                  <th class="desktop">Bytes received</th>
+                  <th class="desktop">Estimated size</th>
                   <th class="desktop">Deletable</th>
                   <th class="desktop">Status</th>
                 </tr>

@@ -304,7 +304,9 @@ class BUIbackend(BUIlogging):
                     "date": "2015-01-25 13:32:00",
                     "deletable": true,
                     "encrypted": true,
-                    "number": "1"
+                    "number": "1",
+                    "received": 889818873,
+                    "size": 35612321050,
                 }
             ]
         """

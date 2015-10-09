@@ -5,18 +5,6 @@ var _chart_stats = null;
 var _stats_data = [];
 var initialized = false;
 
-var _bytes_human_readable = function(bytes, si) {
-	var thresh = si ? 1000 : 1024;
-	if(bytes < thresh) return bytes + ' B';
-	var units = si ? ['kB','MB','GB','TB','PB','EB','ZB','YB'] : ['KiB','MiB','GiB','TiB','PiB','EiB','ZiB','YiB'];
-	var u = -1;
-	do {
-		bytes /= thresh;
-		++u;
-	} while(bytes >= thresh);
-	return bytes.toFixed(1)+' '+units[u];
-};
-
 var _time_human_readable = function(d) {
 	str = '';
 	var days = Math.floor((d % 31536000) / 86400);

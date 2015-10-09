@@ -1,6 +1,6 @@
 # -*- coding: utf8 -*-
 """
-.. module:: burp1
+.. module:: burpui.misc.backend.burp1
     :platform: Unix
     :synopsis: Burp-UI burp1 backend module.
 
@@ -723,6 +723,8 @@ class Burp(BUIbackend):
                 ba['date'] = datetime.datetime.fromtimestamp(int(sp[2])).strftime('%Y-%m-%d %H:%M:%S')
                 log = self.get_backup_logs(sp[0], name)
                 ba['encrypted'] = log['encrypted']
+                ba['received'] = log['received']
+                ba['size'] = log['totsize']
                 r.append(ba)
         # Here we need to reverse the array so the backups are sorted by date ASC
         r.reverse()
