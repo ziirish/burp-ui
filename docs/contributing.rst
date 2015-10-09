@@ -15,6 +15,9 @@ Feel free to use it and post your tips and remarks.
 
 The address is: `http://burpui.ziirish.me/ <http://burpui.ziirish.me/>`__
 
+You can financially support the project if you find it useful or if you would
+like to sponsorise a feature. Details on my `website <http://ziirish.info/>`__.
+
 
 Troubleshooting
 ---------------
