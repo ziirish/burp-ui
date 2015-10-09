@@ -22,7 +22,6 @@ Documentation
    usage
    gunicorn
    buiagent
-   development
    contributing
    changelog
    faq

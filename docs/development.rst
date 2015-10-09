@@ -1,7 +1,8 @@
 Development
 ===========
 
-If you wish to use the latest and yet unstable version (eg. `master <https://git.ziirish.me/ziirish/burp-ui/tree/master>`__),
+If you wish to use the latest and yet unstable version
+(eg. `master <https://git.ziirish.me/ziirish/burp-ui/tree/master>`__),
 you can install it using ``pip`` too, but I would recommend you to use a
 ``virtualenv``.
 
