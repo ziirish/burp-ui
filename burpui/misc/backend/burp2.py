@@ -146,17 +146,12 @@ class Burp(Burp1):
             raise Exception('Unable to determine your burp version: {}'.format(str(e)))
 
         self.parser = Parser(self.app, self.burpconfsrv)
-        signal.signal(signal.SIGALRM, self._sighandler)
 
         self._logger('info', 'burp binary: %s', self.burpbin)
         self._logger('info', 'strip binary: %s', self.stripbin)
         self._logger('info', 'burp conf cli: %s', self.burpconfcli)
         self._logger('info', 'burp conf srv: %s', self.burpconfsrv)
         self._logger('info', 'burp version: %s', version)
-
-    def _sighandler(self, signum, frame):
-        """Catch SIGALRM"""
-        raise TimeoutError('Operation timed out')
 
     def __exit__(self, type, value, traceback):
         """try not to leave child process server side"""
@@ -168,11 +163,15 @@ class Burp(Burp1):
     def _spawn_burp(self):
         """Launch the burp client process"""
         cmd = [self.burpbin, '-c', self.burpconfcli, '-a', 'm']
-        self.proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
+        self.proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False, universal_newlines=True, bufsize=0)
         # wait a little bit in case the process dies on a network timeout
         time.sleep(0.5)
         if not self._proc_is_alive():
             raise Exception('Unable to spawn burp process')
+        _, w, _ = select([], [self.proc.stdin], [], 5)
+        if self.proc.stdin not in w:
+            self.proc.kill()
+            raise OSError('Unable to setup burp client')
         self.proc.stdin.write('j:pretty-print-off\n')
         js = self._read_proc_stdout()
         if self._is_warning(js):
@@ -235,19 +234,15 @@ class Burp(Burp1):
 
     def _read_proc_stdout(self):
         """reads the burp process stdout and returns a document or None"""
-        # Here are a few things to try to avoid the sigalrm thing
-        # http://blog.webapps.ie/2013/04/10/non-blocking-readline-in-python/
-        # http://stackoverflow.com/questions/10756383/timeout-on-subprocess-readline-in-python
-        # http://stackoverflow.com/questions/1191374/subprocess-with-timeout
-        # https://pypi.python.org/pypi/subprocess32/
-        # http://stackoverflow.com/questions/18581174/max-execution-time-for-function-in-python-flask
         doc = u''
         js = None
         while True:
             try:
-                signal.alarm(5)
                 if not self._proc_is_alive():
                     raise Exception('process died while reading its output')
+                r, _, _ = select([self.proc.stdout], [], [], 5)
+                if self.proc.stdout not in r:
+                    raise TimeoutError('Read operation timed out')
                 doc += self.proc.stdout.readline().rstrip('\n')
                 js = self._is_valid_json(doc)
                 # if the string is a valid json and looks like a logline, we
@@ -261,8 +256,6 @@ class Burp(Burp1):
                 # the os throws an exception if there is no data or timeout
                 self._logger('warning', str(e))
                 break
-            finally:
-                signal.alarm(0)
         return js
 
     def status(self, query='c:\n', agent=None):
@@ -275,6 +268,9 @@ class Burp(Burp1):
             if not self._proc_is_alive():
                 self._spawn_burp()
 
+            _, w, _ = select([], [self.proc.stdin], [], 5)
+            if self.proc.stdin not in w:
+                raise TimeoutError('Write operation timed out')
             self.proc.stdin.write(q)
             js = self._read_proc_stdout()
             if self._is_warning(js):
@@ -282,6 +278,10 @@ class Burp(Burp1):
                 return None
 
             return js
+        except TimeoutError as e:
+            msg = 'Cannot send command: {}'.format(str(e))
+            self._logger('error', msg)
+            raise BUIserverException(msg)
         except (OSError, Exception) as e:
             msg = 'Cannot launch burp process: {}'.format(str(e))
             self._logger('error', msg)
