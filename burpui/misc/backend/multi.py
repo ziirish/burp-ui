@@ -265,7 +265,7 @@ class NClient(BUIbackend):
             self.sock.close()
         self.connected = False
 
-    def do_command(self, data=None):
+    def do_command(self, data=None, restarted=False):
         """Send a command to the remote agent"""
         self.conn()
         res = '[]'
@@ -307,12 +307,16 @@ class NClient(BUIbackend):
                 if not r:
                     raise Exception('Socket timed-out 3')
                 res = self.recvall(length).decode('UTF-8')
+        except BrokenPipeError:
+            if not restarted:
+                self.close(True)
+                return self.do_command(data, True)
         except Exception as e:
             self.close(True)
             self.app.logger.error('!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
-        finally:
-            self.close(toclose)
-            return res
+
+        self.close(toclose)
+        return res
 
     def recvall(self, length=1024):
         """Read the answer of the agent"""

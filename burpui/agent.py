@@ -2,10 +2,6 @@
 import os
 import struct
 import select
-try:
-    import ujson as json
-except ImportError:
-    import json
 import re
 import time
 import sys
@@ -18,6 +14,10 @@ from threading import Thread
 from logging import Formatter, StreamHandler
 from logging.handlers import RotatingFileHandler
 from burpui.misc.utils import BUIlogging
+try:
+    import ujson as json
+except ImportError:
+    import json
 
 g_port = '10000'
 g_bind = '::'
@@ -98,8 +98,7 @@ class BUIAgent(BUIlogging, Dummy):
             self.backend = Client(conf=conf)
             self.backend.set_logger(self.app.logger)
         except Exception, e:
-            traceback.print_exc()
-            self.debug('Failed loading backend for Burp version %d: %s', self.vers, str(e))
+            self._logger('debug', '{}\n\nFailed loading backend for Burp version {}: {}'.format(traceback.format_exc(), self.vers, str(e)))
             sys.exit(2)
 
         self.methods = {
@@ -175,17 +174,11 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
         timeout = self.server.agent.timeout
         try:
             err = None
-            r, _, _ = select.select([self.request], [], [], timeout)
-            if not r:
-                raise Exception('Socket timed-out 1')
             lengthbuf = self.request.recv(8)
             length, = struct.unpack('!Q', lengthbuf)
             data = self.recvall(length)
             self.server.agent._logger('info', 'recv: {}'.format(data))
             j = json.loads(data)
-            _, w, _ = select.select([], [self.request], [], timeout)
-            if not w:
-                raise Exception('Socket timed-out 2')
             if j['password'] != self.server.agent.password:
                 self.server.agent._logger('warning', '-----> Wrong Password <-----')
                 self.request.sendall('KO')
@@ -206,9 +199,6 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
                 else:
                     res = json.dumps(self.server.agent.methods[j['func']]())
             self.server.agent._logger('info', 'result: {}'.format(res))
-            _, w, _ = select.select([], [self.request], [], timeout)
-            if not w:
-                raise Exception('Socket timed-out 3')
             if j['func'] == 'restore_files':
                 if err:
                     self.request.sendall('KO')
@@ -225,16 +215,14 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
                         self.server.agent._logger('info', 'sending {} Bytes'.format(len(buf)))
                         self.request.sendall(buf)
                         buf = f.read(1024)
-                        _, w, _ = select.select([], [self.request], [], timeout)
-                        if not w:
-                            raise Exception('Socket timed-out 4')
                 os.unlink(res)
             else:
                 self.request.sendall(struct.pack('!Q', len(res)))
                 self.request.sendall(res)
             self.request.close()
         except Exception as e:
-            self.server.agent._logger('error', '{}'.format(str(e)))
+            self.server.agent._logger('error', '!!! {} !!!\n'.format(str(e), traceback.format_exc()))
+            return
 
     def recvall(self, length=1024):
         buf = b''
