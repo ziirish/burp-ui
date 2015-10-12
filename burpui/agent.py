@@ -28,8 +28,14 @@ g_sslkey = ''
 g_timeout = '5'
 g_password = 'password'
 
+class Dummy(object):
+    class Dummy2(object):
+        logger = None
+        pass
+    app = Dummy2()
+    pass
 
-class BUIAgent(BUIlogging):
+class BUIAgent(BUIlogging, Dummy):
     def __init__(self, conf=None, debug=False, logfile=None):
         global g_port, g_bind, g_ssl, g_version, g_sslcert, g_sslkey, g_password
         self.conf = conf
@@ -40,8 +46,8 @@ class BUIAgent(BUIlogging):
             if debug >= len(levels):
                 debug = len(levels) - 1
             lvl = levels[debug]
-            self.logger = logging.getLogger(__name__)
-            self.logger.setLevel(lvl)
+            self.app.logger = logging.getLogger(__name__)
+            self.app.logger.setLevel(lvl)
             if logfile:
                 handler = RotatingFileHandler(logfile, maxBytes=1024 * 1024 * 100, backupCount=20)
                 LOG_FORMAT = '[%(asctime)s] %(levelname)s in %(module)s: %(message)s'
@@ -55,9 +61,10 @@ class BUIAgent(BUIlogging):
                 )
             handler.setLevel(lvl)
             handler.setFormatter(Formatter(LOG_FORMAT))
-            self.logger.addHandler(handler)
-            self.logger.info('conf: ' + self.conf)
-            self.logger.info('level: ' + logging.getLevelName(lvl))
+            self.app.logger.addHandler(handler)
+            self.app.logger.info('conf: ' + self.conf)
+            self.app.logger.info('level: ' + logging.getLevelName(lvl))
+            self.logger = self.app.logger
         if not conf:
             raise IOError('No configuration file found')
 
@@ -89,7 +96,7 @@ class BUIAgent(BUIlogging):
             mod = __import__(module, fromlist=['Burp'])
             Client = mod.Burp
             self.backend = Client(conf=conf)
-            self.backend.set_logger(self.logger)
+            self.backend.set_logger(self.app.logger)
         except Exception, e:
             traceback.print_exc()
             self.debug('Failed loading backend for Burp version %d: %s', self.vers, str(e))
@@ -156,7 +163,7 @@ class BUIAgent(BUIlogging):
     def _logger(self, level, message):
         # hide password from logs
         msg = message
-        if self.logger.getEffectiveLevel() != logging.DEBUG:
+        if self.app.logger.getEffectiveLevel() != logging.DEBUG:
             msg = re.sub(r'"password": \S+', '"password": "*****",', message)
         super(BUIAgent, self)._logger(level, msg)
 

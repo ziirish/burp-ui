@@ -4,13 +4,14 @@ import copy
 import socket
 import select
 import sys
+import time
+import struct
+import pickle
+import traceback
 try:
     import ujson as json
 except ImportError:
     import json
-import time
-import struct
-import pickle
 try:
     import ConfigParser
 except ImportError:
@@ -232,7 +233,7 @@ class NClient(BUIbackend):
             self.sock = self.do_conn()
             self.connected = True
             self.app.logger.debug('OK, connected to agent %s:%s', self.host, self.port)
-        except Exception, e:
+        except Exception as e:
             self.connected = False
             self.app.logger.error('Could not connect to %s:%s => %s', self.host, self.port, str(e))
 
@@ -245,7 +246,7 @@ class NClient(BUIbackend):
             ret = ssl.wrap_socket(s, cert_reqs=ssl.CERT_NONE, ssl_version=ssl.PROTOCOL_SSLv23)
             try:
                 ret.connect((self.host, self.port))
-            except Exception, e:
+            except Exception as e:
                 self.app.logger.error('ERROR: %s', str(e))
                 raise e
         else:
@@ -276,12 +277,12 @@ class NClient(BUIbackend):
             raw = json.dumps(data)
             length = len(raw)
             self.sock.sendall(struct.pack('!Q', length))
-            self.sock.sendall(raw)
+            self.sock.sendall(raw.encode('UTF-8'))
             self.app.logger.debug("Sending: %s", raw)
             r, _, _ = select.select([self.sock], [], [], self.timeout)
             if not r:
                 raise Exception('Socket timed-out 1')
-            tmp = self.sock.recv(2)
+            tmp = self.sock.recv(2).decode('UTF-8')
             self.app.logger.debug("recv: '%s'", tmp)
             if 'OK' != tmp:
                 self.app.logger.debug('Ooops, unsuccessful!')
@@ -305,10 +306,10 @@ class NClient(BUIbackend):
                 r, _, _ = select.select([self.sock], [], [], self.timeout)
                 if not r:
                     raise Exception('Socket timed-out 3')
-                res = self.recvall(length)
-        except Exception, e:
+                res = self.recvall(length).decode('UTF-8')
+        except Exception as e:
             self.close(True)
-            self.app.logger.error(str(e))
+            self.app.logger.error('!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
         finally:
             self.close(toclose)
             return res
