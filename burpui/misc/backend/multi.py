@@ -4,6 +4,7 @@ import copy
 import socket
 import select
 import sys
+import errno
 import time
 import struct
 import pickle
@@ -307,15 +308,18 @@ class NClient(BUIbackend):
                 if not r:
                     raise Exception('Socket timed-out 3')
                 res = self.recvall(length).decode('UTF-8')
-        except BrokenPipeError:
-            if not restarted:
-                self.close(True)
+        except IOError as e:
+            if not restarted and e.errno == errno.EPIPE:
+                toclose = True
                 return self.do_command(data, True)
+            else:
+                raise e
         except Exception as e:
-            self.close(True)
+            toclose = True
             self.app.logger.error('!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
+        finally:
+            self.close(toclose)
 
-        self.close(toclose)
         return res
 
     def recvall(self, length=1024):
