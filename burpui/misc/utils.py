@@ -74,6 +74,7 @@ class human_readable(long):
 
 if sys.version_info >= (3, 0):
     class BUIlogger(logging.Logger):
+        padding = 0
         """Logger class for more convenience"""
         def makeRecord(self, name, level, fn, lno, msg, args, exc_info, func=None, extra=None, sinfo=None):
             """
@@ -88,16 +89,18 @@ if sys.version_info >= (3, 0):
                 me = me[:-1]
             # It's easy to get the _logger parent function because it's the
             # following frame
-            while cpt < size-1:
+            while cpt < size - 1:
                 (_, filename, _, function_name, _, _) = caller[cpt]
                 if function_name == '_logger' and filename == me:
                     cpt += 1
                     break
                 cpt += 1
+            cpt += self.padding
             (frame, filename, line_number, function_name, lines, index) = caller[cpt]
             return super(BUIlogger, self).makeRecord(name, level, filename, line_number, msg, args, exc_info, func=function_name, extra=extra, sinfo=sinfo)
 else:
     class BUIlogger(logging.Logger):
+        padding = 0
         """Logger class for more convenience"""
         def makeRecord(self, name, level, fn, lno, msg, args, exc_info, func=None, extra=None):
             """Try to guess where was call the function"""
@@ -110,18 +113,20 @@ else:
                 me = me[:-1]
             # It's easy to get the _logger parent function because it's the
             # following frame
-            while cpt < size-1:
+            while cpt < size - 1:
                 (_, filename, _, function_name, _, _) = caller[cpt]
                 if function_name == '_logger' and filename == me:
                     cpt += 1
                     break
                 cpt += 1
+            cpt += self.padding
             (frame, filename, line_number, function_name, lines, index) = caller[cpt]
             return super(BUIlogger, self).makeRecord(name, level, filename, line_number, msg, args, exc_info, func=function_name, extra=extra)
 
 
 class BUIlogging(object):
     monkey = None
+    padding = 0
     """Provides a generic logging method for all modules"""
     def _logger(self, level, msg, *args):
         """generic logging method so that the logging is backend-independent"""
@@ -129,6 +134,8 @@ class BUIlogging(object):
             sav = None
             if not self.monkey:
                 self.monkey = BUIlogger(__name__)
+            # bui-agent overrides the _logger function so we add a padding offset
+            self.monkey.padding = self.padding
             # dynamically monkey-patch the makeRecord function
             sav = self.app.logger.makeRecord
             self.app.logger.makeRecord = self.monkey.makeRecord
