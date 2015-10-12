@@ -9,6 +9,7 @@
 """
 from burpui.misc.utils import BUIlogging
 
+
 class BUIparser(BUIlogging):
     """:class:`burpui.misc.parser.interface.BUIparser` defines a generic
     interface for ``burp`` configuration files parser.
