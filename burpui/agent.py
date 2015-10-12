@@ -8,8 +8,6 @@ import sys
 import logging
 import pickle
 import traceback
-import ConfigParser
-import SocketServer
 from threading import Thread
 from logging import Formatter, StreamHandler
 from logging.handlers import RotatingFileHandler
@@ -18,6 +16,14 @@ try:
     import ujson as json
 except ImportError:
     import json
+try:
+    import ConfigParser
+except ImportError:
+    import configparser as ConfigParser
+try:
+    import SocketServer
+except ImportError:
+    import socketserver as SocketServer
 
 g_port = '10000'
 g_bind = '::'
@@ -28,6 +34,7 @@ g_sslkey = ''
 g_timeout = '5'
 g_password = 'password'
 
+
 class Dummy(object):
     class Dummy2(object):
         logger = None
@@ -35,12 +42,14 @@ class Dummy(object):
     app = Dummy2()
     pass
 
+
 class BUIAgent(BUIlogging, Dummy):
     def __init__(self, conf=None, debug=False, logfile=None):
         global g_port, g_bind, g_ssl, g_version, g_sslcert, g_sslkey, g_password
         self.conf = conf
         self.dbg = debug
         self.logger = None
+        self.padding = 1
         if debug > logging.NOTSET:
             levels = [0, logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG]
             if debug >= len(levels):
@@ -88,7 +97,7 @@ class BUIAgent(BUIlogging, Dummy):
                 self.sslcert = self._safe_config_get(config.get, 'sslcert')
                 self.sslkey = self._safe_config_get(config.get, 'sslkey')
                 self.password = self._safe_config_get(config.get, 'password')
-            except ConfigParser.NoOptionError, e:
+            except ConfigParser.NoOptionError as e:
                 raise e
 
         module = 'burpui.misc.backend.burp{0}'.format(self.vers)
@@ -97,7 +106,7 @@ class BUIAgent(BUIlogging, Dummy):
             Client = mod.Burp
             self.backend = Client(conf=conf)
             self.backend.set_logger(self.app.logger)
-        except Exception, e:
+        except Exception as e:
             self._logger('debug', '{}\n\nFailed loading backend for Burp version {}: {}'.format(traceback.format_exc(), self.vers, str(e)))
             sys.exit(2)
 
@@ -178,16 +187,17 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
             length, = struct.unpack('!Q', lengthbuf)
             data = self.recvall(length)
             self.server.agent._logger('info', 'recv: {}'.format(data))
-            j = json.loads(data)
+            txt = data.decode('UTF-8')
+            j = json.loads(txt)
             if j['password'] != self.server.agent.password:
                 self.server.agent._logger('warning', '-----> Wrong Password <-----')
-                self.request.sendall('KO')
+                self.request.sendall(b'KO')
                 return
             if j['func'] not in self.server.agent.methods:
                 self.server.agent._logger('warning', '-----> Wrong method <-----')
-                self.request.sendall('KO')
+                self.request.sendall(b'KO')
                 return
-            self.request.sendall('OK')
+            self.request.sendall(b'OK')
             if j['func'] == 'restore_files':
                 res, err = self.server.agent.methods[j['func']](**j['args'])
             else:
@@ -201,12 +211,12 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
             self.server.agent._logger('info', 'result: {}'.format(res))
             if j['func'] == 'restore_files':
                 if err:
-                    self.request.sendall('KO')
+                    self.request.sendall(b'KO')
                     size = len(err)
                     self.request.sendall(struct.pack('!Q', size))
-                    self.request.sendall(err)
+                    self.request.sendall(err.encode('UTF-8'))
                     raise Exception('Restoration failed')
-                self.request.sendall('OK')
+                self.request.sendall(b'OK')
                 size = os.path.getsize(res)
                 self.request.sendall(struct.pack('!Q', size))
                 with open(res, 'rb') as f:
@@ -218,11 +228,15 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
                 os.unlink(res)
             else:
                 self.request.sendall(struct.pack('!Q', len(res)))
-                self.request.sendall(res)
+                self.request.sendall(res.encode('UTF-8'))
             self.request.close()
         except Exception as e:
-            self.server.agent._logger('error', '!!! {} !!!\n'.format(str(e), traceback.format_exc()))
-            return
+            self.server.agent._logger('error', '!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
+        finally:
+            try:
+                self.request.close()
+            except Exception as e:
+                self.server.agent._logger('error', '!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
 
     def recvall(self, length=1024):
         buf = b''
@@ -249,18 +263,12 @@ class AgentServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
     def __init__(self, server_address, RequestHandlerClass, agent=None):
         self.agent = agent
         SocketServer.TCPServer.__init__(self, server_address, RequestHandlerClass)
-
-    def get_request(self):
         if self.agent.ssl:
             import ssl
-            (newsocket, fromaddr) = SocketServer.TCPServer.get_request(self)
-            connstream = ssl.wrap_socket(
-                newsocket,
+            self.socket = ssl.wrap_socket(
+                self.socket,
                 server_side=True,
                 certfile=self.agent.sslcert,
                 keyfile=self.agent.sslkey,
                 ssl_version=ssl.PROTOCOL_SSLv23
             )
-            return connstream, fromaddr
-        # if we don't use ssl, use the 'super' method
-        return SocketServer.TCPServer.get_request(self)
