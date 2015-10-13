@@ -15,8 +15,7 @@
     {% if report -%}
     <link href="{{ url_for('static', filename='nvd3/nv.d3.min.css') }}" rel="stylesheet">
     {% else -%}
-    <link href="{{ url_for('static', filename='DataTables/dataTables.responsive.css') }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='DataTables/dataTables.bootstrap.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='DataTables/datatables.min.css') }}" rel="stylesheet">
     {% endif -%}
     {% if tree -%}
     <link href="{{ url_for('static', filename='fancytree/skin-bootstrap/ui.fancytree.css') }}" rel="stylesheet">
@@ -61,9 +60,7 @@
     {% else -%}
     <!-- DataTables
     ================================================== -->
-    <script src="{{ url_for('static', filename='DataTables/jquery.dataTables.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='DataTables/dataTables.responsive.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='DataTables/dataTables.bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='DataTables/datatables.min.js') }}"></script>
     {% endif -%}
     {% if tree -%}
     <!-- Fancytree Javascript
