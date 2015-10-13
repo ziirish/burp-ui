@@ -1,6 +1,6 @@
 # -*- coding: utf8 -*-
 """
-.. module:: api
+.. module:: burpui.api
    :platform: Unix
    :synopsis: Burp-UI api module.
 

@@ -1,6 +1,6 @@
 # -*- coding: utf8 -*-
 """
-.. module:: server
+.. module:: burpui.server
     :platform: Unix
     :synopsis: Burp-UI server module.
 

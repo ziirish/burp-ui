@@ -2,6 +2,12 @@
 """
 Burp-UI is a web-ui for burp backup written in python with Flask and
 jQuery/Bootstrap
+
+.. module:: burpui
+    :platform: Unix
+    :synopsis: Burp-UI main module.
+
+.. moduleauthor:: Ziirish <ziirish@ziirish.info>
 """
 
 import os
@@ -56,12 +62,29 @@ login_manager.login_message_category = 'info'
 
 @login_manager.user_loader
 def load_user(userid):
+    """User loader callback"""
     if bui.auth != 'none':
         return bui.uhandler.user(userid)
     return None
 
 
 def init(conf=None, debug=False, logfile=None, gunicorn=True):
+    """Initialize the whole application.
+
+    :param conf: Configuration file to use
+    :type conf: str
+
+    :param debug: Enable verbose output
+    :type debug: bool
+
+    :param logfile: Store the logs in the given file
+    :type logfile: str
+
+    :param gunicorn: Enable gunicorn engine instead of flask's default
+    :type gunicorn: bool
+
+    :returns: A :class:`Flask` object
+    """
     if debug and not gunicorn:
         app.config['DEBUG'] = debug
         app.config['TESTING'] = True
