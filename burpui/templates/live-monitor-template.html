@@ -1,14 +1,9 @@
 <br />
 <div class="col-lg-12">
   <h1 class="page-header">{{ cname }}</h1>
-  {% if counters.bytes and counters.estimated_bytes -%}
-    {% set percent = (counters.bytes / counters.estimated_bytes * 100) %}
-  {% else -%}
-    {% set percent = 0 %}
-  {% endif -%}
   <h4>{{ percent|round }}%</h4>
   <div class="progress progress-striped active">
-    <div class="progress-bar progress-bar-success" style="width: {{ percent }}%"></div>
+    <div class="progress-bar progress-bar-success" style="width: {{ counters.percent }}%"></div>
   </div>
   {% if counters.path -%}
   <div class="panel panel-primary">

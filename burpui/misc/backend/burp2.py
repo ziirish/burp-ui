@@ -481,17 +481,25 @@ class Burp(Burp1):
         if 'bytes' not in r:
             r['bytes'] = 0
         if r.viewkeys() & {'time_start', 'estimated_bytes', 'bytes'}:
-            diff = time.time() - int(r['time_start'])
-            byteswant = int(r['estimated_bytes'])
-            bytesgot = int(r['bytes'])
-            bytespersec = bytesgot / diff
-            bytesleft = byteswant - bytesgot
-            r['speed'] = bytespersec
-            if (bytespersec > 0):
-                timeleft = int(bytesleft / bytespersec)
-                r['timeleft'] = timeleft
-            else:
+            try:
+                diff = time.time() - int(r['time_start'])
+                byteswant = int(r['estimated_bytes'])
+                bytesgot = int(r['bytes'])
+                bytespersec = bytesgot / diff
+                bytesleft = byteswant - bytesgot
+                r['speed'] = bytespersec
+                if (bytespersec > 0):
+                    timeleft = int(bytesleft / bytespersec)
+                    r['timeleft'] = timeleft
+                else:
+                    r['timeleft'] = -1
+            except:
                 r['timeleft'] = -1
+        try:
+            r['percent'] = int(r['bytes']) / int(r['estimated_bytes']) * 100
+        except:
+            # You know... division by 0
+            r['percent'] = 0
 
         return r
 
@@ -557,6 +565,8 @@ class Burp(Burp1):
             infos = cl['backups']
             if c['state'] in ['running']:
                 c['last'] = 'now'
+                counters = self.get_counters(c['name'])
+                c['percent'] = counters['percent']
             elif not infos:
                 c['last'] = 'never'
             else:

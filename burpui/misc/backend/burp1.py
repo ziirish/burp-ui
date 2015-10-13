@@ -646,6 +646,11 @@ class Burp(BUIbackend):
                     r['timeleft'] = -1
             except:
                 r['timeleft'] = -1
+        try:
+            r['percent'] = r['bytes'] / r['estimated_bytes'] * 100
+        except:
+            # You know... division by 0
+            r['percent'] = 0
         return r
 
     def is_backup_running(self, name=None, agent=None):
@@ -688,6 +693,8 @@ class Burp(BUIbackend):
             infos = m.group(3)
             if c['state'] in ['running']:
                 c['last'] = 'now'
+                counters = self.get_counters(c['name'])
+                c['percent'] = counters['percent']
             elif infos == "0":
                 c['last'] = 'never'
             elif re.match('^\d+\s\d+\s\d+$', infos):
