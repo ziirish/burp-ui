@@ -15,7 +15,7 @@ Introduction
 Screenshots
 -----------
 
-.. image:: https://raw.githubusercontent.com/ziirish/burp-ui/master/pictures/burp-ui.gif
+.. image:: https://git.ziirish.me/ziirish/burp-ui/raw/master/pictures/burp-ui.gif
     :target: https://git.ziirish.me/ziirish/burp-ui/blob/master/pictures/burp-ui.gif
 
 
