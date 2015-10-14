@@ -56,10 +56,10 @@ And here is the main site
 """
 
 
-@view.route('/settings', methods=['GET', 'POST'])
-@view.route('/settings/<path:conf>', methods=['GET', 'POST'])
-@view.route('/<server>/settings', methods=['GET', 'POST'])
-@view.route('/<server>/settings/<path:conf>', methods=['GET', 'POST'])
+@view.route('/settings')
+@view.route('/settings/<path:conf>')
+@view.route('/<server>/settings')
+@view.route('/<server>/settings/<path:conf>')
 @login_required
 def settings(server=None, conf=None):
     # Only the admin can edit the configuration
@@ -72,18 +72,15 @@ def settings(server=None, conf=None):
             pass
     if not server:
         server = request.args.get('server')
-    if request.method == 'POST':
-        noti = view.bui.cli.store_conf_srv(request.form, conf, server)
-        return jsonify(notif=noti)
     return render_template('settings.html', settings=True, server=server, conf=conf)
 
 
-@view.route('/client/client-settings', methods=['GET', 'POST'])
-@view.route('/<client>/client-settings', methods=['GET', 'POST'])
-@view.route('/<client>/client-settings/<path:conf>', methods=['GET', 'POST'])
-@view.route('/<server>/client/client-settings', methods=['GET', 'POST'])
-@view.route('/<server>/<client>/client-settings', methods=['GET', 'POST'])
-@view.route('/<server>/<client>/client-settings/<path:conf>', methods=['GET', 'POST'])
+@view.route('/client/client-settings')
+@view.route('/<client>/client-settings')
+@view.route('/<client>/client-settings/<path:conf>')
+@view.route('/<server>/client/client-settings')
+@view.route('/<server>/<client>/client-settings')
+@view.route('/<server>/<client>/client-settings/<path:conf>')
 @login_required
 def cli_settings(server=None, client=None, conf=None):
     # Only the admin can edit the configuration
@@ -98,9 +95,6 @@ def cli_settings(server=None, client=None, conf=None):
         client = request.args.get('client')
     if not server:
         server = request.args.get('server')
-    if request.method == 'POST':
-        noti = view.bui.cli.store_conf_cli(request.form, client, conf, server)
-        return jsonify(notif=noti)
     return render_template('settings.html', settings=True, client=client, server=server, conf=conf)
 
 

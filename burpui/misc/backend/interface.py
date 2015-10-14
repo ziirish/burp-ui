@@ -551,6 +551,15 @@ class BUIbackend(BUIlogging):
         """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")
 
+    def clients_list(self, agent=None):
+        """The :func:`burpui.misc.backend.interface.BUIbackend.clients_list`
+        function is used to retrieve a list of clients with their configuration
+        file.
+
+        :returns: A list of clients with their configuration file
+        """
+        raise NotImplementedError("Sorry, the current Backend does not implement this method!")
+
     def delete_client(self, client=None, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.delete_client`
         function is used to delete a client from burp's configuration.

@@ -692,6 +692,7 @@ class Parser(BUIparser):
     def _list_clients(self):
         if not self.clientconfdir:
             return []
+
         res = []
         for f in os.listdir(self.clientconfdir):
             ff = os.path.join(self.clientconfdir, f)
@@ -699,6 +700,14 @@ class Parser(BUIparser):
                 res.append({'name': f, 'value': os.path.join(self.clientconfdir, f)})
 
         return res
+
+    def list_clients(self):
+        """See :func:`burpui.misc.parser.interface.BUIparser.list_clients`"""
+        self.read_server_conf()
+        if not self.clientconfdir:
+                return []
+
+        return self._list_clients()
 
     def store_client_conf(self, data, client=None, conf=None):
         """See :func:`burpui.misc.parser.interface.BUIparser.store_client_conf`"""

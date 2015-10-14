@@ -92,10 +92,10 @@ class ClientTree(Resource):
         return jsonify(results=j)
 
 
-@api.resource('/api/client-stat.json/<name>',
-              '/api/<server>/client-stat.json/<name>',
-              '/api/client-stat.json/<name>/<int:backup>',
-              '/api/<server>/client-stat.json/<name>/<int:backup>',
+@api.resource('/api/client-stats.json/<name>',
+              '/api/<server>/client-stats.json/<name>',
+              '/api/client-stats.json/<name>/<int:backup>',
+              '/api/<server>/client-stats.json/<name>/<int:backup>',
               endpoint='api.client_stats')
 class ClientStats(Resource):
     """The :class:`burpui.api.client.ClientStats` resource allows you to

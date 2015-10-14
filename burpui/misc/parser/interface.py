@@ -179,6 +179,14 @@ class BUIparser(BUIlogging):
         """
         raise NotImplementedError("Sorry, the current Parser does not implement this method!")
 
+    def list_clients(self):
+        """:func:`burpui.misc.parser.interface.BUIparser.list_clients` is used
+        to retrieve a list of clients with their configuration file.
+
+        :returns: A list of clients with their configuration file
+        """
+        raise NotImplementedError("Sorry, the current Parser does not implement this method!")
+
     def remove_client(self, client=None):
         """:func:`burpui.misc.parser.interface.BUIparser.remove_client` is used
         to delete a client from burp's configuration.

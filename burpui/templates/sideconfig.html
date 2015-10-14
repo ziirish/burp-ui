@@ -26,7 +26,7 @@
             </ul>
             <ul class="nav nav-sidebar">
               <li>
-                <form action="{{ url_for('api.new_client') }}" method="POST">
+                <form action="{{ url_for('api.new_client') }}" method="POST" ng-submit="createClient($event)">
                   <div class="input-group">
                     <input class="form-control" type="text" name="newclient" id="newclient" placeholder="Create new client">
                     <span class="input-group-btn">

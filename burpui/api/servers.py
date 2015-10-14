@@ -20,7 +20,7 @@ class ServersStats(Resource):
     @login_required
     def get(self):
         r = []
-        if hasattr(api.bui.cli, 'servers'):
+        if hasattr(api.bui.cli, 'servers'):  # pragma: no cover
             check = False
             allowed = []
             if (api.bui.acl and not
@@ -73,7 +73,7 @@ class Live(Resource):
             l = (api.bui.cli.is_one_backup_running(server))[server]
         else:
             l = api.bui.cli.is_one_backup_running()
-        if isinstance(l, dict):
+        if isinstance(l, dict):  # pragma: no cover
             for (k, a) in iteritems(l):
                 for c in a:
                     s = {}
@@ -84,7 +84,7 @@ class Live(Resource):
                     except BUIserverException:
                         s['status'] = []
                     r.append(s)
-        else:
+        else:  # pragma: no cover
             for c in l:
                 s = {}
                 s['client'] = c

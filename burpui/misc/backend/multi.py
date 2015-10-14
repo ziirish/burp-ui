@@ -184,6 +184,10 @@ class Burp(BUIbackend):
         """See :func:`burpui.misc.backend.interface.BUIbackend.delete_client`"""
         return self.servers[agent].delete_client(client)
 
+    def clients_list(self, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.clients_list`"""
+        return self.servers[agent].clients_list()
+
     def get_parser_attr(self, attr=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_parser_attr`"""
         return self.servers[agent].get_parser_attr(attr)
@@ -423,6 +427,11 @@ class NClient(BUIbackend):
     def delete_client(self, client=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.delete_client`"""
         data = {'func': 'delete_client', 'args': {'client': client}}
+        return json.loads(self.do_command(data))
+
+    def clients_list(self, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.clients_list`"""
+        data = {'func': 'clients_list', 'args': None}
         return json.loads(self.do_command(data))
 
     def get_parser_attr(self, attr=None, agent=None):

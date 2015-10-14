@@ -13,16 +13,17 @@ from burpui.api import api
 from flask.ext.restful import reqparse, abort, Resource
 from flask.ext.login import current_user, login_required
 from flask import jsonify, flash, request, redirect, url_for
+from werkzeug.datastructures import ImmutableMultiDict
 if sys.version_info >= (3, 0):
     from urllib.parse import unquote
 else:
     from urllib import unquote
 
 
-@api.resource('/api/server-config',
-              '/api/<server>/server-config',
-              '/api/server-config/<path:conf>',
-              '/api/<server>/server-config/<path:conf>',
+@api.resource('/api/settings/server-config',
+              '/api/<server>/settings/server-config',
+              '/api/settings/server-config/<path:conf>',
+              '/api/<server>/settings/server-config/<path:conf>',
               endpoint='api.server_settings')
 class ServerSettings(Resource):
     """The :class:`burpui.api.settings.ServerSettings` resource allows you to
@@ -30,6 +31,11 @@ class ServerSettings(Resource):
 
     This resource is part of the :mod:`burpui.api.settings` module.
     """
+
+    @login_required
+    def post(self, conf=None, server=None):
+        noti = api.bui.cli.store_conf_srv(request.form, conf, server)
+        return jsonify(notif=noti)
 
     @login_required
     def get(self, conf=None, server=None):
@@ -182,12 +188,28 @@ class ServerSettings(Resource):
                        defaults=api.bui.cli.get_parser_attr('defaults', server))
 
 
-@api.resource('/api/<client>/client-config',
-              '/api/<client>/client-config/<path:conf>',
-              '/api/<server>/<client>/client-config',
-              '/api/<server>/<client>/client-config/<path:conf>',
+@api.resource('/api/settings/clients.json',
+              '/api/<server>/settings/clients.json',
+              endpoint='api.clients_list')
+class ClientsList(Resource):
+
+    @login_required
+    def get(self, server=None):
+        res = api.bui.cli.clients_list(server)
+        return jsonify(result=res)
+
+
+@api.resource('/api/settings/<client>/client-config',
+              '/api/settings/<client>/client-config/<path:conf>',
+              '/api/<server>/settings/<client>/client-config',
+              '/api/<server>/settings/<client>/client-config/<path:conf>',
               endpoint='api.client_settings')
 class ClientSettings(Resource):
+
+    @login_required
+    def post(self, server=None, client=None, conf=None):
+        noti = api.bui.cli.store_conf_cli(request.form, client, conf, server)
+        return jsonify(notif=noti)
 
     @login_required
     def get(self, server=None, client=None, conf=None):
@@ -212,8 +234,8 @@ class ClientSettings(Resource):
                        defaults=api.bui.cli.get_parser_attr('defaults', server))
 
 
-@api.resource('/api/new-client',
-              '/api/<server>/new-client',
+@api.resource('/api/settings/new-client',
+              '/api/<server>/settings/new-client',
               endpoint='api.new_client')
 class NewClient(Resource):
 
@@ -222,7 +244,7 @@ class NewClient(Resource):
         self.parser.add_argument('newclient', type=str)
 
     @login_required
-    def post(self, server=None):
+    def put(self, server=None):
         # Only the admin can edit the configuration
         if (api.bui.acl and not
                 api.bui.acl.is_admin(current_user.get_id())):
@@ -230,19 +252,23 @@ class NewClient(Resource):
 
         newclient = self.parser.parse_args()['newclient']
         if not newclient:
-            flash('No client name provided', 'danger')
-            return redirect(request.referrer)
+            abort(500, message='No client name provided')
         # clientconfdir = api.bui.cli.get_parser_attr('clientconfdir', server)
         # if not clientconfdir:
         #    flash('Could not proceed, no \'clientconfdir\' find', 'warning')
         #    return redirect(request.referrer)
-        return redirect(url_for('view.cli_settings', server=server, client=newclient))
+        noti =  api.bui.cli.store_conf_cli(ImmutableMultiDict(), newclient, None, server)
+        if server:
+            noti.append([3, '<a href="{}">Click here</a> to edit \'{}\' configuration'.format(url_for('view.cli_settings', server=server, client=newclient), newclient)])
+        else:
+            noti.append([3, '<a href="{}">Click here</a> to edit \'{}\' configuration'.format(url_for('view.cli_settings', client=newclient), newclient)])
+        return {'notif': noti}, 201
 
 
-@api.resource('/api/path-expander',
-              '/api/<server>/path-expander',
-              '/api/path-expander/<client>',
-              '/api/<server>/path-expander/<client>',
+@api.resource('/api/settings/path-expander',
+              '/api/<server>/settings/path-expander',
+              '/api/settings/path-expander/<client>',
+              '/api/<server>/settings/path-expander/<client>',
               endpoint='api.path_expander')
 class PathExpander(Resource):
 
@@ -251,7 +277,7 @@ class PathExpander(Resource):
         self.parser.add_argument('path')
 
     @login_required
-    def post(self, server=None, client=None):
+    def get(self, server=None, client=None):
         # Only the admin can edit the configuration
         if (api.bui.acl and not
                 api.bui.acl.is_admin(current_user.get_id())):
@@ -266,19 +292,19 @@ class PathExpander(Resource):
         return jsonify(result=paths)
 
 
-@api.resource('/api/delete-client',
-              '/api/<server>/delete-client',
-              '/api/delete-client/<client>',
-              '/api/<server>/delete-client/<client>',
+@api.resource('/api/settings/delete-client',
+              '/api/<server>/settings/delete-client',
+              '/api/settings/delete-client/<client>',
+              '/api/<server>/settings/delete-client/<client>',
               endpoint='api.delete_client')
 class DeleteClient(Resource):
 
     @login_required
-    def post(self, server=None, client=None):
+    def delete(self, server=None, client=None):
         # Only the admin can edit the configuration
         if (api.bui.acl and not
                 api.bui.acl.is_admin(current_user.get_id())):
             noti = [2, 'Sorry, you don\'t have rights to access the setting panel']
             return jsonify(notif=noti)
 
-        return jsonify(notif=api.bui.cli.delete_client(client, server))
+        return {'notif': api.bui.cli.delete_client(client, server)}, 200

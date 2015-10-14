@@ -127,6 +127,7 @@ class BUIAgent(BUIlogging, Dummy):
             'store_conf_srv': self.backend.store_conf_srv,
             'expand_path': self.backend.expand_path,
             'delete_client': self.backend.delete_client,
+            'clients_list': self.backend.clients_list,
             'get_parser_attr': self.backend.get_parser_attr
         }
 

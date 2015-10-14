@@ -193,20 +193,11 @@ app.controller('ConfigCtrl', function($scope, $http) {
 			submit.attr('disabled', true);
 			/* submit the data */
 			$.ajax({
-						url: form.attr('action'),
-						type: form.attr('method'),
-						data: form.serialize()
+				url: form.attr('action'),
+				type: 'POST',
+				data: form.serialize()
 			}).fail(function(xhr, stat, err) {
-				/* display errors if something went wrong HTTP side */
-				var msg = '<strong>ERROR:</strong> ';
-				if (stat && err) {
-					msg +=	'<p>'+stat+'</p><pre>'+err+'</pre>';
-				} else if (stat) {
-					msg += '<p>'+stat+'</p>';
-				} else if (err) {
-					msg += '<pre>'+err+'</pre>';
-				}
-				notif(2, msg, 10000);
+				$scope.showError(stat, err);
 			}).done(function(data) {
 				/* The server answered correctly but some errors may have occurred server
 				 * side so we display them */
@@ -218,6 +209,7 @@ app.controller('ConfigCtrl', function($scope, $http) {
 				}
 				$scope.setSettings.$setPristine();
 				$scope.changed = false;
+				$scope.getClientsList();
 			}).always(function() {
 				/* reset the submit button state */
 				submit.text(sav);
@@ -228,6 +220,18 @@ app.controller('ConfigCtrl', function($scope, $http) {
 				form.find('#'+value.name+'_view').attr('disabled', false);
 			});
 		}
+	};
+	$scope.showError = function(stat, err) {
+		/* display errors if something went wrong HTTP side */
+		var msg = '<strong>ERROR:</strong> ';
+		if (stat && err) {
+			msg +=	'<p>'+stat+'</p><pre>'+err+'</pre>';
+		} else if (stat) {
+			msg += '<p>'+stat+'</p>';
+		} else if (err) {
+			msg += '<pre>'+err+'</pre>';
+		}
+		notif(2, msg, 10000);
 	};
 	$scope.remove = function(key, index) {
 		if (!$scope.old[key]) {
@@ -329,20 +333,11 @@ app.controller('ConfigCtrl', function($scope, $http) {
 		{% endif -%}
 		$scope.inc_invalid = {};
 		$.ajax({
-					url: api,
-					type: 'POST',
-					data: {'path': path}
+			url: api,
+			type: 'GET',
+			data: {'path': path}
 		}).fail(function(xhr, stat, err) {
-			/* display errors if something went wrong HTTP side */
-			var msg = '<strong>ERROR:</strong> ';
-			if (stat && err) {
-				msg +=	'<p>'+stat+'</p><pre>'+err+'</pre>';
-			} else if (stat) {
-				msg += '<p>'+stat+'</p>';
-			} else if (err) {
-				msg += '<pre>'+err+'</pre>';
-			}
-			notif(2, msg, 10000);
+			$scope.showError(stat, err);
 		}).done(function(data) {
 			/* The server answered correctly but some errors may have occurred server
 			 * side so we display them */
@@ -357,29 +352,51 @@ app.controller('ConfigCtrl', function($scope, $http) {
 			}
 		});
 	};
+	$scope.getClientsList = function() {
+		api = '{{ url_for("api.clients_list", server=server) }}';
+		$.ajax({
+			url: api,
+			type: 'GET'
+		}).done(function(data) {
+			$scope.clients = data.result;
+		});
+	};
 	$scope.deleteClient = function() {
 		api = '{{ url_for("api.delete_client", client=client, server=server) }}';
 		$.ajax({
-					url: api,
-					type: 'POST'
+			url: api,
+			type: 'DELETE'
 		}).fail(function(xhr, stat, err) {
-			/* display errors if something went wrong HTTP side */
-			var msg = '<strong>ERROR:</strong> ';
-			if (stat && err) {
-				msg +=	'<p>'+stat+'</p><pre>'+err+'</pre>';
-			} else if (stat) {
-				msg += '<p>'+stat+'</p>';
-			} else if (err) {
-				msg += '<pre>'+err+'</pre>';
-			}
-			notif(2, msg, 10000);
+			$scope.showError(stat, err);
 		}).done(function(data) {
 			/* The server answered correctly but some errors may have occurred server
 			 * side so we display them */
 			if (data.notif) {
-				notif(data.notif[0], data.notif[1])
+				notif(data.notif[0], data.notif[1]);
 				if (data.notif[0] == 0) {
 					document.location = '{{ url_for("view.settings", server=server) }}';
+				}
+			}
+		});
+	};
+	$scope.createClient = function(e) {
+		/* we disable the 'real' form submission */
+		e.preventDefault();
+		var form = $(e.target);
+		$.ajax({
+			url: form.attr('action'),
+			type: 'PUT',
+			data: form.serialize()
+		}).fail(function(xhr, stat, err) {
+			$scope.showError(stat, err);
+		}).done(function(data) {
+			/* The server answered correctly but some errors may have occurred server
+			 * side so we display them */
+			if (data.notif) {
+				notif(data.notif[0][0], data.notif[0][1]);
+				if (data.notif[0][0] == 0) {
+					$scope.getClientsList();
+					notif(data.notif[1][0], data.notif[1][1], 20000);
 				}
 			}
 		});
