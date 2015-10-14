@@ -82,13 +82,13 @@ class BasicACL(BUIacl):
 
     def is_admin(self, username=None):
         """See :func:`burpui.misc.acl.interface.BUIacl.is_admin`"""
-        if not username:
+        if not username:  # pragma: no cover
             return False
         return username in self.admins
 
     def clients(self, username=None, server=None):
         """See :func:`burpui.misc.acl.interface.BUIacl.clients`"""
-        if not username:
+        if not username:  # pragma: no cover
             return []
         if username in self.cls:
             cls = self.cls[username]
@@ -110,7 +110,7 @@ class BasicACL(BUIacl):
 
     def is_client_allowed(self, username=None, client=None, server=None):
         """See :func:`burpui.misc.acl.interface.BUIacl.is_client_allowed`"""
-        if not username or not client:
+        if not username or not client:  # pragma: no cover
             return False
         # No server defined whereas we have an extended ACL
         if not server and self.servers(username):

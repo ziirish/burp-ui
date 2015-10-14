@@ -65,7 +65,7 @@ def load_user(userid):
     """User loader callback"""
     if bui.auth != 'none':
         return bui.uhandler.user(userid)
-    return None
+    return None  # pragma: no cover
 
 
 def init(conf=None, debug=False, logfile=None, gunicorn=True):
@@ -85,7 +85,7 @@ def init(conf=None, debug=False, logfile=None, gunicorn=True):
 
     :returns: A :class:`Flask` object
     """
-    if debug and not gunicorn:
+    if debug and not gunicorn:  # pragma: no cover
         app.config['DEBUG'] = debug
         app.config['TESTING'] = True
 

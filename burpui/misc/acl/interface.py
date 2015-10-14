@@ -22,12 +22,12 @@ class BUIaclLoader:
         :param standalone: Multi-agent or standalone mode
         :type standalone: bool
         """
-        pass
+        pass  # pragma: no cover
 
     @property
     def acl(self):
         """Property to retrieve the backend"""
-        return None
+        return None  # pragma: no cover
 
 
 class BUIacl:
@@ -43,7 +43,7 @@ class BUIacl:
 
         :returns: True if the user has admin rights, otherwise False
         """
-        return False
+        return False  # pragma: no cover
 
     def clients(self, username=None, server=None):
         """:func:`burpui.misc.acl.interface.BUIacl.clients` returns a list of
@@ -57,7 +57,7 @@ class BUIacl:
 
         :returns: A list of clients
         """
-        return []
+        return []  # pragma: no cover
 
     def servers(self, username=None):
         """:func:`burpui.misc.acl.interface.BUIacl.servers` returns a list of
@@ -68,7 +68,7 @@ class BUIacl:
 
         :returns: A list of servers
         """
-        return []
+        return []  # pragma: no cover
 
     def is_client_allowed(self, username=None, client=None, server=None):
         """:func:`burpui.misc.acl.interface.BUIacl.is_client_allowed` tells us
@@ -85,4 +85,4 @@ class BUIacl:
 
         :returns: True if username is granted, otherwise False
         """
-        return False
+        return False  # pragma: no cover

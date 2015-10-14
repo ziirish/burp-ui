@@ -3,11 +3,15 @@
 import sys
 import os
 import unittest
+import tempfile
+
 if sys.version_info >= (3, 0):
     from urllib.request import urlopen
 else:
     from urllib2 import urlopen
+
 from flask.ext.testing import LiveServerTestCase, TestCase
+from flask import url_for
 
 sys.path.append('{0}/..'.format(os.path.join(os.path.dirname(os.path.realpath(__file__)))))
 
@@ -55,11 +59,11 @@ class BurpuiAPITestCase(TestCase):
         return app
 
     def test_no_clients(self):
-        response = self.client.get('/api/clients.json')
+        response = self.client.get(url_for('api.clients_stats'))
         self.assertEquals(response.json, {u'notif': [[2, u'Cannot contact burp server at 127.0.0.1:9999']]})
 
     def test_server_config_parsing(self):
-        response = self.client.get('/api/server-config')
+        response = self.client.get(url_for('api.server_settings'))
         asse = dict((
                     (
                         u'results',
@@ -84,7 +88,7 @@ class BurpuiAPITestCase(TestCase):
         self.assertEquals(response.json, asse)
 
     def test_client_config_parsing(self):
-        response = self.client.get('/api/toto/client-config')
+        response = self.client.get(url_for('api.client_settings', client='toto'))
         asse = dict((
                     (
                         u'results',
@@ -109,47 +113,47 @@ class BurpuiAPITestCase(TestCase):
         self.assertEquals(response.json, asse)
 
     def test_restore(self):
-        response = self.client.post('/api/restore/dummy/1', data=dict(strip=False))
+        response = self.client.post(url_for('api.restore', name='dummy', backup=1), data=dict(strip=False))
         self.assert500(response)
 
     def test_running_clients(self):
-        response = self.client.get('/api/running-clients.json')
+        response = self.client.get(url_for('api.running_clients'))
         self.assertEquals(response.json, dict(results=[]))
 
     def test_live_rendering(self):
-        response = self.client.get('/api/render-live-template/toto')
+        response = self.client.get(url_for('api.render_live_tpl', name='toto'))
         self.assert404(response)
-        response = self.client.get('/api/render-live-template')
+        response = self.client.get(url_for('api.render_live_tpl'))
         self.assert500(response)
 
     def test_servers_json(self):
-        response = self.client.get('/api/servers.json')
+        response = self.client.get(url_for('api.servers_stats'))
         self.assertEquals(response.json, dict(results=[]))
 
     def test_live(self):
-        response = self.client.get('/api/live.json')
+        response = self.client.get(url_for('api.live'))
         self.assertEquals(response.json, dict(results=[]))
 
     def test_running(self):
-        response = self.client.get('/api/running.json')
+        response = self.client.get(url_for('api.running_backup'))
         self.assertEquals(response.json, dict(results=False))
 
     def test_client_tree(self):
-        response = self.client.get('/api/client-tree.json/toto/1')
+        response = self.client.get(url_for('api.client_tree', name='toto', backup=1))
         self.assertEquals(response.json, {u'notif': [[2, u'Cannot contact burp server at 127.0.0.1:9999']]})
 
     def test_clients_report_json(self):
-        response = self.client.get('/api/clients-report.json')
+        response = self.client.get(url_for('api.clients_report'))
         self.assertEquals(response.json, {u'notif': [[2, u'Cannot contact burp server at 127.0.0.1:9999']]})
 
     def test_client_stat_json(self):
-        response = self.client.get('/api/client-stat.json/toto')
+        response = self.client.get(url_for('api.client_stats', name='toto'))
         self.assertEquals(response.json, {u'notif': [[2, u'Cannot contact burp server at 127.0.0.1:9999']]})
-        response = self.client.get('/api/client-stat.json/toto/1')
+        response = self.client.get(url_for('api.client_stats', name='toto', backup=1))
         self.assertEquals(response.json, {u'notif': [[2, u'Cannot contact burp server at 127.0.0.1:9999']]})
 
     def test_client_json(self):
-        response = self.client.get('/api/client.json/toto')
+        response = self.client.get(url_for('api.client_report', name='toto'))
         self.assertEquals(response.json, {u'notif': [[2, u'Cannot contact burp server at 127.0.0.1:9999']]})
 
 
@@ -172,11 +176,11 @@ class BurpuiRoutesTestCase(TestCase):
         return app
 
     def test_live_monitor(self):
-        response = self.client.get('/live-monitor', follow_redirects=True)
+        response = self.client.get(url_for('view.live_monitor'), follow_redirects=True)
         assert 'Sorry, there are no running backups' in response.data.decode('utf-8')
 
     def test_get_clients(self):
-        response = self.client.get('/api/clients.json')
+        response = self.client.get(url_for('api.clients_stats'))
         self.assertEqual(response.json, {u'results': [{u'state': u'idle', u'last': u'never', u'name': u'testclient'}]})
 
 
@@ -189,14 +193,14 @@ class BurpuiLoginTestCase(TestCase):
         print ('\nTest 4 Finished!\n')
 
     def login(self, username, password):
-        return self.client.post('/login', data=dict(
+        return self.client.post(url_for('view.login'), data=dict(
             username=username,
             password=password
         ), follow_redirects=True)
 
     def create_app(self):
         conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../burpui.sample.cfg')
-        BUIinit(conf, False, False)
+        BUIinit(conf, False, None, False)
         app.config['TESTING'] = True
         app.config['LIVESERVER_PORT'] = 5001
         app.config['WTF_CSRF_ENABLED'] = False
@@ -206,7 +210,7 @@ class BurpuiLoginTestCase(TestCase):
 
     def test_config_render(self):
         rv = self.login('admin', 'admin')
-        response = self.client.get('/settings')
+        response = self.client.get(url_for('view.settings'))
         assert 'Burp Configuration' in response.data.decode('utf-8')
 
     def test_login_ok(self):
@@ -231,14 +235,14 @@ class BurpuiACLTestCase(TestCase):
         print ('\nTest 5 Finished!\n')
 
     def login(self, username, password):
-        return self.client.post('/login', data=dict(
+        return self.client.post(url_for('view.login'), data=dict(
             username=username,
             password=password
         ), follow_redirects=True)
 
     def create_app(self):
         conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test5.cfg')
-        BUIinit(conf, False, False)
+        BUIinit(conf, False, None, False)
         app.config['TESTING'] = True
         app.config['LIVESERVER_PORT'] = 5001
         app.config['WTF_CSRF_ENABLED'] = False
@@ -252,18 +256,47 @@ class BurpuiACLTestCase(TestCase):
 
     def test_config_render(self):
         rv = self.login('admin', 'admin')
-        response = self.client.get('/settings')
+        response = self.client.get(url_for('view.settings'))
         assert 'Burp Configuration' in response.data.decode('utf-8')
 
     def test_config_render_ko(self):
         rv = self.login('user1', 'password')
-        response = self.client.get('/settings')
+        response = self.client.get(url_for('view.settings'))
         self.assert403(response)
 
     def test_cli_settings_ko(self):
         rv = self.login('user1', 'password')
-        response = self.client.get('/api/toto/client-config')
+        response = self.client.get(url_for('api.client_settings', client='toto'))
         self.assert403(response)
+
+
+class BurpuiTestInit(TestCase):
+
+    def setUp(self):
+        print ('\nBegin Test 6\n')
+
+    def tearDown(self):
+        print ('\nTest 6 Finished!\n')
+        os.unlink(self.tmpFile)
+
+    def create_app(self):
+        conf1 = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test6-1.cfg')
+        conf2 = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test6-2.cfg')
+        BUIinit(conf1, False, None, False)
+        BUIinit(conf2, False, None, False)
+        BUIinit(None, False, None, False)
+        app.config['TESTING'] = True
+        app.config['LIVESERVER_PORT'] = 5001
+        app.config['WTF_CSRF_ENABLED'] = False
+        bui.cli.port = 9999
+        login_manager.init_app(app)
+        return app
+
+    def test_exception(self):
+        _, self.tmpFile = tempfile.mkstemp()
+        self.assertRaises(IOError, BUIinit, 'thisfileisnotlikelytoexist', True, self.tmpFile, False)
+        self.assertRaises(IOError, BUIinit, 'thisfileisnotlikelytoexist', False, self.tmpFile, False)
+
 
 if __name__ == '__main__':
     unittest.main()
