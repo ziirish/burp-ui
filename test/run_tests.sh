@@ -110,12 +110,15 @@ VIRTUALENV=$(which virtualenv)
 echo "test python$VERSION"
 $VIRTUALENV -p $PYTHON py$VERSION
 source py${VERSION}/bin/activate
-pip install -r requirements.txt
-pip install -r test-requirements.txt
+pip install --upgrade pip
+pip install --upgrade -r requirements.txt
+pip install --upgrade -r test-requirements.txt
 
-
+mkdir -p /etc/burp
+cp burpui.sample.cfg /etc/burp/burpui.cfg
 nosetests --with-coverage --cover-package=burpui test/test_burpui.py
 ret=$?
+rm /etc/burp/burpui.cfg
 
 echo "cleanup"
 deactivate

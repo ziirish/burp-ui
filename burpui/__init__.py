@@ -137,7 +137,7 @@ def init(conf=None, debug=False, logfile=None, gunicorn=True):
 
     bui.setup(app.config['CFG'])
 
-    if gunicorn:
+    if gunicorn:  # pragma: no cover
         from werkzeug.contrib.fixers import ProxyFix
         app.wsgi_app = ProxyFix(app.wsgi_app)
 

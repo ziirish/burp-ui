@@ -75,7 +75,7 @@ class ClientTree(Resource):
         if not server:
             server = self.parser.parse_args()['server']
         j = []
-        if not name or not backup:
+        if not name or not backup:  # pargma: no cover
             return jsonify(results=j)
         root = self.parser.parse_args()['root']
         try:
@@ -89,7 +89,7 @@ class ClientTree(Resource):
         except BUIserverException as e:
             err = [[2, str(e)]]
             return jsonify(notif=err)
-        return jsonify(results=j)
+        return jsonify(results=j)  # pargma: no cover
 
 
 @api.resource('/api/client-stats.json/<name>',

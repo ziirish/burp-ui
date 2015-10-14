@@ -298,5 +298,44 @@ class BurpuiTestInit(TestCase):
         self.assertRaises(IOError, BUIinit, 'thisfileisnotlikelytoexist', False, self.tmpFile, False)
 
 
+class BurpuiAPILoginTestCase(TestCase):
+
+    def setUp(self):
+        print ('\nBegin Test 7\n')
+
+    def tearDown(self):
+        print ('\nTest 7 Finished!\n')
+
+    def login(self, username, password):
+        return self.client.post(url_for('view.login'), data=dict(
+            username=username,
+            password=password
+        ), follow_redirects=True)
+
+    def create_app(self):
+        conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test7.cfg')
+        app.config['TESTING'] = True
+        app.config['LOGIN_DISABLED'] = True
+        app.config['CFG'] = conf
+        bui.setup(conf)
+        login_manager.init_app(app)
+        return app
+
+    def test_server_config_parsing(self):
+        rv = self.login('toto', 'toto')
+        response = self.client.get(url_for('api.server_settings', server='dummy'))
+        self.assertEquals(response.json, {u'message': u'Sorry, you don\'t have rights to access the setting panel'})
+
+    def test_client_config_parsing(self):
+        rv = self.login('toto', 'toto')
+        response = self.client.get(url_for('api.client_settings', client='toto', server='dummy'))
+        self.assertEquals(response.json, {u'message': u'Sorry, you don\'t have rights to access the setting panel'})
+
+    def test_restore(self):
+        rv = self.login('toto', 'toto')
+        response = self.client.post(url_for('api.restore', name='dummy', backup=1, server='dummy'), data=dict(strip=False))
+        self.assert500(response)
+
+
 if __name__ == '__main__':
     unittest.main()
