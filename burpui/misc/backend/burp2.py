@@ -566,7 +566,10 @@ class Burp(Burp1):
             if c['state'] in ['running']:
                 c['last'] = 'now'
                 counters = self.get_counters(c['name'])
-                c['percent'] = counters['percent']
+                if 'percent' in counters:
+                    c['percent'] = counters['percent']
+                else:
+                    c['percent'] = 0
             elif not infos:
                 c['last'] = 'never'
             else:

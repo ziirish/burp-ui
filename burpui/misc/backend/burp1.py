@@ -694,7 +694,10 @@ class Burp(BUIbackend):
             if c['state'] in ['running']:
                 c['last'] = 'now'
                 counters = self.get_counters(c['name'])
-                c['percent'] = counters['percent']
+                if 'percent' in counters:
+                    c['percent'] = counters['percent']
+                else:
+                    c['percent'] = 0
             elif infos == "0":
                 c['last'] = 'never'
             elif re.match('^\d+\s\d+\s\d+$', infos):
@@ -926,6 +929,10 @@ class Burp(BUIbackend):
         if not client:
             return [2, "No client provided"]
         return self.parser.remove_client(client)
+
+    def clients_list(self, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.clients_list`"""
+        return self.parser.list_clients()
 
     def get_parser_attr(self, attr=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_parser_attr`"""
