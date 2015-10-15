@@ -16,6 +16,7 @@ import logging
 
 from flask import Flask
 from flask.ext.login import LoginManager
+from flask.ext.bower import Bower
 from burpui.server import BUIServer as BurpUI
 from burpui.routes import view
 from burpui.api import api
@@ -58,6 +59,11 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'view.login'
 login_manager.login_message_category = 'info'
+
+app.config.setdefault('BOWER_COMPONENTS_ROOT', os.path.join('static', 'vendor'))
+app.config.setdefault('BOWER_REPLACE_URL_FOR', True)
+bower = Bower()
+bower.init_app(app)
 
 
 @login_manager.user_loader

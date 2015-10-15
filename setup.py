@@ -6,7 +6,40 @@ import os.path
 import re
 import sys
 
+from subprocess import check_output
+from distutils import log
+from distutils.core import Command
 from setuptools import setup, find_packages
+from setuptools.command.develop import develop
+from setuptools.command.sdist import sdist
+
+ROOT=os.path.dirname(os.path.realpath(__file__))
+
+
+class DevelopWithBuildStatic(develop):
+    def install_for_development(self):
+        self.run_command('build_static')
+        return develop.install_for_development(self)
+
+
+class SdistWithBuildStatic(sdist):
+    def make_distribution(self):
+        self.run_command('build_static')
+        return sdist.make_distribution(self)
+
+
+class BuildStatic(Command):
+    user_options = []
+    description = "Install bower dependencies"
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        log.info("running [bower install]")
+        check_output(['bower', 'install'], cwd=ROOT)
 
 
 def readme():
@@ -87,5 +120,10 @@ setup(
         'Programming Language :: Python :: 2.7',
         'Topic :: System :: Archiving :: Backup',
         'Topic :: System :: Monitoring'
-    ]
+    ],
+    cmdclass={
+        'build_static': BuildStatic,
+        'develop': DevelopWithBuildStatic,
+        'sdist': SdistWithBuildStatic,
+    }
 )

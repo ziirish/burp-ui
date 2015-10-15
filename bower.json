@@ -1,0 +1,37 @@
+{
+  "name": "burp-ui",
+  "authors": [
+    "ziirish <ziirish@ziirish.info>"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://git.ziirish.me/ziirish/burp-ui.git"
+  },
+  "description": "Burp-UI is a web-ui for burp backup written in python with Flask and jQuery/Bootstrap",
+  "license": "BSD",
+  "homepage": "https://git.ziirish.me/ziirish/burp-ui",
+  "private": true,
+  "dependencies": {
+    "jquery-file-download": "~1.4.4",
+    "datatables-responsive": "~1.0.7",
+    "jquery-ui": "jqueryui#~1.11.4",
+    "angular-bootstrap-switch": "~0.4.1",
+    "angular-onbeforeunload": "~0.1.7",
+    "angular-strap": "~2.3.3",
+    "ui-select": "angular-ui-select#~0.13.2",
+    "jquery.fancytree": "fancytree#~2.12.0",
+    "d3": "~3.5.6",
+    "nvd3": "~1.8.1",
+    "lodash": "~2.4.2",
+    "typeahead.js": "~0.11.1",
+    "bootswatch": "~3.3.5",
+    "angular-resource": "~1.4.7",
+    "angular-sanitize": "~1.4.7",
+    "angular-animate": "~1.4.7",
+    "angular-route": "~1.4.7",
+    "bootstrap-switch": "~3.3.2"
+  },
+  "resolutions": {
+    "angular": "~1.4.0"
+  }
+}

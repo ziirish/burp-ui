@@ -11,18 +11,18 @@
     <title>Burp Server Dashboard</title>
 
     <!-- Bootstrap core CSS -->
-    <link href="{{ url_for('static', filename='bootstrap/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('bower.static', filename='bootswatch/slate/bootstrap.min.css') }}" rel="stylesheet">
     {% if report -%}
-    <link href="{{ url_for('static', filename='nvd3/nv.d3.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('bower.static', filename='nvd3/build/nv.d3.min.css') }}" rel="stylesheet">
     {% else -%}
-    <link href="{{ url_for('static', filename='DataTables/datatables.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('bower.static', filename='datatables/media/css/dataTables.bootstrap.min.css') }}" rel="stylesheet">
     {% endif -%}
     {% if tree -%}
-    <link href="{{ url_for('static', filename='fancytree/skin-bootstrap/ui.fancytree.css') }}" rel="stylesheet">
+    <link href="{{ url_for('bower.static', filename='jquery.fancytree/dist/skin-bootstrap/ui.fancytree.min.css') }}" rel="stylesheet">
     {% endif -%}
     {% if settings -%}
-    <link href="{{ url_for('static', filename='bootstrap-switch/bootstrap-switch.min.css') }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='angular-ui-select/select.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('bower.static', filename='bootstrap-switch/dist/css/bootstrap3/bootstrap-switch.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('bower.static', filename='ui-select/dist/select.min.css') }}" rel="stylesheet">
     {% endif -%}
 
     <!-- Custom styles for this template -->
@@ -46,44 +46,47 @@
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src="{{ url_for('static', filename='jquery/jquery.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='jquery-ui/jquery-ui-1.10.4.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='bootstrap/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='jquery/dist/jquery.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='jquery-ui/jquery-ui.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='bootstrap/dist/js/bootstrap.min.js') }}"></script>
     <!-- Typeadhead + Bloodhound Javascript
     ================================================== -->
-    <script src="{{ url_for('static', filename='typeahead/typeahead.bundle.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='typeahead.js/dist/typeahead.bundle.min.js') }}"></script>
     {% if report -%}
     <!-- d3 + nvd3 Javascript
     ================================================== -->
-    <script src="{{ url_for('static', filename='d3/d3.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='nvd3/nv.d3.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='d3/d3.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='nvd3/build/nv.d3.min.js') }}"></script>
     {% else -%}
     <!-- DataTables
     ================================================== -->
-    <script src="{{ url_for('static', filename='DataTables/datatables.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='datatables/media/js/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='datatables/media/js/dataTables.bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='datatables-responsive/js/dataTables.responsive.js') }}"></script>
     {% endif -%}
     {% if tree -%}
     <!-- Fancytree Javascript
     ================================================== -->
-    <script src="{{ url_for('static', filename='fancytree/jquery.fancytree-custom.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='fancytree/jquery.fancytree.filter.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='jquery.fancytree/dist/jquery.fancytree-all.min.js') }}"></script>
     <!-- FileDownload Javascript
     ================================================== -->
-    <script src="{{ url_for('static', filename='jquery/jquery.fileDownload.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='jquery-file-download/src/Scripts/jquery.fileDownload.js') }}"></script>
     {% endif -%}
     {% if settings -%}
     <!-- configuration panel Javascript
     ================================================== -->
-    <script src="{{ url_for('static', filename='lodash/lodash.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='angularjs/angular.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='angularjs/angular-sanitize.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='angularjs/angular-animate.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='bootstrap-switch/bootstrap-switch.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='angular-bootstrap-switch/angular-bootstrap-switch.js') }}"></script>
-    <script src="{{ url_for('static', filename='angular-ui-select/select.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='angular-strap/angular-strap.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='angular-strap/angular-strap.tpl.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='angular-onbeforeunload/angular-onbeforeunload.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='lodash/dist/lodash.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='angular/angular.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='angular-route/angular-route.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='angular-sanitize/angular-sanitize.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='angular-resource/angular-resource.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='angular-animate/angular-animate.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='bootstrap-switch/dist/js/bootstrap-switch.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='angular-bootstrap-switch/dist/angular-bootstrap-switch.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='ui-select/dist/select.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='angular-strap/dist/angular-strap.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='angular-strap/dist/angular-strap.tpl.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='angular-onbeforeunload/build/angular-onbeforeunload.js') }}"></script>
     {% endif -%}
     <script type="text/javascript">
       {% include "gerard.js" %}

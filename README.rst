@@ -82,20 +82,20 @@ Licenses
 
 But this project is built on top of other tools listed here:
 
-- `d3.js <http://d3js.org/>`_ (`BSD <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/d3/LICENSE>`__)
-- `nvd3.js <http://nvd3.org/>`_ (`Apache <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/nvd3/LICENSE.md>`__)
-- `jQuery <http://jquery.com/>`_ (`MIT <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/jquery/MIT-LICENSE.txt>`__)
-- `jQuery-UI <http://jqueryui.com/>`_ (`MIT <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/jquery-ui/MIT-LICENSE.txt>`__)
-- `fancytree <https://github.com/mar10/fancytree>`_ (`MIT <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/fancytree/MIT-LICENSE.txt>`__)
-- `bootstrap <http://getbootstrap.com/>`_ (`MIT <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/bootstrap/LICENSE>`__)
-- `typeahead <http://twitter.github.io/typeahead.js/>`_ (`MIT <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/typeahead/LICENSE>`__)
-- `bootswatch <http://bootswatch.com/>`_ theme ``Slate`` (`MIT <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/bootstrap/bootswatch.LICENSE>`__)
-- `angular-bootstrap-switch <https://github.com/frapontillo/angular-bootstrap-switch>`_ (`Apache <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/angular-bootstrap-switch/LICENSE>`__)
-- `angular.js <https://angularjs.org/>`_ (`MIT <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/angularjs/LICENSE>`__)
-- `angular-ui-select <https://github.com/angular-ui/ui-select>`_ (`MIT <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/angular-ui-select/LICENSE>`__)
-- `AngularStrap <http://mgcrea.github.io/angular-strap/>`_ (`MIT <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/angular-strap/LICENSE.md>`__)
-- `lodash <https://github.com/lodash/lodash>`_ (`MIT <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/lodash/LICENSE.txt>`__)
-- `DataTables <http://datatables.net/>`_ (`MIT <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/DataTables/LICENSE.txt>`__)
+- `d3.js <http://d3js.org/>`_
+- `nvd3.js <http://nvd3.org/>`_
+- `jQuery <http://jquery.com/>`_
+- `jQuery-UI <http://jqueryui.com/>`_
+- `fancytree <https://github.com/mar10/fancytree>`_
+- `bootstrap <http://getbootstrap.com/>`_
+- `typeahead <http://twitter.github.io/typeahead.js/>`_
+- `bootswatch <http://bootswatch.com/>`_ theme ``Slate``
+- `angular-bootstrap-switch <https://github.com/frapontillo/angular-bootstrap-switch>`_
+- `angular.js <https://angularjs.org/>`_
+- `angular-ui-select <https://github.com/angular-ui/ui-select>`_
+- `AngularStrap <http://mgcrea.github.io/angular-strap/>`_
+- `lodash <https://github.com/lodash/lodash>`_
+- `DataTables <http://datatables.net/>`_
 - Home-made `favicon <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/images/favicon.ico>`_ based on pictures from `simpsoncrazy <http://www.simpsoncrazy.com/pictures/homer>`_
 
 Also note that this project is made with the Awesome `Flask`_ micro-framework.

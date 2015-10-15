@@ -103,7 +103,7 @@ width:100%;
 .twitter-typeahead .tt-hint {
   margin-bottom: 0;
 }
-.tt-dropdown-menu {
+.tt-menu {
   min-width: 160px;
   margin-top: 2px;
   padding: 5px 0;
@@ -302,4 +302,12 @@ legend[id] {
 
 .clickable {
   cursor: pointer;
+}
+
+.ui-select-bootstrap .ui-select-choices-row > a {
+  color: #fff;
+}
+
+.table-responsive {
+  overflow-x: visible;
 }
