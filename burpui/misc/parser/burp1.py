@@ -786,43 +786,46 @@ class Parser(BUIparser):
         already_file = []
         written = []
 
-        with codecs.open(mconf, 'w', 'utf-8') as f:
-            # f.write('# Auto-generated configuration using Burp-UI\n')
-            for line in orig:
-                if (self._line_removed(line, data.viewkeys()) and
-                        not self._line_is_comment(line) and
-                        not self._line_is_file_include(line)):
-                    # The line was removed, we comment it
-                    f.write('#{}\n'.format(line))
-                elif self._line_is_file_include(line):
-                    # The line is a file inclusion, we check if the line was already present
-                    ori = self._include_get_file(line)
-                    if ori in data.getlist('includes_ori'):
-                        idx = data.getlist('includes_ori').index(ori)
-                        file = data.getlist('includes')[idx]
-                        self._write_key(f, '.', file)
-                        already_file.append(file)
-                    else:
+        try:
+            with codecs.open(mconf, 'w', 'utf-8') as f:
+                # f.write('# Auto-generated configuration using Burp-UI\n')
+                for line in orig:
+                    if (self._line_removed(line, data.viewkeys()) and
+                            not self._line_is_comment(line) and
+                            not self._line_is_file_include(line)):
+                        # The line was removed, we comment it
                         f.write('#{}\n'.format(line))
-                elif self._get_line_key(line, False) in data.viewkeys():
-                    # The line is still present or has been un-commented, rewrite it with eventual changes
-                    key = self._get_line_key(line, False)
-                    if key not in already_multi:
+                    elif self._line_is_file_include(line):
+                        # The line is a file inclusion, we check if the line was already present
+                        ori = self._include_get_file(line)
+                        if ori in data.getlist('includes_ori'):
+                            idx = data.getlist('includes_ori').index(ori)
+                            file = data.getlist('includes')[idx]
+                            self._write_key(f, '.', file)
+                            already_file.append(file)
+                        else:
+                            f.write('#{}\n'.format(line))
+                    elif self._get_line_key(line, False) in data.viewkeys():
+                        # The line is still present or has been un-commented, rewrite it with eventual changes
+                        key = self._get_line_key(line, False)
+                        if key not in already_multi:
+                            self._write_key(f, key, data)
+                        if key in getattr(self, 'multi_{}'.format(mode)):
+                            already_multi.append(key)
+                        written.append(key)
+                    else:
+                        # The line was empty or a comment...
+                        f.write('{}\n'.format(line))
+                # Write the new keys
+                for key in newkeys:
+                    if key not in written and key not in ['includes', 'includes_ori']:
                         self._write_key(f, key, data)
-                    if key in getattr(self, 'multi_{}'.format(mode)):
-                        already_multi.append(key)
-                    written.append(key)
-                else:
-                    # The line was empty or a comment...
-                    f.write('{}\n'.format(line))
-            # Write the new keys
-            for key in newkeys:
-                if key not in written and key not in ['includes', 'includes_ori']:
-                    self._write_key(f, key, data)
-            # Write the rest of file inclusions
-            for file in data.getlist('includes'):
-                if file not in already_file:
-                    self._write_key(f, '.', file)
+                # Write the rest of file inclusions
+                for file in data.getlist('includes'):
+                    if file not in already_file:
+                        self._write_key(f, '.', file)
+        except Exception as e:
+            return [[2, str(e)]]
 
         return [[0, 'Configuration successfully saved.']]
 
