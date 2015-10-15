@@ -1,3 +1,4 @@
 {
-  "directory": "burpui/static/vendor/"
+  "directory": "burpui/static/vendor/",
+  "allow_root": true
 }
