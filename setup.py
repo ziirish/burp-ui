@@ -40,7 +40,11 @@ class BuildStatic(Command):
 
     def run(self):
         log.info("running [bower install]")
-        check_output(['bower', 'install'], cwd=ROOT)
+        try:
+            path = check_output(['which', 'bower'])
+            check_output([path, 'install'], cwd=ROOT)
+        except Exception as e:
+            log.warn(str(e))
 
 
 class CustomInstall(install):
