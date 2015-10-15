@@ -38,7 +38,13 @@ echo "test requirements"
 
 echo "install build requirements"
 update
-[ $ISROOT -eq 1 ] && apt-get install -y uthash-dev g++ make libssl-dev librsync-dev python$(perl -pe "s/\.\d+$//" <<<$VERSION)-dev
+[ $ISROOT -eq 1 ] && apt-get install -y uthash-dev g++ make libssl-dev librsync-dev nodejs npm python$(perl -pe "s/\.\d+$//" <<<$VERSION)-dev
+
+echo "installing bower"
+npm install -g bower
+
+echo "downloading libs"
+bower install
 
 echo "downloading and compiling burp v${BURP_VERSION}"
 ROOT_PWD=`pwd`

@@ -12,6 +12,7 @@ from distutils.core import Command
 from setuptools import setup, find_packages
 from setuptools.command.develop import develop
 from setuptools.command.sdist import sdist
+from setuptools.command.install import install
 
 ROOT=os.path.dirname(os.path.realpath(__file__))
 
@@ -41,6 +42,11 @@ class BuildStatic(Command):
         log.info("running [bower install]")
         check_output(['bower', 'install'], cwd=ROOT)
 
+
+class CustomInstall(install):
+    def run(self):
+        self.run_command('build_static')
+        install.run(self)
 
 def readme():
     """
@@ -125,5 +131,6 @@ setup(
         'build_static': BuildStatic,
         'develop': DevelopWithBuildStatic,
         'sdist': SdistWithBuildStatic,
+        'install': CustomInstall
     }
 )
