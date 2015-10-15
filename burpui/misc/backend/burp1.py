@@ -631,6 +631,9 @@ class Burp(BUIbackend):
                             except ValueError:
                                 continue
                     c += 1
+
+        if 'bytes' not in r:
+            r['bytes'] = 0
         if r.viewkeys() & {'start', 'estimated_bytes', 'bytes_in'}:
             try:
                 diff = time.time() - int(r['start'])
@@ -647,8 +650,8 @@ class Burp(BUIbackend):
             except:
                 r['timeleft'] = -1
         try:
-            r['percent'] = r['bytes'] / r['estimated_bytes'] * 100
-        except:
+            r['percent'] = round(float(r['bytes']) / float(r['estimated_bytes']) * 100)
+        except Exception as e:
             # You know... division by 0
             r['percent'] = 0
         return r
@@ -692,6 +695,13 @@ class Burp(BUIbackend):
             c['state'] = self.states[m.group(2)]
             infos = m.group(3)
             if c['state'] in ['running']:
+                regex = re.compile('\s*(\S+)')
+                r = regex.search(infos)
+                p = r.group(0)
+                if p and p in self.states:
+                    c['phase'] = self.states[p]
+                else:
+                    c['phase'] = 'unknown'
                 c['last'] = 'now'
                 counters = self.get_counters(c['name'])
                 if 'percent' in counters:

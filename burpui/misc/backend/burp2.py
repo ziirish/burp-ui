@@ -496,7 +496,7 @@ class Burp(Burp1):
             except:
                 r['timeleft'] = -1
         try:
-            r['percent'] = int(r['bytes']) / int(r['estimated_bytes']) * 100
+            r['percent'] = round(float(r['bytes']) / float(r['estimated_bytes']) * 100)
         except:
             # You know... division by 0
             r['percent'] = 0
@@ -564,6 +564,7 @@ class Burp(Burp1):
             c['state'] = self._status_human_readable(cl['run_status'])
             infos = cl['backups']
             if c['state'] in ['running']:
+                c['phase'] = cl['phase']
                 c['last'] = 'now'
                 counters = self.get_counters(c['name'])
                 if 'percent' in counters:

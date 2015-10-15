@@ -74,7 +74,7 @@ var _clients_table = $('#table-clients').dataTable( {
 		},
 		{ data: null, render: function ( data, type, row ) {
 				if ('percent' in data) {
-					return data.state+' ('+data.percent+'%)';
+					return data.state+' - '+data.phase+' ('+data.percent+'%)';
 				}
 				return data.state;
 			}
