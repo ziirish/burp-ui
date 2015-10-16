@@ -875,12 +875,3 @@ class Parser(BUIparser):
         (key, _) = re.split('\s+|=', line, 1)
         key = key.strip()
         return key not in keys
-
-    def get_priv_attr(self, key=None):
-        """See :func:`burpui.misc.parser.interface.BUIparser.get_priv_attr`"""
-        if not key:
-            return []
-        try:
-            return getattr(self, key)
-        except:
-            return []

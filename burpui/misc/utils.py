@@ -18,7 +18,7 @@ import logging
 from inspect import getmembers, isfunction, currentframe
 
 if sys.version_info >= (3, 0):
-    long = int
+    long = int  # pragma: no cover
 
 
 class human_readable(long):
@@ -33,7 +33,7 @@ class human_readable(long):
 
     code from: http://code.activestate.com/recipes/578323-human-readable-filememory-sizes-v2/
     """
-    def __format__(self, fmt):
+    def __format__(self, fmt):  # pragma: no cover
         # is it an empty format or not a special format for the size class
         if fmt == "" or fmt[-2:].lower() not in ["em", "sm", "cm"]:
             if fmt[-1].lower() in ['b', 'c', 'd', 'o', 'x', 'n', 'e', 'f', 'g', '%']:
@@ -72,7 +72,7 @@ class human_readable(long):
         return "{0:{1}}".format(t, width) if width != "" else t
 
 
-if sys.version_info >= (3, 0):
+if sys.version_info >= (3, 0):  # pragma: no cover
     class BUIlogger(logging.Logger):
         padding = 0
         """Logger class for more convenience"""
@@ -137,15 +137,15 @@ class BUIlogging(object):
             # bui-agent overrides the _logger function so we add a padding offset
             self.monkey.padding = self.padding
             # dynamically monkey-patch the makeRecord function
-            sav = self.app.logger.makeRecord
-            self.app.logger.makeRecord = self.monkey.makeRecord
+            sav = self.logger.makeRecord
+            self.logger.makeRecord = self.monkey.makeRecord
             self.logger.log(logging.getLevelName(level.upper()), msg, *args)
-            self.app.logger.makeRecord = sav
+            self.logger.makeRecord = sav
 
 
 class BUIcompress():
     """Provides a context to generate any kind of archive supported by burp-ui"""
-    def __init__(self, name, archive):
+    def __init__(self, name, archive):  # pragma: no cover
         self.name = name
         self.archive = archive
 

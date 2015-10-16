@@ -21,7 +21,7 @@ class BUIbackend(BUIlogging):
     :param conf: Configuration file to use
     :type conf: str
     """
-    def __init__(self, server=None, conf=None):
+    def __init__(self, server=None, conf=None):  # pragma: no cover
         self.app = None
         if server:
             if hasattr(server, 'app'):
@@ -55,7 +55,7 @@ class BUIbackend(BUIlogging):
                 "client2\t2\ti\t1 0 1422189120",
             ]
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")
+        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
     def get_backup_logs(self, number, client, forward=False, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.get_backup_logs`
@@ -201,7 +201,7 @@ class BUIbackend(BUIlogging):
                 "windows": "false"
             }
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")
+        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
     def get_clients_report(self, clients, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.get_clients_report`
@@ -216,7 +216,7 @@ class BUIbackend(BUIlogging):
 
         :returns: An array containing one dict with the computed data
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")
+        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
     def get_counters(self, name=None, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.get_counters`
@@ -231,7 +231,7 @@ class BUIbackend(BUIlogging):
 
         :returns: A dict of counters
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")
+        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
     def is_backup_running(self, name=None, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.is_backup_running`
@@ -245,7 +245,7 @@ class BUIbackend(BUIlogging):
 
         :returns: True or False
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")
+        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
     def is_one_backup_running(self, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.is_one_backup_running`
@@ -256,7 +256,7 @@ class BUIbackend(BUIlogging):
 
         :returns: A list of running clients
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")
+        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
     def get_all_clients(self, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.get_all_clients`
@@ -282,7 +282,7 @@ class BUIbackend(BUIlogging):
                 },
             ]
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")
+        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
     def get_client(self, name=None, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.get_client`
@@ -311,7 +311,7 @@ class BUIbackend(BUIlogging):
             ]
         """
 
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")
+        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
     def get_tree(self, name=None, backup=None, root=None, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.get_tree`
@@ -348,7 +348,7 @@ class BUIbackend(BUIlogging):
                 }
             ]
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")
+        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
     def restore_files(self, name=None, backup=None, files=None, strip=None, archive='zip', password=None, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.restore_files`
@@ -384,7 +384,7 @@ class BUIbackend(BUIlogging):
 
         :returns: A tuple with the generated archive path and/or an error message
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")
+        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
     def read_conf_srv(self, conf=None, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.read_conf_srv`
@@ -472,7 +472,7 @@ class BUIbackend(BUIlogging):
                 ],
             }
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")
+        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
     def read_conf_cli(self, client=None, conf=None, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.read_conf_cli`
@@ -480,7 +480,7 @@ class BUIbackend(BUIlogging):
         :func:`burpui.misc.backend.interface.BUIbackend.read_conf_srv` function
         but for the client config file.
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")
+        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
     def store_conf_srv(self, data, conf=None, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.store_conf_srv`
@@ -502,7 +502,7 @@ class BUIbackend(BUIlogging):
 
             [[0, "Success"]]
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")
+        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
     def store_conf_cli(self, data, client=None, conf=None, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.store_conf_cli`
@@ -514,7 +514,7 @@ class BUIbackend(BUIlogging):
         :param client: Name of the client for which to apply this config
         :type client: str
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")
+        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
     def get_parser_attr(self, attr=None, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.get_parser_attr`
@@ -530,7 +530,7 @@ class BUIbackend(BUIlogging):
 
         :returns: The requested attribute or an empty list
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")
+        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
     def expand_path(self, path=None, client=None, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.expand_path`
@@ -549,7 +549,7 @@ class BUIbackend(BUIlogging):
 
         :returns: A list of files or an empty list
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")
+        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
     def clients_list(self, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.clients_list`
@@ -558,7 +558,7 @@ class BUIbackend(BUIlogging):
 
         :returns: A list of clients with their configuration file
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")
+        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
     def delete_client(self, client=None, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.delete_client`
@@ -573,7 +573,7 @@ class BUIbackend(BUIlogging):
         :returns: A list of notifications to return to the UI (success or
                   failure)
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")
+        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
 
 class BUIserverException(Exception):

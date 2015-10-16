@@ -16,7 +16,7 @@ import json
 import datetime
 try:
     import ConfigParser
-except ImportError:
+except ImportError:  # pragma: no cover
     import configparser as ConfigParser
 import shutil
 import subprocess
@@ -30,7 +30,7 @@ from burpui.misc.utils import human_readable as _hr, BUIcompress
 from burpui.misc.backend.interface import BUIbackend, BUIserverException
 from burpui.misc.parser.burp1 import Parser
 
-if sys.version_info >= (3, 0):
+if sys.version_info >= (3, 0):  # pragma: no cover
     from urllib.parse import unquote
 else:
     from urllib import unquote
@@ -162,7 +162,7 @@ class Burp(BUIbackend):
                     self._logger('warning', "'%s' does not exist or is not executable. Fallback to '%s'", strip, g_stripbin)
                     strip = g_stripbin
 
-                if strip and (not os.path.isfile(strip) or not os.access(strip, os.X_OK)):
+                if strip and (not os.path.isfile(strip) or not os.access(strip, os.X_OK)):  # pragma: no cover
                     self._logger('error', "Ooops, '%s' not found or is not executable", strip)
                     strip = None
 
@@ -176,7 +176,7 @@ class Burp(BUIbackend):
                     self._logger('warning', "'%s' does not exist or is not executable. Fallback to '%s'", bbin, g_burpbin)
                     bbin = g_burpbin
 
-                if bbin and (not os.path.isfile(bbin) or not os.access(bbin, os.X_OK)):
+                if bbin and (not os.path.isfile(bbin) or not os.access(bbin, os.X_OK)):  # pragma: no cover
                     self._logger('error', "Ooops, '%s' not found or is not executable", bbin)
                     bbin = None
 
@@ -223,7 +223,7 @@ class Burp(BUIbackend):
         """
         try:
             return callback(sect, key)
-        except ConfigParser.NoOptionError as e:
+        except ConfigParser.NoOptionError as e:  # pragma: no cover
             self._logger('error', str(e))
         except ConfigParser.NoSectionError as e:
             self._logger('warning', str(e))
@@ -231,7 +231,7 @@ class Burp(BUIbackend):
                 if cast:
                     return cast(self.defaults[key])
                 return self.defaults[key]
-        return None
+        return None  # pragma: no cover
 
     def _get_inet_family(self, addr):
         """The :func:`burpui.misc.backend.burp1.Burp._get_inet_family` function
@@ -288,7 +288,7 @@ class Burp(BUIbackend):
         r = []
         try:
             q = b''
-            if not query.endswith('\n'):
+            if not query.endswith('\n'):  # pragma: no cover
                 q += '{0}\n'.format(query).encode('utf-8')
             else:
                 q += query.encode('utf-8')
@@ -305,7 +305,7 @@ class Burp(BUIbackend):
                 ap = ''
                 try:
                     ap = line.decode('utf-8', 'replace')
-                except (Exception, UnicodeDecodeError):
+                except (Exception, UnicodeDecodeError):  # pragma: no cover
                     ap = line
                 r.append(ap)
             f.close()
@@ -342,7 +342,7 @@ class Burp(BUIbackend):
             ret['encrypted'] = True
         return ret
 
-    def _parse_backup_stats(self, number, client, forward=False, agent=None):
+    def _parse_backup_stats(self, number, client, forward=False, agent=None):  # pragma: no cover
         """The :func:`burpui.misc.backend.burp1.Burp._parse_backup_stats`
         function is used to parse the burp logs.
 
@@ -599,7 +599,7 @@ class Burp(BUIbackend):
         ret.append({'clients': cl, 'backups': ba})
         return ret
 
-    def get_counters(self, name=None, agent=None):
+    def get_counters(self, name=None, agent=None):  # pragma: no cover (hard to test, requires a running backup)
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_counters`"""
         r = {}
         if agent:
@@ -948,4 +948,7 @@ class Burp(BUIbackend):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_parser_attr`"""
         if not attr or not self.parser:
             return []
-        return self.parser.get_priv_attr(attr)
+        try:
+            return getattr(self.parser, attr)
+        except:
+            return []

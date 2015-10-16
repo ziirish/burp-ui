@@ -114,7 +114,7 @@ class BUIparser(BUIlogging):
                 ],
             }
         """
-        raise NotImplementedError("Sorry, the current Parser does not implement this method!")
+        raise NotImplementedError("Sorry, the current Parser does not implement this method!")  # pragma: no cover
 
     def store_client_conf(self, data, client=None, conf=None):
         """:func:`burpui.misc.parser.interface.BUIparser.store_client_conf` is
@@ -126,7 +126,7 @@ class BUIparser(BUIlogging):
         :param client: Name of the client for which to apply this config
         :type client: str
         """
-        raise NotImplementedError("Sorry, the current Parser does not implement this method!")
+        raise NotImplementedError("Sorry, the current Parser does not implement this method!")  # pragma: no cover
 
     def store_conf(self, data, conf=None, mode='srv'):
         """:func:`burpui.misc.parser.interface.BUIparser.store_conf` is used to
@@ -150,19 +150,7 @@ class BUIparser(BUIlogging):
 
             [[0, "Success"]]
         """
-        raise NotImplementedError("Sorry, the current Parser does not implement this method!")
-
-    def get_priv_attr(self, key):
-        """:func:`burpui.misc.parser.interface.BUIparser.get_priv_attr` is used
-        to retrieve some attributes from the Parser.
-        It is used by :func:`burpui.misc.backend.interface.BUIbackend.get_parser_attr`
-
-        :param key: Name of the attribute to retrieve
-        :type key: str
-
-        :returns: The requested attribute or an empty list
-        """
-        raise NotImplementedError("Sorry, the current Parser does not implement this method!")
+        raise NotImplementedError("Sorry, the current Parser does not implement this method!")  # pragma: no cover
 
     def path_expander(self, pattern=None, client=None):
         """:func:`burpui.misc.parser.interface.BUIparser.path_expander` is used
@@ -177,7 +165,7 @@ class BUIparser(BUIlogging):
 
         :returns: A list of files or an empty list
         """
-        raise NotImplementedError("Sorry, the current Parser does not implement this method!")
+        raise NotImplementedError("Sorry, the current Parser does not implement this method!")  # pragma: no cover
 
     def list_clients(self):
         """:func:`burpui.misc.parser.interface.BUIparser.list_clients` is used
@@ -185,7 +173,7 @@ class BUIparser(BUIlogging):
 
         :returns: A list of clients with their configuration file
         """
-        raise NotImplementedError("Sorry, the current Parser does not implement this method!")
+        raise NotImplementedError("Sorry, the current Parser does not implement this method!")  # pragma: no cover
 
     def remove_client(self, client=None):
         """:func:`burpui.misc.parser.interface.BUIparser.remove_client` is used
@@ -196,7 +184,7 @@ class BUIparser(BUIlogging):
         :returns: A list of notifications to return to the UI (success or
                   failure)
         """
-        raise NotImplementedError("Sorry, the current Parser does not implement this method!")
+        raise NotImplementedError("Sorry, the current Parser does not implement this method!")  # pragma: no cover
 
     def read_client_conf(self, client=None, conf=None):
         """:func:`burpui.misc.parser.interface.BUIparser.read_client_conf` is
@@ -205,4 +193,4 @@ class BUIparser(BUIlogging):
 
         It works the same way as :func:`burpui.misc.parser.interface.BUIparser.read_server_conf`
         """
-        raise NotImplementedError("Sorry, the current Parser does not implement this method!")
+        raise NotImplementedError("Sorry, the current Parser does not implement this method!")  # pragma: no cover
