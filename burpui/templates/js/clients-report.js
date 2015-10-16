@@ -14,11 +14,12 @@ var _clients = function() {
 				.labelType("percent")
 				.valueFormat(d3.format('f'))
 				.color(d3.scale.category20c().range())
-				.tooltipContent(function(key, y, e, graph) { return '<h3>'+key+'</h3><p>'+(j == 'size' ? _bytes_human_readable(y, false) : y)+'</p>'; })
 				.labelThreshold(.05)
 				.donutRatio(0.55)
 				.donut(true)
 				;
+
+			tmp.tooltip.contentGenerator(function(obj) { return '<h3>'+obj.data.label+'</h3><p>'+(j == 'size' ? _bytes_human_readable(obj.data.value, false) : obj.data.value)+'</p>'; });
 
 			_charts_obj.push({ 'key': 'chart_'+j, 'obj': tmp, 'data': [] });
 		});

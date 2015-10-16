@@ -48,6 +48,7 @@ var _client = function() {
 					.x(function(d,i) { return i })
 					.y(function(d) { return d[1] })
 					.margin({bottom: 105, left: 80})
+					.focusEnable(false)
 					;
 
 		_chart_stats.xAxis.tickFormat(function(d) {

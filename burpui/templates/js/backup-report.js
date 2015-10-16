@@ -17,8 +17,9 @@ var _client = function() {
 				.donut(true)
 				.valueFormat(d3.format('f'))
 				.color(d3.scale.category20c().range())
-				.tooltipContent(function(key, y, e, graph) { return '<h3>'+key+'</h3><p>'+y+' '+j+'</p>'; })
 				.donutRatio(0.55);
+
+			tmp.tooltip.contentGenerator(function(obj) { return '<h3>'+obj.data.label+'</h3><p>'+obj.data.value+' '+j+'</p>'; });
 
 			_charts_obj.push({ 'key': 'chart_'+j, 'obj': tmp, 'data': [] });
 		});
@@ -26,13 +27,13 @@ var _client = function() {
 				.x(function(d) { return d.label })
 				.y(function(d) { return parseInt(d.value) })
 				.showValues(false)
-				.tooltips(true)
 				.valueFormat(d3.format('f'))
-				.tooltipContent(function(key, x, y, e, graph) { return '<h3>' + key + ' - ' + x + '</h3><p>' + y + '</p>'; })
 				.color(d3.scale.category20().range())
 				.showControls(false);
 
 		chart_unified.yAxis.tickFormat(d3.format(',.0f'));
+		chart_unified.tooltip.enabled(true);
+		chart_unified.tooltip.contentGenerator(function(obj) { return '<h3>' + obj.data.key + ' - ' + obj.data.label + '</h3><p>' + obj.data.value + '</p>'; });
 	}
 	url = '{{ url_for("api.client_stats", name=cname, backup=nbackup, server=server) }}';
 	$.getJSON(url, function(d) {
