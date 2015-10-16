@@ -110,28 +110,12 @@ class BUIAgent(BUIlogging, Dummy):
             self._logger('debug', '{}\n\nFailed loading backend for Burp version {}: {}'.format(traceback.format_exc(), self.vers, str(e)))
             sys.exit(2)
 
-        self.methods = {
-            'status': self.backend.status,
-            'get_backup_logs': self.backend.get_backup_logs,
-            'get_clients_report': self.backend.get_clients_report,
-            'get_counters': self.backend.get_counters,
-            'is_backup_running': self.backend.is_backup_running,
-            'is_one_backup_running': self.backend.is_one_backup_running,
-            'get_all_clients': self.backend.get_all_clients,
-            'get_client': self.backend.get_client,
-            'get_tree': self.backend.get_tree,
-            'restore_files': self.backend.restore_files,
-            'read_conf_cli': self.backend.read_conf_cli,
-            'store_conf_cli': self.backend.store_conf_cli,
-            'read_conf_srv': self.backend.read_conf_srv,
-            'store_conf_srv': self.backend.store_conf_srv,
-            'expand_path': self.backend.expand_path,
-            'delete_client': self.backend.delete_client,
-            'clients_list': self.backend.clients_list,
-            'get_parser_attr': self.backend.get_parser_attr
-        }
-
         self.server = AgentServer((self.bind, self.port), AgentTCPHandler, self)
+
+    def __getattr__(self, key):
+        if key in dir(self.backend):
+            return getattr(self.backend, key)
+        raise AttributeError('{}: no such function'.format(key))
 
     def _safe_config_get(self, callback, key, sect='Global', cast=None):
         """:func:`burpui.agent._safe_config_get` is a wrapper to handle
@@ -194,21 +178,17 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
                 self.server.agent._logger('warning', '-----> Wrong Password <-----')
                 self.request.sendall(b'KO')
                 return
-            if j['func'] not in self.server.agent.methods:
-                self.server.agent._logger('warning', '-----> Wrong method <-----')
-                self.request.sendall(b'KO')
-                return
             self.request.sendall(b'OK')
             if j['func'] == 'restore_files':
-                res, err = self.server.agent.methods[j['func']](**j['args'])
+                res, err = getattr(self.server.agent, j['func'])(**j['args'])
             else:
                 if j['args']:
                     if 'pickled' in j and j['pickled']:
                         # de-serialize arguments if needed
                         j['args'] = pickle.loads(j['args'])
-                    res = json.dumps(self.server.agent.methods[j['func']](**j['args']))
+                    res = json.dumps(getattr(self.server.agent, j['func'])(**j['args']))
                 else:
-                    res = json.dumps(self.server.agent.methods[j['func']]())
+                    res = json.dumps(getattr(self.server.agent, j['func'])())
             self.server.agent._logger('info', 'result: {}'.format(res))
             if j['func'] == 'restore_files':
                 if err:
@@ -231,6 +211,10 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
                 self.request.sendall(struct.pack('!Q', len(res)))
                 self.request.sendall(res.encode('UTF-8'))
             self.request.close()
+        except AttributeError as e:
+            self.server.agent._logger('warning', '{}\nWrong method => {}'.format(traceback.format_exc(), str(e)))
+            self.request.sendall(b'KO')
+            return
         except Exception as e:
             self.server.agent._logger('error', '!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
         finally:
