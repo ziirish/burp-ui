@@ -103,6 +103,8 @@ $('#input-client').typeahead({
 	name: 'clients',
 	displayKey: 'name',
 	source: _clients_bh.ttAdapter()
+}).on('typeahead:selected', function(obj, datum, name) {
+	window.location = '{{ url_for("view.client") }}?name='+datum.name;
 });
 	{% else -%}
 		{% for srv in config.SERVERS -%}
@@ -253,18 +255,6 @@ $(function() {
 		{% endif -%}
 	});
 
-	{% if config.STANDALONE -%}
-	/***
-	 * trigger action on the 'search field' when the 'enter' key is pressed
-	 */
-	var search = $('input[id="input-client"]');
-	search.keypress(function(e) {
-		if (e.which == 13) {
-			window.location = '{{ url_for("view.client", server=server) }}?name='+search.val();
-		}
-	});
-	{% endif -%}
-
 	/***
 	 * add a listener to the '.clickable' element dynamically added in the document (see _client and _clients function)
 	 */
@@ -300,11 +290,11 @@ $(function() {
 	/***
 	 * auto-refresh our page if needed
 	 */
-	 {% if live -%}
-	 {% set autorefresh = config.LIVEREFRESH %}
-	 {% else -%}
-	 {% set autorefresh = config.REFRESH %}
-	 {% endif -%}
+	{% if live -%}
+	{% set autorefresh = config.LIVEREFRESH %}
+	{% else -%}
+	{% set autorefresh = config.REFRESH %}
+	{% endif -%}
 	var auto_refresh = setInterval(function() {
 		{% if clients -%}
 		_clients();
