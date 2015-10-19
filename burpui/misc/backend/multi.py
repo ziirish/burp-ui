@@ -20,7 +20,7 @@ except ImportError:
 
 from future.utils import iteritems
 
-from burpui.misc.backend.interface import BUIbackend, BUIserverException
+from .interface import BUIbackend, BUIserverException
 
 
 class Burp(BUIbackend):

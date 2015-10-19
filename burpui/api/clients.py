@@ -7,8 +7,9 @@
 .. moduleauthor:: Ziirish <ziirish@ziirish.info>
 
 """
-from burpui.api import api
-from burpui.misc.backend.interface import BUIserverException
+# This is a submodule we can also use "from ..api import api"
+from . import api
+from ..misc.backend.interface import BUIserverException
 
 from future.utils import iteritems
 from flask.ext.restful import reqparse, Resource

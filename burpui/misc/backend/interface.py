@@ -7,7 +7,7 @@
 .. moduleauthor:: Ziirish <ziirish@ziirish.info>
 
 """
-from burpui.misc.utils import BUIlogging
+from ..utils import BUIlogging
 
 
 class BUIbackend(BUIlogging):

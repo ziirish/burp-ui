@@ -9,7 +9,8 @@
 """
 import sys
 
-from burpui.api import api
+# This is a submodule we can also use "from ..api import api"
+from . import api
 from flask.ext.restful import reqparse, abort, Resource
 from flask.ext.login import current_user, login_required
 from flask import jsonify, flash, request, redirect, url_for

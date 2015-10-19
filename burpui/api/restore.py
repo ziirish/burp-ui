@@ -12,7 +12,8 @@ import select
 from zlib import adler32
 from time import gmtime, strftime, time
 
-from burpui.api import api
+# This is a submodule we can also use "from ..api import api"
+from . import api
 from flask.ext.restful import reqparse, Resource, abort
 from flask.ext.login import current_user, login_required
 from flask import Response, send_file, make_response, after_this_request

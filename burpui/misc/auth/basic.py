@@ -1,5 +1,5 @@
 # -*- coding: utf8 -*-
-from burpui.misc.auth.interface import BUIhandler, BUIuser
+from .interface import BUIhandler, BUIuser
 
 try:
     import ConfigParser

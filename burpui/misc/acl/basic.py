@@ -1,5 +1,5 @@
 # -*- coding: utf8 -*-
-from burpui.misc.acl.interface import BUIacl, BUIaclLoader
+from .interface import BUIacl, BUIaclLoader
 
 try:
     import ConfigParser

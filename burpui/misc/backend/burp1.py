@@ -26,9 +26,9 @@ import codecs
 from future.utils import iteritems
 from pipes import quote
 
-from burpui.misc.utils import human_readable as _hr, BUIcompress
-from burpui.misc.backend.interface import BUIbackend, BUIserverException
-from burpui.misc.parser.burp1 import Parser
+from .interface import BUIbackend, BUIserverException
+from ..utils import human_readable as _hr, BUIcompress
+from ..parser.burp1 import Parser
 
 if sys.version_info >= (3, 0):  # pragma: no cover
     from urllib.parse import unquote

@@ -1,6 +1,6 @@
 # -*- coding: utf8 -*-
 from future.utils import viewitems
-from burpui.misc.auth.interface import BUIhandler, BUIuser
+from .interface import BUIhandler, BUIuser
 
 import ssl
 

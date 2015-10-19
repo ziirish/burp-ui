@@ -6,8 +6,8 @@ import codecs
 
 from glob import glob
 
-from burpui.misc.utils import BUIlogging
-from burpui.misc.parser.interface import BUIparser
+from ..utils import BUIlogging
+from .interface import BUIparser
 
 
 class Parser(BUIparser):

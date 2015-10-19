@@ -23,10 +23,10 @@ from future.utils import iteritems
 from pipes import quote
 from select import select
 
-from burpui.misc.utils import human_readable as _hr
-from burpui.misc.backend.interface import BUIserverException
-from burpui.misc.backend.burp1 import Burp as Burp1
-from burpui.misc.parser.burp2 import Parser
+from .interface import BUIserverException
+from .burp1 import Burp as Burp1
+from ..utils import human_readable as _hr
+from ..parser.burp2 import Parser
 
 if sys.version_info < (3, 3):
     TimeoutError = OSError

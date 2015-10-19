@@ -50,7 +50,6 @@ view.bui = bui
 app.register_blueprint(view)
 
 # We initialize the API
-api.app = app
 api.init_bui(bui)
 api.init_app(app)
 
