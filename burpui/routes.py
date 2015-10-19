@@ -5,12 +5,9 @@ import sys
 from flask import request, render_template, jsonify, redirect, url_for, abort, flash, Blueprint
 from flask.ext.login import login_user, login_required, logout_user, current_user
 
-from burpui.forms import LoginForm
-from burpui.misc.utils import human_readable as _hr
-from burpui.misc.backend.interface import BUIserverException
-
-import burpui.api
-from burpui.api.servers import ServersStats, Live
+from .forms import LoginForm
+from .misc.utils import human_readable as _hr
+from .misc.backend.interface import BUIserverException
 
 if sys.version_info >= (3, 0):
     from urllib.parse import quote

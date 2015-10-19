@@ -17,9 +17,9 @@ import logging
 from flask import Flask
 from flask.ext.login import LoginManager
 from flask.ext.bower import Bower
-from burpui.server import BUIServer as BurpUI
-from burpui.routes import view
-from burpui.api import api
+from .server import BUIServer as BurpUI
+from .routes import view
+from .api import api
 
 if sys.version_info < (3, 0):
     reload(sys)
@@ -51,7 +51,7 @@ app.register_blueprint(view)
 
 # We initialize the API
 api.app = app
-api.bui = bui
+api.init_bui(bui)
 api.init_app(app)
 
 # And the login_manager
@@ -74,57 +74,17 @@ def load_user(userid):
     return None  # pragma: no cover
 
 
-def init(conf=None, debug=False, logfile=None, gunicorn=True):
-    """Initialize the whole application.
-
-    :param conf: Configuration file to use
-    :type conf: str
-
-    :param debug: Enable verbose output
-    :type debug: bool
-
-    :param logfile: Store the logs in the given file
-    :type logfile: str
-
-    :param gunicorn: Enable gunicorn engine instead of flask's default
-    :type gunicorn: bool
-
-    :returns: A :class:`Flask` object
-    """
-    if debug and not gunicorn:  # pragma: no cover
-        app.config['DEBUG'] = debug
-        app.config['TESTING'] = True
-
-    if logfile:
-        from logging import Formatter
-        from logging.handlers import RotatingFileHandler
-        file_handler = RotatingFileHandler(logfile, maxBytes=1024 * 1024 * 100, backupCount=20)
-        if debug:
-            LOG_FORMAT = (
-                '-' * 80 + '\n' +
-                '%(levelname)s in %(module)s [%(pathname)s:%(lineno)d]:\n' +
-                '%(message)s\n' +
-                '-' * 80
-            )
-            file_handler.setLevel(logging.DEBUG)
-        else:
-            LOG_FORMAT = '[%(asctime)s] %(levelname)s in %(module)s: %(message)s'
-            file_handler.setLevel(logging.INFO)
-        file_handler.setFormatter(Formatter(LOG_FORMAT))
-        app.logger.addHandler(file_handler)
-
+def lookup_config(conf=None):
+    ret = None
     if conf:
         if os.path.isfile(conf):
+            ret = conf
             app.config['CFG'] = conf
         else:
             raise IOError('File not found: \'{0}\''.format(conf))
     else:
         root = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)),
-            '..',
-            '..',
-            '..',
-            '..',
+            sys.prefix,
             'share',
             'burpui',
             'etc'
@@ -135,11 +95,69 @@ def init(conf=None, debug=False, logfile=None, gunicorn=True):
             os.path.join(root, 'burpui.sample.cfg')
         ]
         for p in conf_files:
-            app.logger.debug('Trying file \'%s\'', p)
+            app.logger.debug('Trying file \'{}\''.format(p))
             if os.path.isfile(p):
                 app.config['CFG'] = p
-                app.logger.debug('Using file \'%s\'', p)
+                ret = p
+                app.logger.debug('Using file \'{}\''.format(p))
                 break
+
+    return ret
+
+
+def init(conf=None, debug=0, logfile=None, gunicorn=True):
+    """Initialize the whole application.
+
+    :param conf: Configuration file to use
+    :type conf: str
+
+    :param debug: Enable verbose output
+    :type debug: int
+
+    :param logfile: Store the logs in the given file
+    :type logfile: str
+
+    :param gunicorn: Enable gunicorn engine instead of flask's default
+    :type gunicorn: bool
+
+    :returns: A :class:`Flask` object
+    """
+    # The debug argument used to be a boolean so we keep supporting this format
+    if isinstance(debug, bool):
+        debug = logging.DEBUG
+    else:
+        levels = [logging.NOTSET, logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG]
+        if debug >= len(levels):
+            debug = len(levels) - 1
+        if not debug:
+            debug = 0
+        debug = levels[debug]
+
+    if debug != logging.NOTSET and not gunicorn:  # pragma: no cover
+        app.config['DEBUG'] = True
+        app.config['TESTING'] = True
+
+    if logfile:
+        from logging import Formatter
+        from logging.handlers import RotatingFileHandler
+        file_handler = RotatingFileHandler(logfile, maxBytes=1024 * 1024 * 100, backupCount=20)
+        if debug > logging.INFO:
+            LOG_FORMAT = (
+                '-' * 80 + '\n' +
+                '%(levelname)s in %(module)s [%(pathname)s:%(lineno)d]:\n' +
+                '%(message)s\n' +
+                '-' * 80
+            )
+            file_handler.setLevel(debug)
+        else:
+            LOG_FORMAT = '[%(asctime)s] %(levelname)s in %(module)s: %(message)s'
+            file_handler.setLevel(debug)
+        file_handler.setFormatter(Formatter(LOG_FORMAT))
+        app.logger.addHandler(file_handler)
+
+    # Still need to test conf file here because the init function can be called
+    # by gunicorn directly
+    lookup_config(conf)
 
     bui.setup(app.config['CFG'])
 

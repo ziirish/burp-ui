@@ -41,8 +41,7 @@ class BuildStatic(Command):
     def run(self):
         log.info("running [bower install]")
         try:
-            path = check_output(['which', 'bower'])
-            check_output([path, 'install'], cwd=ROOT)
+            check_output(['bower', 'install'], cwd=ROOT)
         except Exception as e:
             log.warn(str(e))
 
@@ -105,15 +104,20 @@ setup(
     package_data={
         'static': 'burpui/static/*',
         'templates': 'burpui/templates/*',
-        'VERSION': 'burpui/VERSION'
+        'VERSION': 'burpui/VERSION',
     },
-    scripts=['bin/burp-ui', 'bin/bui-agent'],
+    entry_points={
+        'console_scripts': [
+            'burp-ui=burpui.__main__:server',
+            'bui-agent=burpui.__main__:agent',
+        ],
+    },
     data_files=[
         (datadir, [os.path.join(datadir, 'burpui.sample.cfg')]),
         (datadir, [os.path.join(datadir, 'buiagent.sample.cfg')]),
         (os.path.join(contrib, 'centos'), ['contrib/centos/init.sh']),
         (os.path.join(contrib, 'debian'), ['contrib/debian/init.sh']),
-        (os.path.join(contrib, 'gunicorn.d'), ['contrib/gunicorn.d/burp-ui'])
+        (os.path.join(contrib, 'gunicorn.d'), ['contrib/gunicorn.d/burp-ui']),
     ],
     install_requires=requires,
     extras_require={
@@ -129,12 +133,12 @@ setup(
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.7',
         'Topic :: System :: Archiving :: Backup',
-        'Topic :: System :: Monitoring'
+        'Topic :: System :: Monitoring',
     ],
     cmdclass={
         'build_static': BuildStatic,
         'develop': DevelopWithBuildStatic,
         'sdist': SdistWithBuildStatic,
-        'install': CustomInstall
+        'install': CustomInstall,
     }
 )

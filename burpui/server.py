@@ -14,7 +14,7 @@ except ImportError:
 import traceback
 import sys
 
-from burpui.misc.backend.burp1 import Burp as BurpGeneric
+from .misc.backend.burp1 import Burp as BurpGeneric
 
 g_port = '5000'
 g_bind = '::'
@@ -79,6 +79,8 @@ class BUIServer:
                 self.auth = self._safe_config_get(config.get, 'auth')
                 if self.auth and self.auth.lower() != 'none':
                     try:
+                        import os
+                        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
                         mod = __import__(
                             'burpui.misc.auth.{0}'.format(self.auth.lower()),
                             fromlist=['UserHandler']
@@ -98,6 +100,8 @@ class BUIServer:
 
                 if self.acl_engine and self.acl_engine.lower() != 'none':
                     try:
+                        import os
+                        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
                         mod = __import__(
                             'burpui.misc.acl.{0}'.format(self.acl_engine.lower()),
                             fromlist=['ACLloader']
@@ -141,6 +145,8 @@ class BUIServer:
         # This instanciation is used for development purpose only
         self.cli = BurpGeneric(dummy=True)
         try:
+            import os
+            sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
             mod = __import__(module, fromlist=['Burp'])
             Client = mod.Burp
             self.cli = Client(self, conf=conf)
@@ -184,12 +190,9 @@ class BUIServer:
                 return self.defaults[key]
         return None
 
-    def run(self, debug=False):
+    def run(self):
         """The :func:`burpui.server.BUIServer.run` functions is used to actually
         launch the ``Burp-UI`` server.
-
-        :param debug: Enable debug mode
-        :type conf: bool
         """
         if not self.init:
             self.setup()
@@ -199,6 +202,6 @@ class BUIServer:
 
         if self.sslcontext:
             self.app.config['SSL'] = True
-            self.app.run(host=self.bind, port=self.port, debug=debug, ssl_context=self.sslcontext)
+            self.app.run(host=self.bind, port=self.port, debug=self.app.config['DEBUG'], ssl_context=self.sslcontext)
         else:
-            self.app.run(host=self.bind, port=self.port, debug=debug)
+            self.app.run(host=self.bind, port=self.port, debug=self.app.config['DEBUG'])

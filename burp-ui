@@ -1,31 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf8 -*-
-import sys
-import os
-from optparse import OptionParser
+#!/bin/bash
 
-sys.path.append('{0}/..'.format(os.path.join(os.path.dirname(os.path.realpath(__file__)))))
-
-from burpui import bui, init, __title__, __version__
-
-if __name__ == '__main__':
-    """
-    Main function
-    """
-    parser = OptionParser()
-    parser.add_option('-v', '--verbose', dest='log', help='verbose output', action='store_true')
-    parser.add_option('-d', '--debug', dest='log', help='verbose output (alias)', action='store_true')  # alias for -v
-    parser.add_option('-V', '--version', dest='version', help='print version and exit', action='store_true')
-    parser.add_option('-c', '--config', dest='config', help='configuration file', metavar='CONFIG')
-    parser.add_option('-l', '--logfile', dest='logfile', help='output logs in defined file', metavar='FILE')
-
-    (options, args) = parser.parse_args()
-    d = options.log
-
-    if options.version:
-        print ('{}: v{}'.format(__title__, __version__))
-        sys.exit(0)
-
-    init(options.config, d, options.logfile, False)
-
-    bui.run(d)
+python ./burpui $@
