@@ -43,7 +43,6 @@ class Burp(BUIbackend):
 
     def __init__(self, server=None, conf=None):
         self.app = None
-        self.logger = None
         self.acl_handler = False
         if server:
             if hasattr(server, 'app'):

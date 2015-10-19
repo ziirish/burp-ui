@@ -60,7 +60,6 @@ class Burp(Burp1):
         global g_burpbin, g_stripbin, g_burpconfcli, g_burpconfsrv, g_tmpdir, BURP_MINIMAL_VERSION
         self.proc = None
         self.app = None
-        self.logger = None
         self.acl_handler = False
         if server:
             if hasattr(server, 'app'):

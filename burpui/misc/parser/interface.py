@@ -26,7 +26,6 @@ class BUIparser(BUIlogging):
         """
         self.app = app
         self.conf = conf
-        self.logger = None
         if self.app:
             self.logger = self.app.logger
 

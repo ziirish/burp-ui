@@ -107,7 +107,6 @@ class Burp(BUIbackend):
         if dummy:
             return
         self.app = None
-        self.logger = None
         self.acl_handler = False
         if server:
             if hasattr(server, 'app'):

@@ -11,7 +11,7 @@ import traceback
 from threading import Thread
 from logging import Formatter, StreamHandler
 from logging.handlers import RotatingFileHandler
-from burpui.misc.utils import BUIlogging
+from .misc.utils import BUIlogging
 try:
     import ujson as json
 except ImportError:
@@ -48,7 +48,6 @@ class BUIAgent(BUIlogging, Dummy):
         global g_port, g_bind, g_ssl, g_version, g_sslcert, g_sslkey, g_password
         self.conf = conf
         self.dbg = debug
-        self.logger = None
         self.padding = 1
         if debug > logging.NOTSET:
             levels = [0, logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG]
