@@ -123,7 +123,10 @@ def init(conf=None, debug=0, logfile=None, gunicorn=True):
     """
     # The debug argument used to be a boolean so we keep supporting this format
     if isinstance(debug, bool):
-        debug = logging.DEBUG
+        if debug:
+            debug = logging.DEBUG
+        else:
+            debug = logging.NOTSET
     else:
         levels = [logging.NOTSET, logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG]
         if debug >= len(levels):
