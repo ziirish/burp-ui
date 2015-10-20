@@ -101,6 +101,7 @@ class BUIAgent(BUIlogging, Dummy):
 
         module = 'burpui.misc.backend.burp{0}'.format(self.vers)
         try:
+            sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
             mod = __import__(module, fromlist=['Burp'])
             Client = mod.Burp
             self.backend = Client(conf=conf)

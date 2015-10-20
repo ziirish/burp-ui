@@ -13,8 +13,8 @@ except ImportError:
     import configparser as ConfigParser
 import traceback
 import sys
+import os
 
-from .misc.backend.burp1 import Burp as BurpGeneric
 
 g_port = '5000'
 g_bind = '::'
@@ -79,7 +79,8 @@ class BUIServer:
                 self.auth = self._safe_config_get(config.get, 'auth')
                 if self.auth and self.auth.lower() != 'none':
                     try:
-                        import os
+                        # Try to load submodules from our current environment
+                        # first
                         sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
                         mod = __import__(
                             'burpui.misc.auth.{0}'.format(self.auth.lower()),
@@ -100,7 +101,8 @@ class BUIServer:
 
                 if self.acl_engine and self.acl_engine.lower() != 'none':
                     try:
-                        import os
+                        # Try to load submodules from our current environment
+                        # first
                         sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
                         mod = __import__(
                             'burpui.misc.acl.{0}'.format(self.acl_engine.lower()),
@@ -109,7 +111,7 @@ class BUIServer:
                         ACLloader = mod.ACLloader
                         self.acl_handler = ACLloader(self.app, self.standalone)
                         # for development purpose only
-                        from burpui.misc.acl.interface import BUIacl
+                        from .misc.acl.interface import BUIacl
                         self.acl = BUIacl
                         self.acl = self.acl_handler.acl
                     except Exception as e:
@@ -143,9 +145,11 @@ class BUIServer:
         else:
             module = 'burpui.misc.backend.multi'
         # This instanciation is used for development purpose only
+        from .misc.backend.burp1 import Burp as BurpGeneric
         self.cli = BurpGeneric(dummy=True)
         try:
-            import os
+            # Try to load submodules from our current environment
+            # first
             sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
             mod = __import__(module, fromlist=['Burp'])
             Client = mod.Burp

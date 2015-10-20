@@ -4,7 +4,8 @@ import sys
 import os
 from argparse import ArgumentParser
 
-sys.path.append('{0}/..'.format(os.path.join(os.path.dirname(os.path.realpath(__file__)))))
+# Try to load modules from our current env first
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
 
 
 def parse_args(mode=True, name=None):
@@ -14,10 +15,10 @@ def parse_args(mode=True, name=None):
     parser.add_argument('-v', '--verbose', dest='log', help='increase output verbosity (e.g., -vv is more than -v)', action='count')
     parser.add_argument('-d', '--debug', dest='log', help='alias for -v', action='count')  # alias for -v
     parser.add_argument('-V', '--version', dest='version', help='print version and exit', action='store_true')
-    parser.add_argument('-c', '--config', dest='config', help='configuration file', metavar='CONFIG')
-    parser.add_argument('-l', '--logfile', dest='logfile', help='output logs in defined file', metavar='FILE')
+    parser.add_argument('-c', '--config', dest='config', help='configuration file', metavar='<CONFIG>')
+    parser.add_argument('-l', '--logfile', dest='logfile', help='output logs in defined file', metavar='<FILE>')
     if mode:
-        parser.add_argument('-m', '--mode', dest='mode', help='application mode (server or agent)', metavar='MODE')
+        parser.add_argument('-m', '--mode', dest='mode', help='application mode (server or agent)', metavar='<agent|server>')
 
     options = parser.parse_args()
 

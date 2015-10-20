@@ -13,6 +13,7 @@ import re
 import sys
 
 from flask.ext.restful import Api
+from importlib import import_module
 
 
 class ApiWrapper(Api):
@@ -32,8 +33,8 @@ class ApiWrapper(Api):
                 if (os.path.isfile(os.path.join(__path__[0], f)) and
                         ext == '.py' and
                         name not in ['__init__', '.', '..']):
-                    mod = name
-                    __import__(mod, globals=globals())
+                    mod = '.'+name
+                    import_module(mod, 'burpui.api')
 
 
 api = ApiWrapper()
