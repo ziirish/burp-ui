@@ -27,7 +27,7 @@ class DevelopWithBuildStatic(develop):
 class BdistWithBuildStatic(bdist_egg):
     def initialize_options(self):
         self.run_command('build_static')
-        return sdist.initialize_options(self)
+        return bdist_egg.initialize_options(self)
 
 
 class SdistWithBuildStatic(sdist):
