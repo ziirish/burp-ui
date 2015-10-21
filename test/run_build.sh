@@ -29,8 +29,13 @@ update
 echo "installing bower"
 npm install -g bower
 
+echo "downloading libs"
+bower install
+
 echo "building dist"
 $PYTHON setup.py sdist
 
 echo "publishing build"
-cp dist/burp-ui*.tar.gz /builds/burp-ui.dev.tar.gz
+cp -vf dist/burp-ui*.tar.gz /pub/burp-ui.dev.tar.gz
+
+exit 0
