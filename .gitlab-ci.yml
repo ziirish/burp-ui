@@ -24,8 +24,18 @@ py3.4:
   except:
   - tags
 
-build-dev:
+build-dev2:
   stage: build
+  script:
+  - /bin/bash test/run_build.sh
+  tags:
+  - build
+  only:
+  - master
+
+build-dev3:
+  stage: build
+  image: python:3.4
   script:
   - /bin/bash test/run_build.sh
   tags:
