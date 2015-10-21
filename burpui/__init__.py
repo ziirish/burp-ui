@@ -98,9 +98,9 @@ def lookup_config(conf=None):
             if os.path.isfile(p):
                 app.config['CFG'] = p
                 ret = p
-                app.logger.debug('Using file \'{}\''.format(p))
                 break
 
+    app.logger.debug('Using file \'{}\''.format(ret))
     return ret
 
 

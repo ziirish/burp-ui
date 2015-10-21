@@ -48,7 +48,7 @@ def server(options=None):
     if not options:
         options = parse_args(mode=False)
 
-    conf = lookup_config()
+    conf = lookup_config(options.config)
     check_config(conf)
 
     init(conf, options.log, options.logfile, False)

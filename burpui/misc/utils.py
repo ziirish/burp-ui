@@ -131,7 +131,7 @@ class BUIlogging(object):
     """Provides a generic logging method for all modules"""
     def _logger(self, level, msg, *args):
         """generic logging method so that the logging is backend-independent"""
-        if self.logger and self.logger.getEffectiveLevel() >= logging.getLevelName(level.upper()):
+        if self.logger and self.logger.getEffectiveLevel() <= logging.getLevelName(level.upper()):
             sav = None
             if not self.monkey:
                 self.monkey = BUIlogger(__name__)
