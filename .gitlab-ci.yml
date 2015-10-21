@@ -1,5 +1,11 @@
 
+stages:
+  - test
+  - build
+  - deploy
+
 py2.7:
+  stage: test
   image: python:2.7
   script:
   - /bin/bash test/run_tests.sh
@@ -9,6 +15,7 @@ py2.7:
   - tags
 
 py3.4:
+  stage: test
   image: python:3.4
   script:
   - /bin/bash test/run_tests.sh
@@ -16,3 +23,12 @@ py3.4:
   - docker
   except:
   - tags
+
+build-dev:
+  stage: build
+  script:
+  - /bin/bash test/run_build.sh
+  tags:
+  - build
+  only:
+  - master
