@@ -52,7 +52,6 @@ class BuildStatic(Command):
         except Exception as e:
             log.warn('Bower error: {}'.format(str(e)))
         # Not sure bower was a great idea...
-        """
         keep = [
             'burpui/static/vendor/bootswatch/slate/bootstrap.min.css',
             'burpui/static/vendor/nvd3/build/nv.d3.min.css',
@@ -94,7 +93,6 @@ class BuildStatic(Command):
                 path = os.path.join(dirname, filename)
                 if os.path.isdir(path) and not os.listdir(path):
                     os.rmdir(path)
-        """
 
 
 class CustomInstall(install):
