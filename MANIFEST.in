@@ -1,5 +1,6 @@
 include LICENSE
 include README.rst
+include VERSION
 include burpui/VERSION
 include requirements.txt
 include test-requirements.txt
