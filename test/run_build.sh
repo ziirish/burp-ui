@@ -3,7 +3,7 @@
 PYTHON=$(which python)
 ISROOT=0
 UPDATED=0
-VERSION=$($PYTHON -V | cut -d' ' -f2)
+VERSION=$($PYTHON -V 2>&1 | cut -d' ' -f2)
 
 function update() {
     [ $UPDATED -eq 0 ] && [ $ISROOT -eq 1 ] && {
@@ -34,11 +34,11 @@ echo "downloading libs"
 bower install
 
 echo "building dist"
-$PYTHON setup.py sdist
+[ "$(sed 's/\([[:digit:]]*\)\..*$/\1/' <<<$VERSION)" -eq 2 ] && $PYTHON setup.py sdist
 $PYTHON setup.py bdist_egg
 
 echo "publishing build"
-cp -vf dist/burp-ui*.tar.gz /pub/burp-ui.dev.tar.gz
-cp -vf dist/burp_ui*.egg /pub/burp_ui-dev-py${VERSION}.egg
+cp -vf dist/burp-ui*.tar.gz /pub/burp-ui.dev.tar.gz 2>/dev/null
+cp -vf dist/burp_ui*.egg /pub/burp_ui-dev-py${VERSION}.egg 2>/dev/null
 
 exit 0
