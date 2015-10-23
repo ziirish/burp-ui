@@ -46,7 +46,7 @@ app.jinja_env.globals.update(api=api)
 bui = BurpUI(app)
 
 # Then we load our routes
-view.bui = bui
+view.init_bui(bui)
 app.register_blueprint(view)
 
 # We initialize the API

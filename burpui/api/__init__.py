@@ -1,8 +1,8 @@
 # -*- coding: utf8 -*-
 """
 .. module:: burpui.api
-   :platform: Unix
-   :synopsis: Burp-UI api module.
+    :platform: Unix
+    :synopsis: Burp-UI api module.
 
 .. moduleauthor:: Ziirish <ziirish@ziirish.info>
 
@@ -14,10 +14,11 @@ import sys
 
 from flask.ext.restful import Api
 from importlib import import_module
+from ..misc.backend.burp1 import Burp as BurpGeneric
 
 
 class ApiWrapper(Api):
-    bui = None
+    bui = BurpGeneric(dummy=True)
     loaded = False
 
     def init_bui(self, bui):

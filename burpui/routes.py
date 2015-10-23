@@ -8,14 +8,21 @@ from flask.ext.login import login_user, login_required, logout_user, current_use
 from .forms import LoginForm
 from .misc.utils import human_readable as _hr
 from .misc.backend.interface import BUIserverException
+from .misc.backend.burp1 import Burp as BurpGeneric
 
 if sys.version_info >= (3, 0):
     from urllib.parse import quote
 else:
     from urllib import quote
 
-view = Blueprint('view', __name__, template_folder='templates')
-view.bui = None
+
+class BPWrapper(Blueprint):
+    bui = BurpGeneric(dummy=True)
+
+    def init_bui(self, bui):
+        self.bui = bui
+
+view = BPWrapper('view', __name__, template_folder='templates')
 
 
 """
