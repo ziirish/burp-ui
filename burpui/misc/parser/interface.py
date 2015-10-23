@@ -193,3 +193,34 @@ class BUIparser(BUIlogging):
         It works the same way as :func:`burpui.misc.parser.interface.BUIparser.read_server_conf`
         """
         raise NotImplementedError("Sorry, the current Parser does not implement this method!")  # pragma: no cover
+
+    def server_initiated_restoration(self, name=None, backup=None, files=None, strip=None, force=None, prefix=None):
+        """:func:`burpui.misc.parser.interface.BUIparser.server_initiated_restoration`
+        called by :func:`burpui.misc.backend.interface.BUIbackend.schedule_restore`
+        in order to create server-initiated restoration file.
+
+        :param name: Client name
+        :type name: str
+
+        :param backup: Backup number
+        :type backup: int
+
+        :param files: List of files to restore
+        :type files: str
+
+        :param strip: Number of leading path to strip
+        :type strip: int
+
+        :param force: Wether to force overriding files or not
+        :type force: bool
+
+        :param prefix: Where to restore files
+        :type prefix: str
+
+        :param agent: What server to ask (only in multi-agent mode)
+        :type agent: str
+
+        :returns: A list of notifications to return to the UI (success or
+                  failure)
+        """
+        raise NotImplementedError("Sorry, the current Parser does not implement this method!")  # pragma: no cover

@@ -30,7 +30,7 @@ class Restore(Resource):
 
     This resource is part of the :mod:`burpui.api.restore` module.
 
-    The following ``GET`` parameters are supported:
+    The following parameters are supported:
     - ``list``: list of files/directories to restore
     - ``strip``: number of elements to strip in the path
     - ``format``: returning archive format
@@ -121,7 +121,7 @@ class Restore(Resource):
                                  mimetype='application/zip')
                 resp.set_cookie('fileDownload', 'true')
             except Exception as e:
-                api.app.logger.error(str(e))
+                api.bui.cli._logger('error', str(e))
                 abort(500)
         else:
             # Multi-agent mode
@@ -134,10 +134,10 @@ class Restore(Resource):
                                                                 f,
                                                                 p,
                                                                 server)
-                api.app.logger.debug('Need to get %d Bytes : %s', length, socket)
+                api.bui.cli._logger('debug', 'Need to get {} Bytes : {}'.format(length, socket))
 
                 if err:
-                    api.app.logger.debug('Something went wrong: %s', err)
+                    api.bui.cli._logger('debug', 'Something went wrong: {}'.format(err))
                     socket.close()
                     return make_response(err, 500)
 
@@ -159,7 +159,7 @@ class Restore(Resource):
                         if not buf:
                             continue
                         received += len(buf)
-                        api.app.logger.debug('%d/%d', received, l)
+                        api.bui.cli._logger('debug', '{}/{}'.format(received, l))
                         yield buf
                     sock.close()
 
@@ -181,6 +181,67 @@ class Restore(Resource):
             except HTTPException as e:
                 raise e
             except Exception as e:
-                api.app.logger.error(str(e))
+                api.bui.cli._logger('error', str(e))
                 abort(500)
         return resp
+
+
+@api.resource('/api/schedule-restore/<name>/<int:backup>',
+              '/api/<server>/schedule-restore/<name>/<int:backup>',
+              endpoint='api.schedule_restore')
+class ScheduleRestore(Resource):
+    """The :class:`burpui.api.restore.ScheduleRestore` resource allows you to
+    prepare a file restoration.
+
+    This resource is part of the :mod:`burpui.api.restore` module.
+
+    The following parameters are supported:
+    - ``list``: list of files/directories to restore
+    - ``strip``: number of elements to strip in the path
+    - ``prefix``: prefix to the restore path
+    - ``force``: whether to overwrite existing files
+    """
+
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument('list', type=str)
+        self.parser.add_argument('strip', type=str)
+        self.parser.add_argument('prefix', type=str)
+        self.parser.add_argument('force', type=str)
+
+    @login_required
+    def post(self, server=None, name=None, backup=None):
+        """**POST** method provided by the webservice.
+
+        :param server: Which server to collect data from when in multi-agent mode
+        :type server: str
+
+        :param name: The client we are working on
+        :type name: str
+
+        :param backup: The backup we are working on
+        :type backup: int
+
+        :returns: Status message (success or failure)
+        """
+        args = self.parser.parse_args()
+        l = args['list']
+        s = args['strip']
+        p = args['prefix']
+        f = args['force']
+        j = []
+        err = []
+        # Check params
+        if not l or not name or not backup:
+            err.append([2, 'Missing options'])
+            return {'notif': err}, 500
+        # Manage ACL
+        if (api.bui.acl and
+                (not api.bui.acl.is_client_allowed(current_user.get_id(),
+                                                   name,
+                                                   server) and not
+                 api.bui.acl.is_admin(current_user.get_id()))):
+            err.append([2, 'You are not allowed to perform a restoration for this client'])
+            return {'notif': err}, 403
+        j = api.bui
+        return {'result': j}, 200

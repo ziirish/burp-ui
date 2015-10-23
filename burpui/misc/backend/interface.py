@@ -575,6 +575,36 @@ class BUIbackend(BUIlogging):
         """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
+    def schedule_restore(self, name=None, backup=None, files=None, strip=None, force=None, prefix=None, agent=None):
+        """The :func:`burpui.misc.backend.interface.BUIbackend.schedule_restore`
+        function is used to schedule a server-side initiated restoration.
+
+        :param name: Client name
+        :type name: str
+
+        :param backup: Backup number
+        :type backup: int
+
+        :param files: List of files to restore
+        :type files: str
+
+        :param strip: Number of leading path to strip
+        :type strip: int
+
+        :param force: Wether to force overriding files or not
+        :type force: bool
+
+        :param prefix: Where to restore files
+        :type prefix: str
+
+        :param agent: What server to ask (only in multi-agent mode)
+        :type agent: str
+
+        :returns: A list of notifications to return to the UI (success or
+                  failure)
+        """
+        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+
 
 class BUIserverException(Exception):
     """Raised in case of internal error. This exception should never reach the

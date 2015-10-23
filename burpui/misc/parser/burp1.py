@@ -875,3 +875,7 @@ class Parser(BUIparser):
         (key, _) = re.split('\s+|=', line, 1)
         key = key.strip()
         return key not in keys
+
+    def server_initiated_restoration(self, name=None, backup=None, files=None, strip=None, force=None, prefix=None):
+        """See :func:`burpui.misc.parser.interface.BUIparser.server_initiated_restoration`"""
+        pass
