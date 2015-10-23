@@ -54,6 +54,11 @@ class BuildStatic(Command):
         # Not sure bower was a great idea...
         keep = [
             'burpui/static/vendor/bootswatch/slate/bootstrap.min.css',
+            'burpui/static/vendor/bootswatch/fonts/glyphicons-halflings-regular.eot',
+            'burpui/static/vendor/bootswatch/fonts/glyphicons-halflings-regular.svg',
+            'burpui/static/vendor/bootswatch/fonts/glyphicons-halflings-regular.ttf',
+            'burpui/static/vendor/bootswatch/fonts/glyphicons-halflings-regular.woff',
+            'burpui/static/vendor/bootswatch/fonts/glyphicons-halflings-regular.woff2',
             'burpui/static/vendor/nvd3/build/nv.d3.min.css',
             'burpui/static/vendor/datatables/media/css/dataTables.bootstrap.min.css',
             'burpui/static/vendor/jquery.fancytree/dist/skin-bootstrap/ui.fancytree.min.css',
@@ -83,16 +88,21 @@ class BuildStatic(Command):
             'burpui/static/vendor/angular-strap/dist/angular-strap.tpl.min.js',
             'burpui/static/vendor/angular-onbeforeunload/build/angular-onbeforeunload.js',
         ]
+        dirlist = []
         for dirname, subdirs, files in os.walk('burpui/static/vendor'):
             for filename in files:
                 path = os.path.join(dirname, filename)
-                if os.path.isfile(path) and path not in keep:
+                name, ext = os.path.splitext(path)
+                fil = path
+                if ext != '.map':
+                    name = path
+                if os.path.isfile(path) and name not in keep:
                     os.unlink(path)
-        for dirname, subdirs, files in os.walk('burpui/static/vendor'):
-            for filename in files:
-                path = os.path.join(dirname, filename)
-                if os.path.isdir(path) and not os.listdir(path):
-                    os.rmdir(path)
+                elif os.path.isdir(path):
+                    dirlist.append(path)
+        for d in dirlist:
+            if os.path.isdir(d) and not os.listdir(d):
+                os.rmdir(d)
 
 
 class CustomInstall(install):
