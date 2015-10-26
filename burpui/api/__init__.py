@@ -22,6 +22,10 @@ class ApiWrapper(Api):
     loaded = False
 
     def init_bui(self, bui):
+        """Loads the right context.
+        :param bui: application context
+        :type bui: :class:`burpui.misc.backend.interface.BUIbackend`
+        """
         self.bui = bui
 
     def load_all(self):
@@ -34,7 +38,7 @@ class ApiWrapper(Api):
                 if (os.path.isfile(os.path.join(__path__[0], f)) and
                         ext == '.py' and
                         name not in ['__init__', '.', '..']):
-                    mod = '.'+name
+                    mod = '.' + name
                     import_module(mod, 'burpui.api')
 
 
