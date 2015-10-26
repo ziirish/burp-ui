@@ -48,9 +48,13 @@ If you are using this sample configuration file, make sure to create the
 
 ::
 
+    apt-get install gunicorn
     useradd -r -d /var/lib/burpui -c 'Burp-UI daemon user' burpui
+    mkdir /etc/burp
+    cp /usr/local/share/burpui/etc/burpui.sample.cfg /etc/burp/burpui.cfg
     mkdir -p /var/log/gunicorn
     chown -R burpui: /var/log/gunicorn
+    service gunicorn restart
 
 
 Reverse Proxy

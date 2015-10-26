@@ -55,6 +55,13 @@ The documentation is hosted on `readthedocs <https://readthedocs.org>`_ at the
 following address: `burp-ui.readthedocs.org <https://burp-ui.readthedocs.org/en/latest/>`_
 
 
+FAQ
+===
+
+A `FAQ <https://burp-ui.readthedocs.org/en/latest/faq.html>`_ is available with
+the documentation.
+
+
 Community
 =========
 
@@ -104,8 +111,11 @@ Also note that this project is made with the Awesome `Flask`_ micro-framework.
 Thanks
 ======
 
-Special Thanks to Graham Keeling for its great software! This project would not
-exist without `Burp`_.
+Thank you all for your fedbacks and bug reports that make the project moving
+forward.
+
+Special Thanks to Graham Keeling for its great piece of software! This project
+would not exist without `Burp`_.
 
 
 .. _Flask: http://flask.pocoo.org/

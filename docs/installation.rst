@@ -80,17 +80,20 @@ Options
 
 ::
 
-    Usage: burp-ui [options]
+   usage: burp-ui [-h] [-v] [-d] [-V] [-c <CONFIG>] [-l <FILE>]
+                  [-m <agent|server>]
 
-    Options:
-      -h, --help            show this help message and exit
-      -v, --verbose         verbose output
-      -d, --debug           verbose output (alias)
-      -V, --version         print version and exit
-      -c CONFIG, --config=CONFIG
-                            configuration file
-      -l FILE, --logfile=FILE
-                            output logs in defined file
+   optional arguments:
+     -h, --help            show this help message and exit
+     -v, --verbose         increase output verbosity (e.g., -vv is more than -v)
+     -d, --debug           alias for -v
+     -V, --version         print version and exit
+     -c <CONFIG>, --config <CONFIG>
+                           configuration file
+     -l <FILE>, --logfile <FILE>
+                           output logs in defined file
+     -m <agent|server>, --mode <agent|server>
+                           application mode (server or agent)
 
 
 .. _Flask: http://flask.pocoo.org/

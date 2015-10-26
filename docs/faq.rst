@@ -21,13 +21,33 @@ What are the default credentials?
 The default login / password is *admin* / *admin* with the
 `basic <usage.html#basic>`__ authentication backend.
 
+How does the online restoration feature works?
+----------------------------------------------
+
+The online restoration feature works the same way as if you were running the
+burp client yourself.
+It means `Burp-UI`_ runs the following command:
+
+::
+
+    burp -a r -b <number> -C <client name> -r <regex> -d /tmp/XXX -c <bconfcli>
+
+
+It then generates an archive based on the restored files.
+
+Because of this workflow, and especially the use of the *-C* flag you need to
+tell your burp-server the client used by `Burp-UI`_ can perform a restoration
+for a different client.
+You can refer to the `restoration <installation.html#restoration>`_ section of
+this documentation for more details.
+
 How can I start Burp-UI as a daemon?
 ------------------------------------
 
 There are several *init scripts* provided by some users available
 `here <https://git.ziirish.me/ziirish/burp-ui/tree/master/contrib>`__.
 
-The recommanded way to run `Burp-UI`_ in production is to use `Gunicorn`_. You
+The recommended way to run `Burp-UI`_ in production is to use `Gunicorn`_. You
 can refer to the `gunicorn <gunicorn.html#daemon>`__ section of this
 documentation for more details.
 

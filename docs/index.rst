@@ -8,7 +8,8 @@ Burp-UI
 
 `Burp-UI`_ is a web-ui for `Burp`_ backup written in python with Flask and
 jQuery/Bootstrap.
-You may have a look a the `README`_ file first.
+You may have a look at the `README`_ file first. There is also a dedicated
+`FAQ <faq.html>`_.
 
 
 Documentation
@@ -27,11 +28,6 @@ Documentation
    faq
    developer
 
-
-Indices and tables
-==================
-
-* :ref:`search`
 
 .. _Flask: http://flask.pocoo.org/
 .. _License: https://git.ziirish.me/ziirish/burp-ui/blob/master/LICENSE
