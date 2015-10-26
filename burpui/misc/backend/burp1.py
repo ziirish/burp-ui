@@ -26,8 +26,8 @@ import codecs
 from future.utils import iteritems
 from pipes import quote
 
-from .interface import BUIbackend, BUIserverException
-from ..utils import human_readable as _hr, BUIcompress
+from .interface import BUIbackend
+from ..utils import human_readable as _hr, BUIcompress, BUIserverException
 from ..parser.burp1 import Parser
 
 if sys.version_info >= (3, 0):  # pragma: no cover
@@ -795,6 +795,7 @@ class Burp(BUIbackend):
         """See :func:`burpui.misc.backend.interface.BUIbackend.schedule_restore`"""
         if not name or not backup or not files:
             raise BUIserverException('At least one argument is missing')
+        return self.parser.server_initiated_restoration(name, backup, files, strip, force, prefix)
         if not self.parser.workingdir:
             raise BUIserverException('Unable to find burp spool dir')
 

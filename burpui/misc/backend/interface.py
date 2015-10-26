@@ -604,10 +604,3 @@ class BUIbackend(BUIlogging):
                   failure)
         """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
-
-
-class BUIserverException(Exception):
-    """Raised in case of internal error. This exception should never reach the
-    end-user.
-    """
-    pass

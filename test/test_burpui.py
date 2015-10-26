@@ -114,7 +114,7 @@ class BurpuiAPITestCase(TestCase):
 
     def test_restore(self):
         response = self.client.post(url_for('api.restore', name='dummy', backup=1), data=dict(strip=False))
-        self.assert500(response)
+        self.assert400(response)
 
     def test_running_clients(self):
         response = self.client.get(url_for('api.running_clients'))
@@ -124,7 +124,7 @@ class BurpuiAPITestCase(TestCase):
         response = self.client.get(url_for('api.render_live_tpl', name='toto'))
         self.assert404(response)
         response = self.client.get(url_for('api.render_live_tpl'))
-        self.assert500(response)
+        self.assert400(response)
 
     def test_servers_json(self):
         response = self.client.get(url_for('api.servers_stats'))

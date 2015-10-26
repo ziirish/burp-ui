@@ -28,7 +28,7 @@ else:
               endpoint='api.server_settings')
 class ServerSettings(Resource):
     """The :class:`burpui.api.settings.ServerSettings` resource allows you to
-    retrieve the server's configuration.
+    read and write the server's configuration.
 
     This resource is part of the :mod:`burpui.api.settings` module.
     """
@@ -36,7 +36,7 @@ class ServerSettings(Resource):
     @login_required
     def post(self, conf=None, server=None):
         noti = api.bui.cli.store_conf_srv(request.form, conf, server)
-        return jsonify(notif=noti)
+        return {'notif': noti}, 200
 
     @login_required
     def get(self, conf=None, server=None):
@@ -253,7 +253,7 @@ class NewClient(Resource):
 
         newclient = self.parser.parse_args()['newclient']
         if not newclient:
-            abort(500, message='No client name provided')
+            abort(400, message='No client name provided')
         # clientconfdir = api.bui.cli.get_parser_attr('clientconfdir', server)
         # if not clientconfdir:
         #    flash('Could not proceed, no \'clientconfdir\' find', 'warning')
@@ -283,14 +283,14 @@ class PathExpander(Resource):
         if (api.bui.acl and not
                 api.bui.acl.is_admin(current_user.get_id())):
             noti = [2, 'Sorry, you don\'t have rights to access the setting panel']
-            return jsonify(notif=noti)
+            return {'notif': noti}, 200
 
         path = self.parser.parse_args()['path']
         paths = api.bui.cli.expand_path(path, client, server)
         if not paths:
             noti = [2, "Path not found"]
-            return jsonify(notif=noti)
-        return jsonify(result=paths)
+            return {'notif': noti}, 200
+        return {'result': paths}
 
 
 @api.resource('/api/settings/delete-client',

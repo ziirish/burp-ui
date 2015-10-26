@@ -9,7 +9,7 @@
 """
 # This is a submodule we can also use "from ..api import api"
 from . import api
-from ..misc.backend.interface import BUIserverException
+from ..misc.utils import BUIserverException
 from flask.ext.restful import reqparse, Resource
 from flask.ext.login import current_user, login_required
 from flask import jsonify

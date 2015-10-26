@@ -6,8 +6,7 @@ from flask import request, render_template, jsonify, redirect, url_for, abort, f
 from flask.ext.login import login_user, login_required, logout_user, current_user
 
 from .forms import LoginForm
-from .misc.utils import human_readable as _hr
-from .misc.backend.interface import BUIserverException
+from .misc.utils import human_readable as _hr, BUIserverException
 from .misc.backend.burp1 import Burp as BurpGeneric
 
 if sys.version_info >= (3, 0):

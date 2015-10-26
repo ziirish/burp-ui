@@ -9,12 +9,12 @@
 """
 # This is a submodule we can also use "from ..api import api"
 from . import api
-from ..misc.backend.interface import BUIserverException
+from ..misc.utils import BUIserverException
 
 from future.utils import iteritems
-from flask.ext.restful import reqparse, Resource
+from flask.ext.restful import reqparse, Resource, abort
 from flask.ext.login import current_user, login_required
-from flask import jsonify, render_template, make_response, abort
+from flask import jsonify, render_template, make_response
 
 
 @api.resource('/api/render-live-template',
@@ -52,7 +52,7 @@ class RenderLiveTpl(Resource):
             name = self.parser.parse_args()['name']
         # Check params
         if not name:
-            abort(500)
+            abort(400, message='No client name provided')
         # Manage ACL
         if (api.bui.acl and
             (not api.bui.acl.is_client_allowed(current_user.get_id(), name, server) or

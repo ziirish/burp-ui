@@ -168,3 +168,10 @@ class BUIcompress():
             self.arch.write(path, arcname)
         elif self.archive in ['tar.gz', 'tar.bz2']:
             self.arch.add(path, arcname=arcname, recursive=False)
+
+
+class BUIserverException(Exception):
+    """Raised in case of internal error. This exception should never reach the
+    end-user.
+    """
+    pass

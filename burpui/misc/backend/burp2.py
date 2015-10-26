@@ -23,9 +23,8 @@ from future.utils import iteritems
 from pipes import quote
 from select import select
 
-from .interface import BUIserverException
 from .burp1 import Burp as Burp1
-from ..utils import human_readable as _hr
+from ..utils import human_readable as _hr, BUIserverException
 from ..parser.burp2 import Parser
 
 if sys.version_info < (3, 3):

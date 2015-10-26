@@ -6,7 +6,7 @@ import codecs
 
 from glob import glob
 
-from ..utils import BUIlogging
+from ..utils import BUIlogging, BUIserverException
 from .interface import BUIparser
 
 

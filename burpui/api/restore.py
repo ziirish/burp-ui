@@ -70,7 +70,7 @@ class Restore(Resource):
             f = 'zip'
         # Check params
         if not l or not name or not backup:
-            abort(500)
+            abort(400, message='missing arguments')
         # Manage ACL
         if (api.bui.acl and
                 (not api.bui.acl.is_client_allowed(current_user.get_id(),
@@ -234,7 +234,7 @@ class ScheduleRestore(Resource):
         # Check params
         if not l or not name or not backup:
             err.append([2, 'Missing options'])
-            return {'notif': err}, 500
+            return {'notif': err}, 400
         # Manage ACL
         if (api.bui.acl and
                 (not api.bui.acl.is_client_allowed(current_user.get_id(),
