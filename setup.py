@@ -14,6 +14,7 @@ from setuptools.command.develop import develop
 from setuptools.command.sdist import sdist
 from setuptools.command.install import install
 from setuptools.command.bdist_egg import bdist_egg
+from setuptools.command.egg_info import egg_info
 
 ROOT=os.path.dirname(os.path.realpath(__file__))
 
@@ -22,6 +23,12 @@ class DevelopWithBuildStatic(develop):
     def install_for_development(self):
         self.run_command('build_static')
         return develop.install_for_development(self)
+
+
+class EggWithBuildStatic(egg_info):
+    def initialize_options(self):
+        self.run_command('build_static')
+        return egg_info.initialize_options(self)
 
 
 class BdistWithBuildStatic(bdist_egg):
@@ -93,13 +100,13 @@ class BuildStatic(Command):
             for filename in files:
                 path = os.path.join(dirname, filename)
                 name, ext = os.path.splitext(path)
-                fil = path
                 if ext != '.map':
                     name = path
                 if os.path.isfile(path) and name not in keep:
                     os.unlink(path)
                 elif os.path.isdir(path):
                     dirlist.append(path)
+        dirlist.sort(reverse=True)
         for d in dirlist:
             if os.path.isdir(d) and not os.listdir(d):
                 os.rmdir(d)
@@ -200,5 +207,6 @@ setup(
         'sdist': SdistWithBuildStatic,
         'install': CustomInstall,
         'bdist_egg': BdistWithBuildStatic,
+        'egg_info': EggWithBuildStatic,
     }
 )

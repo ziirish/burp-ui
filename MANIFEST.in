@@ -1,5 +1,6 @@
 include LICENSE
 include README.rst
+include MANIFEST.in
 include VERSION
 include burpui/VERSION
 include requirements.txt
@@ -11,4 +12,5 @@ include contrib/centos/init.sh
 include contrib/gunicorn.d/burp-ui
 include bower.json
 include .bowerrc
-recursive-include burpui *
+graft burpui
+global-exclude *.pyc
