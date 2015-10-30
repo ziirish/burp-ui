@@ -75,13 +75,6 @@ Please feel free to report any issues on my `gitlab <https://git.ziirish.me/ziir
 I have closed the *github tracker* to have a unique tracker system.
 
 
-TODO
-====
-
-`Here <https://git.ziirish.me/ziirish/burp-ui/issues?label_name=todo>`_ is a
-non-exhaustive list of things I'd like to add.
-
-
 Licenses
 ========
 

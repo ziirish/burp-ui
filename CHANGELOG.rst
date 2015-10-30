@@ -6,7 +6,9 @@ Current
 
 - Add `python 3 support <https://git.ziirish.me/ziirish/burp-ui/issues/75>`_
 - Add new fields in `backup reports <https://git.ziirish.me/ziirish/burp-ui/issues/48>`_
-- `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/0.0.7...master>`__
+- Add `server-side initiated restoration <https://git.ziirish.me/ziirish/burp-ui/issues/12>`_
+- Add percent done in `overview <https://git.ziirish.me/ziirish/burp-ui/issues/55>`_
+- `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/v0.0.7.1...master>`__
 
 0.0.7.3
 -------
