@@ -791,13 +791,12 @@ class Burp(BUIbackend):
                     r.append(t)
         return r
 
-    def schedule_restore(self, name=None, backup=None, files=None, strip=None, force=None, prefix=None, agent=None):
+    def schedule_restore(self, name=None, backup=None, files=None, strip=None, force=None, prefix=None, restoreto=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.schedule_restore`"""
         if not name or not backup or not files:
             raise BUIserverException('At least one argument is missing')
-        return self.parser.server_initiated_restoration(name, backup, files, strip, force, prefix)
-        if not self.parser.workingdir:
-            raise BUIserverException('Unable to find burp spool dir')
+
+        return self.parser.server_initiated_restoration(name, backup, files, strip, force, prefix, restoreto)
 
     def restore_files(self, name=None, backup=None, files=None, strip=None, archive='zip', password=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.restore_files`"""

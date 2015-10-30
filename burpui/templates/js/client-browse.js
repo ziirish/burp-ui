@@ -129,15 +129,19 @@
 			var s = data.tree.getSelectedNodes();
 			if (s.length > 0) {
 				$("#restore-form").show();
+				$("#schedule-form").show();
 				v = [];
 				$.each(s, function(i, n) {
 					v.push({key: n.key, folder: n.folder});
 				});
 				r = {restore:v};
 				$("input[name=list]").val(JSON.stringify(r));
+				$("input[name=list-sc]").val(JSON.stringify(r));
 			} else {
 				$("#restore-form").hide();
+				$("#schedule-form").hide();
 				$("input[name=list]").val('');
+				$("input[name=list-sc]").val('');
 			}
 		}
 	});
@@ -212,6 +216,34 @@
 			data: $(this).serialize()
 		});
 		e.preventDefault();
+		return false;
+	});
+	$("#form-schedule").on('submit', function(e) {
+		e.preventDefault();
+
+		var form = $(this);
+		/* FIXME: quick-fix cause i did not manage to get the form action */
+		var url = "{{ url_for('api.schedule_restore', name=cname, backup=nbackup, server=server) }}";
+		$.ajax({
+			url: url,
+			type: 'PUT',
+			data: form.serialize()
+		}).fail(function(xhr, stat, err) {
+			var msg = '<strong>ERROR:</strong> ';
+			if (stat && err) {
+				msg +=  '<p>'+stat+'</p><pre>'+err+'</pre>';
+			} else if (stat) {
+				msg += '<p>'+stat+'</p>';
+			} else if (err) {
+				msg += '<pre>'+err+'</pre>';
+			}
+			notif(2, msg);
+		}).done(function(data) {
+			if (data.notif) {
+				notif(data.notif[0], data.notif[1]);
+			}
+		});
+
 		return false;
 	});
 	$("#btn-clear").on('click', function() {

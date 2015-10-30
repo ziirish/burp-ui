@@ -1,6 +1,7 @@
 # -*- coding: utf8 -*-
 import re
 import os
+import json
 import shutil
 import codecs
 
@@ -511,6 +512,7 @@ class Parser(BUIparser):
         """See :func:`burpui.misc.parser.interface.BUIparser.__init__`"""
         super(Parser, self).__init__(app, conf)
         self._logger('info', 'Parser initialized with: %s', self.conf)
+        self.clients = []
         self.clientconfdir = None
         self.workingdir = None
         self.root = None
@@ -689,9 +691,12 @@ class Parser(BUIparser):
 
         return res
 
-    def _list_clients(self):
+    def _list_clients(self, force=False):
         if not self.clientconfdir:
             return []
+
+        if self.clients and not force:
+            return self.clients
 
         res = []
         for f in os.listdir(self.clientconfdir):
@@ -699,6 +704,7 @@ class Parser(BUIparser):
             if os.path.isfile(ff) and not f.startswith('.') and not f.endswith('~'):
                 res.append({'name': f, 'value': os.path.join(self.clientconfdir, f)})
 
+        self.clients = res
         return res
 
     def list_clients(self):
@@ -717,7 +723,9 @@ class Parser(BUIparser):
             return [[2, 'Sorry, no client defined']]
         elif client and not conf:
             conf = os.path.join(self.clientconfdir, client)
-        return self.store_conf(data, conf, mode='cli')
+        ret = self.store_conf(data, conf, mode='cli')
+        self._list_clients(True)  # refresh client list
+        return ret
 
     def store_conf(self, data, conf=None, mode='srv'):
         """See :func:`burpui.misc.parser.interface.BUIparser.store_conf`"""
@@ -876,6 +884,66 @@ class Parser(BUIparser):
         key = key.strip()
         return key not in keys
 
-    def server_initiated_restoration(self, name=None, backup=None, files=None, strip=None, force=None, prefix=None):
+    def server_initiated_restoration(self, name=None, backup=None, files=None, strip=None, force=None, prefix=None, restoreto=None):
         """See :func:`burpui.misc.parser.interface.BUIparser.server_initiated_restoration`"""
-        pass
+        self.read_server_conf()
+
+        if not name or not backup or not files:
+            raise BUIserverException('At least one argument is missing')
+
+        if not self.workingdir:
+            raise BUIserverException('Unable to find burp spool dir')
+
+        found = False
+        for cli in self.clients:
+            if cli['name'] == name:
+                found = True
+                break
+
+        if not found:
+            raise BUIserverException('Client \'{}\' not found'.format(name))
+
+        flist = json.loads(files)
+        if 'restore' not in flist:
+            raise BUIserverException('Wrong call')
+
+        full_reg = u''
+        for r in flist['restore']:
+            reg = u''
+            if r['folder'] and r['key'] != '/':
+                reg += '^' + re.escape(r['key']) + '/|'
+            else:
+                reg += '^' + re.escape(r['key']) + '$|'
+            full_reg += reg
+
+        try:
+            client = name
+            if restoreto:
+                found = False
+                for cli in self.clients:
+                    if cli['name'] == restoreto:
+                        found = True
+                        break
+
+                if not found:
+                    raise BUIserverException('Client \'{}\' not found'.format(restoreto))
+
+                client = restoreto
+
+            path = os.path.join(self.workingdir, client, 'restore')
+            with codecs.open(path, 'w', 'utf-8') as f:
+                f.write('backup = {}\n'.format(backup))
+                f.write('regex = {}\n'.format(full_reg.rstrip('|')))
+                if strip:
+                    f.write('strip = {}\n'.format(strip))
+                if prefix:
+                    f.write('restoreprefix = {}\n'.format(prefix))
+                if force:
+                    f.write('overwrite = 1\n')
+                if restoreto:
+                    f.write('orig_client = {}\n'.format(name))
+
+            return [0, 'Restoration successfully scheduled']
+
+        except Exception as e:
+            raise BUIserverException(str(e))

@@ -14,6 +14,7 @@ from time import gmtime, strftime, time
 
 # This is a submodule we can also use "from ..api import api"
 from . import api
+from ..misc.utils import BUIserverException
 from flask.ext.restful import reqparse, Resource, abort
 from flask.ext.login import current_user, login_required
 from flask import Response, send_file, make_response, after_this_request
@@ -200,18 +201,20 @@ class ScheduleRestore(Resource):
     - ``strip``: number of elements to strip in the path
     - ``prefix``: prefix to the restore path
     - ``force``: whether to overwrite existing files
+    - ``restore_to``: restore files on an other client
     """
 
     def __init__(self):
         self.parser = reqparse.RequestParser()
-        self.parser.add_argument('list', type=str)
-        self.parser.add_argument('strip', type=str)
-        self.parser.add_argument('prefix', type=str)
-        self.parser.add_argument('force', type=str)
+        self.parser.add_argument('list-sc', type=str)
+        self.parser.add_argument('strip-sc', type=str)
+        self.parser.add_argument('prefix-sc', type=str)
+        self.parser.add_argument('force-sc', type=str)
+        self.parser.add_argument('restoreto-sc', type=str)
 
     @login_required
-    def post(self, server=None, name=None, backup=None):
-        """**POST** method provided by the webservice.
+    def put(self, server=None, name=None, backup=None):
+        """**PUT** method provided by the webservice.
 
         :param server: Which server to collect data from when in multi-agent mode
         :type server: str
@@ -225,10 +228,11 @@ class ScheduleRestore(Resource):
         :returns: Status message (success or failure)
         """
         args = self.parser.parse_args()
-        l = args['list']
-        s = args['strip']
-        p = args['prefix']
-        f = args['force']
+        l = args['list-sc']
+        s = args['strip-sc']
+        p = args['prefix-sc']
+        f = args['force-sc']
+        to = args['restoreto-sc']
         j = []
         err = []
         # Check params
@@ -243,5 +247,9 @@ class ScheduleRestore(Resource):
                  api.bui.acl.is_admin(current_user.get_id()))):
             err.append([2, 'You are not allowed to perform a restoration for this client'])
             return {'notif': err}, 403
-        j = api.bui
-        return {'result': j}, 200
+        try:
+            j = api.bui.cli.schedule_restore(name, backup, l, s, f, p, to, server)
+            return {'notif': j}, 200
+        except BUIserverException as e:
+            err.append([2, str(e)])
+            return {'notif': err}, 500

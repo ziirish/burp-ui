@@ -59,8 +59,8 @@
             </table>
           </div>
           <br />
-          <div class="row">
-            <form id="form-restore" class="form-inline" method="POST" role="form" action="{{ url_for('api.restore', name=cname, backup=nbackup, server=server) }}">
+          <div class="row form-horizontal">
+            <form id="form-restore" class="form-inline col-md-6" method="POST" role="form" action="{{ url_for('api.restore', name=cname, backup=nbackup, server=server) }}">
               <input type="hidden" name="list">
               <div id="restore-form" style="display:none;">
                 {% if encrypted -%}
@@ -82,6 +82,21 @@
                     <li><label for="strip">Number of leading path components to strip:&nbsp;</label><input type="text" id="strip" name="strip" placeholder="0" autocomplete="off" maxlength="2" size="2"></li>
                     <li><label for="format">Archive format:&nbsp;</label><select id="format" name="format" style="color: #000;"><option>zip</option><option>tar.gz</option><option>tar.bz2</option></select></li>
                     <li><label for="pass">Encryption password:&nbsp;</label><input type="password" id="pass" name="pass" placeholder="password" autocomplete="off" size="20"></li>
+                  </ul>
+                </div>
+              </div>
+            </form>
+            <form id="form-schedule" class="form-inline col-md-6 text-right" method="POST" role="form" action"{{ url_for('api.schedule_restore', name=cname, backup=nbackup, server=server) }}">
+              <input type="hidden" name="list-sc">
+              <div id="schedule-form" style="display:none;">
+                <div class="btn-group">
+                  <button type="submit" class="btn btn-info" id="perform-schedule"><span class="glyphicon glyphicon-cloud-download"></span>&nbsp;Schedule restore</button>
+                  <button class="btn btn-info dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
+                  <ul class="dropdown-menu browse">
+                    <li><label for="strip-sc">Number of leading path components to strip:&nbsp;</label><input type="text" id="strip-sc" name="strip-sc" placeholder="0" autocomplete="off" maxlength="2" size="2"></li>
+                    <li><label for="prefix-sc">Prefix to the restore path:&nbsp;</label><input type="text" id="prefix-sc" name="prefix-sc" placeholder="prefix" autocomplete="off"></li>
+                    <li><label for="restoreto-sc">Restore files on an other client:&nbsp;</label><input type="text" id="restoreto-sc" name="restoreto-sc" placeholder="name" autocomplete="off"></li>
+                    <li><label for="force-sc">Whether to overwrite existing files:&nbsp;</label><input type="checkbox" id="force-sc" name="force-sc"></li>
                   </ul>
                 </div>
                 <button type="button" id="btn-clear" class="btn btn-info"><span class="glyphicon glyphicon-trash"></span>&nbsp;Clear selection</button>
