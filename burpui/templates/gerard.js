@@ -54,6 +54,16 @@ var anim = function(elem, timeout) {
 		.mouseout(function(){ anim(elem, timeout); });
 };
 
+var errorsHandler = function(xhr) {
+	if ('responseJSON' in xhr && 'notif' in xhr.responseJSON) {
+		$.each(xhr.responseJSON.notif, function(i, n) {
+			notif(n[0], n[1]);
+		});
+		return true;
+	}
+	return false;
+};
+
 {% if not login -%}
 var _check_running = function() {
 	{% if server -%}

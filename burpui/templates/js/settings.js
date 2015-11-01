@@ -197,6 +197,9 @@ app.controller('ConfigCtrl', function($scope, $http) {
 				type: 'POST',
 				data: form.serialize()
 			}).fail(function(xhr, stat, err) {
+				if (errorsHandler(xhr)) {
+					return;
+				}
 				$scope.showError(stat, err);
 			}).done(function(data) {
 				/* The server answered correctly but some errors may have occurred server
@@ -337,6 +340,9 @@ app.controller('ConfigCtrl', function($scope, $http) {
 			type: 'GET',
 			data: {'path': path}
 		}).fail(function(xhr, stat, err) {
+			if (errorsHandler(xhr)) {
+				return;
+			}
 			$scope.showError(stat, err);
 		}).done(function(data) {
 			/* The server answered correctly but some errors may have occurred server
@@ -367,6 +373,9 @@ app.controller('ConfigCtrl', function($scope, $http) {
 			url: api,
 			type: 'DELETE'
 		}).fail(function(xhr, stat, err) {
+			if (errorsHandler(xhr)) {
+				return;
+			}
 			$scope.showError(stat, err);
 		}).done(function(data) {
 			/* The server answered correctly but some errors may have occurred server
@@ -388,6 +397,9 @@ app.controller('ConfigCtrl', function($scope, $http) {
 			type: 'PUT',
 			data: form.serialize()
 		}).fail(function(xhr, stat, err) {
+			if (errorsHandler(xhr)) {
+				return;
+			}
 			$scope.showError(stat, err);
 		}).done(function(data) {
 			/* The server answered correctly but some errors may have occurred server

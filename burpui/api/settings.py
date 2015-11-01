@@ -249,11 +249,11 @@ class NewClient(Resource):
         # Only the admin can edit the configuration
         if (api.bui.acl and not
                 api.bui.acl.is_admin(current_user.get_id())):
-            abort(403, message='Sorry, you don\'t have rights to access the setting panel')
+            return {'notif': [[2, 'Sorry, you don\'t have rights to access the setting panel']]}, 403
 
         newclient = self.parser.parse_args()['newclient']
         if not newclient:
-            abort(400, message='No client name provided')
+            return {'notif': [[2, 'No client name provided']]}, 400
         # clientconfdir = api.bui.cli.get_parser_attr('clientconfdir', server)
         # if not clientconfdir:
         #    flash('Could not proceed, no \'clientconfdir\' find', 'warning')
@@ -282,14 +282,14 @@ class PathExpander(Resource):
         # Only the admin can edit the configuration
         if (api.bui.acl and not
                 api.bui.acl.is_admin(current_user.get_id())):
-            noti = [2, 'Sorry, you don\'t have rights to access the setting panel']
-            return {'notif': noti}, 200
+            noti = [[2, 'Sorry, you don\'t have rights to access the setting panel']]
+            return {'notif': noti}, 403
 
         path = self.parser.parse_args()['path']
         paths = api.bui.cli.expand_path(path, client, server)
         if not paths:
-            noti = [2, "Path not found"]
-            return {'notif': noti}, 200
+            noti = [[2, "Path not found"]]
+            return {'notif': noti}, 500
         return {'result': paths}
 
 
@@ -305,7 +305,7 @@ class DeleteClient(Resource):
         # Only the admin can edit the configuration
         if (api.bui.acl and not
                 api.bui.acl.is_admin(current_user.get_id())):
-            noti = [2, 'Sorry, you don\'t have rights to access the setting panel']
-            return jsonify(notif=noti)
+            noti = [[2, 'Sorry, you don\'t have rights to access the setting panel']]
+            return {'notif': noti}, 403
 
         return {'notif': api.bui.cli.delete_client(client, server)}, 200

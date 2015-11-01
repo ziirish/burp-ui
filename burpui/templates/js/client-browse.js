@@ -229,6 +229,9 @@
 			type: 'PUT',
 			data: form.serialize()
 		}).fail(function(xhr, stat, err) {
+			if (errorsHandler(xhr)) {
+				return;
+			}
 			var msg = '<strong>ERROR:</strong> ';
 			if (stat && err) {
 				msg +=  '<p>'+stat+'</p><pre>'+err+'</pre>';
