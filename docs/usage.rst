@@ -52,6 +52,8 @@ The `burpui.cfg`_ configuration file contains a ``[Global]`` section as follow:
     # authentication plugin (mandatory)
     # list the misc/auth directory to see the available backends
     # to disable authentication you can set "auth: none"
+    # you can also chain multiple backends. Example: "auth: ldap,basic"
+    # the order will be respected unless you manually set a higher backend priority
     auth: basic
     # acl plugin
     # list misc/acl directory to see the available backends
@@ -298,7 +300,8 @@ Each option is commented, but here is a more detailed documentation:
 - *bport*: The port of `Burp`_'s status port.
 - *burpbin*: Path to the `Burp`_ binary (used for restorations).
 - *stripbin*: Path to the `Burp`_ *vss_strip* binary (used for restorations).
-- *bconfcli*: Path to the `Burp`_ client configuration file.
+- *bconfcli*: Path to the `Burp`_ client configuration file (see 
+  `restoration <installation.html#restoration>`__).
 - *bconfsrv*: Path to the `Burp`_ server configuration file.
 - *tmpdir*: Path to a temporary directory where to perform restorations.
 
@@ -337,7 +340,8 @@ Each option is commented, but here is a more detailed documentation:
 
 - *burpbin*: Path to the `Burp`_ binary (used for restorations).
 - *stripbin*: Path to the `Burp`_ *vss_strip* binary (used for restorations).
-- *bconfcli*: Path to the `Burp`_ client configuration file.
+- *bconfcli*: Path to the `Burp`_ client configuration file (see
+  `restoration <installation.html#restoration>`__).
 - *bconfsrv*: Path to the `Burp`_ server configuration file.
 - *tmpdir*: Path to a temporary directory where to perform restorations.
 

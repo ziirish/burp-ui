@@ -50,20 +50,22 @@ Restoration
 ^^^^^^^^^^^
 
 `Burp-UI`_ tries to be as less intrusive as possible with `Burp`_ internals.
-In order to make the *on the fly* restoration/download functionality work, you
+In order to make the *online* restoration/download functionality work, you
 need to check a few things:
 
-1. Provide the full path of the burp (client) binary file
-2. Provide a burp-client configuration file
+1. Provide the full path of the burp (client) binary file (field *burpbin* in 
+   `burp-ui configuration <usage.html#versions>`__)
+2. Provide a burp-client configuration file (field *bconfcli* in
+   `burp-ui configuration <usage.html#versions>`__)
 3. Provide the full path of an empty directory where a temporary restoration
    will be made. This involves you have enough space left on that location on
    the server that runs `Burp-UI`_
 4. Launch `Burp-UI`_ with a user that can proceed restorations and that can
    write in the directory mentioned above
-5. Make sure to configure a client on the server that runs `Burp-UI`_ that can
-   restore files of other clients (option *restore_client* in burp-server
-   configuration). The *restore_client* is the *cname* you provided in your
-   client configuration file (see 2.)
+5. Make sure the client provided in 2. can restore files of other clients
+   (option *restore_client* in burp-server configuration).
+   The *restore_client* is the *cname* you provided in your client configuration
+   file (see 2.)
 
 Burp 2
 ^^^^^^
@@ -74,6 +76,7 @@ be able to edit the burp server configuration file within the *settings* view of
 `Burp-UI`_.
 You also need to configure a *restore_client* on your burp server corresponding
 to the client you will use through `Burp-UI`_
+
 
 Options
 -------

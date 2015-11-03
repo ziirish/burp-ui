@@ -38,8 +38,9 @@ It then generates an archive based on the restored files.
 Because of this workflow, and especially the use of the *-C* flag you need to
 tell your burp-server the client used by `Burp-UI`_ can perform a restoration
 for a different client.
-You can refer to the `restoration <installation.html#restoration>`_ section of
-this documentation for more details.
+You can refer to the `restoration <installation.html#restoration>`__ section of
+this documentation along with the `version <usage.html#version>`__ section for
+more details.
 
 How can I start Burp-UI as a daemon?
 ------------------------------------
