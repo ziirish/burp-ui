@@ -617,11 +617,11 @@ class Burp(BUIbackend):
                 c = 0
                 for v in rs.group(3).split('\t'):
                     # self._logger('debug', '{0}: {1}'.format(self.counters[c], v))
-                    if c > 0 and c < 15:
+                    if v and c > 0 and c < 15:
                         val = map(int, v.split('/'))
                         if val[0] > 0 or val[1] > 0 or val[2] or val[3] > 0:
                             r[self.counters[c]] = val
-                    else:
+                    elif v:
                         if 'path' == self.counters[c]:
                             r[self.counters[c]] = v
                         else:
