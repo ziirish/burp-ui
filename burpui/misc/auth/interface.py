@@ -14,13 +14,19 @@ class BUIhandler:
     """The :class:`burpui.misc.auth.interface.BUIhandler` class maintains a list
     of ``Burp-UI`` users.
     """
-    def __init__(self, app=None):
+
+    priority = 0
+
+    def __init__(self, app=None, auth=None):
         """:func:`burpui.misc.auth.interface.BUIhandler.__init__`
 
         :param app: Instance of the app we are running in
         :type app: :class:`burpui.server.BUIServer`
+
+        :param auth: List au authentication backends to load
+        :type auth: str
         """
-        pass
+        pass  # pragma: no cover
 
     def user(self, name=None):
         """The :func:`burpui.misc.auth.interface.BUIhandler.user` function
@@ -51,4 +57,4 @@ class BUIuser(UserMixin):
 
         :returns: True if the name and password match, otherwise False
         """
-        return False
+        return False  # pragma: no cover

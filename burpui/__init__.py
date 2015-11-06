@@ -33,6 +33,7 @@ __description__ = 'Burp-UI is a web-ui for burp backup written in python with Fl
 __license__ = 'BSD 3-clause'
 __version__ = open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'VERSION')).read().rstrip()
 
+
 # First, we setup the app
 app = Flask(__name__)
 

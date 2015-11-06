@@ -11,7 +11,7 @@ class BasicLoader:
     """The :class:`burpui.misc.auth.basic.BasicLoader` class loads the *Basic*
     users.
     """
-    def __init__(self, app=None):
+    def __init__(self, app=None, handler=None):
         """:func:`burpui.misc.auth.basic.BasicLoader.__init__` loads users from
         the configuration file.
 
@@ -30,8 +30,16 @@ class BasicLoader:
             if c.has_section('BASIC'):
                 self.users = {}
                 for opt in c.options('BASIC'):
+                    if opt == 'priority':
+                        # Maybe the handler argument is None, maybe the 'priority'
+                        # option is missing. We don't care.
+                        try:
+                            handler.priority = c.getint('BASIC', opt)
+                        except:
+                            pass
+                        continue
                     self.users[opt] = c.get('BASIC', opt)
-                    self.app.logger.info('Loading user: %s', opt)
+                    self.app.logger.info('Loading user: {}'.format(opt))
 
     def fetch(self, uid=None):
         """:func:`burpui.misc.auth.basic.BasicLoader.fetch` searches for a user
@@ -64,9 +72,9 @@ class BasicLoader:
 
 class UserHandler(BUIhandler):
     """See :class:`burpui.misc.auth.interface.BUIhandler`"""
-    def __init__(self, app=None):
+    def __init__(self, app=None, auth=None):
         """See :func:`burpui.misc.auth.interface.BUIhandler.__init__`"""
-        self.basic = BasicLoader(app)
+        self.basic = BasicLoader(app, self)
         self.users = {}
 
     def user(self, name=None):

@@ -15,6 +15,8 @@ import traceback
 import sys
 import os
 
+from .misc.auth.handler import UserAuthHandler
+
 
 g_port = '5000'
 g_bind = '::'
@@ -79,15 +81,7 @@ class BUIServer:
                 self.auth = self._safe_config_get(config.get, 'auth')
                 if self.auth and self.auth.lower() != 'none':
                     try:
-                        # Try to load submodules from our current environment
-                        # first
-                        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-                        mod = __import__(
-                            'burpui.misc.auth.{0}'.format(self.auth.lower()),
-                            fromlist=['UserHandler']
-                        )
-                        UserHandler = mod.UserHandler
-                        self.uhandler = UserHandler(self.app)
+                        self.uhandler = UserAuthHandler(self.app, self.auth)
                     except Exception as e:
                         traceback.print_exc()
                         self.app.logger.error('Import Exception, module \'{0}\': {1}'.format(self.auth, str(e)))

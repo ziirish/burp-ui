@@ -20,7 +20,7 @@ class LdapLoader:
     """The :class:`burpui.misc.auth.ldap.LdapLoader` handles searching for and
     binding as a :class:`burpui.misc.auth.ldap.LdapUser` user.
     """
-    def __init__(self, app=None):
+    def __init__(self, app=None, handler=None):
         """:func:`burpui.misc.auth.ldap.LdapLoader.__init__` establishes a
         connection to the LDAP server.
 
@@ -58,6 +58,12 @@ class LdapLoader:
         c = ConfigParser.ConfigParser(defaults)
         with open(conf) as fp:
             c.readfp(fp)
+            # Maybe the handler argument is None, maybe the 'priority'
+            # option is missing. We don't care.
+            try:
+                handler.priority = c.getint('LDAP', 'priority')
+            except:
+                pass
             for (opt, key) in viewitems(mapping):
                 try:
                     setattr(self, opt, c.get('LDAP', key))
@@ -181,14 +187,14 @@ class UserHandler(BUIhandler):
     """The :class:`burpui.misc.auth.ldap.UserHandler` class maintains a list of
     ``Burp-UI`` users.
     """
-    def __init__(self, app=None):
+    def __init__(self, app=None, auth=None):
         """:func:`burpui.misc.auth.ldap.UserHandler.__init__` creates the
         handler instance
 
         :param app: Instance of the app we are running in
         :type app: :class:`burpui.server.BUIServer`
         """
-        self.ldap = LdapLoader(app)
+        self.ldap = LdapLoader(app, self)
         self.users = {}
 
     def user(self, name=None):
