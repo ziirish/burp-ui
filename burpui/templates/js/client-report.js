@@ -34,7 +34,7 @@ var _client = function() {
 							.y(function(d) { return d[1] })
 							.useInteractiveGuideline(true)
 							.color(d3.scale.category20c().range())
-							.margin({bottom: 105, left: 80})
+							.margin({bottom: 115, left: 100})
 							;
 
 			tmp.xAxis.showMaxMin(true).tickFormat(function(d) { return d3.time.format('%x %X')(new Date(d)) }).rotateLabels(-45);
@@ -47,7 +47,7 @@ var _client = function() {
 					.color(d3.scale.category10().range())
 					.x(function(d,i) { return i })
 					.y(function(d) { return d[1] })
-					.margin({bottom: 105, left: 80})
+					.margin({bottom: 115, left: 100, right: 80})
 					.focusEnable(false)
 					;
 
