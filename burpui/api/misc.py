@@ -14,7 +14,9 @@ from ..misc.utils import BUIserverException
 from future.utils import iteritems
 from flask.ext.restful import reqparse, Resource, abort
 from flask.ext.login import current_user, login_required
-from flask import jsonify, render_template, make_response
+from flask import render_template, make_response
+
+import time
 
 
 @api.resource('/api/render-live-template',
@@ -58,6 +60,9 @@ class RenderLiveTpl(Resource):
             (not api.bui.acl.is_client_allowed(current_user.get_id(), name, server) or
              not api.bui.acl.is_admin(current_user.get_id()))):
             abort(403)
+        # refresh cache if 30 seconds elapsed since last refresh
+        if not api.bui.cli.refresh or (time.time() - api.bui.cli.refresh > 30):
+            api.bui.cli.is_one_backup_running()
         if isinstance(api.bui.cli.running, dict):
             if server and name not in api.bui.cli.running[server]:
                 abort(404)
