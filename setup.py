@@ -6,7 +6,7 @@ import os.path
 import re
 import sys
 
-from subprocess import check_output
+from subprocess import check_output, call
 from distutils import log
 from distutils.core import Command
 from setuptools import setup, find_packages
@@ -41,6 +41,20 @@ class SdistWithBuildStatic(sdist):
     def make_distribution(self):
         self.run_command('build_static')
         return sdist.make_distribution(self)
+
+
+class PyTest(Command):
+    user_options = []
+    description = "Run tests"
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        errno = call(['make', 'test'])
+        raise SystemExit(errno)
 
 
 class BuildStatic(Command):
@@ -208,5 +222,6 @@ setup(
         'install': CustomInstall,
         'bdist_egg': BdistWithBuildStatic,
         'egg_info': EggWithBuildStatic,
+        'test': PyTest,
     }
 )
