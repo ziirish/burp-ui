@@ -27,8 +27,6 @@ section as below:
     version: 1
     # agent password
     password: password
-    # socket timeout (in seconds)
-    timeout: 5
 
 
 Each option is commented, but here is a more detailed documentation:

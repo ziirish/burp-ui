@@ -226,8 +226,6 @@ Once this mode is enabled, you have to create **one** ``[Agent]`` section
     password: azerty
     # enable SSL
     ssl: true
-    # socket timeout (in seconds)
-    timeout: 5
 
     [Agent:agent2]
     # bui-agent address
@@ -238,8 +236,6 @@ Once this mode is enabled, you have to create **one** ``[Agent]`` section
     password: ytreza
     # enable SSL
     ssl: true
-    # socket timeout (in seconds)
-    timeout: 5
 
 
 .. note:: The sections must be called ``[Agent:<label>]`` (case sensitive)

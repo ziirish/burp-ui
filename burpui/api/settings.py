@@ -13,7 +13,7 @@ import sys
 from . import api
 from flask.ext.restful import reqparse, abort, Resource
 from flask.ext.login import current_user, login_required
-from flask import jsonify, flash, request, redirect, url_for
+from flask import jsonify, request, url_for
 from werkzeug.datastructures import ImmutableMultiDict
 if sys.version_info >= (3, 0):
     from urllib.parse import unquote

@@ -1,7 +1,6 @@
 # -*- coding: utf8 -*-
 import re
 import os
-import socket
 import time
 try:
     import ujson as json
@@ -12,15 +11,11 @@ try:
     import ConfigParser
 except ImportError:
     import configparser as ConfigParser
-import shutil
 import subprocess
-import tempfile
 import codecs
-import signal
 import sys
 
 from future.utils import iteritems
-from pipes import quote
 from select import select
 
 from .burp1 import Burp as Burp1
@@ -530,6 +525,7 @@ class Burp(Burp1):
             if c['state'] in ['running']:
                 r.append(c['name'])
         self.running = r
+        self.refresh = time.time()
         return r
 
     def _status_human_readable(self, status):

@@ -2,7 +2,7 @@
 import math
 import sys
 
-from flask import request, render_template, jsonify, redirect, url_for, abort, flash, Blueprint
+from flask import request, render_template, redirect, url_for, abort, flash, Blueprint
 from flask.ext.login import login_user, login_required, logout_user, current_user
 
 from .forms import LoginForm

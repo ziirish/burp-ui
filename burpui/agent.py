@@ -1,14 +1,12 @@
 # -*- coding: utf8 -*-
 import os
 import struct
-import select
 import re
 import time
 import sys
 import logging
 import pickle
 import traceback
-from threading import Thread
 from logging import Formatter, StreamHandler
 from logging.handlers import RotatingFileHandler
 from .misc.utils import BUIlogging
@@ -31,7 +29,6 @@ g_ssl = 'False'
 g_version = '1'
 g_sslcert = ''
 g_sslkey = ''
-g_timeout = '5'
 g_password = 'password'
 
 
@@ -87,7 +84,6 @@ class BUIAgent(BUIlogging, Dummy):
                 self.port = self._safe_config_get(config.getint, 'port', cast=int)
                 self.bind = self._safe_config_get(config.get, 'bind')
                 self.vers = self._safe_config_get(config.getint, 'version', cast=int)
-                self.timeout = self._safe_config_get(config.getint, 'timeout', cast=int)
                 try:
                     self.ssl = config.getboolean('Global', 'ssl')
                 except ValueError:
@@ -165,7 +161,6 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
     "One instance per connection.  Override handle(self) to customize action."
     def handle(self):
         # self.request is the client connection
-        timeout = self.server.agent.timeout
         try:
             err = None
             lengthbuf = self.request.recv(8)

@@ -21,6 +21,12 @@ class BUIbackend(BUIlogging):
     :param conf: Configuration file to use
     :type conf: str
     """
+
+    # cache the running clients
+    running = []
+    # do we need to refresh the cache?
+    refresh = None
+
     def __init__(self, server=None, conf=None):  # pragma: no cover
         self.app = None
         if server:

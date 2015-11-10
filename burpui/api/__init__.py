@@ -9,22 +9,19 @@
 
 """
 import os
-import re
 import sys
 
 from flask.ext.restful import Api
 from importlib import import_module
-from ..misc.backend.burp1 import Burp as BurpGeneric
 
 
 class ApiWrapper(Api):
-    bui = BurpGeneric(dummy=True)
     loaded = False
 
     def init_bui(self, bui):
         """Loads the right context.
         :param bui: application context
-        :type bui: :class:`burpui.misc.backend.interface.BUIbackend`
+        :type bui: :class:`burpui.server.BUIServer`
         """
         self.bui = bui
 

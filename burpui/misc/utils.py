@@ -15,7 +15,7 @@ import zipfile
 import tarfile
 import logging
 
-from inspect import getmembers, isfunction, currentframe
+from inspect import currentframe
 
 if sys.version_info >= (3, 0):
     long = int  # pragma: no cover

@@ -7,7 +7,7 @@ import codecs
 
 from glob import glob
 
-from ..utils import BUIlogging, BUIserverException
+from ..utils import BUIserverException
 from .interface import BUIparser
 
 
@@ -542,7 +542,6 @@ class Parser(BUIparser):
         return self._parse_lines(fi, 'cli')
 
     def _parse_lines(self, fi, mode='srv'):
-        other_files = []
         dic = []
         boolean = []
         multi = []
@@ -644,7 +643,7 @@ class Parser(BUIparser):
 
         try:
             f = self._readfile(mconf, True)
-        except Exception as e:
+        except Exception:
             return res
 
         strings, boolean, multi, integer, includes, includes_ext = self._parse_lines_cli(f)
@@ -678,7 +677,7 @@ class Parser(BUIparser):
 
         try:
             f = self._readfile(mconf)
-        except Exception as e:
+        except Exception:
             return res
 
         strings, boolean, multi, integer, includes, includes_ext = self._parse_lines_srv(f)

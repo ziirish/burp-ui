@@ -653,7 +653,7 @@ class Burp(BUIbackend):
                 r['timeleft'] = -1
         try:
             r['percent'] = round(float(r['bytes']) / float(r['estimated_bytes']) * 100)
-        except Exception as e:
+        except Exception:
             # You know... division by 0
             r['percent'] = 0
         return r
@@ -683,6 +683,7 @@ class Burp(BUIbackend):
             if self.is_backup_running(c['name']):
                 r.append(c['name'])
         self.running = r
+        self.refresh = time.time()
         return r
 
     def get_all_clients(self, agent=None):
@@ -830,7 +831,6 @@ class Burp(BUIbackend):
         if password:
             if not self.burpconfcli:
                 return None, 'No client configuration file specified'
-            content = []
             fdh = os.fdopen(fh, 'w+')
             with open(self.burpconfcli) as f:
                 shutil.copyfileobj(f, fdh)

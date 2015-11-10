@@ -7,7 +7,7 @@
 .. moduleauthor:: Ziirish <ziirish@ziirish.info>
 
 """
-from flask.ext.login import UserMixin, AnonymousUserMixin
+from flask.ext.login import UserMixin
 
 
 class BUIhandler:
@@ -23,8 +23,12 @@ class BUIhandler:
         :param app: Instance of the app we are running in
         :type app: :class:`burpui.server.BUIServer`
 
-        :param auth: List au authentication backends to load
+        :param auth: List of authentication backends to load
         :type auth: str
+
+        .. versionchanged:: 0.1.0
+            Add ``auth`` parameter so that :mod:`burpui.misc.auth.handler` can
+            be implemented
         """
         pass  # pragma: no cover
 

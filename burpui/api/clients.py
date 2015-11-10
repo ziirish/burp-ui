@@ -14,7 +14,7 @@ from ..misc.utils import BUIserverException
 from future.utils import iteritems
 from flask.ext.restful import reqparse, Resource
 from flask.ext.login import current_user, login_required
-from flask import jsonify, make_response
+from flask import jsonify
 
 
 @api.resource('/api/running-clients.json',
@@ -230,8 +230,6 @@ class ClientsReport(Resource):
         except BUIserverException as e:
             err = [[2, str(e)]]
             return jsonify(notif=err)
-        cl = []
-        ba = []
         # Filter only allowed clients
         allowed = []
         check = False

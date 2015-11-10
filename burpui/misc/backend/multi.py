@@ -1,9 +1,7 @@
 # -*- coding: utf8 -*-
 import re
-import copy
 import socket
 import select
-import sys
 import errno
 import time
 import struct
@@ -21,7 +19,6 @@ except ImportError:
 from future.utils import iteritems
 
 from .interface import BUIbackend
-from ..utils import BUIserverException
 
 
 class Burp(BUIbackend):
@@ -60,15 +57,13 @@ class Burp(BUIbackend):
                 for sec in config.sections():
                     r = re.match('^Agent:(.+)$', sec)
                     if r:
-                        timeout = 5
                         ssl = False
                         host = self._safe_config_get(config.get, 'host', sec)
                         port = self._safe_config_get(config.getint, 'port', sec, cast=int)
                         password = self._safe_config_get(config.get, 'password', sec)
                         ssl = self._safe_config_get(config.getboolean, 'ssl', sec, cast=bool)
-                        timeout = self._safe_config_get(config.getint, 'timeout', sec, cast=int)
 
-                        self.servers[r.group(1)] = NClient(self.app, host, port, password, ssl, timeout)
+                        self.servers[r.group(1)] = NClient(self.app, host, port, password, ssl)
 
         self.app.logger.debug(self.servers)
         for (key, serv) in iteritems(self.servers):
@@ -140,6 +135,7 @@ class Burp(BUIbackend):
             for a in self.servers:
                 r[a] = self.servers[a].is_one_backup_running(a)
             self.running = r
+        self.refresh = time.time()
         return r
 
     def get_all_clients(self, agent=None):
@@ -214,21 +210,15 @@ class NClient(BUIbackend):
 
     :param ssl: Use SSL to communicate with the agent
     :type ssl: bool
-
-    :param timeout: Time to wait for the agent
-    :type timeout: int
     """
 
-    def __init__(self, app=None, host=None, port=None, password=None, ssl=None, timeout=5):
+    def __init__(self, app=None, host=None, port=None, password=None, ssl=None):
         self.host = host
         self.port = port
         self.password = password
         self.ssl = ssl
         self.connected = False
         self.app = app
-        self.timeout = 5
-        if timeout:
-            self.timeout = timeout
 
     def conn(self):
         """Connects to the agent if needed"""
@@ -248,6 +238,7 @@ class NClient(BUIbackend):
         if self.ssl:
             import ssl
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.settimeout(5)
             ret = ssl.wrap_socket(s, cert_reqs=ssl.CERT_NONE, ssl_version=ssl.PROTOCOL_SSLv23)
             try:
                 ret.connect((self.host, self.port))
@@ -255,7 +246,7 @@ class NClient(BUIbackend):
                 self.app.logger.error('ERROR: %s', str(e))
                 raise e
         else:
-            ret = socket.create_connection((self.host, self.port))
+            ret = socket.create_connection((self.host, self.port), timeout=5)
         return ret
 
     def ping(self):
@@ -284,18 +275,12 @@ class NClient(BUIbackend):
             self.sock.sendall(struct.pack('!Q', length))
             self.sock.sendall(raw.encode('UTF-8'))
             self.app.logger.debug("Sending: %s", raw)
-            r, _, _ = select.select([self.sock], [], [], self.timeout)
-            if not r:
-                raise Exception('Socket timed-out 1')
             tmp = self.sock.recv(2).decode('UTF-8')
             self.app.logger.debug("recv: '%s'", tmp)
             if 'OK' != tmp:
                 self.app.logger.debug('Ooops, unsuccessful!')
                 return res
             self.app.logger.debug("Data sent successfully")
-            r, _, _ = select.select([self.sock], [], [], self.timeout)
-            if not r:
-                raise Exception('Socket timed-out 2')
             tmp = 'OK'
             if data['func'] == 'restore_files':
                 tmp = self.sock.recv(2)
@@ -308,16 +293,16 @@ class NClient(BUIbackend):
                 toclose = False
                 res = (self.sock, length, err)
             else:
-                r, _, _ = select.select([self.sock], [], [], self.timeout)
-                if not r:
-                    raise Exception('Socket timed-out 3')
                 res = self.recvall(length).decode('UTF-8')
         except IOError as e:
             if not restarted and e.errno == errno.EPIPE:
                 toclose = True
                 return self.do_command(data, True)
+            elif e.errno == errno.ECONNRESET:
+                self.app.logger.error('!!! {} !!!\nPlease check your SSL configuration on both sides!'.format(str(e)))
             else:
-                raise e
+                toclose = True
+                self.app.logger.error('!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
         except Exception as e:
             toclose = True
             self.app.logger.error('!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))

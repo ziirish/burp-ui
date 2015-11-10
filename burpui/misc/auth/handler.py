@@ -25,7 +25,7 @@ class UserAuthHandler(BUIhandler):
                     self.app.logger.error('Recursive import not permited!')
                     continue
                 try:
-                    mod = import_module('.'+au, 'burpui.misc.auth')
+                    mod = import_module('.' + au, 'burpui.misc.auth')
                     obj = mod.UserHandler(self.app)
                     self.backends.append(obj)
                 except:
