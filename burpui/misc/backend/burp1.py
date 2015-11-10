@@ -618,7 +618,10 @@ class Burp(BUIbackend):
                 for v in rs.group(3).split('\t'):
                     # self._logger('debug', '{0}: {1}'.format(self.counters[c], v))
                     if v and c > 0 and c < 15:
-                        val = map(int, v.split('/'))
+                        try:
+                            val = map(int, v.split('/'))
+                        except:
+                            continue
                         if val[0] > 0 or val[1] > 0 or val[2] or val[3] > 0:
                             r[self.counters[c]] = val
                     elif v:
