@@ -55,6 +55,7 @@ app.register_blueprint(view)
 api.init_bui(bui)
 api.init_app(app)
 
+
 @app.route('/api/doc', endpoint='api.doc')
 def swagger_ui():
     return apidoc.ui_for(api)
