@@ -11,7 +11,7 @@
 import os
 import sys
 
-from flask.ext.restful import Api
+from flask.ext.restplus import Api
 from importlib import import_module
 
 

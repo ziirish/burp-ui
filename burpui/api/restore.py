@@ -15,7 +15,7 @@ from time import gmtime, strftime, time
 # This is a submodule we can also use "from ..api import api"
 from . import api
 from ..misc.utils import BUIserverException
-from flask.ext.restful import reqparse, Resource, abort
+from flask.ext.restplus import reqparse, Resource, abort
 from flask.ext.login import current_user, login_required
 from flask import Response, send_file, make_response, after_this_request
 from werkzeug.datastructures import Headers

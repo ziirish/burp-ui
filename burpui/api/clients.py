@@ -12,7 +12,7 @@ from . import api
 from ..misc.utils import BUIserverException
 
 from future.utils import iteritems
-from flask.ext.restful import reqparse, Resource
+from flask.ext.restplus import reqparse, Resource
 from flask.ext.login import current_user, login_required
 from flask import jsonify
 

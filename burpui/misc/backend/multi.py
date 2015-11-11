@@ -1,7 +1,6 @@
 # -*- coding: utf8 -*-
 import re
 import socket
-import select
 import errno
 import time
 import struct
