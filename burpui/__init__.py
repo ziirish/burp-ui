@@ -17,6 +17,7 @@ import logging
 from flask import Flask
 from flask.ext.login import LoginManager
 from flask.ext.bower import Bower
+from flask.ext.restplus import apidoc
 from .server import BUIServer as BurpUI
 from .routes import view
 from .api import api
@@ -53,6 +54,10 @@ app.register_blueprint(view)
 # We initialize the API
 api.init_bui(bui)
 api.init_app(app)
+
+@app.route('/api/doc', endpoint='api.doc')
+def swagger_ui():
+    return apidoc.ui_for(api)
 
 # And the login_manager
 login_manager = LoginManager()

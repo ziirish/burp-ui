@@ -39,5 +39,5 @@ class ApiWrapper(Api):
                     import_module(mod, 'burpui.api')
 
 
-api = ApiWrapper()
+api = ApiWrapper(ui=False)
 api.load_all()
