@@ -15,12 +15,11 @@ import sys
 import logging
 
 from flask import Flask
-from flask.ext.login import LoginManager
+from flask.ext.login import LoginManager, login_user
 from flask.ext.bower import Bower
-from flask.ext.restplus import apidoc
 from .server import BUIServer as BurpUI
 from .routes import view
-from .api import api
+from .api import api, apibp
 
 if sys.version_info < (3, 0):
     reload(sys)
@@ -42,7 +41,6 @@ app.config['CFG'] = None
 
 app.secret_key = 'VpgOXNXAgcO81xFPyWj07ppN6kExNZeCDRShseNzFKV7ZCgmW2/eLn6xSlt7pYAVBj12zx2Vv9Kw3Q3jd1266A=='
 app.jinja_env.globals.update(isinstance=isinstance, list=list)
-app.jinja_env.globals.update(api=api)
 
 # We initialize the core
 bui = BurpUI(app)
@@ -53,12 +51,9 @@ app.register_blueprint(view)
 
 # We initialize the API
 api.init_bui(bui)
-api.init_app(app)
+api.version = __version__
+app.register_blueprint(apibp)
 
-
-@app.route('/api/doc', endpoint='api.doc')
-def swagger_ui():
-    return apidoc.ui_for(api)
 
 # And the login_manager
 login_manager = LoginManager()
@@ -78,6 +73,27 @@ def load_user(userid):
     if bui.auth != 'none':
         return bui.uhandler.user(userid)
     return None  # pragma: no cover
+
+
+@login_manager.request_loader
+def load_user_from_request(request):
+    """User loader from request callback"""
+    if bui.auth != 'none':
+        creds = request.headers.get('Authorization')
+        if creds:
+            creds = creds.replace('Basic ', '', 1)
+            try:
+                import base64
+                login, password = base64.b64decode(creds).split(':')
+            except:
+                pass
+            if login:
+                user = bui.uhandler.user(login)
+                if user.active and user.login(login, password):
+                    login_user(user)
+                    return user
+
+    return None
 
 
 def lookup_config(conf=None):
