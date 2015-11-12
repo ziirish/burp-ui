@@ -20,12 +20,14 @@ if sys.version_info >= (3, 0):
 else:
     from urllib import unquote
 
+ns = api.namespace('settings', 'Settings methods')
 
-@api.resource('/api/settings/server-config',
-              '/api/<server>/settings/server-config',
-              '/api/settings/server-config/<path:conf>',
-              '/api/<server>/settings/server-config/<path:conf>',
-              endpoint='api.server_settings')
+
+@ns.route('/server-config',
+          '/<server>/server-config',
+          '/server-config/<path:conf>',
+          '/<server>/server-config/<path:conf>',
+          endpoint='server_settings')
 class ServerSettings(Resource):
     """The :class:`burpui.api.settings.ServerSettings` resource allows you to
     read and write the server's configuration.
@@ -189,9 +191,9 @@ class ServerSettings(Resource):
                        defaults=api.bui.cli.get_parser_attr('defaults', server))
 
 
-@api.resource('/api/settings/clients.json',
-              '/api/<server>/settings/clients.json',
-              endpoint='api.clients_list')
+@ns.route('/clients.json',
+          '/<server>/clients.json',
+          endpoint='clients_list')
 class ClientsList(Resource):
 
     @login_required
@@ -200,11 +202,11 @@ class ClientsList(Resource):
         return jsonify(result=res)
 
 
-@api.resource('/api/settings/<client>/client-config',
-              '/api/settings/<client>/client-config/<path:conf>',
-              '/api/<server>/settings/<client>/client-config',
-              '/api/<server>/settings/<client>/client-config/<path:conf>',
-              endpoint='api.client_settings')
+@ns.route('/client/<client>/config',
+          '/client/<client>/config/<path:conf>',
+          '/<server>/client/<client>/config',
+          '/<server>/client/<client>/config/<path:conf>',
+          endpoint='client_settings')
 class ClientSettings(Resource):
 
     @login_required
@@ -235,9 +237,9 @@ class ClientSettings(Resource):
                        defaults=api.bui.cli.get_parser_attr('defaults', server))
 
 
-@api.resource('/api/settings/new-client',
-              '/api/<server>/settings/new-client',
-              endpoint='api.new_client')
+@ns.route('/new-client',
+          '/<server>/new-client',
+          endpoint='new_client')
 class NewClient(Resource):
 
     def __init__(self):
@@ -266,11 +268,11 @@ class NewClient(Resource):
         return {'notif': noti}, 201
 
 
-@api.resource('/api/settings/path-expander',
-              '/api/<server>/settings/path-expander',
-              '/api/settings/path-expander/<client>',
-              '/api/<server>/settings/path-expander/<client>',
-              endpoint='api.path_expander')
+@ns.route('/path-expander',
+          '/<server>/path-expander',
+          '/path-expander/<client>',
+          '/<server>/path-expander/<client>',
+          endpoint='path_expander')
 class PathExpander(Resource):
 
     def __init__(self):
@@ -293,11 +295,11 @@ class PathExpander(Resource):
         return {'result': paths}
 
 
-@api.resource('/api/settings/delete-client',
-              '/api/<server>/settings/delete-client',
-              '/api/settings/delete-client/<client>',
-              '/api/<server>/settings/delete-client/<client>',
-              endpoint='api.delete_client')
+@ns.route('/delete-client',
+          '/<server>/delete-client',
+          '/delete-client/<client>',
+          '/<server>/delete-client/<client>',
+          endpoint='delete_client')
 class DeleteClient(Resource):
 
     @login_required

@@ -11,8 +11,24 @@
 import os
 import sys
 
+from flask import Blueprint, Response
 from flask.ext.restplus import Api
+from flask.ext.login import current_user, current_app
 from importlib import import_module
+from functools import wraps
+
+
+def api_login_required(func):
+    @wraps(func)
+    def decorated_view(*args, **kwargs):
+        if api.bui.auth != 'none' and not current_app.config.get('LOGIN_DISABLED', False):
+            if not current_user.is_authenticated:
+                return Response(
+                    'Could not verify your access level for that URL.\n'
+                    'You have to login with proper credentials', 401,
+                    {'WWW-Authenticate': 'Basic realm="Login Required"'})
+        return func(*args, **kwargs)
+    return decorated_view
 
 
 class ApiWrapper(Api):
@@ -24,6 +40,7 @@ class ApiWrapper(Api):
         :type bui: :class:`burpui.server.BUIServer`
         """
         self.bui = bui
+        self.load_all()
 
     def load_all(self):
         # hack to automatically import api modules
@@ -38,6 +55,5 @@ class ApiWrapper(Api):
                     mod = '.' + name
                     import_module(mod, 'burpui.api')
 
-
-api = ApiWrapper(ui=False)
-api.load_all()
+apibp = Blueprint('api', __name__, url_prefix='/api', template_folder='../templates')
+api = ApiWrapper(apibp, title='Burp-UI API', description='Documented API to interact with burp')

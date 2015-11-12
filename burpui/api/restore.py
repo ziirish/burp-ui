@@ -21,10 +21,12 @@ from flask import Response, send_file, make_response, after_this_request
 from werkzeug.datastructures import Headers
 from werkzeug.exceptions import HTTPException
 
+ns = api.namespace('restore', 'Restore methods')
 
-@api.resource('/api/restore/<name>/<int:backup>',
-              '/api/<server>/restore/<name>/<int:backup>',
-              endpoint='api.restore')
+
+@ns.route('/archive/<name>/<int:backup>',
+          '/<server>/archive/<name>/<int:backup>',
+          endpoint='restore')
 class Restore(Resource):
     """The :class:`burpui.api.restore.Restore` resource allows you to
     perform a file restoration.
@@ -187,9 +189,9 @@ class Restore(Resource):
         return resp
 
 
-@api.resource('/api/schedule-restore/<name>/<int:backup>',
-              '/api/<server>/schedule-restore/<name>/<int:backup>',
-              endpoint='api.schedule_restore')
+@ns.route('/schedule-restore/<name>/<int:backup>',
+          '/<server>/schedule-restore/<name>/<int:backup>',
+          endpoint='schedule_restore')
 class ScheduleRestore(Resource):
     """The :class:`burpui.api.restore.ScheduleRestore` resource allows you to
     prepare a file restoration.

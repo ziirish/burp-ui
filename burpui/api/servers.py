@@ -9,8 +9,10 @@ from flask.ext.restplus import reqparse, Resource
 from flask.ext.login import current_user, login_required
 from flask import jsonify
 
+ns = api.namespace('servers', 'Servers methods')
 
-@api.resource('/api/servers.json', endpoint='api.servers_stats')
+
+@ns.route('/servers.json', endpoint='servers_stats')
 class ServersStats(Resource):
     """The :class:`burpui.api.servers.ServersStats` resource allows you to
     retrieve statistics about servers/agents.
@@ -45,9 +47,9 @@ class ServersStats(Resource):
         return jsonify(results=r)
 
 
-@api.resource('/api/live.json',
-              '/api/<server>/live.json',
-              endpoint='api.live')
+@ns.route('/live.json',
+          '/<server>/live.json',
+          endpoint='live')
 class Live(Resource):
     """The :class:`burpui.api.servers.Live` resource allows you to
     retrieve a list of servers that are currently *alive*.

@@ -14,10 +14,12 @@ from flask.ext.restplus import reqparse, Resource
 from flask.ext.login import current_user, login_required
 from flask import jsonify
 
+ns = api.namespace('client', 'Client methods')
 
-@api.resource('/api/client-tree.json/<name>/<int:backup>',
-              '/api/<server>/client-tree.json/<name>/<int:backup>',
-              endpoint='api.client_tree')
+
+@ns.route('/client-tree.json/<name>/<int:backup>',
+          '/<server>/client-tree.json/<name>/<int:backup>',
+          endpoint='client_tree')
 class ClientTree(Resource):
     """The :class:`burpui.api.client.ClientTree` resource allows you to
     retrieve a list of files in a given backup.
@@ -93,11 +95,11 @@ class ClientTree(Resource):
         return jsonify(results=j)  # pargma: no cover
 
 
-@api.resource('/api/client-stats.json/<name>',
-              '/api/<server>/client-stats.json/<name>',
-              '/api/client-stats.json/<name>/<int:backup>',
-              '/api/<server>/client-stats.json/<name>/<int:backup>',
-              endpoint='api.client_stats')
+@ns.route('/client-stats.json/<name>',
+          '/<server>/client-stats.json/<name>',
+          '/client-stats.json/<name>/<int:backup>',
+          '/<server>/client-stats.json/<name>/<int:backup>',
+          endpoint='client_stats')
 class ClientStats(Resource):
     """The :class:`burpui.api.client.ClientStats` resource allows you to
     retrieve a statistics on a given backup for a given client.
@@ -296,9 +298,9 @@ class ClientStats(Resource):
         return jsonify(results=j)
 
 
-@api.resource('/api/client.json/<name>',
-              '/api/<server>/client.json/<name>',
-              endpoint='api.client_report')
+@ns.route('/client.json/<name>',
+          '/<server>/client.json/<name>',
+          endpoint='client_report')
 class ClientReport(Resource):
     """The :class:`burpui.api.client.ClientReport` resource allows you to
     retrieve a list of backups for a given client.

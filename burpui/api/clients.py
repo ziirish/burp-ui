@@ -8,7 +8,7 @@
 
 """
 # This is a submodule we can also use "from ..api import api"
-from . import api
+from . import api, api_login_required
 from ..misc.utils import BUIserverException
 
 from future.utils import iteritems
@@ -16,12 +16,14 @@ from flask.ext.restplus import reqparse, Resource
 from flask.ext.login import current_user, login_required
 from flask import jsonify
 
+ns = api.namespace('clients', 'Clients methods')
 
-@api.resource('/api/running-clients.json',
-              '/api/<server>/running-clients.json',
-              '/api/running-clients.json/<client>',
-              '/api/<server>/running-clients.json/<client>',
-              endpoint='api.running_clients')
+
+@ns.route('/running-clients.json',
+          '/<server>/running-clients.json',
+          '/running-clients.json/<client>',
+          '/<server>/running-clients.json/<client>',
+          endpoint='running_clients')
 class RunningClients(Resource):
     """The :class:`burpui.api.clients.RunningClients` resource allows you to
     retrieve a list of clients that are currently running a backup.
@@ -92,9 +94,9 @@ class RunningClients(Resource):
         return jsonify(results=r)
 
 
-@api.resource('/api/running.json',
-              '/api/<server>/running.json',
-              endpoint='api.running_backup')
+@ns.route('/running.json',
+          '/<server>/running.json',
+          endpoint='running_backup')
 class RunningBackup(Resource):
     """The :class:`burpui.api.clients.RunningBackup` resource allows you to
     access the status of the server in order to know if there is a running
@@ -147,9 +149,9 @@ class RunningBackup(Resource):
         return jsonify(results=r)
 
 
-@api.resource('/api/clients-report.json',
-              '/api/<server>/clients-report.json',
-              endpoint='api.clients_report')
+@ns.route('/clients-report.json',
+          '/<server>/clients-report.json',
+          endpoint='clients_report')
 class ClientsReport(Resource):
     """The :class:`burpui.api.clients.ClientsReport` resource allows you to
     access general reports about your clients.
@@ -246,9 +248,9 @@ class ClientsReport(Resource):
         return jsonify(results=j)
 
 
-@api.resource('/api/clients.json',
-              '/api/<server>/clients.json',
-              endpoint='api.clients_stats')
+@ns.route('/clients.json',
+          '/<server>/clients.json',
+          endpoint='clients_stats')
 class ClientsStats(Resource):
     """The :class:`burpui.api.clients.ClientsStats` resource allows you to
     access general statistics about your clients.
@@ -263,7 +265,7 @@ class ClientsStats(Resource):
         self.parser = reqparse.RequestParser()
         self.parser.add_argument('server', type=str)
 
-    @login_required
+    @api_login_required
     def get(self, server=None):
         """**GET** method provided by the webservice.
 

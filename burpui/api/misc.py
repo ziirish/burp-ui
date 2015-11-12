@@ -18,12 +18,14 @@ from flask import render_template, make_response
 
 import time
 
+ns = api.namespace('misc', 'Misc methods')
 
-@api.resource('/api/render-live-template',
-              '/api/<server>/render-live-template',
-              '/api/render-live-template/<name>',
-              '/api/<server>/render-live-template/<name>',
-              endpoint='api.render_live_tpl')
+
+@ns.route('/render-live-template',
+          '/<server>/render-live-template',
+          '/render-live-template/<name>',
+          '/<server>/render-live-template/<name>',
+          endpoint='render_live_tpl')
 class RenderLiveTpl(Resource):
     """The :class:`burpui.api.misc.RenderLiveTpl` resource allows you to
     render the *live view* template of a given client.
