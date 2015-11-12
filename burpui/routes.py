@@ -19,6 +19,10 @@ class BPWrapper(Blueprint):
     bui = BurpGeneric(dummy=True)
 
     def init_bui(self, bui):
+        """Loads the right context.
+        :param bui: application context
+        :type bui: :class:`burpui.server.BUIServer`
+        """
         self.bui = bui
 
 view = BPWrapper('view', __name__, template_folder='templates')
