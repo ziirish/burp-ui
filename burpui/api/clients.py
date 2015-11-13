@@ -8,13 +8,14 @@
 
 """
 # This is a submodule we can also use "from ..api import api"
-from . import api, api_login_required
+from . import api
 from ..misc.utils import BUIserverException
 
 from future.utils import iteritems
-from flask.ext.restplus import reqparse, Resource
-from flask.ext.login import current_user, login_required
+from flask.ext.restplus import reqparse, Resource, fields
+from flask.ext.login import current_user
 from flask import jsonify
+import json
 
 ns = api.namespace('clients', 'Clients methods')
 
@@ -37,8 +38,8 @@ class RunningClients(Resource):
     def __init__(self):
         self.parser = reqparse.RequestParser()
         self.parser.add_argument('server', type=str)
+        super(RunningClients, self).__init__()
 
-    @login_required
     def get(self, client=None, server=None):
         """**GET** method provided by the webservice.
 
@@ -105,7 +106,6 @@ class RunningBackup(Resource):
     This resource is part of the :mod:`burpui.api.clients` module.
     """
 
-    @login_required
     def get(self, server=None):
         """**GET** method provided by the webservice.
 
@@ -165,8 +165,8 @@ class ClientsReport(Resource):
     def __init__(self):
         self.parser = reqparse.RequestParser()
         self.parser.add_argument('server', type=str)
+        super(ClientsReport, self).__init__()
 
-    @login_required
     def get(self, server=None):
         """**GET** method provided by the webservice.
 
@@ -260,14 +260,32 @@ class ClientsStats(Resource):
     An optional ``GET`` parameter called ``server`` is supported when running
     in multi-agent mode.
     """
+    client_fields = api.model('Client', {
+        'last': fields.String(required=True, description='Date of last backup'),
+        'name': fields.String(required=True, description='Client name'),
+        'state': fields.String(required=True, description='Current state of the client (idle, backup, etc.)'),
+    })
+    parser = api.parser()
 
     def __init__(self):
-        self.parser = reqparse.RequestParser()
-        self.parser.add_argument('server', type=str)
+        self.parser.add_argument('server', type=str, help='Which server to collect data from when in multi-agent mode')
+        super(ClientsStats, self).__init__()
 
-    @api_login_required
+    @api.marshal_list_with(client_fields)
+    @api.doc(
+        params={
+            'server': 'Which server to collect data from when in multi-agent mode',
+        },
+        responses={
+            200: 'Success',
+            500: 'Internal failure',
+        },
+        parser=parser
+    )
     def get(self, server=None):
-        """**GET** method provided by the webservice.
+        """Returns a list of clients with their states
+
+        **GET** method provided by the webservice.
 
         The *JSON* returned is:
         ::
@@ -312,5 +330,5 @@ class ClientsStats(Resource):
                 j = [x for x in j if x['name'] in api.bui.acl.clients(current_user.get_id(), server)]
         except BUIserverException as e:
             err = [[2, str(e)]]
-            return jsonify(notif=err)
-        return jsonify(results=j)
+            api.abort(500, json.dumps(err))
+        return j
