@@ -13,7 +13,7 @@ from ..misc.utils import BUIserverException
 
 from future.utils import iteritems
 from flask.ext.restplus import reqparse, Resource, abort
-from flask.ext.login import current_user, login_required
+from flask.ext.login import current_user
 from flask import render_template, make_response
 
 import time
@@ -42,8 +42,8 @@ class RenderLiveTpl(Resource):
         self.parser = reqparse.RequestParser()
         self.parser.add_argument('server', type=str)
         self.parser.add_argument('name', type=str)
+        super(RenderLiveTpl, self).__init__()
 
-    @login_required
     def get(self, server=None, name=None):
         """API: render_live_tpl
         :param name: the client name if any. You can also use the GET parameter

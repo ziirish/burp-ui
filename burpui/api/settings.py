@@ -12,7 +12,7 @@ import sys
 # This is a submodule we can also use "from ..api import api"
 from . import api
 from flask.ext.restplus import reqparse, abort, Resource
-from flask.ext.login import current_user, login_required
+from flask.ext.login import current_user
 from flask import jsonify, request, url_for
 from werkzeug.datastructures import ImmutableMultiDict
 if sys.version_info >= (3, 0):
@@ -35,12 +35,10 @@ class ServerSettings(Resource):
     This resource is part of the :mod:`burpui.api.settings` module.
     """
 
-    @login_required
     def post(self, conf=None, server=None):
         noti = api.bui.cli.store_conf_srv(request.form, conf, server)
         return {'notif': noti}, 200
 
-    @login_required
     def get(self, conf=None, server=None):
         """**GET** method provided by the webservice.
 
@@ -196,7 +194,6 @@ class ServerSettings(Resource):
           endpoint='clients_list')
 class ClientsList(Resource):
 
-    @login_required
     def get(self, server=None):
         res = api.bui.cli.clients_list(server)
         return jsonify(result=res)
@@ -209,12 +206,10 @@ class ClientsList(Resource):
           endpoint='client_settings')
 class ClientSettings(Resource):
 
-    @login_required
     def post(self, server=None, client=None, conf=None):
         noti = api.bui.cli.store_conf_cli(request.form, client, conf, server)
         return jsonify(notif=noti)
 
-    @login_required
     def get(self, server=None, client=None, conf=None):
         # Only the admin can edit the configuration
         if (api.bui.acl and not
@@ -245,8 +240,8 @@ class NewClient(Resource):
     def __init__(self):
         self.parser = reqparse.RequestParser()
         self.parser.add_argument('newclient', type=str)
+        super(NewClient, self).__init__()
 
-    @login_required
     def put(self, server=None):
         # Only the admin can edit the configuration
         if (api.bui.acl and not
@@ -278,8 +273,8 @@ class PathExpander(Resource):
     def __init__(self):
         self.parser = reqparse.RequestParser()
         self.parser.add_argument('path')
+        super(PathExpander, self).__init__()
 
-    @login_required
     def get(self, server=None, client=None):
         # Only the admin can edit the configuration
         if (api.bui.acl and not
@@ -302,7 +297,6 @@ class PathExpander(Resource):
           endpoint='delete_client')
 class DeleteClient(Resource):
 
-    @login_required
     def delete(self, server=None, client=None):
         # Only the admin can edit the configuration
         if (api.bui.acl and not

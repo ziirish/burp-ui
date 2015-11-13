@@ -11,7 +11,7 @@
 from . import api
 from ..misc.utils import BUIserverException
 from flask.ext.restplus import reqparse, Resource
-from flask.ext.login import current_user, login_required
+from flask.ext.login import current_user
 from flask import jsonify
 
 ns = api.namespace('client', 'Client methods')
@@ -36,8 +36,8 @@ class ClientTree(Resource):
         self.parser = reqparse.RequestParser()
         self.parser.add_argument('server', type=str)
         self.parser.add_argument('root', type=str)
+        super(ClientTree, self).__init__()
 
-    @login_required
     def get(self, server=None, name=None, backup=None):
         """**GET** method provided by the webservice.
 
@@ -113,8 +113,8 @@ class ClientStats(Resource):
     def __init__(self):
         self.parser = reqparse.RequestParser()
         self.parser.add_argument('server', type=str)
+        super(ClientStats, self).__init__()
 
-    @login_required
     def get(self, server=None, name=None, backup=None):
         """**GET** method provided by the webservice.
 
@@ -314,8 +314,8 @@ class ClientReport(Resource):
     def __init__(self):
         self.parser = reqparse.RequestParser()
         self.parser.add_argument('server', type=str)
+        super(ClientReport, self).__init__()
 
-    @login_required
     def get(self, server=None, name=None):
         """**GET** method provided by the webservice.
 

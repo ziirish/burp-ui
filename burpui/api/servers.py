@@ -6,7 +6,7 @@ from ..misc.utils import BUIserverException
 
 from future.utils import iteritems
 from flask.ext.restplus import reqparse, Resource
-from flask.ext.login import current_user, login_required
+from flask.ext.login import current_user
 from flask import jsonify
 
 ns = api.namespace('servers', 'Servers methods')
@@ -20,7 +20,6 @@ class ServersStats(Resource):
     This resource is part of the :mod:`burpui.api.servers` module.
     """
 
-    @login_required
     def get(self):
         r = []
         if hasattr(api.bui.cli, 'servers'):  # pragma: no cover
@@ -63,8 +62,8 @@ class Live(Resource):
     def __init__(self):
         self.parser = reqparse.RequestParser()
         self.parser.add_argument('server', type=str)
+        super(Live, self).__init__()
 
-    @login_required
     def get(self, server=None):
         """API: live
         :returns: the live status of the server

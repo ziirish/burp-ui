@@ -16,7 +16,7 @@ from time import gmtime, strftime, time
 from . import api
 from ..misc.utils import BUIserverException
 from flask.ext.restplus import reqparse, Resource, abort
-from flask.ext.login import current_user, login_required
+from flask.ext.login import current_user
 from flask import Response, send_file, make_response, after_this_request
 from werkzeug.datastructures import Headers
 from werkzeug.exceptions import HTTPException
@@ -46,8 +46,8 @@ class Restore(Resource):
         self.parser.add_argument('strip', type=str)
         self.parser.add_argument('format', type=str)
         self.parser.add_argument('pass', type=str)
+        super(Restore, self).__init__()
 
-    @login_required
     def post(self, server=None, name=None, backup=None):
         """**POST** method provided by the webservice.
         This method returns a :mod:`flask.Response` object.
@@ -213,8 +213,8 @@ class ScheduleRestore(Resource):
         self.parser.add_argument('prefix-sc', type=str)
         self.parser.add_argument('force-sc', type=str)
         self.parser.add_argument('restoreto-sc', type=str)
+        super(ScheduleRestore, self).__init__()
 
-    @login_required
     def put(self, server=None, name=None, backup=None):
         """**PUT** method provided by the webservice.
 
