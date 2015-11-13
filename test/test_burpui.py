@@ -183,7 +183,7 @@ class BurpuiRoutesTestCase(TestCase):
 
     def test_get_clients(self):
         response = self.client.get(url_for('api.clients_stats'))
-        self.assertEqual(response.json, {u'results': [{u'state': u'idle', u'last': u'never', u'name': u'testclient'}]})
+        self.assertEqual(response.json, [{u'state': u'idle', u'last': u'never', u'name': u'testclient'}])
 
 
 class BurpuiLoginTestCase(TestCase):
