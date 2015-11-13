@@ -11,18 +11,35 @@
 import os
 import sys
 
-from flask import Blueprint, Response
+from flask import Blueprint, Response, request
 from flask.ext.restplus import Api
-from flask.ext.login import current_user, current_app
+from flask.ext.login import current_user, current_app, login_user
 from importlib import import_module
 from functools import wraps
+
+
+def api_login_user(request):
+    creds = request.headers.get('Authorization')
+    if creds:
+        creds = creds.replace('Basic ', '', 1)
+        try:
+            import base64
+            login, password = base64.b64decode(creds).split(':')
+        except:
+            pass
+        if login:
+            user = api.bui.uhandler.user(login)
+            if user.active and user.login(login, password):
+                login_user(user)
+                return user
+    return None
 
 
 def api_login_required(func):
     @wraps(func)
     def decorated_view(*args, **kwargs):
         if api.bui.auth != 'none' and not current_app.config.get('LOGIN_DISABLED', False):
-            if not current_user.is_authenticated:
+            if not current_user.is_authenticated and not api_login_user(request):
                 return Response(
                     'Could not verify your access level for that URL.\n'
                     'You have to login with proper credentials', 401,
@@ -56,4 +73,4 @@ class ApiWrapper(Api):
                     import_module(mod, 'burpui.api')
 
 apibp = Blueprint('api', __name__, url_prefix='/api', template_folder='../templates')
-api = ApiWrapper(apibp, title='Burp-UI API', description='Documented API to interact with burp')
+api = ApiWrapper(apibp, title='Burp-UI API', description='Documented API to interact with burp', decorators=[api_login_required])
