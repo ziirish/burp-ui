@@ -2,6 +2,7 @@
 # -*- coding: utf8 -*-
 import sys
 import os
+import json
 import unittest
 import tempfile
 
@@ -60,7 +61,8 @@ class BurpuiAPITestCase(TestCase):
 
     def test_no_clients(self):
         response = self.client.get(url_for('api.clients_stats'))
-        self.assertEquals(response.json, {u'notif': [[2, u'Cannot contact burp server at 127.0.0.1:9999']]})
+        self.assertEquals(response.json['message'], json.dumps([[2, u'Cannot contact burp server at 127.0.0.1:9999']]))
+        self.assert500(response)
 
     def test_server_config_parsing(self):
         response = self.client.get(url_for('api.server_settings'))
