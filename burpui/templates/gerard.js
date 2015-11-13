@@ -55,13 +55,36 @@ var anim = function(elem, timeout) {
 };
 
 var errorsHandler = function(xhr) {
-	if ('responseJSON' in xhr && 'notif' in xhr.responseJSON) {
-		$.each(xhr.responseJSON.notif, function(i, n) {
+	if ('responseJSON' in xhr) {
+		json = xhr.responseJSON;
+		if ('notif' in json) {
+			message = json.notif
+		} else if ('message' in json) {
+			message = JSON.parse(json.message);
+		} else {
+			return false;
+		}
+		$.each(message, function(i, n) {
 			notif(n[0], n[1]);
 		});
 		return true;
 	}
 	return false;
+};
+
+var myFail = function(xhr, stat, err) {
+	if (errorsHandler(xhr)) {
+		return;
+	}
+	var msg = '<strong>ERROR:</strong> ';
+	if (stat && err) {
+		msg +=  '<p>'+stat+'</p><pre>'+err+'</pre>';
+	} else if (stat) {
+		msg += '<p>'+stat+'</p>';
+	} else if (err) {
+		msg += '<pre>'+err+'</pre>';
+	}
+	notif(2, msg);
 };
 
 {% if not login -%}

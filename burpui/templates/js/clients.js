@@ -23,20 +23,18 @@ var __date = {
 /***
  * _clients: function that retrieve up-to-date informations from the burp server
  * JSON format:
- * {
- *   "results": [
- *     {
- *       "last": "2014-05-12 19:40:02",
- *       "name": "client1",
- *       "state": "idle"
- *     },
- *     {
- *       "last": "never",
- *       "name": "client2",
- *       "state": "idle"
- *     }
- *   ]
- * }
+ * [
+ *   {
+ *     "last": "2014-05-12 19:40:02",
+ *     "name": "client1",
+ *     "state": "idle"
+ *   },
+ *   {
+ *     "last": "never",
+ *     "name": "client2",
+ *     "state": "idle"
+ *   }
+ * ]
  *  The JSON is then parsed into a table
  */
 
@@ -45,16 +43,9 @@ var _clients_table = $('#table-clients').dataTable( {
 	ajax: {
 		url: '{{ url_for("api.clients_stats", server=server) }}',
 		dataSrc: function (data) {
-			if (!data.results) {
-				if (data.notif) {
-					$.each(data.notif, function(i, n) {
-						notif(n[0], n[1]);
-					});
-				}
-				return {};
-			}
-			return data.results;
-		}
+			return data;
+		},
+		error: myFail,
 	},
 	order: [[2, 'desc']],
 	destroy: true,

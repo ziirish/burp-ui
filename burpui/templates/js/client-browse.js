@@ -228,20 +228,9 @@
 			url: url,
 			type: 'PUT',
 			data: form.serialize()
-		}).fail(function(xhr, stat, err) {
-			if (errorsHandler(xhr)) {
-				return;
-			}
-			var msg = '<strong>ERROR:</strong> ';
-			if (stat && err) {
-				msg +=  '<p>'+stat+'</p><pre>'+err+'</pre>';
-			} else if (stat) {
-				msg += '<p>'+stat+'</p>';
-			} else if (err) {
-				msg += '<pre>'+err+'</pre>';
-			}
-			notif(2, msg);
-		}).done(function(data) {
+		})
+		.fail(myFail)
+		.done(function(data) {
 			if (data.notif) {
 				notif(data.notif[0], data.notif[1]);
 			}

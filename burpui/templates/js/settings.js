@@ -196,12 +196,9 @@ app.controller('ConfigCtrl', function($scope, $http) {
 				url: form.attr('action'),
 				type: 'POST',
 				data: form.serialize()
-			}).fail(function(xhr, stat, err) {
-				if (errorsHandler(xhr)) {
-					return;
-				}
-				$scope.showError(stat, err);
-			}).done(function(data) {
+			})
+			.fail(myFail)
+			.done(function(data) {
 				/* The server answered correctly but some errors may have occurred server
 				 * side so we display them */
 				if (data.notif) {
@@ -223,18 +220,6 @@ app.controller('ConfigCtrl', function($scope, $http) {
 				form.find('#'+value.name+'_view').attr('disabled', false);
 			});
 		}
-	};
-	$scope.showError = function(stat, err) {
-		/* display errors if something went wrong HTTP side */
-		var msg = '<strong>ERROR:</strong> ';
-		if (stat && err) {
-			msg +=	'<p>'+stat+'</p><pre>'+err+'</pre>';
-		} else if (stat) {
-			msg += '<p>'+stat+'</p>';
-		} else if (err) {
-			msg += '<pre>'+err+'</pre>';
-		}
-		notif(2, msg, 10000);
 	};
 	$scope.remove = function(key, index) {
 		if (!$scope.old[key]) {
@@ -339,12 +324,9 @@ app.controller('ConfigCtrl', function($scope, $http) {
 			url: api,
 			type: 'GET',
 			data: {'path': path}
-		}).fail(function(xhr, stat, err) {
-			if (errorsHandler(xhr)) {
-				return;
-			}
-			$scope.showError(stat, err);
-		}).done(function(data) {
+		})
+		.fail(myFail)
+		.done(function(data) {
 			/* The server answered correctly but some errors may have occurred server
 			 * side so we display them */
 			if (data.notif) {
@@ -372,12 +354,9 @@ app.controller('ConfigCtrl', function($scope, $http) {
 		$.ajax({
 			url: api,
 			type: 'DELETE'
-		}).fail(function(xhr, stat, err) {
-			if (errorsHandler(xhr)) {
-				return;
-			}
-			$scope.showError(stat, err);
-		}).done(function(data) {
+		})
+		.fail(myFail)
+		.done(function(data) {
 			/* The server answered correctly but some errors may have occurred server
 			 * side so we display them */
 			if (data.notif) {
@@ -396,12 +375,9 @@ app.controller('ConfigCtrl', function($scope, $http) {
 			url: form.attr('action'),
 			type: 'PUT',
 			data: form.serialize()
-		}).fail(function(xhr, stat, err) {
-			if (errorsHandler(xhr)) {
-				return;
-			}
-			$scope.showError(stat, err);
-		}).done(function(data) {
+		})
+		.fail(myFail)
+		.done(function(data) {
 			/* The server answered correctly but some errors may have occurred server
 			 * side so we display them */
 			if (data.notif) {
