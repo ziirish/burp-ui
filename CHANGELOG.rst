@@ -8,6 +8,7 @@ Current
 - Add new fields in `backup reports <https://git.ziirish.me/ziirish/burp-ui/issues/48>`_
 - Add `server-side initiated restoration <https://git.ziirish.me/ziirish/burp-ui/issues/12>`_
 - Add percent done in `overview <https://git.ziirish.me/ziirish/burp-ui/issues/55>`_
+- Add the ability to `chain multiple authentication backends <https://git.ziirish.me/ziirish/burp-ui/issues/79>`_
 - `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/v0.0.7.1...master>`__
 
 0.0.7.3
