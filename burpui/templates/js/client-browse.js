@@ -3,33 +3,29 @@
 	 * Here is our tree to browse a specific backup
 	 * The tree is first initialized with the 'root' part of the backup.
 	 * JSON example:
-	 * {
-	 *   "results": [
-	 *     {
-	 *       "name": "/",
-	 *       "parent": "",
-	 *       "type": "d"
-	 *     }
-	 *   ]
-	 * }
+	 * [
+	 *   {
+	 *     "name": "/",
+	 *     "parent": "",
+	 *     "type": "d"
+	 *   }
+	 * ]
 	 * This JSON is then parsed into another one to initialize our tree.
 	 * Each 'directory' is expandable.
 	 * A new JSON is returned for each one of then on-demand.
 	 * JSON output:
-	 * {
-	 *   "results": [
-	 *     {
-	 *       "name": "etc", 
-	 *       "parent": "/", 
-	 *       "type": "d"
-	 *     }, 
-	 *     {
-	 *       "name": "home", 
-	 *       "parent": "/", 
-	 *       "type": "d"
-	 *     }
-	 *   ]
-	 * }
+	 * [
+	 *   {
+	 *     "name": "etc",
+	 *     "parent": "/",
+	 *     "type": "d"
+	 *   },
+	 *   {
+	 *     "name": "home",
+	 *     "parent": "/",
+	 *     "type": "d"
+	 *   }
+	 * ]
 	 */
 	$("#tree").fancytree({
 		checkbox: true,
@@ -57,21 +53,14 @@
 		source: function() { 
 			r = [];
 			$.getJSON('{{ url_for("api.client_tree", name=cname, backup=nbackup, server=server) }}', function(data) {
-				if (!data.results) {
-					if (data.notif) {
-						$.each(data.notif, function(i, n) {
-							notif(n[0], n[1]);
-						});
-					}
-					return;
-				}
-				$.each(data.results, function(j, c) {
+				$.each(data, function(j, c) {
 					l = (c.type === "d");
 					f = (c.type === "d");
 					s = {title: c.name, key: c.name, lazy: l, folder: f, uid: c.uid, gid: c.gid, date: c.date, mode: c.mode, size: c.size, inodes: c.inodes};
 					r.push(s);
 				});
-			});
+			})
+			.fail(myFail);
 			$("#waiting-container").hide();
 			$("#tree-container").show();
 			return r;
@@ -85,21 +74,14 @@
 			p = node.key;
 			if (p !== "/") p += '/';
 			$.getJSON('{{ url_for("api.client_tree", name=cname, backup=nbackup, server=server) }}?root='+p, function(data) {
-				if (!data.results) {
-					if (data.notif) {
-						$.each(data.notif, function(i, n) {
-							notif(n[0], n[1]);
-						});
-					}
-					return;
-				}
-				$.each(data.results, function(j, c) {
+				$.each(data, function(j, c) {
 					l = (c.type === "d");
 					f = (c.type === "d");
 					s = {title: c.name, key: c.parent+c.name, lazy: l, folder: f, uid: c.uid, gid: c.gid, date: c.date, mode: c.mode, size: c.size, inodes: c.inodes};
 					r.push(s);
 				});
-			});
+			})
+			.fail(myFail);
 			data.result = r;
 			node._isLoading = false;
 			node.renderStatus();

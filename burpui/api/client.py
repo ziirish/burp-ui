@@ -10,7 +10,7 @@
 # This is a submodule we can also use "from ..api import api"
 from . import api
 from ..misc.utils import BUIserverException
-from flask.ext.restplus import reqparse, Resource
+from flask.ext.restplus import Resource, fields
 from flask.ext.login import current_user
 from flask import jsonify
 
@@ -31,34 +31,59 @@ class ClientTree(Resource):
     A mandatory ``GET`` parameter called ``root`` is used to know what path we
     are working on.
     """
+    parser = api.parser()
+    node_fields = api.model('ClientTree', {
+        'date': fields.String(required=True, description='Human representation of the backup date'),
+        'gid': fields.Integer(required=True, description='gid owner of the node'),
+        'inodes': fields.Integer(required=True, description='Inodes of the node'),
+        'mode': fields.String(required=True, description='Human readable mode. Example: "drwxr-xr-x"'),
+        'name': fields.String(required=True, description='Node name'),
+        'parent': fields.String(required=True, description='Parent node name'),
+        'size': fields.String(required=True, description='Human readable size. Example: "12.0KiB"'),
+        'type': fields.String(required=True, description='Node type. Example: "d"'),
+        'uid': fields.Integer(required=True, description='uid owner of the node'),
+    })
 
     def __init__(self):
-        self.parser = reqparse.RequestParser()
-        self.parser.add_argument('server', type=str)
-        self.parser.add_argument('root', type=str)
+        self.parser.add_argument('server', type=str, help='Which server to collect data from when in multi-agent mode')
+        self.parser.add_argument('root', type=str, help='Root path to expand')
         super(ClientTree, self).__init__()
 
+    @api.marshal_list_with(node_fields, code=200, description='Success')
+    @api.doc(
+        params={
+            'server': 'Which server to collect data from when in multi-agent mode',
+            'name': 'Client name',
+            'backup': 'Backup number',
+            'root': 'Root path to expand',
+        },
+        responses={
+            '403': 'Insufficient permissions',
+            '500': 'Internal failure',
+        },
+        parser=parser
+    )
     def get(self, server=None, name=None, backup=None):
-        """**GET** method provided by the webservice.
+        """Returns a list of 'nodes' under a given path
+
+        **GET** method provided by the webservice.
 
         The *JSON* returned is:
         ::
 
-            {
-              "results": [
-                {
-                  "date": "2015-05-21 14:54:49",
-                  "gid": "0",
-                  "inodes": "173",
-                  "mode": "drwxr-xr-x",
-                  "name": "/",
-                  "parent": "",
-                  "size": "12.0KiB",
-                  "type": "d",
-                  "uid": "0"
-                }
-              ]
-            }
+            [
+              {
+                "date": "2015-05-21 14:54:49",
+                "gid": "0",
+                "inodes": "173",
+                "mode": "drwxr-xr-x",
+                "name": "/",
+                "parent": "",
+                "size": "12.0KiB",
+                "type": "d",
+                "uid": "0"
+              },
+            ]
 
 
         The output is filtered by the :mod:`burpui.misc.acl` module so that you
@@ -79,7 +104,7 @@ class ClientTree(Resource):
             server = self.parser.parse_args()['server']
         j = []
         if not name or not backup:  # pargma: no cover
-            return jsonify(results=j)
+            return j
         root = self.parser.parse_args()['root']
         try:
             if (api.bui.acl and
@@ -87,12 +112,11 @@ class ClientTree(Resource):
                      api.bui.acl.is_client_allowed(current_user.get_id(),
                                                    name,
                                                    server))):
-                raise BUIserverException('Sorry, you are not allowed to view this client')
+                api.abort(403, 'Sorry, you are not allowed to view this client')
             j = api.bui.cli.get_tree(name, backup, root, agent=server)
         except BUIserverException as e:
-            err = [[2, str(e)]]
-            return jsonify(notif=err)
-        return jsonify(results=j)  # pargma: no cover
+            api.abort(500, str(e))
+        return j
 
 
 @ns.route('/client-stats.json/<name>',
@@ -109,142 +133,185 @@ class ClientStats(Resource):
     An optional ``GET`` parameter called ``server`` is supported when running
     in multi-agent mode.
     """
+    parser = api.parser()
+    stats_tpl_fields = api.model('ClientStatsTpl', {
+        'changed': fields.Integer(required=True, description='Number of changed files'),
+        'deleted': fields.Integer(required=True, description='Number of deleted files'),
+        'new': fields.Integer(required=True, description='Number of new files'),
+        'scanned': fields.Integer(required=True, description='Number of scanned files'),
+        'total': fields.Integer(required=True, description='Total number of files'),
+        'unchanged': fields.Integer(required=True, description='Number of scanned files'),
+    })
+    stats_fields = api.model('ClientStats', {
+        'dir': fields.Nested(stats_tpl_fields, required=True),
+        'duration': fields.Integer(required=True, description='Backup duration in seconds'),
+        'efs': fields.Nested(stats_tpl_fields, required=True),
+        'encrypted': fields.Boolean(required=True, description='Is the backup encrypted'),
+        'end': fields.Integer(required=True, description='Timestamp of the end date of the backup'),
+        'files': fields.Nested(stats_tpl_fields, required=True),
+        'files_enc': fields.Nested(stats_tpl_fields, required=True),
+        'hardlink': fields.Nested(stats_tpl_fields, required=True),
+        'meta': fields.Nested(stats_tpl_fields, required=True),
+        'meta_enc': fields.Nested(stats_tpl_fields, required=True),
+        'number': fields.Integer(required=True, description='Backup number'),
+        'received': fields.Integer(required=True, description='Bytes received'),
+        'softlink': fields.Nested(stats_tpl_fields, required=True),
+        'special': fields.Nested(stats_tpl_fields, required=True),
+        'start': fields.Integer(required=True, description='Timestamp of the beginning of the backup'),
+        'totsize': fields.Integer(required=True, description='Total size of the backup'),
+        'vssfooter': fields.Nested(stats_tpl_fields, required=True),
+        'vssfooter_enc': fields.Nested(stats_tpl_fields, required=True),
+        'vssheader': fields.Nested(stats_tpl_fields, required=True),
+        'vssheader_enc': fields.Nested(stats_tpl_fields, required=True),
+        'windows': fields.Boolean(required=True, description='Is the client a windows system'),
+    })
 
     def __init__(self):
-        self.parser = reqparse.RequestParser()
-        self.parser.add_argument('server', type=str)
+        self.parser.add_argument('server', type=str, help='Which server to collect data from when in multi-agent mode')
         super(ClientStats, self).__init__()
 
+    @api.marshal_with(stats_fields, code=200, description='Success')
+    @api.doc(
+        params={
+            'server': 'Which server to collect data from when in multi-agent mode',
+            'name': 'Client name',
+            'backup': 'Backup number',
+        },
+        responses={
+            '403': 'Insufficient permissions',
+            '500': 'Internal failure',
+        },
+        parser=parser
+    )
     def get(self, server=None, name=None, backup=None):
-        """**GET** method provided by the webservice.
+        """Returns global statistics of a given backup/client
+
+        **GET** method provided by the webservice.
 
         The *JSON* returned is:
         ::
 
-            {
-              "results": {
-                "dir": {
-                  "changed": 0,
-                  "deleted": 0,
-                  "new": 394,
-                  "scanned": 394,
-                  "total": 394,
-                  "unchanged": 0
-                },
-                "duration": 5,
-                "efs": {
-                  "changed": 0,
-                  "deleted": 0,
-                  "new": 0,
-                  "scanned": 0,
-                  "total": 0,
-                  "unchanged": 0
-                },
-                "encrypted": true,
-                "end": 1422189124,
-                "files": {
-                  "changed": 0,
-                  "deleted": 0,
-                  "new": 0,
-                  "scanned": 0,
-                  "total": 0,
-                  "unchanged": 0
-                },
-                "files_enc": {
-                  "changed": 0,
-                  "deleted": 0,
-                  "new": 1421,
-                  "scanned": 1421,
-                  "total": 1421,
-                  "unchanged": 0
-                },
-                "hardlink": {
-                  "changed": 0,
-                  "deleted": 0,
-                  "new": 0,
-                  "scanned": 0,
-                  "total": 0,
-                  "unchanged": 0
-                },
-                "meta": {
-                  "changed": 0,
-                  "deleted": 0,
-                  "new": 0,
-                  "scanned": 0,
-                  "total": 0,
-                  "unchanged": 0
-                },
-                "meta_enc": {
-                  "changed": 0,
-                  "deleted": 0,
-                  "new": 0,
-                  "scanned": 0,
-                  "total": 0,
-                  "unchanged": 0
-                },
-                "number": 1,
-                "received": 1679304,
-                "softlink": {
-                  "changed": 0,
-                  "deleted": 0,
-                  "new": 1302,
-                  "scanned": 1302,
-                  "total": 1302,
-                  "unchanged": 0
-                },
-                "special": {
-                  "changed": 0,
-                  "deleted": 0,
-                  "new": 0,
-                  "scanned": 0,
-                  "total": 0,
-                  "unchanged": 0
-                },
-                "start": 1422189119,
-                "total": {
-                  "changed": 0,
-                  "deleted": 0,
-                  "new": 3117,
-                  "scanned": 3117,
-                  "total": 3117,
-                  "unchanged": 0
-                },
-                "totsize": 5345361,
-                "vssfooter": {
-                  "changed": 0,
-                  "deleted": 0,
-                  "new": 0,
-                  "scanned": 0,
-                  "total": 0,
-                  "unchanged": 0
-                },
-                "vssfooter_enc": {
-                  "changed": 0,
-                  "deleted": 0,
-                  "new": 0,
-                  "scanned": 0,
-                  "total": 0,
-                  "unchanged": 0
-                },
-                "vssheader": {
-                  "changed": 0,
-                  "deleted": 0,
-                  "new": 0,
-                  "scanned": 0,
-                  "total": 0,
-                  "unchanged": 0
-                },
-                "vssheader_enc": {
-                  "changed": 0,
-                  "deleted": 0,
-                  "new": 0,
-                  "scanned": 0,
-                  "total": 0,
-                  "unchanged": 0
-                },
-                "windows": "false"
-              }
-            }
+            "dir": {
+              "changed": 0,
+              "deleted": 0,
+              "new": 394,
+              "scanned": 394,
+              "total": 394,
+              "unchanged": 0
+            },
+            "duration": 5,
+            "efs": {
+              "changed": 0,
+              "deleted": 0,
+              "new": 0,
+              "scanned": 0,
+              "total": 0,
+              "unchanged": 0
+            },
+            "encrypted": true,
+            "end": 1422189124,
+            "files": {
+              "changed": 0,
+              "deleted": 0,
+              "new": 0,
+              "scanned": 0,
+              "total": 0,
+              "unchanged": 0
+            },
+            "files_enc": {
+              "changed": 0,
+              "deleted": 0,
+              "new": 1421,
+              "scanned": 1421,
+              "total": 1421,
+              "unchanged": 0
+            },
+            "hardlink": {
+              "changed": 0,
+              "deleted": 0,
+              "new": 0,
+              "scanned": 0,
+              "total": 0,
+              "unchanged": 0
+            },
+            "meta": {
+              "changed": 0,
+              "deleted": 0,
+              "new": 0,
+              "scanned": 0,
+              "total": 0,
+              "unchanged": 0
+            },
+            "meta_enc": {
+              "changed": 0,
+              "deleted": 0,
+              "new": 0,
+              "scanned": 0,
+              "total": 0,
+              "unchanged": 0
+            },
+            "number": 1,
+            "received": 1679304,
+            "softlink": {
+              "changed": 0,
+              "deleted": 0,
+              "new": 1302,
+              "scanned": 1302,
+              "total": 1302,
+              "unchanged": 0
+            },
+            "special": {
+              "changed": 0,
+              "deleted": 0,
+              "new": 0,
+              "scanned": 0,
+              "total": 0,
+              "unchanged": 0
+            },
+            "start": 1422189119,
+            "total": {
+              "changed": 0,
+              "deleted": 0,
+              "new": 3117,
+              "scanned": 3117,
+              "total": 3117,
+              "unchanged": 0
+            },
+            "totsize": 5345361,
+            "vssfooter": {
+              "changed": 0,
+              "deleted": 0,
+              "new": 0,
+              "scanned": 0,
+              "total": 0,
+              "unchanged": 0
+            },
+            "vssfooter_enc": {
+              "changed": 0,
+              "deleted": 0,
+              "new": 0,
+              "scanned": 0,
+              "total": 0,
+              "unchanged": 0
+            },
+            "vssheader": {
+              "changed": 0,
+              "deleted": 0,
+              "new": 0,
+              "scanned": 0,
+              "total": 0,
+              "unchanged": 0
+            },
+            "vssheader_enc": {
+              "changed": 0,
+              "deleted": 0,
+              "new": 0,
+              "scanned": 0,
+              "total": 0,
+              "unchanged": 0
+            },
+            "windows": "false"
+          }
 
 
         The output is filtered by the :mod:`burpui.misc.acl` module so that you
@@ -266,25 +333,22 @@ class ClientStats(Resource):
         j = []
         if not name:
             err = [[1, 'No client defined']]
-            return jsonify(notif=err)
+            api.abort(400, err)
         if (api.bui.acl and not
                 api.bui.acl.is_client_allowed(current_user.get_id(),
                                               name,
                                               server)):
-            err = [[2, 'You don\'t have rights to view this client stats']]
-            return jsonify(notif=err)
+            api.abort(403, 'You don\'t have rights to view this client stats')
         if backup:
             try:
                 j = api.bui.cli.get_backup_logs(backup, name, agent=server)
             except BUIserverException as e:
-                err = [[2, str(e)]]
-                return jsonify(notif=err)
+                api.abort(500, str(e))
         else:
             try:
                 cl = api.bui.cli.get_client(name, agent=server)
             except BUIserverException as e:
-                err = [[2, str(e)]]
-                return jsonify(notif=err)
+                api.abort(500, str(e))
             err = []
             for c in cl:
                 try:
@@ -294,8 +358,8 @@ class ClientStats(Resource):
                     if temp not in err:
                         err.append(temp)
             if err:
-                return jsonify(notif=err)
-        return jsonify(results=j)
+                api.abort(500, err)
+        return j
 
 
 @ns.route('/client.json/<name>',
@@ -310,28 +374,50 @@ class ClientReport(Resource):
     An optional ``GET`` parameter called ``server`` is supported when running
     in multi-agent mode.
     """
+    parser = api.parser()
+    client_fields = api.model('ClientReport', {
+        'number': fields.Integer(required=True, description='Backup number'),
+        'received': fields.Integer(required=True, description='Bytes received'),
+        'size': fields.Integer(required=True, description='Total size'),
+        'encrypted': fields.Boolean(required=True, description='Is the backup encrypted'),
+        'deletable': fields.Boolean(required=True, description='Is the backup deletable'),
+        'date': fields.String(required=True, description='Human representation of the backup date'),
+    })
 
     def __init__(self):
-        self.parser = reqparse.RequestParser()
-        self.parser.add_argument('server', type=str)
+        self.parser.add_argument('server', type=str, help='Which server to collect data from when in multi-agent mode')
         super(ClientReport, self).__init__()
 
+    @api.marshal_list_with(client_fields, code=200, description='Success')
+    @api.doc(
+        params={
+            'server': 'Which server to collect data from when in multi-agent mode',
+            'name': 'Client name',
+        },
+        responses={
+            '403': 'Insufficient permissions',
+            '500': 'Internal failure',
+        },
+        parser=parser
+    )
     def get(self, server=None, name=None):
-        """**GET** method provided by the webservice.
+        """Returns a list of backups for a given client
+
+        **GET** method provided by the webservice.
 
         The *JSON* returned is:
         ::
 
-            {
-              "results": [
-                {
-                  "date": "2015-01-25 13:32:00",
-                  "deletable": true,
-                  "encrypted": true,
-                  "number": "1"
-                }
-              ]
-            }
+            [
+              {
+                "date": "2015-01-25 13:32:00",
+                "deletable": true,
+                "encrypted": true,
+                "received": 123,
+                "size": 1234,
+                "number": 1
+              },
+            ]
 
         The output is filtered by the :mod:`burpui.misc.acl` module so that you
         only see stats about the clients you are authorized to.
@@ -352,9 +438,8 @@ class ClientReport(Resource):
                     not api.bui.acl.is_client_allowed(current_user.get_id(),
                                                       name,
                                                       server))):
-                raise BUIserverException('Sorry, you cannot access this client')
+                api.abort(403, 'Sorry, you cannot access this client')
             j = api.bui.cli.get_client(name, agent=server)
         except BUIserverException as e:
-            err = [[2, str(e)]]
-            return jsonify(notif=err)
-        return jsonify(results=j)
+            api.abort(500, str(e))
+        return j

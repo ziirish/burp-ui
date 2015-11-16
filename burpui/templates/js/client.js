@@ -7,26 +7,24 @@
 /***
  * _client: function that retrieve up-to-date informations from the burp server about a specific client
  * JSON format:
- * {
- *   "results": [
- *     {
- *       "date": "2014-05-12 19:40:02",
- *       "number": "254",
- *       "deletable": true,
- *       "encrypted": true,
- *       "received": 889818873,
- *       "size": 35612321050,
- *     },
- *     {
- *       "date": "2014-05-11 21:20:03",
- *       "number": "253",
- *       "deletable": true,
- *       "encrypted": true,
- *       "received": 889818873,
- *       "size": 35612321050,
- *     }
- *   ]
- * }
+ * [
+ *   {
+ *     "date": "2014-05-12 19:40:02",
+ *     "number": "254",
+ *     "deletable": true,
+ *     "encrypted": true,
+ *     "received": 889818873,
+ *     "size": 35612321050,
+ *   },
+ *   {
+ *     "date": "2014-05-11 21:20:03",
+ *     "number": "253",
+ *     "deletable": true,
+ *     "encrypted": true,
+ *     "received": 889818873,
+ *     "size": 35612321050,
+ *   }
+ * ]
  * The JSON is then parsed into a table
  */
 
@@ -35,22 +33,19 @@ var _client_table = $('#table-client').dataTable( {
 	ajax: {
 		url: '{{ url_for("api.client_report", name=cname, server=server) }}',
 		dataSrc: function (data) {
-			if (!data.results) {
-				$('#table-client').hide();
-				$('#client-alert').show();
-				if (data.notif) {
-					$.each(data.notif, function(i, n) {
-						notif(n[0], n[1]);
-					});
-				}
-				return {};
-			}
-			if (data.results.length == 0) {
+			if (data.length == 0) {
 				$('#table-client').hide();
 				$('#client-alert').show();
 			} else {
-				return data.results;
+				$('#client-alert').hide();
+				$('#table-client').show();
+				return data;
 			}
+		},
+		fail: function(xhr, stat, err) {
+			myFail(xhr, stat, err);
+			$('#table-client').hide();
+			$('#client-alert').show();
 		}
 	},
 	order: [[0, 'desc']],

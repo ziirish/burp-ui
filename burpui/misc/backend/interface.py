@@ -220,7 +220,7 @@ class BUIbackend(BUIlogging):
         :param agent: What server to ask (only in multi-agent mode)
         :type agent: str
 
-        :returns: An array containing one dict with the computed data
+        :returns: A dict with the computed data
         """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 

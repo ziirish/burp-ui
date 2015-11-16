@@ -15,7 +15,6 @@ from future.utils import iteritems
 from flask.ext.restplus import reqparse, Resource, fields
 from flask.ext.login import current_user
 from flask import jsonify
-import json
 
 ns = api.namespace('clients', 'Clients methods')
 
@@ -161,49 +160,75 @@ class ClientsReport(Resource):
     An optional ``GET`` parameter called ``server`` is supported when running
     in multi-agent mode.
     """
+    stats_fields = api.model('ClientsStats', {
+        'total': fields.Integer(required=True, description='Number of files'),
+        'totsize': fields.Integer(required=True, description='Total size occupied by all the backups of this client'),
+        'windows': fields.String(required=True, description='Is the client a windows machine'),
+    })
+    client_fields = api.model('ClientsReport', {
+        'name': fields.String(required=True, description='Client name'),
+        'stats': fields.Nested(stats_fields, required=True),
+    })
+    backup_fields = api.model('ClientsBackup', {
+        'name': fields.String(required=True, description='Client name'),
+        'number': fields.Integer(required=True, description='Backup number'),
+    })
+    report_fields = api.model('Report', {
+        'backups': fields.Nested(backup_fields, as_list=True, required=True),
+        'clients': fields.Nested(client_fields, as_list=True, required=True),
+    })
+    parser = api.parser()
 
     def __init__(self):
-        self.parser = reqparse.RequestParser()
-        self.parser.add_argument('server', type=str)
+        self.parser.add_argument('server', type=str, help='Which server to collect data from when in multi-agent mode')
         super(ClientsReport, self).__init__()
 
+    @api.marshal_with(report_fields, code=200, description='Success')
+    @api.doc(
+        params={
+            'server': 'Which server to collect data from when in multi-agent mode',
+        },
+        responses={
+            403: 'Insufficient permissions',
+            500: 'Internal failure',
+        },
+        parser=parser
+    )
     def get(self, server=None):
-        """**GET** method provided by the webservice.
+        """Returns global statistics about all the clients
+
+        **GET** method provided by the webservice.
 
         The *JSON* returned is:
         ::
 
             {
-              "results": [
+              "backups": [
                 {
-                  "backups": [
-                    {
-                      "name": "client1",
-                      "number": 15
-                    },
-                    {
-                      "name": "client2",
-                      "number": 1
-                    }
-                  ],
-                  "clients": [
-                    {
-                      "name": "client1",
-                      "stats": {
-                        "total": 296377,
-                        "totsize": 57055793698,
-                        "windows": "false"
-                      }
-                    },
-                    {
-                      "name": "client2",
-                      "stats": {
-                        "total": 3117,
-                        "totsize": 5345361,
-                        "windows": "true"
-                      }
-                    }
-                  ]
+                  "name": "client1",
+                  "number": 15
+                },
+                {
+                  "name": "client2",
+                  "number": 1
+                }
+              ],
+              "clients": [
+                {
+                  "name": "client1",
+                  "stats": {
+                    "total": 296377,
+                    "totsize": 57055793698,
+                    "windows": "unknown"
+                  }
+                },
+                {
+                  "name": "client2",
+                  "stats": {
+                    "total": 3117,
+                    "totsize": 5345361,
+                    "windows": "true"
+                  }
                 }
               ]
             }
@@ -220,18 +245,17 @@ class ClientsReport(Resource):
 
         if not server:
             server = self.parser.parse_args()['server']
-        j = []
+        j = {}
         try:
             # Manage ACL
             if (not api.bui.standalone and api.bui.acl and
                     (not api.bui.acl.is_admin(current_user.get_id()) and
                      server not in
                      api.bui.acl.servers(current_user.get_id()))):
-                raise BUIserverException('Sorry, you don\'t have rights on this server')
+                api.abort(403, 'Sorry, you don\'t have any rights on this server')
             clients = api.bui.cli.get_all_clients(agent=server)
         except BUIserverException as e:
-            err = [[2, str(e)]]
-            return jsonify(notif=err)
+            api.abort(500, str(e))
         # Filter only allowed clients
         allowed = []
         check = False
@@ -245,7 +269,7 @@ class ClientsReport(Resource):
                 continue
             aclients.append(c)
         j = api.bui.cli.get_clients_report(aclients, server)
-        return jsonify(results=j)
+        return j
 
 
 @ns.route('/clients.json',
@@ -260,7 +284,7 @@ class ClientsStats(Resource):
     An optional ``GET`` parameter called ``server`` is supported when running
     in multi-agent mode.
     """
-    client_fields = api.model('Client', {
+    client_fields = api.model('ClientsStatsSingle', {
         'last': fields.String(required=True, description='Date of last backup'),
         'name': fields.String(required=True, description='Client name'),
         'state': fields.String(required=True, description='Current state of the client (idle, backup, etc.)'),
@@ -271,13 +295,13 @@ class ClientsStats(Resource):
         self.parser.add_argument('server', type=str, help='Which server to collect data from when in multi-agent mode')
         super(ClientsStats, self).__init__()
 
-    @api.marshal_list_with(client_fields)
+    @api.marshal_list_with(client_fields, code=200, description='Success')
     @api.doc(
         params={
             'server': 'Which server to collect data from when in multi-agent mode',
         },
         responses={
-            200: 'Success',
+            403: 'Insufficient permissions',
             500: 'Internal failure',
         },
         parser=parser
@@ -323,12 +347,11 @@ class ClientsStats(Resource):
                     (not api.bui.acl.is_admin(current_user.get_id()) and
                      server not in
                      api.bui.acl.servers(current_user.get_id()))):
-                raise BUIserverException('Sorry, you don\'t have any rights on this server')
+                api.abort(403, 'Sorry, you don\'t have any rights on this server')
             j = api.bui.cli.get_all_clients(agent=server)
             if (api.bui.acl and not
                     api.bui.acl.is_admin(current_user.get_id())):
                 j = [x for x in j if x['name'] in api.bui.acl.clients(current_user.get_id(), server)]
         except BUIserverException as e:
-            err = [[2, str(e)]]
-            api.abort(500, json.dumps(err))
+            api.abort(500, str(e))
         return j

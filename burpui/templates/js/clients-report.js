@@ -33,21 +33,10 @@ var _clients = function() {
 		windows = 0;
 		nonwin = 0;
 		unknown = 0;
-		if (!d.results) {
-			if (d.notif) {
-				$.each(d.notif, function(i, n) {
-					notif(n[0], n[1]);
-				});
-			}
-			$('.mycharts').each(function() {
-				$(this).parent().hide();
-			});
-			return;
-		}
 		$('.mycharts').each(function() {
 			$(this).parent().show();
 		});
-		$.each(d.results[0]['clients'], function(k, c) {
+		$.each(d['clients'], function(k, c) {
 			if (c.stats.windows == 'true') {
 				windows++;
 			} else if (c.stats.windows == 'unknown') {
@@ -58,7 +47,7 @@ var _clients = function() {
 			size.push({'label': c.name, 'value': c.stats.totsize});
 			files.push({'label': c.name, 'value': c.stats.total});
 		});
-		$.each(d.results[0]['backups'], function(k, c) {
+		$.each(d['backups'], function(k, c) {
 			backups[c.name] = c.number;
 		});
 		rep = [{'label': 'Windows', 'value': windows}, {'label': 'Unix/Linux', 'value': nonwin}, {'label': 'Unknown', 'value': unknown}];
@@ -81,6 +70,12 @@ var _clients = function() {
 					c.data = data;
 					break;
 			}
+		});
+	})
+	.fail(myFail)
+	.fail(function () {
+		$('.mycharts').each(function() {
+			$(this).parent().hide();
 		});
 	});
 	_redraw();

@@ -68,6 +68,9 @@ var errorsHandler = function(xhr) {
 			notif(n[0], n[1]);
 		});
 		return true;
+	} else if ('responseText' in xhr) {
+		notif(2, xhr.responseText);
+		return true;
 	}
 	return false;
 };

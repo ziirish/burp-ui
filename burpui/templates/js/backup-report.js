@@ -37,23 +37,12 @@ var _client = function() {
 	}
 	url = '{{ url_for("api.client_stats", name=cname, backup=nbackup, server=server) }}';
 	$.getJSON(url, function(d) {
-		j = d.results;
+		j = d;
 		var _fields = [];
 		if (j && j.encrypted) {
 			_fields = [ 'dir', 'files_enc', 'hardlink', 'softlink' ];
 		} else {
 			_fields = [ 'dir', 'files', 'hardlink', 'softlink' ];
-		}
-		if (!j) {
-			if (d.notif) {
-				$.each(d.notif, function(i, n) {
-					notif(n[0], n[1]);
-				});
-			}
-			$('.mycharts').each(function() {
-				$(this).parent().hide();
-			});
-			return;
 		}
 		$('.mycharts').each(function() {
 			$(this).parent().show();
@@ -80,6 +69,12 @@ var _client = function() {
 					return false;
 				}
 			});
+		});
+	})
+	.fail(myFail)
+	.fail(function() {
+		$('.mycharts').each(function() {
+			$(this).parent().hide();
 		});
 	});
 	_redraw();

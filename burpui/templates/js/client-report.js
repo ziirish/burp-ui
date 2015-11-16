@@ -73,21 +73,10 @@ var _client = function() {
 				size = [];
 				duration = [];
 				push = false;
-				if (!d.results) {
-					if (d.notif) {
-						$.each(d.notif, function(i, n) {
-							notif(n[0], n[1]);
-						});
-					}
-					$('.mycharts').each(function() {
-						$(this).parent().hide();
-					});
-					return;
-				}
 				$('.mycharts').each(function() {
 					$(this).parent().show();
 				});
-				$.each(d.results, function(a, j) {
+				$.each(d, function(a, j) {
 					if (j[c] !== undefined) {
 						val = parseFloat(j[c][l]);
 						values.push([ parseInt(j.end)*1000, val ]);
@@ -122,6 +111,12 @@ var _client = function() {
 					return false;
 				}
 			});
+		});
+	})
+	.fail(myFail)
+	.fail(function() {
+		$('.mycharts').each(function() {
+			$(this).parent().hide();
 		});
 	});
 	_redraw();

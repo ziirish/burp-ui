@@ -61,7 +61,7 @@ class BurpuiAPITestCase(TestCase):
 
     def test_no_clients(self):
         response = self.client.get(url_for('api.clients_stats'))
-        self.assertEquals(response.json['message'], json.dumps([[2, u'Cannot contact burp server at 127.0.0.1:9999']]))
+        self.assertEquals(response.data, u'Cannot contact burp server at 127.0.0.1:9999')
         self.assert500(response)
 
     def test_server_config_parsing(self):
@@ -142,21 +142,26 @@ class BurpuiAPITestCase(TestCase):
 
     def test_client_tree(self):
         response = self.client.get(url_for('api.client_tree', name='toto', backup=1))
-        self.assertEquals(response.json, {u'notif': [[2, u'Cannot contact burp server at 127.0.0.1:9999']]})
+        self.assertEquals(response.data, u'Cannot contact burp server at 127.0.0.1:9999')
+        self.assert500(response)
 
     def test_clients_report_json(self):
         response = self.client.get(url_for('api.clients_report'))
-        self.assertEquals(response.json, {u'notif': [[2, u'Cannot contact burp server at 127.0.0.1:9999']]})
+        self.assertEquals(response.data, u'Cannot contact burp server at 127.0.0.1:9999')
+        self.assert500(response)
 
     def test_client_stat_json(self):
         response = self.client.get(url_for('api.client_stats', name='toto'))
-        self.assertEquals(response.json, {u'notif': [[2, u'Cannot contact burp server at 127.0.0.1:9999']]})
+        self.assertEquals(response.data, u'Cannot contact burp server at 127.0.0.1:9999')
+        self.assert500(response)
         response = self.client.get(url_for('api.client_stats', name='toto', backup=1))
-        self.assertEquals(response.json, {u'notif': [[2, u'Cannot contact burp server at 127.0.0.1:9999']]})
+        self.assertEquals(response.data, u'Cannot contact burp server at 127.0.0.1:9999')
+        self.assert500(response)
 
     def test_client_json(self):
         response = self.client.get(url_for('api.client_report', name='toto'))
-        self.assertEquals(response.json, {u'notif': [[2, u'Cannot contact burp server at 127.0.0.1:9999']]})
+        self.assertEquals(response.data, u'Cannot contact burp server at 127.0.0.1:9999')
+        self.assert500(response)
 
 
 class BurpuiRoutesTestCase(TestCase):

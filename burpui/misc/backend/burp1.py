@@ -585,7 +585,7 @@ class Burp(BUIbackend):
 
     def get_clients_report(self, clients, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_clients_report`"""
-        ret = []
+        ret = {}
         cl = []
         ba = []
         for c in clients:
@@ -595,7 +595,7 @@ class Burp(BUIbackend):
             stats = self.get_backup_logs(client[-1]['number'], c['name'])
             cl.append({'name': c['name'], 'stats': {'windows': stats['windows'], 'totsize': stats['totsize'], 'total': stats['total']['total']}})
             ba.append({'name': c['name'], 'number': len(client)})
-        ret.append({'clients': cl, 'backups': ba})
+        ret = {'clients': cl, 'backups': ba}
         return ret
 
     def get_counters(self, name=None, agent=None):  # pragma: no cover (hard to test, requires a running backup)
