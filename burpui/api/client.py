@@ -12,7 +12,6 @@ from . import api
 from ..misc.utils import BUIserverException
 from flask.ext.restplus import Resource, fields
 from flask.ext.login import current_user
-from flask import jsonify
 
 ns = api.namespace('client', 'Client methods')
 
