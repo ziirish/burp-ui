@@ -20,6 +20,9 @@ from functools import wraps
 
 from ..misc.utils import BUIserverException, BUIhttpException
 
+if sys.version_info >= (3, 0):
+    basestring = str
+
 
 def api_login_user(request):
     """Utility function to login the user using Basic HTTP credentials."""
@@ -72,7 +75,7 @@ class ApiWrapper(Api):
         """Override :func:`flask.ext.restplus.Api.abort` in order to raise
         custom exceptions
         """
-        if message and (isinstance(message, basestring) or isinstance(message, str)):
+        if message and isinstance(message, basestring):
             # raise a custom error that is caught by 'errorhandler'
             raise BUIhttpException(code, message)
         message = json.dumps(message)
