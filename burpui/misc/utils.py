@@ -175,3 +175,11 @@ class BUIserverException(Exception):
     end-user.
     """
     pass
+
+
+class BUIhttpException(Exception):
+    """Raised in case of insufficient permissions."""
+
+    def __init__(self, status=500, message=''):
+        self.status = status
+        self.message = message
