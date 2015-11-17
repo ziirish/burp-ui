@@ -24,7 +24,7 @@ def parse_args(mode=True, name=None):
 
     if options.version:
         from burpui import __title__, __version__
-        print ('{}: v{}'.format(__title__, __version__))
+        print('{}: v{}'.format(__title__, __version__))
         sys.exit(0)
 
     return options
