@@ -13,16 +13,9 @@ var _servers_table = $('#table-servers').dataTable( {
 	ajax: {
 		url: '{{ url_for("api.servers_stats") }}',
 		dataSrc: function (data) {
-			if (!data.results) {
-				if (data.notif) {
-					$.each(data.notif, function(i, n) {
-						notif(n[0], n[1]);
-					});
-				}
-				return {};
-			}
-			return data.results;
-		}
+			return data;
+		},
+		error: myFail,
 	},
 	destroy: true,
 	rowCallback: function( row, data ) {

@@ -98,7 +98,7 @@ var _check_running = function() {
 	url = '{{ url_for("api.running_backup") }}';
 	{% endif -%}
 	$.getJSON(url, function(data) {
-		if (data.results) {
+		if (data.running) {
 			$('#toblink').addClass('blink');
 		} else {
 			$('#toblink').removeClass('blink');

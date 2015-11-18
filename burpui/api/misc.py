@@ -9,7 +9,7 @@
 """
 # This is a submodule we can also use "from ..api import api"
 from . import api
-from ..misc.utils import BUIserverException
+from ..exceptions import BUIserverException
 
 from future.utils import iteritems
 from flask.ext.restplus import reqparse, Resource, abort

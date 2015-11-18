@@ -1,10 +1,10 @@
 
 _parse_live_result = function(data, serv) {
 	var res = '';
-	if (!data.results || data.results.length === 0) {
+	if (!data || data.length === 0) {
 		return res;
 	}
-	$.each(data.results, function(i, c) {
+	$.each(data, function(i, c) {
 		if (c instanceof String || typeof c == 'string') {
 			{% if server -%}
 			u = '{{ url_for("api.render_live_tpl", server=server) }}?name='+c;

@@ -11,7 +11,7 @@ import sys
 
 # This is a submodule we can also use "from ..api import api"
 from . import api
-from flask.ext.restplus import reqparse, abort, Resource
+from flask.ext.restplus import reqparse, Resource
 from flask.ext.login import current_user
 from flask import jsonify, request, url_for
 from werkzeug.datastructures import ImmutableMultiDict
@@ -171,7 +171,7 @@ class ServerSettings(Resource):
         # Only the admin can edit the configuration
         if (api.bui.acl and not
                 api.bui.acl.is_admin(current_user.get_id())):
-            abort(403, message='Sorry, you don\'t have rights to access the setting panel')
+            api.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
 
         try:
             conf = unquote(conf)
@@ -214,7 +214,7 @@ class ClientSettings(Resource):
         # Only the admin can edit the configuration
         if (api.bui.acl and not
                 api.bui.acl.is_admin(current_user.get_id())):
-            abort(403, message='Sorry, you don\'t have rights to access the setting panel')
+            api.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
 
         try:
             conf = unquote(conf)
@@ -246,11 +246,15 @@ class NewClient(Resource):
         # Only the admin can edit the configuration
         if (api.bui.acl and not
                 api.bui.acl.is_admin(current_user.get_id())):
-            return {'notif': [[2, 'Sorry, you don\'t have rights to access the setting panel']]}, 403
+            api.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
 
         newclient = self.parser.parse_args()['newclient']
         if not newclient:
-            return {'notif': [[2, 'No client name provided']]}, 400
+            api.abort(400, 'No client name provided')
+        clients = api.bui.cli.clients_list(server)
+        for cl in clients:
+            if cl['name'] == newclient:
+                api.abort(409, "Client '{}' already exists".format(newclient))
         # clientconfdir = api.bui.cli.get_parser_attr('clientconfdir', server)
         # if not clientconfdir:
         #    flash('Could not proceed, no \'clientconfdir\' find', 'warning')
@@ -279,14 +283,12 @@ class PathExpander(Resource):
         # Only the admin can edit the configuration
         if (api.bui.acl and not
                 api.bui.acl.is_admin(current_user.get_id())):
-            noti = [[2, 'Sorry, you don\'t have rights to access the setting panel']]
-            return {'notif': noti}, 403
+            api.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
 
         path = self.parser.parse_args()['path']
         paths = api.bui.cli.expand_path(path, client, server)
         if not paths:
-            noti = [[2, "Path not found"]]
-            return {'notif': noti}, 500
+            api.abort(500, 'Path not found')
         return {'result': paths}
 
 
@@ -301,7 +303,6 @@ class DeleteClient(Resource):
         # Only the admin can edit the configuration
         if (api.bui.acl and not
                 api.bui.acl.is_admin(current_user.get_id())):
-            noti = [[2, 'Sorry, you don\'t have rights to access the setting panel']]
-            return {'notif': noti}, 403
+            api.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
 
         return {'notif': api.bui.cli.delete_client(client, server)}, 200

@@ -209,7 +209,8 @@
 		$.ajax({
 			url: url,
 			type: 'PUT',
-			data: form.serialize()
+			data: form.serialize(),
+			dataType: 'text json',
 		})
 		.fail(myFail)
 		.done(function(data) {

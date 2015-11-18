@@ -9,7 +9,7 @@
 """
 # This is a submodule we can also use "from ..api import api"
 from . import api
-from ..misc.utils import BUIserverException
+from ..exceptions import BUIserverException
 from flask.ext.restplus import Resource, fields
 from flask.ext.login import current_user
 
@@ -31,6 +31,8 @@ class ClientTree(Resource):
     are working on.
     """
     parser = api.parser()
+    parser.add_argument('server', type=str, help='Which server to collect data from when in multi-agent mode')
+    parser.add_argument('root', type=str, help='Root path to expand')
     node_fields = api.model('ClientTree', {
         'date': fields.String(required=True, description='Human representation of the backup date'),
         'gid': fields.Integer(required=True, description='gid owner of the node'),
@@ -42,11 +44,6 @@ class ClientTree(Resource):
         'type': fields.String(required=True, description='Node type. Example: "d"'),
         'uid': fields.Integer(required=True, description='uid owner of the node'),
     })
-
-    def __init__(self):
-        self.parser.add_argument('server', type=str, help='Which server to collect data from when in multi-agent mode')
-        self.parser.add_argument('root', type=str, help='Root path to expand')
-        super(ClientTree, self).__init__()
 
     @api.marshal_list_with(node_fields, code=200, description='Success')
     @api.doc(
@@ -133,6 +130,7 @@ class ClientStats(Resource):
     in multi-agent mode.
     """
     parser = api.parser()
+    parser.add_argument('server', type=str, help='Which server to collect data from when in multi-agent mode')
     stats_tpl_fields = api.model('ClientStatsTpl', {
         'changed': fields.Integer(required=True, description='Number of changed files'),
         'deleted': fields.Integer(required=True, description='Number of deleted files'),
@@ -164,10 +162,6 @@ class ClientStats(Resource):
         'vssheader_enc': fields.Nested(stats_tpl_fields, required=True),
         'windows': fields.Boolean(required=True, description='Is the client a windows system'),
     })
-
-    def __init__(self):
-        self.parser.add_argument('server', type=str, help='Which server to collect data from when in multi-agent mode')
-        super(ClientStats, self).__init__()
 
     @api.marshal_with(stats_fields, code=200, description='Success')
     @api.doc(
@@ -374,6 +368,7 @@ class ClientReport(Resource):
     in multi-agent mode.
     """
     parser = api.parser()
+    parser.add_argument('server', type=str, help='Which server to collect data from when in multi-agent mode')
     client_fields = api.model('ClientReport', {
         'number': fields.Integer(required=True, description='Backup number'),
         'received': fields.Integer(required=True, description='Bytes received'),
@@ -382,10 +377,6 @@ class ClientReport(Resource):
         'deletable': fields.Boolean(required=True, description='Is the backup deletable'),
         'date': fields.String(required=True, description='Human representation of the backup date'),
     })
-
-    def __init__(self):
-        self.parser.add_argument('server', type=str, help='Which server to collect data from when in multi-agent mode')
-        super(ClientReport, self).__init__()
 
     @api.marshal_list_with(client_fields, code=200, description='Success')
     @api.doc(

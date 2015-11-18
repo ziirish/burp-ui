@@ -9,12 +9,11 @@
 """
 # This is a submodule we can also use "from ..api import api"
 from . import api
-from ..misc.utils import BUIserverException
+from ..exceptions import BUIserverException
 
 from future.utils import iteritems
-from flask.ext.restplus import reqparse, Resource, fields
+from flask.ext.restplus import Resource, fields
 from flask.ext.login import current_user
-from flask import jsonify
 
 ns = api.namespace('clients', 'Clients methods')
 
@@ -33,21 +32,25 @@ class RunningClients(Resource):
     An optional ``GET`` parameter called ``server`` is supported when running
     in multi-agent mode.
     """
+    parser = api.parser()
+    parser.add_argument('server', type=str, help='Which server to collect data from when in multi-agent mode')
 
-    def __init__(self):
-        self.parser = reqparse.RequestParser()
-        self.parser.add_argument('server', type=str)
-        super(RunningClients, self).__init__()
-
+    @api.doc(
+        params={
+            'server': 'Which server to collect data from when in multi-agent mode',
+            'client': 'Client name',
+        },
+        parser=parser
+    )
     def get(self, client=None, server=None):
-        """**GET** method provided by the webservice.
+        """Returns a list of clients currently running a backup
+
+        **GET** method provided by the webservice.
 
         The *JSON* returned is:
         ::
 
-            {
-                "results": [ ]
-            }
+            [ 'client1', 'client2' ]
 
 
         The output is filtered by the :mod:`burpui.misc.acl` module so that you
@@ -70,13 +73,13 @@ class RunningClients(Resource):
                                                       client,
                                                       server)):
                     r = []
-                    return jsonify(results=r)
+                    return r
             if api.bui.cli.is_backup_running(client, server):
                 r = [client]
-                return jsonify(results=r)
+                return r
             else:
                 r = []
-                return jsonify(results=r)
+                return r
 
         r = api.bui.cli.is_one_backup_running(server)
         # Manage ACL
@@ -91,7 +94,7 @@ class RunningClients(Resource):
             else:
                 allowed = api.bui.acl.clients(current_user.get_id(), server)
                 r = [x for x in r if x in allowed]
-        return jsonify(results=r)
+        return r
 
 
 @ns.route('/running.json',
@@ -104,15 +107,26 @@ class RunningBackup(Resource):
 
     This resource is part of the :mod:`burpui.api.clients` module.
     """
+    running_fields = api.model('Running', {
+        'running': fields.Boolean(required=True, description='Is there a backup running right now'),
+    })
 
+    @api.marshal_with(running_fields, code=200, description='Success')
+    @api.doc(
+        params={
+            'server': 'Which server to collect data from when in multi-agent mode',
+        }
+    )
     def get(self, server=None):
-        """**GET** method provided by the webservice.
+        """Tells if a backup is running right now
+
+        **GET** method provided by the webservice.
 
         The *JSON* returned is:
         ::
 
             {
-                "results": false
+                "running": false
             }
 
 
@@ -145,7 +159,7 @@ class RunningBackup(Resource):
                 r = r or (len(v) > 0)
         else:
             r = len(j) > 0
-        return jsonify(results=r)
+        return {'running': r}
 
 
 @ns.route('/clients-report.json',
@@ -160,6 +174,8 @@ class ClientsReport(Resource):
     An optional ``GET`` parameter called ``server`` is supported when running
     in multi-agent mode.
     """
+    parser = api.parser()
+    parser.add_argument('server', type=str, help='Which server to collect data from when in multi-agent mode')
     stats_fields = api.model('ClientsStats', {
         'total': fields.Integer(required=True, description='Number of files'),
         'totsize': fields.Integer(required=True, description='Total size occupied by all the backups of this client'),
@@ -177,11 +193,6 @@ class ClientsReport(Resource):
         'backups': fields.Nested(backup_fields, as_list=True, required=True),
         'clients': fields.Nested(client_fields, as_list=True, required=True),
     })
-    parser = api.parser()
-
-    def __init__(self):
-        self.parser.add_argument('server', type=str, help='Which server to collect data from when in multi-agent mode')
-        super(ClientsReport, self).__init__()
 
     @api.marshal_with(report_fields, code=200, description='Success')
     @api.doc(
@@ -284,16 +295,13 @@ class ClientsStats(Resource):
     An optional ``GET`` parameter called ``server`` is supported when running
     in multi-agent mode.
     """
+    parser = api.parser()
+    parser.add_argument('server', type=str, help='Which server to collect data from when in multi-agent mode')
     client_fields = api.model('ClientsStatsSingle', {
         'last': fields.String(required=True, description='Date of last backup'),
         'name': fields.String(required=True, description='Client name'),
         'state': fields.String(required=True, description='Current state of the client (idle, backup, etc.)'),
     })
-    parser = api.parser()
-
-    def __init__(self):
-        self.parser.add_argument('server', type=str, help='Which server to collect data from when in multi-agent mode')
-        super(ClientsStats, self).__init__()
 
     @api.marshal_list_with(client_fields, code=200, description='Success')
     @api.doc(

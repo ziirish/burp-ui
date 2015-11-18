@@ -14,8 +14,8 @@ from time import gmtime, strftime, time
 
 # This is a submodule we can also use "from ..api import api"
 from . import api
-from ..misc.utils import BUIserverException
-from flask.ext.restplus import reqparse, Resource, abort
+from ..exceptions import BUIserverException
+from flask.ext.restplus import Resource
 from flask.ext.login import current_user
 from flask import Response, send_file, make_response, after_this_request
 from werkzeug.datastructures import Headers
@@ -39,17 +39,30 @@ class Restore(Resource):
     - ``format``: returning archive format
     - ``pass``: password to use for encrypted backups
     """
+    parser = api.parser()
+    parser.add_argument('pass', type=str, help='Password to use for encrypted backups')
+    parser.add_argument('format', type=str, help='Returning archive format')
+    parser.add_argument('strip', type=int, help='Number of elements to strip in the path')
+    parser.add_argument('list', type=str, required=True, help='List of files/directories to restore (example: \'{"restore":[{"folder":true,"key":"/etc"}]}\')')
 
-    def __init__(self):
-        self.parser = reqparse.RequestParser()
-        self.parser.add_argument('list', type=str)
-        self.parser.add_argument('strip', type=str)
-        self.parser.add_argument('format', type=str)
-        self.parser.add_argument('pass', type=str)
-        super(Restore, self).__init__()
-
+    @api.doc(
+        params={
+            'server': 'Which server to collect data from when in multi-agent mode',
+            'name': 'Client name',
+            'backup': 'Backup number',
+        },
+        responses={
+            200: 'Success',
+            400: 'Missing parameter',
+            403: 'Insufficient permissions',
+            500: 'Internal failure',
+        },
+        parser=parser
+    )
     def post(self, server=None, name=None, backup=None):
-        """**POST** method provided by the webservice.
+        """Performs an online restoration
+
+        **POST** method provided by the webservice.
         This method returns a :mod:`flask.Response` object.
 
         :param server: Which server to collect data from when in multi-agent mode
@@ -73,14 +86,14 @@ class Restore(Resource):
             f = 'zip'
         # Check params
         if not l or not name or not backup:
-            abort(400, message='missing arguments')
+            api.abort(400, 'missing arguments')
         # Manage ACL
         if (api.bui.acl and
                 (not api.bui.acl.is_client_allowed(current_user.get_id(),
                                                    name,
                                                    server) and not
                  api.bui.acl.is_admin(current_user.get_id()))):
-            abort(403)
+            api.abort(403, 'You are not allowed to perform a restoration for this client')
         if server:
             filename = 'restoration_%d_%s_on_%s_at_%s.%s' % (
                 backup,
@@ -100,7 +113,7 @@ class Restore(Resource):
             if not archive:
                 if err:
                     return make_response(err, 500)
-                abort(500)
+                api.abort(500)
             try:
                 # Trick to delete the file while sending it to the client.
                 # First, we open the file in reading mode so that a file handler
@@ -125,7 +138,7 @@ class Restore(Resource):
                 resp.set_cookie('fileDownload', 'true')
             except Exception as e:
                 api.bui.cli._logger('error', str(e))
-                abort(500)
+                api.abort(500, str(e))
         else:
             # Multi-agent mode
             socket = None
@@ -185,7 +198,7 @@ class Restore(Resource):
                 raise e
             except Exception as e:
                 api.bui.cli._logger('error', str(e))
-                abort(500)
+                api.abort(500, str(e))
         return resp
 
 
@@ -199,24 +212,37 @@ class ScheduleRestore(Resource):
     This resource is part of the :mod:`burpui.api.restore` module.
 
     The following parameters are supported:
-    - ``list``: list of files/directories to restore
-    - ``strip``: number of elements to strip in the path
-    - ``prefix``: prefix to the restore path
-    - ``force``: whether to overwrite existing files
-    - ``restore_to``: restore files on an other client
+    - ``list-sc``: list of files/directories to restore
+    - ``strip-sc``: number of elements to strip in the path
+    - ``prefix-sc``: prefix to the restore path
+    - ``force-sc``: whether to overwrite existing files
+    - ``restoreto-sc``: restore files on an other client
     """
+    parser = api.parser()
+    parser.add_argument('list-sc', type=str, required=True, help='List of files/directories to restore (example: \'{"restore":[{"folder":true,"key":"/etc"}]}\')')
+    parser.add_argument('strip-sc', type=int, help='Number of elements to strip in the path')
+    parser.add_argument('prefix-sc', type=str, help='Prefix to the restore path')
+    parser.add_argument('force-sc', type=bool, help='Whether to overwrite existing files')
+    parser.add_argument('restoreto-sc', type=str, help='Restore files on an other client')
 
-    def __init__(self):
-        self.parser = reqparse.RequestParser()
-        self.parser.add_argument('list-sc', type=str)
-        self.parser.add_argument('strip-sc', type=str)
-        self.parser.add_argument('prefix-sc', type=str)
-        self.parser.add_argument('force-sc', type=str)
-        self.parser.add_argument('restoreto-sc', type=str)
-        super(ScheduleRestore, self).__init__()
-
+    @api.doc(
+        params={
+            'server': 'Which server to collect data from when in multi-agent mode',
+            'name': 'Client name',
+            'backup': 'Backup number',
+        },
+        responses={
+            201: 'Success',
+            400: 'Missing parameter',
+            403: 'Insufficient permissions',
+            500: 'Internal failure',
+        },
+        parser=parser
+    )
     def put(self, server=None, name=None, backup=None):
-        """**PUT** method provided by the webservice.
+        """Schedule a server-initiated restoration
+
+        **PUT** method provided by the webservice.
 
         :param server: Which server to collect data from when in multi-agent mode
         :type server: str
@@ -236,22 +262,18 @@ class ScheduleRestore(Resource):
         f = args['force-sc']
         to = args['restoreto-sc']
         j = []
-        err = []
         # Check params
         if not l or not name or not backup:
-            err.append([2, 'Missing options'])
-            return {'notif': err}, 400
+            api.abort(400, 'Missing options')
         # Manage ACL
         if (api.bui.acl and
                 (not api.bui.acl.is_client_allowed(current_user.get_id(),
                                                    name,
                                                    server) and not
                  api.bui.acl.is_admin(current_user.get_id()))):
-            err.append([2, 'You are not allowed to perform a restoration for this client'])
-            return {'notif': err}, 403
+            api.abort(403, 'You are not allowed to perform a restoration for this client')
         try:
             j = api.bui.cli.schedule_restore(name, backup, l, s, f, p, to, server)
-            return {'notif': j}, 200
+            return {'notif': j}, 201
         except BUIserverException as e:
-            err.append([2, str(e)])
-            return {'notif': err}, 500
+            api.abort(500, str(e))

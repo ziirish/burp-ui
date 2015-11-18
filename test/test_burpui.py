@@ -120,7 +120,7 @@ class BurpuiAPITestCase(TestCase):
 
     def test_running_clients(self):
         response = self.client.get(url_for('api.running_clients'))
-        self.assertEquals(response.json, dict(results=[]))
+        self.assertEquals(response.json, [])
 
     def test_live_rendering(self):
         response = self.client.get(url_for('api.render_live_tpl', name='toto'))
@@ -130,15 +130,15 @@ class BurpuiAPITestCase(TestCase):
 
     def test_servers_json(self):
         response = self.client.get(url_for('api.servers_stats'))
-        self.assertEquals(response.json, dict(results=[]))
+        self.assertEquals(response.json, [])
 
     def test_live(self):
         response = self.client.get(url_for('api.live'))
-        self.assertEquals(response.json, dict(results=[]))
+        self.assertEquals(response.json, [])
 
     def test_running(self):
         response = self.client.get(url_for('api.running_backup'))
-        self.assertEquals(response.json, dict(results=False))
+        self.assertEquals(response.json, dict(running=False))
 
     def test_client_tree(self):
         response = self.client.get(url_for('api.client_tree', name='toto', backup=1))
