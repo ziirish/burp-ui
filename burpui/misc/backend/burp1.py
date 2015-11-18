@@ -12,23 +12,27 @@ import os
 import sys
 import socket
 import time
-import json
 import datetime
-try:
-    import ConfigParser
-except ImportError:  # pragma: no cover
-    import configparser as ConfigParser
 import shutil
 import subprocess
 import tempfile
 import codecs
+try:
+    import ujson as json
+except ImportError:
+    import json
+try:
+    import ConfigParser
+except ImportError:  # pragma: no cover
+    import configparser as ConfigParser
 
 from future.utils import iteritems
 from pipes import quote
 
 from .interface import BUIbackend
-from ..utils import human_readable as _hr, BUIcompress, BUIserverException
 from ..parser.burp1 import Parser
+from ...utils import human_readable as _hr, BUIcompress
+from ...exceptions import BUIserverException
 
 if sys.version_info >= (3, 0):  # pragma: no cover
     from urllib.parse import unquote
@@ -201,36 +205,6 @@ class Burp(BUIbackend):
     """
     Utilities functions
     """
-
-    def _safe_config_get(self, callback, key, sect='Burp1', cast=None):
-        """:func:`burpui.misc.backend.burp1.Burp._safe_config_get` is a wrapper
-        to handle Exceptions throwed by :mod:`ConfigParser`.
-
-        :param callback: Function to wrap
-        :type callback: callable
-
-        :param key: Key to retrieve
-        :type key: str
-
-        :param sect: Section of the config file to read
-        :type sect: str
-
-        :param cast: Cast the returned value if provided
-        :type case: callable
-
-        :returns: The value returned by the `callback`
-        """
-        try:
-            return callback(sect, key)
-        except ConfigParser.NoOptionError as e:  # pragma: no cover
-            self._logger('error', str(e))
-        except ConfigParser.NoSectionError as e:
-            self._logger('warning', str(e))
-            if key in self.defaults:
-                if cast:
-                    return cast(self.defaults[key])
-                return self.defaults[key]
-        return None  # pragma: no cover
 
     def _get_inet_family(self, addr):
         """The :func:`burpui.misc.backend.burp1.Burp._get_inet_family` function

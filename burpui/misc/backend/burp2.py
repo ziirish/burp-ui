@@ -2,25 +2,26 @@
 import re
 import os
 import time
+import datetime
+import subprocess
+import codecs
+import sys
 try:
     import ujson as json
 except ImportError:
     import json
-import datetime
 try:
     import ConfigParser
 except ImportError:
     import configparser as ConfigParser
-import subprocess
-import codecs
-import sys
 
 from future.utils import iteritems
 from select import select
 
 from .burp1 import Burp as Burp1
-from ..utils import human_readable as _hr, BUIserverException
 from ..parser.burp2 import Parser
+from ...utils import human_readable as _hr
+from ...exceptions import BUIserverException
 
 if sys.version_info < (3, 3):
     TimeoutError = OSError
