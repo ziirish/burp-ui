@@ -18,7 +18,7 @@ from flask.ext.login import current_user, current_app, login_user
 from importlib import import_module
 from functools import wraps
 
-from ..misc.utils import BUIserverException, BUIhttpException
+from ..exceptions import BUIserverException, BUIhttpException
 
 if sys.version_info >= (3, 0):
     basestring = str
@@ -93,6 +93,7 @@ class ApiWrapper(Api):
                         name not in ['__init__', '.', '..']):
                     mod = '.' + name
                     import_module(mod, 'burpui.api')
+
 
 apibp = Blueprint('api', __name__, url_prefix='/api', template_folder='../templates')
 api = ApiWrapper(apibp, title='Burp-UI API', description='Burp-UI API to interact with burp', decorators=[api_login_required])
