@@ -7,9 +7,6 @@ import sys
 import logging
 import pickle
 import traceback
-from logging import Formatter, StreamHandler
-from logging.handlers import RotatingFileHandler
-from .misc.utils import BUIlogging
 try:
     import ujson as json
 except ImportError:
@@ -23,6 +20,9 @@ try:
 except ImportError:
     import socketserver as SocketServer
 
+from logging.handlers import RotatingFileHandler
+from .misc.backend.interface import BUIbackend
+
 g_port = '10000'
 g_bind = '::'
 g_ssl = 'False'
@@ -32,15 +32,14 @@ g_sslkey = ''
 g_password = 'password'
 
 
-class Dummy(object):
-    class Dummy2(object):
-        logger = None
-        pass
-    app = Dummy2()
-    pass
+class BUIAgent(BUIbackend):
+    # These functions MUST be implemented because we inherit an abstract class.
+    # The hack here is to get the list of the functions and let the interpreter
+    # think we don't have to implement them.
+    # Thanks to this list, we know what function are implemented by our backend.
+    foreign = BUIbackend.__abstractmethods__
+    BUIbackend.__abstractmethods__ = frozenset()
 
-
-class BUIAgent(BUIlogging, Dummy):
     def __init__(self, conf=None, debug=False, logfile=None):
         global g_port, g_bind, g_ssl, g_version, g_sslcert, g_sslkey, g_password
         self.conf = conf
@@ -52,12 +51,13 @@ class BUIAgent(BUIlogging, Dummy):
                 debug = len(levels) - 1
             lvl = levels[debug]
             self.app.logger = logging.getLogger(__name__)
-            self.app.logger.setLevel(lvl)
+            self.set_logger(self.app.logger)
+            self.logger.setLevel(lvl)
             if logfile:
                 handler = RotatingFileHandler(logfile, maxBytes=1024 * 1024 * 100, backupCount=20)
                 LOG_FORMAT = '[%(asctime)s] %(levelname)s in %(module)s: %(message)s'
             else:
-                handler = StreamHandler()
+                handler = logging.StreamHandler()
                 LOG_FORMAT = (
                     '-' * 80 + '\n' +
                     '%(levelname)s in %(module)s [%(pathname)s:%(lineno)d]:\n' +
@@ -65,11 +65,10 @@ class BUIAgent(BUIlogging, Dummy):
                     '-' * 80
                 )
             handler.setLevel(lvl)
-            handler.setFormatter(Formatter(LOG_FORMAT))
-            self.app.logger.addHandler(handler)
-            self.app.logger.info('conf: ' + self.conf)
-            self.app.logger.info('level: ' + logging.getLevelName(lvl))
-            self.logger = self.app.logger
+            handler.setFormatter(logging.Formatter(LOG_FORMAT))
+            self.logger.addHandler(handler)
+            self._logger('info', 'conf: ' + self.conf)
+            self._logger('info', 'level: ' + logging.getLevelName(lvl))
         if not conf:
             raise IOError('No configuration file found')
 
@@ -81,17 +80,17 @@ class BUIAgent(BUIlogging, Dummy):
         with open(conf) as fp:
             config.readfp(fp)
             try:
-                self.port = self._safe_config_get(config.getint, 'port', cast=int)
-                self.bind = self._safe_config_get(config.get, 'bind')
-                self.vers = self._safe_config_get(config.getint, 'version', cast=int)
+                self.port = self._safe_config_get(config.getint, 'port', 'Global', cast=int)
+                self.bind = self._safe_config_get(config.get, 'bind', 'Global')
+                self.vers = self._safe_config_get(config.getint, 'version', 'Global', cast=int)
                 try:
                     self.ssl = config.getboolean('Global', 'ssl')
                 except ValueError:
-                    self.app.logger.error("Wrong value for 'ssl' key! Assuming 'false'")
+                    self._logger('warning', "Wrong value for 'ssl' key! Assuming 'false'")
                     self.ssl = False
-                self.sslcert = self._safe_config_get(config.get, 'sslcert')
-                self.sslkey = self._safe_config_get(config.get, 'sslkey')
-                self.password = self._safe_config_get(config.get, 'password')
+                self.sslcert = self._safe_config_get(config.get, 'sslcert', 'Global')
+                self.sslkey = self._safe_config_get(config.get, 'sslkey', 'Global')
+                self.password = self._safe_config_get(config.get, 'password', 'Global')
             except ConfigParser.NoOptionError as e:
                 raise e
 
@@ -101,47 +100,23 @@ class BUIAgent(BUIlogging, Dummy):
             mod = __import__(module, fromlist=['Burp'])
             Client = mod.Burp
             self.backend = Client(conf=conf)
-            self.backend.set_logger(self.app.logger)
+            self.backend.set_logger(self.logger)
         except Exception as e:
-            self._logger('debug', '{}\n\nFailed loading backend for Burp version {}: {}'.format(traceback.format_exc(), self.vers, str(e)))
+            self._logger('error', '{}\n\nFailed loading backend for Burp version {}: {}'.format(traceback.format_exc(), self.vers, str(e)))
             sys.exit(2)
 
         self.server = AgentServer((self.bind, self.port), AgentTCPHandler, self)
 
-    def __getattr__(self, key):
-        if key in dir(self.backend):
-            return getattr(self.backend, key)
-        raise AttributeError('{}: no such function'.format(key))
-
-    def _safe_config_get(self, callback, key, sect='Global', cast=None):
-        """:func:`burpui.agent._safe_config_get` is a wrapper to handle
-        Exceptions throwed by :mod:`ConfigParser`.
-
-        :param callback: Function to wrap
-        :type callback: callable
-
-        :param key: Key to retrieve
-        :type key: str
-
-        :param sect: Section of the config file to read
-        :type sect: str
-
-        :param cast: Cast the returned value if provided
-        :type case: callable
-
-        :returns: The value returned by the `callback`
-        """
-        try:
-            return callback(sect, key)
-        except ConfigParser.NoOptionError as e:
-            self._logger('error', str(e))
-        except ConfigParser.NoSectionError as e:
-            self._logger('warning', str(e))
-            if key in self.defaults:
-                if cast:
-                    return cast(self.defaults[key])
-                return self.defaults[key]
-        return None
+    def __getattribute__(self, name):
+        # always return this value because we need it and if we don't do that
+        # we'll end up with an infinite loop
+        if name == 'foreign':
+            return object.__getattribute__(self, name)
+        # now we can retrieve the 'foreign' list and know if the object called
+        # is in the backend
+        if name in self.foreign:
+            return getattr(self.backend, name)
+        return object.__getattribute__(self, name)
 
     def run(self):
         try:
@@ -152,8 +127,10 @@ class BUIAgent(BUIlogging, Dummy):
     def _logger(self, level, message):
         # hide password from logs
         msg = message
-        if self.app.logger.getEffectiveLevel() != logging.DEBUG:
-            msg = re.sub(r'"password": \S+', '"password": "*****",', message)
+        if not self.logger:
+            return
+        if self.logger.getEffectiveLevel() != logging.DEBUG:
+            msg = re.sub(r'([\'"])password\1\s*:\s*([\'"])[^\2]+?\2', '"password": "*****"', message)
         super(BUIAgent, self)._logger(level, msg)
 
 
