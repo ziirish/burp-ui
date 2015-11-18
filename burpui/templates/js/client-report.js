@@ -60,6 +60,72 @@ var _client = function() {
 
 		_chart_stats.y2Axis.tickFormat(function(d) { return _bytes_human_readable(d, false) }); // Size
 
+		_chart_stats.tooltip.contentGenerator(function(d) {
+			if (d === null) {
+				return '';
+			}
+
+			var title = 'Bytes received';
+			var duration = false;
+			if ('data' in d) {
+				title = 'Duration';
+				duration = true;
+			}
+
+			var table = d3.select(document.createElement("table"));
+			var theadEnter = table.selectAll("thead")
+				.data([d])
+				.enter().append("thead");
+
+			theadEnter.append("tr")
+				.append("td")
+				.attr("colspan", 3)
+				.append("strong")
+				.classed("x-value", true)
+				.html(title);
+
+			var tbodyEnter = table.selectAll("tbody")
+				.data([d])
+				.enter().append("tbody");
+
+			var trowEnter = tbodyEnter.selectAll("tr")
+				.data(function(p) { return p.series})
+				.enter()
+				.append("tr")
+				.classed("highlight", function(p) { return p.highlight});
+
+			trowEnter.append("td")
+				.classed("legend-color-guide",true)
+				.append("div")
+				.style("background-color", function(p) { return p.color});
+
+			trowEnter.append("td")
+				.classed("key",true)
+				.classed("total",function(p) { return !!p.total})
+				.html(function(p, i) { 
+					if (duration) {
+						return _time_human_readable(p.value);
+					}
+					return _bytes_human_readable(p.value, false);
+				});
+
+			trowEnter.selectAll("td").each(function(p) {
+				if (p.highlight) {
+				var opacityScale = d3.scale.linear().domain([0,1]).range(["#fff",p.color]);
+				var opacity = 0.6;
+				d3.select(this)
+					.style("border-bottom-color", opacityScale(opacity))
+					.style("border-top-color", opacityScale(opacity))
+				;
+				}
+			});
+
+			var html = table.node().outerHTML;
+			if (d.footer !== undefined)
+				html += "<div class='footer'>" + d.footer + "</div>";
+			return html;	
+		});
+
 		_chart_stats.bars.forceY([0]);
 	}
 	url = '{{ url_for("api.client_stats", name=cname, server=server) }}';
