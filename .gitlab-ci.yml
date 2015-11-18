@@ -6,7 +6,7 @@ stages:
 
 py2.7:
   stage: test
-  image: python:2.7
+  image: ziirish/python:2.7
   script:
   - /bin/bash test/run_tests.sh
   tags:
@@ -16,7 +16,7 @@ py2.7:
 
 py3.4:
   stage: test
-  image: python:3.4
+  image: ziirish/python:3.4
   script:
   - /bin/bash test/run_tests.sh
   tags:
@@ -35,7 +35,7 @@ build-dev2:
 
 build-dev3:
   stage: build
-  image: python:3.4
+  image: ziirish/python:3.4
   script:
   - /bin/bash test/run_build.sh
   tags:
