@@ -23,12 +23,12 @@ echo "test requirements"
     exit 1
 }
 
-echo "install build requirements"
-update
-[ $ISROOT -eq 1 ] && apt-get install -y nodejs nodejs-legacy npm
+#echo "install build requirements"
+#update
+#[ $ISROOT -eq 1 ] && apt-get install -y nodejs nodejs-legacy npm
 
-echo "installing bower"
-npm install -g bower
+#echo "installing bower"
+#npm install -g bower
 
 echo "downloading libs"
 bower install

@@ -36,12 +36,12 @@ echo "test requirements"
     exit 1
 }
 
-echo "install build requirements"
-update
-[ $ISROOT -eq 1 ] && apt-get install -y uthash-dev g++ make libssl-dev librsync-dev nodejs nodejs-legacy npm python$(perl -pe "s/\.\d+$//" <<<$VERSION)-dev
+#echo "install build requirements"
+#update
+#[ $ISROOT -eq 1 ] && apt-get install -y uthash-dev g++ make libssl-dev librsync-dev nodejs nodejs-legacy npm python$(perl -pe "s/\.\d+$//" <<<$VERSION)-dev
 
-echo "installing bower"
-npm install -g bower
+#echo "installing bower"
+#npm install -g bower
 
 echo "downloading libs"
 bower install
@@ -94,11 +94,6 @@ BURP_PID=$!
 #$BURP2_DIR/burp/src/burp -F -c $WORKING_DIR2/config/burp.conf -g >$LOGFILE2 2>&1
 #($BURP2_DIR/burp/src/burp -F -c $WORKING_DIR2/config/burp.conf >>$LOGFILE2 2>&1) &
 #BURP2_PID=$!
-
-##echo "install lib devel..."
-##apt-get update
-##apt-get -y install python-pip python
-##apt-get -y install python2.7-dev python2.6-dev libsasl2-dev
 
 echo "check files"
 pwd
