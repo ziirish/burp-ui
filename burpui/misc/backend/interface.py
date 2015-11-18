@@ -7,31 +7,79 @@
 .. moduleauthor:: Ziirish <ziirish@ziirish.info>
 
 """
-from ..utils import BUIlogging
+try:
+    import ConfigParser
+except ImportError:
+    import configparser as ConfigParser
+
+from abc import ABCMeta, abstractmethod
+from ...utils import BUIlogging
+
+
+class Dummy(object):
+    logger = None
+    pass
 
 
 class BUIbackend(BUIlogging):
     """The :class:`burpui.misc.backend.interface.BUIbackend` class provides
     a consistent interface backend for any ``burp`` server.
 
-    :param server: ``Burp-UI`` server instance in order to access logger
+    :param server: ``Flask`` server instance in order to access logger
                    and/or some global settings
-    :type server: :class:`burpui.server.BUIServer`
+    :type server: :class:`Flask`
 
     :param conf: Configuration file to use
     :type conf: str
     """
+    __metaclass__ = ABCMeta
 
     # cache the running clients
     running = []
     # do we need to refresh the cache?
     refresh = None
+    # Flask object
+    app = Dummy()
 
     def __init__(self, server=None, conf=None):  # pragma: no cover
-        self.app = None
         if server:
             if hasattr(server, 'app'):
                 self.app = server.app
+
+    """
+    Utilities functions
+    """
+
+    def _safe_config_get(self, callback, key, sect='Burp1', cast=None):
+        """
+        :func:`burpui.misc.backend.interface.BUIbackend._safe_config_get` is a
+        wrapper to handle Exceptions thrown by :mod:`ConfigParser`.
+
+        :param callback: Function to wrap
+        :type callback: callable
+
+        :param key: Key to retrieve
+        :type key: str
+
+        :param sect: Section of the config file to read
+        :type sect: str
+
+        :param cast: Cast the returned value if provided
+        :type case: callable
+
+        :returns: The value returned by the `callback`
+        """
+        try:
+            return callback(sect, key)
+        except ConfigParser.NoOptionError as e:
+            self._logger('error', str(e))
+        except ConfigParser.NoSectionError as e:
+            self._logger('warning', str(e))
+            if key in self.defaults:
+                if cast:
+                    return cast(self.defaults[key])
+                return self.defaults[key]
+        return None
 
     def set_logger(self, logger):
         """The :func:`burpui.misc.backend.interface.BUIbackend.set_logger`
@@ -42,6 +90,7 @@ class BUIbackend(BUIlogging):
         """
         self.logger = logger
 
+    @abstractmethod
     def status(self, query='\n', agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.status` method is
         used to send queries to the Burp server
@@ -63,6 +112,7 @@ class BUIbackend(BUIlogging):
         """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
+    @abstractmethod
     def get_backup_logs(self, number, client, forward=False, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.get_backup_logs`
         function is used to retrieve the burp logs depending the burp-server
@@ -209,6 +259,7 @@ class BUIbackend(BUIlogging):
         """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
+    @abstractmethod
     def get_clients_report(self, clients, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.get_clients_report`
         function returns the computed/compacted data to display clients report.
@@ -224,6 +275,7 @@ class BUIbackend(BUIlogging):
         """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
+    @abstractmethod
     def get_counters(self, name=None, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.get_counters`
         function returns a dict of counters for a given client while it performs
@@ -239,6 +291,7 @@ class BUIbackend(BUIlogging):
         """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
+    @abstractmethod
     def is_backup_running(self, name=None, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.is_backup_running`
         functions tells you if a given client is currently performing a backup.
@@ -253,6 +306,7 @@ class BUIbackend(BUIlogging):
         """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
+    @abstractmethod
     def is_one_backup_running(self, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.is_one_backup_running`
         function tells you if at least one backup is running.
@@ -264,6 +318,7 @@ class BUIbackend(BUIlogging):
         """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
+    @abstractmethod
     def get_all_clients(self, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.get_all_clients`
         function returns a list containing all the clients with their states.
@@ -290,6 +345,7 @@ class BUIbackend(BUIlogging):
         """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
+    @abstractmethod
     def get_client(self, name=None, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.get_client`
         function returns a list of dict representing the backups of a given
@@ -319,6 +375,7 @@ class BUIbackend(BUIlogging):
 
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
+    @abstractmethod
     def get_tree(self, name=None, backup=None, root=None, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.get_tree`
         function returns a list of dict representing files/dir (with their
@@ -356,6 +413,7 @@ class BUIbackend(BUIlogging):
         """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
+    @abstractmethod
     def restore_files(self, name=None, backup=None, files=None, strip=None, archive='zip', password=None, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.restore_files`
         function performs a restoration and returns a tuple containing the path
@@ -392,6 +450,7 @@ class BUIbackend(BUIlogging):
         """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
+    @abstractmethod
     def read_conf_srv(self, conf=None, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.read_conf_srv`
         function returns a dict of options present in the server config file.
@@ -480,6 +539,7 @@ class BUIbackend(BUIlogging):
         """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
+    @abstractmethod
     def read_conf_cli(self, client=None, conf=None, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.read_conf_cli`
         function works the same way as the
@@ -488,6 +548,7 @@ class BUIbackend(BUIlogging):
         """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
+    @abstractmethod
     def store_conf_srv(self, data, conf=None, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.store_conf_srv`
         functions is used to save the new settings in the configuration file.
@@ -510,6 +571,7 @@ class BUIbackend(BUIlogging):
         """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
+    @abstractmethod
     def store_conf_cli(self, data, client=None, conf=None, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.store_conf_cli`
         function works the same way as the
@@ -522,6 +584,7 @@ class BUIbackend(BUIlogging):
         """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
+    @abstractmethod
     def get_parser_attr(self, attr=None, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.get_parser_attr`
         function is used to retrieve some attributes from the Parser.
@@ -538,6 +601,7 @@ class BUIbackend(BUIlogging):
         """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
+    @abstractmethod
     def expand_path(self, path=None, client=None, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.expand_path`
         function is used to expand path of file inclusions glob the user can
@@ -557,6 +621,7 @@ class BUIbackend(BUIlogging):
         """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
+    @abstractmethod
     def clients_list(self, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.clients_list`
         function is used to retrieve a list of clients with their configuration
@@ -566,6 +631,7 @@ class BUIbackend(BUIlogging):
         """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
+    @abstractmethod
     def delete_client(self, client=None, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.delete_client`
         function is used to delete a client from burp's configuration.
@@ -581,6 +647,7 @@ class BUIbackend(BUIlogging):
         """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
+    @abstractmethod
     def schedule_restore(self, name=None, backup=None, files=None, strip=None, force=None, prefix=None, restoreto=None, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.schedule_restore`
         function is used to schedule a server-side initiated restoration.
