@@ -68,41 +68,6 @@ class Burp(BUIbackend):
         for (key, serv) in iteritems(self.servers):
             self.app.config['SERVERS'].append(key)
 
-    """
-    Utilities functions
-    """
-
-    def _safe_config_get(self, callback, key, sect='Burp1', cast=None):
-        """
-        :func:`burpui.misc.backend.multi.Burp._safe_config_get` is a wrapper to handle
-        Exceptions throwed by :mod:`ConfigParser`.
-
-        :param callback: Function to wrap
-        :type callback: callable
-
-        :param key: Key to retrieve
-        :type key: str
-
-        :param sect: Section of the config file to read
-        :type sect: str
-
-        :param cast: Cast the returned value if provided
-        :type case: callable
-
-        :returns: The value returned by the `callback`
-        """
-        try:
-            return callback(sect, key)
-        except ConfigParser.NoOptionError as e:
-            self._logger('error', str(e))
-        except ConfigParser.NoSectionError as e:
-            self._logger('warning', str(e))
-            if key in self.defaults:
-                if cast:
-                    return cast(self.defaults[key])
-                return self.defaults[key]
-        return None
-
     def status(self, query='\n', agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.status`"""
         return self.servers[agent].status(query)
@@ -186,6 +151,10 @@ class Burp(BUIbackend):
     def get_parser_attr(self, attr=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_parser_attr`"""
         return self.servers[agent].get_parser_attr(attr)
+
+    def schedule_restore(self, name=None, backup=None, files=None, strip=None, force=None, prefix=None, restoreto=None, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.schedule_restore`"""
+        return self.servers[agent].schedule_restore(name, backup, files, strip, force, prefix, restoreto)
 
 
 class NClient(BUIbackend):
@@ -421,4 +390,9 @@ class NClient(BUIbackend):
     def get_parser_attr(self, attr=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_parser_attr`"""
         data = {'func': 'get_parser_attr', 'args': {'attr': attr}}
+        return json.loads(self.do_command(data))
+
+    def schedule_restore(self, name=None, backup=None, files=None, strip=None, force=None, prefix=None, restoreto=None, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.schedule_restore`"""
+        data = {'func': 'schedule_restore', 'args': {'name': name, 'backup': backup, 'files': files, 'strip': strip, 'force': force, 'prefix': prefix, 'restoreto': restoreto}}
         return json.loads(self.do_command(data))
