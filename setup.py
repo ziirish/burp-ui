@@ -202,6 +202,7 @@ setup(
     install_requires=requires,
     extras_require={
         'ldap_authentication': ['ldap3'],
+        'burp2': ['ujson'],
         'test': test_requires,
     },
     tests_require=test_requires,
