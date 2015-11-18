@@ -1,4 +1,5 @@
 *.pyc
+*.swp
 burpui/static/vendor
 burpui-dev.cfg
 devel.sh
