@@ -7,7 +7,7 @@
 .. moduleauthor:: Ziirish <ziirish@ziirish.info>
 
 """
-from ..utils import BUIlogging
+from ...utils import BUIlogging
 
 
 class BUIparser(BUIlogging):

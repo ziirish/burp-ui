@@ -7,8 +7,8 @@ import codecs
 
 from glob import glob
 
-from ..utils import BUIserverException
 from .interface import BUIparser
+from ...exceptions import BUIserverException
 
 
 class Parser(BUIparser):
