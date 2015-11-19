@@ -118,8 +118,10 @@ todo_include_todos = False
 
 # on_rtd is whether we are on readthedocs.org
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
-if not on_rtd:
-    html_theme = 'sphinx_rtd_theme'
+#if not on_rtd:
+#    html_theme = 'sphinx_rtd_theme'
+html_theme_path = ['_themes']
+html_theme = 'flask'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -138,7 +140,7 @@ if not on_rtd:
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-#html_logo = None
+html_logo = '_static/logo.png'
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32

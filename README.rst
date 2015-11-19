@@ -15,8 +15,8 @@ Introduction
 Screenshots
 -----------
 
-.. image:: https://git.ziirish.me/ziirish/burp-ui/raw/master/docs/img/burp-ui.gif
-    :target: https://git.ziirish.me/ziirish/burp-ui/blob/master/docs/img/burp-ui.gif
+.. image:: https://git.ziirish.me/ziirish/burp-ui/raw/master/docs/_static/burp-ui.gif
+    :target: https://git.ziirish.me/ziirish/burp-ui/blob/master/docs/_static/burp-ui.gif
 
 
 What's that?
