@@ -42,7 +42,7 @@ class Restore(Resource):
     parser = api.parser()
     parser.add_argument('pass', type=str, help='Password to use for encrypted backups')
     parser.add_argument('format', type=str, help='Returning archive format')
-    parser.add_argument('strip', type=int, help='Number of elements to strip in the path')
+    parser.add_argument('strip', type=int, required=True, help='Number of elements to strip in the path', default=0)
     parser.add_argument('list', type=str, required=True, help='List of files/directories to restore (example: \'{"restore":[{"folder":true,"key":"/etc"}]}\')')
 
     @api.doc(
@@ -220,9 +220,9 @@ class ScheduleRestore(Resource):
     """
     parser = api.parser()
     parser.add_argument('list-sc', type=str, required=True, help='List of files/directories to restore (example: \'{"restore":[{"folder":true,"key":"/etc"}]}\')')
-    parser.add_argument('strip-sc', type=int, help='Number of elements to strip in the path')
+    parser.add_argument('strip-sc', type=int, required=True, help='Number of elements to strip in the path', default=0)
     parser.add_argument('prefix-sc', type=str, help='Prefix to the restore path')
-    parser.add_argument('force-sc', type=bool, help='Whether to overwrite existing files')
+    parser.add_argument('force-sc', type=bool, help='Whether to overwrite existing files', default=False)
     parser.add_argument('restoreto-sc', type=str, help='Restore files on an other client')
 
     @api.doc(

@@ -79,7 +79,7 @@
                   <button type="submit" class="btn btn-info" id="perform"><span class="glyphicon glyphicon-cloud-download"></span>&nbsp;Download selected files</button>
                   <button class="btn btn-info dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
                   <ul class="dropdown-menu browse">
-                    <li><label for="strip">Number of leading path components to strip:&nbsp;</label><input type="text" id="strip" name="strip" placeholder="0" autocomplete="off" maxlength="2" size="2"></li>
+                    <li><label for="strip">Number of leading path components to strip:&nbsp;</label><input type="text" id="strip" name="strip" placeholder="0" autocomplete="off" maxlength="2" size="2" value="0"></li>
                     <li><label for="format">Archive format:&nbsp;</label><select id="format" name="format" style="color: #000;"><option>zip</option><option>tar.gz</option><option>tar.bz2</option></select></li>
                     <li><label for="pass">Encryption password:&nbsp;</label><input type="password" id="pass" name="pass" placeholder="password" autocomplete="off" size="20"></li>
                   </ul>
@@ -93,7 +93,7 @@
                   <button type="submit" class="btn btn-info" id="perform-schedule"><span class="glyphicon glyphicon-cloud-upload"></span>&nbsp;Schedule restore</button>
                   <button class="btn btn-info dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
                   <ul class="dropdown-menu dropdown-menu-right browse">
-                    <li><label for="strip-sc">Number of leading path components to strip:&nbsp;</label><input type="text" id="strip-sc" name="strip-sc" placeholder="0" autocomplete="off" maxlength="2" size="2"></li>
+                    <li><label for="strip-sc">Number of leading path components to strip:&nbsp;</label><input type="text" id="strip-sc" name="strip-sc" placeholder="0" autocomplete="off" maxlength="2" size="2" value="0"></li>
                     <li><label for="prefix-sc">Prefix to the restore path:&nbsp;</label><input type="text" id="prefix-sc" name="prefix-sc" placeholder="prefix" autocomplete="off"></li>
                     <li><label for="restoreto-sc">Restore files on an other client:&nbsp;</label><input type="text" id="restoreto-sc" name="restoreto-sc" placeholder="name" autocomplete="off"></li>
                     <li><label for="force-sc">Whether to overwrite existing files:&nbsp;</label><input type="checkbox" id="force-sc" name="force-sc"></li>
