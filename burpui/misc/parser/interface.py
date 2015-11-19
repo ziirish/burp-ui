@@ -8,12 +8,15 @@
 
 """
 from ...utils import BUIlogging
+from abc import ABCMeta, abstractmethod
 
 
 class BUIparser(BUIlogging):
     """:class:`burpui.misc.parser.interface.BUIparser` defines a generic
     interface for ``burp`` configuration files parser.
     """
+    __metaclass__ = ABCMeta
+
     def __init__(self, app=None, conf=None):
         """:func:`burpui.misc.parser.interface.BUIparser.__init__` instanciate
         the parser.
@@ -29,6 +32,7 @@ class BUIparser(BUIlogging):
         if self.app:
             self.logger = self.app.logger
 
+    @abstractmethod
     def read_server_conf(self, conf=None):
         """:func:`burpui.misc.parser.interface.BUIparser.read_server_conf` is
         called by :func:`burpui.misc.backend.interface.BUIbackend.read_conf_srv`
@@ -115,6 +119,7 @@ class BUIparser(BUIlogging):
         """
         raise NotImplementedError("Sorry, the current Parser does not implement this method!")  # pragma: no cover
 
+    @abstractmethod
     def store_client_conf(self, data, client=None, conf=None):
         """:func:`burpui.misc.parser.interface.BUIparser.store_client_conf` is
         used by :func:`burpui.misc.backend.BUIbackend.store_conf_cli`.
@@ -127,6 +132,7 @@ class BUIparser(BUIlogging):
         """
         raise NotImplementedError("Sorry, the current Parser does not implement this method!")  # pragma: no cover
 
+    @abstractmethod
     def store_conf(self, data, conf=None, mode='srv'):
         """:func:`burpui.misc.parser.interface.BUIparser.store_conf` is used to
         store the configuration from the web-ui into the actual configuration
@@ -151,6 +157,7 @@ class BUIparser(BUIlogging):
         """
         raise NotImplementedError("Sorry, the current Parser does not implement this method!")  # pragma: no cover
 
+    @abstractmethod
     def path_expander(self, pattern=None, client=None):
         """:func:`burpui.misc.parser.interface.BUIparser.path_expander` is used
         to expand path of file inclusions glob the user can set in the setting
@@ -166,6 +173,7 @@ class BUIparser(BUIlogging):
         """
         raise NotImplementedError("Sorry, the current Parser does not implement this method!")  # pragma: no cover
 
+    @abstractmethod
     def list_clients(self):
         """:func:`burpui.misc.parser.interface.BUIparser.list_clients` is used
         to retrieve a list of clients with their configuration file.
@@ -174,6 +182,7 @@ class BUIparser(BUIlogging):
         """
         raise NotImplementedError("Sorry, the current Parser does not implement this method!")  # pragma: no cover
 
+    @abstractmethod
     def remove_client(self, client=None):
         """:func:`burpui.misc.parser.interface.BUIparser.remove_client` is used
         to delete a client from burp's configuration.
@@ -185,6 +194,7 @@ class BUIparser(BUIlogging):
         """
         raise NotImplementedError("Sorry, the current Parser does not implement this method!")  # pragma: no cover
 
+    @abstractmethod
     def read_client_conf(self, client=None, conf=None):
         """:func:`burpui.misc.parser.interface.BUIparser.read_client_conf` is
         called by :func:`burpui.misc.backend.interface.BUIbackend.read_conf_cli`
@@ -194,6 +204,7 @@ class BUIparser(BUIlogging):
         """
         raise NotImplementedError("Sorry, the current Parser does not implement this method!")  # pragma: no cover
 
+    @abstractmethod
     def server_initiated_restoration(self, name=None, backup=None, files=None, strip=None, force=None, prefix=None):
         """:func:`burpui.misc.parser.interface.BUIparser.server_initiated_restoration`
         called by :func:`burpui.misc.backend.interface.BUIbackend.schedule_restore`

@@ -8,12 +8,14 @@
 
 """
 from flask.ext.login import UserMixin
+from abc import ABCMeta, abstractmethod
 
 
 class BUIhandler:
     """The :class:`burpui.misc.auth.interface.BUIhandler` class maintains a list
     of ``Burp-UI`` users.
     """
+    __metaclass__ = ABCMeta
 
     priority = 0
 
@@ -32,6 +34,7 @@ class BUIhandler:
         """
         pass  # pragma: no cover
 
+    @abstractmethod
     def user(self, name=None):
         """The :func:`burpui.misc.auth.interface.BUIhandler.user` function
         returns the :class:`flask.ext.login.UserMixin` object corresponding to
@@ -49,6 +52,9 @@ class BUIuser(UserMixin):
     """The :class:`burpui.misc.auth.interface.BUIuser` class extends the
     :class:`flask.ext.login.UserMixin` class.
     """
+    __metaclass__ = ABCMeta
+
+    @abstractmethod
     def login(self, name=None, passwd=None):
         """The :func:`burpui.misc.auth.interface.BUIuser.login` function
         checks if the profided username and password match.

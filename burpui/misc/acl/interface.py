@@ -7,11 +7,14 @@
 .. moduleauthor:: Ziirish <ziirish@ziirish.info>
 
 """
+from abc import ABCMeta, abstractmethod, abstractproperty
 
 
 class BUIaclLoader:
     """The :class:`burpui.misc.acl.interface.BUIaclLoader` class is used to
     load the actual ACL backend"""
+    __metaclass__ = ABCMeta
+
     def __init__(self, app=None, standalone=False):
         """:func:`burpui.misc.acl.interface.BUIaclLoader.__init__` instanciate
         the loader.
@@ -24,6 +27,7 @@ class BUIaclLoader:
         """
         pass  # pragma: no cover
 
+    @abstractproperty
     @property
     def acl(self):
         """Property to retrieve the backend"""
@@ -34,6 +38,9 @@ class BUIacl:
     """The :class:`burpui.misc.acl.interface.BUIacl` class represents the ACL
     engine.
     """
+    __metaclass__ = ABCMeta
+
+    @abstractmethod
     def is_admin(self, username=None):
         """:func:`burpui.misc.acl.interface.BUIacl.is_admin` is used to know if
         a user has administrator rights.
@@ -45,6 +52,7 @@ class BUIacl:
         """
         return False  # pragma: no cover
 
+    @abstractmethod
     def clients(self, username=None, server=None):
         """:func:`burpui.misc.acl.interface.BUIacl.clients` returns a list of
         allowed clients for a given user.
@@ -59,6 +67,7 @@ class BUIacl:
         """
         return []  # pragma: no cover
 
+    @abstractmethod
     def servers(self, username=None):
         """:func:`burpui.misc.acl.interface.BUIacl.servers` returns a list of
         allowed servers for a given user.
@@ -70,6 +79,7 @@ class BUIacl:
         """
         return []  # pragma: no cover
 
+    @abstractmethod
     def is_client_allowed(self, username=None, client=None, server=None):
         """:func:`burpui.misc.acl.interface.BUIacl.is_client_allowed` tells us
         if a given user has access to a given client on a given server.
