@@ -123,9 +123,9 @@ class BurpuiAPITestCase(TestCase):
         self.assertEquals(response.json, [])
 
     def test_live_rendering(self):
-        response = self.client.get(url_for('api.render_live_tpl', name='toto'))
+        response = self.client.get(url_for('api.counters', name='toto'))
         self.assert404(response)
-        response = self.client.get(url_for('api.render_live_tpl'))
+        response = self.client.get(url_for('api.counters'))
         self.assert400(response)
 
     def test_servers_json(self):
