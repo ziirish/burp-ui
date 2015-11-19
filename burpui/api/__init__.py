@@ -95,7 +95,7 @@ class ApiWrapper(Api):
                     import_module(mod, 'burpui.api')
 
 
-apibp = Blueprint('api', __name__, url_prefix='/api', template_folder='../templates')
+apibp = Blueprint('api', __name__, url_prefix='/api')
 api = ApiWrapper(apibp, title='Burp-UI API', description='Burp-UI API to interact with burp', decorators=[api_login_required])
 
 

@@ -60,7 +60,14 @@ var errorsHandler = function(xhr) {
 		if ('notif' in json) {
 			message = json.notif
 		} else if ('message' in json) {
-			message = JSON.parse(json.message);
+			try {
+				message = JSON.parse(json.message);
+			} catch(err) {
+				message = Array();
+				for (field in json.message) {
+					message.push([2, field+': '+json.message[field]]);
+				}
+			}
 		} else {
 			return false;
 		}
