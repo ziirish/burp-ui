@@ -9,30 +9,65 @@
           </button>
           <a class="navbar-brand" href="{{ url_for('view.home') }}">Burp Server Dashboard</a>
         </div>
-        {% if not login -%}
         <div class="navbar-collapse collapse">
-            <ul class="nav navbar-nav navbar-right">
+          <ul class="nav navbar-nav navbar-right">
+            <li class="detail {% if about %}active{% endif %}">
+              <a href="{{ url_for('view.about') }}">
+                <span class="glyphicon glyphicon-question-sign"></span><span class="dtl">&nbsp;About</span>
+              </a>
+            </li>
+            {% if not login -%}
             {% if not config.STANDALONE -%}
-            <li class="detail {% if not server %}active{% endif %}"><a href="{{ url_for('view.home') }}"><span class="glyphicon glyphicon-hdd"></span><span class="dtl">&nbsp;Servers</span></a></li>
+            <li class="detail {% if not server %}active{% endif %}">
+              <a href="{{ url_for('view.home') }}">
+                <span class="glyphicon glyphicon-hdd"></span><span class="dtl">&nbsp;Servers</span>
+              </a>
+            </li>
                 {% if server -%}
-            <li class="detail{% if clients %} active{% endif %}"><a href="{{ url_for('view.clients', server=server) }}"><span class="glyphicon glyphicon-tasks"></span><span class="dtl">&nbsp;Clients</span></a></li>
+            <li class="detail {% if clients %}active{% endif %}">
+              <a href="{{ url_for('view.clients', server=server) }}">
+                <span class="glyphicon glyphicon-tasks"></span><span class="dtl">&nbsp;Clients</span>
+              </a>
+            </li>
                 {% endif -%}
             {% else -%}
-            <li class="detail{% if clients %} active{% endif %}"><a href="{{ url_for('view.home') }}"><span class="glyphicon glyphicon-tasks"></span><span class="dtl">&nbsp;Clients</span></a></li>
+            <li class="detail {% if clients %}active{% endif %}">
+              <a href="{{ url_for('view.home') }}">
+                <span class="glyphicon glyphicon-tasks"></span><span class="dtl">&nbsp;Clients</span>
+              </a>
+            </li>
             {% endif -%}
             {% if config.STANDALONE or server -%}
-            <li class="detail{% if settings %} active{% endif %}"><a href="{{ url_for('view.settings', server=server) }}"><span class="glyphicon glyphicon-wrench"></span><span class="dtl">&nbsp;Settings</span></a></li>
+            <li class="detail {% if settings %}active{% endif %}">
+              <a href="{{ url_for('view.settings', server=server) }}">
+                <span class="glyphicon glyphicon-wrench"></span><span class="dtl">&nbsp;Settings</span>
+              </a>
+            </li>
             {% endif -%}
-            <li class="detail{% if live %} active{% endif %}"><a href="{{ url_for('view.live_monitor', server=server) }}"><span id="toblink" class="glyphicon glyphicon-screenshot"></span><span class="dtl">&nbsp;Live monitor</span></a></li>
+            <li class="detail {% if live %}active{% endif %}">
+              <a href="{{ url_for('view.live_monitor', server=server) }}">
+                <span id="toblink" class="glyphicon glyphicon-screenshot"></span><span class="dtl">&nbsp;Live monitor</span>
+              </a>
+            </li>
             {% if current_user and current_user.is_authenticated -%}
-            <li class="detail"><a href="{{ url_for('view.logout') }}"><span class="glyphicon glyphicon-log-out"></span><span class="dtl">&nbsp;Logout<small>({{ current_user.get_id() }})</small></span></a></li>
+            <li class="detail">
+              <a href="{{ url_for('view.logout') }}">
+                <span class="glyphicon glyphicon-log-out"></span><span class="dtl">&nbsp;Logout<small>({{ current_user.get_id() }})</small></span>
+              </a>
+            </li>
             {% endif -%}
-            <li><a id="refresh" href="#"><span class="glyphicon glyphicon-refresh"></span><span class="hidden-md hidden-lg">&nbsp;Refresh</span></a></li>
+            <li>
+              <a id="refresh" href="#">
+                <span class="glyphicon glyphicon-refresh"></span><span class="hidden-md hidden-lg">&nbsp;Refresh</span>
+              </a>
+            </li>
+            {% endif -%}
           </ul>
+          {% if not login -%}
           <form class="navbar-form navbar-right" id="search">
             <input type="text" class="form-control" id="input-client" placeholder="Search client..." autocomplete="off">
           </form>
+          {% endif -%}
         </div>
-        {% endif -%}
       </div>
     </div>

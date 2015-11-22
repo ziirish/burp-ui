@@ -36,7 +36,7 @@
 
     <div class="container-fluid">
       <div class="row" {% if settings %}ng-controller="ConfigCtrl"{% endif %}>
-        {% if not live and not login -%}
+        {% if not live and not login and not about -%}
         {% include "sidebar.html" %}
         {% endif -%}
         {% block body %}{% endblock %}
@@ -93,4 +93,3 @@
     </script>
   </body>
 </html>
-

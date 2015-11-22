@@ -241,3 +241,33 @@ class Alert(Resource):
             level = 'danger'
         flash(args['message'], level)
         return {'message': message}, 200
+
+
+@ns.route('/about', endpoint='about')
+class About(Resource):
+    """The :class:`burpui.api.misc.About` resource allows you to retrieve
+    various informations about ``Burp-UI``
+    """
+    about_fields = api.model('About', {
+        'version': fields.String(required=True, description='Burp-UI version'),
+        'client': fields.String(description='Burp client version'),
+        'server': fields.String(description='Burp server version'),
+    })
+
+    @api.marshal_with(about_fields, code=200, description='Success')
+    def get(self):
+        """Returns various informations about Burp-UI"""
+        r = {}
+        r['version'] = api.version
+        try:
+            r['client'] = api.bui.cli.client_version
+        except:
+            pass
+        try:
+            v = getattr(api.bui.cli, 'server_version', -1)
+            if not v or v == -1:
+                api.bui.cli.status()
+            r['server'] = api.bui.cli.server_version
+        except:
+            pass
+        return r

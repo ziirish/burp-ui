@@ -243,6 +243,12 @@ def logout():
     return redirect(url_for('.home'))
 
 
+@view.route('/about')
+def about():
+    """about view"""
+    return render_template('about.html', about=True, login=(not current_user.is_authenticated))
+
+
 @view.route('/')
 @login_required
 def home():

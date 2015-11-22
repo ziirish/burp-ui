@@ -132,11 +132,11 @@ app.controller('ConfigCtrl', function($scope, $http) {
 		};
 	$scope.changed = false;
 	{% if client -%}
-	$http.get('{{ url_for("api.client_settings", client=client, conf=conf, server=server) }}').
+	$http.get('{{ url_for("api.client_settings", client=client, conf=conf, server=server) }}')
 	{% else -%}
-	$http.get('{{ url_for("api.server_settings", conf=conf, server=server) }}').
+	$http.get('{{ url_for("api.server_settings", conf=conf, server=server) }}')
 	{% endif -%}
-		success(function(data, status, headers, config) {
+		.success(function(data, status, headers, config) {
 			$scope.bools = data.results.boolean;
 			$scope.all.bools = data.boolean;
 			$scope.strings = data.results.common;

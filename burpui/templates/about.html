@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+{% block body %}
+        <div class="col-sm-12 col-md-12 main" ng-controller="AboutCtrl">
+					<br />
+					<h1 class="page-header">About</h1>
+					<p>
+						<a href="https://git.ziirish.me/ziirish/burp-ui">Burp-UI</a> is
+						brought to you by <a href="https://ziirish.info/">Ziirish</a>.
+					</p>
+					{# From here, the jinja syntax is escaped because we use the angularjs syntax #}
+					{% raw %}
+					{ version }
+					{% endraw %}
+				</div>
+{% endblock %}

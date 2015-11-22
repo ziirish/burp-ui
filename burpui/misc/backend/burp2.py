@@ -55,6 +55,8 @@ class Burp(Burp1):
         global g_burpbin, g_stripbin, g_burpconfcli, g_burpconfsrv, g_tmpdir, BURP_MINIMAL_VERSION
         self.proc = None
         self.app = None
+        self.client_version = None
+        self.server_version = None
         self.acl_handler = False
         if server:
             if hasattr(server, 'app'):
@@ -139,13 +141,15 @@ class Burp(Burp1):
         except subprocess.CalledProcessError as e:
             raise Exception('Unable to determine your burp version: {}'.format(str(e)))
 
+        self.client_version = version
+
         self.parser = Parser(self.app, self.burpconfsrv)
 
         self._logger('info', 'burp binary: %s', self.burpbin)
         self._logger('info', 'strip binary: %s', self.stripbin)
         self._logger('info', 'burp conf cli: %s', self.burpconfcli)
         self._logger('info', 'burp conf srv: %s', self.burpconfsrv)
-        self._logger('info', 'burp version: %s', version)
+        self._logger('info', 'burp version: %s', self.client_version)
 
     def __exit__(self, type, value, traceback):
         """try not to leave child process server side"""
@@ -181,6 +185,11 @@ class Burp(Burp1):
         """We ignore the 'logline' lines"""
         if not js:
             return True
+        if not self.server_version:
+            if 'logline' in js:
+                r = re.search('^Server version: (\d+\.\d+\.\d+)$', js['logline'])
+                if r:
+                    self.server_version = r.group(1)
         return 'logline' in js
 
     def _is_warning(self, js):

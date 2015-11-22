@@ -23,6 +23,8 @@ from ..exceptions import BUIserverException, BUIhttpException
 if sys.version_info >= (3, 0):
     basestring = str
 
+LOGIN_NOT_REQUIRED = ['about']
+
 
 def api_login_user(request):
     """Utility function to login the user using Basic HTTP credentials."""
@@ -49,7 +51,9 @@ def api_login_required(func):
     @wraps(func)
     def decorated_view(*args, **kwargs):
         """decorator"""
-        if api.bui.auth != 'none' and not current_app.config.get('LOGIN_DISABLED', False):
+        if (api.bui.auth != 'none' and
+                func.func_name not in LOGIN_NOT_REQUIRED and
+                not current_app.config.get('LOGIN_DISABLED', False)):
             if not current_user.is_authenticated and not api_login_user(request):
                 return Response(
                     'Could not verify your access level for that URL.\n'

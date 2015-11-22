@@ -232,6 +232,10 @@ $('#input-client').typeahead({
 {% include "js/settings.js" %}
 {% endif -%}
 
+{% if about -%}
+{% include "js/about.js" %}
+{% endif -%}
+
 var _async_ajax = function(b) {
 	$.ajaxSetup({
 		async: b
