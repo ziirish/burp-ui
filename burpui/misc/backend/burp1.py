@@ -315,7 +315,7 @@ class Burp(BUIbackend):
             ret['encrypted'] = True
         return ret
 
-    def _parse_backup_stats(self, number, client, forward=False, agent=None):  # pragma: no cover
+    def _parse_backup_stats(self, number, client, forward=False, stats=None, agent=None):
         """The :func:`burpui.misc.backend.burp1.Burp._parse_backup_stats`
         function is used to parse the burp logs.
 
@@ -427,7 +427,10 @@ class Burp(BUIbackend):
             'total_scanned': ['total', 'scanned'],
             'total_total': ['total', 'total']
         }
-        f = self.status('c:{0}:b:{1}:f:backup_stats\n'.format(client, number), agent=agent)
+        if not stats:
+            f = self.status('c:{0}:b:{1}:f:backup_stats\n'.format(client, number), agent=agent)
+        else:
+            f = stats
         for line in f:
             if line == '-list begin-' or line == '-list end-':
                 continue

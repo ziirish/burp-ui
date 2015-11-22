@@ -382,12 +382,17 @@ class Burp(Burp1):
         back = backups[0]
         if 'backup_stats' not in back['logs']:
             return {}
+        stats = None
         try:
             stats = json.loads(''.join(back['logs']['backup_stats']))
         except:
-            pass
+            stats = back['logs']['backup_stats']
+        print stats
         if not stats:
             return {}
+        # server was upgraded but backup comes from an older version
+        if 'counters' not in stats:
+            return super(Burp, self)._parse_backup_stats(number, client, forward, stats, agent)
         counters = stats['counters']
         for counter in counters:
             name = counter['name']
@@ -599,10 +604,13 @@ class Burp(Burp1):
                 ba['deletable'] = False
             ba['date'] = datetime.datetime.fromtimestamp(backup['timestamp']).strftime('%Y-%m-%d %H:%M:%S')
             log = self.get_backup_logs(backup['number'], name)
-            ba['encrypted'] = log['encrypted']
-            ba['received'] = log['received']
-            ba['size'] = log['totsize']
-            r.append(ba)
+            try:
+                ba['encrypted'] = log['encrypted']
+                ba['received'] = log['received']
+                ba['size'] = log['totsize']
+                r.append(ba)
+            except:
+                pass
 
         # Here we need to reverse the array so the backups are sorted by date ASC
         r.reverse()
