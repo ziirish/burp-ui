@@ -51,8 +51,12 @@ def api_login_required(func):
     @wraps(func)
     def decorated_view(*args, **kwargs):
         """decorator"""
+        try:
+            name = func.func_name
+        except:
+            name = func.__name__
         if (api.bui.auth != 'none' and
-                func.func_name not in LOGIN_NOT_REQUIRED and
+                name not in LOGIN_NOT_REQUIRED and
                 not current_app.config.get('LOGIN_DISABLED', False)):
             if not current_user.is_authenticated and not api_login_user(request):
                 return Response(
