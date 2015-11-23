@@ -9,6 +9,7 @@ Current
 - Add `server-side initiated restoration <https://git.ziirish.me/ziirish/burp-ui/issues/12>`_
 - Add percent done in `overview <https://git.ziirish.me/ziirish/burp-ui/issues/55>`_
 - Add the ability to `chain multiple authentication backends <https://git.ziirish.me/ziirish/burp-ui/issues/79>`_
+- Add display versions `within the interface <https://git.ziirish.me/ziirish/burp-ui/issues/89>`_
 - Add Basic HTTP Authentication
 - Add full documented API
 - Fix issue `#81 <https://git.ziirish.me/ziirish/burp-ui/issues/81>`_
