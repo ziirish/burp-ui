@@ -55,12 +55,12 @@ class BUIAgent(BUIbackend):
             self.logger.setLevel(lvl)
             if logfile:
                 handler = RotatingFileHandler(logfile, maxBytes=1024 * 1024 * 100, backupCount=20)
-                LOG_FORMAT = '[%(asctime)s] %(levelname)s in %(module)s: %(message)s'
+                LOG_FORMAT = '[%(asctime)s] %(levelname)s in %(module)s.%(funcName)s: %(message)s'
             else:
                 handler = logging.StreamHandler()
                 LOG_FORMAT = (
                     '-' * 80 + '\n' +
-                    '%(levelname)s in %(module)s [%(pathname)s:%(lineno)d]:\n' +
+                    '%(levelname)s in %(module)s.%(funcName)s [%(pathname)s:%(lineno)d]:\n' +
                     '%(message)s\n' +
                     '-' * 80
                 )

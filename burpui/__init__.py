@@ -166,17 +166,16 @@ def init(conf=None, debug=0, logfile=None, gunicorn=True):
         from logging import Formatter
         from logging.handlers import RotatingFileHandler
         file_handler = RotatingFileHandler(logfile, maxBytes=1024 * 1024 * 100, backupCount=20)
-        if debug > logging.INFO:
+        if debug < logging.INFO:
             LOG_FORMAT = (
                 '-' * 80 + '\n' +
-                '%(levelname)s in %(module)s [%(pathname)s:%(lineno)d]:\n' +
+                '%(levelname)s in %(module)s.%(funcName)s [%(pathname)s:%(lineno)d]:\n' +
                 '%(message)s\n' +
                 '-' * 80
             )
-            file_handler.setLevel(debug)
         else:
-            LOG_FORMAT = '[%(asctime)s] %(levelname)s in %(module)s: %(message)s'
-            file_handler.setLevel(debug)
+            LOG_FORMAT = '[%(asctime)s] %(levelname)s in %(module)s.%(funcName)s: %(message)s'
+        file_handler.setLevel(debug)
         file_handler.setFormatter(Formatter(LOG_FORMAT))
         app.logger.addHandler(file_handler)
 
