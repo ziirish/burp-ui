@@ -243,31 +243,56 @@ class Alert(Resource):
         return {'message': message}, 200
 
 
-@ns.route('/about', endpoint='about')
+@ns.route('/about.json',
+          '/<server>/about.json',
+          endpoint='about')
 class About(Resource):
     """The :class:`burpui.api.misc.About` resource allows you to retrieve
     various informations about ``Burp-UI``
+
+    An optional ``GET`` parameter called ``server`` is supported when running
+    in multi-agent mode.
     """
-    about_fields = api.model('About', {
-        'version': fields.String(required=True, description='Burp-UI version'),
+    parser = api.parser()
+    parser.add_argument('server', type=str, help='Which server to collect data from when in multi-agent mode')
+    burp_fields = api.model('Burp', {
+        'name': fields.String(required=True, description='Instance name', default='Default'),
         'client': fields.String(description='Burp client version'),
         'server': fields.String(description='Burp server version'),
     })
+    about_fields = api.model('About', {
+        'version': fields.String(required=True, description='Burp-UI version'),
+        'burp': fields.Nested(burp_fields, as_list=True, description='Burp version'),
+    })
 
     @api.marshal_with(about_fields, code=200, description='Success')
-    def get(self):
+    @api.doc(
+        params={
+            'server': 'Which server to collect data from when in multi-agent mode',
+        },
+        parser=parser
+    )
+    def get(self, server=None):
         """Returns various informations about Burp-UI"""
         r = {}
+        if not server:
+            server = self.parser.parse_args()['server']
         r['version'] = api.version
-        try:
-            r['client'] = api.bui.cli.client_version
-        except:
-            pass
-        try:
-            v = getattr(api.bui.cli, 'server_version', -1)
-            if not v or v == -1:
-                api.bui.cli.status()
-            r['server'] = api.bui.cli.server_version
-        except:
-            pass
+        r['burp'] = []
+        cli = api.bui.cli.get_client_version(server)
+        srv = api.bui.cli.get_server_version(server)
+        multi = {}
+        if isinstance(cli, dict):
+            for (name, v) in iteritems(cli):
+                multi[name] = {'client': v}
+        if isinstance(srv, dict):
+            for (name, v) in iteritems(srv):
+                multi[name]['server'] = v
+        if not multi:
+            r['burp'].append({'client': cli, 'server': srv})
+        else:
+            for (name, v) in iteritems(multi):
+                a = v
+                a.update({'name': name})
+                r['burp'].append(a)
         return r

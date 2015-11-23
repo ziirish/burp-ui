@@ -680,3 +680,27 @@ class BUIbackend(BUIlogging):
                   failure)
         """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+
+    @abstractmethod
+    def get_client_version(self, agent=None):
+        """The :func:`burpui.misc.backend.interface.BUIbackend.get_client_version`
+        function returns the client version used to connect to the server.
+
+        :param agent: What server to ask (only in multi-agent mode)
+        :type agent: str
+
+        :returns: Burp client version
+        """
+        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+
+    @abstractmethod
+    def get_server_version(self, agent=None):
+        """The :func:`burpui.misc.backend.interface.BUIbackend.get_server_version`
+        function returns the server version (if any).
+
+        :param agent: What server to ask (only in multi-agent mode)
+        :type agent: str
+
+        :returns: Burp server version
+        """
+        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover

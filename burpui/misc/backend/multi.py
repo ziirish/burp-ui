@@ -156,6 +156,28 @@ class Burp(BUIbackend):
         """See :func:`burpui.misc.backend.interface.BUIbackend.schedule_restore`"""
         return self.servers[agent].schedule_restore(name, backup, files, strip, force, prefix, restoreto)
 
+    def get_client_version(self, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.get_client_version`"""
+        if not agent:
+            r = {}
+            for (key, serv) in iteritems(self.servers):
+                v = serv.get_client_version() or None
+                r[key] = v
+            print r
+            return r
+        return self.servers[agent].get_client_version()
+
+    def get_server_version(self, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.get_server_version`"""
+        if not agent:
+            r = {}
+            for (key, serv) in iteritems(self.servers):
+                v = serv.get_server_version() or None
+                r[key] = v
+            print r
+            return r
+        return self.servers[agent].get_server_version()
+
 
 class NClient(BUIbackend):
     """The :class:`burpui.misc.backend.multi.NClient` class provides a
@@ -395,4 +417,14 @@ class NClient(BUIbackend):
     def schedule_restore(self, name=None, backup=None, files=None, strip=None, force=None, prefix=None, restoreto=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.schedule_restore`"""
         data = {'func': 'schedule_restore', 'args': {'name': name, 'backup': backup, 'files': files, 'strip': strip, 'force': force, 'prefix': prefix, 'restoreto': restoreto}}
+        return json.loads(self.do_command(data))
+
+    def get_client_version(self, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.get_client_version`"""
+        data = {'func': 'get_client_version', 'args': None}
+        return json.loads(self.do_command(data))
+
+    def get_server_version(self, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.get_server_version`"""
+        data = {'func': 'get_server_version', 'args': None}
         return json.loads(self.do_command(data))

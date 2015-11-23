@@ -110,6 +110,8 @@ class Burp(BUIbackend):
         global g_burpport, g_burphost, g_burpbin, g_stripbin, g_burpconfcli, g_burpconfsrv, g_tmpdir
         if dummy:
             return
+        self.client_version = None
+        self.server_version = None
         self.app = None
         self.acl_handler = False
         if server:
@@ -193,6 +195,24 @@ class Burp(BUIbackend):
 
         self.family = self._get_inet_family(self.host)
         self._test_burp_server_address(self.host)
+
+        try:
+            cmd = [self.burpbin, '-v']
+            self.client_version = subprocess.check_output(cmd, universal_newlines=True).rstrip().replace('burp-', '')
+        except:
+            pass
+
+        try:
+            cmd = [self.burpbin, '-a', 'l']
+            if self.burpconfcli:
+                cmd += ['-c', self.burpconfcli ]
+            for l in subprocess.check_output(cmd, universal_newlines=True).split('\n'):
+                r = re.search('^.*Server version:\s+(\d+\.\d+\.\d+)', l)
+                if r:
+                    self.server_version = r.group(1)
+                    break
+        except:
+            pass
 
         self._logger('info', 'burp port: %d', self.port)
         self._logger('info', 'burp host: %s', self.host)
@@ -938,3 +958,11 @@ class Burp(BUIbackend):
             return getattr(self.parser, attr)
         except:
             return []
+
+    def get_client_version(self, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.get_client_version`"""
+        return self.client_version
+
+    def get_server_version(self, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.get_server_version`"""
+        return self.server_version

@@ -4,21 +4,24 @@
  * Our $scope is initialized with a $http request that retrieves a JSON like that:
  * {
  *   'version': 'xxx',
- *   'client': 'yyy',
- *   'server': 'zzz',
+ *   'burp': [
+ *	   {
+ *       'client': 'yyy',
+ *       'server': 'zzz',
+ *       'name': 'aaa',
+ *     },
+ *   ]
  * }
  */
 var app = angular.module('MainApp', ['ngSanitize']);
 
 app.controller('AboutCtrl', function($scope, $http) {
 	$scope.version = '';
-	$scope.client = '';
-	$scope.server = '';
+	$scope.burp = Array();
 
 	$http.get('{{ url_for("api.about") }}')
 		.success(function(data, status, headers, config) {
 			$scope.version = data.version;
-			$scope.client = data.client;
-			$scope.server = data.server;
+			$scope.burp = data.burp;
 		});
 });

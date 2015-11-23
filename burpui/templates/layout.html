@@ -88,6 +88,15 @@
     <script src="{{ url_for('bower.static', filename='angular-strap/dist/angular-strap.tpl.min.js') }}"></script>
     <script src="{{ url_for('bower.static', filename='angular-onbeforeunload/build/angular-onbeforeunload.js') }}"></script>
     {% endif -%}
+    {% if about -%}
+    <!-- configuration about view
+    ================================================== -->
+    <script src="{{ url_for('bower.static', filename='angular/angular.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='angular-route/angular-route.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='angular-sanitize/angular-sanitize.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='angular-resource/angular-resource.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='angular-animate/angular-animate.min.js') }}"></script>
+    {% endif -%}
     <script type="text/javascript">
       {% include "gerard.js" %}
     </script>

@@ -141,7 +141,7 @@ class Burp(Burp1):
         except subprocess.CalledProcessError as e:
             raise Exception('Unable to determine your burp version: {}'.format(str(e)))
 
-        self.client_version = version
+        self.client_version = version.replace('burp-', '')
 
         self.parser = Parser(self.app, self.burpconfsrv)
 
@@ -670,6 +670,16 @@ class Burp(Burp1):
             t['date'] = datetime.datetime.fromtimestamp(entry['mtime']).strftime('%Y-%m-%d %H:%M:%S')
             r.append(t)
         return r
+
+    def get_client_version(self, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.get_client_version`"""
+        return self.client_version
+
+    def get_server_version(self, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.get_server_version`"""
+        if not self.server_version:
+            self.status()
+        return self.server_version
 
     # Same as in Burp1 backend
     # def restore_files(self, name=None, backup=None, files=None, strip=None, archive='zip', password=None, agent=None):
