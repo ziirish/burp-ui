@@ -236,9 +236,7 @@ class Alert(Resource):
         """Propagate a message to the next screen"""
         args = self.parser.parse_args()
         message = args['message']
-        level = args['level']
-        if not level:
-            level = 'danger'
+        level = args['level'] or 'danger'
         flash(args['message'], level)
         return {'message': message}, 200
 

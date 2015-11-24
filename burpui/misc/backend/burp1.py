@@ -205,7 +205,7 @@ class Burp(BUIbackend):
         try:
             cmd = [self.burpbin, '-a', 'l']
             if self.burpconfcli:
-                cmd += ['-c', self.burpconfcli ]
+                cmd += ['-c', self.burpconfcli]
             for l in subprocess.check_output(cmd, universal_newlines=True).split('\n'):
                 r = re.search('^.*Server version:\s+(\d+\.\d+\.\d+)', l)
                 if r:
