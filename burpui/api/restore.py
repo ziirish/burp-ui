@@ -40,10 +40,10 @@ class Restore(Resource):
     - ``pass``: password to use for encrypted backups
     """
     parser = api.parser()
-    parser.add_argument('pass', type=str, help='Password to use for encrypted backups')
-    parser.add_argument('format', type=str, help='Returning archive format')
-    parser.add_argument('strip', type=int, required=True, help='Number of elements to strip in the path', default=0)
-    parser.add_argument('list', type=str, required=True, help='List of files/directories to restore (example: \'{"restore":[{"folder":true,"key":"/etc"}]}\')')
+    parser.add_argument('pass', type=str, help='Password to use for encrypted backups', location='form')
+    parser.add_argument('format', type=str, help='Returning archive format', location='form')
+    parser.add_argument('strip', type=int, required=True, help='Number of elements to strip in the path', default=0, location='form')
+    parser.add_argument('list', type=str, required=True, help='List of files/directories to restore (example: \'{"restore":[{"folder":true,"key":"/etc"}]}\')', location='form')
 
     @api.doc(
         params={
@@ -79,11 +79,9 @@ class Restore(Resource):
         args = self.parser.parse_args()
         l = args['list']
         s = args['strip']
-        f = args['format']
+        f = args['format'] or 'zip'
         p = args['pass']
         resp = None
-        if not f:
-            f = 'zip'
         # Check params
         if not l or not name or not backup:
             api.abort(400, 'missing arguments')
@@ -219,11 +217,11 @@ class ScheduleRestore(Resource):
     - ``restoreto-sc``: restore files on an other client
     """
     parser = api.parser()
-    parser.add_argument('list-sc', type=str, required=True, help='List of files/directories to restore (example: \'{"restore":[{"folder":true,"key":"/etc"}]}\')')
-    parser.add_argument('strip-sc', type=int, required=True, help='Number of elements to strip in the path', default=0)
-    parser.add_argument('prefix-sc', type=str, help='Prefix to the restore path')
-    parser.add_argument('force-sc', type=bool, help='Whether to overwrite existing files', default=False)
-    parser.add_argument('restoreto-sc', type=str, help='Restore files on an other client')
+    parser.add_argument('list-sc', type=str, required=True, help='List of files/directories to restore (example: \'{"restore":[{"folder":true,"key":"/etc"}]}\')', location='form')
+    parser.add_argument('strip-sc', type=int, required=True, help='Number of elements to strip in the path', default=0, location='form')
+    parser.add_argument('prefix-sc', type=str, help='Prefix to the restore path', location='form')
+    parser.add_argument('force-sc', type=bool, help='Whether to overwrite existing files', default=False, location='form')
+    parser.add_argument('restoreto-sc', type=str, help='Restore files on an other client', location='form')
 
     @api.doc(
         params={
