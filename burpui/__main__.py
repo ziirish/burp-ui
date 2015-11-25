@@ -23,8 +23,11 @@ def parse_args(mode=True, name=None):
     options = parser.parse_args()
 
     if options.version:
-        from burpui import __title__, __version__
-        print('{}: v{}'.format(__title__, __version__))
+        from burpui import __title__, __version__, __release__
+        ver = '{}: v{}'.format(__title__, __version__)
+        if options.log:
+            ver = '{} ({})'.format(ver, __release__)
+        print(ver)
         sys.exit(0)
 
     return options
@@ -43,7 +46,7 @@ def main():
 
 
 def server(options=None):
-    from burpui import bui as server, init, lookup_config
+    from burpui import init, lookup_config
 
     if not options:
         options = parse_args(mode=False)
@@ -51,9 +54,9 @@ def server(options=None):
     conf = lookup_config(options.config)
     check_config(conf)
 
-    init(conf, options.log, options.logfile, False)
+    server = init(conf, options.log, options.logfile, False)
 
-    server.run()
+    server.manual_run()
 
 
 def agent(options=None):
