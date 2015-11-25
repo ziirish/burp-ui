@@ -16,7 +16,7 @@ from setuptools.command.install import install
 from setuptools.command.bdist_egg import bdist_egg
 from setuptools.command.egg_info import egg_info
 
-ROOT=os.path.dirname(os.path.realpath(__file__))
+ROOT=os.path.join(os.path.dirname(os.path.realpath(__file__)))
 
 
 class DevelopWithBuildStatic(develop):
@@ -67,9 +67,21 @@ class BuildStatic(Command):
         pass
 
     def run(self):
+        os.chdir(ROOT)
+        log.info("getting revision number")
+        branch = check_output('git symbolic-ref --short HEAD'.split()).rstrip()
+        if branch == 'master':
+            rev = check_output('cat .git/refs/heads/master'.split()).rstrip()
+        else:
+            rev = 'stable'
+        try:
+            with open('burpui/RELEASE', 'w') as f:
+                f.write(rev)
+        except:
+            pass
         log.info("running [bower install]")
         try:
-            check_output(['bower', 'install'], cwd=ROOT)
+            check_output(['bower', 'install'])
         except Exception as e:
             log.warn('Bower error: {}'.format(str(e)))
         # Not sure bower was a great idea...
@@ -113,10 +125,8 @@ class BuildStatic(Command):
         for dirname, subdirs, files in os.walk('burpui/static/vendor'):
             for filename in files:
                 path = os.path.join(dirname, filename)
-                name, ext = os.path.splitext(path)
-                if ext != '.map':
-                    name = path
-                if os.path.isfile(path) and name not in keep:
+                # _, ext = os.path.splitext(path)
+                if os.path.isfile(path) and path not in keep:  # and ext != '.map':
                     os.unlink(path)
                 elif os.path.isdir(path):
                     dirlist.append(path)
@@ -138,7 +148,7 @@ def readme():
     desc = ''
     cpt = 0
     skip = False
-    with open('README.rst') as f:
+    with open(os.path.join(ROOT, 'README.rst')) as f:
         for l in f.readlines():
             if l.rstrip() == 'Screenshots':
                 skip = True
@@ -151,7 +161,7 @@ def readme():
             desc += l
     return desc
 
-with open(os.path.join(os.path.dirname(__file__), 'burpui', '__init__.py')) as f:
+with open(os.path.join(ROOT, 'burpui', '__init__.py')) as f:
     data = f.read()
 
     name = re.search("__title__ *= *'(.*)'", data).group(1)
@@ -160,10 +170,10 @@ with open(os.path.join(os.path.dirname(__file__), 'burpui', '__init__.py')) as f
     description = re.search("__description__ *= *'(.*)'", data).group(1)
     url = re.search("__url__ *= *'(.*)'", data).group(1)
 
-with open('requirements.txt', 'r') as f:
+with open(os.path.join(ROOT, 'requirements.txt')) as f:
     requires = [x.strip() for x in f if x.strip()]
 
-with open('test-requirements.txt', 'r') as f:
+with open(os.path.join(ROOT, 'test-requirements.txt')) as f:
     test_requires = [x.strip() for x in f if x.strip()]
 
 datadir = os.path.join('share', 'burpui', 'etc')
@@ -171,10 +181,10 @@ contrib = os.path.join('share', 'burpui', 'contrib')
 
 setup(
     name=name,
-    version=open('VERSION').read().rstrip(),
+    version=open(os.path.join(ROOT, 'burpui', 'VERSION')).read().rstrip(),
     description=description,
     long_description=readme(),
-    license=open('LICENSE').read(),
+    license=open(os.path.join(ROOT, 'LICENSE')).read(),
     author=author,
     author_email=author_email,
     url=url,
