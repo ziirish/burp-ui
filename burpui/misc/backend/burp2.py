@@ -15,7 +15,7 @@ try:
 except ImportError:
     import configparser as ConfigParser
 
-from future.utils import iteritems
+from six import iteritems
 from select import select
 
 from .burp1 import Burp as Burp1

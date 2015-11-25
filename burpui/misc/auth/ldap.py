@@ -1,5 +1,5 @@
 # -*- coding: utf8 -*-
-from future.utils import viewitems
+from six import viewitems
 from .interface import BUIhandler, BUIuser
 
 import ssl

@@ -15,15 +15,12 @@ class BUIaclLoader:
     load the actual ACL backend"""
     __metaclass__ = ABCMeta
 
-    def __init__(self, app=None, standalone=False):
+    def __init__(self, app=None):
         """:func:`burpui.misc.acl.interface.BUIaclLoader.__init__` instanciate
         the loader.
 
         :param app: Application context
         :type app: :class:`burpui.server.BUIServer`
-
-        :param standalone: Multi-agent or standalone mode
-        :type standalone: bool
         """
         pass  # pragma: no cover
 

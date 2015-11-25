@@ -10,7 +10,7 @@ import json
 
 class ACLloader(BUIaclLoader):
     """See :class:`burpui.misc.acl.interface.BUIaclLoader`"""
-    def __init__(self, app=None, standalone=False):
+    def __init__(self, app=None):
         """See :func:`burpui.misc.acl.interface.BUIaclLoader.__init__`"""
         self.app = app
         self.admins = [
@@ -18,7 +18,7 @@ class ACLloader(BUIaclLoader):
         ]
         self.clients = {}
         self.servers = {}
-        self.standalone = standalone
+        self.standalone = self.app.standalone
         conf = self.app.config['CFG']
         c = ConfigParser.ConfigParser()
         adms = []

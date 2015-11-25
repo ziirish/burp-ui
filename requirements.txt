@@ -4,4 +4,4 @@ Flask-Bower==1.2.1
 Flask-WTF==0.12
 flask-restplus==0.8.0
 WTForms==2.0.2
-future
+six==1.10.0

@@ -15,7 +15,7 @@ try:
 except ImportError:
     import configparser as ConfigParser
 
-from future.utils import iteritems
+from six import iteritems
 
 from .interface import BUIbackend
 
@@ -39,13 +39,10 @@ class Burp(BUIbackend):
     """
 
     def __init__(self, server=None, conf=None):
-        self.app = None
+        self.app = server
         self.acl_handler = False
-        if server:
-            if hasattr(server, 'app'):
-                self.app = server.app
-                self.set_logger(self.app.logger)
-            self.acl_handler = server.acl_handler
+        self.set_logger(self.app.logger)
+        self.acl_handler = server.acl_handler
         self.servers = {}
         self.app.config['SERVERS'] = []
         self.running = {}
@@ -286,9 +283,10 @@ class NClient(BUIbackend):
                 res = self.recvall(length).decode('UTF-8')
         except IOError as e:
             if not restarted and e.errno == errno.EPIPE:
-                toclose = True
+                self.connected = False
                 return self.do_command(data, True)
             elif e.errno == errno.ECONNRESET:
+                self.connected = False
                 self.app.logger.error('!!! {} !!!\nPlease check your SSL configuration on both sides!'.format(str(e)))
             else:
                 toclose = True

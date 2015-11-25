@@ -8,7 +8,6 @@ from flask.ext.login import login_user, login_required, logout_user, current_use
 from .forms import LoginForm
 from .exceptions import BUIserverException
 from .utils import human_readable as _hr
-from .misc.backend.burp1 import Burp as BurpGeneric
 
 if sys.version_info >= (3, 0):
     from urllib.parse import quote
@@ -17,7 +16,7 @@ else:
 
 
 class BPWrapper(Blueprint):
-    bui = BurpGeneric(dummy=True)
+    bui = None
 
     def init_bui(self, bui):
         """Loads the right context.

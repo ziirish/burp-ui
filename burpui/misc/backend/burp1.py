@@ -26,7 +26,7 @@ try:
 except ImportError:  # pragma: no cover
     import configparser as ConfigParser
 
-from future.utils import iteritems
+from six import iteritems
 from pipes import quote
 
 from .interface import BUIbackend

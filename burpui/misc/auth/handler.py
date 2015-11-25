@@ -9,17 +9,17 @@ import json
 
 class UserAuthHandler(BUIhandler):
     """See :class:`burpui.misc.auth.interface.BUIhandler`"""
-    def __init__(self, app=None, auth=None):
+    def __init__(self, app=None):
         """See :func:`burpui.misc.auth.interface.BUIhandler.__init__`"""
         self.app = app
         self.users = {}
         self.backends = []
-        if auth:
+        if self.app.auth:
             me, _ = os.path.splitext(os.path.basename(__file__))
             try:
-                back = json.loads(auth)
+                back = json.loads(self.app.auth)
             except:
-                back = re.split(' *,+ *', auth)
+                back = re.split(' *,+ *', self.app.auth)
             for au in back:
                 if au == me:
                     self.app.logger.error('Recursive import not permited!')
@@ -32,7 +32,7 @@ class UserAuthHandler(BUIhandler):
                     pass
         self.backends.sort(key=lambda x: x.priority, reverse=True)
         if not self.backends:
-            raise ImportError('No backend found for \'{}\''.format(auth))
+            raise ImportError('No backend found for \'{}\''.format(self.app.auth))
 
     def user(self, name=None):
         """See :func:`burpui.misc.auth.interface.BUIhandler.user`"""

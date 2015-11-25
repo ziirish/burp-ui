@@ -19,18 +19,11 @@ class BUIhandler:
 
     priority = 0
 
-    def __init__(self, app=None, auth=None):
+    def __init__(self, app=None):
         """:func:`burpui.misc.auth.interface.BUIhandler.__init__`
 
         :param app: Instance of the app we are running in
         :type app: :class:`burpui.server.BUIServer`
-
-        :param auth: List of authentication backends to load
-        :type auth: str
-
-        .. versionchanged:: 0.1.0
-            Add ``auth`` parameter so that :mod:`burpui.misc.auth.handler` can
-            be implemented
         """
         pass  # pragma: no cover
 

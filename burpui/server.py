@@ -17,6 +17,8 @@ import os
 
 from .misc.auth.handler import UserAuthHandler
 
+from flask import Flask
+
 
 g_port = '5000'
 g_bind = '::'
@@ -31,18 +33,18 @@ g_auth = 'basic'
 g_acl = ''
 
 
-class BUIServer:
+class BUIServer(Flask):
     """
     The :class:`burpui.server.BUIServer` class provides the ``Burp-UI`` server.
     """
-    def __init__(self, app=None):
+    def __init__(self):
         """The :class:`burpui.server.BUIServer` class provides the ``Burp-UI``
         server.
 
         :param app: The Flask application to launch
         """
         self.init = False
-        self.app = app
+        super(BUIServer, self).__init__(__name__)
 
     def setup(self, conf=None):
         """The :func:`burpui.server.BUIServer.setup` functions is used to setup
@@ -55,7 +57,7 @@ class BUIServer:
         global g_refresh, g_port, g_bind, g_ssl, g_sslcert, g_sslkey, g_version, g_auth, g_standalone, g_acl, g_liverefresh
         self.sslcontext = None
         if not conf:
-            conf = self.app.config['CFG']
+            conf = self.config['CFG']
 
         if not conf:
             raise IOError('No configuration file found')
@@ -81,17 +83,18 @@ class BUIServer:
                 self.auth = self._safe_config_get(config.get, 'auth')
                 if self.auth and self.auth.lower() != 'none':
                     try:
-                        self.uhandler = UserAuthHandler(self.app, self.auth)
+                        self.uhandler = UserAuthHandler(self)
                     except Exception as e:
                         traceback.print_exc()
-                        self.app.logger.error('Import Exception, module \'{0}\': {1}'.format(self.auth, str(e)))
+                        self.logger.error('Import Exception, module \'{0}\': {1}'.format(self.auth, str(e)))
                         sys.exit(1)
                     self.acl_engine = self._safe_config_get(config.get, 'acl')
                 else:
                     # I know that's ugly, but hey, I need it!
-                    self.app.login_manager._login_disabled = True
+                    self.login_manager._login_disabled = True
                     # No login => no ACL
                     self.acl_engine = 'none'
+                    self.auth = 'none'
 
                 if self.acl_engine and self.acl_engine.lower() != 'none':
                     try:
@@ -103,36 +106,38 @@ class BUIServer:
                             fromlist=['ACLloader']
                         )
                         ACLloader = mod.ACLloader
-                        self.acl_handler = ACLloader(self.app, self.standalone)
+                        self.acl_handler = ACLloader(self)
                         # for development purpose only
                         from .misc.acl.interface import BUIacl
                         self.acl = BUIacl
                         self.acl = self.acl_handler.acl
                     except Exception as e:
                         traceback.print_exc()
-                        self.app.logger.error('Import Exception, module \'{0}\': {1}'.format(self.acl_engine, str(e)))
+                        self.logger.error('Import Exception, module \'{0}\': {1}'.format(self.acl_engine, str(e)))
                         sys.exit(1)
                 else:
                     self.acl_handler = False
                     self.acl = False
 
-                self.app.config['REFRESH'] = self._safe_config_get(config.getint, 'refresh', 'UI', cast=int)
-                self.app.config['LIVEREFRESH'] = self._safe_config_get(config.getint, 'liverefresh', 'UI', cast=int)
+                self.config['REFRESH'] = self._safe_config_get(config.getint, 'refresh', 'UI', cast=int)
+                self.config['LIVEREFRESH'] = self._safe_config_get(config.getint, 'liverefresh', 'UI', cast=int)
 
             except ConfigParser.NoOptionError as e:
-                self.app.logger.error(str(e))
+                self.logger.error(str(e))
 
-        self.app.config['STANDALONE'] = self.standalone
+        self.config['STANDALONE'] = self.standalone
 
-        self.app.logger.info('burp version: {}'.format(self.vers))
-        self.app.logger.info('listen port: {}'.format(self.port))
-        self.app.logger.info('bind addr: {}'.format(self.bind))
-        self.app.logger.info('use ssl: {}'.format(self.ssl))
-        self.app.logger.info('standalone: {}'.format(self.standalone))
-        self.app.logger.info('sslcert: {}'.format(self.sslcert))
-        self.app.logger.info('sslkey: {}'.format(self.sslkey))
-        self.app.logger.info('refresh: {}'.format(self.app.config['REFRESH']))
-        self.app.logger.info('liverefresh: {}'.format(self.app.config['LIVEREFRESH']))
+        self.logger.info('burp version: {}'.format(self.vers))
+        self.logger.info('listen port: {}'.format(self.port))
+        self.logger.info('bind addr: {}'.format(self.bind))
+        self.logger.info('use ssl: {}'.format(self.ssl))
+        self.logger.info('standalone: {}'.format(self.standalone))
+        self.logger.info('sslcert: {}'.format(self.sslcert))
+        self.logger.info('sslkey: {}'.format(self.sslkey))
+        self.logger.info('refresh: {}'.format(self.config['REFRESH']))
+        self.logger.info('liverefresh: {}'.format(self.config['LIVEREFRESH']))
+        self.logger.info('auth: {}'.format(self.auth))
+        self.logger.info('acl: {}'.format(self.acl_engine))
 
         if self.standalone:
             module = 'burpui.misc.backend.burp{0}'.format(self.vers)
@@ -150,7 +155,7 @@ class BUIServer:
             self.cli = Client(self, conf=conf)
         except Exception as e:
             traceback.print_exc()
-            self.app.logger.error('Failed loading backend for Burp version {0}: {1}'.format(self.vers, str(e)))
+            self.logger.error('Failed loading backend for Burp version {0}: {1}'.format(self.vers, str(e)))
             sys.exit(2)
 
         self.init = True
@@ -176,9 +181,9 @@ class BUIServer:
         try:
             return callback(sect, key)
         except ConfigParser.NoOptionError as e:
-            self.app.logger.error(str(e))
+            self.logger.error(str(e))
         except ConfigParser.NoSectionError as e:
-            self.app.logger.warning(str(e))
+            self.logger.warning(str(e))
             if key in self.defaults:
                 if cast:
                     try:
@@ -188,8 +193,8 @@ class BUIServer:
                 return self.defaults[key]
         return None
 
-    def run(self):
-        """The :func:`burpui.server.BUIServer.run` functions is used to actually
+    def manual_run(self):
+        """The :func:`burpui.server.BUIServer.manual_run` functions is used to actually
         launch the ``Burp-UI`` server.
         """
         if not self.init:
@@ -199,7 +204,7 @@ class BUIServer:
             self.sslcontext = (self.sslcert, self.sslkey)
 
         if self.sslcontext:
-            self.app.config['SSL'] = True
-            self.app.run(host=self.bind, port=self.port, debug=self.app.config['DEBUG'], ssl_context=self.sslcontext)
+            self.config['SSL'] = True
+            self.run(host=self.bind, port=self.port, debug=self.config['DEBUG'], ssl_context=self.sslcontext)
         else:
-            self.app.run(host=self.bind, port=self.port, debug=self.app.config['DEBUG'])
+            self.run(host=self.bind, port=self.port, debug=self.config['DEBUG'])
