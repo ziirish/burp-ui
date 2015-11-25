@@ -31,6 +31,8 @@ g_sslcert = ''
 g_sslkey = ''
 g_password = 'password'
 
+DISCLOSURE = 5
+
 
 class BUIAgent(BUIbackend):
     # These functions MUST be implemented because we inherit an abstract class.
@@ -46,7 +48,8 @@ class BUIAgent(BUIbackend):
         self.dbg = debug
         self.padding = 1
         if debug > logging.NOTSET:
-            levels = [0, logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG]
+            logging.addLevelName(DISCLOSURE, 'DISCLOSURE')
+            levels = [0, logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG, DISCLOSURE]
             if debug >= len(levels):
                 debug = len(levels) - 1
             lvl = levels[debug]
@@ -129,8 +132,8 @@ class BUIAgent(BUIbackend):
         msg = message
         if not self.logger:
             return
-        if self.logger.getEffectiveLevel() != logging.DEBUG:
-            msg = re.sub(r'([\'"])password\1\s*:\s*([\'"])[^\2]+?\2', '"password": "*****"', message)
+        if self.logger.getEffectiveLevel() != DISCLOSURE:
+            msg = re.sub(r'([\'"])password\1(\s*:\s*)([\'"])[^\3]+?\3', r'\1password\1\2\3*****\3', message)
         super(BUIAgent, self)._logger(level, msg)
 
 
