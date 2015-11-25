@@ -11,7 +11,7 @@
 from . import api
 from ..exceptions import BUIserverException
 
-from future.utils import iteritems
+from six import iteritems
 from flask.ext.restplus import Resource, fields
 from flask.ext.login import current_user
 
@@ -301,6 +301,8 @@ class ClientsStats(Resource):
         'last': fields.String(required=True, description='Date of last backup'),
         'name': fields.String(required=True, description='Client name'),
         'state': fields.String(required=True, description='Current state of the client (idle, backup, etc.)'),
+        'phase': fields.String(description='Phase of the current running backup'),
+        'percent': fields.Integer(description='Percentage done'),
     })
 
     @api.marshal_list_with(client_fields, code=200, description='Success')
@@ -327,12 +329,16 @@ class ClientsStats(Resource):
                 {
                   "last": "2015-05-17 11:40:02",
                   "name": "client1",
-                  "state": "idle"
+                  "state": "idle",
+                  "phase": "phase1",
+                  "percent": 12,
                 },
                 {
                   "last": "never",
                   "name": "client2",
-                  "state": "idle"
+                  "state": "idle",
+                  "phase": "phase2",
+                  "percent": 42,
                 }
               ]
             }

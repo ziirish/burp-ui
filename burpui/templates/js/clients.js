@@ -27,12 +27,16 @@ var __date = {
  *   {
  *     "last": "2014-05-12 19:40:02",
  *     "name": "client1",
- *     "state": "idle"
+ *     "state": "idle",
+ *     "phase": "phase1",
+ *     "percent": 12,
  *   },
  *   {
  *     "last": "never",
  *     "name": "client2",
- *     "state": "idle"
+ *     "state": "idle",
+ *     "phase": "phase2",
+ *     "percent": 42,
  *   }
  * ]
  *  The JSON is then parsed into a table
@@ -64,7 +68,7 @@ var _clients_table = $('#table-clients').dataTable( {
 			}
 		},
 		{ data: null, render: function ( data, type, row ) {
-				if ('percent' in data) {
+				if ('phase' in data && data.phase) {
 					return data.state+' - '+data.phase+' ('+data.percent+'%)';
 				}
 				return data.state;
