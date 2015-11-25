@@ -16,20 +16,20 @@ from flask import url_for
 
 sys.path.append('{0}/..'.format(os.path.join(os.path.dirname(os.path.realpath(__file__)))))
 
-from burpui import app, bui, login_manager, init as BUIinit
+from burpui import init as BUIinit
 
 
 class BurpuiLiveTestCase(LiveServerTestCase):
 
     def create_app(self):
         conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../burpui.sample.cfg')
-        app.config['TESTING'] = True
-        app.config['LOGIN_DISABLED'] = True
-        app.config['LIVESERVER_PORT'] = 5001
-        app.config['CFG'] = conf
+        bui = BUIinit(gunicorn=False)
+        bui.config['TESTING'] = True
+        bui.config['LOGIN_DISABLED'] = True
+        bui.config['LIVESERVER_PORT'] = 5001
+        bui.config['CFG'] = conf
         bui.setup(conf)
-        login_manager.init_app(app)
-        return app
+        return bui
 
     def setUp(self):
         print ('\nBegin Test 1\n')
@@ -52,12 +52,13 @@ class BurpuiAPITestCase(TestCase):
 
     def create_app(self):
         conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test2.cfg')
-        app.config['TESTING'] = True
-        app.config['LOGIN_DISABLED'] = True
-        app.config['CFG'] = conf
+        bui = BUIinit(gunicorn=False)
+        bui.config['TESTING'] = True
+        bui.config['LOGIN_DISABLED'] = True
+        bui.config['CFG'] = conf
         bui.setup(conf)
-        login_manager.init_app(app)
-        return app
+        self.bui = bui
+        return bui
 
     def test_no_clients(self):
         response = self.client.get(url_for('api.clients_stats'))
@@ -79,14 +80,14 @@ class BurpuiAPITestCase(TestCase):
                             u'clients': []
                         }
                     ),
-                    (u'boolean', bui.cli.get_parser_attr('boolean_srv')),
-                    (u'string', bui.cli.get_parser_attr('string_srv')),
-                    (u'integer', bui.cli.get_parser_attr('integer_srv')),
-                    (u'multi', bui.cli.get_parser_attr('multi_srv')),
-                    (u'server_doc', bui.cli.get_parser_attr('doc')),
-                    (u'suggest', bui.cli.get_parser_attr('values')),
-                    (u'placeholders', bui.cli.get_parser_attr('placeholders')),
-                    (u'defaults', bui.cli.get_parser_attr('defaults'))))
+                    (u'boolean', self.bui.cli.get_parser_attr('boolean_srv')),
+                    (u'string', self.bui.cli.get_parser_attr('string_srv')),
+                    (u'integer', self.bui.cli.get_parser_attr('integer_srv')),
+                    (u'multi', self.bui.cli.get_parser_attr('multi_srv')),
+                    (u'server_doc', self.bui.cli.get_parser_attr('doc')),
+                    (u'suggest', self.bui.cli.get_parser_attr('values')),
+                    (u'placeholders', self.bui.cli.get_parser_attr('placeholders')),
+                    (u'defaults', self.bui.cli.get_parser_attr('defaults'))))
         self.assertEquals(response.json, asse)
 
     def test_client_config_parsing(self):
@@ -104,14 +105,14 @@ class BurpuiAPITestCase(TestCase):
                             u'clients': []
                         }
                     ),
-                    (u'boolean', bui.cli.get_parser_attr('boolean_cli')),
-                    (u'string', bui.cli.get_parser_attr('string_cli')),
-                    (u'integer', bui.cli.get_parser_attr('integer_cli')),
-                    (u'multi', bui.cli.get_parser_attr('multi_cli')),
-                    (u'server_doc', bui.cli.get_parser_attr('doc')),
-                    (u'suggest', bui.cli.get_parser_attr('values')),
-                    (u'placeholders', bui.cli.get_parser_attr('placeholders')),
-                    (u'defaults', bui.cli.get_parser_attr('defaults'))))
+                    (u'boolean', self.bui.cli.get_parser_attr('boolean_cli')),
+                    (u'string', self.bui.cli.get_parser_attr('string_cli')),
+                    (u'integer', self.bui.cli.get_parser_attr('integer_cli')),
+                    (u'multi', self.bui.cli.get_parser_attr('multi_cli')),
+                    (u'server_doc', self.bui.cli.get_parser_attr('doc')),
+                    (u'suggest', self.bui.cli.get_parser_attr('values')),
+                    (u'placeholders', self.bui.cli.get_parser_attr('placeholders')),
+                    (u'defaults', self.bui.cli.get_parser_attr('defaults'))))
         self.assertEquals(response.json, asse)
 
     def test_restore(self):
@@ -174,13 +175,12 @@ class BurpuiRoutesTestCase(TestCase):
 
     def create_app(self):
         conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test3.cfg')
-        app.config['TESTING'] = True
-        app.config['LOGIN_DISABLED'] = True
-        app.config['LIVESERVER_PORT'] = 5001
-        app.config['CFG'] = conf
+        bui = BUIinit(conf, gunicorn=False)
+        bui.config['TESTING'] = True
+        bui.config['LOGIN_DISABLED'] = True
+        bui.config['LIVESERVER_PORT'] = 5001
         bui.setup(conf)
-        login_manager.init_app(app)
-        return app
+        return bui
 
     def test_live_monitor(self):
         response = self.client.get(url_for('view.live_monitor'), follow_redirects=True)
@@ -188,7 +188,7 @@ class BurpuiRoutesTestCase(TestCase):
 
     def test_get_clients(self):
         response = self.client.get(url_for('api.clients_stats'))
-        self.assertEqual(response.json, [{u'state': u'idle', u'last': u'never', u'name': u'testclient'}])
+        self.assertEqual(response.json, [{u'state': u'idle', u'last': u'never', u'name': u'testclient', u'phase': None, u'percent': None}])
 
 
 class BurpuiLoginTestCase(TestCase):
@@ -207,13 +207,12 @@ class BurpuiLoginTestCase(TestCase):
 
     def create_app(self):
         conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../burpui.sample.cfg')
-        BUIinit(conf, False, None, False)
-        app.config['TESTING'] = True
-        app.config['LIVESERVER_PORT'] = 5001
-        app.config['WTF_CSRF_ENABLED'] = False
+        bui = BUIinit(conf, False, None, False)
+        bui.config['TESTING'] = True
+        bui.config['LIVESERVER_PORT'] = 5001
+        bui.config['WTF_CSRF_ENABLED'] = False
         bui.cli.port = 9999
-        login_manager.init_app(app)
-        return app
+        return bui
 
     def test_config_render(self):
         rv = self.login('admin', 'admin')
@@ -249,13 +248,12 @@ class BurpuiACLTestCase(TestCase):
 
     def create_app(self):
         conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test5.cfg')
-        BUIinit(conf, False, None, False)
-        app.config['TESTING'] = True
-        app.config['LIVESERVER_PORT'] = 5001
-        app.config['WTF_CSRF_ENABLED'] = False
+        bui = BUIinit(conf, False, None, False)
+        bui.config['TESTING'] = True
+        bui.config['LIVESERVER_PORT'] = 5001
+        bui.config['WTF_CSRF_ENABLED'] = False
         bui.cli.port = 9999
-        login_manager.init_app(app)
-        return app
+        return bui
 
     def test_login_ko(self):
         rv = self.login('admin', 'toto')
@@ -291,13 +289,12 @@ class BurpuiTestInit(TestCase):
         conf2 = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test6-2.cfg')
         BUIinit(conf1, False, None, False)
         BUIinit(conf2, False, None, False)
-        BUIinit(None, False, None, False)
-        app.config['TESTING'] = True
-        app.config['LIVESERVER_PORT'] = 5001
-        app.config['WTF_CSRF_ENABLED'] = False
+        bui = BUIinit(None, False, None, False)
+        bui.config['TESTING'] = True
+        bui.config['LIVESERVER_PORT'] = 5001
+        bui.config['WTF_CSRF_ENABLED'] = False
         bui.cli.port = 9999
-        login_manager.init_app(app)
-        return app
+        return bui
 
     def test_exception(self):
         _, self.tmpFile = tempfile.mkstemp()
@@ -325,7 +322,6 @@ class BurpuiTestInit(TestCase):
 #        app.config['LOGIN_DISABLED'] = True
 #        app.config['CFG'] = conf
 #        bui.setup(conf)
-#        login_manager.init_app(app)
 #        return app
 #
 #    def test_server_config_parsing(self):
