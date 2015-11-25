@@ -69,7 +69,7 @@ See the `general instructions <installation.html#burp-2>`_ for more details.
 Are there any known issues?
 ---------------------------
 
-There is a `known issue <contributing.html#known-issues>`__ section in this
+There is a `known issue <introduction.html#known-issues>`__ section in this
 documentation.
 
 How can I contribute?
