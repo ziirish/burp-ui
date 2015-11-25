@@ -1,8 +1,8 @@
 include LICENSE
 include README.rst
 include MANIFEST.in
-include VERSION
 include burpui/VERSION
+include burpui/RELEASE
 include requirements.txt
 include test-requirements.txt
 include share/burpui/etc/burpui.sample.cfg

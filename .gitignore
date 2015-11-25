@@ -2,6 +2,7 @@
 *.swp
 burpui/static/vendor
 burpui-dev.cfg
+burpui/RELEASE
 devel.sh
 *.egg*
 .coverage
