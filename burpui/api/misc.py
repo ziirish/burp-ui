@@ -11,7 +11,7 @@
 from . import api
 from ..exceptions import BUIserverException
 
-from future.utils import iteritems
+from six import iteritems
 from flask.ext.restplus import Resource, fields
 from flask.ext.login import current_user
 from flask import flash
@@ -89,10 +89,9 @@ class Counters(Resource):
 
         :returns: Counters
         """
-        if not server:
-            server = self.parser.parse_args()['server']
-        if not name:
-            name = self.parser.parse_args()['name']
+        args = self.parser.parse_args()
+        server = server or args['server']
+        name = name or args['name']
         # Check params
         if not name:
             api.abort(400, 'No client name provided')
@@ -185,8 +184,8 @@ class Live(Resource):
         :returns: The *JSON* described above
         """
 
-        if not server:
-            server = self.parser.parse_args()['server']
+        args = self.parser.parse_args()
+        server = server or args['server']
         r = []
         if server:
             l = (api.bui.cli.is_one_backup_running(server))[server]
@@ -260,6 +259,7 @@ class About(Resource):
     })
     about_fields = api.model('About', {
         'version': fields.String(required=True, description='Burp-UI version'),
+        'release': fields.String(description='Burp-UI release (commit number)'),
         'burp': fields.Nested(burp_fields, as_list=True, description='Burp version'),
     })
 
@@ -272,10 +272,11 @@ class About(Resource):
     )
     def get(self, server=None):
         """Returns various informations about Burp-UI"""
+        args = self.parser.parse_args()
         r = {}
-        if not server:
-            server = self.parser.parse_args()['server']
+        server = server or args['server']
         r['version'] = api.version
+        r['release'] = api.release
         r['burp'] = []
         cli = api.bui.cli.get_client_version(server)
         srv = api.bui.cli.get_server_version(server)

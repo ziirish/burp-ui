@@ -70,6 +70,7 @@ def api_login_required(func):
 class ApiWrapper(Api):
     """Wrapper class around :class:`flask.ext.restplus.Api`"""
     loaded = False
+    release = None
 
     def init_bui(self, bui):
         """Loads the right context.
