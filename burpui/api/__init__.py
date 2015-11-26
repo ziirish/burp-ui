@@ -12,36 +12,18 @@ import os
 import sys
 import json
 
-from flask import Blueprint, Response, request, make_response
+from flask import Blueprint, Response, make_response
 from flask.ext.restplus import Api
-from flask.ext.login import current_user, current_app, login_user
+from flask.ext.login import current_user, current_app
 from importlib import import_module
 from functools import wraps
 
 from ..exceptions import BUIserverException, BUIhttpException
 
-if sys.version_info >= (3, 0):
+if sys.version_info >= (3, 0):  # pragma: no cover
     basestring = str
 
 LOGIN_NOT_REQUIRED = ['about']
-
-
-def api_login_user(request):
-    """Utility function to login the user using Basic HTTP credentials."""
-    creds = request.headers.get('Authorization')
-    if creds:
-        creds = creds.replace('Basic ', '', 1)
-        try:
-            import base64
-            login, password = base64.b64decode(creds).split(':')
-        except:
-            pass
-        if login:
-            user = api.bui.uhandler.user(login)
-            if user and user.active and user.login(login, password):
-                login_user(user)
-                return user
-    return None
 
 
 def api_login_required(func):
@@ -53,12 +35,12 @@ def api_login_required(func):
         """decorator"""
         try:
             name = func.func_name
-        except:
+        except:  # pragma: no cover
             name = func.__name__
         if (api.bui.auth != 'none' and
                 name not in LOGIN_NOT_REQUIRED and
                 not current_app.config.get('LOGIN_DISABLED', False)):
-            if not current_user.is_authenticated and not api_login_user(request):
+            if not current_user.is_authenticated:
                 return Response(
                     'Could not verify your access level for that URL.\n'
                     'You have to login with proper credentials', 401,
@@ -87,8 +69,8 @@ class ApiWrapper(Api):
         if message and isinstance(message, basestring):
             # raise a custom error that is caught by 'errorhandler'
             raise BUIhttpException(code, message)
-        message = json.dumps(message)
-        super(ApiWrapper, self).abort(code, message, **kwargs)
+        message = json.dumps(message)  # pragma: no cover
+        super(ApiWrapper, self).abort(code, message, **kwargs)  # pragma: no cover
 
     def load_all(self):
         """hack to automatically import api modules"""
@@ -110,7 +92,7 @@ api = ApiWrapper(apibp, title='Burp-UI API', description='Burp-UI API to interac
 
 # Just in case the exception was not caught earlier
 @apibp.errorhandler(BUIserverException)
-def handle_bui_server_exception(error):
+def handle_bui_server_exception(error):  # pragma: no cover
     response = make_response(str(error), 500)
     response.headers['content-type'] = 'text/plain'
     return response

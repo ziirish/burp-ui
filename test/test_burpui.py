@@ -29,6 +29,7 @@ class BurpuiLiveTestCase(LiveServerTestCase):
         bui.config['LIVESERVER_PORT'] = 5001
         bui.config['CFG'] = conf
         bui.setup(conf)
+        bui.login_manager.init_app(bui)
         return bui
 
     def setUp(self):
@@ -42,13 +43,47 @@ class BurpuiLiveTestCase(LiveServerTestCase):
         self.assertEqual(response.code, 200)
 
 
-class BurpuiAPITestCase(TestCase):
+class BurpuiAPIBasicHTTPTestCase(TestCase):
 
     def setUp(self):
         print ('\nBegin Test 2\n')
 
     def tearDown(self):
         print ('\nTest 2 Finished!\n')
+        os.unlink(self.logfile)
+
+    def create_app(self):
+        import tempfile
+        conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test2.cfg')
+        _, self.logfile = tempfile.mkstemp()
+        bui = BUIinit(conf, 0, self.logfile, gunicorn=False)
+        bui.config['DEBUG'] = False
+        return bui
+
+    def test_auth_required(self):
+        response = self.client.get(url_for('api.about'))
+        self.assert200(response)
+        response = self.client.get(url_for('api.counters'))
+        self.assert401(response)
+
+    def test_auth_valid(self):
+        import base64
+        response = self.client.get(
+            url_for('api.live'),
+            headers={
+                'Authorization': 'Basic ' + base64.b64encode('admin:admin')
+            }
+        )
+        self.assert200(response)
+
+
+class BurpuiAPITestCase(TestCase):
+
+    def setUp(self):
+        print ('\nBegin Test 3\n')
+
+    def tearDown(self):
+        print ('\nTest 3 Finished!\n')
 
     def create_app(self):
         conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test2.cfg')
@@ -57,6 +92,7 @@ class BurpuiAPITestCase(TestCase):
         bui.config['LOGIN_DISABLED'] = True
         bui.config['CFG'] = conf
         bui.setup(conf)
+        bui.login_manager.init_app(bui)
         self.bui = bui
         return bui
 
@@ -168,24 +204,24 @@ class BurpuiAPITestCase(TestCase):
 class BurpuiRoutesTestCase(TestCase):
 
     def setUp(self):
-        print ('\nBegin Test 3\n')
+        print ('\nBegin Test 4\n')
 
     def tearDown(self):
-        print ('\nTest 3 Finished!\n')
+        print ('\nTest 4 Finished!\n')
 
     def create_app(self):
-        conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test3.cfg')
+        conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test4.cfg')
         bui = BUIinit(conf, gunicorn=False)
         bui.config['TESTING'] = True
         bui.config['LOGIN_DISABLED'] = True
         bui.config['LIVESERVER_PORT'] = 5001
         bui.setup(conf)
+        bui.login_manager.init_app(bui)
         return bui
 
-# FIXME/TODO: restore after live monitor is fixed
-#    def test_live_monitor(self):
-#        response = self.client.get(url_for('view.live_monitor'), follow_redirects=True)
-#        assert 'Sorry, there are no running backups' in response.data.decode('utf-8')
+    def test_live_monitor(self):
+        response = self.client.get(url_for('view.live_monitor'), follow_redirects=True)
+        assert 'Sorry, there are no running backups' in response.data.decode('utf-8')
 
     def test_get_clients(self):
         response = self.client.get(url_for('api.clients_stats'))
@@ -195,10 +231,10 @@ class BurpuiRoutesTestCase(TestCase):
 class BurpuiLoginTestCase(TestCase):
 
     def setUp(self):
-        print ('\nBegin Test 4\n')
+        print ('\nBegin Test 5\n')
 
     def tearDown(self):
-        print ('\nTest 4 Finished!\n')
+        print ('\nTest 5 Finished!\n')
 
     def login(self, username, password):
         return self.client.post(url_for('view.login'), data=dict(
@@ -236,10 +272,10 @@ class BurpuiLoginTestCase(TestCase):
 class BurpuiACLTestCase(TestCase):
 
     def setUp(self):
-        print ('\nBegin Test 5\n')
+        print ('\nBegin Test 6\n')
 
     def tearDown(self):
-        print ('\nTest 5 Finished!\n')
+        print ('\nTest 6 Finished!\n')
 
     def login(self, username, password):
         return self.client.post(url_for('view.login'), data=dict(
@@ -248,7 +284,7 @@ class BurpuiACLTestCase(TestCase):
         ), follow_redirects=True)
 
     def create_app(self):
-        conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test5.cfg')
+        conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test6.cfg')
         bui = BUIinit(conf, False, None, False)
         bui.config['TESTING'] = True
         bui.config['LIVESERVER_PORT'] = 5001
@@ -279,15 +315,15 @@ class BurpuiACLTestCase(TestCase):
 class BurpuiTestInit(TestCase):
 
     def setUp(self):
-        print ('\nBegin Test 6\n')
+        print ('\nBegin Test 7\n')
 
     def tearDown(self):
-        print ('\nTest 6 Finished!\n')
+        print ('\nTest 7 Finished!\n')
         os.unlink(self.tmpFile)
 
     def create_app(self):
-        conf1 = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test6-1.cfg')
-        conf2 = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test6-2.cfg')
+        conf1 = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test7-1.cfg')
+        conf2 = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test7-2.cfg')
         BUIinit(conf1, False, None, False)
         BUIinit(conf2, False, None, False)
         bui = BUIinit(None, False, None, False)

@@ -25,9 +25,9 @@ __url__ = 'https://git.ziirish.me/ziirish/burp-ui'
 __description__ = 'Burp-UI is a web-ui for burp backup written in python with Flask and jQuery/Bootstrap'
 __license__ = 'BSD 3-clause'
 __version__ = open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'VERSION')).read().rstrip()
-try:
+try:  # pragma: no cover
     __release__ = open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'RELEASE')).read().rstrip()
-except:
+except:  # pragma: no cover
     __release__ = 'unknown'
 
 
@@ -100,24 +100,24 @@ def init(conf=None, debug=0, logfile=None, gunicorn=True):
     app.register_blueprint(apibp)
 
     # And the login_manager
-    login_manager = LoginManager()
-    login_manager.init_app(app)
-    login_manager.login_view = 'view.login'
-    login_manager.login_message_category = 'info'
+    app.login_manager = LoginManager()
+    app.login_manager.init_app(app)
+    app.login_manager.login_view = 'view.login'
+    app.login_manager.login_message_category = 'info'
 
     app.config.setdefault('BOWER_COMPONENTS_ROOT', os.path.join('static', 'vendor'))
     app.config.setdefault('BOWER_REPLACE_URL_FOR', True)
     bower = Bower()
     bower.init_app(app)
 
-    @login_manager.user_loader
+    @app.login_manager.user_loader
     def load_user(userid):
         """User loader callback"""
         if app.auth != 'none':
             return app.uhandler.user(userid)
         return None  # pragma: no cover
 
-    @login_manager.request_loader
+    @app.login_manager.request_loader
     def load_user_from_request(request):
         """User loader from request callback"""
         if app.auth != 'none':
@@ -127,7 +127,7 @@ def init(conf=None, debug=0, logfile=None, gunicorn=True):
                 try:
                     import base64
                     login, password = base64.b64decode(creds).split(':')
-                except:
+                except:  # pragma: no cover
                     pass
                 if login:
                     user = app.uhandler.user(login)
@@ -180,6 +180,6 @@ def init(conf=None, debug=0, logfile=None, gunicorn=True):
 
     if gunicorn:  # pragma: no cover
         from werkzeug.contrib.fixers import ProxyFix
-        app.wsgi_app = ProxyFix(bui.wsgi_app)
+        app.wsgi_app = ProxyFix(app.wsgi_app)
 
     return app
