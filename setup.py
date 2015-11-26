@@ -70,7 +70,7 @@ class BuildStatic(Command):
         os.chdir(ROOT)
         log.info("getting revision number")
         try:
-            branch = check_output('sed "s@^.*/@@g" .git/HEAD'.split()).rstrip()
+            branch = check_output('sed s@^.*/@@g .git/HEAD'.split()).rstrip()
             if branch == 'master':
                 rev = check_output('cat .git/refs/heads/master'.split()).rstrip()
             else:
