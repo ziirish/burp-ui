@@ -71,7 +71,7 @@ class BurpuiAPIBasicHTTPTestCase(TestCase):
         response = self.client.get(
             url_for('api.live'),
             headers={
-                'Authorization': 'Basic ' + base64.b64encode('admin:admin')
+                'Authorization': 'Basic ' + base64.b64encode(b'admin:admin').decode('utf-8')
             }
         )
         self.assert200(response)
