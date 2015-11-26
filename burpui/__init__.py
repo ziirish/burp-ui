@@ -30,8 +30,6 @@ try:
 except:
     __release__ = 'unknown'
 
-bui = None
-
 
 def lookup_config(conf=None):
     ret = None
@@ -75,7 +73,7 @@ def init(conf=None, debug=0, logfile=None, gunicorn=True):
     :param gunicorn: Enable gunicorn engine instead of flask's default
     :type gunicorn: bool
 
-    :returns: A :class:`Flask` object
+    :returns: A :class:`flask.Flask` object
     """
     from flask.ext.login import LoginManager, login_user
     from flask.ext.bower import Bower
@@ -84,45 +82,45 @@ def init(conf=None, debug=0, logfile=None, gunicorn=True):
     from .api import api, apibp
 
     # We initialize the core
-    bui = BurpUI()
+    app = BurpUI()
 
-    bui.config['CFG'] = None
+    app.config['CFG'] = None
 
-    bui.secret_key = 'VpgOXNXAgcO81xFPyWj07ppN6kExNZeCDRShseNzFKV7ZCgmW2/eLn6xSlt7pYAVBj12zx2Vv9Kw3Q3jd1266A=='
-    bui.jinja_env.globals.update(isinstance=isinstance, list=list)
+    app.secret_key = 'VpgOXNXAgcO81xFPyWj07ppN6kExNZeCDRShseNzFKV7ZCgmW2/eLn6xSlt7pYAVBj12zx2Vv9Kw3Q3jd1266A=='
+    app.jinja_env.globals.update(isinstance=isinstance, list=list)
 
     # Then we load our routes
-    view.init_bui(bui)
-    bui.register_blueprint(view)
+    view.init_bui(app)
+    app.register_blueprint(view)
 
     # We initialize the API
-    api.init_bui(bui)
+    api.init_bui(app)
     api.version = __version__
     api.release = __release__
-    bui.register_blueprint(apibp)
+    app.register_blueprint(apibp)
 
     # And the login_manager
     login_manager = LoginManager()
-    login_manager.init_app(bui)
+    login_manager.init_app(app)
     login_manager.login_view = 'view.login'
     login_manager.login_message_category = 'info'
 
-    bui.config.setdefault('BOWER_COMPONENTS_ROOT', os.path.join('static', 'vendor'))
-    bui.config.setdefault('BOWER_REPLACE_URL_FOR', True)
+    app.config.setdefault('BOWER_COMPONENTS_ROOT', os.path.join('static', 'vendor'))
+    app.config.setdefault('BOWER_REPLACE_URL_FOR', True)
     bower = Bower()
-    bower.init_app(bui)
+    bower.init_app(app)
 
     @login_manager.user_loader
     def load_user(userid):
         """User loader callback"""
-        if bui.auth != 'none':
-            return bui.uhandler.user(userid)
+        if app.auth != 'none':
+            return app.uhandler.user(userid)
         return None  # pragma: no cover
 
     @login_manager.request_loader
     def load_user_from_request(request):
         """User loader from request callback"""
-        if bui.auth != 'none':
+        if app.auth != 'none':
             creds = request.headers.get('Authorization')
             if creds:
                 creds = creds.replace('Basic ', '', 1)
@@ -132,7 +130,7 @@ def init(conf=None, debug=0, logfile=None, gunicorn=True):
                 except:
                     pass
                 if login:
-                    user = bui.uhandler.user(login)
+                    user = app.uhandler.user(login)
                     if user.active and user.login(login, password):
                         login_user(user)
                         return user
@@ -154,8 +152,8 @@ def init(conf=None, debug=0, logfile=None, gunicorn=True):
         debug = levels[debug]
 
     if debug != logging.NOTSET and not gunicorn:  # pragma: no cover
-        bui.config['DEBUG'] = True
-        bui.config['TESTING'] = True
+        app.config['DEBUG'] = True
+        app.config['TESTING'] = True
 
     if logfile:
         from logging import Formatter
@@ -172,16 +170,16 @@ def init(conf=None, debug=0, logfile=None, gunicorn=True):
             LOG_FORMAT = '[%(asctime)s] %(levelname)s in %(module)s.%(funcName)s: %(message)s'
         file_handler.setLevel(debug)
         file_handler.setFormatter(Formatter(LOG_FORMAT))
-        bui.logger.addHandler(file_handler)
+        app.logger.addHandler(file_handler)
 
     # Still need to test conf file here because the init function can be called
     # by gunicorn directly
-    bui.config['CFG'] = lookup_config(conf)
+    app.config['CFG'] = lookup_config(conf)
 
-    bui.setup(bui.config['CFG'])
+    app.setup(app.config['CFG'])
 
     if gunicorn:  # pragma: no cover
         from werkzeug.contrib.fixers import ProxyFix
-        bui.wsgi_app = ProxyFix(bui.wsgi_app)
+        app.wsgi_app = ProxyFix(bui.wsgi_app)
 
-    return bui
+    return app
