@@ -71,10 +71,9 @@ class BuildStatic(Command):
         log.info("getting revision number")
         try:
             branch = check_output('sed s@^.*/@@g .git/HEAD'.split()).rstrip()
-            head = check_output('cat .git/refs/heads/master'.split()).rstrip()
-            log.info('{} / {}'.format(branch, head))
-            if head and branch in [head, 'master']:
-                rev = head
+            ver = open(os.path.join('burpui', 'VERSION')).read().rstrip()
+            if branch and 'dev' in ver:
+                rev = branch
             else:
                 rev = 'stable'
             try:
