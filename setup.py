@@ -72,7 +72,8 @@ class BuildStatic(Command):
         try:
             branch = check_output('sed s@^.*/@@g .git/HEAD'.split()).rstrip()
             head = check_output('cat .git/refs/heads/master'.split()).rstrip()
-            if head and branch == head:
+            log.info('{} / {}'.format(branch, head))
+            if head and branch in [head, 'master']:
                 rev = head
             else:
                 rev = 'stable'
