@@ -69,14 +69,17 @@ class BuildStatic(Command):
     def run(self):
         os.chdir(ROOT)
         log.info("getting revision number")
-        branch = check_output('git symbolic-ref --short HEAD'.split()).rstrip()
-        if branch == 'master':
-            rev = check_output('cat .git/refs/heads/master'.split()).rstrip()
-        else:
-            rev = 'stable'
         try:
-            with open('burpui/RELEASE', 'w') as f:
-                f.write(rev)
+            branch = check_output('sed "s@^.*/@@g" .git/HEAD'.split()).rstrip()
+            if branch == 'master':
+                rev = check_output('cat .git/refs/heads/master'.split()).rstrip()
+            else:
+                rev = 'stable'
+            try:
+                with open('burpui/RELEASE', 'w') as f:
+                    f.write(rev)
+            except:
+                pass
         except:
             pass
         log.info("running [bower install]")
