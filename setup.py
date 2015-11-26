@@ -71,8 +71,9 @@ class BuildStatic(Command):
         log.info("getting revision number")
         try:
             branch = check_output('sed s@^.*/@@g .git/HEAD'.split()).rstrip()
-            if branch == 'master':
-                rev = check_output('cat .git/refs/heads/master'.split()).rstrip()
+            head = check_output('cat .git/refs/heads/master'.split()).rstrip()
+            if head and branch == head:
+                rev = head
             else:
                 rev = 'stable'
             try:
