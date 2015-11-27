@@ -64,7 +64,7 @@ class Counters(Resource):
     """
     parser = api.parser()
     parser.add_argument('server', type=str, help='Which server to collect data from when in multi-agent mode')
-    parser.add_argument('name', type=str, help='Client name')
+    parser.add_argument('name', type=str, help='Client name', required=True)
 
     @api.marshal_with(counters_fields, code=200, description='Success')
     @api.doc(
@@ -187,13 +187,33 @@ class Live(Resource):
         args = self.parser.parse_args()
         server = server or args['server']
         r = []
+        # ACL
+        admin = api.bui.acl and api.bui.acl.is_admin(current_user.get_id())
+        if (api.bui.acl and
+                not admin and
+                server and
+                server not in api.bui.acl.servers(current_user.get_id())):
+            api.abort(403, 'You are not allowed to view stats of this server')
         if server:
             l = (api.bui.cli.is_one_backup_running(server))[server]
+            # ACL
+            if api.bui.acl and not admin:
+                allowed = api.bui.acl.clients(current_user.get_id(), server)
+                l = [x for x in l if x in allowed]
         else:
             l = api.bui.cli.is_one_backup_running()
-        if isinstance(l, dict):  # pragma: no cover
+        if isinstance(l, dict):
             for (k, a) in iteritems(l):
                 for c in a:
+                    # ACL
+                    if (api.bui.acl and
+                            not admin and
+                            not api.bui.acl.is_client_allowed(
+                                current_user.get_id(),
+                                c,
+                                k)
+                            ):
+                        continue
                     s = {}
                     s['client'] = c
                     s['agent'] = k
@@ -202,7 +222,7 @@ class Live(Resource):
                     except BUIserverException:
                         s['status'] = []
                     r.append(s)
-        else:  # pragma: no cover
+        else:
             for c in l:
                 s = {}
                 s['client'] = c
@@ -250,10 +270,11 @@ class About(Resource):
     An optional ``GET`` parameter called ``server`` is supported when running
     in multi-agent mode.
     """
+    api.LOGIN_NOT_REQUIRED.append('about')
     parser = api.parser()
     parser.add_argument('server', type=str, help='Which server to collect data from when in multi-agent mode')
     burp_fields = api.model('Burp', {
-        'name': fields.String(required=True, description='Instance name', default='Default'),
+        'name': fields.String(required=True, description='Instance name', default='Burp{}'.format(api.bui.vers)),
         'client': fields.String(description='Burp client version'),
         'server': fields.String(description='Burp server version'),
     })
