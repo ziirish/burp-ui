@@ -23,8 +23,6 @@ from ..exceptions import BUIserverException, BUIhttpException
 if sys.version_info >= (3, 0):  # pragma: no cover
     basestring = str
 
-LOGIN_NOT_REQUIRED = ['about']
-
 
 def api_login_required(func):
     """Custom login decorator that is able to parse Basic credentials as well as
@@ -38,7 +36,7 @@ def api_login_required(func):
         except:  # pragma: no cover
             name = func.__name__
         if (api.bui.auth != 'none' and
-                name not in LOGIN_NOT_REQUIRED and
+                name not in api.LOGIN_NOT_REQUIRED and
                 not current_app.config.get('LOGIN_DISABLED', False)):
             if not current_user.is_authenticated:
                 return Response(
@@ -53,6 +51,7 @@ class ApiWrapper(Api):
     """Wrapper class around :class:`flask.ext.restplus.Api`"""
     loaded = False
     release = None
+    LOGIN_NOT_REQUIRED = []
 
     def init_bui(self, bui):
         """Loads the right context.
