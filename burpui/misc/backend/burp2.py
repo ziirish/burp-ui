@@ -396,7 +396,6 @@ class Burp(Burp1):
             stats = json.loads(''.join(back['logs']['backup_stats']))
         except:
             stats = back['logs']['backup_stats']
-        print stats
         if not stats:
             return {}
         # server was upgraded but backup comes from an older version
