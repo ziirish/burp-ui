@@ -80,3 +80,24 @@ _live = function() {
 	$('#live-container').html(html);
 };
 {% endif -%}
+
+{% if config.STANDALONE -%}
+	{% if cname -%}
+var url = '{{ url_for("api.counters", name=cname) }}';
+	{% else -%}
+var url = '{{ url_for("api.live") }}';
+	{% endif -%}
+{% else -%}
+	{% if cname -%}
+var url = '{{ url_for("api.counters", name=cname, server=server) }}';
+	{% elif server -%}
+var url = '{{ url_for("api.live", server=server) }}';
+	{% else -%}
+var url = '{{ url_for("api.live") }}';
+	{% endif -%}
+{% endif -%}
+
+var app = angular.module('MainApp', ['ngSanitize']);
+
+app.controller('LiveCtrl', function($scope, $http, $timeout) {
+});
