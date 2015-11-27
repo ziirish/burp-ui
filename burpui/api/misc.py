@@ -64,7 +64,7 @@ class Counters(Resource):
     """
     parser = api.parser()
     parser.add_argument('server', type=str, help='Which server to collect data from when in multi-agent mode')
-    parser.add_argument('name', type=str, help='Client name', required=True)
+    parser.add_argument('name', type=str, help='Client name')
 
     @api.marshal_with(counters_fields, code=200, description='Success')
     @api.doc(
