@@ -43,6 +43,8 @@ echo "test requirements"
 #echo "installing bower"
 #npm install -g bower
 
+git config --global url.https://.insteadOf git:// || true
+
 echo "downloading libs"
 bower install
 

@@ -4,7 +4,7 @@ stages:
   - build
   - deploy
 
-py2.7:
+test:py2.7:
   stage: test
   image: ziirish/python:2.7
   script:
@@ -14,7 +14,7 @@ py2.7:
   except:
   - tags
 
-py3.4:
+test:py3.4:
   stage: test
   image: ziirish/python:3.4
   script:
@@ -24,7 +24,7 @@ py3.4:
   except:
   - tags
 
-build-dev2:
+build:py2:
   stage: build
   script:
   - /bin/bash test/run_build.sh
@@ -32,8 +32,11 @@ build-dev2:
   - build
   only:
   - master
+  artifacts:
+    path:
+    - dist/
 
-build-dev3:
+build:py3:
   stage: build
   image: ziirish/python:3.4
   script:
@@ -42,3 +45,6 @@ build-dev3:
   - build
   only:
   - master
+  artifacts:
+    paths:
+    - dist/
