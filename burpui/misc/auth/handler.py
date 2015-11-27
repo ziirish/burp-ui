@@ -70,7 +70,7 @@ class UserHandler(BUIuser):
                     self.id = res
                     self.real = u
                     break
-        elif self.real:
+        elif self.real:  # pragma: no cover
             self.authenticated = self.real.login(name, passwd)
         return self.authenticated
 

@@ -95,13 +95,6 @@ BURP_PID=$!
 #($BURP2_DIR/burp/src/burp -F -c $WORKING_DIR2/config/burp.conf >>$LOGFILE2 2>&1) &
 #BURP2_PID=$!
 
-echo "check files"
-pwd
-ls -la
-file burp-ui.py
-file burpui.cfg
-file test/test_burpui.py
-
 echo "install virtualenv"
 $PIP install virtualenv
 mkdir py$VERSION

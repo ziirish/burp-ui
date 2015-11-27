@@ -37,7 +37,7 @@ class BasicLoader:
                             handler.priority = c.getint('BASIC', opt)
                         except:
                             pass
-                        continue
+                        continue  # pragma: no cover
                     self.users[opt] = c.get('BASIC', opt)
                     self.app.logger.info('Loading user: {}'.format(opt))
 
@@ -105,11 +105,11 @@ class BasicUser(BUIuser):
         return self.authenticated
 
     @property
-    def is_active(self):
+    def is_active(self):  # pragma: no cover
         return self.active
 
     @property
-    def is_authenticated(self):
+    def is_authenticated(self):  # pragma: no cover
         return self.authenticated
 
     def get_id(self):

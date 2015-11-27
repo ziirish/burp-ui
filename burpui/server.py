@@ -85,9 +85,8 @@ class BUIServer(Flask):
                     try:
                         self.uhandler = UserAuthHandler(self)
                     except Exception as e:
-                        traceback.print_exc()
                         self.logger.error('Import Exception, module \'{0}\': {1}'.format(self.auth, str(e)))
-                        sys.exit(1)
+                        raise e
                     self.acl_engine = self._safe_config_get(config.get, 'acl')
                 else:
                     # I know that's ugly, but hey, I need it!
@@ -112,9 +111,8 @@ class BUIServer(Flask):
                         self.acl = BUIacl
                         self.acl = self.acl_handler.acl
                     except Exception as e:
-                        traceback.print_exc()
                         self.logger.error('Import Exception, module \'{0}\': {1}'.format(self.acl_engine, str(e)))
-                        sys.exit(1)
+                        raise e
                 else:
                     self.acl_handler = False
                     self.acl = False

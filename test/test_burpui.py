@@ -23,7 +23,8 @@ class BurpuiLiveTestCase(LiveServerTestCase):
 
     def create_app(self):
         conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../burpui.sample.cfg')
-        bui = BUIinit(gunicorn=False)
+        bui = BUIinit(debug=12, gunicorn=False, unittest=True)
+        bui.config['DEBUG'] = False
         bui.config['TESTING'] = True
         bui.config['LOGIN_DISABLED'] = True
         bui.config['LIVESERVER_PORT'] = 5001
@@ -53,10 +54,9 @@ class BurpuiAPIBasicHTTPTestCase(TestCase):
         os.unlink(self.logfile)
 
     def create_app(self):
-        import tempfile
         conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test2.cfg')
         _, self.logfile = tempfile.mkstemp()
-        bui = BUIinit(conf, 0, self.logfile, gunicorn=False)
+        bui = BUIinit(conf, 1, self.logfile, gunicorn=False, unittest=True)
         bui.config['DEBUG'] = False
         return bui
 
@@ -337,6 +337,8 @@ class BurpuiTestInit(TestCase):
         _, self.tmpFile = tempfile.mkstemp()
         self.assertRaises(IOError, BUIinit, 'thisfileisnotlikelytoexist', True, self.tmpFile, False)
         self.assertRaises(IOError, BUIinit, 'thisfileisnotlikelytoexist', False, self.tmpFile, False)
+        conf3 = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test7-3.cfg')
+        self.assertRaises(ImportError, BUIinit, conf3, False, None, False)
 
 
 #class BurpuiAPILoginTestCase(TestCase):

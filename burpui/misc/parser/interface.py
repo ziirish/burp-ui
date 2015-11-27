@@ -29,7 +29,7 @@ class BUIparser(BUIlogging):
         """
         self.app = app
         self.conf = conf
-        if self.app:
+        if self.app:  # pragma: no cover
             self.logger = self.app.logger
 
     @abstractmethod

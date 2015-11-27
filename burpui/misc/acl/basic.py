@@ -3,7 +3,7 @@ from .interface import BUIacl, BUIaclLoader
 
 try:
     import ConfigParser
-except ImportError:
+except ImportError:  # pragma: no cover
     import configparser as ConfigParser
 import json
 
@@ -60,7 +60,7 @@ class ACLloader(BUIaclLoader):
         """Property to retrieve the backend"""
         if self._acl:
             return self._acl
-        return None
+        return None  # pragma: no cover
 
 
 class BasicACL(BUIacl):
@@ -72,7 +72,7 @@ class BasicACL(BUIacl):
         :param handler: ACL handler
         :type handler: :class:`burpui.misc.acl.interface.BUIaclLoader`
         """
-        if not handler:
+        if not handler:  # pragma: no cover
             return
         self.handler = handler
         self.standalone = handler.standalone

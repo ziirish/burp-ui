@@ -38,7 +38,7 @@ class BUIhandler:
 
         :returns: The corresponding user object
         """
-        return None
+        return None  # pragma: no cover
 
 
 class BUIuser(UserMixin):

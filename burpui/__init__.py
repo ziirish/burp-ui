@@ -58,7 +58,7 @@ def lookup_config(conf=None):
     return ret
 
 
-def init(conf=None, debug=0, logfile=None, gunicorn=True):
+def init(conf=None, debug=0, logfile=None, gunicorn=True, unittest=False):
     """Initialize the whole application.
 
     :param conf: Configuration file to use
@@ -73,7 +73,7 @@ def init(conf=None, debug=0, logfile=None, gunicorn=True):
     :param gunicorn: Enable gunicorn engine instead of flask's default
     :type gunicorn: bool
 
-    :returns: A :class:`flask.Flask` object
+    :returns: A :class:`burpui.server.BUIServer` object
     """
     from flask.ext.login import LoginManager, login_user
     from flask.ext.bower import Bower
@@ -88,6 +88,51 @@ def init(conf=None, debug=0, logfile=None, gunicorn=True):
 
     app.secret_key = 'VpgOXNXAgcO81xFPyWj07ppN6kExNZeCDRShseNzFKV7ZCgmW2/eLn6xSlt7pYAVBj12zx2Vv9Kw3Q3jd1266A=='
     app.jinja_env.globals.update(isinstance=isinstance, list=list)
+
+    # The debug argument used to be a boolean so we keep supporting this format
+    if isinstance(debug, bool):
+        if debug:
+            debug = logging.DEBUG
+        else:
+            debug = logging.NOTSET
+    else:
+        levels = [logging.NOTSET, logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG]
+        if debug >= len(levels):
+            debug = len(levels) - 1
+        if not debug:
+            debug = 0
+        debug = levels[debug]
+
+    if debug != logging.NOTSET and not gunicorn:  # pragma: no cover
+        app.config['DEBUG'] = True and not unittest
+        app.config['TESTING'] = True and not unittest
+
+    if logfile:
+        from logging import Formatter
+        from logging.handlers import RotatingFileHandler
+        file_handler = RotatingFileHandler(logfile, maxBytes=1024 * 1024 * 100, backupCount=20)
+        if debug < logging.INFO:
+            LOG_FORMAT = (
+                '-' * 80 + '\n' +
+                '%(levelname)s in %(module)s.%(funcName)s [%(pathname)s:%(lineno)d]:\n' +
+                '%(message)s\n' +
+                '-' * 80
+            )
+        else:
+            LOG_FORMAT = '[%(asctime)s] %(levelname)s in %(module)s.%(funcName)s: %(message)s'
+        file_handler.setLevel(debug)
+        file_handler.setFormatter(Formatter(LOG_FORMAT))
+        app.logger.addHandler(file_handler)
+
+    # Still need to test conf file here because the init function can be called
+    # by gunicorn directly
+    app.config['CFG'] = lookup_config(conf)
+
+    app.setup(app.config['CFG'])
+
+    if gunicorn:  # pragma: no cover
+        from werkzeug.contrib.fixers import ProxyFix
+        app.wsgi_app = ProxyFix(app.wsgi_app)
 
     # Then we load our routes
     view.init_bui(app)
@@ -136,50 +181,5 @@ def init(conf=None, debug=0, logfile=None, gunicorn=True):
                         return user
 
         return None
-
-    # The debug argument used to be a boolean so we keep supporting this format
-    if isinstance(debug, bool):
-        if debug:
-            debug = logging.DEBUG
-        else:
-            debug = logging.NOTSET
-    else:
-        levels = [logging.NOTSET, logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG]
-        if debug >= len(levels):
-            debug = len(levels) - 1
-        if not debug:
-            debug = 0
-        debug = levels[debug]
-
-    if debug != logging.NOTSET and not gunicorn:  # pragma: no cover
-        app.config['DEBUG'] = True
-        app.config['TESTING'] = True
-
-    if logfile:
-        from logging import Formatter
-        from logging.handlers import RotatingFileHandler
-        file_handler = RotatingFileHandler(logfile, maxBytes=1024 * 1024 * 100, backupCount=20)
-        if debug < logging.INFO:
-            LOG_FORMAT = (
-                '-' * 80 + '\n' +
-                '%(levelname)s in %(module)s.%(funcName)s [%(pathname)s:%(lineno)d]:\n' +
-                '%(message)s\n' +
-                '-' * 80
-            )
-        else:
-            LOG_FORMAT = '[%(asctime)s] %(levelname)s in %(module)s.%(funcName)s: %(message)s'
-        file_handler.setLevel(debug)
-        file_handler.setFormatter(Formatter(LOG_FORMAT))
-        app.logger.addHandler(file_handler)
-
-    # Still need to test conf file here because the init function can be called
-    # by gunicorn directly
-    app.config['CFG'] = lookup_config(conf)
-
-    app.setup(app.config['CFG'])
-
-    if gunicorn:  # pragma: no cover
-        from werkzeug.contrib.fixers import ProxyFix
-        app.wsgi_app = ProxyFix(app.wsgi_app)
 
     return app
