@@ -170,7 +170,6 @@ class Burp(BUIbackend):
             for (key, serv) in iteritems(self.servers):
                 v = serv.get_server_version() or None
                 r[key] = v
-            print r
             return r
         return self.servers[agent].get_server_version()
 
