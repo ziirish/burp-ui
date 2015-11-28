@@ -43,11 +43,6 @@ echo "test requirements"
 #echo "installing bower"
 #npm install -g bower
 
-git config --global url.https://.insteadOf git:// || true
-
-echo "downloading libs"
-bower install
-
 echo "downloading and compiling burp v${BURP_VERSION}"
 ROOT_PWD=`pwd`
 BURP_DIR=$(mktemp -d)

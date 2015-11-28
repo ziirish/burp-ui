@@ -30,11 +30,6 @@ echo "test requirements"
 #echo "installing bower"
 #npm install -g bower
 
-git config --global url.https://.insteadOf git:// || true
-
-echo "downloading libs"
-bower install
-
 echo "building dist"
 [ "$(sed 's/\([[:digit:]]*\)\..*$/\1/' <<<$VERSION)" -eq 2 ] && $PYTHON setup.py sdist
 $PYTHON setup.py bdist_egg
