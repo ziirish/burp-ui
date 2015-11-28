@@ -83,11 +83,6 @@ class BuildStatic(Command):
                 pass
         except:
             pass
-        log.info("running [bower install]")
-        try:
-            check_output(['bower', 'install'])
-        except Exception as e:
-            log.warn('Bower error: {}'.format(str(e)))
         # Not sure bower was a great idea...
         keep = [
             'burpui/static/vendor/bootswatch/slate/bootstrap.min.css',

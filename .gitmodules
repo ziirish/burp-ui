@@ -1,0 +1,3 @@
+[submodule "burpui/static/vendor"]
+	path = burpui/static/vendor
+	url = https://git.ziirish.me/ziirish/burp-ui-externals.git
