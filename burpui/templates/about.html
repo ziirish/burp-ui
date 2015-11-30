@@ -4,8 +4,10 @@
 					<br />
 					<h1 class="page-header">About</h1>
 					<p>
-						<a href="https://git.ziirish.me/ziirish/burp-ui">Burp-UI</a> is
+						<a href="{{ url }}">Burp-UI</a> is
 						brought to you by <a href="https://ziirish.info/">Ziirish</a>.
+						<br />
+						You can find the documentation at <a href="{{ doc }}">{{ doc }}</a>.
 					</p>
 					{# From here, the jinja syntax is escaped because we use the angularjs syntax #}
 					{% raw %}
@@ -14,6 +16,9 @@
 					</p>
 					<p ng-repeat="b in burp" ng-if="b.client || b.server">
 						<strong>{{ ::b.name }}</strong><span ng-if="b.client"> - client: <em>{{ ::b.client }}</em></span><span ng-if="b.server"> - server: <em>{{ ::b.server }}</em></span>
+					</p>
+					<p>
+					API <a ng-href="{{ api }}">documentation</a>
 					</p>
 					{% endraw %}
 				</div>

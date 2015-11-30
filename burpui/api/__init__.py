@@ -51,6 +51,8 @@ class ApiWrapper(Api):
     """Wrapper class around :class:`flask.ext.restplus.Api`"""
     loaded = False
     release = None
+    __doc__ = None
+    __url__ = None
     LOGIN_NOT_REQUIRED = []
 
     def init_bui(self, bui):
@@ -86,7 +88,7 @@ class ApiWrapper(Api):
 
 
 apibp = Blueprint('api', __name__, url_prefix='/api')
-api = ApiWrapper(apibp, title='Burp-UI API', description='Burp-UI API to interact with burp', decorators=[api_login_required])
+api = ApiWrapper(apibp, title='Burp-UI API', description='Burp-UI API to interact with burp', doc='/doc', decorators=[api_login_required])
 
 
 # Just in case the exception was not caught earlier

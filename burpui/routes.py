@@ -17,6 +17,8 @@ else:
 
 class BPWrapper(Blueprint):
     bui = None
+    __url__ = None
+    __doc__ = None
 
     def init_bui(self, bui):
         """Loads the right context.
@@ -245,7 +247,7 @@ def logout():
 @view.route('/about')
 def about():
     """about view"""
-    return render_template('about.html', about=True, login=(not current_user.is_authenticated))
+    return render_template('about.html', about=True, login=(not current_user.is_authenticated), doc=view.__doc__, url=view.__url__)
 
 
 @view.route('/')

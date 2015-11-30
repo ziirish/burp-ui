@@ -14,7 +14,7 @@ from ..exceptions import BUIserverException
 from six import iteritems
 from flask.ext.restplus import Resource, fields
 from flask.ext.login import current_user
-from flask import flash
+from flask import flash, url_for
 
 ns = api.namespace('misc', 'Misc methods')
 
@@ -281,6 +281,7 @@ class About(Resource):
     about_fields = api.model('About', {
         'version': fields.String(required=True, description='Burp-UI version'),
         'release': fields.String(description='Burp-UI release (commit number)'),
+        'api': fields.String(description='Burp-UI API documentation URL'),
         'burp': fields.Nested(burp_fields, as_list=True, description='Burp version'),
     })
 
@@ -298,6 +299,7 @@ class About(Resource):
         server = server or args['server']
         r['version'] = api.version
         r['release'] = api.release
+        r['api'] = url_for('api.doc')
         r['burp'] = []
         cli = api.bui.cli.get_client_version(server)
         srv = api.bui.cli.get_server_version(server)

@@ -22,6 +22,7 @@ __title__ = 'burp-ui'
 __author__ = 'Benjamin SANS (Ziirish)'
 __author_email__ = 'ziirish+burpui@ziirish.info'
 __url__ = 'https://git.ziirish.me/ziirish/burp-ui'
+__doc__ = 'https://burp-ui.readthedocs.org/en/latest/'
 __description__ = 'Burp-UI is a web-ui for burp backup written in python with Flask and jQuery/Bootstrap'
 __license__ = 'BSD 3-clause'
 __version__ = open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'VERSION')).read().rstrip()
@@ -136,12 +137,16 @@ def init(conf=None, debug=0, logfile=None, gunicorn=True, unittest=False):
 
     # Then we load our routes
     view.init_bui(app)
+    view.__url__ = __url__
+    view.__doc__ = __doc__
     app.register_blueprint(view)
 
     # We initialize the API
     api.init_bui(app)
     api.version = __version__
     api.release = __release__
+    api.__url__ = __url__
+    api.__doc__ = __doc__
     app.register_blueprint(apibp)
 
     # And the login_manager
