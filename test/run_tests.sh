@@ -7,7 +7,7 @@ ISROOT=0
 UPDATED=0
 BURP="https://git.ziirish.me/ziirish/burp.git"
 BURP_VERSION="1.4.40"
-BURP2_VERSION="2.0.26"
+BURP2_VERSION="2.0.28"
 
 function update() {
     [ $UPDATED -eq 0 ] && [ $ISROOT -eq 1 ] && {
