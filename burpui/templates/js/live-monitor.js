@@ -100,4 +100,11 @@ var url = '{{ url_for("api.live") }}';
 var app = angular.module('MainApp', ['ngSanitize']);
 
 app.controller('LiveCtrl', function($scope, $http, $timeout) {
+	$scope.load = function() {
+		$http.get(url)
+		.success(function(data, status, headers, config) {
+		})
+		.error(function(data, status, headers, config) {
+		});
+	};
 });

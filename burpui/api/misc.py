@@ -211,8 +211,7 @@ class Live(Resource):
                             not api.bui.acl.is_client_allowed(
                                 current_user.get_id(),
                                 c,
-                                k)
-                            ):
+                                k)):
                         continue
                     s = {}
                     s['client'] = c
