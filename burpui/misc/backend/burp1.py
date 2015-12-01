@@ -618,6 +618,7 @@ class Burp(BUIbackend):
                         try:
                             val = map(int, v.split('/'))
                         except:
+                            c += 1
                             continue
                         if val[0] > 0 or val[1] > 0 or val[2] or val[3] > 0:
                             r[self.counters[c]] = val
@@ -628,6 +629,7 @@ class Burp(BUIbackend):
                             try:
                                 r[self.counters[c]] = int(v)
                             except ValueError:
+                                c += 1
                                 continue
                     c += 1
 
