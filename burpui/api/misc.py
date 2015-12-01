@@ -40,6 +40,7 @@ counters_fields = api.model('Counters', {
     'bytes_in': fields.Integer(description='Bytes received since backup started'),
     'bytes_out': fields.Integer(description='Bytes sent since backup started'),
     'start': fields.String(description='Timestamp of the start date of the backup'),
+    'speed': fields.Integer(description='Backup speed', default=-1),
     'timeleft': fields.Integer(description='Estimated time left'),
     'percent': fields.Integer(required=True, description='Percentage done'),
     'path': fields.String(description='File that is currently treated by burp'),
@@ -65,8 +66,13 @@ class Counters(Resource):
     parser = api.parser()
     parser.add_argument('server', type=str, help='Which server to collect data from when in multi-agent mode')
     parser.add_argument('name', type=str, help='Client name')
+    monitor_fields = api.model('Monitor', {
+        'client': fields.String(required=True, description='Client name'),
+        'agent': fields.String(description='Server (agent) name'),
+        'counters': fields.Nested(counters_fields, description='Various statistics about the running backup'),
+    })
 
-    @api.marshal_with(counters_fields, code=200, description='Success')
+    @api.marshal_with(monitor_fields, code=200, description='Success')
     @api.doc(
         params={
             'server': 'Which server to collect data from when in multi-agent mode',
@@ -117,7 +123,11 @@ class Counters(Resource):
             counters = api.bui.cli.get_counters(name, agent=server)
         except BUIserverException:
             counters = {}
-        return counters
+        res = {}
+        res['client'] = name
+        res['agent'] = server
+        res['counters'] = counters
+        return res
 
 
 @ns.route('/live.json',
@@ -137,7 +147,7 @@ class Live(Resource):
     live_fields = api.model('Live', {
         'client': fields.String(required=True, description='Client name'),
         'agent': fields.String(description='Server (agent) name'),
-        'status': fields.Nested(counters_fields, description='Various statistics about the running backup'),
+        'counters': fields.Nested(counters_fields, description='Various statistics about the running backup'),
     })
 
     @api.marshal_list_with(live_fields, code=200, description='Success')
@@ -159,7 +169,7 @@ class Live(Resource):
               {
                 'client': 'client1',
                 'agent': 'burp1',
-                'status': {
+                'counters': {
                     'phase': 2,
                     'path': '/etc/some/configuration',
                     '...': '...',
@@ -168,7 +178,7 @@ class Live(Resource):
               {
                 'client': 'client12',
                 'agent': 'burp2',
-                'status': {
+                'counters': {
                     'phase': 3,
                     'path': '/etc/some/other/configuration',
                     '...': '...',
@@ -217,18 +227,18 @@ class Live(Resource):
                     s['client'] = c
                     s['agent'] = k
                     try:
-                        s['status'] = api.bui.cli.get_counters(c, agent=k)
+                        s['counters'] = api.bui.cli.get_counters(c, agent=k)
                     except BUIserverException:
-                        s['status'] = []
+                        s['counters'] = {}
                     r.append(s)
         else:
             for c in l:
                 s = {}
                 s['client'] = c
                 try:
-                    s['status'] = api.bui.cli.get_counters(c, agent=server)
+                    s['counters'] = api.bui.cli.get_counters(c, agent=server)
                 except BUIserverException:
-                    s['status'] = []
+                    s['counters'] = {}
                 r.append(s)
         return r
 

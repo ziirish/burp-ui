@@ -35,7 +35,7 @@
     {% include "topbar.html" %}
 
     <div class="container-fluid">
-      <div class="row" {% if settings %}ng-controller="ConfigCtrl"{% endif %}>
+			<div class="row" {% if settings %}ng-controller="ConfigCtrl"{% elif live %}ng-controller="LiveCtrl"{% endif %}>
         {% if not live and not login and not about -%}
         {% include "sidebar.html" %}
         {% endif -%}
@@ -88,7 +88,7 @@
     <script src="{{ url_for('bower.static', filename='angular-strap/dist/angular-strap.tpl.min.js') }}"></script>
     <script src="{{ url_for('bower.static', filename='angular-onbeforeunload/build/angular-onbeforeunload.js') }}"></script>
     {% endif -%}
-    {% if about -%}
+    {% if about or live -%}
     <!-- configuration about view
     ================================================== -->
     <script src="{{ url_for('bower.static', filename='angular/angular.min.js') }}"></script>

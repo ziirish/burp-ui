@@ -10,58 +10,46 @@
             {% raw %}
             <div class="col-lg-12" ng-repeat="client in clients">
               <br />
-              <h1 class="page-header">{{ cname }}</h1>
-              <h4>{{ counters.percent|round }}%</h4>
+							<h1 class="page-header">{{ ::client.client }}<span ng-if="client.agent"> on {{ ::client.agent }}</h1>
+              <h4>{{ client.counters.percent | number:0 }}%</h4>
               <div class="progress progress-striped active">
-                <div class="progress-bar progress-bar-success" style="width: {{ counters.percent }}%"></div>
+                <div class="progress-bar progress-bar-success" style="width: {{ client.counters.percent }}%"></div>
               </div>
-              {% if counters.path -%}
-              <div class="panel panel-primary">
+              <div class="panel panel-primary" ng-if="client.counters.path">
                 <div class="panel-heading">
                   <h3 class="panel-title">Path</h3>
                 </div>
                 <div class="panel-body">
-                  {{ counters.path }}
+                  {{ client.counters.path }}
                 </div>
               </div>
-              {% endif -%}
               <div class="row">
                 <div class="col-lg-6">
                   <ul class="list-group">
-                    {% if counters.phase -%}
-                    <li class="list-group-item">
-                      <span class="badge">{{ counters.phase }}</span>
+                    <li class="list-group-item" ng-if="client.counters.phase">
+                      <span class="badge">{{ client.counters.phase }}</span>
                       Phase
                     </li>
-                    {% endif -%}
-                    {% if counters.timeleft -%}
-                    <li class="list-group-item">
-                      <span class="badge">{{ counters.timeleft|time_human }}</span>
+                    <li class="list-group-item" ng-if="client.counters.timeleft">
+                      <span class="badge">{{ client.counters.timeleft | time_human }}</span>
                       Time left
                     </li>
-                    {% endif -%}
-                    {% if counters.warning and counters.warning > 0 -%}
-                    <li class="list-group-item">
-                      <span class="badge">{{ counters.warning }}</span>
-                      Warning
+										<li class="list-group-item" ng-if="client.counters.warning && client.counters.warning > 0">
+                      <span class="badge">{{ client.counters.warning }}</span>
+											Warning<span ng-if="client.counters.warning > 1">s</span>
                     </li>
-                    {% endif -%}
                   </ul>
                 </div>
                 <div class="col-lg-6">
                   <ul class="list-group">
-                    {% if counters.bytes_in -%}
-                    <li class="list-group-item">
-                      <span class="badge">{{ counters.bytes_in|bytes_human }}</span>
+                    <li class="list-group-item" ng-if="client.counters.bytes_in">
+                      <span class="badge">{{ client.counters.bytes_in | bytes_human }}</span>
                       Bytes received
                     </li>
-                    {% endif -%}
-                    {% if counters.speed -%}
-                    <li class="list-group-item">
-                      <span class="badge">{{ counters.speed|bytes_human }}/s</span>
+										<li class="list-group-item" ng-if="client.counters.speed && client.counters.speed > 0">
+                      <span class="badge">{{ client.counters.speed | bytes_human }}/s</span>
                       Speed
                     </li>
-                    {% endif -%}
                   </ul>
                 </div>
               </div>
@@ -77,16 +65,14 @@
                   </tr>
                 </thead>
                 <tbody>
-                {% for d in counters -%}
-                  {% if isinstance(counters[d], list) and d != 'Grand total' -%}
-                  <tr>
-                    <th>{{ d }}</th>
-                    {% for v in counters[d] -%}
-                    <td>{{ v }}</th>
-                    {% endfor -%}
+                  <tr ng-repeat="(key, val) in client.counters" ng-if="key != 'Grand total' && val.length == 5">
+                    <td>{{ key }}</td>
+                    <td>{{ val[0] }}</td>
+                    <td>{{ val[1] }}</td>
+                    <td>{{ val[2] }}</td>
+                    <td>{{ val[3] }}</td>
+                    <td>{{ val[4] }}</td>
                   </tr>
-                  {% endif -%}
-                {% endfor -%}
                 </tbody>
               </table>
             </div>

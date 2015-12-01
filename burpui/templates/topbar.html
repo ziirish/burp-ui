@@ -17,7 +17,7 @@
               </a>
             </li>
             {% if not login -%}
-            {% if not config.STANDALONE -%}
+							{% if not config.STANDALONE -%}
             <li class="detail {% if not server %}active{% endif %}">
               <a href="{{ url_for('view.home') }}">
                 <span class="glyphicon glyphicon-hdd"></span><span class="dtl">&nbsp;Servers</span>
@@ -30,33 +30,33 @@
               </a>
             </li>
                 {% endif -%}
-            {% else -%}
+	            {% else -%}
             <li class="detail {% if clients %}active{% endif %}">
               <a href="{{ url_for('view.home') }}">
                 <span class="glyphicon glyphicon-tasks"></span><span class="dtl">&nbsp;Clients</span>
               </a>
             </li>
-            {% endif -%}
-            {% if config.STANDALONE or server -%}
+		          {% endif -%}
+			        {% if config.STANDALONE or server -%}
             <li class="detail {% if settings %}active{% endif %}">
               <a href="{{ url_for('view.settings', server=server) }}">
                 <span class="glyphicon glyphicon-wrench"></span><span class="dtl">&nbsp;Settings</span>
               </a>
             </li>
-            {% endif -%}
+				      {% endif -%}
             <li class="detail {% if live %}active{% endif %}">
               <a href="{{ url_for('view.live_monitor', server=server) }}">
                 <span id="toblink" class="glyphicon glyphicon-screenshot"></span><span class="dtl">&nbsp;Live monitor</span>
               </a>
             </li>
-            {% if current_user and current_user.is_authenticated -%}
+					    {% if current_user and current_user.is_authenticated -%}
             <li class="detail">
               <a href="{{ url_for('view.logout') }}">
                 <span class="glyphicon glyphicon-log-out"></span><span class="dtl">&nbsp;Logout<small>({{ current_user.get_id() }})</small></span>
               </a>
             </li>
-            {% endif -%}
-            <li>
+						  {% endif -%}
+						<li {% if live %}ng-click="refresh"{% endif %}>
               <a id="refresh" href="#">
                 <span class="glyphicon glyphicon-refresh"></span><span class="hidden-md hidden-lg">&nbsp;Refresh</span>
               </a>

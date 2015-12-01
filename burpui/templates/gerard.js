@@ -54,27 +54,31 @@ var anim = function(elem, timeout) {
 		.mouseout(function(){ anim(elem, timeout); });
 };
 
-var errorsHandler = function(xhr) {
+var errorsHandler = function(json) {
+	if ('notif' in json) {
+		message = json.notif;
+	} else if ('message' in json) {
+		try {
+			message = JSON.parse(json.message);
+		} catch(err) {
+			message = Array();
+			for (field in json.message) {
+				message.push([2, field+': '+json.message[field]]);
+			}
+		}
+	} else {
+		return false;
+	}
+	$.each(message, function(i, n) {
+		notif(n[0], n[1]);
+	});
+	return true;
+};
+
+var xhrErrorsHandler = function(xhr) {
 	if ('responseJSON' in xhr) {
 		json = xhr.responseJSON;
-		if ('notif' in json) {
-			message = json.notif
-		} else if ('message' in json) {
-			try {
-				message = JSON.parse(json.message);
-			} catch(err) {
-				message = Array();
-				for (field in json.message) {
-					message.push([2, field+': '+json.message[field]]);
-				}
-			}
-		} else {
-			return false;
-		}
-		$.each(message, function(i, n) {
-			notif(n[0], n[1]);
-		});
-		return true;
+		return errorsHandler(json);
 	} else if ('responseText' in xhr) {
 		notif(2, xhr.responseText);
 		return true;
@@ -83,7 +87,7 @@ var errorsHandler = function(xhr) {
 };
 
 var myFail = function(xhr, stat, err) {
-	if (errorsHandler(xhr)) {
+	if (xhrErrorsHandler(xhr)) {
 		return;
 	}
 	var msg = '<strong>ERROR:</strong> ';
@@ -125,12 +129,6 @@ var _clients_bh = new Bloodhound({
 	limit: 10,
 	prefetch: {
 		url: '{{ url_for("api.clients_stats") }}',
-		filter: function(list) {
-			if (list.results) {
-				return list.results;
-			}
-			return new Array();
-		}
 	}
 });
 
@@ -158,12 +156,6 @@ var _{{ srv }}_bh = new Bloodhound({
 	limit: 10,
 	prefetch: {
 		url: '{{ url_for("api.clients_stats", server=srv) }}',
-		filter: function(list) {
-			if (list.results) {
-				return list.results;
-			}
-			return new Array();
-		}
 	}
 });
 
@@ -291,9 +283,6 @@ $(function() {
 		{% if client and is_client_func -%}
 		_client();
 		{% endif -%}
-		{% if live -%}
-		_live();
-		{% endif -%}
 		{% if not login -%}
 		_check_running();
 		{% endif -%}
@@ -326,9 +315,6 @@ $(function() {
 	{% if client and is_client_func -%}
 	_client();
 	{% endif -%}
-	{% if live -%}
-	_live();
-	{% endif -%}
 	{% if servers and overview -%}
 	_servers();
 	{% endif -%}
@@ -337,20 +323,13 @@ $(function() {
 	/***
 	 * auto-refresh our page if needed
 	 */
-	{% if live -%}
-	{% set autorefresh = config.LIVEREFRESH %}
-	{% else -%}
 	{% set autorefresh = config.REFRESH %}
-	{% endif -%}
 	var auto_refresh = setInterval(function() {
 		{% if clients -%}
 		_clients();
 		{% endif -%}
 		{% if client -%}
 		_client();
-		{% endif -%}
-		{% if live -%}
-		_live();
 		{% endif -%}
 		{% if servers and overview -%}
 		_servers();

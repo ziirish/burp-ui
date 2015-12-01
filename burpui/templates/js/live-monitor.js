@@ -1,110 +1,80 @@
 
-_parse_live_result = function(data, serv) {
-	var res = '';
-	if (!data || data.length === 0) {
-		return res;
-	}
-	$.each(data, function(i, c) {
-		if (c instanceof String || typeof c == 'string') {
-			{% if server -%}
-			u = '{{ url_for("api.render_live_tpl", server=server) }}?name='+c;
-			{% else -%}
-			if (serv) {
-				u = '{{ url_for("api.render_live_tpl") }}?name='+c+'&server='+serv;
-			} else {
-				u = '{{ url_for("api.render_live_tpl") }}?name='+c;
-			}
-			{% endif -%}
-			$.get(u, function(d) {
-				if (d) {
-					res += d;
-				}
-			});
-		} else {
-			$.each(c, function(j, a) {
-				$.each(a, function(k, cl) {
-					{% if server -%}
-					u = '{{ url_for("api.render_live_tpl", server=server) }}?name='+cl;
-					{% else -%}
-					if (serv) {
-						u = '{{ url_for("api.render_live_tpl") }}?name='+cl+'&server='+serv;
-					} else {
-						u = '{{ url_for("api.render_live_tpl") }}?name='+cl;
-					}
-					{% endif -%}
-					$.get(u, function(d) {
-						if (d) {
-							res += d;
-						}
-					});
-				});
-			});
-		}
-	});
-	return res;
-};
-
-{% if not config.STANDALONE and not server -%}
-_live = function() {
-	urls = Array();
-	{% for s in config.SERVERS -%}
-	urls.push({'url': '{{ url_for("api.running_clients", client=cname) }}?server={{ s }}', 'serv': '{{ s }}'});
-	{% endfor -%}
-	html = '';
-	$.each(urls, function(i, rec) {
-		$.getJSON(rec['url'], function(data) {
-			html += _parse_live_result(data, rec['serv']);
-		});
-	});
-	redirect = '{{ url_for("view.home", server=server) }}';
-	if (!html) {
-		document.location = redirect;
-	}
-	$('#live-container').html(html);
-};
-{% else -%}
-_live = function() {
-	{% if config.STANDALONE -%}
-	url = '{{ url_for("api.running_clients", client=cname) }}';
-	{% else -%}
-	url = '{{ url_for("api.running_clients", server=server, client=cname) }}';
-	{% endif -%}
-	html = ''
-	$.getJSON(url, function(data) {
-		html += _parse_live_result(data);
-	});
-	redirect = '{{ url_for("view.home", server=server) }}';
-	if (!html) {
-		document.location = redirect;
-	}
-	$('#live-container').html(html);
-};
-{% endif -%}
-
 {% if config.STANDALONE -%}
 	{% if cname -%}
-var url = '{{ url_for("api.counters", name=cname) }}';
+var counters = '{{ url_for("api.counters", name=cname) }}';
 	{% else -%}
-var url = '{{ url_for("api.live") }}';
+var counters = '{{ url_for("api.live") }}';
 	{% endif -%}
 {% else -%}
 	{% if cname -%}
-var url = '{{ url_for("api.counters", name=cname, server=server) }}';
+var counters = '{{ url_for("api.counters", name=cname, server=server) }}';
 	{% elif server -%}
-var url = '{{ url_for("api.live", server=server) }}';
+var counters = '{{ url_for("api.live", server=server) }}';
 	{% else -%}
-var url = '{{ url_for("api.live") }}';
+var counters = '{{ url_for("api.live") }}';
 	{% endif -%}
 {% endif -%}
+
 
 var app = angular.module('MainApp', ['ngSanitize']);
 
-app.controller('LiveCtrl', function($scope, $http, $timeout) {
+
+app.filter('time_human', [function() {
+	return function(d) {
+		s = '';
+		seconds = (((d % 31536000) % 86400) % 3600) % 60;
+		minutes = Math.floor((((d % 31536000) % 86400) % 3600) / 60);
+		hours = Math.floor(((d % 31536000) % 86400) / 3600);
+		if (hours > 0) {
+			s = pad(hours, 2) + 'H ';
+		}
+		s += pad(minutes, 2) + 'm ' + pad(seconds, 2) + 's';
+		return s;
+	};
+}]);
+
+app.filter('bytes_human', [function() {
+	return function(d) {
+		return _bytes_human_readable(d);
+	};
+}]);
+
+app.controller('LiveCtrl', function($scope, $http, $interval) {
+	$scope.clients = [];
+	var timer;
+
+	$scope.stopTimer = function() {
+		if (angular.isDefined(stop)) {
+			$interval.cancel(stop);
+			stop = undefined;
+		}
+	};
+
 	$scope.load = function() {
-		$http.get(url)
+		$http.get(counters)
 		.success(function(data, status, headers, config) {
+			if (angular.isArray(data)) {
+				$scope.clients = data;
+			} else {
+				$scope.clients = [];
+				$scope.clients.push(data);
+			}
 		})
 		.error(function(data, status, headers, config) {
+			// TODO: redirect when there are no running backup
+			$scope.stopTimer();
+			errorsHandler(data);
 		});
 	};
+
+	$scope.refresh = function(e) {
+		e.preventDefault();
+		$scope.load();
+	};
+
+	timer = $interval(function() {
+		$scope.load();
+	}, {{ config.LIVEREFRESH * 1000 }});
+
+	$scope.load();
 });
