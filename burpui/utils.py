@@ -167,3 +167,22 @@ class BUIcompress():
             self.arch.write(path, arcname)
         elif self.archive in ['tar.gz', 'tar.bz2']:
             self.arch.add(path, arcname=arcname, recursive=False)
+
+
+def basic_login_from_request(request, app):
+    creds = request.headers.get('Authorization')
+    if creds:
+        creds = creds.replace('Basic ', '', 1)
+        try:
+            import base64
+            login, password = base64.b64decode(creds.encode('utf-8')).decode('utf-8').split(':')
+        except:  # pragma: no cover
+            pass
+        if login:
+            user = app.uhandler.user(login)
+            if user.active and user.login(login, password):
+                from flask.ext.login import login_user
+                login_user(user)
+                return user
+
+    return None

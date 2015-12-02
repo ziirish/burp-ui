@@ -37,6 +37,8 @@ class BUIServer(Flask):
     """
     The :class:`burpui.server.BUIServer` class provides the ``Burp-UI`` server.
     """
+    gunicorn = False
+
     def __init__(self):
         """The :class:`burpui.server.BUIServer` class provides the ``Burp-UI``
         server.

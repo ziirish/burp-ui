@@ -78,6 +78,7 @@ def init(conf=None, debug=0, logfile=None, gunicorn=True, unittest=False):
     """
     from flask.ext.login import LoginManager, login_user
     from flask.ext.bower import Bower
+    from .utils import basic_login_from_request
     from .server import BUIServer as BurpUI
     from .routes import view
     from .api import api, apibp
@@ -134,6 +135,7 @@ def init(conf=None, debug=0, logfile=None, gunicorn=True, unittest=False):
     if gunicorn:  # pragma: no cover
         from werkzeug.contrib.fixers import ProxyFix
         app.wsgi_app = ProxyFix(app.wsgi_app)
+        app.gunicorn = True
 
     # Then we load our routes
     view.init_bui(app)
@@ -151,9 +153,9 @@ def init(conf=None, debug=0, logfile=None, gunicorn=True, unittest=False):
 
     # And the login_manager
     app.login_manager = LoginManager()
-    app.login_manager.init_app(app)
     app.login_manager.login_view = 'view.login'
     app.login_manager.login_message_category = 'info'
+    app.login_manager.init_app(app)
 
     app.config.setdefault('BOWER_COMPONENTS_ROOT', os.path.join('static', 'vendor'))
     app.config.setdefault('BOWER_REPLACE_URL_FOR', True)
@@ -171,20 +173,6 @@ def init(conf=None, debug=0, logfile=None, gunicorn=True, unittest=False):
     def load_user_from_request(request):
         """User loader from request callback"""
         if app.auth != 'none':
-            creds = request.headers.get('Authorization')
-            if creds:
-                creds = creds.replace('Basic ', '', 1)
-                try:
-                    import base64
-                    login, password = base64.b64decode(creds.encode('utf-8')).decode('utf-8').split(':')
-                except:  # pragma: no cover
-                    pass
-                if login:
-                    user = app.uhandler.user(login)
-                    if user.active and user.login(login, password):
-                        login_user(user)
-                        return user
-
-        return None
+            return basic_login_from_request(request, app)
 
     return app

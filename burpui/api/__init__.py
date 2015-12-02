@@ -12,7 +12,7 @@ import os
 import sys
 import json
 
-from flask import Blueprint, Response, make_response
+from flask import Blueprint, Response, make_response, request
 from flask.ext.restplus import Api
 from flask.ext.login import current_user, current_app
 from importlib import import_module
@@ -39,6 +39,10 @@ def api_login_required(func):
                 name not in api.LOGIN_NOT_REQUIRED and
                 not current_app.config.get('LOGIN_DISABLED', False)):
             if not current_user.is_authenticated:
+                if api.bui.gunicorn:
+                    from ..utils import basic_login_from_request
+                    if basic_login_from_request(request, api.bui):
+                        return func(*args, **kwargs)
                 return Response(
                     'Could not verify your access level for that URL.\n'
                     'You have to login with proper credentials', 401,
