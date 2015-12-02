@@ -9,6 +9,8 @@ BURP="https://git.ziirish.me/ziirish/burp.git"
 BURP_VERSION="1.4.40"
 BURP2_VERSION="2.0.28"
 
+exit 0
+
 function update() {
     [ $UPDATED -eq 0 ] && [ $ISROOT -eq 1 ] && {
         apt-get update

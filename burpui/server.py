@@ -19,7 +19,7 @@ from .misc.auth.handler import UserAuthHandler
 from .utils import basic_login_from_request
 
 from flask import Flask
-from flask.ext.login import LoginManager, login_user
+from flask.ext.login import LoginManager
 
 
 g_port = '5000'
@@ -220,12 +220,14 @@ app.login_manager.login_view = 'view.login'
 app.login_manager.login_message_category = 'info'
 app.login_manager.init_app(app)
 
+
 @app.login_manager.user_loader
 def load_user(userid):
     """User loader callback"""
     if app.auth != 'none':
         return app.uhandler.user(userid)
     return None  # pragma: no cover
+
 
 @app.login_manager.request_loader
 def load_user_from_request(request):

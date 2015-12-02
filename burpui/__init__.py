@@ -77,7 +77,6 @@ def init(conf=None, debug=0, logfile=None, gunicorn=True, unittest=False):
     :returns: A :class:`burpui.server.BUIServer` object
     """
     from flask.ext.bower import Bower
-    from .utils import basic_login_from_request
     from .server import app
     from .routes import view
     from .api import api, apibp
