@@ -5,7 +5,7 @@ from .interface import BUIhandler, BUIuser
 import ssl
 
 try:
-    from ldap3 import Server, Connection, Tls, ALL, RESTARTABLE, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_NONE
+    from ldap3 import Server, Connection, Tls, ALL, RESTARTABLE, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_NONE, SIMPLE
 except ImportError:
     raise ImportError('Unable to load \'ldap3\' module')
 
@@ -107,7 +107,7 @@ class LdapLoader:
         try:
             self.server = Server(host=self.host, port=self.port, use_ssl=self.ssl, get_info=ALL, tls=self.tls)
             self.app.logger.debug('LDAP Server = {0}'.format(str(self.server)))
-            self.ldap = Connection(self.server, user=self.binddn, password=self.bindpw, raise_exceptions=True, client_strategy=RESTARTABLE, auto_bind=self.auto_bind)
+            self.ldap = Connection(self.server, user=self.binddn, password=self.bindpw, raise_exceptions=True, client_strategy=RESTARTABLE, auto_bind=self.auto_bind, authentication=SIMPLE)
             with self.ldap:
                 self.app.logger.debug('LDAP Connection = {0}'.format(str(self.ldap)))
                 self.app.logger.info('OK, connected to LDAP')
@@ -172,10 +172,10 @@ class LdapLoader:
         :returns: True if bind was successful, otherwise False
         """
         try:
-            with Connection(self.server, user='{0}'.format(dn), password=passwd, raise_exceptions=True, auto_bind=self.auto_bind) as l:
+            with Connection(self.server, user='{0}'.format(dn), password=passwd, raise_exceptions=True, auto_bind=self.auto_bind, authentication=SIMPLE) as l:
                 self.app.logger.debug('LDAP Connection = {0}'.format(str(l)))
                 self.app.logger.info('Bound as user: {0}'.format(dn))
-                return True
+                return l.bind()
         except Exception as e:
             self.app.logger.error('Failed to authenticate user: {0}, {1}'.format(dn, str(e)))
 
