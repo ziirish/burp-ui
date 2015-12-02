@@ -76,15 +76,11 @@ def init(conf=None, debug=0, logfile=None, gunicorn=True, unittest=False):
 
     :returns: A :class:`burpui.server.BUIServer` object
     """
-    from flask.ext.login import LoginManager, login_user
     from flask.ext.bower import Bower
     from .utils import basic_login_from_request
-    from .server import BUIServer as BurpUI
+    from .server import app
     from .routes import view
     from .api import api, apibp
-
-    # We initialize the core
-    app = BurpUI()
 
     app.config['CFG'] = None
 
@@ -151,28 +147,9 @@ def init(conf=None, debug=0, logfile=None, gunicorn=True, unittest=False):
     api.__doc__ = __doc__
     app.register_blueprint(apibp)
 
-    # And the login_manager
-    app.login_manager = LoginManager()
-    app.login_manager.login_view = 'view.login'
-    app.login_manager.login_message_category = 'info'
-    app.login_manager.init_app(app)
-
     app.config.setdefault('BOWER_COMPONENTS_ROOT', os.path.join('static', 'vendor'))
     app.config.setdefault('BOWER_REPLACE_URL_FOR', True)
     bower = Bower()
     bower.init_app(app)
-
-    @app.login_manager.user_loader
-    def load_user(userid):
-        """User loader callback"""
-        if app.auth != 'none':
-            return app.uhandler.user(userid)
-        return None  # pragma: no cover
-
-    @app.login_manager.request_loader
-    def load_user_from_request(request):
-        """User loader from request callback"""
-        if app.auth != 'none':
-            return basic_login_from_request(request, app)
 
     return app
