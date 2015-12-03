@@ -1,6 +1,7 @@
 # -*- coding: utf8 -*-
 from .interface import BUIhandler, BUIuser
 from importlib import import_module
+from flask import session
 
 import re
 import os
@@ -45,7 +46,7 @@ class UserHandler(BUIuser):
     """See :class:`burpui.misc.auth.interface.BUIuser`"""
     def __init__(self, backends=None, name=None):
         self.active = False
-        self.authenticated = False
+        self.authenticated = session.get('authenticated', False)
         self.backends = backends
         self.name = name
         self.real = None
@@ -72,6 +73,7 @@ class UserHandler(BUIuser):
                     break
         elif self.real:  # pragma: no cover
             self.authenticated = self.real.login(name, passwd)
+        session['authenticated'] = self.authenticated
         return self.authenticated
 
     @property

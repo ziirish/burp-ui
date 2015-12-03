@@ -2,7 +2,7 @@
 import math
 import sys
 
-from flask import request, render_template, redirect, url_for, abort, flash, Blueprint
+from flask import request, render_template, redirect, url_for, abort, flash, Blueprint, session
 from flask.ext.login import login_user, login_required, logout_user, current_user
 
 from .forms import LoginForm
@@ -226,6 +226,8 @@ def login():
 @view.route('/logout')
 @login_required
 def logout():
+    if 'authenticated' in session:
+        session.pop('authenticated')
     logout_user()
     return redirect(url_for('.home'))
 

@@ -31,6 +31,8 @@ g_sslkey = ''
 g_version = '1'
 g_auth = 'basic'
 g_acl = ''
+g_storage = ''
+g_redis = ''
 
 
 class BUIServer(Flask):
@@ -56,7 +58,9 @@ class BUIServer(Flask):
         :param conf: Path to a configuration file
         :type conf: str
         """
-        global g_refresh, g_port, g_bind, g_ssl, g_sslcert, g_sslkey, g_version, g_auth, g_standalone, g_acl, g_liverefresh
+        global g_refresh, g_port, g_bind, g_ssl, g_sslcert, g_sslkey, \
+            g_version, g_auth, g_standalone, g_acl, g_liverefresh, g_storage, \
+            g_redis
         self.sslcontext = None
         if not conf:
             conf = self.config['CFG']
@@ -69,17 +73,34 @@ class BUIServer(Flask):
             'refresh': g_refresh, 'ssl': g_ssl, 'sslcert': g_sslcert,
             'sslkey': g_sslkey, 'version': g_version, 'auth': g_auth,
             'standalone': g_standalone, 'acl': g_acl,
-            'liverefresh': g_liverefresh
+            'liverefresh': g_liverefresh, 'storage': g_storage,
+            'redis': g_redis
         }
         config = ConfigParser.ConfigParser(self.defaults)
         with open(conf) as fp:
             config.readfp(fp)
             try:
-                self.port = self._safe_config_get(config.getint, 'port', cast=int)
+                self.port = self._safe_config_get(
+                    config.getint,
+                    'port',
+                    cast=int
+                )
                 self.bind = self._safe_config_get(config.get, 'bind')
-                self.vers = self._safe_config_get(config.getint, 'version', cast=int)
-                self.ssl = self._safe_config_get(config.getboolean, 'ssl', cast=bool)
-                self.standalone = self._safe_config_get(config.getboolean, 'standalone', cast=bool)
+                self.vers = self._safe_config_get(
+                    config.getint,
+                    'version',
+                    cast=int
+                )
+                self.ssl = self._safe_config_get(
+                    config.getboolean,
+                    'ssl',
+                    cast=bool
+                )
+                self.standalone = self._safe_config_get(
+                    config.getboolean,
+                    'standalone',
+                    cast=bool
+                )
                 self.sslcert = self._safe_config_get(config.get, 'sslcert')
                 self.sslkey = self._safe_config_get(config.get, 'sslkey')
                 self.auth = self._safe_config_get(config.get, 'auth')
@@ -87,7 +108,12 @@ class BUIServer(Flask):
                     try:
                         self.uhandler = UserAuthHandler(self)
                     except Exception as e:
-                        self.logger.error('Import Exception, module \'{0}\': {1}'.format(self.auth, str(e)))
+                        self.logger.error(
+                            'Import Exception, module \'{0}\': {1}'.format(
+                                self.auth,
+                                str(e)
+                            )
+                        )
                         raise e
                     self.acl_engine = self._safe_config_get(config.get, 'acl')
                 else:
@@ -101,9 +127,14 @@ class BUIServer(Flask):
                     try:
                         # Try to load submodules from our current environment
                         # first
-                        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+                        sys.path.insert(
+                            0,
+                            os.path.dirname(os.path.abspath(__file__))
+                        )
                         mod = __import__(
-                            'burpui.misc.acl.{0}'.format(self.acl_engine.lower()),
+                            'burpui.misc.acl.{0}'.format(
+                                self.acl_engine.lower()
+                            ),
                             fromlist=['ACLloader']
                         )
                         ACLloader = mod.ACLloader
@@ -113,14 +144,42 @@ class BUIServer(Flask):
                         self.acl = BUIacl
                         self.acl = self.acl_handler.acl
                     except Exception as e:
-                        self.logger.error('Import Exception, module \'{0}\': {1}'.format(self.acl_engine, str(e)))
+                        self.logger.error(
+                            'Import Exception, module \'{0}\': {1}'.format(
+                                self.acl_engine,
+                                str(e)
+                            )
+                        )
                         raise e
                 else:
                     self.acl_handler = False
                     self.acl = False
 
-                self.config['REFRESH'] = self._safe_config_get(config.getint, 'refresh', 'UI', cast=int)
-                self.config['LIVEREFRESH'] = self._safe_config_get(config.getint, 'liverefresh', 'UI', cast=int)
+                # UI options
+                self.config['REFRESH'] = self._safe_config_get(
+                    config.getint,
+                    'refresh',
+                    'UI',
+                    cast=int
+                )
+                self.config['LIVEREFRESH'] = self._safe_config_get(
+                    config.getint,
+                    'liverefresh',
+                    'UI',
+                    cast=int
+                )
+
+                # Session options
+                self.storage = self._safe_config_get(
+                    config.get,
+                    'storage',
+                    'Session'
+                )
+                self.redis = self._safe_config_get(
+                    config.get,
+                    'redis',
+                    'Session'
+                )
 
             except ConfigParser.NoOptionError as e:
                 self.logger.error(str(e))
@@ -155,7 +214,12 @@ class BUIServer(Flask):
             self.cli = Client(self, conf=conf)
         except Exception as e:
             traceback.print_exc()
-            self.logger.error('Failed loading backend for Burp version {0}: {1}'.format(self.vers, str(e)))
+            self.logger.error(
+                'Failed loading backend for Burp version {0}: {1}'.format(
+                    self.vers,
+                    str(e)
+                )
+            )
             sys.exit(2)
 
         self.init = True
@@ -194,8 +258,8 @@ class BUIServer(Flask):
         return None
 
     def manual_run(self):
-        """The :func:`burpui.server.BUIServer.manual_run` functions is used to actually
-        launch the ``Burp-UI`` server.
+        """The :func:`burpui.server.BUIServer.manual_run` functions is used to
+        actually launch the ``Burp-UI`` server.
         """
         if not self.init:
             self.setup()
@@ -205,6 +269,11 @@ class BUIServer(Flask):
 
         if self.sslcontext:
             self.config['SSL'] = True
-            self.run(host=self.bind, port=self.port, debug=self.config['DEBUG'], ssl_context=self.sslcontext)
+            self.run(
+                host=self.bind,
+                port=self.port,
+                debug=self.config['DEBUG'],
+                ssl_context=self.sslcontext
+            )
         else:
             self.run(host=self.bind, port=self.port, debug=self.config['DEBUG'])

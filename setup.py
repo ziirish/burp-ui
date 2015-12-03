@@ -163,11 +163,13 @@ def readme():
 with open(os.path.join(ROOT, 'burpui', '__init__.py')) as f:
     data = f.read()
 
-    name = re.search("__title__ *= *'(.*)'", data).group(1)
-    author = re.search("__author__ *= *'(.*)'", data).group(1)
-    author_email = re.search("__author_email__ *= *'(.*)'", data).group(1)
-    description = re.search("__description__ *= *'(.*)'", data).group(1)
-    url = re.search("__url__ *= *'(.*)'", data).group(1)
+    from burpui import __author__, __author_email__, __description__, __url__, \
+                       __title__
+    name = __title__
+    author = __author__
+    author_email = __author_email__
+    description = __description__
+    url = __url__
 
 with open(os.path.join(ROOT, 'requirements.txt')) as f:
     requires = [x.strip() for x in f if x.strip()]
@@ -211,7 +213,8 @@ setup(
     install_requires=requires,
     extras_require={
         'ldap_authentication': ['ldap3'],
-        'burp2': ['ujson'],
+        'burp2-extra': ['ujson'],
+        'gunicorn-extra': ['eventlet', 'redis', 'Flask-Session'],
         'test': test_requires,
     },
     tests_require=test_requires,

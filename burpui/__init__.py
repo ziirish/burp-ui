@@ -23,11 +23,16 @@ __author__ = 'Benjamin SANS (Ziirish)'
 __author_email__ = 'ziirish+burpui@ziirish.info'
 __url__ = 'https://git.ziirish.me/ziirish/burp-ui'
 __doc__ = 'https://burp-ui.readthedocs.org/en/latest/'
-__description__ = 'Burp-UI is a web-ui for burp backup written in python with Flask and jQuery/Bootstrap'
+__description__ = ('Burp-UI is a web-ui for burp backup written in python with '
+                   'Flask and jQuery/Bootstrap')
 __license__ = 'BSD 3-clause'
-__version__ = open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'VERSION')).read().rstrip()
+__version__ = open(
+    os.path.join(os.path.dirname(os.path.realpath(__file__)), 'VERSION')
+).read().rstrip()
 try:  # pragma: no cover
-    __release__ = open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'RELEASE')).read().rstrip()
+    __release__ = open(
+        os.path.join(os.path.dirname(os.path.realpath(__file__)), 'RELEASE')
+    ).read().rstrip()
 except:  # pragma: no cover
     __release__ = 'unknown'
 
@@ -88,7 +93,8 @@ def init(conf=None, debug=0, logfile=None, gunicorn=True, unittest=False):
 
     app.config['CFG'] = None
 
-    app.secret_key = 'VpgOXNXAgcO81xFPyWj07ppN6kExNZeCDRShseNzFKV7ZCgmW2/eLn6xSlt7pYAVBj12zx2Vv9Kw3Q3jd1266A=='
+    app.secret_key = ('VpgOXNXAgcO81xFPyWj07ppN6kExNZeCDRShseNzFKV7ZCgmW2/eLn6x'
+                      'Slt7pYAVBj12zx2Vv9Kw3Q3jd1266A==')
     app.jinja_env.globals.update(isinstance=isinstance, list=list)
 
     # The debug argument used to be a boolean so we keep supporting this format
@@ -98,7 +104,13 @@ def init(conf=None, debug=0, logfile=None, gunicorn=True, unittest=False):
         else:
             debug = logging.NOTSET
     else:
-        levels = [logging.NOTSET, logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG]
+        levels = [
+            logging.NOTSET,
+            logging.ERROR,
+            logging.WARNING,
+            logging.INFO,
+            logging.DEBUG
+        ]
         if debug >= len(levels):
             debug = len(levels) - 1
         if not debug:
@@ -112,16 +124,22 @@ def init(conf=None, debug=0, logfile=None, gunicorn=True, unittest=False):
     if logfile:
         from logging import Formatter
         from logging.handlers import RotatingFileHandler
-        file_handler = RotatingFileHandler(logfile, maxBytes=1024 * 1024 * 100, backupCount=20)
+        file_handler = RotatingFileHandler(
+            logfile,
+            maxBytes=1024 * 1024 * 100,
+            backupCount=20
+        )
         if debug < logging.INFO:
             LOG_FORMAT = (
                 '-' * 80 + '\n' +
-                '%(levelname)s in %(module)s.%(funcName)s [%(pathname)s:%(lineno)d]:\n' +
+                '%(levelname)s in %(module)s.%(funcName)s ' +
+                '[%(pathname)s:%(lineno)d]:\n' +
                 '%(message)s\n' +
                 '-' * 80
             )
         else:
-            LOG_FORMAT = '[%(asctime)s] %(levelname)s in %(module)s.%(funcName)s: %(message)s'
+            LOG_FORMAT = ('[%(asctime)s] %(levelname)s in '
+                          '%(module)s.%(funcName)s: %(message)s')
         file_handler.setLevel(debug)
         file_handler.setFormatter(Formatter(LOG_FORMAT))
         app.logger.addHandler(file_handler)
@@ -134,6 +152,28 @@ def init(conf=None, debug=0, logfile=None, gunicorn=True, unittest=False):
 
     if gunicorn:  # pragma: no cover
         from werkzeug.contrib.fixers import ProxyFix
+        if app.storage and app.storage.lower() == 'redis':
+            if app.redis:
+                part = app.redis.split(':')
+                host = part[0]
+                try:
+                    port = int(part[1])
+                except:
+                    port = 6379
+            else:
+                host = 'localhost'
+                port = 6379
+            try:
+                from redis import Redis
+                from flask.ext.session import Session
+                red = Redis(host=host, port=port)
+                app.config['SESSION_TYPE'] = 'redis'
+                app.config['SESSION_REDIS'] = red
+                ses = Session()
+                ses.init_app(app)
+            except:
+                pass
+
         app.wsgi_app = ProxyFix(app.wsgi_app)
         app.gunicorn = True
 
@@ -158,7 +198,10 @@ def init(conf=None, debug=0, logfile=None, gunicorn=True, unittest=False):
     app.login_manager.session_protection = 'strong'
     app.login_manager.init_app(app)
 
-    app.config.setdefault('BOWER_COMPONENTS_ROOT', os.path.join('static', 'vendor'))
+    app.config.setdefault(
+        'BOWER_COMPONENTS_ROOT',
+        os.path.join('static', 'vendor')
+    )
     app.config.setdefault('BOWER_REPLACE_URL_FOR', True)
     bower = Bower()
     bower.init_app(app)
