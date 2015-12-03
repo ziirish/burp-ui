@@ -76,7 +76,7 @@ def init(conf=None, debug=0, logfile=None, gunicorn=True, unittest=False):
 
     :returns: A :class:`burpui.server.BUIServer` object
     """
-    from flask.ext.login import LoginManager, login_user
+    from flask.ext.login import LoginManager
     from flask.ext.bower import Bower
     from .utils import basic_login_from_request
     from .server import BUIServer as BurpUI
