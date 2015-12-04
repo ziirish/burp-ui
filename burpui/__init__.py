@@ -95,7 +95,11 @@ def init(conf=None, debug=0, logfile=None, gunicorn=True, unittest=False):
 
     app.secret_key = ('VpgOXNXAgcO81xFPyWj07ppN6kExNZeCDRShseNzFKV7ZCgmW2/eLn6x'
                       'Slt7pYAVBj12zx2Vv9Kw3Q3jd1266A==')
-    app.jinja_env.globals.update(isinstance=isinstance, list=list)
+    app.jinja_env.globals.update(
+        isinstance=isinstance,
+        list=list,
+        version_id='{}-{}'.format(__version__, __release__)
+    )
 
     # The debug argument used to be a boolean so we keep supporting this format
     if isinstance(debug, bool):

@@ -129,6 +129,8 @@ var _clients_bh = new Bloodhound({
 	limit: 10,
 	prefetch: {
 		url: '{{ url_for("api.clients_stats") }}',
+		ttl: 1800000,
+		cacheKey: '{{ version_id }}{% if current_user and current_user.is_authenticated %}-{{ current_user.get_id() }}{% endif %}',
 	}
 });
 
@@ -156,6 +158,17 @@ var _{{ srv }}_bh = new Bloodhound({
 	limit: 10,
 	prefetch: {
 		url: '{{ url_for("api.clients_stats", server=srv) }}',
+		filter: function(data) {
+			res = new Array();
+			$.each(data, function(i, d) {
+				n = d;
+				n.server = '{{ srv }}';
+				res.push(n);
+			});
+			return res;
+		},
+		ttl: 1800000,
+		cacheKey: '{{ version_id }}{% if current_user and current_user.is_authenticated %}-{{ current_user.get_id() }}{% endif %}-{{ srv }}',
 	}
 });
 
@@ -183,8 +196,8 @@ $('#input-client').typeahead({
 },
 			{% endif -%}
 		{% endfor -%}
-).on('typeahead:selected', function(obj, datum, name) {
-	window.location = '{{ url_for("view.client") }}?name='+datum.name+'&server='+name;
+).on('typeahead:selected', function(obj, datum) {
+	window.location = '{{ url_for("view.client") }}?name='+datum.name+'&server='+datum.server;
 });
 	{% endif -%}
 {% endif -%}
@@ -244,11 +257,11 @@ var _fit_menu = function() {
 		target.hover(
 			// mouse in
 			function() {
-				$(this).find('.dtl').finish().animate({width: 'toggle'});
+				$(this).find('.dtl').stop( true, true ).animate({width: 'toggle'});
 			},
 			// mouse out
 			function() {
-				$(this).find('.dtl').finish().animate({width: 'toggle'});
+				$(this).find('.dtl').stop( true, true ).animate({width: 'toggle'});
 			}
 		);
 		target.find('.dtl').hide();
