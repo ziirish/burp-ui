@@ -205,7 +205,7 @@ class Live(Resource):
                 server not in api.bui.acl.servers(current_user.get_id())):
             api.abort(403, 'You are not allowed to view stats of this server')
         if server:
-            l = (api.bui.cli.is_one_backup_running(server))[server]
+            l = api.bui.cli.is_one_backup_running(server)[server]
             # ACL
             if api.bui.acl and not admin:
                 allowed = api.bui.acl.clients(current_user.get_id(), server)
