@@ -58,8 +58,9 @@ class Burp(BUIbackend):
                         port = self._safe_config_get(config.getint, 'port', sec, cast=int)
                         password = self._safe_config_get(config.get, 'password', sec)
                         ssl = self._safe_config_get(config.getboolean, 'ssl', sec, cast=bool)
+                        timeout = self._safe_config_get(config.getint, 'timeout', sec, cast=int)
 
-                        self.servers[r.group(1)] = NClient(self.app, host, port, password, ssl)
+                        self.servers[r.group(1)] = NClient(self.app, host, port, password, ssl, timeout)
 
         self.app.logger.debug(self.servers)
         for (key, serv) in iteritems(self.servers):
@@ -197,13 +198,14 @@ class NClient(BUIbackend):
     :type ssl: bool
     """
 
-    def __init__(self, app=None, host=None, port=None, password=None, ssl=None):
+    def __init__(self, app=None, host=None, port=None, password=None, ssl=None, timeout=5):
         self.host = host
         self.port = port
         self.password = password
         self.ssl = ssl
         self.connected = False
         self.app = app
+        self.timeout = timeout or 5
 
     def conn(self):
         """Connects to the agent if needed"""
@@ -223,7 +225,7 @@ class NClient(BUIbackend):
         if self.ssl:
             import ssl
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.settimeout(5)
+            s.settimeout(self.timeout)
             ret = ssl.wrap_socket(s, cert_reqs=ssl.CERT_NONE, ssl_version=ssl.PROTOCOL_SSLv23)
             try:
                 ret.connect((self.host, self.port))
@@ -231,7 +233,7 @@ class NClient(BUIbackend):
                 self.app.logger.error('ERROR: %s', str(e))
                 raise e
         else:
-            ret = socket.create_connection((self.host, self.port), timeout=5)
+            ret = socket.create_connection((self.host, self.port), timeout=self.timeout)
         return ret
 
     def ping(self):
