@@ -244,13 +244,13 @@ class NClient(BUIbackend):
         """Disconnect from the agent"""
         if self.connected and force:
             self.sock.close()
-        self.connected = False
+            self.connected = False
 
     def do_command(self, data=None, restarted=False):
         """Send a command to the remote agent"""
         self.conn()
         res = '[]'
-        toclose = True
+        toclose = False
         if not data or not self.connected:
             return res
         try:
@@ -275,7 +275,6 @@ class NClient(BUIbackend):
                 err = None
                 if tmp == 'KO':
                     err = self.recvall(length)
-                toclose = False
                 res = (self.sock, length, err)
             else:
                 res = self.recvall(length).decode('UTF-8')

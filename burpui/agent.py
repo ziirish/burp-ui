@@ -142,50 +142,50 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
     def handle(self):
         # self.request is the client connection
         try:
-            err = None
-            lengthbuf = self.request.recv(8)
-            length, = struct.unpack('!Q', lengthbuf)
-            data = self.recvall(length)
-            self.server.agent._logger('info', 'recv: {}'.format(data))
-            txt = data.decode('UTF-8')
-            j = json.loads(txt)
-            if j['password'] != self.server.agent.password:
-                self.server.agent._logger('warning', '-----> Wrong Password <-----')
-                self.request.sendall(b'KO')
-                return
-            self.request.sendall(b'OK')
-            if j['func'] == 'restore_files':
-                res, err = getattr(self.server.agent, j['func'])(**j['args'])
-            else:
-                if j['args']:
-                    if 'pickled' in j and j['pickled']:
-                        # de-serialize arguments if needed
-                        j['args'] = pickle.loads(j['args'])
-                    res = json.dumps(getattr(self.server.agent, j['func'])(**j['args']))
-                else:
-                    res = json.dumps(getattr(self.server.agent, j['func'])())
-            self.server.agent._logger('info', 'result: {}'.format(res))
-            if j['func'] == 'restore_files':
-                if err:
+            while True:
+                err = None
+                lengthbuf = self.request.recv(8)
+                length, = struct.unpack('!Q', lengthbuf)
+                data = self.recvall(length)
+                self.server.agent._logger('info', 'recv: {}'.format(data))
+                txt = data.decode('UTF-8')
+                j = json.loads(txt)
+                if j['password'] != self.server.agent.password:
+                    self.server.agent._logger('warning', '-----> Wrong Password <-----')
                     self.request.sendall(b'KO')
-                    size = len(err)
-                    self.request.sendall(struct.pack('!Q', size))
-                    self.request.sendall(err.encode('UTF-8'))
-                    raise Exception('Restoration failed')
+                    return
                 self.request.sendall(b'OK')
-                size = os.path.getsize(res)
-                self.request.sendall(struct.pack('!Q', size))
-                with open(res, 'rb') as f:
-                    buf = f.read(1024)
-                    while buf:
-                        self.server.agent._logger('info', 'sending {} Bytes'.format(len(buf)))
-                        self.request.sendall(buf)
+                if j['func'] == 'restore_files':
+                    res, err = getattr(self.server.agent, j['func'])(**j['args'])
+                else:
+                    if j['args']:
+                        if 'pickled' in j and j['pickled']:
+                            # de-serialize arguments if needed
+                            j['args'] = pickle.loads(j['args'])
+                        res = json.dumps(getattr(self.server.agent, j['func'])(**j['args']))
+                    else:
+                        res = json.dumps(getattr(self.server.agent, j['func'])())
+                self.server.agent._logger('info', 'result: {}'.format(res))
+                if j['func'] == 'restore_files':
+                    if err:
+                        self.request.sendall(b'KO')
+                        size = len(err)
+                        self.request.sendall(struct.pack('!Q', size))
+                        self.request.sendall(err.encode('UTF-8'))
+                        raise Exception('Restoration failed')
+                    self.request.sendall(b'OK')
+                    size = os.path.getsize(res)
+                    self.request.sendall(struct.pack('!Q', size))
+                    with open(res, 'rb') as f:
                         buf = f.read(1024)
-                os.unlink(res)
-            else:
-                self.request.sendall(struct.pack('!Q', len(res)))
-                self.request.sendall(res.encode('UTF-8'))
-            self.request.close()
+                        while buf:
+                            self.server.agent._logger('info', 'sending {} Bytes'.format(len(buf)))
+                            self.request.sendall(buf)
+                            buf = f.read(1024)
+                    os.unlink(res)
+                else:
+                    self.request.sendall(struct.pack('!Q', len(res)))
+                    self.request.sendall(res.encode('UTF-8'))
         except AttributeError as e:
             self.server.agent._logger('warning', '{}\nWrong method => {}'.format(traceback.format_exc(), str(e)))
             self.request.sendall(b'KO')
