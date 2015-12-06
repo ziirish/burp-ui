@@ -6,6 +6,7 @@ from ..exceptions import BUIserverException
 
 from flask.ext.restplus import Resource, fields
 from flask.ext.login import current_user
+import multiprocessing
 
 ns = api.namespace('servers', 'Servers methods')
 
@@ -61,17 +62,33 @@ class ServersStats(Resource):
                     api.bui.acl.is_admin(current_user.get_id())):
                 check = True
                 allowed = api.bui.acl.servers(current_user.get_id())
-            for serv in api.bui.cli.servers:
+
+            def get_server_infos(serv, output):
                 try:
                     if check:
                         if serv in allowed:
-                            r.append({'name': serv,
-                                      'clients': len(api.bui.cli.servers[serv].get_all_clients(serv)),
-                                      'alive': api.bui.cli.servers[serv].ping()})
+                            output.put({
+                                'name': serv,
+                                'clients': len(api.bui.cli.servers[serv].get_all_clients(serv)),
+                                'alive': api.bui.cli.servers[serv].ping()
+                            })
                     else:
-                        r.append({'name': serv,
-                                  'clients': len(api.bui.cli.servers[serv].get_all_clients(serv)),
-                                  'alive': api.bui.cli.servers[serv].ping()})
+                        output.put({
+                            'name': serv,
+                            'clients': len(api.bui.cli.servers[serv].get_all_clients(serv)),
+                            'alive': api.bui.cli.servers[serv].ping()
+                        })
                 except BUIserverException as e:
                     api.abort(500, str(e))
+
+            output = multiprocessing.Queue()
+            pools = [multiprocessing.Process(target=get_server_infos, args=(s, output)) for s in api.bui.cli.servers]
+            for p in pools:
+                p.start()
+
+            for p in pools:
+                p.join()
+
+            r = [output.get() for p in pools]
+
         return r
