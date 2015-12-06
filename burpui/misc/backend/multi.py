@@ -226,6 +226,7 @@ class NClient(BUIbackend):
             import ssl
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.settimeout(self.timeout)
+            s.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
             ret = ssl.wrap_socket(s, cert_reqs=ssl.CERT_NONE, ssl_version=ssl.PROTOCOL_SSLv23)
             try:
                 ret.connect((self.host, self.port))
@@ -234,6 +235,7 @@ class NClient(BUIbackend):
                 raise e
         else:
             ret = socket.create_connection((self.host, self.port), timeout=self.timeout)
+            ret.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
         return ret
 
     def ping(self):
