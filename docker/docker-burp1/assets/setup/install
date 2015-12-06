@@ -1,0 +1,112 @@
+#!/bin/bash
+set -e
+
+SETUP_DIR="/app/setup"
+CONFIG_DIR="${SETUP_DIR}/config"
+BURP="https://git.ziirish.me/ziirish/burp.git"
+BURP_VERSION="1.4.40"
+BURPUI="https://burpui.ziirish.me/builds/burp-ui.dev.tar.gz"
+
+# Install burp
+git clone $BURP
+cd burp
+git checkout tags/$BURP_VERSION
+./configure --disable-ipv6
+make -j4
+make install
+
+cd
+
+# Install burp-ui
+pip install --upgrade pip
+pip install "requests[security]"
+pip install --upgrade $BURPUI
+pip install redis
+pip install Flask-Session
+
+# Create burp-ui User
+useradd -m -s /bin/bash -d /var/lib/burpui -c 'Burp-UI daemon user' -u 5337 burpui
+
+mkdir -p /var/log/gunicorn
+chown -R burpui: /var/log/gunicorn
+
+# configure supervisord log rotation
+cat > /etc/logrotate.d/supervisord <<EOF
+/var/log/supervisor/*.log {
+  weekly
+  missingok
+  rotate 52
+  compress
+  delaycompress
+  notifempty
+  copytruncate
+}
+EOF
+
+# configure gunicorn log rotation
+cat > /etc/logrotate.d/gunicorn <<EOF
+/var/log/gunicorn/*.log {
+  daily
+  missingok
+  rotate 14
+  compress
+  delaycompress
+  notifempty
+  copytruncate
+}
+EOF
+
+# configure supervisord to start crond
+cat > /etc/supervisor/conf.d/cron.conf <<EOF
+[program:cron]
+priority=20
+directory=/tmp
+command=/usr/sbin/cron -f
+user=root
+autostart=false
+autorestart=true
+stdout_logfile=/var/log/supervisor/%(program_name)s.log
+stderr_logfile=/var/log/supervisor/%(program_name)s.log
+EOF
+
+# configure supervisord to start bui-agent
+cat > /etc/supervisor/conf.d/buiagent.conf <<EOF
+[program:buiagent]
+priority=20
+directory=/tmp
+command=/usr/local/bin/bui-agent -vvvv
+user=burpui
+autostart=false
+autorestart=true
+stdout_logfile=/var/log/supervisor/%(program_name)s.log
+stderr_logfile=/var/log/supervisor/%(program_name)s.log
+EOF
+
+# configure supervisord to start burp
+cat > /etc/supervisor/conf.d/burp.conf <<EOF
+[program:burp]
+priority=20
+directory=/tmp
+command=/usr/sbin/burp -F -c /etc/burp/burp-server.conf
+user=root
+autostart=false
+autorestart=true
+stdout_logfile=/var/log/supervisor/%(program_name)s.log
+stderr_logfile=/var/log/supervisor/%(program_name)s.log
+EOF
+
+cat ${CONFIG_DIR}/burp/burp.conf >/tmp/burp.conf
+chown burpui: /tmp/burp.conf
+
+echo "restore_client = agent" >>/etc/burp/burp-server.conf
+
+cp ${CONFIG_DIR}/burp-ui/buiagent.cfg /etc/burp/buiagent.cfg
+
+mkdir -p /tmp/burp/{CA,CA-client}
+chgrp -R burpui /tmp/burp
+chmod -R g+w /tmp/burp
+
+/usr/sbin/burp -g -c /etc/burp/burp-server.conf
+
+# cleanup
+rm -rf /var/lib/apt/lists/*

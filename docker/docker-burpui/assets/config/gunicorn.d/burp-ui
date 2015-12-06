@@ -1,0 +1,11 @@
+CONFIG = {
+    'args': (
+        '--bind=0.0.0.0:5000',
+        '--user=burpui',
+        '--workers=5',
+        '--worker-class=eventlet',
+        '--access-logfile=/var/log/gunicorn/burp-ui_access.log',
+        '--error-logfile=/var/log/gunicorn/burp-ui_error.log',
+        'burpui:init(logfile="/var/log/gunicorn/burp-ui_info.log")',
+    ),
+}
