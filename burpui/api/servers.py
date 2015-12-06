@@ -72,14 +72,17 @@ class ServersStats(Resource):
                                 'clients': len(api.bui.cli.servers[serv].get_all_clients(serv)),
                                 'alive': api.bui.cli.servers[serv].ping()
                             })
+                            return
                     else:
                         output.put({
                             'name': serv,
                             'clients': len(api.bui.cli.servers[serv].get_all_clients(serv)),
                             'alive': api.bui.cli.servers[serv].ping()
                         })
+                        return
+                    output.put(None)
                 except BUIserverException as e:
-                    api.abort(500, str(e))
+                    output.put(str(e))
 
             output = multiprocessing.Queue()
             pools = [multiprocessing.Process(target=get_server_infos, args=(s, output)) for s in api.bui.cli.servers]
@@ -89,6 +92,11 @@ class ServersStats(Resource):
             for p in pools:
                 p.join()
 
-            r = [output.get() for p in pools]
+            for p in pools:
+                tmp = output.get()
+                if tmp and isinstance(tmp, dict):
+                    r.append(tmp)
+                elif tmp:
+                    api.abort(500, tmp)
 
         return r
