@@ -846,8 +846,8 @@ class Burp(BUIbackend):
             cmd.append(strip)
         self._logger('debug', cmd)
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        status = p.wait()
         out, err = p.communicate()
+        status = p.wait()
         if password:
             os.remove(tmpfile)
         self._logger('debug', out)
@@ -861,7 +861,6 @@ class Burp(BUIbackend):
         # a return code of 2 means there were some warnings during restoration
         # so we can assume the restoration was successful anyway
         if status not in [0, 2]:
-            # out, err = p.communicate()
             return None, out
 
         zip_dir = tmpdir.rstrip(os.sep)
