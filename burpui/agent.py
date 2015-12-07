@@ -149,6 +149,8 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
                 data = self.recvall(length)
                 self.server.agent._logger('info', 'recv: {}'.format(data))
                 txt = data.decode('UTF-8')
+                if txt == 'RE':
+                    break
                 j = json.loads(txt)
                 if j['password'] != self.server.agent.password:
                     self.server.agent._logger('warning', '-----> Wrong Password <-----')
