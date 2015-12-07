@@ -98,7 +98,6 @@ class BurpuiAPITestCase(TestCase):
 
     def test_no_clients(self):
         response = self.client.get(url_for('api.clients_stats'))
-        print response.data
         self.assertEquals(json.loads(response.data.decode('utf-8'))['message'], u'Cannot contact burp server at 127.0.0.1:9999')
         self.assert500(response)
 
