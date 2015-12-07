@@ -1,0 +1,69 @@
+#!/bin/bash
+# Build: @build@
+set -e
+
+SETUP_DIR="/app/setup"
+CONFIG_DIR="${SETUP_DIR}/config"
+BURPUI="https://burpui.ziirish.me/builds/burp-ui.dev.tar.gz"
+
+cd
+
+# Install burp-ui
+pip install --upgrade pip
+pip install "requests[security]"
+pip install --upgrade $BURPUI
+pip install redis
+pip install Flask-Session
+
+# Create burp-ui User
+useradd -r -d /var/lib/burpui -c 'Burp-UI daemon user' -u 5337 burpui
+
+mkdir -p /var/log/gunicorn
+chown -R burpui: /var/log/gunicorn
+
+# configure supervisord log rotation
+cat > /etc/logrotate.d/supervisord <<EOF
+/var/log/supervisor/*.log {
+  weekly
+  missingok
+  rotate 52
+  compress
+  delaycompress
+  notifempty
+  copytruncate
+}
+EOF
+
+# configure gunicorn log rotation
+cat > /etc/logrotate.d/gunicorn <<EOF
+/var/log/gunicorn/*.log {
+  daily
+  missingok
+  rotate 14
+  compress
+  delaycompress
+  notifempty
+  copytruncate
+}
+EOF
+
+# configure supervisord to start crond
+cat > /etc/supervisor/conf.d/cron.conf <<EOF
+[program:cron]
+priority=20
+directory=/tmp
+command=/usr/sbin/cron -f
+user=root
+autostart=false
+autorestart=true
+stdout_logfile=/var/log/supervisor/%(program_name)s.log
+stderr_logfile=/var/log/supervisor/%(program_name)s.log
+EOF
+
+cp ${CONFIG_DIR}/gunicorn.d/burp-ui /etc/gunicorn.d/burp-ui
+
+mkdir -p /etc/burp
+cp ${CONFIG_DIR}/burp-ui/burpui.cfg /etc/burp/burpui.cfg
+
+# cleanup
+rm -rf /var/lib/apt/lists/*

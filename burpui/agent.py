@@ -7,6 +7,7 @@ import sys
 import logging
 import pickle
 import traceback
+import socket
 try:
     import ujson as json
 except ImportError:
@@ -142,6 +143,7 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
     def handle(self):
         # self.request is the client connection
         try:
+            self.request.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
             while True:
                 err = None
                 lengthbuf = self.request.recv(8)
