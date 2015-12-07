@@ -156,6 +156,8 @@ def init(conf=None, debug=0, logfile=None, gunicorn=True, unittest=False):
 
     if gunicorn:  # pragma: no cover
         from werkzeug.contrib.fixers import ProxyFix
+        from gevent import monkey
+        monkey.patch_all()
         if app.storage and app.storage.lower() == 'redis':
             if app.redis:
                 part = app.redis.split(':')
