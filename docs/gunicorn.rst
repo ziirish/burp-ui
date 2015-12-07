@@ -7,18 +7,18 @@ online restoration) may take some time and thus may block any further requests.
 With `Gunicorn`_, you have several workers that can proceed the requests so you
 can handle more users.
 
-You need to install ``gunicorn`` and ``eventlet``:
+You need to install ``gunicorn`` and ``gevent``:
 
 ::
 
-    pip install eventlet
+    pip install gevent
     pip install gunicorn
 
 You will then be able to launch `Burp-UI`_ this way:
 
 ::
 
-    gunicorn -k eventlet -w 4 'burpui:init(conf="/path/to/burpui.cfg")'
+    gunicorn -k gevent -w 4 'burpui:init(conf="/path/to/burpui.cfg")'
 
 When using ``gunicorn``, the command line options are not available. Instead,
 run the `Burp-UI`_ ``init`` method directly. Here are the parameters you can

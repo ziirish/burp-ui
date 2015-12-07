@@ -214,7 +214,7 @@ setup(
     extras_require={
         'ldap_authentication': ['ldap3'],
         'burp2-extra': ['ujson'],
-        'gunicorn-extra': ['eventlet', 'redis', 'Flask-Session'],
+        'gunicorn-extra': ['gevent', 'redis', 'Flask-Session'],
         'test': test_requires,
     },
     tests_require=test_requires,
