@@ -12,13 +12,11 @@ import os
 import sys
 import json
 
-from flask import Blueprint, Response, make_response
+from flask import Blueprint, Response
 from flask.ext.restplus import Api
 from flask.ext.login import current_user
 from importlib import import_module
 from functools import wraps
-
-from ..exceptions import BUIserverException, BUIhttpException
 
 if sys.version_info >= (3, 0):  # pragma: no cover
     basestring = str
@@ -67,10 +65,11 @@ class ApiWrapper(Api):
         """Override :func:`flask.ext.restplus.Api.abort` in order to raise
         custom exceptions
         """
-        if message and isinstance(message, basestring):
-            # raise a custom error that is caught by 'errorhandler'
-            raise BUIhttpException(code, message)
-        message = json.dumps(message)  # pragma: no cover
+        if message and not isinstance(message, basestring):
+            try:
+                message = json.dumps(message)  # pragma: no cover
+            except:
+                message = None
         super(ApiWrapper, self).abort(code, message, **kwargs)  # pragma: no cover
 
     def load_all(self):
@@ -89,18 +88,3 @@ class ApiWrapper(Api):
 
 apibp = Blueprint('api', __name__, url_prefix='/api')
 api = ApiWrapper(apibp, title='Burp-UI API', description='Burp-UI API to interact with burp', doc='/doc', decorators=[api_login_required])
-
-
-# Just in case the exception was not caught earlier
-@apibp.errorhandler(BUIserverException)
-def handle_bui_server_exception(error):  # pragma: no cover
-    response = make_response(str(error), 500)
-    response.headers['content-type'] = 'text/plain'
-    return response
-
-
-@apibp.errorhandler(BUIhttpException)
-def handle_bui_http_exception(error):
-    response = make_response(error.message, error.status)
-    response.headers['content-type'] = 'text/plain'
-    return response

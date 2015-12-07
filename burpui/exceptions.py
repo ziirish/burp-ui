@@ -7,18 +7,17 @@
 .. moduleauthor:: Ziirish <ziirish@ziirish.info>
 
 """
+from werkzeug.exceptions import HTTPException
 
 
-class BUIserverException(Exception):
+class BUIserverException(HTTPException):
     """Raised in case of internal error. This exception should never reach the
     end-user.
     """
-    pass
+    code = 500
 
+    def __init__(self, message):
+        self.description = message
 
-class BUIhttpException(Exception):
-    """Raised in case of insufficient permissions."""
-
-    def __init__(self, status=500, message=''):
-        self.status = status
-        self.message = message
+    def __str__(self):
+        return self.description
