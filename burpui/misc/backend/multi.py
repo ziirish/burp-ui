@@ -207,25 +207,26 @@ class NClient(BUIbackend):
         self.app = app
         self.timeout = timeout or 5
 
-    def conn(self):
+    def conn(self, notimeout=False):
         """Connects to the agent if needed"""
         try:
             if self.connected:
                 return
-            self.sock = self.do_conn()
+            self.sock = self.do_conn(notimeout)
             self.connected = True
             self.app.logger.debug('OK, connected to agent %s:%s', self.host, self.port)
         except Exception as e:
             self.connected = False
             self.app.logger.error('Could not connect to %s:%s => %s', self.host, self.port, str(e))
 
-    def do_conn(self):
+    def do_conn(self, notimeout=False):
         """Do the actual connection to the agent"""
         ret = None
         if self.ssl:
             import ssl
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.settimeout(self.timeout)
+            if not notimeout:
+                s.settimeout(self.timeout)
             s.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
             ret = ssl.wrap_socket(s, cert_reqs=ssl.CERT_NONE, ssl_version=ssl.PROTOCOL_SSLv23)
             try:
@@ -234,7 +235,10 @@ class NClient(BUIbackend):
                 self.app.logger.error('ERROR: %s', str(e))
                 raise e
         else:
-            ret = socket.create_connection((self.host, self.port), timeout=self.timeout)
+            if not notimeout:
+                ret = socket.create_connection((self.host, self.port), timeout=self.timeout)
+            else:
+                ret = socket.create_connection((self.host, self.port))
             ret.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
         return ret
 
@@ -247,6 +251,8 @@ class NClient(BUIbackend):
     def close(self, force=True):
         """Disconnect from the agent"""
         if self.connected and force:
+            self.sock.sendall(struct.pack('!Q', 2))
+            self.sock.sendall(b'RE')
             self.sock.close()
             self.connected = False
 
@@ -259,6 +265,9 @@ class NClient(BUIbackend):
             return res
         try:
             data['password'] = self.password
+            if data['func'] == 'restore_files':
+                self.close()
+                self.conn(True)
             raw = json.dumps(data)
             length = len(raw)
             self.sock.sendall(struct.pack('!Q', length))
@@ -278,8 +287,9 @@ class NClient(BUIbackend):
             if data['func'] == 'restore_files':
                 err = None
                 if tmp == 'KO':
-                    err = self.recvall(length)
+                    err = self.recvall(length).decode('UTF-8')
                 res = (self.sock, length, err)
+                self.connected = False
             else:
                 res = self.recvall(length).decode('UTF-8')
         except IOError as e:

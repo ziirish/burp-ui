@@ -8,6 +8,7 @@
 
 """
 import select
+import struct
 
 from zlib import adler32
 from time import gmtime, strftime, time
@@ -152,6 +153,8 @@ class Restore(Resource):
 
                 if err:
                     api.bui.cli._logger('debug', 'Something went wrong: {}'.format(err))
+                    socket.sendall(struct.pack('!Q', 2))
+                    socket.sendall(b'RE')
                     socket.close()
                     return make_response(err, 500)
 
@@ -175,6 +178,8 @@ class Restore(Resource):
                         received += len(buf)
                         api.bui.cli._logger('debug', '{}/{}'.format(received, l))
                         yield buf
+                    sock.sendall(struct.pack('!Q', 2))
+                    sock.sendall(b'RE')
                     sock.close()
 
                 headers = Headers()
