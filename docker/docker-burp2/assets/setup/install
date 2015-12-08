@@ -94,7 +94,9 @@ stdout_logfile=/var/log/supervisor/%(program_name)s.log
 stderr_logfile=/var/log/supervisor/%(program_name)s.log
 EOF
 
-cat ${CONFIG_DIR}/burp/burp.conf >/etc/burp/burp.conf
+cat ${CONFIG_DIR}/burp/burp.conf >/tmp/burp.conf
+chown burpui: /tmp/burp.conf
+
 cat ${CONFIG_DIR}/burp/CA.cnf >/etc/burp/CA.cnf
 
 echo "restore_client = agent" >>/etc/burp/burp-server.conf
@@ -103,9 +105,8 @@ echo "monitor_browse_cache = 1" >>/etc/burp/burp-server.conf
 cp ${CONFIG_DIR}/burp-ui/buiagent.cfg /etc/burp/buiagent.cfg
 
 mkdir -p /tmp/burp2/CA-client
-chown -R burpui: /tmp/burp2 /etc/burp/burp.conf
-chgrp burpui /etc/burp
-chmod g+w /etc/burp
+chgrp -R burpui /tmp/burp2
+chmod -R g+w /tmp/burp2
 
 /usr/sbin/burp -g -c /etc/burp/burp-server.conf
 
