@@ -33,6 +33,7 @@ g_stripbin = u'/usr/sbin/vss_strip'
 g_burpconfcli = u'/etc/burp/burp.conf'
 g_burpconfsrv = u'/etc/burp/burp-server.conf'
 g_tmpdir = u'/tmp/bui'
+g_timeout = u'5'
 
 
 # Some functions are the same as in Burp1 backend
@@ -52,7 +53,8 @@ class Burp(Burp1):
     """
 
     def __init__(self, server=None, conf=None):
-        global g_burpbin, g_stripbin, g_burpconfcli, g_burpconfsrv, g_tmpdir, BURP_MINIMAL_VERSION
+        global g_burpbin, g_stripbin, g_burpconfcli, g_burpconfsrv, g_tmpdir, \
+            g_timeout, BURP_MINIMAL_VERSION
         self.proc = None
         self.app = None
         self.client_version = None
@@ -67,7 +69,14 @@ class Burp(Burp1):
         self.stripbin = g_stripbin
         self.burpconfcli = g_burpconfcli
         self.burpconfsrv = g_burpconfsrv
-        self.defaults = {'burpbin': g_burpbin, 'stripbin': g_stripbin, 'bconfcli': g_burpconfcli, 'bconfsrv': g_burpconfsrv, 'tmpdir': g_tmpdir}
+        self.defaults = {
+            'burpbin': g_burpbin,
+            'stripbin': g_stripbin,
+            'bconfcli': g_burpconfcli,
+            'bconfsrv': g_burpconfsrv,
+            'timeout': g_timeout,
+            'tmpdir': g_tmpdir
+        }
         self.running = []
         if conf:
             config = ConfigParser.ConfigParser(self.defaults)
@@ -79,6 +88,7 @@ class Burp(Burp1):
                     strip = self._safe_config_get(config.get, 'stripbin', sect='Burp2')
                     confcli = self._safe_config_get(config.get, 'bconfcli', sect='Burp2')
                     confsrv = self._safe_config_get(config.get, 'bconfsrv', sect='Burp2')
+                    self.timeout = self._safe_config_get(config.getint, 'timeout', sect='Burp2', cast=int)
                     tmpdir = self._safe_config_get(config.get, 'tmpdir')
 
                     if tmpdir and os.path.exists(tmpdir) and not os.path.isdir(tmpdir):
@@ -145,11 +155,12 @@ class Burp(Burp1):
 
         self.parser = Parser(self.app, self.burpconfsrv)
 
-        self._logger('info', 'burp binary: %s', self.burpbin)
-        self._logger('info', 'strip binary: %s', self.stripbin)
-        self._logger('info', 'burp conf cli: %s', self.burpconfcli)
-        self._logger('info', 'burp conf srv: %s', self.burpconfsrv)
-        self._logger('info', 'burp version: %s', self.client_version)
+        self._logger('info', 'burp binary: {}'.format(self.burpbin))
+        self._logger('info', 'strip binary: {}'.format(self.stripbin))
+        self._logger('info', 'burp conf cli: {}'.format(self.burpconfcli))
+        self._logger('info', 'burp conf srv: {}'.format(self.burpconfsrv))
+        self._logger('info', 'command timeout: {}'.format(self.timeout))
+        self._logger('info', 'burp version: {}'.format(self.client_version))
 
     def __exit__(self, type, value, traceback):
         """try not to leave child process server side"""
@@ -166,7 +177,7 @@ class Burp(Burp1):
         time.sleep(0.5)
         if not self._proc_is_alive():
             raise Exception('Unable to spawn burp process')
-        _, w, _ = select([], [self.proc.stdin], [], 5)
+        _, w, _ = select([], [self.proc.stdin], [], self.timeout)
         if self.proc.stdin not in w:
             self.proc.kill()
             raise OSError('Unable to setup burp client')
@@ -243,7 +254,7 @@ class Burp(Burp1):
             try:
                 if not self._proc_is_alive():
                     raise Exception('process died while reading its output')
-                r, _, _ = select([self.proc.stdout], [], [], 5)
+                r, _, _ = select([self.proc.stdout], [], [], self.timeout)
                 if self.proc.stdout not in r:
                     raise TimeoutError('Read operation timed out')
                 doc += self.proc.stdout.readline().rstrip('\n')
@@ -258,6 +269,7 @@ class Burp(Burp1):
             except (TimeoutError, IOError, Exception) as e:
                 # the os throws an exception if there is no data or timeout
                 self._logger('warning', str(e))
+                self.proc.terminate()
                 break
         return js
 
@@ -271,7 +283,7 @@ class Burp(Burp1):
             if not self._proc_is_alive():
                 self._spawn_burp()
 
-            _, w, _ = select([], [self.proc.stdin], [], 5)
+            _, w, _ = select([], [self.proc.stdin], [], self.timeout)
             if self.proc.stdin not in w:
                 raise TimeoutError('Write operation timed out')
             self.proc.stdin.write(q)
@@ -284,6 +296,7 @@ class Burp(Burp1):
         except TimeoutError as e:
             msg = 'Cannot send command: {}'.format(str(e))
             self._logger('error', msg)
+            self.proc.terminate()
             raise BUIserverException(msg)
         except (OSError, Exception) as e:
             msg = 'Cannot launch burp process: {}'.format(str(e))

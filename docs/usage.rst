@@ -273,6 +273,8 @@ Now you can add *burp-2* backend specific options:
     bconfsrv: /etc/burp/burp-server.conf
     # temporary directory to use for restoration
     tmpdir: /tmp
+    # how many time to wait for the monitor to answer (in seconds)
+    timeout: 5
 
 
 Each option is commented, but here is a more detailed documentation:
@@ -283,6 +285,7 @@ Each option is commented, but here is a more detailed documentation:
   `restoration <installation.html#restoration>`__).
 - *bconfsrv*: Path to the `Burp`_ server configuration file.
 - *tmpdir*: Path to a temporary directory where to perform restorations.
+- *timeout*: Time to wait for the monitor to answer in seconds.
 
 
 Authentication
