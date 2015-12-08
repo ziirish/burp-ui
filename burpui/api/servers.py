@@ -6,7 +6,6 @@ from ..exceptions import BUIserverException
 
 from flask.ext.restplus import Resource, fields
 from flask.ext.login import current_user
-import multiprocessing
 
 ns = api.namespace('servers', 'Servers methods')
 
@@ -63,40 +62,22 @@ class ServersStats(Resource):
                 check = True
                 allowed = api.bui.acl.servers(current_user.get_id())
 
-            def get_server_infos(serv, output):
+            for serv in api.bui.cli.servers:
                 try:
                     if check:
                         if serv in allowed:
-                            output.put({
+                            r.append({
                                 'name': serv,
-                                'clients': len(api.bui.cli.servers[serv].get_all_clients(serv)),
+                                'clients': len(api.bui.acl.clients(current_user.get_id(), serv)),
                                 'alive': api.bui.cli.servers[serv].ping()
                             })
-                            return
                     else:
-                        output.put({
+                        r.append({
                             'name': serv,
                             'clients': len(api.bui.cli.servers[serv].get_all_clients(serv)),
                             'alive': api.bui.cli.servers[serv].ping()
                         })
-                        return
-                    output.put(None)
                 except BUIserverException as e:
-                    output.put(str(e))
-
-            output = multiprocessing.Queue()
-            pools = [multiprocessing.Process(target=get_server_infos, args=(s, output)) for s in api.bui.cli.servers]
-            for p in pools:
-                p.start()
-
-            for p in pools:
-                p.join()
-
-            for p in pools:
-                tmp = output.get()
-                if tmp and isinstance(tmp, dict):
-                    r.append(tmp)
-                elif tmp:
-                    api.abort(500, tmp)
+                    api.abort(500, str(e))
 
         return r

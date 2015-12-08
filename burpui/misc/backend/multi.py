@@ -14,6 +14,10 @@ try:
     import ConfigParser
 except ImportError:
     import configparser as ConfigParser
+try:
+    from gevent.local import local
+except ImportError:
+    local = object
 
 from six import iteritems
 
@@ -175,7 +179,7 @@ class Burp(BUIbackend):
         return self.servers[agent].get_server_version()
 
 
-class NClient(BUIbackend):
+class NClient(BUIbackend, local):
     """The :class:`burpui.misc.backend.multi.NClient` class provides a
     consistent backend to interact with ``agents``.
 
@@ -253,6 +257,7 @@ class NClient(BUIbackend):
         if self.connected and force:
             self.sock.sendall(struct.pack('!Q', 2))
             self.sock.sendall(b'RE')
+            self.sock.shutdown(socket.SHUT_RDWR)
             self.sock.close()
             self.connected = False
 

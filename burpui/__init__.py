@@ -88,8 +88,13 @@ def init(conf=None, debug=0, logfile=None, gunicorn=True, unittest=False):
     from .routes import view
     from .api import api, apibp
 
+    if gunicorn:
+        from gevent import monkey
+        monkey.patch_all()
+
     # We initialize the core
     app = BurpUI()
+    app.gunicorn = gunicorn
 
     app.config['CFG'] = None
 
@@ -156,8 +161,6 @@ def init(conf=None, debug=0, logfile=None, gunicorn=True, unittest=False):
 
     if gunicorn:  # pragma: no cover
         from werkzeug.contrib.fixers import ProxyFix
-        from gevent import monkey
-        monkey.patch_all()
         if app.storage and app.storage.lower() == 'redis':
             if app.redis:
                 part = app.redis.split(':')
@@ -181,7 +184,6 @@ def init(conf=None, debug=0, logfile=None, gunicorn=True, unittest=False):
                 pass
 
         app.wsgi_app = ProxyFix(app.wsgi_app)
-        app.gunicorn = True
 
     # Then we load our routes
     view.init_bui(app)
