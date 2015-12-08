@@ -198,6 +198,7 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
             self.server.agent._logger('error', '!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
         finally:
             try:
+                self.request.shutdown(socket.SHUT_RDWR)
                 self.request.close()
             except Exception as e:
                 self.server.agent._logger('error', '!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
