@@ -22,6 +22,7 @@ except ImportError:
 from six import iteritems
 
 from .interface import BUIbackend
+from ...exceptions import BUIserverException
 
 
 class Burp(BUIbackend):
@@ -187,7 +188,7 @@ class NClient(BUIbackend, local):
     the :class:`burpui.misc.backend.interface.BUIbackend` class.
 
     :param app: The application context
-    :type app: Flask object
+    :type app: :class:`burpui.server.BUIServer`
 
     :param host: Address of the remote agent
     :type host: str
@@ -280,6 +281,11 @@ class NClient(BUIbackend, local):
             self.app.logger.debug("Sending: %s", raw)
             tmp = self.sock.recv(2).decode('UTF-8')
             self.app.logger.debug("recv: '%s'", tmp)
+            if 'ER' == tmp:
+                lengthbuf = self.sock.recv(8)
+                length, = struct.unpack('!Q', lengthbuf)
+                err = self.recvall(length).decode('UTF-8')
+                raise BUIserverException(err)
             if 'OK' != tmp:
                 self.app.logger.debug('Ooops, unsuccessful!')
                 return res
@@ -297,6 +303,8 @@ class NClient(BUIbackend, local):
                 self.connected = False
             else:
                 res = self.recvall(length).decode('UTF-8')
+        except BUIserverException as e:
+            raise e
         except IOError as e:
             if not restarted and e.errno == errno.EPIPE:
                 self.connected = False
@@ -307,6 +315,12 @@ class NClient(BUIbackend, local):
             else:
                 toclose = True
                 self.app.logger.error('!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
+        except socket.timeout as e:
+            if self.app.gunicorn and not restarted:
+                self.connected = False
+                return self.do_command(data, True)
+            toclose = True
+            self.app.logger.error('!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
         except Exception as e:
             toclose = True
             self.app.logger.error('!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))

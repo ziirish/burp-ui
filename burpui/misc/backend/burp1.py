@@ -39,8 +39,8 @@ if sys.version_info >= (3, 0):  # pragma: no cover
 else:
     from urllib import unquote
 
-g_burpport = '4972'
-g_burphost = '::1'
+g_burpport = u'4972'
+g_burphost = u'::1'
 g_burpbin = u'/usr/sbin/burp'
 g_stripbin = u'/usr/sbin/vss_strip'
 g_burpconfcli = None

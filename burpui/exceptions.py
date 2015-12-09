@@ -7,7 +7,11 @@
 .. moduleauthor:: Ziirish <ziirish@ziirish.info>
 
 """
-from werkzeug.exceptions import HTTPException
+# Agent does not need "real" HTTP errors
+try:
+    from werkzeug.exceptions import HTTPException
+except ImportError:
+    HTTPException = object
 
 
 class BUIserverException(HTTPException):

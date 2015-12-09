@@ -22,6 +22,7 @@ except ImportError:
     import socketserver as SocketServer
 
 from logging.handlers import RotatingFileHandler
+from .exceptions import BUIserverException
 from .misc.backend.interface import BUIbackend
 
 g_port = '10000'
@@ -157,26 +158,33 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
                 if j['password'] != self.server.agent.password:
                     self.server.agent._logger('warning', '-----> Wrong Password <-----')
                     self.request.sendall(b'KO')
-                    return
-                self.request.sendall(b'OK')
-                if j['func'] == 'restore_files':
-                    res, err = getattr(self.server.agent, j['func'])(**j['args'])
-                else:
-                    if j['args']:
-                        if 'pickled' in j and j['pickled']:
-                            # de-serialize arguments if needed
-                            j['args'] = pickle.loads(j['args'])
-                        res = json.dumps(getattr(self.server.agent, j['func'])(**j['args']))
+                    continue
+                try:
+                    if j['func'] == 'restore_files':
+                        res, err = getattr(self.server.agent, j['func'])(**j['args'])
                     else:
-                        res = json.dumps(getattr(self.server.agent, j['func'])())
-                self.server.agent._logger('info', 'result: {}'.format(res))
+                        if j['args']:
+                            if 'pickled' in j and j['pickled']:
+                                # de-serialize arguments if needed
+                                j['args'] = pickle.loads(j['args'])
+                            res = json.dumps(getattr(self.server.agent, j['func'])(**j['args']))
+                        else:
+                            res = json.dumps(getattr(self.server.agent, j['func'])())
+                    self.server.agent._logger('info', 'result: {}'.format(res))
+                    self.request.sendall(b'OK')
+                except BUIserverException as e:
+                    self.request.sendall(b'ER')
+                    res = str(e)
+                    self.request.sendall(struct.pack('!Q', len(res)))
+                    self.request.sendall(res.encode('UTF-8'))
+                    continue
                 if j['func'] == 'restore_files':
                     if err:
                         self.request.sendall(b'KO')
-                        size = len(err)
-                        self.request.sendall(struct.pack('!Q', size))
+                        self.request.sendall(struct.pack('!Q', len(err)))
                         self.request.sendall(err.encode('UTF-8'))
-                        raise Exception('Restoration failed')
+                        self.server.agent._logger('error', 'Restoration failed')
+                        continue
                     self.request.sendall(b'OK')
                     size = os.path.getsize(res)
                     self.request.sendall(struct.pack('!Q', size))
