@@ -58,6 +58,7 @@ deploy:demo:
   - find . -name "install" | xargs sed -i "s/@build@/$(git rev-parse HEAD)/"
   - docker-compose build
   - docker-compose stop
+  - docker-compose rm
   - docker-compose up -d
   tags:
   - deploy
