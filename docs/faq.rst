@@ -1,6 +1,14 @@
 FAQ
 ===
 
+Is there a demo somewhere?
+--------------------------
+
+Yes, you can play with `Burp-UI`_ at `demo.ziirish.me`_. Credentials are:
+
+- admin / admin to play with `Burp-UI`_ as an administrator
+- demo / demo to play with `Burp-UI`_ as a regular user
+
 How to start using Burp-UI?
 ---------------------------
 
@@ -84,3 +92,4 @@ documentation.
 .. _Burp-UI: https://git.ziirish.me/ziirish/burp-ui
 .. _Gunicorn: http://gunicorn.org/
 .. _README: https://git.ziirish.me/ziirish/burp-ui/blob/master/README.rst
+.. _demo.ziirish.me: http://demo.ziirish.me/

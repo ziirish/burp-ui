@@ -19,6 +19,19 @@ Screenshots
     :target: https://git.ziirish.me/ziirish/burp-ui/blob/master/docs/_static/burp-ui.gif
 
 
+Demo
+----
+
+A screenshot is worth a thousand words, but a Demo is worth a thousand
+screenshots.
+You can now play with ``Burp-UI`` at `demo.ziirish.me <http://demo.ziirish.me>`_
+
+Credentials:
+
+- admin / admin to play with `Burp-UI`_ as an administrator
+- demo / demo to play with `Burp-UI`_ as a regular user
+
+
 What's that?
 ------------
 
