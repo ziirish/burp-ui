@@ -43,8 +43,8 @@ EOF
 cp ${CONFIG_DIR}/burp/* /etc/burp/
 
 cat >>/etc/crontab<<EOF
-12 1,3,5,7,9,11,13,15,17,19,21,23 * * * root burp -c /etc/burp/demo1.conf -a t &>/dev/null
-47 0,2,4,6,8,10,12,14,16,18,20,22 * * * root burp -c /etc/burp/demo2.conf -a t &>/dev/null
+42 3,7,11,15,19,23 * * * root burp -c /etc/burp/demo1.conf -a t &>/dev/null
+17 2,6,10,14,18,22 * * * root burp -c /etc/burp/demo2.conf -a t &>/dev/null
 EOF
 
 # cleanup

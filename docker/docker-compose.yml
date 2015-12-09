@@ -5,6 +5,7 @@ demo-burp1:
     - /srv/demo/spool/burp1/backup:/var/spool/burp
     - /srv/demo/spool/burp1/tmp:/tmp/bui
     - /srv/demo/conf/burp1/clients:/etc/burp/clientconfdir
+
 demo-burp2:
   restart: always
   build: docker-burp2/
@@ -12,23 +13,27 @@ demo-burp2:
     - /srv/demo/spool/burp2/backup:/var/spool/burp
     - /srv/demo/spool/burp2/tmp:/tmp/bui
     - /srv/demo/conf/burp2/clients:/etc/burp/clientconfdir
+
 demo-redis:
   restart: always
   image: sameersbn/redis:latest
+
 demo-cli1:
   restart: always
   build: docker-cli1/
   volumes:
     - /srv/demo/files:/home
   links:
-    - demo-burp1:demo-burp1
+    - demo-burp1
+
 demo-cli2:
   restart: always
   build: docker-cli2/
   volumes:
     - /srv/demo/files:/home
   links:
-    - demo-burp2:demo-burp2
+    - demo-burp2
+
 demo-bui:
   restart: always
   build: docker-burpui/
@@ -37,6 +42,6 @@ demo-bui:
   ports:
     - 5000:5000
   links:
-    - demo-redis:demo-redis
-    - demo-burp1:demo-burp1
-    - demo-burp2:demo-burp2
+    - demo-redis
+    - demo-burp1
+    - demo-burp2

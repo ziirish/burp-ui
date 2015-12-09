@@ -50,3 +50,17 @@ build:py3:
 #  artifacts:
 #    paths:
 #    - dist/
+
+deploy:demo:
+  stage: deploy
+  script:
+  - cd docker/
+  - find . -name "install" | xargs sed -i "s/@build@/$(git rev-parse HEAD)/"
+  - docker-compose build
+  - docker-compose stop
+  - docker-compose up -d
+  tags:
+  - deploy
+  only:
+  - rc
+  - demo

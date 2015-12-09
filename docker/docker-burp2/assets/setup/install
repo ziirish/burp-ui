@@ -1,4 +1,5 @@
 #!/bin/bash
+# Build: @build@
 set -e
 
 SETUP_DIR="/app/setup"
