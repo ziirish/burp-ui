@@ -34,6 +34,8 @@ build:py2:
   - build
   only:
   - master
+  - demo
+  - rc
 #  artifacts:
 #    path:
 #    - dist/
@@ -47,6 +49,8 @@ build:py3:
   - build
   only:
   - master
+  - demo
+  - rc
 #  artifacts:
 #    paths:
 #    - dist/
@@ -58,7 +62,7 @@ deploy:demo:
   - find . -name "install" | xargs sed -i "s/@build@/$(git rev-parse HEAD)/"
   - docker-compose build
   - docker-compose stop
-  - docker-compose rm
+  - docker-compose rm -f
   - docker-compose up -d
   tags:
   - deploy
