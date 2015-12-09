@@ -164,6 +164,24 @@ class Burp(Burp1):
 
     def __exit__(self, type, value, traceback):
         """try not to leave child process server side"""
+        self._terminate_burp()
+        self._kill_burp()
+
+    def _kill_burp(self):
+        """Terminate the process"""
+        if self._proc_is_alive():
+            try:
+                self.proc.terminate()
+            except:
+                pass
+        if self._proc_is_alive():
+            try:
+                self.proc.kill()
+            except:
+                pass
+
+    def _terminate_burp(self):
+        """Terminate cleanly the process"""
         if self._proc_is_alive():
             self.proc.stdin.close()
             self.proc.communicate()
@@ -173,13 +191,13 @@ class Burp(Burp1):
         """Launch the burp client process"""
         cmd = [self.burpbin, '-c', self.burpconfcli, '-a', 'm']
         self.proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False, universal_newlines=True, bufsize=0)
-        # wait a little bit in case the process dies on a network timeout
+        # wait a little bit in case the process dies on a network error
         time.sleep(0.5)
         if not self._proc_is_alive():
             raise Exception('Unable to spawn burp process')
         _, w, _ = select([], [self.proc.stdin], [], self.timeout)
         if self.proc.stdin not in w:
-            self.proc.kill()
+            self._kill_burp()
             raise OSError('Unable to setup burp client')
         self.proc.stdin.write('j:pretty-print-off\n')
         js = self._read_proc_stdout()
@@ -269,7 +287,7 @@ class Burp(Burp1):
             except (TimeoutError, IOError, Exception) as e:
                 # the os throws an exception if there is no data or timeout
                 self._logger('warning', str(e))
-                self.proc.terminate()
+                self._kill_burp()
                 break
         return js
 
@@ -296,7 +314,7 @@ class Burp(Burp1):
         except TimeoutError as e:
             msg = 'Cannot send command: {}'.format(str(e))
             self._logger('error', msg)
-            self.proc.terminate()
+            self._kill_burp()
             raise BUIserverException(msg)
         except (OSError, Exception) as e:
             msg = 'Cannot launch burp process: {}'.format(str(e))
