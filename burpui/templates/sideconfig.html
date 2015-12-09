@@ -9,7 +9,7 @@
               <li bs-scrollspy data-target="#includes_source"><a href="#includes_source">Includes</a></li>
             </ul>
             <h4>Client to configure</h4>
-            <ul class="nav nav-sidebar">
+            <ul class="nav nav-sidebar" ng-cloak>
               {% raw %}
               <li>
                 <ui-select ng-model="client.selected" style="width: 100%;" on-select="selectClient($item, $select)">
