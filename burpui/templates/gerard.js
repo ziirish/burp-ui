@@ -62,8 +62,12 @@ var errorsHandler = function(json) {
 			message = JSON.parse(json.message);
 		} catch(err) {
 			message = Array();
-			for (field in json.message) {
-				message.push([2, field+': '+json.message[field]]);
+			if (typeof(json.message) == 'string') {
+				message.push([2, json.message]);
+			} else {
+				for (field in json.message) {
+					message.push([2, field+': '+json.message[field]]);
+				}
 			}
 		}
 	} else {
