@@ -68,7 +68,7 @@ cp ${CONFIG_DIR}/burp-ui/burpui.cfg /etc/burp/burpui.cfg
 
 # patch demo with piwik
 REP=$(cat ${CONFIG_DIR}/patch/piwik.patch)
-perl -i -pe 's#^.*@DEMO@.*$#'$REP'#' /usr/local/lib/python2.7/dist-packages/burpui/templates/layout.html
+perl -i -pe "s#^.*@DEMO@.*\$#$REP#" /usr/local/lib/python2.7/dist-packages/burpui/templates/layout.html
 
 # cleanup
 rm -rf /var/lib/apt/lists/*
