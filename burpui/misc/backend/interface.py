@@ -40,6 +40,8 @@ class BUIbackend(BUIlogging):
     refresh = None
     # Flask object
     app = Dummy()
+    # Defaults config parameters
+    defaults = {}
 
     def __init__(self, server=None, conf=None):  # pragma: no cover
         if server:

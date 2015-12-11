@@ -95,6 +95,8 @@ section as below:
     version: 1
     # agent password
     password: password
+    # number of threads that will handle requests
+    threads: 5
 
 
 Each option is commented, but here is a more detailed documentation:
@@ -107,6 +109,9 @@ Each option is commented, but here is a more detailed documentation:
 - *version*: What version of `Burp`_ this `bui-agent`_ instance manages. (see
   `Burp-UI versions <usage.html#versions>`__ for more details)
 - *password*: The shared secret between the `Burp-UI`_ server and `bui-agent`_.
+- *threads*: Number of threads that will handle requests.
+  You'll have to set *max_status_children* accordingly in your burp-server
+  configuration because every thread makes a connection to the status port.
 
 As with `Burp-UI`_, you need a specific section depending on the *version*
 value. Please refer to the `Burp-UI versions <usage.html#versions>`__ section
@@ -121,18 +126,18 @@ Here is a full usage example:
 ::
 
     # On the server called 'agent1'
-    agent1:~$ python path/to/bui-agent.py -c path/to/buiagent.cfg
+    agent1:~$ python path/to/bui-agent -c path/to/buiagent.cfg
 
     # On the server called 'agent2'
-    agent2:~$ python path/to/bui-agent.py -c path/to/buiagent.cfg
+    agent2:~$ python path/to/bui-agent -c path/to/buiagent.cfg
 
     # On the server called 'front'
-    front:~$ python path/to/burp-ui.py -c path/to/burpui.cfg
+    front:~$ python path/to/burp-ui -c path/to/burpui.cfg
 
 
 This example uses three servers. You then only need to point your browser to
-http://front:5000/ for instance, and the `Burp-UI`_ instance will *proxify* the
-requests to the two agents for you.
+http://front:5000/ for instance, and the `Burp-UI`_ instance (front) will
+*proxify* the requests to the two agents for you.
 
 
 .. _Burp: http://burp.grke.org/

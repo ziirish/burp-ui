@@ -5,9 +5,13 @@ import re
 import time
 import sys
 import logging
-import pickle
 import traceback
+import threading
 import socket
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
 try:
     import ujson as json
 except ImportError:
@@ -25,24 +29,62 @@ from logging.handlers import RotatingFileHandler
 from .exceptions import BUIserverException
 from .misc.backend.interface import BUIbackend
 
-g_port = '10000'
-g_bind = '::'
-g_ssl = 'False'
-g_version = '1'
-g_sslcert = ''
-g_sslkey = ''
-g_password = 'password'
+from Queue import Queue
+
+g_port = u'10000'
+g_bind = u'::'
+g_ssl = u'False'
+g_version = u'1'
+g_sslcert = u''
+g_sslkey = u''
+g_password = u'password'
+g_threads = u'5'
 
 DISCLOSURE = 5
 
 
-class BUIAgent(BUIbackend):
+class BurpHandler(BUIbackend):
     # These functions MUST be implemented because we inherit an abstract class.
     # The hack here is to get the list of the functions and let the interpreter
     # think we don't have to implement them.
     # Thanks to this list, we know what function are implemented by our backend.
     foreign = BUIbackend.__abstractmethods__
     BUIbackend.__abstractmethods__ = frozenset()
+
+    def __init__(self, vers=1, logger=None, conf=None):
+        self.vers = vers
+        self.logger = logger
+
+        module = 'burpui.misc.backend.burp{0}'.format(self.vers)
+        try:
+            sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+            mod = __import__(module, fromlist=['Burp'])
+            Client = mod.Burp
+            self.backend = Client(conf=conf)
+            self.backend.set_logger(self.logger)
+        except Exception as e:
+            self._logger('error', '{}\n\nFailed loading backend for Burp version {}: {}'.format(traceback.format_exc(), self.vers, str(e)))
+            sys.exit(2)
+
+    def __getattribute__(self, name):
+        # always return this value because we need it and if we don't do that
+        # we'll end up with an infinite loop
+        if name == 'foreign':
+            return object.__getattribute__(self, name)
+        # now we can retrieve the 'foreign' list and know if the object called
+        # is in the backend
+        if name in self.foreign:
+            return getattr(self.backend, name)
+        return object.__getattribute__(self, name)
+
+
+class BUIAgent(BUIbackend):
+    BUIbackend.__abstractmethods__ = frozenset()
+    defaults = {
+        'port': g_port, 'bind': g_bind,
+        'ssl': g_ssl, 'sslcert': g_sslcert, 'sslkey': g_sslkey,
+        'version': g_version, 'password': g_password, 'threads': g_threads
+    }
 
     def __init__(self, conf=None, debug=False, logfile=None):
         global g_port, g_bind, g_ssl, g_version, g_sslcert, g_sslkey, g_password
@@ -74,15 +116,15 @@ class BUIAgent(BUIbackend):
             self.logger.addHandler(handler)
             self._logger('info', 'conf: ' + self.conf)
             self._logger('info', 'level: ' + logging.getLevelName(lvl))
-        if not conf:
+        if not self.conf:
             raise IOError('No configuration file found')
 
         config = ConfigParser.ConfigParser({
             'port': g_port, 'bind': g_bind,
             'ssl': g_ssl, 'sslcert': g_sslcert, 'sslkey': g_sslkey,
-            'version': g_version, 'password': g_password
+            'version': g_version, 'password': g_password, 'threads': g_threads
         })
-        with open(conf) as fp:
+        with open(self.conf) as fp:
             config.readfp(fp)
             try:
                 self.port = self._safe_config_get(config.getint, 'port', 'Global', cast=int)
@@ -96,32 +138,11 @@ class BUIAgent(BUIbackend):
                 self.sslcert = self._safe_config_get(config.get, 'sslcert', 'Global')
                 self.sslkey = self._safe_config_get(config.get, 'sslkey', 'Global')
                 self.password = self._safe_config_get(config.get, 'password', 'Global')
+                self.threads = self._safe_config_get(config.getint, 'threads', 'Global', cast=int)
             except ConfigParser.NoOptionError as e:
                 raise e
 
-        module = 'burpui.misc.backend.burp{0}'.format(self.vers)
-        try:
-            sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-            mod = __import__(module, fromlist=['Burp'])
-            Client = mod.Burp
-            self.backend = Client(conf=conf)
-            self.backend.set_logger(self.logger)
-        except Exception as e:
-            self._logger('error', '{}\n\nFailed loading backend for Burp version {}: {}'.format(traceback.format_exc(), self.vers, str(e)))
-            sys.exit(2)
-
         self.server = AgentServer((self.bind, self.port), AgentTCPHandler, self)
-
-    def __getattribute__(self, name):
-        # always return this value because we need it and if we don't do that
-        # we'll end up with an infinite loop
-        if name == 'foreign':
-            return object.__getattribute__(self, name)
-        # now we can retrieve the 'foreign' list and know if the object called
-        # is in the backend
-        if name in self.foreign:
-            return getattr(self.backend, name)
-        return object.__getattribute__(self, name)
 
     def run(self):
         try:
@@ -141,63 +162,66 @@ class BUIAgent(BUIbackend):
 
 class AgentTCPHandler(SocketServer.BaseRequestHandler):
     "One instance per connection.  Override handle(self) to customize action."
+
     def handle(self):
-        # self.request is the client connection
+        """self.request is the client connection"""
         try:
             self.request.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-            while True:
-                err = None
-                lengthbuf = self.request.recv(8)
-                length, = struct.unpack('!Q', lengthbuf)
-                data = self.recvall(length)
-                self.server.agent._logger('info', 'recv: {}'.format(data))
-                txt = data.decode('UTF-8')
-                if txt == 'RE':
-                    break
-                j = json.loads(txt)
-                if j['password'] != self.server.agent.password:
-                    self.server.agent._logger('warning', '-----> Wrong Password <-----')
-                    self.request.sendall(b'KO')
-                    continue
-                try:
-                    if j['func'] == 'restore_files':
-                        res, err = getattr(self.server.agent, j['func'])(**j['args'])
-                    else:
-                        if j['args']:
-                            if 'pickled' in j and j['pickled']:
-                                # de-serialize arguments if needed
-                                j['args'] = pickle.loads(j['args'])
-                            res = json.dumps(getattr(self.server.agent, j['func'])(**j['args']))
-                        else:
-                            res = json.dumps(getattr(self.server.agent, j['func'])())
-                    self.server.agent._logger('info', 'result: {}'.format(res))
-                    self.request.sendall(b'OK')
-                except BUIserverException as e:
-                    self.request.sendall(b'ER')
-                    res = str(e)
-                    self.request.sendall(struct.pack('!Q', len(res)))
-                    self.request.sendall(res.encode('UTF-8'))
-                    continue
+            self.cli = self.server.clients.get()
+
+            err = None
+            lengthbuf = self.request.recv(8)
+            length, = struct.unpack('!Q', lengthbuf)
+            data = self.recvall(length)
+            self.server.agent._logger('info', 'recv: {}'.format(data))
+            txt = data.decode('UTF-8')
+            if txt == 'RE':
+                return
+            j = json.loads(txt)
+            if j['password'] != self.server.agent.password:
+                self.server.agent._logger('warning', '-----> Wrong Password <-----')
+                self.request.sendall(b'KO')
+                return
+            try:
                 if j['func'] == 'restore_files':
-                    if err:
-                        self.request.sendall(b'KO')
-                        self.request.sendall(struct.pack('!Q', len(err)))
-                        self.request.sendall(err.encode('UTF-8'))
-                        self.server.agent._logger('error', 'Restoration failed')
-                        continue
-                    self.request.sendall(b'OK')
-                    size = os.path.getsize(res)
-                    self.request.sendall(struct.pack('!Q', size))
-                    with open(res, 'rb') as f:
-                        buf = f.read(1024)
-                        while buf:
-                            self.server.agent._logger('info', 'sending {} Bytes'.format(len(buf)))
-                            self.request.sendall(buf)
-                            buf = f.read(1024)
-                    os.unlink(res)
+                    res, err = getattr(self.cli, j['func'])(**j['args'])
                 else:
-                    self.request.sendall(struct.pack('!Q', len(res)))
-                    self.request.sendall(res.encode('UTF-8'))
+                    if j['args']:
+                        if 'pickled' in j and j['pickled']:
+                            # de-serialize arguments if needed
+                            from base64 import b64decode
+                            j['args'] = pickle.loads(b64decode(j['args']))
+                        res = json.dumps(getattr(self.cli, j['func'])(**j['args']))
+                    else:
+                        res = json.dumps(getattr(self.cli, j['func'])())
+                self.server.agent._logger('info', 'result: {}'.format(res))
+                self.request.sendall(b'OK')
+            except BUIserverException as e:
+                self.request.sendall(b'ER')
+                res = str(e)
+                self.request.sendall(struct.pack('!Q', len(res)))
+                self.request.sendall(res.encode('UTF-8'))
+                return
+            if j['func'] == 'restore_files':
+                if err:
+                    self.request.sendall(b'KO')
+                    self.request.sendall(struct.pack('!Q', len(err)))
+                    self.request.sendall(err.encode('UTF-8'))
+                    self.server.agent._logger('error', 'Restoration failed')
+                    return
+                self.request.sendall(b'OK')
+                size = os.path.getsize(res)
+                self.request.sendall(struct.pack('!Q', size))
+                with open(res, 'rb') as f:
+                    buf = f.read(1024)
+                    while buf:
+                        self.server.agent._logger('info', 'sending {} Bytes'.format(len(buf)))
+                        self.request.sendall(buf)
+                        buf = f.read(1024)
+                os.unlink(res)
+            else:
+                self.request.sendall(struct.pack('!Q', len(res)))
+                self.request.sendall(res.encode('UTF-8'))
         except AttributeError as e:
             self.server.agent._logger('warning', '{}\nWrong method => {}'.format(traceback.format_exc(), str(e)))
             self.request.sendall(b'KO')
@@ -205,8 +229,8 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
         except Exception as e:
             self.server.agent._logger('error', '!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
         finally:
+            self.server.clients.put(self.cli)
             try:
-                self.request.shutdown(socket.SHUT_RDWR)
                 self.request.close()
             except Exception as e:
                 self.server.agent._logger('error', '!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
@@ -228,13 +252,16 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
 
 
 class AgentServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
-    # Ctrl-C will cleanly kill all spawned threads
-    daemon_threads = True
     # much faster rebinding
     allow_reuse_address = True
 
     def __init__(self, server_address, RequestHandlerClass, agent=None):
+        """
+        :param agent: Agent instance
+        :type agent: :class:`BUIAgent`
+        """
         self.agent = agent
+        self.numThreads = self.agent.threads
         SocketServer.TCPServer.__init__(self, server_address, RequestHandlerClass)
         if self.agent.ssl:
             import ssl
@@ -245,3 +272,36 @@ class AgentServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
                 keyfile=self.agent.sslkey,
                 ssl_version=ssl.PROTOCOL_SSLv23
             )
+
+    def serve_forever(self):
+        """Handle one request at a time until doomsday"""
+        # set up the threadpool
+        self.requests = Queue(self.numThreads)
+        self.clients = Queue(self.numThreads)
+
+        for x in range(self.numThreads):
+            cli = BurpHandler(self.agent.vers, self.agent.logger, self.agent.conf)
+            self.clients.put(cli)
+            t = threading.Thread(target=self.process_request_thread)
+            t.setDaemon(1)
+            t.start()
+
+        # server main loop
+        while True:
+            self.handle_request()
+
+        self.server_close()
+
+    def process_request_thread(self):
+        """obtain request from queue instead of directly from server socket"""
+        while True:
+            SocketServer.ThreadingMixIn.process_request_thread(self, *self.requests.get())
+
+    def handle_request(self):
+        """simply collect requests and put them on the queue for the workers"""
+        try:
+            request, client_address = self.get_request()
+        except socket.error:
+            return
+        if self.verify_request(request, client_address):
+            self.requests.put((request, client_address))
