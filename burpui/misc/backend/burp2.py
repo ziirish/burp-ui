@@ -161,8 +161,11 @@ class Burp(Burp1):
         self._logger('info', 'burp conf srv: {}'.format(self.burpconfsrv))
         self._logger('info', 'command timeout: {}'.format(self.timeout))
         self._logger('info', 'burp version: {}'.format(self.client_version))
-        # make the connection
-        self.status()
+        try:
+            # make the connection
+            self.status()
+        except BUIserverException:
+            pass
 
     def __exit__(self, type, value, traceback):
         """try not to leave child process server side"""

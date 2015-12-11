@@ -221,8 +221,11 @@ class Burp(BUIbackend):
         self._logger('info', 'burp conf cli: %s', self.burpconfcli)
         self._logger('info', 'burp conf srv: %s', self.burpconfsrv)
         self._logger('info', 'tmpdir: %s', self.tmpdir)
-        # make the connection
-        self.status()
+        try:
+            # make the connection
+            self.status()
+        except BUIserverException:
+            pass
 
     """
     Utilities functions
