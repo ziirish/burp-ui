@@ -109,6 +109,8 @@ mkdir -p /tmp/burp2/CA-client
 chgrp -R burpui /tmp/burp2
 chmod -R g+w /tmp/burp2
 
+sed -i "s/^max_status_children.*$/max_status_children = 100/" /etc/burp/burp-server.conf
+
 /usr/sbin/burp -g -c /etc/burp/burp-server.conf
 
 # cleanup

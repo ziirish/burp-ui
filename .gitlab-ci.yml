@@ -54,8 +54,9 @@ build:py3:
 deploy:demo:
   stage: deploy
   script:
-  - cd docker/
-  - find . -name "install" | xargs sed -i "s/@build@/$(git rev-parse HEAD)/"
+  - find docker/ -name "install" | xargs sed -i "s/@build@/$(git rev-parse HEAD)/"
+  - cp -r docker/ /srv/demo/
+  - cd /srv/demo/docker/
   - docker-compose build
   - docker-compose stop
   - docker-compose rm -f
