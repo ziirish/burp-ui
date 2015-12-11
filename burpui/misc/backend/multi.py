@@ -4,8 +4,11 @@ import socket
 import errno
 import time
 import struct
-import pickle
 import traceback
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
 try:
     import ujson as json
 except ImportError:
@@ -412,14 +415,16 @@ class NClient(BUIbackend, local):
         """See :func:`burpui.misc.backend.interface.BUIbackend.store_conf_cli`"""
         # serialize data as it is a nested dict
         # TODO: secure the serialization
-        data = {'func': 'store_conf_cli', 'args': pickle.dumps({'data': data, 'conf': conf, 'client': client}), 'pickled': True}
+        from base64 import b64encode
+        data = {'func': 'store_conf_cli', 'args': b64encode(pickle.dumps({'data': data, 'conf': conf, 'client': client}, -1)), 'pickled': True}
         return json.loads(self.do_command(data))
 
     def store_conf_srv(self, data, conf=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.store_conf_srv`"""
         # serialize data as it is a nested dict
         # TODO: secure the serialization
-        data = {'func': 'store_conf_srv', 'args': pickle.dumps({'data': data, 'conf': conf}), 'pickled': True}
+        from base64 import b64encode
+        data = {'func': 'store_conf_srv', 'args': b64encode(pickle.dumps({'data': data, 'conf': conf}, -1)), 'pickled': True}
         return json.loads(self.do_command(data))
 
     def expand_path(self, path=None, client=None, agent=None):
