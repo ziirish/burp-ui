@@ -74,7 +74,7 @@ cat > /etc/supervisor/conf.d/buiagent.conf <<EOF
 [program:buiagent]
 priority=20
 directory=/tmp
-command=/usr/local/bin/bui-agent -vvvv
+command=/usr/local/bin/bui-agent
 user=burpui
 autostart=false
 autorestart=true
