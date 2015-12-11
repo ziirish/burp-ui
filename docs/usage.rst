@@ -108,6 +108,24 @@ Each option is commented, but here is a more detailed documentation:
 - *refresh*: Time in seconds between two refresh of the interface.
 - *liverefresh*: Time in seconds between two refresh of the *live-monitor* page.
 
+Production
+----------
+
+The `burpui.cfg`_ configuration file contains a ``[Production]`` section as
+follow:
+
+::
+
+    [Production]
+    # storage backend (only used with gunicorn) for session and cache
+    # may be either 'default' or 'redis'
+    storage: default
+    # redis server to connect to
+    redis: localhost:6379
+
+
+These settings are only used when Gunicorn is enabled and used.
+
 Modes
 -----
 

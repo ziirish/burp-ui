@@ -1,7 +1,7 @@
 # -*- coding: utf8 -*-
 
 # This is a submodule we can also use "from ..api import api"
-from . import api
+from . import api, cache_key
 from ..exceptions import BUIserverException
 
 from flask.ext.restplus import Resource, fields
@@ -23,6 +23,7 @@ class ServersStats(Resource):
         'name': fields.String(required=True, description='Server name'),
     })
 
+    @api.cache.cached(timeout=120, key_prefix=cache_key)
     @api.marshal_list_with(servers_fields, code=200, description='Success')
     @api.doc(
         responses={
