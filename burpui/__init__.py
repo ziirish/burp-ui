@@ -182,8 +182,21 @@ def init(conf=None, debug=0, logfile=None, gunicorn=True, unittest=False):
                 ses.init_app(app)
             except:
                 pass
+            api.cache.init_app(
+                app,
+                config={
+                    'CACHE_TYPE': 'redis',
+                    'CACHE_REDIS_HOST': host,
+                    'CACHE_REDIS_PORT': port,
+                    'CACHE_REDIS_DB': 1
+                }
+            )
+        else:
+            api.cache.init_app(app)
 
         app.wsgi_app = ProxyFix(app.wsgi_app)
+    else:
+        api.cache.init_app(app)
 
     # Then we load our routes
     view.init_bui(app)

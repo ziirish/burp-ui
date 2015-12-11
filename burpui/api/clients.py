@@ -8,7 +8,7 @@
 
 """
 # This is a submodule we can also use "from ..api import api"
-from . import api
+from . import api, cache_key
 from ..exceptions import BUIserverException
 
 from six import iteritems
@@ -194,6 +194,7 @@ class ClientsReport(Resource):
         'clients': fields.Nested(client_fields, as_list=True, required=True),
     })
 
+    @api.cache.cached(timeout=120, key_prefix=cache_key)
     @api.marshal_with(report_fields, code=200, description='Success')
     @api.doc(
         params={
@@ -305,6 +306,7 @@ class ClientsStats(Resource):
         'percent': fields.Integer(description='Percentage done'),
     })
 
+    @api.cache.cached(timeout=120, key_prefix=cache_key)
     @api.marshal_list_with(client_fields, code=200, description='Success')
     @api.doc(
         params={

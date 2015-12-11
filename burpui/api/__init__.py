@@ -12,14 +12,19 @@ import os
 import sys
 import json
 
-from flask import Blueprint, Response
+from flask import Blueprint, Response, request
 from flask.ext.restplus import Api
 from flask.ext.login import current_user
+from flask.ext.cache import Cache
 from importlib import import_module
 from functools import wraps
 
 if sys.version_info >= (3, 0):  # pragma: no cover
     basestring = str
+
+
+def cache_key():
+    return '{}-{}-{}'.format(current_user.get_id(), request.path, request.values)
 
 
 def api_login_required(func):
@@ -47,6 +52,7 @@ def api_login_required(func):
 
 class ApiWrapper(Api):
     """Wrapper class around :class:`flask.ext.restplus.Api`"""
+    cache = Cache(config={'CACHE_TYPE': 'null'})
     loaded = False
     release = None
     __doc__ = None

@@ -63,7 +63,7 @@ Reverse Proxy
 You may want to add a reverse proxy so `Burp-UI`_ can be accessed on port 80 (or
 443) along with other applications.
 
-Here is a sample configuration for nginx:
+Here is a sample configuration for Nginx:
 
 ::
 
@@ -89,5 +89,20 @@ Here is a sample configuration for nginx:
     }
 
 
+Production
+----------
+
+We can consider the `demo`_ as a production example of what you can setup/expect
+in your environment.
+It is using `Gunicorn`_ along with Nginx as described above.
+
+In order to improve performances, `Redis`_ can be used to cache sessions and
+various API calls.
+
+See the `production <usage.html#production>`_ section of the
+`usage <usage.html>`_ page.
+
 .. _Gunicorn: http://gunicorn.org/
 .. _Burp-UI: https://git.ziirish.me/ziirish/burp-ui
+.. _demo: http://demo.ziirish.me/
+.. _Redis: http://redis.io/
