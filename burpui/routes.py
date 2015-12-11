@@ -112,6 +112,7 @@ def cli_settings(server=None, client=None, conf=None):
 def live_monitor(server=None, name=None):
     """Live status monitor view"""
     server = server or request.args.get('server')
+    view.bui.cli.is_one_backup_running()
     if view.bui.standalone:
         if not view.bui.cli.running:
             flash('Sorry, there are no running backups', 'warning')
