@@ -169,16 +169,16 @@ class BUIServer(Flask):
                     cast=int
                 )
 
-                # Session options
+                # Production options
                 self.storage = self._safe_config_get(
                     config.get,
                     'storage',
-                    'Session'
+                    'Production'
                 )
                 self.redis = self._safe_config_get(
                     config.get,
                     'redis',
-                    'Session'
+                    'Production'
                 )
 
             except ConfigParser.NoOptionError as e:
