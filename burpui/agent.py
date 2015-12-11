@@ -167,7 +167,18 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
         """self.request is the client connection"""
         try:
             self.request.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-            self.cli = self.server.clients.get()
+            # try to pick the first available client
+            self.idx = -1
+            for (i, l) in enumerate(self.server.locks):
+                if l.acquire(False):
+                    self.cli = self.server.clients[i]
+                    self.idx = i
+
+            # if none of them are available pick one randomly and wait for it
+            if self.idx == -1:
+                from random import randint
+                self.idx = randint(0, len(self.server.locks))
+                self.server.locks[self.idx].acquire()
 
             err = None
             lengthbuf = self.request.recv(8)
@@ -229,7 +240,7 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
         except Exception as e:
             self.server.agent._logger('error', '!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
         finally:
-            self.server.clients.put(self.cli)
+            self.server.locks[self.idx].release()
             try:
                 self.request.close()
             except Exception as e:
@@ -262,6 +273,14 @@ class AgentServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
         """
         self.agent = agent
         self.numThreads = self.agent.threads
+        self.locks = []
+        self.clients = []
+        for i in range(self.numThreads):
+            cli = BurpHandler(self.agent.vers, self.agent.logger, self.agent.conf)
+            lock = threading.Lock()
+            self.clients.append(cli)
+            self.locks.append(lock)
+
         SocketServer.TCPServer.__init__(self, server_address, RequestHandlerClass)
         if self.agent.ssl:
             import ssl
@@ -277,11 +296,8 @@ class AgentServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
         """Handle one request at a time until doomsday"""
         # set up the threadpool
         self.requests = Queue(self.numThreads)
-        self.clients = Queue(self.numThreads)
 
         for x in range(self.numThreads):
-            cli = BurpHandler(self.agent.vers, self.agent.logger, self.agent.conf)
-            self.clients.put(cli)
             t = threading.Thread(target=self.process_request_thread)
             t.setDaemon(1)
             t.start()
