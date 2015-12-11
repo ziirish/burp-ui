@@ -78,9 +78,9 @@ class Burp(Burp1):
             'tmpdir': g_tmpdir
         }
         self.running = []
+        version = ''
         if conf:
             config = ConfigParser.ConfigParser(self.defaults)
-            version = ''
             with codecs.open(conf, 'r', 'utf-8') as fp:
                 config.readfp(fp)
                 try:
@@ -161,6 +161,8 @@ class Burp(Burp1):
         self._logger('info', 'burp conf srv: {}'.format(self.burpconfsrv))
         self._logger('info', 'command timeout: {}'.format(self.timeout))
         self._logger('info', 'burp version: {}'.format(self.client_version))
+        # make the connection
+        self.status()
 
     def __exit__(self, type, value, traceback):
         """try not to leave child process server side"""
