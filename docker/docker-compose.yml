@@ -16,7 +16,10 @@ demo-burp2:
 
 demo-redis:
   restart: always
-  image: sameersbn/redis:latest
+  image: redis:3
+  command: redis-server --appendonly yes
+  volumes:
+    - /srv/demo/redis:/data
 
 demo-cli1:
   restart: always
