@@ -34,6 +34,7 @@ build:py2:
   - build
   only:
   - master
+  - demo
 #  artifacts:
 #    path:
 #    - dist/
