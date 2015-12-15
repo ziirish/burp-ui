@@ -177,8 +177,9 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
             # if none of them are available pick one randomly and wait for it
             if self.idx == -1:
                 from random import randint
-                self.idx = randint(0, len(self.server.locks))
+                self.idx = randint(0, len(self.server.locks) - 1)
                 self.server.locks[self.idx].acquire()
+                self.cli = self.server.clients[self.idx]
 
             err = None
             lengthbuf = self.request.recv(8)
