@@ -11,6 +11,7 @@
 import os
 import sys
 import json
+import multiprocessing
 
 from flask import Blueprint, Response, request
 from flask.ext.restplus import Api
@@ -21,6 +22,37 @@ from functools import wraps
 
 if sys.version_info >= (3, 0):  # pragma: no cover
     basestring = str
+
+
+def parallel_loop(func=None, elem=None):
+    ret = []
+
+    if not callable(func):
+        api.abort(500, 'The provided \'func\' is not callable!')
+    if not elem:
+        return []
+
+    # create our process pool/queue
+    output = multiprocessing.Queue()
+    processes = [
+        multiprocessing.Process(
+            target=func,
+            args=(e, output)
+        ) for e in elem
+    ]
+    # start the processes
+    [p.start() for p in processes]
+    # wait for process termination
+    [p.join() for p in processes]
+
+    for p in processes:
+        tmp = output.get()
+        if isinstance(tmp, basestring):
+            api.abort(500, tmp)
+        elif tmp:
+            ret.append(tmp)
+
+    return ret
 
 
 def cache_key():
