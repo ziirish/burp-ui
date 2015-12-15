@@ -266,7 +266,7 @@ class Alert(Resource):
         message = args['message']
         level = args['level'] or 'danger'
         flash(args['message'], level)
-        return {'message': message}, 200
+        return {'message': message}, 201
 
 
 @ns.route('/about.json',

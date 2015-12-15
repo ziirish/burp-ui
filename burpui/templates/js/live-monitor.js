@@ -59,11 +59,17 @@ app.controller('LiveCtrl', function($scope, $http, $interval) {
 				$scope.clients = [];
 				$scope.clients.push(data);
 			}
+			if ($scope.clients.length == 0) {
+				$http.post('{{ url_for("api.alert") }}', {'message': 'No more backup running'});
+				document.location = '{{ url_for("view.home") }}';
+			}
 		})
 		.error(function(data, status, headers, config) {
-			// TODO: redirect when there are no running backup
 			$scope.stopTimer();
 			errorsHandler(data);
+			setTimeout(function() {
+				document.location = '{{ url_for("view.home") }}';
+			}, 5000);
 		});
 	};
 
