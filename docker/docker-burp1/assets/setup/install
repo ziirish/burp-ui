@@ -22,8 +22,7 @@ cd
 pip install --upgrade pip
 pip install "requests[security]"
 pip install --upgrade $BURPUI
-pip install redis
-pip install Flask-Session
+pip install ujson
 
 # Create burp-ui User
 useradd -m -s /bin/bash -d /var/lib/burpui -c 'Burp-UI daemon user' -u 5337 burpui
