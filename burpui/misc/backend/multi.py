@@ -5,7 +5,6 @@ import errno
 import time
 import struct
 import traceback
-import multiprocessing
 try:
     import cPickle as pickle
 except ImportError:
@@ -103,30 +102,8 @@ class Burp(BUIbackend):
             self.running[agent] = r
         else:
             r = {}
-            output = multiprocessing.Queue()
-
-            def get_running(a, i, output):
-                output.put((i, self.servers[a].is_one_backup_running(a)))
-
-            processes = [
-                (
-                    multiprocessing.Process(
-                        target=get_running,
-                        args=(a, i, output)
-                    ),
-                    a
-                ) for (i, a) in enumerate(self.servers)
-            ]
-            [p.start() for (p, a) in processes]
-            [p.join() for (p, a) in processes]
-
-            results = [output.get() for (p, a) in processes]
-            results.sort()
-
-            for (i, (p, a)) in enumerate(processes):
-                # results contains a tuple (index, response) so we 'split' it
-                _, r[a] = results[i]
-
+            for a in self.servers:
+                r[a] = self.servers[a].is_one_backup_running(a)
             self.running = r
         self.refresh = time.time()
         return r
@@ -185,53 +162,24 @@ class Burp(BUIbackend):
         """See :func:`burpui.misc.backend.interface.BUIbackend.schedule_restore`"""
         return self.servers[agent].schedule_restore(name, backup, files, strip, force, prefix, restoreto)
 
-    def _get_multi_version(self, method=None):
-        if not method:
-            raise BUIserverException('Wrong method call')
-        r = {}
-        output = multiprocessing.Queue()
-
-        def get_client_vers(key, i, output):
-            output.put((i, self.servers[key].get_client_version()))
-
-        def get_server_vers(key, i, output):
-            output.put((i, self.servers[key].get_server_version()))
-
-        if method == 'get_client_version':
-            func = get_client_vers
-        else:
-            func = get_server_vers
-
-        processes = [
-            (
-                multiprocessing.Process(
-                    target=func,
-                    args=(k, i, output)
-                ),
-                k
-            ) for (i, (k, s)) in enumerate(iteritems(self.servers))
-        ]
-        [p.start() for (p, k) in processes]
-        [p.join() for (p, k) in processes]
-
-        results = [output.get() for (p, k) in processes]
-        results.sort()
-
-        for (i, (p, k)) in enumerate(processes):
-            _, r[k] = results[i]
-
-        return r
-
     def get_client_version(self, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_client_version`"""
         if not agent:
-            return self._get_multi_version('get_client_version')
+            r = {}
+            for (key, serv) in iteritems(self.servers):
+                v = serv.get_client_version() or None
+                r[key] = v
+            return r
         return self.servers[agent].get_client_version()
 
     def get_server_version(self, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_server_version`"""
         if not agent:
-            return self._get_multi_version('get_server_version')
+            r = {}
+            for (key, serv) in iteritems(self.servers):
+                v = serv.get_server_version() or None
+                r[key] = v
+            return r
         return self.servers[agent].get_server_version()
 
 
