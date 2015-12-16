@@ -1,5 +1,8 @@
 CONFIG = {
     'working_dir': '/',
+    'environment': {
+        'SERVER_SOFTWARE': 'gunicorn',
+    },
     'args': (
         '--bind=0.0.0.0:5000',
         '--user=burpui',
