@@ -11,14 +11,14 @@ import sys
 import os
 
 try:
-    import ConfigParser
+    import ConfigParser  # NOQA
 except ImportError:
-    import configparser as ConfigParser
+    import configparser as ConfigParser  # NOQA
 
 IS_GUNICORN = 'gunicorn' in os.environ.get('SERVER_SOFTWARE', '')
 
 if IS_GUNICORN:
-    from gevent.local import local
+    from gevent.local import local  # NOQA
 else:
     local = object
 
@@ -59,7 +59,7 @@ def patch_module(name, items=None):
 
 def patch_json():
     try:
-        import ujson
+        import ujson  # NOQA
     except ImportError:
         # ujson is not available, we won't patch anything
         return

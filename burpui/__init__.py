@@ -87,13 +87,14 @@ def init(conf=None, debug=0, logfile=None, gunicorn=True, unittest=False):
     from .server import BUIServer as BurpUI
     from .routes import view
     from .api import api, apibp
-    from ._compat import patch_json
+
+    if not unittest:
+        from ._compat import patch_json
+        patch_json()
 
     if gunicorn:
         from gevent import monkey
         monkey.patch_all()
-
-    patch_json()
 
     # We initialize the core
     app = BurpUI()

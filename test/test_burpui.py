@@ -87,7 +87,7 @@ class BurpuiAPITestCase(TestCase):
 
     def create_app(self):
         conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test2.cfg')
-        bui = BUIinit(gunicorn=False)
+        bui = BUIinit(gunicorn=False, unittest=True)
         bui.config['TESTING'] = True
         bui.config['LOGIN_DISABLED'] = True
         bui.config['CFG'] = conf
@@ -211,7 +211,7 @@ class BurpuiRoutesTestCase(TestCase):
 
     def create_app(self):
         conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test4.cfg')
-        bui = BUIinit(conf, gunicorn=False)
+        bui = BUIinit(conf, gunicorn=False, unittest=True)
         bui.config['TESTING'] = True
         bui.config['LOGIN_DISABLED'] = True
         bui.config['LIVESERVER_PORT'] = 5001
@@ -244,7 +244,7 @@ class BurpuiLoginTestCase(TestCase):
 
     def create_app(self):
         conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../burpui.sample.cfg')
-        bui = BUIinit(conf, False, None, False)
+        bui = BUIinit(conf, False, None, False, unittest=True)
         bui.config['TESTING'] = True
         bui.config['LIVESERVER_PORT'] = 5001
         bui.config['WTF_CSRF_ENABLED'] = False
@@ -285,7 +285,7 @@ class BurpuiACLTestCase(TestCase):
 
     def create_app(self):
         conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test6.cfg')
-        bui = BUIinit(conf, False, None, False)
+        bui = BUIinit(conf, False, None, False, unittest=True)
         bui.config['TESTING'] = True
         bui.config['LIVESERVER_PORT'] = 5001
         bui.config['WTF_CSRF_ENABLED'] = False
@@ -324,9 +324,9 @@ class BurpuiTestInit(TestCase):
     def create_app(self):
         conf1 = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test7-1.cfg')
         conf2 = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test7-2.cfg')
-        BUIinit(conf1, False, None, False)
-        BUIinit(conf2, False, None, False)
-        bui = BUIinit(None, False, None, False)
+        BUIinit(conf1, False, None, False, unittest=True)
+        BUIinit(conf2, False, None, False, unittest=True)
+        bui = BUIinit(None, False, None, False, unittest=True)
         bui.config['TESTING'] = True
         bui.config['LIVESERVER_PORT'] = 5001
         bui.config['WTF_CSRF_ENABLED'] = False
@@ -335,10 +335,10 @@ class BurpuiTestInit(TestCase):
 
     def test_exception(self):
         _, self.tmpFile = tempfile.mkstemp()
-        self.assertRaises(IOError, BUIinit, 'thisfileisnotlikelytoexist', True, self.tmpFile, False)
-        self.assertRaises(IOError, BUIinit, 'thisfileisnotlikelytoexist', False, self.tmpFile, False)
+        self.assertRaises(IOError, BUIinit, 'thisfileisnotlikelytoexist', True, self.tmpFile, False, unittest=True)
+        self.assertRaises(IOError, BUIinit, 'thisfileisnotlikelytoexist', False, self.tmpFile, False, unittest=True)
         conf3 = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test7-3.cfg')
-        self.assertRaises(ImportError, BUIinit, conf3, False, None, False)
+        self.assertRaises(ImportError, BUIinit, conf3, False, None, False, unittest=True)
 
 
 #class BurpuiAPILoginTestCase(TestCase):
