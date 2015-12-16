@@ -196,7 +196,8 @@ def init(conf=None, debug=0, logfile=None, gunicorn=True, unittest=False):
                 }
             )
             # clear cache at startup in case we removed or added servers
-            api.cache.clear()
+            with app.app_context():
+                api.cache.clear()
         else:
             api.cache.init_app(app)
 
