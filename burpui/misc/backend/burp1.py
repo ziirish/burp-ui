@@ -21,10 +21,6 @@ try:
     import ujson as json
 except ImportError:
     import json
-try:
-    import ConfigParser
-except ImportError:  # pragma: no cover
-    import configparser as ConfigParser
 
 from six import iteritems
 from pipes import quote
@@ -33,6 +29,7 @@ from .interface import BUIbackend
 from ..parser.burp1 import Parser
 from ...utils import human_readable as _hr, BUIcompress
 from ...exceptions import BUIserverException
+from ..._compat import ConfigParser
 
 if sys.version_info >= (3, 0):  # pragma: no cover
     from urllib.parse import unquote

@@ -17,10 +17,6 @@ try:
 except ImportError:
     import json
 try:
-    import ConfigParser
-except ImportError:
-    import configparser as ConfigParser
-try:
     import SocketServer
 except ImportError:
     import socketserver as SocketServer
@@ -28,6 +24,7 @@ except ImportError:
 from logging.handlers import RotatingFileHandler
 from .exceptions import BUIserverException
 from .misc.backend.interface import BUIbackend
+from ._compat import ConfigParser
 
 from Queue import Queue
 

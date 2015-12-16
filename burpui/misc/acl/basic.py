@@ -1,10 +1,7 @@
 # -*- coding: utf8 -*-
 from .interface import BUIacl, BUIaclLoader
+from ..._compat import ConfigParser
 
-try:
-    import ConfigParser
-except ImportError:  # pragma: no cover
-    import configparser as ConfigParser
 import json
 
 

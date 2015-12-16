@@ -7,15 +7,12 @@
 .. moduleauthor:: Ziirish <ziirish@ziirish.info>
 
 """
-try:
-    import ConfigParser
-except ImportError:
-    import configparser as ConfigParser
 import traceback
 import sys
 import os
 
 from .misc.auth.handler import UserAuthHandler
+from ._compat import ConfigParser
 
 from flask import Flask
 
