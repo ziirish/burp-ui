@@ -10,10 +10,6 @@ try:
     import ujson as json
 except ImportError:
     import json
-try:
-    import ConfigParser
-except ImportError:
-    import configparser as ConfigParser
 
 from six import iteritems
 from select import select
@@ -22,6 +18,7 @@ from .burp1 import Burp as Burp1
 from ..parser.burp2 import Parser
 from ...utils import human_readable as _hr
 from ...exceptions import BUIserverException
+from ..._compat import ConfigParser
 
 if sys.version_info < (3, 3):
     TimeoutError = OSError

@@ -1,6 +1,8 @@
 # -*- coding: utf8 -*-
 from six import viewitems
+
 from .interface import BUIhandler, BUIuser
+from ..._compat import ConfigParser
 
 import ssl
 
@@ -8,12 +10,6 @@ try:
     from ldap3 import Server, Connection, Tls, ALL, RESTARTABLE, AUTO_BIND_TLS_BEFORE_BIND, AUTO_BIND_NONE, SIMPLE
 except ImportError:
     raise ImportError('Unable to load \'ldap3\' module')
-
-# python 3 compatibility
-try:
-    import ConfigParser
-except ImportError:
-    import configparser as ConfigParser
 
 
 class LdapLoader:

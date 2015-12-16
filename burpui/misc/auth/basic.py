@@ -1,10 +1,6 @@
 # -*- coding: utf8 -*-
 from .interface import BUIhandler, BUIuser
-
-try:
-    import ConfigParser
-except ImportError:
-    import configparser as ConfigParser
+from ..._compat import ConfigParser
 
 
 class BasicLoader:

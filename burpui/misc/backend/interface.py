@@ -7,13 +7,10 @@
 .. moduleauthor:: Ziirish <ziirish@ziirish.info>
 
 """
-try:
-    import ConfigParser
-except ImportError:
-    import configparser as ConfigParser
-
 from abc import ABCMeta, abstractmethod
+
 from ...utils import BUIlogging
+from ..._compat import ConfigParser
 
 
 class Dummy(object):

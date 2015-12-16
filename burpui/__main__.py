@@ -61,6 +61,9 @@ def server(options=None):
 
 def agent(options=None):
     from burpui.agent import BUIAgent as Agent
+    from burpui._compat import patch_json
+
+    patch_json()
 
     if not options:
         options = parse_args(mode=False, name='bui-agent')

@@ -19,8 +19,78 @@ from flask.ext.cache import Cache
 from importlib import import_module
 from functools import wraps
 
+from .._compat import IS_GUNICORN
+
 if sys.version_info >= (3, 0):  # pragma: no cover
     basestring = str
+
+
+# Implement a "parallel loop" routine either with gipc or multiprocessing
+# depending if we are under gunicorn or not
+if IS_GUNICORN:
+    def parallel_loop(func=None, elem=None):
+        import gevent
+        from gevent.queue import Queue
+        ret = []
+        api.bui.cli._logger('debug', 'Using gevent')
+
+        if not callable(func):
+            api.abort(500, 'The provided \'func\' is not callable!')
+        if not elem:
+            return []
+
+        output = Queue()
+
+        processes = [
+            gevent.spawn(
+                func,
+                e,
+                output
+            ) for e in elem
+        ]
+        # wait for process termination
+        gevent.joinall(processes)
+
+        for p in processes:
+            tmp = output.get()
+            if isinstance(tmp, basestring):
+                api.abort(500, tmp)
+            elif tmp:
+                ret.append(tmp)
+
+        return ret
+
+else:
+    def parallel_loop(func=None, elem=None):
+        import multiprocessing
+        ret = []
+
+        if not callable(func):
+            api.abort(500, 'The provided \'func\' is not callable!')
+        if not elem:
+            return []
+
+        # create our process pool/queue
+        output = multiprocessing.Queue()
+        processes = [
+            multiprocessing.Process(
+                target=func,
+                args=(e, output)
+            ) for e in elem
+        ]
+        # start the processes
+        [p.start() for p in processes]
+        # wait for process termination
+        [p.join() for p in processes]
+
+        for p in processes:
+            tmp = output.get()
+            if isinstance(tmp, basestring):
+                api.abort(500, tmp)
+            elif tmp:
+                ret.append(tmp)
+
+        return ret
 
 
 def cache_key():
