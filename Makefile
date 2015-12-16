@@ -2,8 +2,7 @@
 
 all:
 	@echo 'test           run the unit tests'
-	@echo 'pep8           check pep8 compliance'
-	@echo 'pyflakes       check for unused imports (requires pyflakes)'
+	@echo 'flake8         check pep8 compliance'
 	@echo 'check          make sure you are ready to commit'
 	@echo 'clean          cleanup the source tree'
 
@@ -27,12 +26,8 @@ clean:
 clean_coverage:
 	@rm -f .coverage
 
-pep8:
-	@echo 'Checking pep8 compliance...'
-	@pep8 --ignore=E501 burpui
-
-pyflakes:
-	@echo 'Running pyflakes...'
-	@pyflakes burpui
+flake8:
+	@echo 'Checking pep8 compliance and errors...'
+	@flake8 --ignore=E501 burpui
 
 check: pep8 pyflakes doc_coverage test

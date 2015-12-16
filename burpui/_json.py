@@ -13,6 +13,7 @@ __implements__ = ['dumps', 'loads']
 ori_dumps = None
 ori_loads = None
 
+
 # ujson does not implement all the features of the original json parser
 # the trick here is to catch such an exception to fallback to the original one
 def dumps(*args, **kwargs):

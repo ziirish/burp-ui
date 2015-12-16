@@ -209,7 +209,7 @@ class Burp(Burp1):
     def _proc_is_alive(self):
         """Check if the burp client process is still alive"""
         if self.proc:
-            return self.proc.poll() == None
+            return self.proc.poll() is None
         return False
 
     def _is_ignored(self, js):
