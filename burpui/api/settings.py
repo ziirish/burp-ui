@@ -264,6 +264,8 @@ class NewClient(Resource):
             noti.append([3, '<a href="{}">Click here</a> to edit \'{}\' configuration'.format(url_for('view.cli_settings', server=server, client=newclient), newclient)])
         else:
             noti.append([3, '<a href="{}">Click here</a> to edit \'{}\' configuration'.format(url_for('view.cli_settings', client=newclient), newclient)])
+        # clear the cache when we add a new client
+        api.cache.clear()
         return {'notif': noti}, 201
 
 
@@ -305,4 +307,6 @@ class DeleteClient(Resource):
                 api.bui.acl.is_admin(current_user.get_id())):
             api.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
 
+        # clear the cache when we remove a client
+        api.cache.clear()
         return {'notif': api.bui.cli.delete_client(client, server)}, 200

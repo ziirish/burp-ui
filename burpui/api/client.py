@@ -45,7 +45,7 @@ class ClientTree(Resource):
         'uid': fields.Integer(required=True, description='uid owner of the node'),
     })
 
-    @api.cache.cached(timeout=600, key_prefix=cache_key)
+    @api.cache.cached(timeout=3600, key_prefix=cache_key)
     @api.marshal_list_with(node_fields, code=200, description='Success')
     @api.doc(
         params={
@@ -164,7 +164,7 @@ class ClientStats(Resource):
         'windows': fields.Boolean(required=True, description='Is the client a windows system'),
     })
 
-    @api.cache.cached(timeout=120, key_prefix=cache_key)
+    @api.cache.cached(timeout=1800, key_prefix=cache_key)
     @api.marshal_with(stats_fields, code=200, description='Success')
     @api.doc(
         params={
@@ -380,7 +380,7 @@ class ClientReport(Resource):
         'date': fields.String(required=True, description='Human representation of the backup date'),
     })
 
-    @api.cache.cached(timeout=120, key_prefix=cache_key)
+    @api.cache.cached(timeout=1800, key_prefix=cache_key)
     @api.marshal_list_with(client_fields, code=200, description='Success')
     @api.doc(
         params={

@@ -23,7 +23,7 @@ class ServersStats(Resource):
         'name': fields.String(required=True, description='Server name'),
     })
 
-    @api.cache.cached(timeout=120, key_prefix=cache_key)
+    @api.cache.cached(timeout=1800, key_prefix=cache_key)
     @api.marshal_list_with(servers_fields, code=200, description='Success')
     @api.doc(
         responses={
