@@ -152,7 +152,7 @@ class BUIcompress():
     def __enter__(self):
         self.arch = None
         if self.archive == 'zip':
-            self.arch = zipfile.ZipFile(self.name, mode='w', compression=zipfile.ZIP_DEFLATED)
+            self.arch = zipfile.ZipFile(self.name, mode='w', compression=zipfile.ZIP_DEFLATED,allowZip64="True")
         elif self.archive == 'tar.gz':
             self.arch = tarfile.open(self.name, 'w:gz')
         elif self.archive == 'tar.bz2':
