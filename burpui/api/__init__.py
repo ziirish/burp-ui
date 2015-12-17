@@ -122,7 +122,7 @@ def api_login_required(func):
 
 class ApiWrapper(Api):
     """Wrapper class around :class:`flask.ext.restplus.Api`"""
-    cache = Cache(config={'CACHE_TYPE': 'null'})
+    cache = Cache(config={'CACHE_TYPE': 'null', 'CACHE_NO_NULL_WARNING': True})
     loaded = False
     release = None
     __doc__ = None
