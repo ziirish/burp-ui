@@ -3,22 +3,15 @@ import re
 import socket
 import errno
 import time
+import json
 import struct
 import traceback
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
-try:
-    import ujson as json
-except ImportError:
-    import json
 
 from six import iteritems
 
 from .interface import BUIbackend
 from ...exceptions import BUIserverException
-from ..._compat import IS_GUNICORN, ConfigParser, local
+from ..._compat import IS_GUNICORN, ConfigParser, local, pickle
 
 
 class Burp(BUIbackend):

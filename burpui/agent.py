@@ -4,18 +4,11 @@ import struct
 import re
 import time
 import sys
+import json
 import logging
 import traceback
 import threading
 import socket
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
-try:
-    import ujson as json
-except ImportError:
-    import json
 try:
     import SocketServer
 except ImportError:
@@ -24,7 +17,7 @@ except ImportError:
 from logging.handlers import RotatingFileHandler
 from .exceptions import BUIserverException
 from .misc.backend.interface import BUIbackend
-from ._compat import ConfigParser
+from ._compat import ConfigParser, pickle
 
 from Queue import Queue
 

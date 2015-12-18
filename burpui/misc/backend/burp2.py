@@ -6,10 +6,7 @@ import datetime
 import subprocess
 import codecs
 import sys
-try:
-    import ujson as json
-except ImportError:
-    import json
+import json
 
 from six import iteritems
 from select import select

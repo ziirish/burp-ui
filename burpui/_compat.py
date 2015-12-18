@@ -15,6 +15,18 @@ try:
 except ImportError:
     import configparser as ConfigParser  # NOQA
 
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
+
+if sys.version_info[0] >= 3:
+    PY3 = True
+    from urllib.parse import unquote
+else:
+    PY3 = False
+    from urllib import unquote
+
 IS_GUNICORN = 'gunicorn' in os.environ.get('SERVER_SOFTWARE', '')
 
 if IS_GUNICORN:
@@ -22,11 +34,6 @@ if IS_GUNICORN:
 else:
     local = object
 
-
-if sys.version_info[0] >= 3:
-    PY3 = True
-else:
-    PY3 = False
 
 # maps module name -> attribute name -> original item
 # e.g. "time" -> "sleep" -> built-in function sleep
