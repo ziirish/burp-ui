@@ -194,7 +194,7 @@ class Burp(BUIbackend):
         try:
             cmd = [self.burpbin, '-v']
             self.client_version = subprocess.check_output(cmd, universal_newlines=True).rstrip().replace('burp-', '')
-        except subprocess.CalledProcessError:
+        except:
             pass
 
         try:
@@ -206,7 +206,7 @@ class Burp(BUIbackend):
                 if result:
                     self.server_version = result.group(1)
                     break
-        except subprocess.CalledProcessError:
+        except:
             pass
 
         self._logger('info', 'burp port: %d', self.port)
