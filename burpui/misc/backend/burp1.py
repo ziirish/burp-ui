@@ -25,7 +25,7 @@ from .interface import BUIbackend
 from ..parser.burp1 import Parser
 from ...utils import human_readable as _hr, BUIcompress
 from ...exceptions import BUIserverException
-from ..._compat import ConfigParser, unquote
+from ..._compat import ConfigParser, unquote, PY3
 
 G_BURPPORT = u'4972'
 G_BURPHOST = u'::1'
@@ -295,7 +295,8 @@ class Burp(BUIbackend):
                 if not line:
                     continue
                 try:
-                    line = line.decode('utf-8', 'replace')
+                    if not PY3:
+                        line = line.decode('utf-8', 'replace')
                 except UnicodeDecodeError:  # pragma: no cover
                     pass
                 result.append(line)
