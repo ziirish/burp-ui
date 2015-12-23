@@ -72,8 +72,12 @@ case "$1" in
                 2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
         esac
         ;;
+  restart)
+        do_stop
+        do_start
+        ;;
   *)
-        echo "Usage: $SCRIPTNAME {start|stop}" >&2
+        echo "Usage: $SCRIPTNAME {start|stop|restart}" >&2
         exit 3
         ;;
 esac
