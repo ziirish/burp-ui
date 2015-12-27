@@ -24,6 +24,7 @@ IMPLEMENTED_LOADS_KWARGS = [
     'precise_float',
 ]
 
+
 # ujson does not implement all the features of the original json parser
 # the trick here is to catch such an exception to fallback to the original one
 def dumps(*args, **kwargs):

@@ -56,7 +56,10 @@ class Burp(BUIbackend):
 
                         self.servers[r.group(1)] = NClient(self.app, host, port, password, ssl, timeout)
 
-        self.app.logger.debug(self.servers)
+        if not self.servers:
+            self.app.logger.error('No agent configured!')
+        else:
+            self.app.logger.debug(self.servers)
         for (key, serv) in iteritems(self.servers):
             self.app.config['SERVERS'].append(key)
 

@@ -1,8 +1,7 @@
 #!/usr/bin/env python
-# coding: utf-8
+# -*- coding: utf-8 -*-
 
 import os
-import os.path
 import re
 import sys
 
@@ -177,6 +176,8 @@ with open(os.path.join(ROOT, 'requirements.txt')) as f:
 with open(os.path.join(ROOT, 'test-requirements.txt')) as f:
     test_requires = [x.strip() for x in f if x.strip()]
 
+dev_requires = ['flake8']
+
 datadir = os.path.join('share', 'burpui', 'etc')
 contrib = os.path.join('share', 'burpui', 'contrib')
 
@@ -217,6 +218,7 @@ setup(
         'gunicorn': ['gevent'],
         'gunicorn-extra': ['redis', 'Flask-Session'],
         'test': test_requires,
+        'dev': dev_requires,
     },
     tests_require=test_requires,
     classifiers=[

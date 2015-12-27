@@ -43,7 +43,7 @@ demo-bui:
   volumes:
     - /srv/demo/conf/bui:/etc/burp
   ports:
-    - 5000:5000
+    - 127.0.0.1:5000:5000
   links:
     - demo-redis
     - demo-burp1
