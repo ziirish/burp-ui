@@ -83,8 +83,9 @@ section as below:
     # On which port is the application listening
     port: 10000
     # On which address is the application listening
-    # '0.0.0.0' is the default for all IPv4
-    bind: 0.0.0.0
+    # '::' is the default for all IPv6
+    # set it to '0.0.0.0' if you want to listen on all IPv4 addresses
+    bind: ::
     # enable SSL
     ssl: true
     # ssl cert

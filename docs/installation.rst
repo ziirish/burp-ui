@@ -26,6 +26,10 @@ By default `Burp-UI`_ ships with a sample file located in
 (*$INSTALLDIR* defaults to */usr/local* when using pip **outside** a
 virtualenv)
 
+.. note::
+   It is advised to copy the sample configuration in ``/etc/burp/burpui.cfg``
+   and to edit this file so that it is not overwritten on every upgrade.
+
 Then you can run ``burp-ui``: ``burp-ui``
 
 By default, ``burp-ui`` listens on all interfaces (including IPv6) on port 5000.

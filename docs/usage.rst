@@ -36,6 +36,7 @@ The `burpui.cfg`_ configuration file contains a ``[Global]`` section as follow:
     port: 5000
     # On which address is the application listening
     # '::' is the default for all IPv6
+    # set it to '0.0.0.0' if you want to listen on all IPv4 addresses
     bind: ::
     # enable SSL
     ssl: false
@@ -214,6 +215,8 @@ Versions
 
 These backends allow you to either connect to a `Burp`_ server version 1.x.x or
 2.x.x.
+If you are using a `Burp`_ server version 2.x.x you **have** to use the `Burp2`_
+backend, no matter what `Burp`_'s protocol you are using.
 
 
 Burp1
