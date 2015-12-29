@@ -61,7 +61,7 @@ def lookup_config(conf=None):
         conf_files = [
             '/etc/burp/burpui.cfg',
             os.path.join(root, 'burpui.cfg'),
-            os.path.join(root, 'burpui.sample.cfg')
+            os.path.join(root, 'burpui.sample.cfg'),
             os.path.join(root2, 'burpui.cfg'),
             os.path.join(root2, 'burpui.sample.cfg')
         ]

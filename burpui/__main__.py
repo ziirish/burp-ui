@@ -88,7 +88,7 @@ def agent(options=None):
         conf_files = [
             '/etc/burp/buiagent.cfg',
             os.path.join(root, 'buiagent.cfg'),
-            os.path.join(root, 'buiagent.sample.cfg')
+            os.path.join(root, 'buiagent.sample.cfg'),
             os.path.join(root2, 'buiagent.cfg'),
             os.path.join(root2, 'buiagent.sample.cfg')
         ]
