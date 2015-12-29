@@ -78,10 +78,19 @@ def agent(options=None):
             'burpui',
             'etc'
         )
+        root2 = os.path.join(
+            sys.prefix,
+            'local',
+            'share',
+            'burpui',
+            'etc'
+        )
         conf_files = [
             '/etc/burp/buiagent.cfg',
             os.path.join(root, 'buiagent.cfg'),
             os.path.join(root, 'buiagent.sample.cfg')
+            os.path.join(root2, 'buiagent.cfg'),
+            os.path.join(root2, 'buiagent.sample.cfg')
         ]
         for p in conf_files:
             if os.path.isfile(p):

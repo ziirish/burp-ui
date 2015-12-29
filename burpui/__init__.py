@@ -51,10 +51,19 @@ def lookup_config(conf=None):
             'burpui',
             'etc'
         )
+        root2 = os.path.join(
+            sys.prefix,
+            'local',
+            'share',
+            'burpui',
+            'etc'
+        )
         conf_files = [
             '/etc/burp/burpui.cfg',
             os.path.join(root, 'burpui.cfg'),
             os.path.join(root, 'burpui.sample.cfg')
+            os.path.join(root2, 'burpui.cfg'),
+            os.path.join(root2, 'burpui.sample.cfg')
         ]
         for p in conf_files:
             if os.path.isfile(p):
