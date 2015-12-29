@@ -16,16 +16,16 @@ except ImportError:
     import configparser as ConfigParser  # NOQA
 
 try:
-    import cPickle as pickle
+    import cPickle as pickle  # NOQA
 except ImportError:
-    import pickle
+    import pickle  # NOQA
 
 if sys.version_info[0] >= 3:
     PY3 = True
-    from urllib.parse import unquote
+    from urllib.parse import unquote  # NOQA
 else:
     PY3 = False
-    from urllib import unquote
+    from urllib import unquote  # NOQA
 
 IS_GUNICORN = 'gunicorn' in os.environ.get('SERVER_SOFTWARE', '')
 

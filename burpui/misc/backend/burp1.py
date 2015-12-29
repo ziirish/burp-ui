@@ -514,7 +514,7 @@ class Burp(BUIbackend):
             'vssfooter_enc': r'^\s*VSS footers \(enc\):?\s+(.+)\s+\|\s+(\d+)$',
             'total': r'^\s*Grand total:?\s+(.+)\s+\|\s+(\d+)$'
         }
-        _ = agent  # not used
+        _ = agent  # NOQA
         backup = {'windows': 'false', 'number': int(number)}
         if client is not None:
             backup['name'] = client

@@ -24,6 +24,7 @@ from .._compat import IS_GUNICORN
 if sys.version_info >= (3, 0):  # pragma: no cover
     basestring = str
 
+EXEMPT_METHODS = set(['OPTIONS'])
 
 # Implement a "parallel loop" routine either with gipc or multiprocessing
 # depending if we are under gunicorn or not
@@ -104,6 +105,8 @@ def api_login_required(func):
     @wraps(func)
     def decorated_view(*args, **kwargs):
         """decorator"""
+        if request.method in EXEMPT_METHODS:
+            return func(*args, **kwargs)
         try:
             name = func.func_name
         except:  # pragma: no cover
