@@ -6,6 +6,5 @@ devel.sh
 *.egg*
 .coverage
 dist
-py2.7
 _build
 .tags
