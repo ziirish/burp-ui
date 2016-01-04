@@ -2,7 +2,7 @@ FROM debian:jessie
 MAINTAINER ziirish@ziirish.info
 
 RUN apt-get update \
- && DEBIAN_FRONTEND=noninteractive apt-get install -y supervisor logrotate locales wget curl uthash-dev g++ make libssl-dev librsync-dev git cron \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y supervisor logrotate locales wget curl uthash-dev g++ make libssl-dev librsync-dev git cron autoconf automake libtool libz-dev libyajl-dev \
  && update-locale LANG=C.UTF-8 LC_MESSAGES=POSIX \
  && locale-gen en_US.UTF-8 \
  && dpkg-reconfigure -f noninteractive locales \
