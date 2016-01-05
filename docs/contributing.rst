@@ -6,17 +6,52 @@ opening issues on the `bug tracker
 <https://git.ziirish.me/ziirish/burp-ui/issues>`__, sending patches, etc.
 
 There is also a dedicated website. Currently it only hosts a `Discourse
-<http://www.discourse.org/>`__ instance where you ca discuss with each other.
+<http://www.discourse.org/>`__ instance where you can discuss with each other.
 No need to create another account, the one you use in the `bug tracker
 <https://git.ziirish.me/ziirish/burp-ui/issues>`__ can be imported
 automatically!
 
 Feel free to use it and post your tips and remarks.
 
-The address is: `http://burpui.ziirish.me/ <http://burpui.ziirish.me/>`__
+The address is: `https://burpui.ziirish.me/ <https://burpui.ziirish.me/>`__
 
 You can financially support the project if you find it useful or if you would
-like to sponsor a feature. Details on my `website <http://ziirish.info/>`__.
+like to sponsor a feature. Details on my `website <https://ziirish.info/>`__.
+
+
+Issues / Bugs
+-------------
+
+If you find issues using ``Burp-UI`` please report on the `bug tracker
+<https://git.ziirish.me/ziirish/burp-ui/issues>`__.
+All issues should contain the used command line to reproduce the problem, the
+debug output and both versions of burp and ``Burp-UI`` you are using.
+
+You can get those informations using the following commands:
+
+::
+
+        $ /usr/sbin/burp -v
+        burp-1.4.40
+        $ burp-ui -V -v
+        burp-ui: v0.1.0.dev (90deb82c7b0be35f1a70bb073c9926b5947c6a85)
+        $ burp-ui -v
+
+
+Optionally your python version and your OS might be useful as well.
+
+
+Questions
+---------
+
+Please ask question in the `discussion forum
+<https://burpui.ziirish.me/>`__. Do not use the issue tracker.
+
+``Burp-UI`` has extensive online documentation please read the `doc
+<https://burp-ui.readthedocs.org/en/latest/>`__.
+
+Also please, use English as often as you can so everybody can understand your
+question.
 
 
 Troubleshooting
@@ -27,6 +62,7 @@ In case you encounter troubles with ``Burp-UI``, you should run it with the
 Please also give the version of ``burp`` AND ``Burp-UI``.
 Since v0.0.6 you can use the ``-V`` or ``--version`` flag in order to get your
 version number.
+
 
 Development
 -----------

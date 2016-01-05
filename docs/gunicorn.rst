@@ -104,5 +104,5 @@ See the `production <usage.html#production>`_ section of the
 
 .. _Gunicorn: http://gunicorn.org/
 .. _Burp-UI: https://git.ziirish.me/ziirish/burp-ui
-.. _demo: http://demo.ziirish.me/
+.. _demo: https://demo.ziirish.me/
 .. _Redis: http://redis.io/

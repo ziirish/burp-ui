@@ -13,7 +13,7 @@ Current
 - Add Basic HTTP Authentication
 - Add full documented API
 - Fix issue `#81 <https://git.ziirish.me/ziirish/burp-ui/issues/81>`_
-- `demo <http://demo.ziirish.me/>`_
+- `demo <https://demo.ziirish.me/>`_
 - API refactoring
 - Security fixes
 - Bugfixes

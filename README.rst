@@ -24,7 +24,7 @@ Demo
 
 A screenshot is worth a thousand words, but a Demo is worth a thousand
 screenshots.
-You can now play with ``Burp-UI`` at `demo.ziirish.me <http://demo.ziirish.me>`_
+You can now play with ``Burp-UI`` at `demo.ziirish.me <https://demo.ziirish.me>`_
 
 Credentials:
 
@@ -38,10 +38,8 @@ What's that?
 Let me introduce you ``Burp-UI``. It is a web-based UI to manage your
 burp-servers.
 You can view different reports about burp-servers, burp-clients, backups, etc.
-``Burp-UI`` allows you to perform *on-the-fly* restorations and to edit/manage
+``Burp-UI`` allows you to perform *online* restorations and to edit/manage
 your burp-server's configuration files.
-
-It is actually an improvement of the burp status monitor (``burp -c /etc/burp/burp-server.conf -a s``).
 
 In order to work properly, you must be running ``Burp-UI`` on the same host that
 runs your burp-server (because the burp status port only listen on *localhost*).
@@ -65,7 +63,8 @@ Documentation
 =============
 
 The documentation is hosted on `readthedocs <https://readthedocs.org>`_ at the
-following address: `burp-ui.readthedocs.org <https://burp-ui.readthedocs.org/en/latest/>`_
+following address: `burp-ui.readthedocs.org
+<https://burp-ui.readthedocs.org/en/latest/>`_
 
 
 FAQ
@@ -78,14 +77,20 @@ the documentation.
 Community
 =========
 
-Please refer to the `Contributing <https://burp-ui.readthedocs.org/en/latest/contributing.html>`_ page.
+Please refer to the `Contributing
+<https://burp-ui.readthedocs.org/en/latest/contributing.html>`_ page.
 
 
 Notes
 =====
 
-Please feel free to report any issues on my `gitlab <https://git.ziirish.me/ziirish/burp-ui/issues>`_.
+Feel free to report any issues on my `gitlab
+<https://git.ziirish.me/ziirish/burp-ui/issues>`_.
 I have closed the *github tracker* to have a unique tracker system.
+Also please, read the `Contributing
+<https://burp-ui.readthedocs.org/en/latest/contributing.html>`_
+page before reporting any issue to make sure we have all the informations to
+help you.
 
 
 Licenses

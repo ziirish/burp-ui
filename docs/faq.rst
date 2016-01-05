@@ -92,4 +92,4 @@ documentation.
 .. _Burp-UI: https://git.ziirish.me/ziirish/burp-ui
 .. _Gunicorn: http://gunicorn.org/
 .. _README: https://git.ziirish.me/ziirish/burp-ui/blob/master/README.rst
-.. _demo.ziirish.me: http://demo.ziirish.me/
+.. _demo.ziirish.me: https://demo.ziirish.me/
