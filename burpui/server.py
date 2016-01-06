@@ -21,7 +21,7 @@ g_port = '5000'
 g_bind = '::'
 g_refresh = '180'
 g_liverefresh = '5'
-g_ssl = 'False'
+g_ssl = ''
 g_standalone = 'True'
 g_sslcert = ''
 g_sslkey = ''
@@ -30,6 +30,7 @@ g_auth = 'basic'
 g_acl = ''
 g_storage = ''
 g_redis = ''
+g_zip64 = ''
 
 
 class BUIServer(Flask):
@@ -55,9 +56,6 @@ class BUIServer(Flask):
         :param conf: Path to a configuration file
         :type conf: str
         """
-        global g_refresh, g_port, g_bind, g_ssl, g_sslcert, g_sslkey, \
-            g_version, g_auth, g_standalone, g_acl, g_liverefresh, g_storage, \
-            g_redis
         self.sslcontext = None
         if not conf:
             conf = self.config['CFG']
@@ -71,7 +69,7 @@ class BUIServer(Flask):
             'sslkey': g_sslkey, 'version': g_version, 'auth': g_auth,
             'standalone': g_standalone, 'acl': g_acl,
             'liverefresh': g_liverefresh, 'storage': g_storage,
-            'redis': g_redis
+            'redis': g_redis, 'zip64': g_zip64
         }
         config = ConfigParser.ConfigParser(self.defaults)
         with open(conf) as fp:
@@ -178,6 +176,14 @@ class BUIServer(Flask):
                     'Production'
                 )
 
+                # Experimental features
+                self.zip64 = self._safe_config_get(
+                    config.getboolean,
+                    'zip64',
+                    'Experimental',
+                    cast=bool
+                )
+
             except ConfigParser.NoOptionError as e:
                 self.logger.error(str(e))
 
@@ -194,6 +200,7 @@ class BUIServer(Flask):
         self.logger.info('liverefresh: {}'.format(self.config['LIVEREFRESH']))
         self.logger.info('auth: {}'.format(self.auth))
         self.logger.info('acl: {}'.format(self.acl_engine))
+        self.logger.info('zip64: {}'.format(self.zip64))
 
         if self.standalone:
             module = 'burpui.misc.backend.burp{0}'.format(self.vers)

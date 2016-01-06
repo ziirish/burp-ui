@@ -145,14 +145,15 @@ class BUIlogging(object):
 
 class BUIcompress():
     """Provides a context to generate any kind of archive supported by burp-ui"""
-    def __init__(self, name, archive):  # pragma: no cover
+    def __init__(self, name, archive, zip64=False):  # pragma: no cover
         self.name = name
         self.archive = archive
+        self.zip64 = zip64
 
     def __enter__(self):
         self.arch = None
         if self.archive == 'zip':
-            self.arch = zipfile.ZipFile(self.name, mode='w', compression=zipfile.ZIP_DEFLATED,allowZip64="True")
+            self.arch = zipfile.ZipFile(self.name, mode='w', compression=zipfile.ZIP_DEFLATED, allowZip64=self.zip64)
         elif self.archive == 'tar.gz':
             self.arch = tarfile.open(self.name, 'w:gz')
         elif self.archive == 'tar.bz2':

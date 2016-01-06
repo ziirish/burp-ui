@@ -95,12 +95,30 @@ class Burp(BUIbackend):
     ]
 
     def __init__(self, server=None, conf=None, dummy=False):
+        """The :class:`burpui.misc.backend.burp1.Burp` class provides a consistent
+        backend for ``burp-1`` servers.
+
+        It implements the :class:`burpui.misc.backend.interface.BUIbackend` class
+        in order to have consistent data whatever backend is used.
+
+        :param server: ``Burp-UI`` server instance in order to access logger
+                       and/or some global settings
+        :type server: :class:`burpui.server.BUIServer`
+
+        :param conf: Configuration file to use
+        :type conf: str
+
+        :param dummy: Does not instanciate the object (used for development
+                      purpose)
+        :type dummy: boolean
+        """
         if dummy:
             return
         self.client_version = None
         self.server_version = None
         self.app = None
         self.acl_handler = False
+        self.server = server
         if server:
             if hasattr(server, 'app'):
                 self.app = server.app
@@ -875,7 +893,7 @@ class Burp(BUIbackend):
         zip_len = len(zip_dir) + 1
         stripping = True
         test_strip = True
-        with BUIcompress(zip_file, archive) as zfh:
+        with BUIcompress(zip_file, archive, self.server.zip64) as zfh:
             for dirname, _, files in os.walk(zip_dir):
                 for filename in files:
                     path = os.path.join(dirname, filename)

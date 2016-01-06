@@ -23,7 +23,7 @@ from Queue import Queue
 
 g_port = u'10000'
 g_bind = u'::'
-g_ssl = u'False'
+g_ssl = u''
 g_version = u'1'
 g_sslcert = u''
 g_sslkey = u''
@@ -77,7 +77,6 @@ class BUIAgent(BUIbackend):
     }
 
     def __init__(self, conf=None, debug=False, logfile=None):
-        global g_port, g_bind, g_ssl, g_version, g_sslcert, g_sslkey, g_password
         self.conf = conf
         self.dbg = debug
         self.padding = 1
@@ -109,11 +108,7 @@ class BUIAgent(BUIbackend):
         if not self.conf:
             raise IOError('No configuration file found')
 
-        config = ConfigParser.ConfigParser({
-            'port': g_port, 'bind': g_bind,
-            'ssl': g_ssl, 'sslcert': g_sslcert, 'sslkey': g_sslkey,
-            'version': g_version, 'password': g_password, 'threads': g_threads
-        })
+        config = ConfigParser.ConfigParser(self.defaults)
         with open(self.conf) as fp:
             config.readfp(fp)
             try:
