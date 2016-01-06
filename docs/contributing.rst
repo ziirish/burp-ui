@@ -44,14 +44,11 @@ Optionally your python version and your OS might be useful as well.
 Questions
 ---------
 
-Please ask question in the `discussion forum
-<https://burpui.ziirish.me/>`__. Do not use the issue tracker.
+Ask question in the `discussion forum <https://burpui.ziirish.me/>`__. Do not
+use the issue tracker.
 
 ``Burp-UI`` has extensive online documentation please read the `doc
 <https://burp-ui.readthedocs.org/en/latest/>`__.
-
-Also please, use English as often as you can so everybody can understand your
-question.
 
 
 Troubleshooting
@@ -62,6 +59,15 @@ In case you encounter troubles with ``Burp-UI``, you should run it with the
 Please also give the version of ``burp`` AND ``Burp-UI``.
 Since v0.0.6 you can use the ``-V`` or ``--version`` flag in order to get your
 version number.
+
+
+Merge / Pull requests
+---------------------
+
+I would like you to use `gitlab <https://git.ziirish.me/>`__ for your Merge
+requests in order to take advantage of the automated tests I have been working
+on.
+You can login/register on my personal gitlab server with your github account.
 
 
 Development
