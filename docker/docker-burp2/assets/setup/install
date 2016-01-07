@@ -15,7 +15,8 @@ git checkout tags/$BURP_VERSION
 autoreconf -vif
 ./configure
 make -j4
-make install-all
+make install
+#make install-all
 
 cd
 
