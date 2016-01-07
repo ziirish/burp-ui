@@ -13,7 +13,7 @@ git clone $BURP
 cd burp
 git checkout tags/$BURP_VERSION
 autoreconf -vif
-./configure
+./configure --prefix=/usr --sysconfdir=/etc/burp --localstatedir=/var
 make -j4
 make install
 #make install-all
