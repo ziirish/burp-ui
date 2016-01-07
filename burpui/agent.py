@@ -7,19 +7,12 @@ import sys
 import json
 import logging
 import traceback
-import threading
-import socket
-try:
-    import SocketServer
-except ImportError:
-    import socketserver as SocketServer
 
+from gevent.server import StreamServer
 from logging.handlers import RotatingFileHandler
 from .exceptions import BUIserverException
 from .misc.backend.interface import BUIbackend
 from ._compat import ConfigParser, pickle
-
-from Queue import Queue
 
 g_port = u'10000'
 g_bind = u'::'
@@ -28,7 +21,6 @@ g_version = u'1'
 g_sslcert = u''
 g_sslkey = u''
 g_password = u'password'
-g_threads = u'5'
 
 DISCLOSURE = 5
 
@@ -73,7 +65,7 @@ class BUIAgent(BUIbackend):
     defaults = {
         'port': g_port, 'bind': g_bind,
         'ssl': g_ssl, 'sslcert': g_sslcert, 'sslkey': g_sslkey,
-        'version': g_version, 'password': g_password, 'threads': g_threads
+        'version': g_version, 'password': g_password
     }
 
     def __init__(self, conf=None, debug=False, logfile=None):
@@ -123,11 +115,14 @@ class BUIAgent(BUIbackend):
                 self.sslcert = self._safe_config_get(config.get, 'sslcert', 'Global')
                 self.sslkey = self._safe_config_get(config.get, 'sslkey', 'Global')
                 self.password = self._safe_config_get(config.get, 'password', 'Global')
-                self.threads = self._safe_config_get(config.getint, 'threads', 'Global', cast=int)
             except ConfigParser.NoOptionError as e:
                 raise e
 
-        self.server = AgentServer((self.bind, self.port), AgentTCPHandler, self)
+        self.cli = BurpHandler(self.vers, self.logger, self.conf)
+        if not self.ssl:
+            self.sslkey = None
+            self.sslcert = None
+        self.server = StreamServer((self.bind, self.port), self.handle, keyfile=self.sslkey, certfile=self.sslcert)
 
     def run(self):
         try:
@@ -135,48 +130,21 @@ class BUIAgent(BUIbackend):
         except KeyboardInterrupt:
             sys.exit(0)
 
-    def _logger(self, level, message):
-        # hide password from logs
-        msg = message
-        if not self.logger:
-            return
-        if self.logger.getEffectiveLevel() != DISCLOSURE:
-            msg = re.sub(r'([\'"])password\1(\s*:\s*)([\'"])[^\3]+?\3', r'\1password\1\2\3*****\3', message)
-        super(BUIAgent, self)._logger(level, msg)
-
-
-class AgentTCPHandler(SocketServer.BaseRequestHandler):
-    "One instance per connection.  Override handle(self) to customize action."
-
-    def handle(self):
+    def handle(self, request, address):
         """self.request is the client connection"""
         try:
-            self.request.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-            # try to pick the first available client
-            self.idx = -1
-            for (i, l) in enumerate(self.server.locks):
-                if l.acquire(False):
-                    self.cli = self.server.clients[i]
-                    self.idx = i
-
-            # if none of them are available pick one randomly and wait for it
-            if self.idx == -1:
-                from random import randint
-                self.idx = randint(0, len(self.server.locks) - 1)
-                self.server.locks[self.idx].acquire()
-                self.cli = self.server.clients[self.idx]
-
+            self.request = request
             err = None
             lengthbuf = self.request.recv(8)
             length, = struct.unpack('!Q', lengthbuf)
             data = self.recvall(length)
-            self.server.agent._logger('info', 'recv: {}'.format(data))
+            self._logger('info', 'recv: {}'.format(data))
             txt = data.decode('UTF-8')
             if txt == 'RE':
                 return
             j = json.loads(txt)
-            if j['password'] != self.server.agent.password:
-                self.server.agent._logger('warning', '-----> Wrong Password <-----')
+            if j['password'] != self.password:
+                self._logger('warning', '-----> Wrong Password <-----')
                 self.request.sendall(b'KO')
                 return
             try:
@@ -191,7 +159,7 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
                         res = json.dumps(getattr(self.cli, j['func'])(**j['args']))
                     else:
                         res = json.dumps(getattr(self.cli, j['func'])())
-                self.server.agent._logger('info', 'result: {}'.format(res))
+                self._logger('info', 'result: {}'.format(res))
                 self.request.sendall(b'OK')
             except BUIserverException as e:
                 self.request.sendall(b'ER')
@@ -204,7 +172,7 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
                     self.request.sendall(b'KO')
                     self.request.sendall(struct.pack('!Q', len(err)))
                     self.request.sendall(err.encode('UTF-8'))
-                    self.server.agent._logger('error', 'Restoration failed')
+                    self._logger('error', 'Restoration failed')
                     return
                 self.request.sendall(b'OK')
                 size = os.path.getsize(res)
@@ -212,7 +180,7 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
                 with open(res, 'rb') as f:
                     buf = f.read(1024)
                     while buf:
-                        self.server.agent._logger('info', 'sending {} Bytes'.format(len(buf)))
+                        self._logger('info', 'sending {} Bytes'.format(len(buf)))
                         self.request.sendall(buf)
                         buf = f.read(1024)
                 os.unlink(res)
@@ -220,17 +188,16 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
                 self.request.sendall(struct.pack('!Q', len(res)))
                 self.request.sendall(res.encode('UTF-8'))
         except AttributeError as e:
-            self.server.agent._logger('warning', '{}\nWrong method => {}'.format(traceback.format_exc(), str(e)))
+            self._logger('warning', '{}\nWrong method => {}'.format(traceback.format_exc(), str(e)))
             self.request.sendall(b'KO')
             return
         except Exception as e:
-            self.server.agent._logger('error', '!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
+            self._logger('error', '!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
         finally:
-            self.server.locks[self.idx].release()
             try:
                 self.request.close()
             except Exception as e:
-                self.server.agent._logger('error', '!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
+                self._logger('error', '!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
 
     def recvall(self, length=1024):
         buf = b''
@@ -247,63 +214,11 @@ class AgentTCPHandler(SocketServer.BaseRequestHandler):
             received += len(newbuf)
         return buf
 
-
-class AgentServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
-    # much faster rebinding
-    allow_reuse_address = True
-
-    def __init__(self, server_address, RequestHandlerClass, agent=None):
-        """
-        :param agent: Agent instance
-        :type agent: :class:`BUIAgent`
-        """
-        self.agent = agent
-        self.numThreads = self.agent.threads
-        self.locks = []
-        self.clients = []
-        for i in range(self.numThreads):
-            cli = BurpHandler(self.agent.vers, self.agent.logger, self.agent.conf)
-            lock = threading.Lock()
-            self.clients.append(cli)
-            self.locks.append(lock)
-
-        SocketServer.TCPServer.__init__(self, server_address, RequestHandlerClass)
-        if self.agent.ssl:
-            import ssl
-            self.socket = ssl.wrap_socket(
-                self.socket,
-                server_side=True,
-                certfile=self.agent.sslcert,
-                keyfile=self.agent.sslkey,
-                ssl_version=ssl.PROTOCOL_SSLv23
-            )
-
-    def serve_forever(self):
-        """Handle one request at a time until doomsday"""
-        # set up the threadpool
-        self.requests = Queue(self.numThreads)
-
-        for x in range(self.numThreads):
-            t = threading.Thread(target=self.process_request_thread)
-            t.setDaemon(1)
-            t.start()
-
-        # server main loop
-        while True:
-            self.handle_request()
-
-        self.server_close()
-
-    def process_request_thread(self):
-        """obtain request from queue instead of directly from server socket"""
-        while True:
-            SocketServer.ThreadingMixIn.process_request_thread(self, *self.requests.get())
-
-    def handle_request(self):
-        """simply collect requests and put them on the queue for the workers"""
-        try:
-            request, client_address = self.get_request()
-        except socket.error:
+    def _logger(self, level, message):
+        # hide password from logs
+        msg = message
+        if not self.logger:
             return
-        if self.verify_request(request, client_address):
-            self.requests.put((request, client_address))
+        if self.logger.getEffectiveLevel() != DISCLOSURE:
+            msg = re.sub(r'([\'"])password\1(\s*:\s*)([\'"])[^\3]+?\3', r'\1password\1\2\3*****\3', message)
+        super(BUIAgent, self)._logger(level, msg)
