@@ -96,8 +96,6 @@ section as below:
     version: 1
     # agent password
     password: password
-    # number of threads that will handle requests
-    threads: 5
 
 
 Each option is commented, but here is a more detailed documentation:
@@ -110,9 +108,6 @@ Each option is commented, but here is a more detailed documentation:
 - *version*: What version of `Burp`_ this `bui-agent`_ instance manages. (see
   `Burp-UI versions <usage.html#versions>`__ for more details)
 - *password*: The shared secret between the `Burp-UI`_ server and `bui-agent`_.
-- *threads*: Number of threads that will handle requests.
-  You'll have to set *max_status_children* accordingly in your burp-server
-  configuration because every thread makes a connection to the status port.
 
 As with `Burp-UI`_, you need a specific section depending on the *version*
 value. Please refer to the `Burp-UI versions <usage.html#versions>`__ section
