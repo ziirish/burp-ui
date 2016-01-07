@@ -120,9 +120,9 @@ class BUIAgent(BUIbackend):
 
         self.cli = BurpHandler(self.vers, self.logger, self.conf)
         if not self.ssl:
-            self.sslkey = None
-            self.sslcert = None
-        self.server = StreamServer((self.bind, self.port), self.handle, keyfile=self.sslkey, certfile=self.sslcert)
+            self.server = StreamServer((self.bind, self.port), self.handle)
+        else:
+            self.server = StreamServer((self.bind, self.port), self.handle, keyfile=self.sslkey, certfile=self.sslcert)
 
     def run(self):
         try:
