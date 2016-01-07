@@ -15,12 +15,13 @@ git checkout tags/$BURP_VERSION
 autoreconf -vif
 ./configure
 make -j4
-make install
+make install-all
 
 cd
 
 # Install burp-ui
 pip install --upgrade pip
+pip install gevent
 pip install "requests[security]"
 pip install --upgrade $BURPUI
 pip install ujson
