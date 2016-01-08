@@ -190,7 +190,7 @@ setup(
     author=author,
     author_email=author_email,
     url=url,
-    keywords='burp web ui',
+    keywords='burp web ui backup monitoring',
     packages=find_packages(),
     include_package_data=True,
     package_data={
@@ -213,10 +213,12 @@ setup(
     ],
     install_requires=requires,
     extras_require={
+        'ssl': ['pyOpenSSL'],
         'ldap_authentication': ['ldap3'],
         'extra': ['ujson'],
         'gunicorn': ['gevent'],
         'gunicorn-extra': ['redis', 'Flask-Session'],
+        'agent': ['gevent'],
         'test': test_requires,
         'dev': dev_requires,
     },

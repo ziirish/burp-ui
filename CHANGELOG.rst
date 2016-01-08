@@ -10,9 +10,14 @@ Current
 - Add percent done in `overview <https://git.ziirish.me/ziirish/burp-ui/issues/55>`_
 - Add the ability to `chain multiple authentication backends <https://git.ziirish.me/ziirish/burp-ui/issues/79>`_
 - Add display versions `within the interface <https://git.ziirish.me/ziirish/burp-ui/issues/89>`_
+- Add support for `zip64 <https://git.ziirish.me/ziirish/burp-ui/issues/97>`_
 - Add Basic HTTP Authentication
 - Add full documented API
 - Fix issue `#81 <https://git.ziirish.me/ziirish/burp-ui/issues/81>`_
+- Fix issue `#87 <https://git.ziirish.me/ziirish/burp-ui/issues/87>`_
+- Fix issue `#88 <https://git.ziirish.me/ziirish/burp-ui/issues/88>`_
+- Fix issue `#92 <https://git.ziirish.me/ziirish/burp-ui/issues/92>`_
+- Fix issue `#95 <https://git.ziirish.me/ziirish/burp-ui/issues/95>`_
 - `demo <https://demo.ziirish.me/>`_
 - API refactoring
 - Security fixes

@@ -68,6 +68,17 @@ The architecture is described bellow:
                                                   +--------------------+
 
 
+Requirements
+------------
+
+The agent is powered by gevent. In order to install it, you can run the
+following command:
+
+::
+
+    pip install "burp-ui[agent]"
+
+
 Configuration
 -------------
 
@@ -122,13 +133,13 @@ Here is a full usage example:
 ::
 
     # On the server called 'agent1'
-    agent1:~$ python path/to/bui-agent -c path/to/buiagent.cfg
+    agent1:~$ bui-agent -c path/to/buiagent.cfg
 
     # On the server called 'agent2'
-    agent2:~$ python path/to/bui-agent -c path/to/buiagent.cfg
+    agent2:~$ bui-agent -c path/to/buiagent.cfg
 
     # On the server called 'front'
-    front:~$ python path/to/burp-ui -c path/to/burpui.cfg
+    front:~$ burp-ui -c path/to/burpui.cfg
 
 
 This example uses three servers. You then only need to point your browser to
