@@ -4,7 +4,7 @@
     :platform: Unix
     :synopsis: Burp-UI parser interface.
 
-.. moduleauthor:: Ziirish <ziirish@ziirish.info>
+.. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
 from ...utils import BUIlogging

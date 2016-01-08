@@ -4,7 +4,7 @@
     :platform: Unix
     :synopsis: Burp-UI compatibility module.
 
-.. moduleauthor:: Ziirish <ziirish@ziirish.info>
+.. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
 import sys

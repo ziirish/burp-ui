@@ -1,5 +1,5 @@
 FROM python:3.4
-MAINTAINER ziirish@ziirish.info
+MAINTAINER hi+burpui@ziirish.me
 
 RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y locales wget curl uthash-dev g++ make libssl-dev librsync-dev python3.4-dev \ 

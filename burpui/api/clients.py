@@ -4,7 +4,7 @@
     :platform: Unix
     :synopsis: Burp-UI clients api module.
 
-.. moduleauthor:: Ziirish <ziirish@ziirish.info>
+.. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
 # This is a submodule we can also use "from ..api import api"
