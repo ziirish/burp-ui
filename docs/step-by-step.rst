@@ -59,7 +59,7 @@ Now we retrieve the `Burp`_ sources and then we compile and install it:
     update-rc.d burp defaults
 
 
-It is no time to install `Burp-UI`_:
+It is now time to install `Burp-UI`_:
 
 ::
 
@@ -140,7 +140,7 @@ The default configuration is plug and play for this case, we just have to start
 
 
 Your server is now fully set-up, you can access `Burp-UI`_ by pointing your
-browser to: http://<server_ip>:5000/
+browser to: http://server_ip:5000/
 
 The default user / password is: admin / admin
 
