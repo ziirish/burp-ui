@@ -5,7 +5,7 @@ Although `Burp-UI`_ tries to make `Burp`_ accessible to everyone, both products
 have their complexity.
 
 In this *Step by Step*, I would like to introduce you different use-cases with
-there associated configurations, descriptions and comments.
+their associated configurations, descriptions and comments.
 In every case, we will consider neither `Burp`_ or `Burp-UI`_ are installed and
 describe the steps to setup your server from Scratch.
 
@@ -14,9 +14,9 @@ describe the steps to setup your server from Scratch.
     willing to adapt these examples with other distros I would be very thankful.
 
 
-1. Burp1 server with `Burp-UI`_
-2. Burp2 server with `Burp-UI`_
-3. Multiple servers with `bui-agents <buiagent.html>`_
+1. `Burp1 server`_ with `Burp-UI`_
+2. `Burp2 server`_ with `Burp-UI`_
+3. `Multiple servers`_ with `bui-agents <buiagent.html>`_
 
 
 Burp1 server
