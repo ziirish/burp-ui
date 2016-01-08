@@ -1,7 +1,7 @@
 # -*- coding: utf8 -*-
 
 # This is a submodule we can also use "from ..api import api"
-from . import api, cache_key
+from . import api, cache_key, parallel_loop
 from ..exceptions import BUIserverException
 
 from flask.ext.restplus import Resource, fields
@@ -63,22 +63,27 @@ class ServersStats(Resource):
                 check = True
                 allowed = api.bui.acl.servers(current_user.get_id())
 
-            for serv in api.bui.cli.servers:
+            def get_servers_info(serv, output):
                 try:
                     if check:
                         if serv in allowed:
-                            r.append({
+                            output.put({
                                 'name': serv,
                                 'clients': len(api.bui.acl.clients(current_user.get_id(), serv)),
                                 'alive': api.bui.cli.servers[serv].ping()
                             })
+                            return
                     else:
-                        r.append({
+                        output.put({
                             'name': serv,
                             'clients': len(api.bui.cli.servers[serv].get_all_clients(serv)),
                             'alive': api.bui.cli.servers[serv].ping()
                         })
+                        return
+                    output.put(None)
                 except BUIserverException as e:
-                    api.abort(500, str(e))
+                    output.put(str(e))
+
+            r = parallel_loop(get_servers_info, api.bui.cli.servers)
 
         return r
