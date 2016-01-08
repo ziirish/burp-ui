@@ -4,7 +4,7 @@
     :platform: Unix
     :synopsis: Burp-UI authentication interface.
 
-.. moduleauthor:: Ziirish <ziirish@ziirish.info>
+.. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
 from flask.ext.login import UserMixin

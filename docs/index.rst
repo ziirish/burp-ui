@@ -27,6 +27,7 @@ Documentation
    contributing
    changelog
    faq
+   step-by-step
    developer
 
 

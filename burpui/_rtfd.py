@@ -4,7 +4,7 @@
     :platform: Unix
     :synopsis: Burp-UI wrapper documentation module.
 
-.. moduleauthor:: Ziirish <ziirish@ziirish.info>
+.. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
 

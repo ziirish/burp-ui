@@ -4,7 +4,7 @@
     :platform: Unix
     :synopsis: Burp-UI exceptions module.
 
-.. moduleauthor:: Ziirish <ziirish@ziirish.info>
+.. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
 # Agent does not need "real" HTTP errors

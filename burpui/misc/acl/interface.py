@@ -4,7 +4,7 @@
     :platform: Unix
     :synopsis: Burp-UI ACL interface.
 
-.. moduleauthor:: Ziirish <ziirish@ziirish.info>
+.. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
 from abc import ABCMeta, abstractmethod, abstractproperty

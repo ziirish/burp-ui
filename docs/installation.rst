@@ -27,8 +27,8 @@ By default `Burp-UI`_ ships with a sample file located in
 virtualenv)
 
 .. note::
-   It is advised to copy the sample configuration in ``/etc/burp/burpui.cfg``
-   and to edit this file so that it is not overwritten on every upgrade.
+    It is advised to copy the sample configuration in ``/etc/burp/burpui.cfg``
+    and to edit this file so that it is not overwritten on every upgrade.
 
 Then you can run ``burp-ui``: ``burp-ui``
 

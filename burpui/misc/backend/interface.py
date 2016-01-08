@@ -4,7 +4,7 @@
     :platform: Unix
     :synopsis: Burp-UI backend interface.
 
-.. moduleauthor:: Ziirish <ziirish@ziirish.info>
+.. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
 from abc import ABCMeta, abstractmethod

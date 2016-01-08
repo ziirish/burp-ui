@@ -52,7 +52,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Burp-UI'
-copyright = u'2015, Ziirish'
+copyright = u'2016, Ziirish'
 author = u'Ziirish'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -213,7 +213,7 @@ html_logo = '_static/logo.png'
 #html_search_scorer = 'scorer.js'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'Burp-UIdoc'
+htmlhelp_basename = 'Burp-UI doc'
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -280,7 +280,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
   (master_doc, 'Burp-UI', u'Burp-UI Documentation',
-   author, 'Burp-UI', 'One line description of project.',
+   author, 'Burp-UI', 'Burp-UI is a web-ui for burp backup written in python with Flask and jQuery/Bootstrap.',
    'Miscellaneous'),
 ]
 

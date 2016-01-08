@@ -22,7 +22,7 @@ from burpui import init as BUIinit
 class BurpuiLiveTestCase(LiveServerTestCase):
 
     def create_app(self):
-        conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../burpui.sample.cfg')
+        conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../share/burpui/etc/burpui.sample.cfg')
         bui = BUIinit(debug=12, gunicorn=False, unittest=True)
         bui.config['DEBUG'] = False
         bui.config['TESTING'] = True
@@ -243,7 +243,7 @@ class BurpuiLoginTestCase(TestCase):
         ), follow_redirects=True)
 
     def create_app(self):
-        conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../burpui.sample.cfg')
+        conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../share/burpui/etc/burpui.sample.cfg')
         bui = BUIinit(conf, False, None, False, unittest=True)
         bui.config['TESTING'] = True
         bui.config['LIVESERVER_PORT'] = 5001

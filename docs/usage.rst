@@ -4,24 +4,27 @@ Usage
 `Burp-UI`_ has been written with modularity in mind. The aim is to support
 `Burp`_ from the stable to the latest versions. `Burp`_ exists in two major
 versions: 1.x.x and 2.x.x.
-The version 2.x.x is currently in heavy development and should bring a lot of
-improvements, but also a lot of rework especially regarding the ``status port``
-which is the main communication system between `Burp`_ and `Burp-UI`_.
+
+.. note::
+    The version 2.x.x of `Burp`_ is currently in heavy development and should
+    bring a lot of improvements, but also a lot of rework especially regarding
+    the ``status port`` which is the main communication system between `Burp`_
+    and `Burp-UI`_.
 
 Both `Versions`_ are supported by `Burp-UI`_ thanks to its modular design.
 The consequence is you have various options in the configuration file to suite
-every bodies needs.
+everybody needs.
 
 There are also different modules to support `Authentication`_ and `ACL`_ within
 the web-interface.
 
 .. warning::
-   `Burp-UI`_ tries to be the less intrusive as possible, nevertheless it ships
-   with the ability to manage `Burp`_'s configuration files.
-   This feature **requires** `Burp-UI`_ to be launched on the **same** server
-   that hosts your `Burp`_ instance.
-   You also have to make sure the user that runs `Burp-UI`_ has **enough**
-   privileges to edit those files.
+    `Burp-UI`_ tries to be as less intrusive as possible, nevertheless it ships
+    with the ability to manage `Burp`_'s configuration files.
+    This feature **requires** `Burp-UI`_ to be launched on the **same** server
+    that hosts your `Burp`_ instance.
+    You also have to make sure the user that runs `Burp-UI`_ has **enough**
+    privileges to edit those files.
 
 
 Configuration
@@ -215,12 +218,18 @@ Versions
 
 These backends allow you to either connect to a `Burp`_ server version 1.x.x or
 2.x.x.
-If you are using a `Burp`_ server version 2.x.x you **have** to use the `Burp2`_
-backend, no matter what `Burp`_'s protocol you are using.
+
+.. note::
+    If you are using a `Burp`_ server version 2.x.x you **have** to use the
+    `Burp2`_ backend, no matter what `Burp`_'s protocol you are using.
 
 
 Burp1
 ^^^^^
+
+.. note::
+    Make sure you have read and understood the `requirements
+    <requirements.html#burp1>`__ first.
 
 The *burp-1* backend can be enabled by setting the *version* option to *1* in
 the ``[Global]`` section of your `burpui.cfg`_ file:
@@ -268,6 +277,10 @@ Each option is commented, but here is a more detailed documentation:
 
 Burp2
 ^^^^^
+
+.. note::
+    Make sure you have read and understood the `requirements
+    <requirements.html#burp2>`__ first.
 
 The *burp-2* backend can be enabled by setting the *version* option to *2* in
 the ``[Global]`` section of your `burpui.cfg`_ file:
@@ -332,9 +345,9 @@ LDAP
 ^^^^
 
 The *ldap* authentication backend has some dependencies, please refer to the
-`requirements <requirements.html>`_ page. To enable this backend, you need to
-set the *auth* option of the ``[Global]`` section of your `burpui.cfg`_ file to
-*ldap*:
+`requirements <requirements.html#ldap>`_ page. To enable this backend, you need
+to set the *auth* option of the ``[Global]`` section of your `burpui.cfg`_ file
+to *ldap*:
 
 ::
 
@@ -413,7 +426,9 @@ Now you can add *basic* specific options:
     user1: otherpassword
 
 
-.. note:: Each line defines a new user with the *key* as the username and the *value* as the password
+.. note::
+    Each line defines a new user with the *key* as the username and the *value*
+    as the password
 
 
 ACL

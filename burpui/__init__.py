@@ -7,7 +7,7 @@ jQuery/Bootstrap
     :platform: Unix
     :synopsis: Burp-UI main module.
 
-.. moduleauthor:: Ziirish <ziirish@ziirish.info>
+.. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 """
 
 import os
@@ -20,7 +20,7 @@ if sys.version_info < (3, 0):
 
 __title__ = 'burp-ui'
 __author__ = 'Benjamin SANS (Ziirish)'
-__author_email__ = 'ziirish+burpui@ziirish.info'
+__author_email__ = 'hi+burpui@ziirish.me'
 __url__ = 'https://git.ziirish.me/ziirish/burp-ui'
 __doc__ = 'https://burp-ui.readthedocs.org/en/latest/'
 __description__ = ('Burp-UI is a web-ui for burp backup written in python with '

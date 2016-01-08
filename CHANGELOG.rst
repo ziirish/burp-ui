@@ -10,30 +10,35 @@ Current
 - Add percent done in `overview <https://git.ziirish.me/ziirish/burp-ui/issues/55>`_
 - Add the ability to `chain multiple authentication backends <https://git.ziirish.me/ziirish/burp-ui/issues/79>`_
 - Add display versions `within the interface <https://git.ziirish.me/ziirish/burp-ui/issues/89>`_
+- Add support for `zip64 <https://git.ziirish.me/ziirish/burp-ui/issues/97>`_
 - Add Basic HTTP Authentication
 - Add full documented API
 - Fix issue `#81 <https://git.ziirish.me/ziirish/burp-ui/issues/81>`_
+- Fix issue `#87 <https://git.ziirish.me/ziirish/burp-ui/issues/87>`_
+- Fix issue `#88 <https://git.ziirish.me/ziirish/burp-ui/issues/88>`_
+- Fix issue `#92 <https://git.ziirish.me/ziirish/burp-ui/issues/92>`_
+- Fix issue `#95 <https://git.ziirish.me/ziirish/burp-ui/issues/95>`_
 - `demo <https://demo.ziirish.me/>`_
 - API refactoring
 - Security fixes
 - Bugfixes
-- `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/v0.0.7.1...master>`__
+- `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/0.0.7...master>`__
 
-0.0.7.3
--------
+0.0.7.3 (09/26/2015)
+--------------------
 
 - Fix issue `#77 <https://git.ziirish.me/ziirish/burp-ui/issues/77>`_
 - Doc
 
-0.0.7.2
--------
+0.0.7.2 (09/01/2015)
+--------------------
 
 - Fix issue `#73 <https://git.ziirish.me/ziirish/burp-ui/issues/72>`_
 - Fix issue `#74 <https://git.ziirish.me/ziirish/burp-ui/issues/74>`_
 - Doc
 
-0.0.7.1
--------
+0.0.7.1 (08/22/2015)
+--------------------
 
 - Add `Burp-2 backend <https://git.ziirish.me/ziirish/burp-ui/issues/52>`_
 - Add `sortable tables <https://git.ziirish.me/ziirish/burp-ui/issues/51>`_
@@ -66,8 +71,8 @@ Current
 - Bufixes
 - `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/v0.0.6...v0.0.7.1>`__
 
-0.0.6
------
+0.0.6 (12/15/2014)
+------------------
 
 - Add `gunicorn support <https://git.ziirish.me/ziirish/burp-ui/commit/836f522f51ba0706ca94b379d93b20c75e71ecb1>`_
 - Add `init script for CentOS <https://git.ziirish.me/ziirish/burp-ui/issues/27>`_
@@ -87,32 +92,32 @@ Current
 - Bugfixes
 - `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/v0.0.5...v0.0.6>`__
 
-0.0.5
------
+0.0.5 (09/22/2014)
+------------------
 
 - Add multi-server support
 - Fix bugs
 - `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/v0.0.4...v0.0.5>`__
 
-0.0.4
------
+0.0.4 (09/07/2014)
+------------------
 
 - Add the ability to download files directly from the web interface
 - `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/v0.0.3...v0.0.4>`__
 
-0.0.3
------
+0.0.3 (09/02/2014)
+------------------
 
 - Add authentication
 - `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/v0.0.2...v0.0.3>`__
 
-0.0.2
------
+0.0.2 (08/25/2014)
+------------------
 
 - Fix bugs
 - `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/v0.0.1...v0.0.2>`__
 
-0.0.1
------
+0.0.1 (08/25/2014)
+------------------
 
 - Initial release
