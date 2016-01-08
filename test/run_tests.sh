@@ -105,7 +105,7 @@ pip install --upgrade -r requirements.txt
 pip install --upgrade -r test-requirements.txt
 
 mkdir -p /etc/burp
-cp burpui.sample.cfg /etc/burp/burpui.cfg
+cp share/burpui/etc/burpui.sample.cfg /etc/burp/burpui.cfg
 nosetests --with-coverage --cover-package=burpui test/test_burpui.py
 ret=$?
 rm /etc/burp/burpui.cfg
