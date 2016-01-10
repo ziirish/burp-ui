@@ -29,7 +29,7 @@ EXEMPT_METHODS = set(['OPTIONS'])
 # Implement a "parallel loop" routine either with gipc or multiprocessing
 # depending if we are under gunicorn or not
 if IS_GUNICORN:
-    def parallel_loop(func=None, elem=None):
+    def parallel_loop(func=None, elem=None, *args, **kwargs):
         import gevent
         from gevent.queue import Queue
         ret = []
@@ -46,7 +46,9 @@ if IS_GUNICORN:
             gevent.spawn(
                 func,
                 e,
-                output
+                output,
+                *args,
+                **kwargs
             ) for e in elem
         ]
         # wait for process termination
@@ -62,7 +64,7 @@ if IS_GUNICORN:
         return ret
 
 else:
-    def parallel_loop(func=None, elem=None):
+    def parallel_loop(func=None, elem=None, *args, **kwargs):
         import multiprocessing
         ret = []
 
@@ -76,7 +78,8 @@ else:
         processes = [
             multiprocessing.Process(
                 target=func,
-                args=(e, output)
+                args=((e, output) + args),
+                kwargs=kwargs
             ) for e in elem
         ]
         # start the processes

@@ -56,24 +56,21 @@ class ServersStats(Resource):
 
         r = []
         if hasattr(api.bui.cli, 'servers'):  # pragma: no cover
-            check = False
             allowed = []
             if (api.bui.acl and not
                     api.bui.acl.is_admin(current_user.get_id())):
-                check = True
                 allowed = api.bui.acl.servers(current_user.get_id())
 
-            def get_servers_info(serv, output):
+            def get_servers_info(serv, output, allowed, username):
                 try:
-                    if check:
-                        if serv in allowed:
-                            output.put({
-                                'name': serv,
-                                'clients': len(api.bui.acl.clients(current_user.get_id(), serv)),
-                                'alive': api.bui.cli.servers[serv].ping()
-                            })
-                            return
-                    else:
+                    if allowed and serv in allowed:
+                        output.put({
+                            'name': serv,
+                            'clients': len(api.bui.acl.clients(username, serv)),
+                            'alive': api.bui.cli.servers[serv].ping()
+                        })
+                        return
+                    elif not allowed:
                         output.put({
                             'name': serv,
                             'clients': len(api.bui.cli.servers[serv].get_all_clients(serv)),
@@ -84,6 +81,6 @@ class ServersStats(Resource):
                 except BUIserverException as e:
                     output.put(str(e))
 
-            r = parallel_loop(get_servers_info, api.bui.cli.servers)
+            r = parallel_loop(get_servers_info, api.bui.cli.servers, allowed, current_user.get_id())
 
         return r
