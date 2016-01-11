@@ -41,11 +41,6 @@ You can view different reports about burp-servers, burp-clients, backups, etc.
 ``Burp-UI`` allows you to perform *online* restorations and to edit/manage
 your burp-server's configuration files.
 
-In order to work properly, you must be running ``Burp-UI`` on the same host that
-runs your burp-server (because the burp status port only listen on *localhost*).
-If you don't want to, I developed a ``bui-agent`` that allows you to *proxify*
-external commands to your burp status port.
-
 
 Who are you?
 ------------
@@ -122,8 +117,8 @@ Also note that this project is made with the Awesome `Flask`_ micro-framework.
 Thanks
 ======
 
-Thank you all for your fedbacks and bug reports that make the project moving
-forward.
+Thank you all for your feedbacks and bug reports those are making the project
+moving forward.
 
 Special Thanks to Graham Keeling for its great piece of software! This project
 would not exist without `Burp`_.

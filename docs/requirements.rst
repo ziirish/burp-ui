@@ -54,6 +54,8 @@ Burp2
 -----
 
 The `burp2 backend <usage.html#burp2>`__ supports only burp 2.0.18 and above.
+Some versions are known to contain critical issues resulting in a non-functional
+`Burp-UI`_: 2.0.24, 2.0.26 and 2.0.30
 If you are using an older version of burp2 `Burp-UI`_ will fail to start.
 
 .. _Burp-UI: https://git.ziirish.me/ziirish/burp-ui

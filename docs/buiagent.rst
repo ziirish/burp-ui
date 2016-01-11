@@ -4,6 +4,10 @@ bui-agent
 The `bui-agent`_ is a kind of proxy between a `Burp`_ server and your `Burp-UI`_
 server.
 
+It is useful when you have several servers to monitor and/or when you don't want
+(or can't) install the full `Burp-UI`_ on your server.
+
+
 Architecture
 ------------
 

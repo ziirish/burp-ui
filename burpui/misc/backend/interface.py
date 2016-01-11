@@ -333,12 +333,16 @@ class BUIbackend(BUIlogging):
                 {
                     "last": "2015-10-02 08:20:03",
                     "name": "client1",
-                    "state": "idle"
+                    "state": "idle",
+                    "percent": null,
+                    "phase": null,
                 },
                 {
                     "last": "2015-01-25 13:32:00",
                     "name": "client2",
                     "state": "idle"
+                    "percent": null,
+                    "phase": null,
                 },
             ]
         """

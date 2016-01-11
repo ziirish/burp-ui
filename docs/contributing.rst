@@ -44,8 +44,8 @@ Optionally your python version and your OS might be useful as well.
 Questions
 ---------
 
-Ask question in the `discussion forum <https://burpui.ziirish.me/>`__. Do not
-use the issue tracker.
+Ask questions in the `discussion forum <https://burpui.ziirish.me/>`__. Do not
+use the issue tracker for this purpose.
 
 ``Burp-UI`` has extensive online documentation please read the `doc
 <https://burp-ui.readthedocs.org/en/latest/>`__.
