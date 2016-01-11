@@ -117,13 +117,13 @@ class Burp(BUIbackend):
         self.client_version = None
         self.server_version = None
         self.app = None
-        self.acl_handler = False
-        self.server = server
+        self.zip64 = False
         if server:
             if hasattr(server, 'app'):
                 self.app = server.app
                 self.set_logger(self.app.logger)
-            self.acl_handler = server.acl_handler
+            if hasattr(server, 'zip64'):
+                self.zip64 = server.zip64
         self.host = G_BURPHOST
         self.port = int(G_BURPPORT)
         self.burpbin = G_BURPBIN
@@ -893,7 +893,7 @@ class Burp(BUIbackend):
         zip_len = len(zip_dir) + 1
         stripping = True
         test_strip = True
-        with BUIcompress(zip_file, archive, self.server.zip64) as zfh:
+        with BUIcompress(zip_file, archive, self.zip64) as zfh:
             for dirname, _, files in os.walk(zip_dir):
                 for filename in files:
                     path = os.path.join(dirname, filename)

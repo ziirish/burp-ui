@@ -53,12 +53,13 @@ class Burp(Burp1):
         self.app = None
         self.client_version = None
         self.server_version = None
-        self.acl_handler = False
+        self.zip64 = False
         if server:
             if hasattr(server, 'app'):
                 self.app = server.app
                 self.set_logger(self.app.logger)
-            self.acl_handler = server.acl_handler
+            if hasattr(server, 'zip64'):
+                self.zip64 = server.zip64
         self.burpbin = g_burpbin
         self.stripbin = g_stripbin
         self.burpconfcli = g_burpconfcli
