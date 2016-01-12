@@ -189,8 +189,8 @@ class ServerSettings(Resource):
                        defaults=api.bui.cli.get_parser_attr('defaults', server))
 
 
-@ns.route('/clients.json',
-          '/<server>/clients.json',
+@ns.route('/clients',
+          '/<server>/clients',
           endpoint='clients_list')
 class ClientsList(Resource):
 
@@ -199,10 +199,10 @@ class ClientsList(Resource):
         return jsonify(result=res)
 
 
-@ns.route('/client/<client>/config',
-          '/client/<client>/config/<path:conf>',
-          '/<server>/client/<client>/config',
-          '/<server>/client/<client>/config/<path:conf>',
+@ns.route('/config/<client>',
+          '/config/<client>/<path:conf>',
+          '/<server>/config/<client>',
+          '/<server>/config/<client>/<path:conf>',
           endpoint='client_settings')
 class ClientSettings(Resource):
 

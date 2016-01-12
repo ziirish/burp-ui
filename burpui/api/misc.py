@@ -47,10 +47,10 @@ counters_fields = api.model('Counters', {
 })
 
 
-@ns.route('/counters.json',
-          '/<server>/counters.json',
-          '/counters.json/<name>',
-          '/<server>/counters.json/<name>',
+@ns.route('/counters',
+          '/<server>/counters',
+          '/counters/<name>',
+          '/<server>/counters/<name>',
           endpoint='counters')
 class Counters(Resource):
     """The :class:`burpui.api.misc.Counters` resource allows you to
@@ -130,8 +130,8 @@ class Counters(Resource):
         return res
 
 
-@ns.route('/live.json',
-          '/<server>/live.json',
+@ns.route('/monitor',
+          '/<server>/monitor',
           endpoint='live')
 class Live(Resource):
     """The :class:`burpui.api.misc.Live` resource allows you to
@@ -269,8 +269,8 @@ class Alert(Resource):
         return {'message': message}, 201
 
 
-@ns.route('/about.json',
-          '/<server>/about.json',
+@ns.route('/about',
+          '/<server>/about',
           endpoint='about')
 class About(Resource):
     """The :class:`burpui.api.misc.About` resource allows you to retrieve

@@ -10,7 +10,7 @@ from flask.ext.login import current_user
 ns = api.namespace('servers', 'Servers methods')
 
 
-@ns.route('/servers.json', endpoint='servers_stats')
+@ns.route('/stats', endpoint='servers_stats')
 class ServersStats(Resource):
     """The :class:`burpui.api.servers.ServersStats` resource allows you to
     retrieve statistics about servers/agents.

@@ -16,8 +16,8 @@ from flask.ext.login import current_user
 ns = api.namespace('client', 'Client methods')
 
 
-@ns.route('/client-tree.json/<name>/<int:backup>',
-          '/<server>/client-tree.json/<name>/<int:backup>',
+@ns.route('/browse/<name>/<int:backup>',
+          '/<server>/browse/<name>/<int:backup>',
           endpoint='client_tree')
 class ClientTree(Resource):
     """The :class:`burpui.api.client.ClientTree` resource allows you to
@@ -116,10 +116,10 @@ class ClientTree(Resource):
         return j
 
 
-@ns.route('/client-stats.json/<name>',
-          '/<server>/client-stats.json/<name>',
-          '/client-stats.json/<name>/<int:backup>',
-          '/<server>/client-stats.json/<name>/<int:backup>',
+@ns.route('/stats/<name>',
+          '/<server>/stats/<name>',
+          '/stats/<name>/<int:backup>',
+          '/<server>/stats/<name>/<int:backup>',
           endpoint='client_stats')
 class ClientStats(Resource):
     """The :class:`burpui.api.client.ClientStats` resource allows you to
@@ -357,8 +357,8 @@ class ClientStats(Resource):
         return j
 
 
-@ns.route('/client.json/<name>',
-          '/<server>/client.json/<name>',
+@ns.route('/report/<name>',
+          '/<server>/report/<name>',
           endpoint='client_report')
 class ClientReport(Resource):
     """The :class:`burpui.api.client.ClientReport` resource allows you to

@@ -18,10 +18,10 @@ from flask.ext.login import current_user
 ns = api.namespace('clients', 'Clients methods')
 
 
-@ns.route('/running-clients.json',
-          '/<server>/running-clients.json',
-          '/running-clients.json/<client>',
-          '/<server>/running-clients.json/<client>',
+@ns.route('/running',
+          '/<server>/running',
+          '/running/<client>',
+          '/<server>/running/<client>',
           endpoint='running_clients')
 class RunningClients(Resource):
     """The :class:`burpui.api.clients.RunningClients` resource allows you to
@@ -97,8 +97,8 @@ class RunningClients(Resource):
         return r
 
 
-@ns.route('/running.json',
-          '/<server>/running.json',
+@ns.route('/is-running',
+          '/<server>/is-running',
           endpoint='running_backup')
 class RunningBackup(Resource):
     """The :class:`burpui.api.clients.RunningBackup` resource allows you to
@@ -162,8 +162,8 @@ class RunningBackup(Resource):
         return {'running': r}
 
 
-@ns.route('/clients-report.json',
-          '/<server>/clients-report.json',
+@ns.route('/report',
+          '/<server>/report',
           endpoint='clients_report')
 class ClientsReport(Resource):
     """The :class:`burpui.api.clients.ClientsReport` resource allows you to
@@ -284,8 +284,8 @@ class ClientsReport(Resource):
         return j
 
 
-@ns.route('/clients.json',
-          '/<server>/clients.json',
+@ns.route('/stats',
+          '/<server>/stats',
           endpoint='clients_stats')
 class ClientsStats(Resource):
     """The :class:`burpui.api.clients.ClientsStats` resource allows you to
