@@ -5,15 +5,16 @@ set -e
 SETUP_DIR="/app/setup"
 CONFIG_DIR="${SETUP_DIR}/config"
 BURP="https://git.ziirish.me/ziirish/burp.git"
-BURP_VERSION="2.0.30"
+BURP_VERSION="2.0.28"
 BURPUI="https://burpui.ziirish.me/builds/burp-ui.dev.tar.gz"
 
 # Install burp
 git clone $BURP
 cd burp
 git checkout tags/$BURP_VERSION
-autoreconf -vif
-./configure --prefix=/usr --sysconfdir=/etc/burp --localstatedir=/var
+#autoreconf -vif
+#./configure --prefix=/usr --sysconfdir=/etc/burp --localstatedir=/var
+./configure
 make -j4
 make install
 #make install-all
