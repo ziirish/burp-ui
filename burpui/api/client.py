@@ -186,127 +186,128 @@ class ClientStats(Resource):
         The *JSON* returned is:
         ::
 
-            "dir": {
-              "changed": 0,
-              "deleted": 0,
-              "new": 394,
-              "scanned": 394,
-              "total": 394,
-              "unchanged": 0
-            },
-            "duration": 5,
-            "efs": {
-              "changed": 0,
-              "deleted": 0,
-              "new": 0,
-              "scanned": 0,
-              "total": 0,
-              "unchanged": 0
-            },
-            "encrypted": true,
-            "end": 1422189124,
-            "files": {
-              "changed": 0,
-              "deleted": 0,
-              "new": 0,
-              "scanned": 0,
-              "total": 0,
-              "unchanged": 0
-            },
-            "files_enc": {
-              "changed": 0,
-              "deleted": 0,
-              "new": 1421,
-              "scanned": 1421,
-              "total": 1421,
-              "unchanged": 0
-            },
-            "hardlink": {
-              "changed": 0,
-              "deleted": 0,
-              "new": 0,
-              "scanned": 0,
-              "total": 0,
-              "unchanged": 0
-            },
-            "meta": {
-              "changed": 0,
-              "deleted": 0,
-              "new": 0,
-              "scanned": 0,
-              "total": 0,
-              "unchanged": 0
-            },
-            "meta_enc": {
-              "changed": 0,
-              "deleted": 0,
-              "new": 0,
-              "scanned": 0,
-              "total": 0,
-              "unchanged": 0
-            },
-            "number": 1,
-            "received": 1679304,
-            "softlink": {
-              "changed": 0,
-              "deleted": 0,
-              "new": 1302,
-              "scanned": 1302,
-              "total": 1302,
-              "unchanged": 0
-            },
-            "special": {
-              "changed": 0,
-              "deleted": 0,
-              "new": 0,
-              "scanned": 0,
-              "total": 0,
-              "unchanged": 0
-            },
-            "start": 1422189119,
-            "total": {
-              "changed": 0,
-              "deleted": 0,
-              "new": 3117,
-              "scanned": 3117,
-              "total": 3117,
-              "unchanged": 0
-            },
-            "totsize": 5345361,
-            "vssfooter": {
-              "changed": 0,
-              "deleted": 0,
-              "new": 0,
-              "scanned": 0,
-              "total": 0,
-              "unchanged": 0
-            },
-            "vssfooter_enc": {
-              "changed": 0,
-              "deleted": 0,
-              "new": 0,
-              "scanned": 0,
-              "total": 0,
-              "unchanged": 0
-            },
-            "vssheader": {
-              "changed": 0,
-              "deleted": 0,
-              "new": 0,
-              "scanned": 0,
-              "total": 0,
-              "unchanged": 0
-            },
-            "vssheader_enc": {
-              "changed": 0,
-              "deleted": 0,
-              "new": 0,
-              "scanned": 0,
-              "total": 0,
-              "unchanged": 0
-            },
-            "windows": "false"
-          }
+            {
+              "dir": {
+                "changed": 0,
+                "deleted": 0,
+                "new": 394,
+                "scanned": 394,
+                "total": 394,
+                "unchanged": 0
+              },
+              "duration": 5,
+              "efs": {
+                "changed": 0,
+                "deleted": 0,
+                "new": 0,
+                "scanned": 0,
+                "total": 0,
+                "unchanged": 0
+              },
+              "encrypted": true,
+              "end": 1422189124,
+              "files": {
+                "changed": 0,
+                "deleted": 0,
+                "new": 0,
+                "scanned": 0,
+                "total": 0,
+                "unchanged": 0
+              },
+              "files_enc": {
+                "changed": 0,
+                "deleted": 0,
+                "new": 1421,
+                "scanned": 1421,
+                "total": 1421,
+                "unchanged": 0
+              },
+              "hardlink": {
+                "changed": 0,
+                "deleted": 0,
+                "new": 0,
+                "scanned": 0,
+                "total": 0,
+                "unchanged": 0
+              },
+              "meta": {
+                "changed": 0,
+                "deleted": 0,
+                "new": 0,
+                "scanned": 0,
+                "total": 0,
+                "unchanged": 0
+              },
+              "meta_enc": {
+                "changed": 0,
+                "deleted": 0,
+                "new": 0,
+                "scanned": 0,
+                "total": 0,
+                "unchanged": 0
+              },
+              "number": 1,
+              "received": 1679304,
+              "softlink": {
+                "changed": 0,
+                "deleted": 0,
+                "new": 1302,
+                "scanned": 1302,
+                "total": 1302,
+                "unchanged": 0
+              },
+              "special": {
+                "changed": 0,
+                "deleted": 0,
+                "new": 0,
+                "scanned": 0,
+                "total": 0,
+                "unchanged": 0
+              },
+              "start": 1422189119,
+              "total": {
+                "changed": 0,
+                "deleted": 0,
+                "new": 3117,
+                "scanned": 3117,
+                "total": 3117,
+                "unchanged": 0
+              },
+              "totsize": 5345361,
+              "vssfooter": {
+                "changed": 0,
+                "deleted": 0,
+                "new": 0,
+                "scanned": 0,
+                "total": 0,
+                "unchanged": 0
+              },
+              "vssfooter_enc": {
+                "changed": 0,
+                "deleted": 0,
+                "new": 0,
+                "scanned": 0,
+                "total": 0,
+                "unchanged": 0
+              },
+              "vssheader": {
+                "changed": 0,
+                "deleted": 0,
+                "new": 0,
+                "scanned": 0,
+                "total": 0,
+                "unchanged": 0
+              },
+              "vssheader_enc": {
+                "changed": 0,
+                "deleted": 0,
+                "new": 0,
+                "scanned": 0,
+                "total": 0,
+                "unchanged": 0
+              },
+              "windows": "false"
+            }
 
 
         The output is filtered by the :mod:`burpui.misc.acl` module so that you

@@ -184,6 +184,7 @@ class Live(Resource):
                     '...': '...',
                 },
               },
+            ]
 
         The output is filtered by the :mod:`burpui.misc.acl` module so that you
         only see stats about the clients you are authorized to.

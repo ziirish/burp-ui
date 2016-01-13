@@ -49,6 +49,7 @@ class ServersStats(Resource):
                 'clients': 0,
                 'name': 'burp2',
               },
+            ]
 
 
         :returns: The *JSON* described above.
