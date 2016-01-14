@@ -103,7 +103,10 @@ class LdapLoader:
         try:
             self.server = Server(host=self.host, port=self.port, use_ssl=self.ssl, get_info=ALL, tls=self.tls)
             self.app.logger.debug('LDAP Server = {0}'.format(str(self.server)))
-            self.ldap = Connection(self.server, user=self.binddn, password=self.bindpw, raise_exceptions=True, client_strategy=RESTARTABLE, auto_bind=self.auto_bind, authentication=SIMPLE)
+            if self.binddn:
+                self.ldap = Connection(self.server, user=self.binddn, password=self.bindpw, raise_exceptions=True, client_strategy=RESTARTABLE, auto_bind=self.auto_bind, authentication=SIMPLE)
+            else:
+                self.ldap = Connection(self.server, raise_exceptions=True, client_strategy=RESTARTABLE, auto_bind=self.auto_bind)
             with self.ldap:
                 self.app.logger.debug('LDAP Connection = {0}'.format(str(self.ldap)))
                 self.app.logger.info('OK, connected to LDAP')
@@ -136,7 +139,7 @@ class LdapLoader:
             if self.filt:
                 query = self.filt.format(self.attr, searchval)
             else:
-                query = '{0}={1}'.format(self.attr, searchval)
+                query = '({0}={1})'.format(self.attr, searchval)
             self.app.logger.info('filter: {0} | base: {1}'.format(query, self.base))
             r = None
             with self.ldap:
