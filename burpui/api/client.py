@@ -116,14 +116,14 @@ class ClientTree(Resource):
         return j
 
 
-@ns.route('/stats/<name>',
-          '/<server>/stats/<name>',
-          '/stats/<name>/<int:backup>',
-          '/<server>/stats/<name>/<int:backup>',
-          endpoint='client_stats')
-class ClientStats(Resource):
+@ns.route('/report/<name>',
+          '/<server>/report/<name>',
+          '/report/<name>/<int:backup>',
+          '/<server>/report/<name>/<int:backup>',
+          endpoint='client_report')
+class ClientReport(Resource):
     """The :class:`burpui.api.client.ClientStats` resource allows you to
-    retrieve a statistics on a given backup for a given client.
+    retrieve a report on a given backup for a given client.
 
     This resource is part of the :mod:`burpui.api.client` module.
 
@@ -132,7 +132,7 @@ class ClientStats(Resource):
     """
     parser = api.parser()
     parser.add_argument('server', type=str, help='Which server to collect data from when in multi-agent mode')
-    stats_tpl_fields = api.model('ClientStatsTpl', {
+    report_tpl_fields = api.model('ClientReportTpl', {
         'changed': fields.Integer(required=True, description='Number of changed files'),
         'deleted': fields.Integer(required=True, description='Number of deleted files'),
         'new': fields.Integer(required=True, description='Number of new files'),
@@ -140,32 +140,32 @@ class ClientStats(Resource):
         'total': fields.Integer(required=True, description='Total number of files'),
         'unchanged': fields.Integer(required=True, description='Number of scanned files'),
     })
-    stats_fields = api.model('ClientStats', {
-        'dir': fields.Nested(stats_tpl_fields, required=True),
+    report_fields = api.model('ClientReport', {
+        'dir': fields.Nested(report_tpl_fields, required=True),
         'duration': fields.Integer(required=True, description='Backup duration in seconds'),
-        'efs': fields.Nested(stats_tpl_fields, required=True),
+        'efs': fields.Nested(report_tpl_fields, required=True),
         'encrypted': fields.Boolean(required=True, description='Is the backup encrypted'),
         'end': fields.Integer(required=True, description='Timestamp of the end date of the backup'),
-        'files': fields.Nested(stats_tpl_fields, required=True),
-        'files_enc': fields.Nested(stats_tpl_fields, required=True),
-        'hardlink': fields.Nested(stats_tpl_fields, required=True),
-        'meta': fields.Nested(stats_tpl_fields, required=True),
-        'meta_enc': fields.Nested(stats_tpl_fields, required=True),
+        'files': fields.Nested(report_tpl_fields, required=True),
+        'files_enc': fields.Nested(report_tpl_fields, required=True),
+        'hardlink': fields.Nested(report_tpl_fields, required=True),
+        'meta': fields.Nested(report_tpl_fields, required=True),
+        'meta_enc': fields.Nested(report_tpl_fields, required=True),
         'number': fields.Integer(required=True, description='Backup number'),
         'received': fields.Integer(required=True, description='Bytes received'),
-        'softlink': fields.Nested(stats_tpl_fields, required=True),
-        'special': fields.Nested(stats_tpl_fields, required=True),
+        'softlink': fields.Nested(report_tpl_fields, required=True),
+        'special': fields.Nested(report_tpl_fields, required=True),
         'start': fields.Integer(required=True, description='Timestamp of the beginning of the backup'),
         'totsize': fields.Integer(required=True, description='Total size of the backup'),
-        'vssfooter': fields.Nested(stats_tpl_fields, required=True),
-        'vssfooter_enc': fields.Nested(stats_tpl_fields, required=True),
-        'vssheader': fields.Nested(stats_tpl_fields, required=True),
-        'vssheader_enc': fields.Nested(stats_tpl_fields, required=True),
+        'vssfooter': fields.Nested(report_tpl_fields, required=True),
+        'vssfooter_enc': fields.Nested(report_tpl_fields, required=True),
+        'vssheader': fields.Nested(report_tpl_fields, required=True),
+        'vssheader_enc': fields.Nested(report_tpl_fields, required=True),
         'windows': fields.Boolean(required=True, description='Is the client a windows system'),
     })
 
     @api.cache.cached(timeout=1800, key_prefix=cache_key)
-    @api.marshal_with(stats_fields, code=200, description='Success')
+    @api.marshal_with(report_fields, code=200, description='Success')
     @api.doc(
         params={
             'server': 'Which server to collect data from when in multi-agent mode',
@@ -179,7 +179,7 @@ class ClientStats(Resource):
         parser=parser
     )
     def get(self, server=None, name=None, backup=None):
-        """Returns global statistics of a given backup/client
+        """Returns a global report of a given backup/client
 
         **GET** method provided by the webservice.
 
@@ -334,7 +334,7 @@ class ClientStats(Resource):
                 api.bui.acl.is_client_allowed(current_user.get_id(),
                                               name,
                                               server)):
-            api.abort(403, 'You don\'t have rights to view this client stats')
+            api.abort(403, 'You don\'t have rights to view this client report')
         if backup:
             try:
                 j = api.bui.cli.get_backup_logs(backup, name, agent=server)
@@ -358,10 +358,10 @@ class ClientStats(Resource):
         return j
 
 
-@ns.route('/report/<name>',
-          '/<server>/report/<name>',
-          endpoint='client_report')
-class ClientReport(Resource):
+@ns.route('/stats/<name>',
+          '/<server>/stats/<name>',
+          endpoint='client_stats')
+class ClientStats(Resource):
     """The :class:`burpui.api.client.ClientReport` resource allows you to
     retrieve a list of backups for a given client.
 
@@ -372,7 +372,7 @@ class ClientReport(Resource):
     """
     parser = api.parser()
     parser.add_argument('server', type=str, help='Which server to collect data from when in multi-agent mode')
-    client_fields = api.model('ClientReport', {
+    client_fields = api.model('ClientStats', {
         'number': fields.Integer(required=True, description='Backup number'),
         'received': fields.Integer(required=True, description='Bytes received'),
         'size': fields.Integer(required=True, description='Total size'),

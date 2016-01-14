@@ -31,7 +31,7 @@
 var _client_table = $('#table-client').dataTable( {
 	responsive: true,
 	ajax: {
-		url: '{{ url_for("api.client_report", name=cname, server=server) }}',
+		url: '{{ url_for("api.client_stats", name=cname, server=server) }}',
 		dataSrc: function (data) {
 			if (data.length == 0) {
 				$('#table-client').hide();

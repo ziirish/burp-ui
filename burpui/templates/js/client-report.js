@@ -128,7 +128,7 @@ var _client = function() {
 
 		_chart_stats.bars.forceY([0]);
 	}
-	url = '{{ url_for("api.client_stats", name=cname, server=server) }}';
+	url = '{{ url_for("api.client_report", name=cname, server=server) }}';
 	$.getJSON(url, function(d) {
 		var _fields = [ 'dir', 'files', 'hardlink', 'softlink', 'files_enc', 'meta', 'meta_enc', 'special', 'efs', 'vssheader', 'vssheader_enc', 'vssfooter', 'vssfooter_enc' ];
 		var stats = true;

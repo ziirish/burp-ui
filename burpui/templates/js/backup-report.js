@@ -35,7 +35,7 @@ var _client = function() {
 		chart_unified.tooltip.enabled(true);
 		chart_unified.tooltip.contentGenerator(function(obj) { return '<h3>' + obj.data.key + ' - ' + obj.data.label + '</h3><p>' + obj.data.value + '</p>'; });
 	}
-	url = '{{ url_for("api.client_stats", name=cname, backup=nbackup, server=server) }}';
+	url = '{{ url_for("api.client_report", name=cname, backup=nbackup, server=server) }}';
 	$.getJSON(url, function(d) {
 		j = d;
 		var _fields = [];
