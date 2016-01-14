@@ -21,7 +21,7 @@ g_port = '5000'
 g_bind = '::'
 g_refresh = '180'
 g_liverefresh = '5'
-g_ssl = ''
+g_ssl = 'False'
 g_standalone = 'True'
 g_sslcert = ''
 g_sslkey = ''
@@ -30,7 +30,7 @@ g_auth = 'basic'
 g_acl = ''
 g_storage = ''
 g_redis = ''
-g_zip64 = ''
+g_zip64 = 'False'
 
 
 class BUIServer(Flask):
