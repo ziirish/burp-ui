@@ -85,4 +85,7 @@ class UserHandler(BUIuser):
         return self.authenticated
 
     def get_id(self):
-        return self.id
+        try:
+            return unicode(self.id)
+        except NameError:
+            return str(self.id)

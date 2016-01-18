@@ -191,6 +191,7 @@ def init(conf=None, debug=0, logfile=None, gunicorn=True, unittest=False):
                 red = Redis(host=host, port=port)
                 app.config['SESSION_TYPE'] = 'redis'
                 app.config['SESSION_REDIS'] = red
+                app.config['SESSION_COOKIE_SECURE'] = app.scookie
                 ses = Session()
                 ses.init_app(app)
             except:

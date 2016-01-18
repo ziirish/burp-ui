@@ -31,6 +31,7 @@ g_acl = ''
 g_storage = ''
 g_redis = ''
 g_zip64 = 'False'
+g_scookie = 'False'
 
 
 class BUIServer(Flask):
@@ -69,7 +70,7 @@ class BUIServer(Flask):
             'sslkey': g_sslkey, 'version': g_version, 'auth': g_auth,
             'standalone': g_standalone, 'acl': g_acl,
             'liverefresh': g_liverefresh, 'storage': g_storage,
-            'redis': g_redis, 'zip64': g_zip64
+            'redis': g_redis, 'zip64': g_zip64, 'scookie': g_scookie
         }
         config = ConfigParser.ConfigParser(self.defaults)
         with open(conf) as fp:
@@ -174,6 +175,12 @@ class BUIServer(Flask):
                     config.get,
                     'redis',
                     'Production'
+                )
+                self.scookie = self._safe_config_get(
+                    config.getboolean,
+                    'scookie',
+                    'Production',
+                    cast=bool
                 )
 
                 # Experimental features
