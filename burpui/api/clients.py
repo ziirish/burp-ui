@@ -177,9 +177,9 @@ class ClientsReport(Resource):
     parser = api.parser()
     parser.add_argument('server', type=str, help='Which server to collect data from when in multi-agent mode')
     stats_fields = api.model('ClientsStats', {
-        'total': fields.Integer(required=True, description='Number of files'),
-        'totsize': fields.Integer(required=True, description='Total size occupied by all the backups of this client'),
-        'windows': fields.String(required=True, description='Is the client a windows machine'),
+        'total': fields.Integer(required=True, description='Number of files', default=0),
+        'totsize': fields.Integer(required=True, description='Total size occupied by all the backups of this client', default=0),
+        'windows': fields.String(required=True, description='Is the client a windows machine', default='unknown'),
     })
     client_fields = api.model('ClientsReport', {
         'name': fields.String(required=True, description='Client name'),
@@ -303,7 +303,7 @@ class ClientsStats(Resource):
         'name': fields.String(required=True, description='Client name'),
         'state': fields.String(required=True, description='Current state of the client (idle, backup, etc.)'),
         'phase': fields.String(description='Phase of the current running backup'),
-        'percent': fields.Integer(description='Percentage done'),
+        'percent': fields.Integer(description='Percentage done', default=0),
     })
 
     @api.cache.cached(timeout=1800, key_prefix=cache_key)

@@ -133,12 +133,12 @@ class ClientReport(Resource):
     parser = api.parser()
     parser.add_argument('server', type=str, help='Which server to collect data from when in multi-agent mode')
     report_tpl_fields = api.model('ClientReportTpl', {
-        'changed': fields.Integer(required=True, description='Number of changed files'),
-        'deleted': fields.Integer(required=True, description='Number of deleted files'),
-        'new': fields.Integer(required=True, description='Number of new files'),
-        'scanned': fields.Integer(required=True, description='Number of scanned files'),
-        'total': fields.Integer(required=True, description='Total number of files'),
-        'unchanged': fields.Integer(required=True, description='Number of scanned files'),
+        'changed': fields.Integer(required=True, description='Number of changed files', default=0),
+        'deleted': fields.Integer(required=True, description='Number of deleted files', default=0),
+        'new': fields.Integer(required=True, description='Number of new files', default=0),
+        'scanned': fields.Integer(required=True, description='Number of scanned files', default=0),
+        'total': fields.Integer(required=True, description='Total number of files', default=0),
+        'unchanged': fields.Integer(required=True, description='Number of scanned files', default=0),
     })
     report_fields = api.model('ClientReport', {
         'dir': fields.Nested(report_tpl_fields, required=True),
