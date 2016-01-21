@@ -942,7 +942,7 @@ class Parser(BUIparser):
                 if restoreto:
                     f.write('orig_client = {}\n'.format(name))
 
-            return [0, 'Restoration successfully scheduled']
+            return [0, 'Server-initiated restoration successfully scheduled']
 
         except Exception as e:
             raise BUIserverException(str(e))

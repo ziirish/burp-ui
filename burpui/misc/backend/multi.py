@@ -200,9 +200,9 @@ class Burp(BUIbackend):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_parser_attr`"""
         return self.servers[agent].get_parser_attr(attr)
 
-    def schedule_restore(self, name=None, backup=None, files=None, strip=None, force=None, prefix=None, restoreto=None, agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.schedule_restore`"""
-        return self.servers[agent].schedule_restore(name, backup, files, strip, force, prefix, restoreto)
+    def server_restore(self, name=None, backup=None, files=None, strip=None, force=None, prefix=None, restoreto=None, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.server_restore`"""
+        return self.servers[agent].server_restore(name, backup, files, strip, force, prefix, restoreto)
 
     def _get_version_parallel(self, method=None):
         """Use :mod:`multiprocessing` or :mod:`gevent` to retrieve versions"""
@@ -543,9 +543,9 @@ class NClient(BUIbackend, local):
         data = {'func': 'get_parser_attr', 'args': {'attr': attr}}
         return json.loads(self.do_command(data))
 
-    def schedule_restore(self, name=None, backup=None, files=None, strip=None, force=None, prefix=None, restoreto=None, agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.schedule_restore`"""
-        data = {'func': 'schedule_restore', 'args': {'name': name, 'backup': backup, 'files': files, 'strip': strip, 'force': force, 'prefix': prefix, 'restoreto': restoreto}}
+    def server_restore(self, name=None, backup=None, files=None, strip=None, force=None, prefix=None, restoreto=None, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.server_restore`"""
+        data = {'func': 'server_restore', 'args': {'name': name, 'backup': backup, 'files': files, 'strip': strip, 'force': force, 'prefix': prefix, 'restoreto': restoreto}}
         return json.loads(self.do_command(data))
 
     def get_client_version(self, agent=None):

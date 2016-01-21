@@ -207,7 +207,7 @@ class BUIparser(BUIlogging):
     @abstractmethod
     def server_initiated_restoration(self, name=None, backup=None, files=None, strip=None, force=None, prefix=None):
         """:func:`burpui.misc.parser.interface.BUIparser.server_initiated_restoration`
-        called by :func:`burpui.misc.backend.interface.BUIbackend.schedule_restore`
+        called by :func:`burpui.misc.backend.interface.BUIbackend.server_restore`
         in order to create server-initiated restoration file.
 
         :param name: Client name

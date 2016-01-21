@@ -651,8 +651,8 @@ class BUIbackend(BUIlogging):
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
     @abstractmethod
-    def schedule_restore(self, name=None, backup=None, files=None, strip=None, force=None, prefix=None, restoreto=None, agent=None):
-        """The :func:`burpui.misc.backend.interface.BUIbackend.schedule_restore`
+    def server_restore(self, name=None, backup=None, files=None, strip=None, force=None, prefix=None, restoreto=None, agent=None):
+        """The :func:`burpui.misc.backend.interface.BUIbackend.server_restore`
         function is used to schedule a server-side initiated restoration.
 
         :param name: Client name

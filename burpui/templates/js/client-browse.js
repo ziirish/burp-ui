@@ -111,7 +111,7 @@
 			var s = data.tree.getSelectedNodes();
 			if (s.length > 0) {
 				$("#restore-form").show();
-				$("#schedule-form").show();
+				$("#server-initiated-form").show();
 				v = [];
 				$.each(s, function(i, n) {
 					v.push({key: n.key, folder: n.folder});
@@ -121,7 +121,7 @@
 				$("input[name=list-sc]").val(JSON.stringify(r));
 			} else {
 				$("#restore-form").hide();
-				$("#schedule-form").hide();
+				$("#server-initiated-form").hide();
 				$("input[name=list]").val('');
 				$("input[name=list-sc]").val('');
 			}
@@ -200,12 +200,12 @@
 		e.preventDefault();
 		return false;
 	});
-	$("#form-schedule").on('submit', function(e) {
+	$("#form-server-initiated").on('submit', function(e) {
 		e.preventDefault();
 
 		var form = $(this);
 		/* FIXME: quick-fix cause i did not manage to get the form action */
-		var url = "{{ url_for('api.schedule_restore', name=cname, backup=nbackup, server=server) }}";
+		var url = "{{ url_for('api.server_restore', name=cname, backup=nbackup, server=server) }}";
 		$.ajax({
 			url: url,
 			type: 'PUT',

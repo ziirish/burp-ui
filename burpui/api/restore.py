@@ -205,11 +205,11 @@ class Restore(Resource):
         return resp
 
 
-@ns.route('/schedule-restore/<name>/<int:backup>',
-          '/<server>/schedule-restore/<name>/<int:backup>',
-          endpoint='schedule_restore')
-class ScheduleRestore(Resource):
-    """The :class:`burpui.api.restore.ScheduleRestore` resource allows you to
+@ns.route('/sserver-restore/<name>/<int:backup>',
+          '/<server>/server-restore/<name>/<int:backup>',
+          endpoint='server_restore')
+class ServerRestore(Resource):
+    """The :class:`burpui.api.restore.ServerRestore` resource allows you to
     prepare a file restoration.
 
     This resource is part of the :mod:`burpui.api.restore` module.
@@ -276,7 +276,7 @@ class ScheduleRestore(Resource):
                  api.bui.acl.is_admin(current_user.get_id()))):
             api.abort(403, 'You are not allowed to perform a restoration for this client')
         try:
-            j = api.bui.cli.schedule_restore(name, backup, l, s, f, p, to, server)
+            j = api.bui.cli.server_restore(name, backup, l, s, f, p, to, server)
             return {'notif': j}, 201
         except BUIserverException as e:
             api.abort(500, str(e))

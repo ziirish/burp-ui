@@ -86,11 +86,11 @@
                 </div>
               </div>
             </form>
-            <form id="form-schedule" class="form-inline col-md-6 text-right" method="POST" role="form" action"{{ url_for('api.schedule_restore', name=cname, backup=nbackup, server=server) }}">
+            <form id="form-server-initiated" class="form-inline col-md-6 text-right" method="POST" role="form" action"{{ url_for('api.server_restore', name=cname, backup=nbackup, server=server) }}">
               <input type="hidden" name="list-sc">
-              <div id="schedule-form" style="display:none;">
+              <div id="server-initiated-form" style="display:none;">
                 <div class="btn-group dropup">
-                  <button type="submit" class="btn btn-info" id="perform-schedule"><span class="glyphicon glyphicon-cloud-upload"></span>&nbsp;Schedule restore</button>
+                  <button type="submit" class="btn btn-info" id="perform-server-initiated"><span class="glyphicon glyphicon-cloud-upload"></span>&nbsp;Server initiated restore</button>
                   <button class="btn btn-info dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
                   <ul class="dropdown-menu dropdown-menu-right browse">
                     <li><label for="strip-sc">Number of leading path components to strip:&nbsp;</label><input type="text" id="strip-sc" name="strip-sc" placeholder="0" autocomplete="off" maxlength="2" size="2" value="0"></li>

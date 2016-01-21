@@ -50,6 +50,16 @@ You can refer to the `restoration <installation.html#restoration>`__ section of
 this documentation along with the `version <usage.html#versions>`__ section for
 more details.
 
+What does the server-initiated restoration feature do and how to make it work?
+------------------------------------------------------------------------------
+
+This feature asks the server to perform a restoration on the client the next
+time it sees it.
+
+In order for this feature to work, your client **MUST** allows the server to do
+that. You have to set ``server_can_restore = 1`` (which is the default value) in
+your client configuration file (usually */etc/burp/burp.conf*).
+
 How can I start Burp-UI as a daemon?
 ------------------------------------
 
