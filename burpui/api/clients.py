@@ -258,21 +258,21 @@ class ClientsReport(Resource):
         if not server:
             server = self.parser.parse_args()['server']
         j = {}
-        try:
-            # Manage ACL
-            if (not api.bui.standalone and api.bui.acl and
-                    (not api.bui.acl.is_admin(current_user.get_id()) and
-                     server not in
-                     api.bui.acl.servers(current_user.get_id()))):
-                api.abort(403, 'Sorry, you don\'t have any rights on this server')
-        except BUIserverException as e:
-            api.abort(500, str(e))
+        # Manage ACL
+        if (not api.bui.standalone and api.bui.acl and
+                (not api.bui.acl.is_admin(current_user.get_id()) and
+                 server not in
+                 api.bui.acl.servers(current_user.get_id()))):
+            api.abort(403, 'Sorry, you don\'t have any rights on this server')
         clients = []
         if (api.bui.acl and not
                 api.bui.acl.is_admin(current_user.get_id())):
             clients = api.bui.acl.clients(current_user.get_id(), server)
         else:
-            clients = api.bui.cli.get_all_clients(agent=server)
+            try:
+                clients = api.bui.cli.get_all_clients(agent=server)
+            except BUIserverException as e:
+                api.abort(500, str(e))
         j = api.bui.cli.get_clients_report(clients, server)
         return j
 
