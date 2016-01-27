@@ -97,8 +97,8 @@ class RunningClients(Resource):
         return r
 
 
-@ns.route('/is-running',
-          '/<server>/is-running',
+@ns.route('/backup-running',
+          '/<server>/backup-running',
           endpoint='running_backup')
 class RunningBackup(Resource):
     """The :class:`burpui.api.clients.RunningBackup` resource allows you to
@@ -187,7 +187,7 @@ class ClientsReport(Resource):
     })
     backup_fields = api.model('ClientsBackup', {
         'name': fields.String(required=True, description='Client name'),
-        'number': fields.Integer(required=True, description='Backup number'),
+        'number': fields.Integer(required=True, description='Number of backups on this client', default=0),
     })
     report_fields = api.model('Report', {
         'backups': fields.Nested(backup_fields, as_list=True, required=True),
@@ -207,7 +207,7 @@ class ClientsReport(Resource):
         parser=parser
     )
     def get(self, server=None):
-        """Returns global statistics about all the clients
+        """Returns a global report about all the clients of a given server
 
         **GET** method provided by the webservice.
 
@@ -265,22 +265,15 @@ class ClientsReport(Resource):
                      server not in
                      api.bui.acl.servers(current_user.get_id()))):
                 api.abort(403, 'Sorry, you don\'t have any rights on this server')
-            clients = api.bui.cli.get_all_clients(agent=server)
         except BUIserverException as e:
             api.abort(500, str(e))
-        # Filter only allowed clients
-        allowed = []
-        check = False
+        clients = []
         if (api.bui.acl and not
                 api.bui.acl.is_admin(current_user.get_id())):
-            check = True
-            allowed = api.bui.acl.clients(current_user.get_id(), server)
-        aclients = []
-        for c in clients:
-            if check and c['name'] not in allowed:
-                continue
-            aclients.append(c)
-        j = api.bui.cli.get_clients_report(aclients, server)
+            clients = api.bui.acl.clients(current_user.get_id(), server)
+        else:
+            clients = api.bui.cli.get_all_clients(agent=server)
+        j = api.bui.cli.get_clients_report(clients, server)
         return j
 
 
@@ -327,7 +320,7 @@ class ClientsStats(Resource):
         ::
 
             {
-              "results": [
+              [
                 {
                   "last": "2015-05-17 11:40:02",
                   "name": "client1",
