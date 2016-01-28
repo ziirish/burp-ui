@@ -267,7 +267,7 @@ class ClientsReport(Resource):
         clients = []
         if (api.bui.acl and not
                 api.bui.acl.is_admin(current_user.get_id())):
-            clients = api.bui.acl.clients(current_user.get_id(), server)
+            clients = [{'name': x} for x in api.bui.acl.clients(current_user.get_id(), server)]
         else:
             try:
                 clients = api.bui.cli.get_all_clients(agent=server)
