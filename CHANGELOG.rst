@@ -11,13 +11,18 @@ Current
 - Add the ability to `chain multiple authentication backends <https://git.ziirish.me/ziirish/burp-ui/issues/79>`_
 - Add display versions `within the interface <https://git.ziirish.me/ziirish/burp-ui/issues/89>`_
 - Add support for `zip64 <https://git.ziirish.me/ziirish/burp-ui/issues/97>`_
-- Add Basic HTTP Authentication
+- Add new `report <https://git.ziirish.me/ziirish/burp-ui/issues/15>`_
+- Add "restart" option to debian init script thanks to @Larsen
+- Add Basic HTTP Authentication (mostly for the API)
 - Add full documented API
 - Fix issue `#81 <https://git.ziirish.me/ziirish/burp-ui/issues/81>`_
 - Fix issue `#87 <https://git.ziirish.me/ziirish/burp-ui/issues/87>`_
 - Fix issue `#88 <https://git.ziirish.me/ziirish/burp-ui/issues/88>`_
 - Fix issue `#92 <https://git.ziirish.me/ziirish/burp-ui/issues/92>`_
 - Fix issue `#95 <https://git.ziirish.me/ziirish/burp-ui/issues/95>`_
+- Fix issue `#99 <https://git.ziirish.me/ziirish/burp-ui/issues/99>`_
+- Fix issue `#100 <https://git.ziirish.me/ziirish/burp-ui/issues/100>`_
+- Fix issue `#101 <https://git.ziirish.me/ziirish/burp-ui/issues/101>`_
 - `demo <https://demo.ziirish.me/>`_
 - API refactoring
 - Security fixes

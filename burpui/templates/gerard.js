@@ -210,6 +210,10 @@ $('#input-client').typeahead({
 {% include "js/servers.js" %}
 {% endif -%}
 
+{% if servers and report -%}
+{% include "js/servers-report.js" %}
+{% endif -%}
+
 {% if clients and overview -%}
 {% include "js/clients.js" %}
 {% endif -%}
@@ -303,7 +307,7 @@ $(function() {
 		{% if not login -%}
 		_check_running();
 		{% endif -%}
-		{% if servers and overview -%}
+		{% if servers -%}
 		_servers();
 		{% endif -%}
 	});
@@ -332,7 +336,7 @@ $(function() {
 	{% if client and is_client_func -%}
 	_client();
 	{% endif -%}
-	{% if servers and overview -%}
+	{% if servers -%}
 	_servers();
 	{% endif -%}
 

@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+{% block body %}
+        {% include "notifications.html" %}
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+          {% include "small_topbar.html" %}
+          <ul class="breadcrumb" style="margin-bottom: 5px;">
+            <li class="active">Home</li>
+          </ul>
+          <br />
+          <h1 class="page-header">Global report</h1>
+          <div class="row placeholders">
+            <div class="col-xs-6 col-sm-6 placeholder">
+              <div class="mycharts" id="chart_repartition" style="height: 350px;">
+                <svg></svg>
+              </div>
+              <h4>Clients repartition per server</h4>
+            </div>
+            <div class="col-xs-6 col-sm-6 placeholder">
+              <div class="mycharts" id="chart_size" style="height: 350px;">
+                <svg></svg>
+              </div>
+              <h4>Used space</h4>
+            </div>
+            <div class="col-xs-6 col-sm-6 placeholder">
+              <div class="mycharts" id="chart_files" style="height: 350px;">
+                <svg></svg>
+              </div>
+              <h4>Total files</h4>
+            </div>
+            <div class="col-xs-6 col-sm-6 placeholder">
+              <div class="mycharts" id="chart_backups" style="height: 350px;">
+                <svg></svg>
+              </div>
+              <h4>Number of backups</h4>
+            </div>
+          </div>
+        </div>
+{% endblock %}

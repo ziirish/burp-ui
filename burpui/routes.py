@@ -210,6 +210,12 @@ def servers():
     return render_template('servers.html', servers=True, overview=True)
 
 
+@view.route('/servers-report', methods=['GET'])
+@login_required
+def servers_report():
+    return render_template('servers-report.html', servers=True, report=True)
+
+
 @view.route('/login', methods=['POST', 'GET'])
 def login():
     form = LoginForm(request.form)
