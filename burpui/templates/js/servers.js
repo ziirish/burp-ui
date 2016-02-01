@@ -26,7 +26,7 @@ var _servers_table = $('#table-servers').dataTable( {
 	},
 	columns: [
 		{ data: null, render: function ( data, type, row ) {
-				href = '{{ url_for("view.clients") }}?server='+data.name;
+				href = '{{ url_for("view.clients") }}?serverName='+data.name;
 				if (!data.alive) {
 					href = '#';
 				}

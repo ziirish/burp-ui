@@ -64,7 +64,7 @@ class Counters(Resource):
     are working on.
     """
     parser = api.parser()
-    parser.add_argument('server', type=str, help='Which server to collect data from when in multi-agent mode')
+    parser.add_argument('serverName', type=str, help='Which server to collect data from when in multi-agent mode')
     parser.add_argument('name', type=str, help='Client name')
     monitor_fields = api.model('Monitor', {
         'client': fields.String(required=True, description='Client name'),
@@ -96,7 +96,7 @@ class Counters(Resource):
         :returns: Counters
         """
         args = self.parser.parse_args()
-        server = server or args['server']
+        server = server or args['serverName']
         name = name or args['name']
         # Check params
         if not name:
@@ -143,7 +143,7 @@ class Live(Resource):
     in multi-agent mode.
     """
     parser = api.parser()
-    parser.add_argument('server', type=str, help='Which server to collect data from when in multi-agent mode')
+    parser.add_argument('serverName', type=str, help='Which server to collect data from when in multi-agent mode')
     live_fields = api.model('Live', {
         'client': fields.String(required=True, description='Client name'),
         'agent': fields.String(description='Server (agent) name'),
@@ -196,7 +196,7 @@ class Live(Resource):
         """
 
         args = self.parser.parse_args()
-        server = server or args['server']
+        server = server or args['serverName']
         r = []
         # ACL
         admin = api.bui.acl and api.bui.acl.is_admin(current_user.get_id())
@@ -282,7 +282,7 @@ class About(Resource):
     """
     api.LOGIN_NOT_REQUIRED.append('about')
     parser = api.parser()
-    parser.add_argument('server', type=str, help='Which server to collect data from when in multi-agent mode')
+    parser.add_argument('serverName', type=str, help='Which server to collect data from when in multi-agent mode')
     burp_fields = api.model('Burp', {
         'name': fields.String(required=True, description='Instance name', default='Burp{}'.format(api.bui.vers)),
         'client': fields.String(description='Burp client version'),
@@ -307,7 +307,7 @@ class About(Resource):
         """Returns various informations about Burp-UI"""
         args = self.parser.parse_args()
         r = {}
-        server = server or args['server']
+        server = server or args['serverName']
         r['version'] = api.version
         r['release'] = api.release
         r['api'] = url_for('api.doc')

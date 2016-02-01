@@ -17,6 +17,7 @@ from time import gmtime, strftime, time
 from . import api
 from ..exceptions import BUIserverException
 from flask.ext.restplus import Resource
+from flask.ext.restplus.inputs import boolean
 from flask.ext.login import current_user
 from flask import Response, send_file, make_response, after_this_request
 from werkzeug.datastructures import Headers
@@ -42,7 +43,7 @@ class Restore(Resource):
     """
     parser = api.parser()
     parser.add_argument('pass', type=str, help='Password to use for encrypted backups', location='form')
-    parser.add_argument('format', type=str, help='Returning archive format', location='form')
+    parser.add_argument('format', type=str, help='Returning archive format', location='form', choices=('zip', 'tar.gz', 'tar.bz2'), default='zip')
     parser.add_argument('strip', type=int, required=True, help='Number of elements to strip in the path', default=0, location='form')
     parser.add_argument('list', type=str, required=True, help='List of files/directories to restore (example: \'{"restore":[{"folder":true,"key":"/etc"}]}\')', location='form')
 
@@ -118,8 +119,8 @@ class Restore(Resource):
                 # First, we open the file in reading mode so that a file handler
                 # is open on the file. Then we delete it as soon as the request
                 # ended. Because the fh is open, the file will be actually removed
-                # when the transfert is done and the send_file method has closed
-                # the fh.
+                # when the transfer is done and the send_file method has closed
+                # the fh. Only tested on Linux systems.
                 fh = open(archive, 'r')
 
                 @after_this_request
@@ -130,6 +131,7 @@ class Restore(Resource):
                     import os
                     os.remove(archive)
                     return response
+
                 resp = send_file(fh,
                                  as_attachment=True,
                                  attachment_filename=filename,
@@ -225,7 +227,7 @@ class ServerRestore(Resource):
     parser.add_argument('list-sc', type=str, required=True, help='List of files/directories to restore (example: \'{"restore":[{"folder":true,"key":"/etc"}]}\')', location='form')
     parser.add_argument('strip-sc', type=int, required=True, help='Number of elements to strip in the path', default=0, location='form')
     parser.add_argument('prefix-sc', type=str, help='Prefix to the restore path', location='form')
-    parser.add_argument('force-sc', type=bool, help='Whether to overwrite existing files', default=False, location='form')
+    parser.add_argument('force-sc', type=boolean, help='Whether to overwrite existing files', default=False, location='form')
     parser.add_argument('restoreto-sc', type=str, help='Restore files on an other client', location='form')
 
     @api.doc(

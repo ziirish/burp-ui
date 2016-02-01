@@ -33,7 +33,7 @@ class RunningClients(Resource):
     in multi-agent mode.
     """
     parser = api.parser()
-    parser.add_argument('server', type=str, help='Which server to collect data from when in multi-agent mode')
+    parser.add_argument('serverName', type=str, help='Which server to collect data from when in multi-agent mode')
 
     @api.doc(
         params={
@@ -64,8 +64,7 @@ class RunningClients(Resource):
 
         :returns: The *JSON* described above.
         """
-        if not server:
-            server = self.parser.parse_args()['server']
+        server = server or self.parser.parse_args()['serverName']
         if client:
             if api.bui.acl:
                 if (not api.bui.acl.is_admin(current_user.get_id()) and not
@@ -175,7 +174,7 @@ class ClientsReport(Resource):
     in multi-agent mode.
     """
     parser = api.parser()
-    parser.add_argument('server', type=str, help='Which server to collect data from when in multi-agent mode')
+    parser.add_argument('serverName', type=str, help='Which server to collect data from when in multi-agent mode')
     stats_fields = api.model('ClientsStats', {
         'total': fields.Integer(required=True, description='Number of files', default=0),
         'totsize': fields.Integer(required=True, description='Total size occupied by all the backups of this client', default=0),
@@ -255,8 +254,7 @@ class ClientsReport(Resource):
         :returns: The *JSON* described above
         """
 
-        if not server:
-            server = self.parser.parse_args()['server']
+        server = server or self.parser.parse_args()['serverName']
         j = {}
         # Manage ACL
         if (not api.bui.standalone and api.bui.acl and
@@ -290,7 +288,7 @@ class ClientsStats(Resource):
     in multi-agent mode.
     """
     parser = api.parser()
-    parser.add_argument('server', type=str, help='Which server to collect data from when in multi-agent mode')
+    parser.add_argument('serverName', type=str, help='Which server to collect data from when in multi-agent mode')
     client_fields = api.model('ClientsStatsSingle', {
         'last': fields.String(required=True, description='Date of last backup'),
         'name': fields.String(required=True, description='Client name'),
@@ -348,8 +346,7 @@ class ClientsStats(Resource):
         :returns: The *JSON* described above
         """
 
-        if not server:
-            server = self.parser.parse_args()['server']
+        server = server or self.parser.parse_args()['serverName']
         try:
             if (not api.bui.standalone and
                     api.bui.acl and

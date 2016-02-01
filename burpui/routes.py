@@ -79,7 +79,7 @@ def settings(server=None, conf=None):
             conf = quote(request.args.get('conf'), safe='')
         except:
             pass
-    server = server or request.args.get('server')
+    server = server or request.args.get('serverName')
     return render_template('settings.html', settings=True, server=server, conf=conf)
 
 
@@ -100,7 +100,7 @@ def cli_settings(server=None, client=None, conf=None):
         except:
             pass
     client = client or request.args.get('client')
-    server = server or request.args.get('server')
+    server = server or request.args.get('serverName')
     return render_template('settings.html', settings=True, client=client, server=server, conf=conf)
 
 
@@ -111,7 +111,7 @@ def cli_settings(server=None, client=None, conf=None):
 @login_required
 def live_monitor(server=None, name=None):
     """Live status monitor view"""
-    server = server or request.args.get('server')
+    server = server or request.args.get('serverName')
     view.bui.cli.is_one_backup_running()
     if view.bui.standalone:
         if not view.bui.cli.running:
@@ -139,7 +139,7 @@ def client_browse(server=None, name=None, backup=None, encrypted=None):
     """Browse a specific backup of a specific client"""
     if request.args.get('encrypted') == '1':
         encrypted = 1
-    server = server or request.args.get('server')
+    server = server or request.args.get('serverName')
     bkp = request.args.get('backup')
     if bkp and not backup:
         return redirect(url_for('.client_browse', name=name, backup=bkp, encrypted=encrypted, server=server))
@@ -151,7 +151,7 @@ def client_browse(server=None, name=None, backup=None, encrypted=None):
 @login_required
 def client_report(server=None, name=None):
     """Specific client report"""
-    server = server or request.args.get('server')
+    server = server or request.args.get('serverName')
     try:
         l = view.bui.cli.get_client(name, agent=server)
     except BUIserverException:
@@ -166,7 +166,7 @@ def client_report(server=None, name=None):
 @login_required
 def clients_report(server=None):
     """Global report"""
-    server = server or request.args.get('server')
+    server = server or request.args.get('serverName')
     return render_template('clients-report.html', clients=True, report=True, server=server)
 
 
@@ -178,7 +178,7 @@ def clients_report(server=None):
 def backup_report(server=None, name=None, backup=None):
     """Backup specific report"""
     backup = backup or request.args.get('backup')
-    server = server or request.args.get('server')
+    server = server or request.args.get('serverName')
     return render_template('backup-report.html', client=True, backup=True, report=True, cname=name, nbackup=backup, server=server)
 
 
@@ -190,7 +190,7 @@ def backup_report(server=None, name=None, backup=None):
 def client(server=None, name=None):
     """Specific client overview"""
     c = name or request.args.get('name')
-    server = server or request.args.get('server')
+    server = server or request.args.get('serverName')
     if view.bui.cli.is_backup_running(c, agent=server):
         return redirect(url_for('.live_monitor', name=c, server=server))
     return render_template('client.html', client=True, overview=True, cname=c, server=server)
@@ -200,7 +200,7 @@ def client(server=None, name=None):
 @view.route('/<server>/clients', methods=['GET'])
 @login_required
 def clients(server=None):
-    server = server or request.args.get('server')
+    server = server or request.args.get('serverName')
     return render_template('clients.html', clients=True, overview=True, server=server)
 
 
@@ -252,7 +252,7 @@ def home():
     if view.bui.standalone:
         return redirect(url_for('.clients'))
     else:
-        server = request.args.get('server')
+        server = request.args.get('serverName')
         if server:
             return redirect(url_for('.clients', server=server))
         return redirect(url_for('.servers'))

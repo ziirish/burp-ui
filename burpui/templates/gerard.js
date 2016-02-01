@@ -201,7 +201,7 @@ $('#input-client').typeahead({
 			{% endif -%}
 		{% endfor -%}
 ).on('typeahead:selected', function(obj, datum) {
-	window.location = '{{ url_for("view.client") }}?name='+datum.name+'&server='+datum.server;
+	window.location = '{{ url_for("view.client") }}?name='+datum.name+'&serverName='+datum.server;
 });
 	{% endif -%}
 {% endif -%}

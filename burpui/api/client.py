@@ -31,7 +31,7 @@ class ClientTree(Resource):
     are working on.
     """
     parser = api.parser()
-    parser.add_argument('server', type=str, help='Which server to collect data from when in multi-agent mode')
+    parser.add_argument('serverName', type=str, help='Which server to collect data from when in multi-agent mode')
     parser.add_argument('root', type=str, help='Root path to expand')
     node_fields = api.model('ClientTree', {
         'date': fields.String(required=True, description='Human representation of the backup date'),
@@ -97,12 +97,12 @@ class ClientTree(Resource):
 
         :returns: The *JSON* described above.
         """
-        if not server:
-            server = self.parser.parse_args()['server']
+        args = self.parser.parse_args()
+        server = server or args['serverName']
         j = []
         if not name or not backup:  # pargma: no cover
             return j
-        root = self.parser.parse_args()['root']
+        root = args['root']
         try:
             if (api.bui.acl and
                     (not api.bui.acl.is_admin(current_user.get_id()) and not
@@ -131,7 +131,7 @@ class ClientReport(Resource):
     in multi-agent mode.
     """
     parser = api.parser()
-    parser.add_argument('server', type=str, help='Which server to collect data from when in multi-agent mode')
+    parser.add_argument('serverName', type=str, help='Which server to collect data from when in multi-agent mode')
     report_tpl_fields = api.model('ClientReportTpl', {
         'changed': fields.Integer(required=True, description='Number of changed files', default=0),
         'deleted': fields.Integer(required=True, description='Number of deleted files', default=0),
@@ -324,8 +324,7 @@ class ClientReport(Resource):
 
         :returns: The *JSON* described above.
         """
-        if not server:
-            server = self.parser.parse_args()['server']
+        server = server or self.parser.parse_args()['serverName']
         j = []
         if not name:
             err = [[1, 'No client defined']]
@@ -371,7 +370,7 @@ class ClientStats(Resource):
     in multi-agent mode.
     """
     parser = api.parser()
-    parser.add_argument('server', type=str, help='Which server to collect data from when in multi-agent mode')
+    parser.add_argument('serverName', type=str, help='Which server to collect data from when in multi-agent mode')
     client_fields = api.model('ClientStats', {
         'number': fields.Integer(required=True, description='Backup number'),
         'received': fields.Integer(required=True, description='Bytes received'),
@@ -424,8 +423,7 @@ class ClientStats(Resource):
 
         :returns: The *JSON* described above.
         """
-        if not server:
-            server = self.parser.parse_args()['server']
+        server = server or self.parser.parse_args()['serverName']
         try:
             if (api.bui.acl and (
                     not api.bui.acl.is_admin(current_user.get_id()) and
