@@ -598,7 +598,8 @@ class Parser(BUIparser):
 
     def path_expander(self, pattern=None, client=None):
         """See :func:`burpui.misc.parser.interface.BUIparser.path_expander`"""
-        # TODO: enhance security by allowing only some paths (ie. remove '..' if needed)
+        # TODO: enhance security by allowing only some paths
+        # (ie. remove '..' if needed)
         if not pattern:
             return []
         if not pattern.startswith('/'):
@@ -609,7 +610,10 @@ class Parser(BUIparser):
         if not re.search('\?|\*|\[.*\]', pattern):
             return [pattern]
         else:
-            return [x for x in glob(pattern) if os.path.isfile(x) and not x.endswith('~')]
+            return [
+                x for x in glob(pattern)
+                if os.path.isfile(x) and not x.endswith('~')
+            ]
 
     def remove_client(self, client=None):
         """See :func:`burpui.misc.parser.interface.BUIparser.remove_client`"""
@@ -700,8 +704,12 @@ class Parser(BUIparser):
         res = []
         for f in os.listdir(self.clientconfdir):
             ff = os.path.join(self.clientconfdir, f)
-            if os.path.isfile(ff) and not f.startswith('.') and not f.endswith('~'):
-                res.append({'name': f, 'value': os.path.join(self.clientconfdir, f)})
+            if (os.path.isfile(ff) and not f.startswith('.')
+                    and not f.endswith('~')):
+                res.append({
+                    'name': f,
+                    'value': os.path.join(self.clientconfdir, f)
+                })
 
         self.clients = res
         return res
@@ -775,7 +783,12 @@ class Parser(BUIparser):
                     elif key in getattr(self, 'integer_{}'.format(mode)):
                         typ = 'integers'
                     # highlight the wrong parameters
-                    errs.append([2, "Sorry, the file '{}' does not exist".format(d), key, typ])
+                    errs.append([
+                        2,
+                        "Sorry, the file '{}' does not exist".format(d),
+                        key,
+                        typ
+                    ])
         if errs:
             return errs
 
@@ -825,7 +838,8 @@ class Parser(BUIparser):
                         f.write('{}\n'.format(line))
                 # Write the new keys
                 for key in newkeys:
-                    if key not in written and key not in ['includes', 'includes_ori']:
+                    if (key not in written and
+                            key not in ['includes', 'includes_ori']):
                         self._write_key(f, key, data)
                 # Write the rest of file inclusions
                 for file in data.getlist('includes'):
@@ -925,7 +939,9 @@ class Parser(BUIparser):
                         break
 
                 if not found:
-                    raise BUIserverException('Client \'{}\' not found'.format(restoreto))
+                    raise BUIserverException(
+                        'Client \'{}\' not found'.format(restoreto)
+                    )
 
                 client = restoreto
 

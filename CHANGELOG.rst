@@ -14,7 +14,7 @@ Current
 - Add new `report <https://git.ziirish.me/ziirish/burp-ui/issues/15>`_
 - Add "restart" option to debian init script thanks to @Larsen
 - Add Basic HTTP Authentication (mostly for the API)
-- Add full documented API
+- Add self-documented API
 - Fix issue `#81 <https://git.ziirish.me/ziirish/burp-ui/issues/81>`_
 - Fix issue `#87 <https://git.ziirish.me/ziirish/burp-ui/issues/87>`_
 - Fix issue `#88 <https://git.ziirish.me/ziirish/burp-ui/issues/88>`_

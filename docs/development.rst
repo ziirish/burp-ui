@@ -21,4 +21,22 @@ You can uninstall/disable this `Burp-UI`_ setup by typing ``deactivate`` and
 removing the ``/opt/bui-venv`` directory.
 
 
+Hacking
+=======
+
+For those of you who would like to hack on the project, I have split out the
+repository to keep a copy of all the external dependencies (JS and CSS) in a git
+submodule.
+
+In order to run local debugging, you need to retrieve this git submodule.
+
+To do so, run the following commands:
+
+::
+
+    git clone https://git.ziirish.me/ziirish/burp-ui.git
+    cd burp-ui
+    git submodule update --init
+
+
 .. _Burp-UI: https://git.ziirish.me/ziirish/burp-ui
