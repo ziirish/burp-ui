@@ -5,4 +5,6 @@ Flask-WTF==0.12
 flask-restplus==0.8.6
 Flask-Cache==0.13.1
 WTForms==2.0.2
+arrow==0.7.0
+tzlocal==1.2
 six==1.10.0
