@@ -12,7 +12,6 @@ import os
 import socket
 import time
 import json
-import datetime
 import shutil
 import subprocess
 import tempfile
@@ -556,7 +555,7 @@ class Burp(BUIbackend):
                 if reg:
                     found = True
                     if key in ['start', 'end']:
-                        backup[key] = int(time.mktime(datetime.datetime.strptime(reg.group(1), '%Y-%m-%d %H:%M:%S').timetuple()))
+                        backup[key] = int(reg.group(1))
                     elif key == 'duration':
                         tmp = reg.group(1).split(':')
                         tmp.reverse()
@@ -737,10 +736,10 @@ class Burp(BUIbackend):
                 cli['last'] = 'never'
             elif re.match(r'^\d+\s\d+\s\d+$', infos):
                 spl = infos.split()
-                cli['last'] = datetime.datetime.fromtimestamp(int(spl[2])).strftime('%Y-%m-%d %H:%M:%S')
+                cli['last'] = int(spl[2])
             else:
                 spl = infos.split('\t')
-                cli['last'] = datetime.datetime.fromtimestamp(int(spl[len(spl) - 2])).strftime('%Y-%m-%d %H:%M:%S')
+                cli['last'] = int(spl[len(spl) - 2])
             res.append(cli)
         return res
 
@@ -765,7 +764,7 @@ class Burp(BUIbackend):
                 spl = backup.split()
                 bkp['number'] = spl[0]
                 bkp['deletable'] = (spl[1] == '1')
-                bkp['date'] = datetime.datetime.fromtimestamp(int(spl[2])).strftime('%Y-%m-%d %H:%M:%S')
+                bkp['date'] = int(spl[2])
                 log = self.get_backup_logs(spl[0], name)
                 bkp['encrypted'] = log['encrypted']
                 bkp['received'] = log['received']

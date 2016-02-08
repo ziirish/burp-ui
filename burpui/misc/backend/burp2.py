@@ -2,7 +2,6 @@
 import re
 import os
 import time
-import datetime
 import subprocess
 import codecs
 import sys
@@ -614,7 +613,7 @@ class Burp(Burp1):
                 c['last'] = 'never'
             else:
                 infos = infos[0]
-                c['last'] = datetime.datetime.fromtimestamp(infos['timestamp']).strftime('%Y-%m-%d %H:%M:%S')
+                c['last'] = infos['timestamp']
             j.append(c)
         return j
 
@@ -641,7 +640,7 @@ class Burp(Burp1):
                 ba['deletable'] = True
             else:
                 ba['deletable'] = False
-            ba['date'] = datetime.datetime.fromtimestamp(backup['timestamp']).strftime('%Y-%m-%d %H:%M:%S')
+            ba['date'] = backup['timestamp']
             log = self.get_backup_logs(backup['number'], name)
             try:
                 ba['encrypted'] = log['encrypted']
@@ -697,7 +696,7 @@ class Burp(Burp1):
             t['gid'] = entry['gid']
             t['parent'] = top
             t['size'] = '{0:.1eM}'.format(_hr(entry['size']))
-            t['date'] = datetime.datetime.fromtimestamp(entry['mtime']).strftime('%Y-%m-%d %H:%M:%S')
+            t['date'] = entry['mtime']
             r.append(t)
         return r
 
