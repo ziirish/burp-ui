@@ -115,6 +115,7 @@ class ServersReport(Resource):
         'backups': fields.Nested(backup_fields, as_list=True, required=True),
         'servers': fields.Nested(server_fields, as_list=True, required=True),
     })
+
     @api.cache.cached(timeout=1800, key_prefix=cache_key)
     @api.marshal_with(report_fields, code=200, description='Success')
     @api.doc(
@@ -219,4 +220,5 @@ class ServersReport(Resource):
 
             r['backups'] = backups
             r['servers'] = servers
+
         return r

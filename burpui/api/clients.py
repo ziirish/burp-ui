@@ -9,6 +9,7 @@
 """
 # This is a submodule we can also use "from ..api import api"
 from . import api, cache_key
+from .custom import fields as my_fields
 from ..exceptions import BUIserverException
 
 from six import iteritems
@@ -29,7 +30,7 @@ class RunningClients(Resource):
 
     This resource is part of the :mod:`burpui.api.clients` module.
 
-    An optional ``GET`` parameter called ``server`` is supported when running
+    An optional ``GET`` parameter called ``serverName`` is supported when running
     in multi-agent mode.
     """
     parser = api.parser()
@@ -170,7 +171,7 @@ class ClientsReport(Resource):
 
     This resource is part of the :mod:`burpui.api.clients` module.
 
-    An optional ``GET`` parameter called ``server`` is supported when running
+    An optional ``GET`` parameter called ``serverName`` is supported when running
     in multi-agent mode.
     """
     parser = api.parser()
@@ -284,13 +285,13 @@ class ClientsStats(Resource):
 
     This resource is part of the :mod:`burpui.api.clients` module.
 
-    An optional ``GET`` parameter called ``server`` is supported when running
+    An optional ``GET`` parameter called ``serverName`` is supported when running
     in multi-agent mode.
     """
     parser = api.parser()
     parser.add_argument('serverName', type=str, help='Which server to collect data from when in multi-agent mode')
     client_fields = api.model('ClientsStatsSingle', {
-        'last': fields.String(required=True, description='Date of last backup'),
+        'last': my_fields.DateTime(required=True, dt_format='iso8601', description='Date of last backup'),
         'name': fields.String(required=True, description='Client name'),
         'state': fields.String(required=True, description='Current state of the client (idle, backup, etc.)'),
         'phase': fields.String(description='Phase of the current running backup'),
