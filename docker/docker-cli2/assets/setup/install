@@ -4,19 +4,17 @@ set -e
 SETUP_DIR="/app/setup"
 CONFIG_DIR="${SETUP_DIR}/config"
 BURP="https://git.ziirish.me/ziirish/burp.git"
-BURP_VERSION="2.0.28"
+BURP_VERSION="2.0.32"
 BURPUI="https://burpui.ziirish.me/builds/burp-ui.dev.tar.gz"
 
 # Install burp
 git clone $BURP
 cd burp
 git checkout tags/$BURP_VERSION
-#autoreconf -vif
-#./configure --prefix=/usr --sysconfdir=/etc/burp --localstatedir=/var
-./configure
+autoreconf -vif
+./configure --prefix=/usr --sysconfdir=/etc/burp --localstatedir=/var
 make -j4
-make install
-#make install-all
+make install-all
 
 # configure supervisord log rotation
 cat > /etc/logrotate.d/supervisord <<EOF
