@@ -7,13 +7,11 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
-# This is a submodule we can also use "from ..api import api"
 from . import api, cache_key
+from .custom import fields, Resource
 from ..exceptions import BUIserverException
 
 from six import iteritems
-from flask.ext.restplus import Resource, fields
-from flask.ext.login import current_user
 from flask import flash, url_for
 
 ns = api.namespace('misc', 'Misc methods')
@@ -58,14 +56,14 @@ class Counters(Resource):
 
     This resource is part of the :mod:`burpui.api.api` module.
 
-    An optional ``GET`` parameter called ``server`` is supported when running
+    An optional ``GET`` parameter called ``serverName`` is supported when running
     in multi-agent mode.
-    A mandatory ``GET`` parameter called ``name`` is used to know what client we
+    A mandatory ``GET`` parameter called ``clientName`` is used to know what client we
     are working on.
     """
     parser = api.parser()
     parser.add_argument('serverName', type=str, help='Which server to collect data from when in multi-agent mode')
-    parser.add_argument('name', type=str, help='Client name')
+    parser.add_argument('clientName', type=str, help='Client name')
     monitor_fields = api.model('Monitor', {
         'client': fields.String(required=True, description='Client name'),
         'agent': fields.String(description='Server (agent) name'),
@@ -97,14 +95,14 @@ class Counters(Resource):
         """
         args = self.parser.parse_args()
         server = server or args['serverName']
-        name = name or args['name']
+        name = name or args['clientName']
         # Check params
         if not name:
             api.abort(400, 'No client name provided')
         # Manage ACL
         if (api.bui.acl and
-            (not api.bui.acl.is_client_allowed(current_user.get_id(), name, server) or
-             not api.bui.acl.is_admin(current_user.get_id()))):
+            (not api.bui.acl.is_client_allowed(self.username, name, server) or
+             not self.is_admin)):
             api.abort(403)
         api.bui.cli.is_one_backup_running()
         if isinstance(api.bui.cli.running, dict):
@@ -139,7 +137,7 @@ class Live(Resource):
 
     This resource is part of the :mod:`burpui.api.misc` module.
 
-    An optional ``GET`` parameter called ``server`` is supported when running
+    An optional ``GET`` parameter called ``serverName`` is supported when running
     in multi-agent mode.
     """
     parser = api.parser()
@@ -199,17 +197,16 @@ class Live(Resource):
         server = server or args['serverName']
         r = []
         # ACL
-        admin = api.bui.acl and api.bui.acl.is_admin(current_user.get_id())
         if (api.bui.acl and
-                not admin and
+                not self.is_admin and
                 server and
-                server not in api.bui.acl.servers(current_user.get_id())):
+                server not in api.bui.acl.servers(self.username)):
             api.abort(403, 'You are not allowed to view stats of this server')
         if server:
             l = api.bui.cli.is_one_backup_running(server)[server]
             # ACL
-            if api.bui.acl and not admin:
-                allowed = api.bui.acl.clients(current_user.get_id(), server)
+            if api.bui.acl and not self.is_admin:
+                allowed = api.bui.acl.clients(self.username, server)
                 l = [x for x in l if x in allowed]
         else:
             l = api.bui.cli.is_one_backup_running()
@@ -218,9 +215,9 @@ class Live(Resource):
                 for c in a:
                     # ACL
                     if (api.bui.acl and
-                            not admin and
+                            not self.is_admin and
                             not api.bui.acl.is_client_allowed(
-                                current_user.get_id(),
+                                self.username,
                                 c,
                                 k)):
                         continue
@@ -253,7 +250,7 @@ class Alert(Resource):
     """
     parser = api.parser()
     parser.add_argument('message', required=True, help='Message to display', type=str, location='form')
-    parser.add_argument('level', help='Alert level', location='form')
+    parser.add_argument('level', help='Alert level', location='form', type=str, choices=('danger', 'warning', 'info', 'success'), default='danger')
 
     @api.doc(
         responses={
@@ -262,7 +259,7 @@ class Alert(Resource):
         parser=parser
     )
     def post(self):
-        """Propagate a message to the next screen"""
+        """Propagate a message to the next screen (or whatever reads the session)"""
         args = self.parser.parse_args()
         message = args['message']
         level = args['level'] or 'danger'
@@ -277,7 +274,7 @@ class About(Resource):
     """The :class:`burpui.api.misc.About` resource allows you to retrieve
     various informations about ``Burp-UI``
 
-    An optional ``GET`` parameter called ``server`` is supported when running
+    An optional ``GET`` parameter called ``serverName`` is supported when running
     in multi-agent mode.
     """
     api.LOGIN_NOT_REQUIRED.append('about')
@@ -329,3 +326,112 @@ class About(Resource):
                 a.update({'name': name})
                 r['burp'].append(a)
         return r
+
+
+@ns.route('/history',
+          '/history/<name>',
+          '/<server>/history',
+          '/<server>/history/<name>',
+          endpoint='history')
+class History(Resource):
+    """The :class:`burpui.api.misc.History` resource allows you to retrieve
+    an history of the backups
+
+    An optional ``GET`` parameter called ``serverName`` is supported when running
+    in multi-agent mode.
+
+    TODO:
+
+    ::
+
+        $('#calendar').fullCalendar({
+
+            eventSources: [
+
+                // your event source
+                {
+                    events: [ // put the array in the `events` property
+                        {
+                            title  : 'event1',
+                            start  : '2010-01-01'
+                        },
+                        {
+                            title  : 'event2',
+                            start  : '2010-01-05',
+                            end    : '2010-01-07'
+                        },
+                        {
+                            title  : 'event3',
+                            start  : '2010-01-09T12:30:00',
+                        }
+                    ],
+                    color: 'black',     // an option!
+                    textColor: 'yellow' // an option!
+                }
+
+                // any other event sources...
+
+            ]
+
+        });
+
+    """
+    parser = api.parser()
+    parser.add_argument('serverName', type=str, help='Which server to collect data from when in multi-agent mode')
+    parser.add_argument('clientName', type=str, help='Which client to collect data from')
+    event_fields = api.model('Event', {
+        'title': fields.String(required=True, description='Event name'),
+        'start': fields.DateTime(dt_format='iso8601', description='Start time of the event'),
+        'end': fields.DateTime(dt_format='iso8601', description='End time of the event'),
+        'name': fields.String(description='Client name'),
+        'backup': fields.Integer(description='Backup number'),
+        'url': fields.String(description='Callback URL'),
+    })
+    history_fields = api.model('History', {
+        'events': fields.Nested(event_fields, as_list=True, description='Events list'),
+        'color': fields.String(description='Background color'),
+        'textColor': fields.String(description='Text color'),
+        'name': fields.String(description='Feed name'),
+    })
+
+    @api.marshal_list_with(history_fields, code=200, description='Success')
+    @api.doc(
+        responses={
+            200: 'Success',
+        },
+        parser=parser
+    )
+    def get(self, client=None, server=None):
+        args = self.parser.parse_args()
+        client = client or args['clientName']
+        server = server or args['serverName']
+
+        if (server and api.bui.acl and not self.is_admin and
+                server not in api.bui.acl.servers(self.username)):
+            api.abort(403, "You are not allowed to view this server infos")
+
+        if (client and api.bui.acl and not self.is_admin and not
+                api.bui.acl.is_client_allowed(self.username, client, server)):
+            api.abort(403, "You are not allowed to view this client infos")
+
+        from datetime import date, datetime
+        import time
+        import random
+        rand = lambda: random.randint(0,255)
+        red = rand()
+        green = rand()
+        blue = rand()
+        yiq = ((red * 299) + (green * 587) + (blue * 114)) / 1000
+        text = 'black' if yiq >= 128 else 'white'
+        return [
+            {
+                'events': [
+                    {'title': 'blah', 'start': date.fromtimestamp(time.time())},
+                    {'title': 'blih', 'start': "2016-01-30T11:42:02+02:00"},
+                    {'title': 'bloh', 'start': datetime.utcnow()},
+                    {'title': 'bluh', 'start': 1454614802},
+                ],
+                'color': '#{:02X}{:02X}{:02X}'.format(red, green, blue),
+                'textColor': text,
+            },
+        ]
