@@ -11,7 +11,7 @@ import sys
 
 # This is a submodule we can also use "from ..api import api"
 from . import api
-from flask.ext.restplus import reqparse, Resource
+from .custom import Resource
 from flask.ext.login import current_user
 from flask import jsonify, request, url_for
 from werkzeug.datastructures import ImmutableMultiDict
@@ -238,7 +238,7 @@ class ClientSettings(Resource):
 class NewClient(Resource):
 
     def __init__(self):
-        self.parser = reqparse.RequestParser()
+        self.parser = api.parser()
         self.parser.add_argument('newclient', type=str)
         super(NewClient, self).__init__()
 
@@ -277,7 +277,7 @@ class NewClient(Resource):
 class PathExpander(Resource):
 
     def __init__(self):
-        self.parser = reqparse.RequestParser()
+        self.parser = api.parser()
         self.parser.add_argument('path')
         super(PathExpander, self).__init__()
 

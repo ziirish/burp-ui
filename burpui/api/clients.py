@@ -9,11 +9,10 @@
 """
 # This is a submodule we can also use "from ..api import api"
 from . import api, cache_key
-from .custom import fields as my_fields
+from .custom import fields, Resource
 from ..exceptions import BUIserverException
 
 from six import iteritems
-from flask.ext.restplus import Resource, fields
 from flask.ext.login import current_user
 
 ns = api.namespace('clients', 'Clients methods')
@@ -291,7 +290,7 @@ class ClientsStats(Resource):
     parser = api.parser()
     parser.add_argument('serverName', type=str, help='Which server to collect data from when in multi-agent mode')
     client_fields = api.model('ClientsStatsSingle', {
-        'last': my_fields.DateTime(required=True, dt_format='iso8601', description='Date of last backup'),
+        'last': fields.DateTime(required=True, dt_format='iso8601', description='Date of last backup'),
         'name': fields.String(required=True, description='Client name'),
         'state': fields.String(required=True, description='Current state of the client (idle, backup, etc.)'),
         'phase': fields.String(description='Phase of the current running backup'),

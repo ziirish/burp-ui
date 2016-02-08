@@ -2,9 +2,9 @@
 
 # This is a submodule we can also use "from ..api import api"
 from . import api, cache_key, parallel_loop
+from .custom import fields, Resource
 from ..exceptions import BUIserverException
 
-from flask.ext.restplus import Resource, fields
 from flask.ext.login import current_user
 
 ns = api.namespace('servers', 'Servers methods')

@@ -9,9 +9,8 @@
 """
 # This is a submodule we can also use "from ..api import api"
 from . import api, cache_key
-from .custom import fields as my_fields
+from .custom import fields, Resource
 from ..exceptions import BUIserverException
-from flask.ext.restplus import Resource, fields
 from flask.ext.login import current_user
 
 ns = api.namespace('client', 'Client methods')
@@ -35,7 +34,7 @@ class ClientTree(Resource):
     parser.add_argument('serverName', type=str, help='Which server to collect data from when in multi-agent mode')
     parser.add_argument('root', type=str, help='Root path to expand')
     node_fields = api.model('ClientTree', {
-        'date': my_fields.DateTime(required=True, dt_format='iso8601', description='Human representation of the backup date'),
+        'date': fields.DateTime(required=True, dt_format='iso8601', description='Human representation of the backup date'),
         'gid': fields.Integer(required=True, description='gid owner of the node'),
         'inodes': fields.Integer(required=True, description='Inodes of the node'),
         'mode': fields.String(required=True, description='Human readable mode. Example: "drwxr-xr-x"'),
@@ -378,7 +377,7 @@ class ClientStats(Resource):
         'size': fields.Integer(required=True, description='Total size'),
         'encrypted': fields.Boolean(required=True, description='Is the backup encrypted'),
         'deletable': fields.Boolean(required=True, description='Is the backup deletable'),
-        'date': my_fields.DateTime(required=True, dt_format='iso8601', description='Human representation of the backup date'),
+        'date': fields.DateTime(required=True, dt_format='iso8601', description='Human representation of the backup date'),
     })
 
     @api.cache.cached(timeout=1800, key_prefix=cache_key)
