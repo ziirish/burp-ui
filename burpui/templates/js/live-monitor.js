@@ -1,13 +1,13 @@
 
 {% if config.STANDALONE -%}
 	{% if cname -%}
-var counters = '{{ url_for("api.counters", name=cname) }}';
+var counters = '{{ url_for("api.counters", client=cname) }}';
 	{% else -%}
 var counters = '{{ url_for("api.live") }}';
 	{% endif -%}
 {% else -%}
 	{% if cname -%}
-var counters = '{{ url_for("api.counters", name=cname, server=server) }}';
+var counters = '{{ url_for("api.counters", client=cname, server=server) }}';
 	{% elif server -%}
 var counters = '{{ url_for("api.live", server=server) }}';
 	{% else -%}
