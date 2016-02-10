@@ -769,6 +769,7 @@ class Burp(BUIbackend):
                 bkp['encrypted'] = log['encrypted']
                 bkp['received'] = log['received']
                 bkp['size'] = log['totsize']
+                bkp['end'] = log['end']
                 res.append(bkp)
         # Here we need to reverse the array so the backups are sorted by date ASC
         res.reverse()

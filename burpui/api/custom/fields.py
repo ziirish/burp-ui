@@ -9,4 +9,4 @@
 
 """
 from flask.ext.restplus.fields import *
-from .my_fields import DateTime
+from .my_fields import DateTime, BackupNumber

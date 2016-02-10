@@ -633,6 +633,7 @@ class Burp(Burp1):
         backups = client['backups']
         for backup in backups:
             ba = {}
+            # skip running backups since data will be inconsistent
             if 'flags' in backup and 'working' in backup['flags']:
                 continue
             ba['number'] = backup['number']
@@ -646,6 +647,7 @@ class Burp(Burp1):
                 ba['encrypted'] = log['encrypted']
                 ba['received'] = log['received']
                 ba['size'] = log['totsize']
+                ba['end'] = log['end']
                 r.append(ba)
             except:
                 pass

@@ -33,3 +33,12 @@ class DateTime(fields.DateTime):
             raise fields.MarshallingError(e)
         except arrow.parser.ParserError as e:
             return value
+
+
+class BackupNumber(fields.String):
+    """Custom BackupNumber field"""
+    def format(self, value):
+        try:
+            return fields.String.format(self, '{0:07d}'.format(int(value)))
+        except ValueError as e:
+            raise fields.MarshallingError(e)

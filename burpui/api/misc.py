@@ -14,6 +14,8 @@ from ..exceptions import BUIserverException
 from six import iteritems
 from flask import flash, url_for
 
+import random
+
 ns = api.namespace('misc', 'Misc methods')
 
 counters_fields = api.model('Counters', {
@@ -47,8 +49,8 @@ counters_fields = api.model('Counters', {
 
 @ns.route('/counters',
           '/<server>/counters',
-          '/counters/<name>',
-          '/<server>/counters/<name>',
+          '/counters/<client>',
+          '/<server>/counters/<client>',
           endpoint='counters')
 class Counters(Resource):
     """The :class:`burpui.api.misc.Counters` resource allows you to
@@ -74,7 +76,7 @@ class Counters(Resource):
     @api.doc(
         params={
             'server': 'Which server to collect data from when in multi-agent mode',
-            'name': 'Client name',
+            'client': 'Client name',
         },
         responses={
             400: 'Missing argument',
@@ -83,7 +85,7 @@ class Counters(Resource):
         },
         parser=parser
     )
-    def get(self, server=None, name=None):
+    def get(self, server=None, client=None):
         """Returns counters for a given client
 
         **GET** method provided by the webservice.
@@ -95,34 +97,34 @@ class Counters(Resource):
         """
         args = self.parser.parse_args()
         server = server or args['serverName']
-        name = name or args['clientName']
+        client = client or args['clientName']
         # Check params
-        if not name:
+        if not client:
             api.abort(400, 'No client name provided')
         # Manage ACL
         if (api.bui.acl and
-            (not api.bui.acl.is_client_allowed(self.username, name, server) or
+            (not api.bui.acl.is_client_allowed(self.username, client, server) or
              not self.is_admin)):
             api.abort(403)
         api.bui.cli.is_one_backup_running()
         if isinstance(api.bui.cli.running, dict):
-            if server and name not in api.bui.cli.running[server]:
-                api.abort(404, "'{}' not found in the list of running clients for '{}'".format(name, server))
+            if server and client not in api.bui.cli.running[server]:
+                api.abort(404, "'{}' not found in the list of running clients for '{}'".format(client, server))
             else:
                 found = False
                 for (k, a) in iteritems(api.bui.cli.running):
-                    found = found or (name in a)
+                    found = found or (client in a)
                 if not found:
-                    api.bort(404, "'{}' not found in running clients".format(name))
+                    api.bort(404, "'{}' not found in running clients".format(client))
         else:
-            if name not in api.bui.cli.running:
-                api.abort(404, "'{}' not found in running clients".format(name))
+            if client not in api.bui.cli.running:
+                api.abort(404, "'{}' not found in running clients".format(client))
         try:
-            counters = api.bui.cli.get_counters(name, agent=server)
+            counters = api.bui.cli.get_counters(client, agent=server)
         except BUIserverException:
             counters = {}
         res = {}
-        res['client'] = name
+        res['client'] = client
         res['agent'] = server
         res['counters'] = counters
         return res
@@ -329,16 +331,17 @@ class About(Resource):
 
 
 @ns.route('/history',
-          '/history/<name>',
+          '/history/<client>',
           '/<server>/history',
-          '/<server>/history/<name>',
+          '/<server>/history/<client>',
           endpoint='history')
 class History(Resource):
     """The :class:`burpui.api.misc.History` resource allows you to retrieve
     an history of the backups
 
-    An optional ``GET`` parameter called ``serverName`` is supported when running
-    in multi-agent mode.
+    An optional ``GET`` parameter called ``serverName`` is supported when
+    running in multi-agent mode and ``clientName`` is also allowed to filter
+    by client.
 
     TODO:
 
@@ -381,10 +384,10 @@ class History(Resource):
     parser.add_argument('clientName', type=str, help='Which client to collect data from')
     event_fields = api.model('Event', {
         'title': fields.String(required=True, description='Event name'),
-        'start': fields.DateTime(dt_format='iso8601', description='Start time of the event'),
+        'start': fields.DateTime(dt_format='iso8601', description='Start time of the event', attribute='date'),
         'end': fields.DateTime(dt_format='iso8601', description='End time of the event'),
         'name': fields.String(description='Client name'),
-        'backup': fields.Integer(description='Backup number'),
+        'backup': fields.BackupNumber(description='Backup number', attribute='number'),
         'url': fields.String(description='Callback URL'),
     })
     history_fields = api.model('History', {
@@ -396,12 +399,51 @@ class History(Resource):
 
     @api.marshal_list_with(history_fields, code=200, description='Success')
     @api.doc(
+        params={
+            'server': 'Which server to collect data from when in multi-agent mode',
+            'client': 'Client name',
+        },
         responses={
             200: 'Success',
         },
         parser=parser
     )
     def get(self, client=None, server=None):
+        """Returns a list of calendars describing the backups that are done
+
+        **GET** method provided by the webservice.
+
+        The *JSON* returned is:
+        ::
+
+            {
+              "color": "#7C6F44",
+              "events": [
+                {
+                  "backup": "0000001",
+                  "end": "2015-01-25 13:32:04+01:00",
+                  "name": "toto-test",
+                  "start": "2015-01-25 13:32:00+01:00",
+                  "title": "Client: toto-test, Backup n°0000001",
+                  "url": "/client/toto-test"
+                }
+              ],
+              "name": "toto-test",
+              "textColor": "white"
+            }
+
+
+        The output is filtered by the :mod:`burpui.misc.acl` module so that you
+        only see stats about the clients you are authorized to.
+
+        :param server: Which server to collect data from when in multi-agent mode
+        :type server: str
+        :param client: Which client to collect data from
+        :type client: str
+
+        :returns: The *JSON* described above
+        """
+        rand = lambda: random.randint(0,255)
         args = self.parser.parse_args()
         client = client or args['clientName']
         server = server or args['serverName']
@@ -414,24 +456,30 @@ class History(Resource):
                 api.bui.acl.is_client_allowed(self.username, client, server)):
             api.abort(403, "You are not allowed to view this client infos")
 
-        from datetime import date, datetime
-        import time
-        import random
-        rand = lambda: random.randint(0,255)
-        red = rand()
-        green = rand()
-        blue = rand()
-        yiq = ((red * 299) + (green * 587) + (blue * 114)) / 1000
-        text = 'black' if yiq >= 128 else 'white'
-        return [
-            {
-                'events': [
-                    {'title': 'blah', 'start': date.fromtimestamp(time.time())},
-                    {'title': 'blih', 'start': "2016-01-30T11:42:02+02:00"},
-                    {'title': 'bloh', 'start': datetime.utcnow()},
-                    {'title': 'bluh', 'start': 1454614802},
-                ],
-                'color': '#{:02X}{:02X}{:02X}'.format(red, green, blue),
+        if client:
+            backups = api.bui.cli.get_client(client, agent=server)
+            for back in backups:
+                back['title'] = 'Client: {0}, Backup n°{1:07d}'.format(client, int(back['number']))
+                if server:
+                    back['title'] += ', Server: {0}'.format(server)
+                back['name'] = client
+                back['url'] = url_for('view.client', name=client, server=server)
+
+            red = rand()
+            green = rand()
+            blue = rand()
+            yiq = ((red * 299) + (green * 587) + (blue * 114)) / 1000
+            text = 'black' if yiq >= 128 else 'white'
+            color = '#{:02X}{:02X}{:02X}'.format(red, green, blue)
+            ret = {
+                'color': color,
                 'textColor': text,
-            },
-        ]
+                'events': backups,
+            }
+            name = client
+            if server:
+                name += ' on {}'.format(server)
+            ret['name'] = name
+            return ret
+
+        return {}
