@@ -65,6 +65,17 @@ And here is the main site
 """
 
 
+@view.route('/calendar')
+@view.route('/calendar/<client>')
+@view.route('/<server>/calendar')
+@view.route('/<server>/calendar/<client>')
+@login_required
+def calendar(server=None, client=None):
+    server = server or request.args.get('serverName')
+    client = client or request.args.get('clientName')
+    return render_template('calendar.html', calendar=True, server=server, cname=client)
+
+
 @view.route('/settings')
 @view.route('/settings/<path:conf>')
 @view.route('/<server>/settings')

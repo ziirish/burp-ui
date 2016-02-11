@@ -22,6 +22,7 @@
             {% else -%}
             <a class="btn btn-default {% if report %}active{% endif %}" href="#"><span class="glyphicon glyphicon-stats"></span>&nbsp;Reports</a>
             {% endif -%}
+            <a class="btn btn-default {% if calendar %}active{% endif %}" href="{{ url_for('view.calendar', name=cname, server=server) }}"><span class="glyphicon glyphicon-calendar"></span>&nbsp;Calendar</a>
           </div>
           <br />
           {% endif -%}

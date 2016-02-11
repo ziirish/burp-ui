@@ -249,6 +249,10 @@ $('#input-client').typeahead({
 {% include "js/about.js" %}
 {% endif -%}
 
+{% if calendar -%}
+{% include "js/calendar.js" %}
+{% endif -%}
+
 var _async_ajax = function(b) {
 	$.ajaxSetup({
 		async: b

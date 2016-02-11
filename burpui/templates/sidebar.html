@@ -29,6 +29,9 @@
             <a href="#"><span class="glyphicon glyphicon-stats"></span>&nbsp;Reports</a>
             {% endif %}
             </li>
+            <li {% if calendar %} class="active"{% endif %}>
+              <a href="{{ url_for('view.calendar', client=cname, server=server) }}"><span class="glyphicon glyphicon-calendar"></span>&nbsp;Calendar</a>
+            </li>
           </ul>
           {% endif -%}
         </div>

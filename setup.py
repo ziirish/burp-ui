@@ -118,6 +118,13 @@ class BuildStatic(Command):
             'burpui/static/vendor/angular-strap/dist/angular-strap.min.js',
             'burpui/static/vendor/angular-strap/dist/angular-strap.tpl.min.js',
             'burpui/static/vendor/angular-onbeforeunload/build/angular-onbeforeunload.js',
+            'burpui/static/vendor/moment/min/moment.min.js',
+            'burpui/static/vendor/angular-ui-calendar/src/calendar.js',
+            'burpui/static/vendor/fullcalendar/dist/fullcalendar.min.css',
+            'burpui/static/vendor/fullcalendar/dist/fullcalendar.min.js',
+            'burpui/static/vendor/fullcalendar/dist/gcal.js',
+            'burpui/static/vendor/angular-bootstrap/ui-bootstrap.min.js',
+            'burpui/static/vendor/angular-bootstrap/ui-bootstrap-tpls.min.js',
         ]
         dirlist = []
         for dirname, subdirs, files in os.walk('burpui/static/vendor'):

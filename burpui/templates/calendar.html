@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+{% block body %}
+        {% include "notifications.html" %}
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+          {% include "small_topbar.html" %}
+          <ul class="breadcrumb" style="margin-bottom: 5px;">
+            {% if server -%}
+            <li><a href="{{ url_for('view.home') }}">Home</a></li>
+            <li><a href="{{ url_for('view.clients', server=server) }}">{{ server }} clients</a></li>
+            <li><a href="{{ url_for('view.client', name=cname, server=server) }}">{{ cname }} overview</a></li>
+            <li class="active">Backup n°{{ nbackup|mypad }} overview</li>
+            {% else -%}
+            <li><a href="{{ url_for('view.home') }}">Home</a></li>
+            <li><a href="{{ url_for('view.client', name=cname) }}">{{ cname }} overview</a></li>
+            <li class="active">Backup n°{{ nbackup|mypad }} overview</li>
+            {% endif -%}
+          </ul>
+          <br />
+          <h1 class="page-header">Backup n°{{ nbackup|mypad }} of {{ cname }}</h1>
+          <div class="row placeholders" ng-controller="CalendarCtrl">
+						<div ui-calendar ng-model="eventSources"></div>
+          </div>
+        </div>
+{% endblock %}
