@@ -397,6 +397,7 @@ class History(Resource):
         'name': fields.String(description='Feed name'),
     })
 
+    @api.cache.cached(timeout=1800, key_prefix=cache_key)
     @api.marshal_list_with(history_fields, code=200, description='Success')
     @api.doc(
         params={
@@ -409,28 +410,31 @@ class History(Resource):
         parser=parser
     )
     def get(self, client=None, server=None):
-        """Returns a list of calendars describing the backups that are done
+        """Returns a list of calendars describing the backups that have been
+        completed so far
 
         **GET** method provided by the webservice.
 
         The *JSON* returned is:
         ::
 
-            {
-              "color": "#7C6F44",
-              "events": [
-                {
-                  "backup": "0000001",
-                  "end": "2015-01-25 13:32:04+01:00",
-                  "name": "toto-test",
-                  "start": "2015-01-25 13:32:00+01:00",
-                  "title": "Client: toto-test, Backup n°0000001",
-                  "url": "/client/toto-test"
-                }
-              ],
-              "name": "toto-test",
-              "textColor": "white"
-            }
+            [
+              {
+                "color": "#7C6F44",
+                "events": [
+                  {
+                    "backup": "0000001",
+                    "end": "2015-01-25 13:32:04+01:00",
+                    "name": "toto-test",
+                    "start": "2015-01-25 13:32:00+01:00",
+                    "title": "Client: toto-test, Backup n°0000001",
+                    "url": "/client/toto-test"
+                  }
+                ],
+                "name": "toto-test",
+                "textColor": "white"
+              }
+            ]
 
 
         The output is filtered by the :mod:`burpui.misc.acl` module so that you
@@ -443,7 +447,7 @@ class History(Resource):
 
         :returns: The *JSON* described above
         """
-        rand = lambda: random.randint(0,255)
+        ret = []
         args = self.parser.parse_args()
         client = client or args['clientName']
         server = server or args['serverName']
@@ -457,29 +461,90 @@ class History(Resource):
             api.abort(403, "You are not allowed to view this client infos")
 
         if client:
-            backups = api.bui.cli.get_client(client, agent=server)
-            for back in backups:
-                back['title'] = 'Client: {0}, Backup n°{1:07d}'.format(client, int(back['number']))
-                if server:
-                    back['title'] += ', Server: {0}'.format(server)
-                back['name'] = client
-                back['url'] = url_for('view.client', name=client, server=server)
-
-            red = rand()
-            green = rand()
-            blue = rand()
-            yiq = ((red * 299) + (green * 587) + (blue * 114)) / 1000
-            text = 'black' if yiq >= 128 else 'white'
-            color = '#{:02X}{:02X}{:02X}'.format(red, green, blue)
-            ret = {
+            (color, text) = self.gen_colors()
+            feed = {
                 'color': color,
                 'textColor': text,
-                'events': backups,
+                'events': self.gen_events(client, server),
             }
             name = client
             if server:
                 name += ' on {}'.format(server)
-            ret['name'] = name
+            feed['name'] = name
+            ret.append(feed)
+            return ret
+        elif server:
+            clients = api.bui.cli.get_all_clients(agent=server)
+            if api.bui.acl and not self.is_admin:
+                clients = [x for x in clients if x['name'] in api.bui.acl.clients(self.username, server)]
+            for cl in clients:
+                (color, text) = self.gen_colors()
+                feed = {
+                    'events': self.gen_events(cl['name'], server),
+                    'textColor': text,
+                    'color': color,
+                    'name': '{} on {}'.format(cl['name'], server),
+                }
+                ret.append(feed)
             return ret
 
-        return {}
+        if api.bui.standalone:
+            if api.bui.acl and not self.is_admin:
+                clients_list = api.bui.acl.clients(self.username)
+            else:
+                clients_list = [x['name'] for x in api.bui.cli.get_all_clients()]
+            for cl in clients_list:
+                (color, text) = self.gen_colors()
+                feed = {
+                    'events': self.gen_events(cl),
+                    'textColor': text,
+                    'color': color,
+                    'name': cl,
+                }
+                ret.append(feed)
+            return ret
+        else:
+            grants = {}
+            if api.bui.acl and not self.is_admin:
+                for serv in api.bui.acl.servers(self.username):
+                    grants[serv] = api.bui.acl.clients(self.username, serv)
+            else:
+                for serv in api.bui.cli.servers:
+                    grants[serv] = 'all'
+            for (serv, clients) in iteritems(grants):
+                if not isinstance(clients, list):
+                    clients = [x['name'] for x in api.bui.cli.get_all_clients(agent=serv)]
+                for cl in clients:
+                    (color, text) = self.gen_colors()
+                    feed = {
+                        'events': self.gen_events(cl, serv),
+                        'textColor': text,
+                        'color': color,
+                        'name': '{} on {}'.format(cl, serv),
+                    }
+                    ret.append(feed)
+
+        return ret
+
+    def gen_colors(self):
+        """Generates color for an events feed"""
+        rand = lambda: random.randint(0,255)
+        red = rand()
+        green = rand()
+        blue = rand()
+        yiq = ((red * 299) + (green * 587) + (blue * 114)) / 1000
+        text = 'black' if yiq >= 128 else 'white'
+        color = '#{:02X}{:02X}{:02X}'.format(red, green, blue)
+        return (color, text)
+
+    def gen_events(self, client, server=None):
+        """Creates events for a given client"""
+        events = api.bui.cli.get_client(client, agent=server)
+        for ev in events:
+            ev['title'] = 'Client: {0}, Backup n°{1:07d}'.format(client, int(ev['number']))
+            if server:
+                ev['title'] += ', Server: {0}'.format(server)
+            ev['name'] = client
+            ev['url'] = url_for('view.client', name=client, server=server)
+
+        return events
