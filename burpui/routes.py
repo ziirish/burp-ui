@@ -73,7 +73,15 @@ And here is the main site
 def calendar(server=None, client=None):
     server = server or request.args.get('serverName')
     client = client or request.args.get('clientName')
-    return render_template('calendar.html', calendar=True, server=server, cname=client)
+    if not view.bui.standalone:
+        servers = not server and not client
+        clients = bool(server)
+        cli = bool(client)
+    else:
+        servers = False
+        cli = bool(client)
+        clients = not cli
+    return render_template('calendar.html', calendar=True, server=server, cname=client, client=cli, servers=servers, clients=clients)
 
 
 @view.route('/settings')

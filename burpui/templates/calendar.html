@@ -18,7 +18,7 @@
           <br />
           <h1 class="page-header">Backup n°{{ nbackup|mypad }} of {{ cname }}</h1>
           <div class="row placeholders" ng-controller="CalendarCtrl">
-						<div ui-calendar ng-model="eventSources"></div>
+            <div ui-calendar="uiConfig.calendar" ng-model="eventSources"></div>
           </div>
         </div>
 {% endblock %}

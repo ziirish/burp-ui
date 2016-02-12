@@ -4,6 +4,27 @@ var pad = function(num, size) {
 	return s.substr(s.length-size);
 };
 
+var _time_human_readable = function(d) {
+	str = '';
+	var days = Math.floor((d % 31536000) / 86400);
+	var hours = Math.floor(((d % 31536000) % 86400) / 3600);
+	var minutes = Math.floor((((d % 31536000) % 86400) % 3600) / 60);
+	var seconds = (((d % 31536000) % 86400) % 3600) % 60;
+	if (days > 0) {
+		str += days;
+		if (days > 1) {
+			str += ' days ';
+		} else {
+			str += ' day ';
+		}
+	}
+	if (hours > 0) {
+		str += pad(hours,2)+'H ';
+	}
+	str += pad(minutes,2)+'m '+pad(seconds,2)+'s';
+	return str;
+};
+
 var _bytes_human_readable = function(bytes, si) {
 	var thresh = si ? 1000 : 1024;
 	if(bytes < thresh) return bytes + ' B';

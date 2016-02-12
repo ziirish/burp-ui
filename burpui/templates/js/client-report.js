@@ -5,27 +5,6 @@ var _chart_stats = null;
 var _stats_data = [];
 var initialized = false;
 
-var _time_human_readable = function(d) {
-	str = '';
-	var days = Math.floor((d % 31536000) / 86400);
-	var hours = Math.floor(((d % 31536000) % 86400) / 3600);
-	var minutes = Math.floor((((d % 31536000) % 86400) % 3600) / 60);
-	var seconds = (((d % 31536000) % 86400) % 3600) % 60;
-	if (days > 0) {
-		str += days;
-		if (days > 1) {
-			str += ' days ';
-		} else {
-			str += ' day ';
-		}
-	}
-	if (hours > 0) {
-		str += pad(hours,2)+'H ';
-	}
-	str += pad(minutes,2)+'m '+pad(seconds,2)+'s';
-	return str;
-};
-
 var _client = function() {
 	if (!initialized) {
 		$.each(_charts, function(i, j) {

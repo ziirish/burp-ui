@@ -545,6 +545,6 @@ class History(Resource):
             if server:
                 ev['title'] += ', Server: {0}'.format(server)
             ev['name'] = client
-            ev['url'] = url_for('view.client', name=client, server=server)
+            ev['url'] = url_for('view.backup_report', name=client, server=server, backup=int(ev['number']))
 
         return events
