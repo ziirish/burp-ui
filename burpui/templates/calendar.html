@@ -6,17 +6,14 @@
           <ul class="breadcrumb" style="margin-bottom: 5px;">
             {% if server -%}
             <li><a href="{{ url_for('view.home') }}">Home</a></li>
-            <li><a href="{{ url_for('view.clients', server=server) }}">{{ server }} clients</a></li>
-            <li><a href="{{ url_for('view.client', name=cname, server=server) }}">{{ cname }} overview</a></li>
-            <li class="active">Backup n°{{ nbackup|mypad }} overview</li>
+            <li class="active">Calendar</li>
             {% else -%}
             <li><a href="{{ url_for('view.home') }}">Home</a></li>
-            <li><a href="{{ url_for('view.client', name=cname) }}">{{ cname }} overview</a></li>
-            <li class="active">Backup n°{{ nbackup|mypad }} overview</li>
+            <li class="active">Calendar</li>
             {% endif -%}
           </ul>
           <br />
-          <h1 class="page-header">Backup n°{{ nbackup|mypad }} of {{ cname }}</h1>
+          <h1 class="page-header">Calendar{% if cname %} of {{ cname }}{% if server %} on {{ server }}{% endif %}{% elif server %} of {{ server }}{% endif %}</h1>
           <div class="row placeholders" ng-controller="CalendarCtrl">
             <div ui-calendar="uiConfig.calendar" ng-model="eventSources"></div>
           </div>

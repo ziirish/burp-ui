@@ -11,7 +11,7 @@
           <ul class="nav nav-sidebar">
             <li {% if overview %}class="active"{% endif %}>
             {% if backup %}
-            <a href="{{ url_for('view.client_browse', name=cname, server=server) }}?backup={{ nbackup }}"><span class="glyphicon glyphicon-th"></span>&nbsp;Overview</a>
+            <a href="{{ url_for('view.client_browse', name=cname, server=server, backup=nbackup) }}"><span class="glyphicon glyphicon-th"></span>&nbsp;Overview</a>
             {% elif client %}
             <a href="{{ url_for('view.client', name=cname, server=server) }}"><span class="glyphicon glyphicon-th"></span>&nbsp;Overview</a>
             {% elif clients %}

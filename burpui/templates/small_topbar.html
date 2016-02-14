@@ -1,7 +1,7 @@
           {% if not settings -%}
           <div class="btn-group btn-group-justified  hidden-md hidden-lg">
             {% if backup -%}
-            <a class="btn btn-default {% if overview %}active{% endif %}" href="{{ url_for('view.client_browse', name=cname, server=server) }}?backup={{ nbackup }}"><span class="glyphicon glyphicon-th"></span>&nbsp;Overview</a>
+            <a class="btn btn-default {% if overview %}active{% endif %}" href="{{ url_for('view.client_browse', name=cname, server=server, backup=nbackup) }}"><span class="glyphicon glyphicon-th"></span>&nbsp;Overview</a>
             {% elif client -%}
             <a class="btn btn-default {% if overview %}active{% endif %}" href="{{ url_for('view.client', name=cname, server=server) }}"><span class="glyphicon glyphicon-th"></span>&nbsp;Overview</a>
             {% elif clients -%}
