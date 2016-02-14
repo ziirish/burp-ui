@@ -12,6 +12,7 @@ Current
 - Add display versions `within the interface <https://git.ziirish.me/ziirish/burp-ui/issues/89>`_
 - Add support for `zip64 <https://git.ziirish.me/ziirish/burp-ui/issues/97>`_
 - Add new `report <https://git.ziirish.me/ziirish/burp-ui/issues/15>`_
+- Add new `calendar view <https://git.ziirish.me/ziirish/burp-ui/issues/61>`_
 - Add "restart" option to debian init script thanks to @Larsen
 - Add Basic HTTP Authentication (mostly for the API)
 - Add self-documented API
