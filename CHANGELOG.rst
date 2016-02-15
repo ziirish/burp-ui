@@ -1,8 +1,8 @@
 Changelog
 =========
 
-Current
--------
+0.1.0 (02/15/2016)
+------------------
 
 - Add `python 3 support <https://git.ziirish.me/ziirish/burp-ui/issues/75>`_
 - Add new fields in `backup reports <https://git.ziirish.me/ziirish/burp-ui/issues/48>`_
@@ -28,7 +28,6 @@ Current
 - API refactoring
 - Security fixes
 - Bugfixes
-- `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/0.0.7...master>`__
 
 0.0.7.3 (09/26/2015)
 --------------------
