@@ -52,8 +52,11 @@ class PyTest(Command):
         pass
 
     def run(self):
-        errno = call(['make', 'test'])
-        raise SystemExit(errno)
+        try:
+            errno = call(['make', 'test'])
+            raise SystemExit(errno)
+        except OSError:
+            print 'Looks like the tools to run the tests are missing'
 
 
 class BuildStatic(Command):
@@ -212,11 +215,11 @@ setup(
         ],
     },
     data_files=[
-        (datadir, [os.path.join(datadir, 'burpui.sample.cfg')]),
-        (datadir, [os.path.join(datadir, 'buiagent.sample.cfg')]),
-        (os.path.join(contrib, 'centos'), ['contrib/centos/init.sh']),
-        (os.path.join(contrib, 'debian'), ['contrib/debian/init.sh']),
-        (os.path.join(contrib, 'gunicorn.d'), ['contrib/gunicorn.d/burp-ui']),
+        (os.path.join(os.sep, 'usr', 'local', datadir), [os.path.join(datadir, 'burpui.sample.cfg')]),
+        (os.path.join(os.sep, 'usr', 'local', datadir), [os.path.join(datadir, 'buiagent.sample.cfg')]),
+        (os.path.join(os.sep, 'usr', 'local', contrib, 'centos'), ['contrib/centos/init.sh']),
+        (os.path.join(os.sep, 'usr', 'local', contrib, 'debian'), ['contrib/debian/init.sh']),
+        (os.path.join(os.sep, 'usr', 'local', contrib, 'gunicorn.d'), ['contrib/gunicorn.d/burp-ui']),
     ],
     install_requires=requires,
     extras_require={
@@ -228,6 +231,7 @@ setup(
         'agent': ['gevent'],
         'test': test_requires,
         'dev': dev_requires,
+        'debian_wheezy': ['functools32'],
     },
     tests_require=test_requires,
     classifiers=[
