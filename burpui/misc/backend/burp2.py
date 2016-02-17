@@ -649,7 +649,8 @@ class Burp(Burp1):
                 ba['received'] = log['received']
                 ba['size'] = log['totsize']
                 ba['end'] = log['end']
-                ba['start'] = log['start']
+                # override date since the timestamp is odd
+                ba['date'] = log['start']
                 r.append(ba)
             except:
                 pass
