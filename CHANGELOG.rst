@@ -1,6 +1,14 @@
 Changelog
 =========
 
+0.1.1 (02/17/2016)
+------------------
+
+- Fix burp2 backend issue
+- Fix Debian wheezy compatibility
+- Fix sample configuration files location
+- Better calendar readability
+
 0.1.0 (02/15/2016)
 ------------------
 
