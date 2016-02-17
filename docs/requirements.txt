@@ -2,7 +2,8 @@ Flask==0.10.1
 Flask-Login==0.3.2
 Flask-Bower==1.2.1
 Flask-WTF==0.12
-flask-restplus==0.8.6
+flask-restplus>=0.8.5
+Flask-RESTful>=0.3.5
 Flask-Cache==0.13.1
 WTForms==2.0.2
 arrow==0.7.0
