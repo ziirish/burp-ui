@@ -7,12 +7,18 @@ class Parser(Burp1):
     """Implements :class:`burpui.misc.parser.burp1.Parser`"""
     pver = 2
 
+    multi_srv = Burp1.multi_srv + [
+        u'labels',
+    ]
     string_srv = Burp1.string_srv + [
         u'manual_delete',
     ]
     boolean_srv = Burp1.boolean_srv + [
         u'acl',
         u'xattr',
+    ]
+    multi_cli = Burp1.multi_cli + [
+        u'labels',
     ]
     integer_cli = Burp1.integer_cli + [
         u'randomise',
@@ -22,6 +28,7 @@ class Parser(Burp1):
         u'xattr',
         u'randomise',
         u'manual_delete',
+        u'labels',
     ]
     placeholders = Burp1.placeholders
     placeholders.update({
@@ -29,13 +36,15 @@ class Parser(Burp1):
         u'xattr': u"0|1",
         u'randomise': u"max secs",
         u'manual_delete': u"path",
+        u'labels': u"some informations",
     })
     defaults = Burp1.defaults
     defaults.update({
         u'acl': True,
         u'xattr': True,
         u'randomise': 0,
-        u'manual_delete': '',
+        u'manual_delete': u'',
+        u'labels': u'',
     })
     doc = Burp1.doc
     doc.update({
@@ -61,4 +70,10 @@ class Parser(Burp1):
                           " job, or similar, to delete the files yourself." +
                           " Do not specify a path that is not on the same" +
                           " filesystem as the client storage directory.",
+        u'labels': "You can have multiple labels, and they can be overridden" +
+                   " in the client configuration files in clientconfdir on" +
+                   " the server. They will appear as an array of strings in" +
+                   " the server status monitor JSON output. The idea is to" +
+                   " provide a mechanism for arbitrary values to be passed" +
+                   " to clients of the server status monitor.",
     })
