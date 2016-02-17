@@ -12,4 +12,4 @@
 
 from . import init
 
-app = init(gunicorn=False)
+app = init(conf='/dev/null', gunicorn=False)
