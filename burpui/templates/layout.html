@@ -26,6 +26,7 @@
     {% endif -%}
     {% if calendar -%}
     <link href="{{ url_for('bower.static', filename='fullcalendar/dist/fullcalendar.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('bower.static', filename='fullcalendar/dist/fullcalendar.print.css') }}" media="print" rel="stylesheet">
     {% endif -%}
 
     <!-- Custom styles for this template -->
