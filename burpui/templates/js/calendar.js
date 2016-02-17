@@ -41,6 +41,7 @@ app.controller('CalendarCtrl', function($scope, $http, $compile, uiCalendarConfi
 	$scope.uiConfig = {
 		calendar: {
 			editable: false,
+			eventLimit: true,
 			firstDay: 1,
 			header:{
 				left: 'month agendaWeek agendaDay',
