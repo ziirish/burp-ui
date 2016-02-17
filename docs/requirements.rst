@@ -9,6 +9,17 @@ burp-server for some features.
     free to contribute for other distributions!
 
 
+Debian Wheezy
+-------------
+
+It looks like some requirements are not automatically installed on *Debian
+Wheezy*. You can install them with the following command:
+
+::
+
+    pip install "burp-ui[debian_wheezy]"
+
+
 LDAP
 ----
 
