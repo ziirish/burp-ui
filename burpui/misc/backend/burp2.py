@@ -339,6 +339,7 @@ class Burp(Burp1):
         if 'logs' not in backups[0] and 'list' not in backups[0]['logs']:
             return {}
         logs = backups[0]['logs']['list']
+        ret = {}
         if 'backup_stats' in logs:
             ret = self._parse_backup_stats(number, client, forward)
         # TODO: support clients that were upgraded to 2.x
@@ -648,6 +649,7 @@ class Burp(Burp1):
                 ba['received'] = log['received']
                 ba['size'] = log['totsize']
                 ba['end'] = log['end']
+                ba['start'] = log['start']
                 r.append(ba)
             except:
                 pass
