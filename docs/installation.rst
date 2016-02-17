@@ -47,6 +47,20 @@ following command:
    pip install --upgrade burp-ui
 
 
+Debian Wheezy
+-------------
+
+The version of ``pip`` available on *Debian Wheezy* does not support all the
+features needed to build and install the latest `Burp-UI`_ version.
+
+Instead, you may want to run the following command either to install it from
+scratch or to upgrade your current version to the latest one:
+
+::
+
+    easy_install --upgrade burp-ui
+
+
 General Instructions
 --------------------
 
