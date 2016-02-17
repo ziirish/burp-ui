@@ -125,6 +125,7 @@ class BuildStatic(Command):
             'burpui/static/vendor/moment/min/moment.min.js',
             'burpui/static/vendor/angular-ui-calendar/src/calendar.js',
             'burpui/static/vendor/fullcalendar/dist/fullcalendar.min.css',
+            'burpui/static/vendor/fullcalendar/dist/fullcalendar.print.css',
             'burpui/static/vendor/fullcalendar/dist/fullcalendar.min.js',
             'burpui/static/vendor/fullcalendar/dist/gcal.js',
             'burpui/static/vendor/angular-bootstrap/ui-bootstrap.min.js',
