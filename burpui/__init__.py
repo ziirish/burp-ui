@@ -40,7 +40,7 @@ except:  # pragma: no cover
 def lookup_config(conf=None):
     ret = None
     if conf:
-        if os.path.isfile(conf):
+        if os.path.isfile(conf) or conf == '/dev/null':
             ret = conf
         else:
             raise IOError('File not found: \'{0}\''.format(conf))
