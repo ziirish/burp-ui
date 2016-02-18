@@ -76,8 +76,8 @@
     ================================================== -->
     <script src="{{ url_for('bower.static', filename='jquery-file-download/src/Scripts/jquery.fileDownload.js') }}"></script>
     {% endif -%}
-    {% if about or live or calendar -%}
-    <!-- configuration about view
+    {% if about or live or calendar or settings -%}
+    <!-- configuration angular views
     ================================================== -->
     <script src="{{ url_for('bower.static', filename='angular/angular.min.js') }}"></script>
     <script src="{{ url_for('bower.static', filename='angular-route/angular-route.min.js') }}"></script>
