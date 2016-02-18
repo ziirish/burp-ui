@@ -16,7 +16,6 @@ from setuptools.command.bdist_egg import bdist_egg
 from setuptools.command.egg_info import egg_info
 
 ROOT=os.path.join(os.path.dirname(os.path.realpath(__file__)))
-on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 
 
 class DevelopWithBuildStatic(develop):
@@ -191,10 +190,6 @@ dev_requires = ['flake8']
 
 datadir = os.path.join('share', 'burpui', 'etc')
 contrib = os.path.join('share', 'burpui', 'contrib')
-if on_rtd:
-    prefix = os.path.join('usr', 'local')
-else:
-    prefix = os.path.join(os.sep, 'usr', 'local')
 
 setup(
     name=name,
@@ -220,11 +215,11 @@ setup(
         ],
     },
     data_files=[
-        (os.path.join(prefix, datadir), [os.path.join(datadir, 'burpui.sample.cfg')]),
-        (os.path.join(prefix, datadir), [os.path.join(datadir, 'buiagent.sample.cfg')]),
-        (os.path.join(prefix, contrib, 'centos'), ['contrib/centos/init.sh']),
-        (os.path.join(prefix, contrib, 'debian'), ['contrib/debian/init.sh']),
-        (os.path.join(prefix, contrib, 'gunicorn.d'), ['contrib/gunicorn.d/burp-ui']),
+        (datadir, [os.path.join(datadir, 'burpui.sample.cfg')]),
+        (datadir, [os.path.join(datadir, 'buiagent.sample.cfg')]),
+        (os.path.join(contrib, 'centos'), ['contrib/centos/init.sh']),
+        (os.path.join(contrib, 'debian'), ['contrib/debian/init.sh']),
+        (os.path.join(contrib, 'gunicorn.d'), ['contrib/gunicorn.d/burp-ui']),
     ],
     install_requires=requires,
     extras_require={
