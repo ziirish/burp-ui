@@ -1,6 +1,14 @@
 Changelog
 =========
 
+0.1.2 (02/18/2016)
+------------------
+
+- Fix duration computation
+- Fix issue `#104 <https://git.ziirish.me/ziirish/burp-ui/issues/104>`_
+- Fix issue `#105 <https://git.ziirish.me/ziirish/burp-ui/issues/105>`_
+- Fix issue `#106 <https://git.ziirish.me/ziirish/burp-ui/issues/106>`_
+
 0.1.1 (02/17/2016)
 ------------------
 
