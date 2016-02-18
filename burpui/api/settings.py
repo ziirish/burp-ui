@@ -236,11 +236,8 @@ class ClientSettings(Resource):
           '/<server>/new-client',
           endpoint='new_client')
 class NewClient(Resource):
-
-    def __init__(self):
-        self.parser = api.parser()
-        self.parser.add_argument('newclient', type=str)
-        super(NewClient, self).__init__()
+    parser = api.parser()
+    parser.add_argument('newclient', type=str, required=True, help="No 'newclient' provided")
 
     def put(self, server=None):
         # Only the admin can edit the configuration
@@ -276,10 +273,8 @@ class NewClient(Resource):
           endpoint='path_expander')
 class PathExpander(Resource):
 
-    def __init__(self):
-        self.parser = api.parser()
-        self.parser.add_argument('path')
-        super(PathExpander, self).__init__()
+    parser = api.parser()
+    parser.add_argument('path', type=str, required=True, help="No 'path' provided")
 
     def get(self, server=None, client=None):
         # Only the admin can edit the configuration
