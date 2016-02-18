@@ -4,6 +4,27 @@ Changelog
 Current
 -------
 
+- `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/v0.1.0...master>`__
+
+0.1.2 (02/18/2016)
+------------------
+
+- Fix duration computation
+- Fix issue `#104 <https://git.ziirish.me/ziirish/burp-ui/issues/104>`_
+- Fix issue `#105 <https://git.ziirish.me/ziirish/burp-ui/issues/105>`_
+- Fix issue `#106 <https://git.ziirish.me/ziirish/burp-ui/issues/106>`_
+
+0.1.1 (02/17/2016)
+------------------
+
+- Fix burp2 backend issue
+- Fix Debian wheezy compatibility
+- Fix sample configuration files location
+- Better calendar readability
+
+0.1.0 (02/15/2016)
+------------------
+
 - Add `python 3 support <https://git.ziirish.me/ziirish/burp-ui/issues/75>`_
 - Add new fields in `backup reports <https://git.ziirish.me/ziirish/burp-ui/issues/48>`_
 - Add `server-side initiated restoration <https://git.ziirish.me/ziirish/burp-ui/issues/12>`_
@@ -28,7 +49,6 @@ Current
 - API refactoring
 - Security fixes
 - Bugfixes
-- `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/0.0.7...master>`__
 
 0.0.7.3 (09/26/2015)
 --------------------
