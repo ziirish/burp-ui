@@ -57,7 +57,7 @@ class PyTest(Command):
             errno = call(['make', 'test'])
             raise SystemExit(errno)
         except OSError:
-            print 'Looks like the tools to run the tests are missing'
+            print('Looks like the tools to run the tests are missing')
 
 
 class BuildStatic(Command):
