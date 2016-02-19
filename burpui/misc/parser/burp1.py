@@ -1272,8 +1272,10 @@ class Parser(BUIparser):
         key = key.strip()
         return key not in keys
 
-    def server_initiated_restoration(self, name=None, backup=None, files=None,
-            strip=None, force=None, prefix=None, restoreto=None):
+    def server_initiated_restoration(
+            self, name=None, backup=None, files=None,
+            strip=None, force=None, prefix=None, restoreto=None
+            ):
         """See :func:`burpui.misc.parser.interface.BUIparser.server_initiated_restoration`"""
         self.read_server_conf()
 
