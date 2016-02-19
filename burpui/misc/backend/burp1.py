@@ -11,6 +11,7 @@ import re
 import os
 import socket
 import time
+import datetime
 import json
 import shutil
 import subprocess
@@ -555,7 +556,7 @@ class Burp(BUIbackend):
                 if reg:
                     found = True
                     if key in ['start', 'end']:
-                        backup[key] = int(reg.group(1))
+                        backup[key] = int(time.mktime(datetime.datetime.strptime(reg.group(1), '%Y-%m-%d %H:%M:%S').timetuple()))
                     elif key == 'duration':
                         tmp = reg.group(1).split(':')
                         tmp.reverse()
@@ -639,11 +640,11 @@ class Burp(BUIbackend):
                     if val and count > 0 and count < 15:
                         try:
                             vals = map(int, val.split('/'))
-                        except ValueError:
+                            if vals[0] > 0 or vals[1] > 0 or vals[2] or vals[3] > 0:
+                                res[self.counters[count]] = vals
+                        except (ValueError, IndexError):
                             count += 1
                             continue
-                        if vals[0] > 0 or vals[1] > 0 or vals[2] or vals[3] > 0:
-                            res[self.counters[count]] = vals
                     elif val:
                         if self.counters[count] == 'path':
                             res[self.counters[count]] = val
