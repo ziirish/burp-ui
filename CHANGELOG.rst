@@ -6,6 +6,12 @@ Current
 
 - `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/v0.1.0...master>`__
 
+0.1.3 (02/20/2016)
+------------------
+
+- Fix issue `#107 <https://git.ziirish.me/ziirish/burp-ui/issues/107>`_
+- Fix issue `#108 <https://git.ziirish.me/ziirish/burp-ui/issues/108>`_
+
 0.1.2 (02/18/2016)
 ------------------
 
