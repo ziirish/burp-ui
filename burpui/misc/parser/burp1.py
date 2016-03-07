@@ -1272,10 +1272,17 @@ class Parser(BUIparser):
         key = key.strip()
         return key not in keys
 
+    def cancel_restore(self, name=None):
+        """See :func:`burpui.misc.parser.interface.BUIparser.cancel_restore`"""
+        return
+
+    def read_restore(self, name=None):
+        """See :func:`burpui.misc.parser.interface.BUIparser.read_restore`"""
+        return
+
     def server_initiated_restoration(
             self, name=None, backup=None, files=None,
-            strip=None, force=None, prefix=None, restoreto=None
-            ):
+            strip=None, force=None, prefix=None, restoreto=None):
         """See :func:`burpui.misc.parser.interface.BUIparser.server_initiated_restoration`"""
         self.read_server_conf()
 
