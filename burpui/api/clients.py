@@ -13,7 +13,7 @@ from .custom import fields, Resource
 from ..exceptions import BUIserverException
 
 from six import iteritems
-from flask.ext.login import current_user
+from flask_login import current_user
 
 ns = api.namespace('clients', 'Clients methods')
 

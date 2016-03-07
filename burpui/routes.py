@@ -3,7 +3,7 @@ import math
 import sys
 
 from flask import request, render_template, redirect, url_for, abort, flash, Blueprint, session
-from flask.ext.login import login_user, login_required, logout_user, current_user
+from flask_login import login_user, login_required, logout_user, current_user
 
 from .forms import LoginForm
 from .exceptions import BUIserverException

@@ -1,6 +1,6 @@
 # -*- coding: utf8 -*-
 
-from flask.ext.wtf import Form
+from flask_wtf import Form
 from wtforms import TextField, PasswordField, BooleanField, validators
 
 

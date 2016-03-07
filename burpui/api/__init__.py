@@ -13,9 +13,9 @@ import sys
 import json
 
 from flask import Blueprint, Response, request
-from flask.ext.restplus import Api
-from flask.ext.login import current_user
-from flask.ext.cache import Cache
+from flask_restplus import Api
+from flask_login import current_user
+from flask_cache import Cache
 from importlib import import_module
 from functools import wraps
 
@@ -127,7 +127,7 @@ def api_login_required(func):
 
 
 class ApiWrapper(Api):
-    """Wrapper class around :class:`flask.ext.restplus.Api`"""
+    """Wrapper class around :class:`flask_restplus.Api`"""
     cache = Cache(config={'CACHE_TYPE': 'null', 'CACHE_NO_NULL_WARNING': True})
     loaded = False
     release = None
@@ -144,7 +144,7 @@ class ApiWrapper(Api):
         self.load_all()
 
     def abort(self, code=500, message=None, **kwargs):
-        """Override :func:`flask.ext.restplus.Api.abort` in order to raise
+        """Override :func:`flask_restplus.Api.abort` in order to raise
         custom exceptions
         """
         if message and not isinstance(message, basestring):

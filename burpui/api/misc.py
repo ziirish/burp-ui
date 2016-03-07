@@ -528,7 +528,7 @@ class History(Resource):
 
     def gen_colors(self):
         """Generates color for an events feed"""
-        rand = lambda: random.randint(0,255)
+        rand = lambda: random.randint(0, 255)
         red = rand()
         green = rand()
         blue = rand()

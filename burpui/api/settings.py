@@ -12,10 +12,10 @@ import sys
 # This is a submodule we can also use "from ..api import api"
 from . import api
 from .custom import Resource
-from flask.ext.login import current_user
+from flask_login import current_user
 from flask import jsonify, request, url_for
 from werkzeug.datastructures import ImmutableMultiDict
-if sys.version_info >= (3, 0):
+if sys.version_info >= (3, 0):  # NOQA
     from urllib.parse import unquote
 else:
     from urllib import unquote

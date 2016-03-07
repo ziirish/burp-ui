@@ -183,7 +183,7 @@ def basic_login_from_request(request, app):
             if login:
                 user = app.uhandler.user(login)
                 if user.active and user.login(login, password):
-                    from flask.ext.login import login_user
+                    from flask_login import login_user
                     login_user(user)
                     return user
 

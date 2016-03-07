@@ -27,11 +27,11 @@ else:
     PY3 = False
     from urllib import unquote  # NOQA
 
-IS_GUNICORN = 'gunicorn' in os.environ.get('SERVER_SOFTWARE', '')
-
-if IS_GUNICORN:
+if 'gunicorn' in os.environ.get('SERVER_SOFTWARE', ''):
+    IS_GUNICORN = True
     from gevent.local import local  # NOQA
 else:
+    IS_GUNICORN = False
     local = object
 
 

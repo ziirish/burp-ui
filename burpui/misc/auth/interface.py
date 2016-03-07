@@ -7,7 +7,7 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
-from flask.ext.login import UserMixin
+from flask_login import UserMixin
 from abc import ABCMeta, abstractmethod
 
 
@@ -30,7 +30,7 @@ class BUIhandler:
     @abstractmethod
     def user(self, name=None):
         """The :func:`burpui.misc.auth.interface.BUIhandler.user` function
-        returns the :class:`flask.ext.login.UserMixin` object corresponding to
+        returns the :class:`flask_login.UserMixin` object corresponding to
         the given user name.
 
         :param name: Name of the user
@@ -43,7 +43,7 @@ class BUIhandler:
 
 class BUIuser(UserMixin):
     """The :class:`burpui.misc.auth.interface.BUIuser` class extends the
-    :class:`flask.ext.login.UserMixin` class.
+    :class:`flask_login.UserMixin` class.
     """
     __metaclass__ = ABCMeta
 

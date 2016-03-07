@@ -10,7 +10,7 @@
 """
 import arrow
 
-from flask.ext.restplus import fields
+from flask_restplus import fields
 from tzlocal import get_localzone
 
 

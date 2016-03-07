@@ -17,8 +17,8 @@ from time import gmtime, strftime, time
 from . import api
 from .custom import Resource
 from ..exceptions import BUIserverException
-from flask.ext.restplus.inputs import boolean
-from flask.ext.login import current_user
+from flask_restplus.inputs import boolean
+from flask_login import current_user
 from flask import Response, send_file, make_response, after_this_request
 from werkzeug.datastructures import Headers
 from werkzeug.exceptions import HTTPException

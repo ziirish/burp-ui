@@ -102,8 +102,8 @@ def init(conf=None, debug=0, logfile=None, gunicorn=True, unittest=False):
 
     :returns: A :class:`burpui.server.BUIServer` object
     """
-    from flask.ext.login import LoginManager
-    from flask.ext.bower import Bower
+    from flask_login import LoginManager
+    from flask_bower import Bower
     from .utils import basic_login_from_request
     from .server import BUIServer as BurpUI
     from .routes import view
@@ -199,7 +199,7 @@ def init(conf=None, debug=0, logfile=None, gunicorn=True, unittest=False):
                 port = 6379
             try:
                 from redis import Redis
-                from flask.ext.session import Session
+                from flask_session import Session
                 red = Redis(host=host, port=port)
                 app.config['SESSION_TYPE'] = 'redis'
                 app.config['SESSION_REDIS'] = red
