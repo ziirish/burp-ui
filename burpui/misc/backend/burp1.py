@@ -517,20 +517,20 @@ class Burp(BUIbackend):
             'received': r'^\s*Bytes received:\s+(\d+)'
         }
         lookup_complex = {
-            'files': r'^\s*Files:?\s+(.+)\s+\|\s+(\d+)$',
-            'files_enc': r'^\s*Files \(encrypted\):?\s+(.+)\s+\|\s+(\d+)$',
-            'dir': r'^\s*Directories:?\s+(.+)\s+\|\s+(\d+)$',
-            'softlink': r'^\s*Soft links:?\s+(.+)\s+\|\s+(\d+)$',
-            'hardlink': r'^\s*Hard links:?\s+(.+)\s+\|\s+(\d+)$',
-            'meta': r'^\s*Meta data:?\s+(.+)\s+\|\s+(\d+)$',
-            'meta_enc': r'^\s*Meta data\(enc\):?\s+(.+)\s+\|\s+(\d+)$',
-            'special': r'^\s*Special files:?\s+(.+)\s+\|\s+(\d+)$',
-            'efs': r'^\s*EFS files:?\s+(.+)\s+\|\s+(\d+)$',
-            'vssheader': r'^\s*VSS headers:?\s+(.+)\s+\|\s+(\d+)$',
-            'vssheader_enc': r'^\s*VSS headers \(enc\):?\s+(.+)\s+\|\s+(\d+)$',
-            'vssfooter': r'^\s*VSS footers:?\s+(.+)\s+\|\s+(\d+)$',
-            'vssfooter_enc': r'^\s*VSS footers \(enc\):?\s+(.+)\s+\|\s+(\d+)$',
-            'total': r'^\s*Grand total:?\s+(.+)\s+\|\s+(\d+)$'
+            'files': r'^\s*Files:?\s+([\d\s]+)\s+\|\s+(\d+)$',
+            'files_enc': r'^\s*Files \(encrypted\):?\s+([\d\s]+)\s+\|\s+(\d+)$',
+            'dir': r'^\s*Directories:?\s+([\d\s]+)\s+\|\s+(\d+)$',
+            'softlink': r'^\s*Soft links:?\s+([\d\s]+)\s+\|\s+(\d+)$',
+            'hardlink': r'^\s*Hard links:?\s+([\d\s]+)\s+\|\s+(\d+)$',
+            'meta': r'^\s*Meta data:?\s+([\d\s]+)\s+\|\s+(\d+)$',
+            'meta_enc': r'^\s*Meta data\(enc\):?\s+([\d\s]+)\s+\|\s+(\d+)$',
+            'special': r'^\s*Special files:?\s+([\d\s]+)\s+\|\s+(\d+)$',
+            'efs': r'^\s*EFS files:?\s+([\d\s]+)\s+\|\s+(\d+)$',
+            'vssheader': r'^\s*VSS headers:?\s+([\d\s]+)\s+\|\s+(\d+)$',
+            'vssheader_enc': r'^\s*VSS headers \(enc\):?\s+([\d\s]+)\s+\|\s+(\d+)$',
+            'vssfooter': r'^\s*VSS footers:?\s+([\d\s]+)\s+\|\s+(\d+)$',
+            'vssfooter_enc': r'^\s*VSS footers \(enc\):?\s+([\d\s]+)\s+\|\s+(\d+)$',
+            'total': r'^\s*Grand total:?\s+([\d\s]+)\s+\|\s+(\d+)$'
         }
         _ = agent  # NOQA
         backup = {'windows': 'false', 'number': int(number)}
