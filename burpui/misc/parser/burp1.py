@@ -215,9 +215,9 @@ class Parser(BUIparser):
         u'working_dir_recovery_method': u"resume|use|delete",
     }
     values = {
-        u'compression': [u'gzip{0}'.format(x) for x in range(1, 10)],
+        u'compression': [u'gzip{0}'.format(x) for x in range(0, 10)],
         u'mode': [u'client', u'server'],
-        u'ssl_compression': [u'zlib{0}'.format(x) for x in range(1, 10)],
+        u'ssl_compression': [u'zlib{0}'.format(x) for x in range(0, 10)],
         u'status_address': [u'127.0.0.1', u'::1'],  # 127.0.0.1 / ::1
         u'working_dir_recovery_method': [u'use', u'delete', u'resume'],
     }
