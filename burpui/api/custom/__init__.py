@@ -7,4 +7,4 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
-from .resource import Resource  # NOQA
+from .resource import Resource  # noqa

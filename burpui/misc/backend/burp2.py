@@ -322,24 +322,17 @@ class Burp(Burp1):
 
     def get_backup_logs(self, number, client, forward=False, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_backup_logs`"""
+        ret = {}
         if not client or not number:
-            return {}
+            return ret
 
         query = self.status('c:{0}:b:{1}\n'.format(client, number))
         if not query:
-            return {}
-        clients = query['clients']
-        if not clients:
-            return {}
-        if 'backups' not in clients[0]:
-            return {}
-        backups = clients[0]['backups']
-        if not backups:
-            return {}
-        if 'logs' not in backups[0] and 'list' not in backups[0]['logs']:
-            return {}
-        logs = backups[0]['logs']['list']
-        ret = {}
+            return ret
+        try:
+            logs = query['clients'][0]['backups'][0]['logs']['list']
+        except KeyError as e:
+            return ret
         if 'backup_stats' in logs:
             ret = self._parse_backup_stats(number, client, forward)
         # TODO: support clients that were upgraded to 2.x
@@ -397,6 +390,7 @@ class Burp(Burp1):
 
         :returns: Dict containing the backup log
         """
+        ret = {}
         backup = {'windows': 'unknown', 'number': int(number)}
         if forward:
             backup['name'] = client
@@ -434,17 +428,13 @@ class Burp(Burp1):
         single = ['time_start', 'time_end', 'time_taken', 'bytes_received', 'bytes_estimated', 'bytes']
         query = self.status('c:{0}:b:{1}:l:backup_stats\n'.format(client, number), agent=agent)
         if not query:
-            return {}
-        clients = query['clients']
-        if not clients:
-            return {}
-        client = clients[0]
-        backups = client['backups']
-        if not backups:
-            return {}
-        back = backups[0]
+            return ret
+        try:
+            back = query['clients'][0]['backups'][0]
+        except KeyError as e:
+            return ret
         if 'backup_stats' not in back['logs']:
-            return {}
+            return ret
         stats = None
         try:
             stats = json.loads(''.join(back['logs']['backup_stats']))
@@ -486,36 +476,35 @@ class Burp(Burp1):
 
     def get_counters(self, name=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_counters`"""
-        r = {}
+        ret = {}
         if agent:
             if not name or name not in self.running[agent]:
-                return r
+                return ret
         else:
             if not name or name not in self.running:
-                return r
-        clients = self.status('c:{0}\n'.format(name))
+                return ret
+        query = self.status('c:{0}\n'.format(name))
         # check the status returned something
-        if not clients:
-            return r
+        if not query:
+            return ret
 
-        clients = clients['clients']
-        # check there are at least one client
-        if not clients:
-            return r
+        try:
+            client = query['clients'][0]
+        except KeyError as e:
+            return ret
 
-        client = clients[0]
         # check the client is currently backing-up
-        if client['run_status'] != 'running':
-            return r
+        if 'run_status' not in client or client['run_status'] != 'running':
+            return ret
 
         backup = None
-        for b in client['backups']:
-            if 'flags' in b and 'working' in b['flags']:
-                backup = b
+        for back in client['backups']:
+            if 'flags' in back and 'working' in back['flags']:
+                backup = back
                 break
         # check we found a working backup
         if not backup:
-            return r
+            return ret
 
         # list of single counters (type CNTR_SINGLE_FIELD in cntr.c)
         single = [
@@ -535,34 +524,34 @@ class Burp(Burp1):
             if name in translate:
                 name = translate[name]
             if counter['name'] not in single:
-                r[name] = [counter['count'], counter['changed'], counter['same'], counter['deleted'], counter['scanned']]
+                ret[name] = [counter['count'], counter['changed'], counter['same'], counter['deleted'], counter['scanned']]
             else:
-                r[name] = counter['count']
+                ret[name] = counter['count']
 
-        if 'bytes' not in r:
-            r['bytes'] = 0
-        if r.viewkeys() & {'time_start', 'estimated_bytes', 'bytes'}:
+        if 'bytes' not in ret:
+            ret['bytes'] = 0
+        if ret.viewkeys() & {'time_start', 'estimated_bytes', 'bytes'}:
             try:
-                diff = time.time() - int(r['time_start'])
-                byteswant = int(r['estimated_bytes'])
-                bytesgot = int(r['bytes'])
+                diff = time.time() - int(ret['time_start'])
+                byteswant = int(ret['estimated_bytes'])
+                bytesgot = int(ret['bytes'])
                 bytespersec = bytesgot / diff
                 bytesleft = byteswant - bytesgot
-                r['speed'] = bytespersec
+                ret['speed'] = bytespersec
                 if (bytespersec > 0):
                     timeleft = int(bytesleft / bytespersec)
-                    r['timeleft'] = timeleft
+                    ret['timeleft'] = timeleft
                 else:
-                    r['timeleft'] = -1
+                    ret['timeleft'] = -1
             except:
-                r['timeleft'] = -1
+                ret['timeleft'] = -1
         try:
-            r['percent'] = round(float(r['bytes']) / float(r['estimated_bytes']) * 100)
+            ret['percent'] = round(float(ret['bytes']) / float(ret['estimated_bytes']) * 100)
         except:
             # You know... division by 0
-            r['percent'] = 0
+            ret['percent'] = 0
 
-        return r
+        return ret
 
     def is_backup_running(self, name=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.is_backup_running`"""
@@ -574,27 +563,25 @@ class Burp(Burp1):
             return False
         if not query:
             return False
-        clients = query['clients']
-        if not clients:
+        try:
+            return query['clients'][0]['run_status'] in ['running']
+        except KeyError as e:
             return False
-        client = clients[0]
-        if client['run_status'] in ['running']:
-            return True
         return False
 
     def is_one_backup_running(self, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.is_one_backup_running`"""
-        r = []
+        ret = []
         try:
-            cls = self.get_all_clients()
+            clients = self.get_all_clients()
         except BUIserverException:
-            return r
-        for c in cls:
-            if c['state'] in ['running']:
-                r.append(c['name'])
-        self.running = r
+            return ret
+        for client in clients:
+            if client['state'] in ['running']:
+                ret.append(client['name'])
+        self.running = ret
         self.refresh = time.time()
-        return r
+        return ret
 
     def _status_human_readable(self, status):
         """The label has changed in burp2, we override it to be compatible with
@@ -615,84 +602,82 @@ class Burp(Burp1):
 
     def get_all_clients(self, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_all_clients`"""
-        j = []
+        ret = []
         query = self.status()
         if not query or 'clients' not in query:
-            return j
+            return ret
         clients = query['clients']
-        for cl in clients:
-            c = {}
-            c['name'] = cl['name']
-            c['state'] = self._status_human_readable(cl['run_status'])
-            infos = cl['backups']
-            if c['state'] in ['running']:
-                c['phase'] = cl['phase']
-                c['last'] = 'now'
-                counters = self.get_counters(c['name'])
+        for client in clients:
+            cli = {}
+            cli['name'] = client['name']
+            cli['state'] = self._status_human_readable(client['run_status'])
+            infos = client['backups']
+            if cli['state'] in ['running']:
+                cli['phase'] = client['phase']
+                cli['last'] = 'now'
+                counters = self.get_counters(cli['name'])
                 if 'percent' in counters:
-                    c['percent'] = counters['percent']
+                    cli['percent'] = counters['percent']
                 else:
-                    c['percent'] = 0
+                    cli['percent'] = 0
             elif not infos:
-                c['last'] = 'never'
+                cli['last'] = 'never'
             else:
                 infos = infos[0]
-                c['last'] = infos['timestamp']
-            j.append(c)
-        return j
+                cli['last'] = infos['timestamp']
+            ret.append(cli)
+        return ret
 
     def get_client(self, name=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_client`"""
-        r = []
+        ret = []
         if not name:
-            return r
-        c = name
-        query = self.status('c:{0}\n'.format(c))
+            return ret
+        query = self.status('c:{0}\n'.format(name))
         if not query:
-            return r
-        clients = query['clients']
-        if not clients:
-            return r
-        client = clients[0]
-        backups = client['backups']
+            return ret
+        try:
+            backups = query['clients'][0]['backups']
+        except KeyError as e:
+            return ret
         for backup in backups:
-            ba = {}
+            back = {}
             # skip running backups since data will be inconsistent
             if 'flags' in backup and 'working' in backup['flags']:
                 continue
-            ba['number'] = backup['number']
+            back['number'] = backup['number']
             if 'flags' in backup and 'deletable' in backup['flags']:
-                ba['deletable'] = True
+                back['deletable'] = True
             else:
-                ba['deletable'] = False
-            ba['date'] = backup['timestamp']
+                back['deletable'] = False
+            back['date'] = backup['timestamp']
             log = self.get_backup_logs(backup['number'], name)
             try:
-                ba['encrypted'] = log['encrypted']
+                back['encrypted'] = log['encrypted']
                 try:
                     ba['received'] = log['received']
                 except KeyError as e:
-                    ba['received'] = -1
+                    back['received'] = -1
                 try:
-                    ba['size'] = log['totsize']
+                    back['size'] = log['totsize']
                 except KeyError as e:
-                    ba['size'] = -1
-                ba['end'] = log['end']
+                    back['size'] = -1
+                back['end'] = log['end']
                 # override date since the timestamp is odd
-                ba['date'] = log['start']
-                r.append(ba)
+                back['date'] = log['start']
+                ret.append(back)
             except:
                 pass
 
         # Here we need to reverse the array so the backups are sorted by date ASC
-        r.reverse()
-        return r
+        ret.reverse()
+        return ret
 
     def get_tree(self, name=None, backup=None, root=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_tree`"""
-        r = []
+        ret = []
         if not name or not backup:
-            return r
+            return ret
         if not root:
             top = ''
         else:
@@ -701,38 +686,32 @@ class Burp(Burp1):
             except UnicodeDecodeError:
                 top = root
 
-        result = self.status('c:{0}:b:{1}:p:{2}\n'.format(name, backup, top))
-        if not result:
-            return r
-        clients = result['clients']
-        if not clients:
-            return r
-        client = clients[0]
-        if 'backups' not in client:
-            return r
-        backups = client['backups']
-        if not backups:
-            return r
-        backup = backups[0]
+        query = self.status('c:{0}:b:{1}:p:{2}\n'.format(name, backup, top))
+        if not query:
+            return ret
+        try:
+            backup = query['clients'][0]['backups'][0]
+        except KeyError as e:
+            return ret
         for entry in backup['browse']['entries']:
-            t = {}
+            data = {}
             if entry['name'] == '.':
                 continue
             else:
-                t['name'] = entry['name']
-            t['mode'] = self._human_st_mode(entry['mode'])
+                data['name'] = entry['name']
+            data['mode'] = self._human_st_mode(entry['mode'])
             if re.match('^(d|l)', t['mode']):
-                t['type'] = 'd'
+                data['type'] = 'd'
             else:
-                t['type'] = 'f'
-            t['inodes'] = entry['nlink']
-            t['uid'] = entry['uid']
-            t['gid'] = entry['gid']
-            t['parent'] = top
-            t['size'] = '{0:.1eM}'.format(_hr(entry['size']))
-            t['date'] = entry['mtime']
-            r.append(t)
-        return r
+                data['type'] = 'f'
+            data['inodes'] = entry['nlink']
+            data['uid'] = entry['uid']
+            data['gid'] = entry['gid']
+            data['parent'] = top
+            data['size'] = '{0:.1eM}'.format(_hr(entry['size']))
+            data['date'] = entry['mtime']
+            ret.append(data)
+        return ret
 
     def get_client_version(self, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_client_version`"""

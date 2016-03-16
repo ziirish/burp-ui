@@ -15,7 +15,7 @@ from .custom import Resource
 from flask_login import current_user
 from flask import jsonify, request, url_for
 from werkzeug.datastructures import ImmutableMultiDict
-if sys.version_info >= (3, 0):  # NOQA
+if sys.version_info >= (3, 0):  # noqa
     from urllib.parse import unquote
 else:
     from urllib import unquote

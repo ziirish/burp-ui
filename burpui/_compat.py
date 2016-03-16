@@ -11,25 +11,25 @@ import sys
 import os
 
 try:
-    import ConfigParser  # NOQA
+    import ConfigParser  # noqa
 except ImportError:
-    import configparser as ConfigParser  # NOQA
+    import configparser as ConfigParser  # noqa
 
 try:
-    import cPickle as pickle  # NOQA
+    import cPickle as pickle  # noqa
 except ImportError:
-    import pickle  # NOQA
+    import pickle  # noqa
 
 if sys.version_info[0] >= 3:
     PY3 = True
-    from urllib.parse import unquote  # NOQA
+    from urllib.parse import unquote  # noqa
 else:
     PY3 = False
-    from urllib import unquote  # NOQA
+    from urllib import unquote  # noqa
 
 if 'gunicorn' in os.environ.get('SERVER_SOFTWARE', ''):
     IS_GUNICORN = True
-    from gevent.local import local  # NOQA
+    from gevent.local import local  # noqa
 else:
     IS_GUNICORN = False
     local = object
@@ -66,7 +66,7 @@ def patch_module(name, items=None):
 
 def patch_json():
     try:
-        import ujson  # NOQA
+        import ujson  # noqa
     except ImportError:
         # ujson is not available, we won't patch anything
         return
