@@ -356,6 +356,29 @@ class Burp(Burp1):
             ret['encrypted'] = True
         return ret
 
+    def _guess_backup_protocol(self, number, client):
+        """The :func:`burpui.misc.backend.burp2.Burp._guess_backup_protocol`
+        function helps you determine if the backup is protocol 2 or 1
+
+        :param number: Backup number to work on
+        :type number: int
+
+        :param client: Client name to work on
+        :type client: str
+
+        :returns: 1 or 2
+        """
+        query = self.status('c:{0}:b:{1}:l:backup\n'.format(client, number))
+        try:
+            log = query['clients'][0]['backups'][0]['logs']['backup']
+            for line in log:
+                if re.search(r'Protocol: 2$', line):
+                    return 2
+        except KeyError as e:
+            # Assume protocol 1 in all cases unless explicitly found Protocol 2
+            return 1
+        return 1
+
     def _parse_backup_stats(self, number, client, forward=False, agent=None):
         """The :func:`burpui.misc.backend.burp2.Burp._parse_backup_stats`
         function is used to parse the burp logs.
@@ -646,8 +669,14 @@ class Burp(Burp1):
             log = self.get_backup_logs(backup['number'], name)
             try:
                 ba['encrypted'] = log['encrypted']
-                ba['received'] = log['received']
-                ba['size'] = log['totsize']
+                try:
+                    ba['received'] = log['received']
+                except KeyError as e:
+                    ba['received'] = -1
+                try:
+                    ba['size'] = log['totsize']
+                except KeyError as e:
+                    ba['size'] = -1
                 ba['end'] = log['end']
                 # override date since the timestamp is odd
                 ba['date'] = log['start']
