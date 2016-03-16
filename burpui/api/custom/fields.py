@@ -8,5 +8,5 @@
 
 
 """
-from flask_restplus.fields import *  # NOQA
-from .my_fields import DateTime, BackupNumber  # NOQA
+from flask_restplus.fields import *  # noqa
+from .my_fields import DateTime, BackupNumber  # noqa
