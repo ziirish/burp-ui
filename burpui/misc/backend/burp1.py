@@ -991,3 +991,8 @@ class Burp(BUIbackend):
     def get_server_version(self, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_server_version`"""
         return self.server_version
+
+    def get_client_labels(self, client=None, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.get_client_labels`"""
+        # Not supported with Burp 1.x.x so we just return an empty list
+        return []

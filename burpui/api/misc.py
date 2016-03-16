@@ -15,6 +15,7 @@ from six import iteritems
 from flask import flash, url_for
 
 import random
+import re
 
 ns = api.namespace('misc', 'Misc methods')
 
@@ -461,7 +462,7 @@ class History(Resource):
             api.abort(403, "You are not allowed to view this client infos")
 
         if client:
-            (color, text) = self.gen_colors()
+            (color, text) = self.gen_colors(client, server)
             feed = {
                 'color': color,
                 'textColor': text,
@@ -478,7 +479,7 @@ class History(Resource):
             if api.bui.acl and not self.is_admin:
                 clients = [x for x in clients if x['name'] in api.bui.acl.clients(self.username, server)]
             for cl in clients:
-                (color, text) = self.gen_colors()
+                (color, text) = self.gen_colors(cl['name'], server)
                 feed = {
                     'events': self.gen_events(cl['name'], server),
                     'textColor': text,
@@ -494,7 +495,7 @@ class History(Resource):
             else:
                 clients_list = [x['name'] for x in api.bui.cli.get_all_clients()]
             for cl in clients_list:
-                (color, text) = self.gen_colors()
+                (color, text) = self.gen_colors(cl)
                 feed = {
                     'events': self.gen_events(cl),
                     'textColor': text,
@@ -515,7 +516,7 @@ class History(Resource):
                 if not isinstance(clients, list):
                     clients = [x['name'] for x in api.bui.cli.get_all_clients(agent=serv)]
                 for cl in clients:
-                    (color, text) = self.gen_colors()
+                    (color, text) = self.gen_colors(cl, serv)
                     feed = {
                         'events': self.gen_events(cl, serv),
                         'textColor': text,
@@ -526,16 +527,70 @@ class History(Resource):
 
         return ret
 
-    def gen_colors(self):
+    def gen_colors(self, client=None, agent=None):
         """Generates color for an events feed"""
-        rand = lambda: random.randint(0, 255)
-        red = rand()
-        green = rand()
-        blue = rand()
-        yiq = ((red * 299) + (green * 587) + (blue * 114)) / 1000
-        text = 'black' if yiq >= 128 else 'white'
-        color = '#{:02X}{:02X}{:02X}'.format(red, green, blue)
+        labels = api.bui.cli.get_client_labels(client, agent)
+        HTML_COLOR = r'((?P<hex>#(?P<red_hex>[0-9a-f]{1,2})(?P<green_hex>[0-9a-f]{1,2})(?P<blue_hex>[0-9a-f]{1,2}))|(?P<rgb>rgb\s*\(\s*(?P<red>2[0-5]{2}|2[0-4]\d|[0-1]?\d\d?)\s*,\s*(?P<green>2[0-5]{2}|2[0-4]\d|[0-1]?\d\d?)\s*,\s*(?P<blue>2[0-5]{2}|2[0-4]\d|[0-1]?\d\d?)\s*\))|(?P<plain>[\w-]+$))'
+        color_found = False
+        color = None
+        text = None
+        for label in labels:
+            # We are looking for labels starting with "color:" or "text:"
+            if re.search(r'^color:', label, re.IGNORECASE):
+                search = re.search(r'^color:\s*{}'.format(HTML_COLOR), label, re.IGNORECASE)
+                # we allow various color forms. For instance:
+                # hex: #fa12e6
+                # rgb: rgb (123, 42, 9)
+                # plain: black
+                if search.group('hex'):
+                    red = search.group('red_hex')
+                    green = search.group('green_hex')
+                    blue = search.group('blue_hex')
+                    # ensure ensure the hex part is of the form XX
+                    red = red + red if len(red) == 1 else red
+                    green = green + green if len(green) == 1 else green
+                    blue = blue + blue if len(blue) == 1 else blue
+                    # Now convert the hex to an int
+                    red = int(red, 16)
+                    green = int(green, 16)
+                    blue = int(blue, 16)
+                elif search.group('rgb'):
+                    red = int(search.group('red'))
+                    green = int(search.group('green'))
+                    blue = int(search.group('blue'))
+                elif search.group('plain'):
+                    # if plain color is provided, we cannot guess the adapted
+                    # text color, so we assume white (unless text is specified)
+                    red = 0
+                    green = 0
+                    blue = 0
+                    color = search.group('plain')
+                else:
+                    continue
+                color = color or '#{:02X}{:02X}{:02X}'.format(red, green, blue)
+                color_found = True
+            if re.search(r'^text:', label, re.IGNORECASE):
+                search = re.search(r'^text:\s*{}'.format(HTML_COLOR), label, re.IGNORECASE)
+                # if we don't find anything, we'll generate a color based on
+                # the value of the red, green and blue variables
+                text = search.group('hex') or search.group('rgb') or search.group('plain')
+            if color and text:
+                break
+
+        if not color_found:
+            rand = lambda: random.randint(0, 255)
+            red = rand()
+            green = rand()
+            blue = rand()
+
+        text = text or self._get_text_color(red, green, blue)
+        color = color or '#{:02X}{:02X}{:02X}'.format(red, green, blue)
         return (color, text)
+
+    def _get_text_color(self, red=0, green=0, blue=0):
+        """Generates the text color for a given color"""
+        yiq = ((red * 299) + (green * 587) + (blue * 114)) / 1000
+        return 'black' if yiq >= 128 else 'white'
 
     def gen_events(self, client, server=None):
         """Creates events for a given client"""

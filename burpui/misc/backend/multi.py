@@ -278,6 +278,10 @@ class Burp(BUIbackend):
             return self._get_version_parallel('get_server_version')
         return self.servers[agent].get_server_version()
 
+    def get_client_labels(self, client=None, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.get_client_labels`"""
+        return self.servers[agent].get_client_labels(client)
+
 
 class NClient(BUIbackend, local):
     """The :class:`burpui.misc.backend.multi.NClient` class provides a
@@ -556,4 +560,9 @@ class NClient(BUIbackend, local):
     def get_server_version(self, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_server_version`"""
         data = {'func': 'get_server_version', 'args': None}
+        return json.loads(self.do_command(data))
+
+    def get_client_labels(self, client=None, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.get_client_labels`"""
+        data = {'func': 'get_client_labels', 'args': {'client': client}}
         return json.loads(self.do_command(data))

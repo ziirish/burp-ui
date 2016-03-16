@@ -707,3 +707,20 @@ class BUIbackend(BUIlogging):
         :returns: Burp server version
         """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+
+    @abstractmethod
+    def get_client_labels(self, client=None, agent=None):
+        """The :func:`burpui.misc.backend.interface.BUIbackend.get_client_labels`
+        function returns a list of labels (if any) for a given client.
+
+        .. note:: Labels are only available with Burp 2.0.34 and above
+
+        :param client: The client for which you want the labels
+        :type client: str
+
+        :param agent: What server to ask (only in multi-agent mode)
+        :type agent: str
+
+        :returns: A list of labels or an empty list
+        """
+        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover

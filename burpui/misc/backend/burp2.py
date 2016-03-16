@@ -294,16 +294,14 @@ class Burp(Burp1):
         """See :func:`burpui.misc.backend.interface.BUIbackend.status`"""
         try:
             if not query.endswith('\n'):
-                q = '{0}\n'.format(query)
-            else:
-                q = query
+                query = '{0}\n'.format(query)
             if not self._proc_is_alive():
                 self._spawn_burp()
 
             _, w, _ = select([], [self.proc.stdin], [], self.timeout)
             if self.proc.stdin not in w:
                 raise TimeoutError('Write operation timed out')
-            self.proc.stdin.write(q)
+            self.proc.stdin.write(query)
             js = self._read_proc_stdout()
             if self._is_warning(js):
                 self._logger('warning', js['warning'])
@@ -722,6 +720,19 @@ class Burp(Burp1):
         if not self.server_version:
             self.status()
         return self.server_version
+
+    def get_client_labels(self, client=None, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.get_client_labels`"""
+        ret = []
+        if not client:
+            return ret
+        query = self.status('c:{0}\n'.format(client))
+        if not query:
+            return ret
+        try:
+            return query['clients'][0]['labels']
+        except KeyError as e:
+            return ret
 
     # Same as in Burp1 backend
     # def restore_files(self, name=None, backup=None, files=None, strip=None, archive='zip', password=None, agent=None):
