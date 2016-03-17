@@ -16,7 +16,7 @@ import tarfile
 import logging
 
 from inspect import currentframe, getouterframes
-from _compat import PY3
+from ._compat import PY3
 
 if PY3:
     long = int  # pragma: no cover
