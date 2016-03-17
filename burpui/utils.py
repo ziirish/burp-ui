@@ -7,6 +7,7 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
+import os
 import math
 import string
 import sys
@@ -165,7 +166,17 @@ class BUIcompress():
 
     def append(self, path, arcname):
         if self.archive == 'zip':
-            self.arch.write(path, arcname)
+            if os.path.islink(path):
+                # This is a symlink, we virtually create one in memory
+                # because zipfile does not seem to support them natively
+                vfile = zipfile.ZipInfo()
+                vfile.filename = arcname  # That's the name of the actual file
+                vfile.external_attr |= 0120000 << 16L  # symlink file type
+                vfile.compress_type = zipfile.ZIP_STORED
+                # os.readlink gives us the target of the symlink
+                self.arch.writestr(vfile, os.readlink(path))
+            else:
+                self.arch.write(path, arcname)
         elif self.archive in ['tar.gz', 'tar.bz2']:
             self.arch.add(path, arcname=arcname, recursive=False)
 
