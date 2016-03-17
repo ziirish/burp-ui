@@ -16,8 +16,9 @@ import tarfile
 import logging
 
 from inspect import currentframe, getouterframes
+from _compat import PY3
 
-if sys.version_info >= (3, 0):
+if PY3:
     long = int  # pragma: no cover
 
 
@@ -171,7 +172,10 @@ class BUIcompress():
                 # because zipfile does not seem to support them natively
                 vfile = zipfile.ZipInfo()
                 vfile.filename = arcname  # That's the name of the actual file
-                vfile.external_attr |= 0120000 << 16L  # symlink file type
+                if PY3:
+                    vfile.external_attr |= 0o120000 << 16L
+                else:
+                    vfile.external_attr |= 0120000 << 16L  # symlink file type
                 vfile.compress_type = zipfile.ZIP_STORED
                 # os.readlink gives us the target of the symlink
                 self.arch.writestr(vfile, os.readlink(path))
