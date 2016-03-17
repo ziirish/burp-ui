@@ -172,7 +172,7 @@ class BUIcompress():
                 # because zipfile does not seem to support them natively
                 vfile = zipfile.ZipInfo()
                 vfile.filename = arcname  # That's the name of the actual file
-                vfile.external_attr |= 0o120000 << 16L # symlink file type
+                vfile.external_attr |= 0o120000 << long(16)  # symlink file type
                 vfile.compress_type = zipfile.ZIP_STORED
                 # os.readlink gives us the target of the symlink
                 self.arch.writestr(vfile, os.readlink(path))
