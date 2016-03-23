@@ -10,6 +10,7 @@
 import traceback
 import sys
 import os
+import logging
 
 from .misc.auth.handler import UserAuthHandler
 from ._compat import ConfigParser
@@ -47,7 +48,15 @@ class BUIServer(Flask):
         :param app: The Flask application to launch
         """
         self.init = False
+        # Create a dummy logger
+        # We cannot override the Flask's logger so we use our own
+        self.builogger = logging.getLogger('burp-ui')
+        self.builogger.disabled = True
         super(BUIServer, self).__init__(__name__)
+
+    def enable_logger(self, enable=True):
+        """Enable or disable the logger"""
+        self.builogger.disabled = not enable
 
     def setup(self, conf=None):
         """The :func:`burpui.server.BUIServer.setup` functions is used to setup
@@ -104,7 +113,7 @@ class BUIServer(Flask):
                     try:
                         self.uhandler = UserAuthHandler(self)
                     except Exception as e:
-                        self.logger.error(
+                        self.builogger.critical(
                             'Import Exception, module \'{0}\': {1}'.format(
                                 self.auth,
                                 str(e)
@@ -140,7 +149,7 @@ class BUIServer(Flask):
                         self.acl = BUIacl
                         self.acl = self.acl_handler.acl
                     except Exception as e:
-                        self.logger.error(
+                        self.builogger.critical(
                             'Import Exception, module \'{0}\': {1}'.format(
                                 self.acl_engine,
                                 str(e)
@@ -192,22 +201,22 @@ class BUIServer(Flask):
                 )
 
             except ConfigParser.NoOptionError as e:
-                self.logger.error(str(e))
+                self.builogger.error(str(e))
 
         self.config['STANDALONE'] = self.standalone
 
-        self.logger.info('burp version: {}'.format(self.vers))
-        self.logger.info('listen port: {}'.format(self.port))
-        self.logger.info('bind addr: {}'.format(self.bind))
-        self.logger.info('use ssl: {}'.format(self.ssl))
-        self.logger.info('standalone: {}'.format(self.standalone))
-        self.logger.info('sslcert: {}'.format(self.sslcert))
-        self.logger.info('sslkey: {}'.format(self.sslkey))
-        self.logger.info('refresh: {}'.format(self.config['REFRESH']))
-        self.logger.info('liverefresh: {}'.format(self.config['LIVEREFRESH']))
-        self.logger.info('auth: {}'.format(self.auth))
-        self.logger.info('acl: {}'.format(self.acl_engine))
-        self.logger.info('zip64: {}'.format(self.zip64))
+        self.builogger.info('burp version: {}'.format(self.vers))
+        self.builogger.info('listen port: {}'.format(self.port))
+        self.builogger.info('bind addr: {}'.format(self.bind))
+        self.builogger.info('use ssl: {}'.format(self.ssl))
+        self.builogger.info('standalone: {}'.format(self.standalone))
+        self.builogger.info('sslcert: {}'.format(self.sslcert))
+        self.builogger.info('sslkey: {}'.format(self.sslkey))
+        self.builogger.info('refresh: {}'.format(self.config['REFRESH']))
+        self.builogger.info('liverefresh: {}'.format(self.config['LIVEREFRESH']))
+        self.builogger.info('auth: {}'.format(self.auth))
+        self.builogger.info('acl: {}'.format(self.acl_engine))
+        self.builogger.info('zip64: {}'.format(self.zip64))
 
         if self.standalone:
             module = 'burpui.misc.backend.burp{0}'.format(self.vers)
@@ -225,7 +234,7 @@ class BUIServer(Flask):
             self.cli = Client(self, conf=conf)
         except Exception as e:
             traceback.print_exc()
-            self.logger.error(
+            self.builogger.critical(
                 'Failed loading backend for Burp version {0}: {1}'.format(
                     self.vers,
                     str(e)
@@ -256,9 +265,9 @@ class BUIServer(Flask):
         try:
             return callback(sect, key)
         except ConfigParser.NoOptionError as e:
-            self.logger.error(str(e))
+            self.builogger.error(str(e))
         except ConfigParser.NoSectionError as e:
-            self.logger.warning(str(e))
+            self.builogger.warning(str(e))
             if key in self.defaults:
                 if cast:
                     try:

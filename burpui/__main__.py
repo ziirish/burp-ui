@@ -13,7 +13,7 @@ def parse_args(mode=True, name=None):
         name = 'burp-ui'
     parser = ArgumentParser(prog=name)
     parser.add_argument('-v', '--verbose', dest='log', help='increase output verbosity (e.g., -vv is more verbose than -v)', action='count')
-    parser.add_argument('-d', '--debug', dest='log', help='alias for -v', action='count')  # alias for -v
+    parser.add_argument('-d', '--debug', dest='debug', help='enable debug mode', action='store_true')  # alias for -v
     parser.add_argument('-V', '--version', dest='version', help='print version and exit', action='store_true')
     parser.add_argument('-c', '--config', dest='config', help='configuration file', metavar='<CONFIG>')
     parser.add_argument('-l', '--logfile', dest='logfile', help='output logs in defined file', metavar='<FILE>')
@@ -54,7 +54,7 @@ def server(options=None):
     conf = lookup_config(options.config)
     check_config(conf)
 
-    server = init(conf, options.log, options.logfile, False)
+    server = init(conf, options.log, options.logfile, False, debug=options.debug)
 
     server.manual_run()
 

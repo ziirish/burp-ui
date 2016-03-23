@@ -74,24 +74,33 @@ class BUIAgent(BUIbackend):
         self.padding = 1
         if debug > logging.NOTSET:
             logging.addLevelName(DISCLOSURE, 'DISCLOSURE')
-            levels = [0, logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG, DISCLOSURE]
+            levels = [
+                logging.CRITICAL,
+                logging.ERROR,
+                logging.WARNING,
+                logging.INFO,
+                logging.DEBUG,
+                DISCLOSURE
+            ]
             if debug >= len(levels):
                 debug = len(levels) - 1
             lvl = levels[debug]
-            self.app.logger = logging.getLogger(__name__)
+            self.app.logger = logging.getLogger('burp-ui')
             self.set_logger(self.app.logger)
             self.logger.setLevel(lvl)
-            if logfile:
-                handler = RotatingFileHandler(logfile, maxBytes=1024 * 1024 * 100, backupCount=20)
+            if lvl > logging.DEBUG:
                 LOG_FORMAT = '[%(asctime)s] %(levelname)s in %(module)s.%(funcName)s: %(message)s'
             else:
-                handler = logging.StreamHandler()
                 LOG_FORMAT = (
                     '-' * 80 + '\n' +
                     '%(levelname)s in %(module)s.%(funcName)s [%(pathname)s:%(lineno)d]:\n' +
                     '%(message)s\n' +
                     '-' * 80
                 )
+            if logfile:
+                handler = RotatingFileHandler(logfile, maxBytes=1024 * 1024 * 100, backupCount=20)
+            else:
+                handler = logging.StreamHandler()
             handler.setLevel(lvl)
             handler.setFormatter(logging.Formatter(LOG_FORMAT))
             self.logger.addHandler(handler)

@@ -6,6 +6,7 @@ import time
 import json
 import struct
 import traceback
+import logging
 
 from six import iteritems
 
@@ -34,8 +35,7 @@ class Burp(BUIbackend):
 
     def __init__(self, server=None, conf=None):
         self.app = server
-        self.acl_handler = False
-        self.set_logger(self.app.logger)
+        self.logger = logging.getLogger('burp-ui')
         self.acl_handler = server.acl_handler
         self.servers = {}
         self.app.config['SERVERS'] = []

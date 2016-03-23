@@ -10,6 +10,8 @@
 from ...utils import BUIlogging
 from abc import ABCMeta, abstractmethod
 
+import logging
+
 
 class BUIparser(BUIlogging):
     """:class:`burpui.misc.parser.interface.BUIparser` defines a generic
@@ -17,7 +19,7 @@ class BUIparser(BUIlogging):
     """
     __metaclass__ = ABCMeta
 
-    def __init__(self, app=None, conf=None):
+    def __init__(self, conf=None):
         """:func:`burpui.misc.parser.interface.BUIparser.__init__` instanciate
         the parser.
 
@@ -27,10 +29,8 @@ class BUIparser(BUIlogging):
         :param conf: The main configuration file
         :type conf: str
         """
-        self.app = app
         self.conf = conf
-        if self.app:  # pragma: no cover
-            self.logger = self.app.logger
+        self.logger = logging.getLogger('burp-ui')
 
     @abstractmethod
     def read_server_conf(self, conf=None):

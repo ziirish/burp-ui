@@ -1,9 +1,9 @@
 # -*- coding: utf8 -*-
-from .interface import BUIhandler, BUIuser
+from .interface import BUIhandler, BUIuser, BUIloader
 from ..._compat import ConfigParser
 
 
-class BasicLoader:
+class BasicLoader(BUIloader):
     """The :class:`burpui.misc.auth.basic.BasicLoader` class loads the *Basic*
     users.
     """
@@ -35,7 +35,7 @@ class BasicLoader:
                             pass
                         continue  # pragma: no cover
                     self.users[opt] = c.get('BASIC', opt)
-                    self.app.logger.info('Loading user: {}'.format(opt))
+                    self.builogger.info('Loading user: {}'.format(opt))
 
     def fetch(self, uid=None):
         """:func:`burpui.misc.auth.basic.BasicLoader.fetch` searches for a user

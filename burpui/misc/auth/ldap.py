@@ -1,7 +1,7 @@
 # -*- coding: utf8 -*-
 from six import viewitems
 
-from .interface import BUIhandler, BUIuser
+from .interface import BUIhandler, BUIuser, BUIloader
 from ..._compat import ConfigParser
 
 import ssl
@@ -12,7 +12,7 @@ except ImportError:
     raise ImportError('Unable to load \'ldap3\' module')
 
 
-class LdapLoader:
+class LdapLoader(BUIloader):
     """The :class:`burpui.misc.auth.ldap.LdapLoader` handles searching for and
     binding as a :class:`burpui.misc.auth.ldap.LdapUser` user.
     """
@@ -64,9 +64,9 @@ class LdapLoader:
                 try:
                     setattr(self, opt, c.get('LDAP', key))
                 except ConfigParser.NoOptionError as e:
-                    self.app.logger.info(str(e))
+                    self.builogger.info(str(e))
                 except ConfigParser.NoSectionError as e:
-                    self.app.logger.error(str(e))
+                    self.builogger.error(str(e))
 
         if self.validate and self.validate.lower() in ['none', 'optional', 'required']:
             self.validate = getattr(ssl, 'CERT_{}'.format(self.validate.upper()))
@@ -88,33 +88,33 @@ class LdapLoader:
             try:
                 self.port = int(self.port)
             except ValueError:
-                self.app.logger.error('LDAP port must be a valid integer')
+                self.builogger.error('LDAP port must be a valid integer')
                 self.port = None
-        self.app.logger.info('LDAP host: {0}'.format(self.host))
-        self.app.logger.info('LDAP port: {0}'.format(self.port))
-        self.app.logger.info('LDAP encryption: {0}'.format(self.encryption))
-        self.app.logger.info('LDAP filter: {0}'.format(self.filt))
-        self.app.logger.info('LDAP base: {0}'.format(self.base))
-        self.app.logger.info('LDAP search attr: {0}'.format(self.attr))
-        self.app.logger.info('LDAP binddn: {0}'.format(self.binddn))
-        self.app.logger.info('LDAP bindpw: {0}'.format('*****' if self.bindpw else 'None'))
-        self.app.logger.info('TLS object: {0}'.format(self.tls))
+        self.builogger.info('LDAP host: {0}'.format(self.host))
+        self.builogger.info('LDAP port: {0}'.format(self.port))
+        self.builogger.info('LDAP encryption: {0}'.format(self.encryption))
+        self.builogger.info('LDAP filter: {0}'.format(self.filt))
+        self.builogger.info('LDAP base: {0}'.format(self.base))
+        self.builogger.info('LDAP search attr: {0}'.format(self.attr))
+        self.builogger.info('LDAP binddn: {0}'.format(self.binddn))
+        self.builogger.info('LDAP bindpw: {0}'.format('*****' if self.bindpw else 'None'))
+        self.builogger.info('TLS object: {0}'.format(self.tls))
 
         try:
             self.server = Server(host=self.host, port=self.port, use_ssl=self.ssl, get_info=ALL, tls=self.tls)
-            self.app.logger.debug('LDAP Server = {0}'.format(str(self.server)))
+            self.builogger.debug('LDAP Server = {0}'.format(str(self.server)))
             if self.binddn:
                 self.ldap = Connection(self.server, user=self.binddn, password=self.bindpw, raise_exceptions=True, client_strategy=RESTARTABLE, auto_bind=self.auto_bind, authentication=SIMPLE)
             else:
                 self.ldap = Connection(self.server, raise_exceptions=True, client_strategy=RESTARTABLE, auto_bind=self.auto_bind)
             with self.ldap:
-                self.app.logger.debug('LDAP Connection = {0}'.format(str(self.ldap)))
-                self.app.logger.info('OK, connected to LDAP')
+                self.builogger.debug('LDAP Connection = {0}'.format(str(self.ldap)))
+                self.builogger.info('OK, connected to LDAP')
                 return
 
             raise Exception('Not connected')
         except Exception as e:
-            self.app.logger.error('Could not connect to LDAP: {0}'.format(str(e)))
+            self.builogger.error('Could not connect to LDAP: {0}'.format(str(e)))
             self.server = None
             self.ldap = None
 
@@ -140,22 +140,22 @@ class LdapLoader:
                 query = self.filt.format(self.attr, searchval)
             else:
                 query = '({0}={1})'.format(self.attr, searchval)
-            self.app.logger.info('filter: {0} | base: {1}'.format(query, self.base))
+            self.builogger.info('filter: {0} | base: {1}'.format(query, self.base))
             r = None
             with self.ldap:
-                self.app.logger.debug('LDAP Connection = {0}'.format(str(self.ldap)))
+                self.builogger.debug('LDAP Connection = {0}'.format(str(self.ldap)))
                 self.ldap.search(self.base, query, attributes=['cn', self.attr])
                 r = self.ldap.response
             if not r:
                 raise Exception('no results')
         except Exception as e:
-            self.app.logger.error('Ooops, LDAP lookup failed: {0}'.format(str(e)))
+            self.builogger.error('Ooops, LDAP lookup failed: {0}'.format(str(e)))
             return None
 
         for record in r:
             attrs = record['attributes']
             if self.attr in attrs and searchval in attrs[self.attr]:
-                self.app.logger.info('Found DN: {0}'.format(record['dn']))
+                self.builogger.info('Found DN: {0}'.format(record['dn']))
                 return {'dn': record['dn'], 'cn': attrs['cn'][0]}
 
     def check(self, dn=None, passwd=None):
@@ -172,13 +172,13 @@ class LdapLoader:
         """
         try:
             with Connection(self.server, user='{0}'.format(dn), password=passwd, raise_exceptions=True, auto_bind=self.auto_bind, authentication=SIMPLE) as l:
-                self.app.logger.debug('LDAP Connection = {0}'.format(str(l)))
-                self.app.logger.info('Bound as user: {0}'.format(dn))
+                self.builogger.debug('LDAP Connection = {0}'.format(str(l)))
+                self.builogger.info('Bound as user: {0}'.format(dn))
                 return l.bind()
         except Exception as e:
-            self.app.logger.error('Failed to authenticate user: {0}, {1}'.format(dn, str(e)))
+            self.builogger.error('Failed to authenticate user: {0}, {1}'.format(dn, str(e)))
 
-        self.app.logger.error('Bind as \'{0}\' failed'.format(dn))
+        self.builogger.error('Bind as \'{0}\' failed'.format(dn))
         return False
 
 

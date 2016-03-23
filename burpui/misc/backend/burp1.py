@@ -17,6 +17,7 @@ import shutil
 import subprocess
 import tempfile
 import codecs
+import logging
 
 from pipes import quote
 from six import iteritems
@@ -118,10 +119,8 @@ class Burp(BUIbackend):
         self.server_version = None
         self.app = None
         self.zip64 = False
+        self.logger = logging.getLogger('burp-ui')
         if server:
-            if hasattr(server, 'app'):
-                self.app = server.app
-                self.set_logger(self.app.logger)
             if hasattr(server, 'zip64'):
                 self.zip64 = server.zip64
         self.host = G_BURPHOST
@@ -204,7 +203,7 @@ class Burp(BUIbackend):
                 self.burpconfsrv = confsrv
                 self.tmpdir = tmpdir
 
-        self.parser = Parser(self.app, self.burpconfsrv)
+        self.parser = Parser(self.burpconfsrv)
 
         self.family = Burp._get_inet_family(self.host)
         self._test_burp_server_address(self.host)
@@ -297,6 +296,7 @@ class Burp(BUIbackend):
         """See :func:`burpui.misc.backend.interface.BUIbackend.status`"""
         result = []
         try:
+            self._logger('info', "query: '{}'".format(query.rstrip()))
             qry = b''
             if not query.endswith('\n'):  # pragma: no cover
                 qry += '{0}\n'.format(query).encode('utf-8')
@@ -319,6 +319,7 @@ class Burp(BUIbackend):
                     pass
                 result.append(line)
             fileobj.close()
+            self._logger('debug', '=> {}'.format(result))
             return result
         except socket.error:
             self._logger('error', 'Cannot contact burp server at %s:%s', self.host, self.port)

@@ -6,6 +6,7 @@ import subprocess
 import codecs
 import sys
 import json
+import logging
 
 from six import iteritems
 from select import select
@@ -53,10 +54,8 @@ class Burp(Burp1):
         self.client_version = None
         self.server_version = None
         self.zip64 = False
+        self.logger = logging.getLogger('burp-ui')
         if server:
-            if hasattr(server, 'app'):
-                self.app = server.app
-                self.set_logger(self.app.logger)
             if hasattr(server, 'zip64'):
                 self.zip64 = server.zip64
         self.burpbin = g_burpbin
@@ -122,7 +121,7 @@ class Burp(Burp1):
                         bbin = g_burpbin
 
                     if bbin and (not os.path.isfile(bbin) or not os.access(bbin, os.X_OK)):
-                        self._logger('error', "Ooops, '%s' not found or is not executable", bbin)
+                        self._logger('critical', "Ooops, '%s' not found or is not executable", bbin)
                         # The burp binary is mandatory for this backend
                         raise Exception('This backend *CAN NOT* work without a burp binary')
 
@@ -147,7 +146,7 @@ class Burp(Burp1):
 
         self.client_version = version.replace('burp-', '')
 
-        self.parser = Parser(self.app, self.burpconfsrv)
+        self.parser = Parser(self.burpconfsrv)
 
         self._logger('info', 'burp binary: {}'.format(self.burpbin))
         self._logger('info', 'strip binary: {}'.format(self.stripbin))
@@ -293,6 +292,7 @@ class Burp(Burp1):
     def status(self, query='c:\n', agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.status`"""
         try:
+            self._logger('info', "query: '{}'".format(query.rstrip()))
             if not query.endswith('\n'):
                 query = '{0}\n'.format(query)
             if not self._proc_is_alive():
@@ -305,8 +305,10 @@ class Burp(Burp1):
             js = self._read_proc_stdout()
             if self._is_warning(js):
                 self._logger('warning', js['warning'])
+                self._logger('debug', 'Nothing interesting to return')
                 return None
 
+            self._logger('debug', '=> {}'.format(js))
             return js
         except TimeoutError as e:
             msg = 'Cannot send command: {}'.format(str(e))
@@ -330,6 +332,7 @@ class Burp(Burp1):
         try:
             logs = query['clients'][0]['backups'][0]['logs']['list']
         except KeyError as e:
+            self._logger('warning', 'No logs found')
             return ret
         if 'backup_stats' in logs:
             ret = self._parse_backup_stats(number, client, forward)
@@ -430,8 +433,10 @@ class Burp(Burp1):
         try:
             back = query['clients'][0]['backups'][0]
         except KeyError as e:
+            self._logger('warning', 'No backup found')
             return ret
         if 'backup_stats' not in back['logs']:
+            self._logger('warning', 'No stats found for backup')
             return ret
         stats = None
         try:
@@ -439,7 +444,7 @@ class Burp(Burp1):
         except:
             stats = back['logs']['backup_stats']
         if not stats:
-            return {}
+            return ret
         # server was upgraded but backup comes from an older version
         if 'counters' not in stats:
             return super(Burp, self)._parse_backup_stats(number, client, forward, stats, agent)
@@ -489,6 +494,7 @@ class Burp(Burp1):
         try:
             client = query['clients'][0]
         except KeyError as e:
+            self._logger('warning', 'Client not found')
             return ret
 
         # check the client is currently backing-up
@@ -564,6 +570,7 @@ class Burp(Burp1):
         try:
             return query['clients'][0]['run_status'] in ['running']
         except KeyError as e:
+            self._logger('warning', 'Client not found')
             return False
         return False
 
@@ -637,6 +644,7 @@ class Burp(Burp1):
         try:
             backups = query['clients'][0]['backups']
         except KeyError as e:
+            self._logger('warning', 'Client not found')
             return ret
         for backup in backups:
             back = {}

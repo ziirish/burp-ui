@@ -9,6 +9,11 @@
 """
 from flask_login import UserMixin
 from abc import ABCMeta, abstractmethod
+import logging
+
+
+class BUIloader:
+    builogger = logging.getLogger('burp-ui')
 
 
 class BUIhandler:

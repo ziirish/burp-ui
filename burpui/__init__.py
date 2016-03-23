@@ -13,6 +13,7 @@ jQuery/Bootstrap
 import os
 import sys
 import logging
+from logging import Formatter
 
 if sys.version_info < (3, 0):
     reload(sys)
@@ -85,20 +86,26 @@ def lookup_config(conf=None):
     return ret
 
 
-def init(conf=None, debug=0, logfile=None, gunicorn=True, unittest=False):
+def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debug=False):
     """Initialize the whole application.
 
     :param conf: Configuration file to use
     :type conf: str
 
-    :param debug: Enable verbose output
-    :type debug: int
+    :param verbose: Set the verbosity level
+    :type verbose: int
 
     :param logfile: Store the logs in the given file
     :type logfile: str
 
     :param gunicorn: Enable gunicorn engine instead of flask's default
     :type gunicorn: bool
+
+    :param unittest: Are we running tests (used for test only)
+    :type unittest: bool
+
+    :param debug: Enable debug mode
+    :type debug: bool
 
     :returns: A :class:`burpui.server.BUIServer` object
     """
@@ -108,6 +115,67 @@ def init(conf=None, debug=0, logfile=None, gunicorn=True, unittest=False):
     from .server import BUIServer as BurpUI
     from .routes import view
     from .api import api, apibp
+
+    logger = logging.getLogger('burp-ui')
+
+    # The debug argument used to be a boolean so we keep supporting this format
+    if isinstance(verbose, bool):
+        if verbose:
+            verbose = logging.DEBUG
+        else:
+            verbose = logging.CRITICAL
+    else:
+        levels = [
+            logging.CRITICAL,
+            logging.ERROR,
+            logging.WARNING,
+            logging.INFO,
+            logging.DEBUG
+        ]
+        if verbose >= len(levels):
+            verbose = len(levels) - 1
+        if not verbose:
+            verbose = 0
+        verbose = levels[verbose]
+
+    if logfile:
+        from logging.handlers import RotatingFileHandler
+        handler = RotatingFileHandler(
+            logfile,
+            maxBytes=1024 * 1024 * 100,
+            backupCount=20
+        )
+    else:
+        from logging import StreamHandler
+        handler = StreamHandler()
+
+    if verbose > logging.DEBUG:
+        LOG_FORMAT = ('[%(asctime)s] %(levelname)s in '
+                          '%(module)s.%(funcName)s: %(message)s')
+    else:
+        LOG_FORMAT = (
+            '-' * 80 + '\n' +
+            '%(levelname)s in %(module)s.%(funcName)s ' +
+            '[%(pathname)s:%(lineno)d]:\n' +
+            '%(message)s\n' +
+            '-' * 80
+        )
+
+    handler.setLevel(verbose)
+    handler.setFormatter(Formatter(LOG_FORMAT))
+
+    logger.setLevel(verbose)
+
+    logger.addHandler(handler)
+
+    logger.debug(
+        'conf: {}\n'.format(conf) +
+        'verbose: {}\n'.format(logging.getLevelName(verbose)) +
+        'logfile: {}\n'.format(logfile) +
+        'gunicorn: {}\n'.format(gunicorn) +
+        'debug: {}\n'.format(debug) +
+        'unittest: {}'.format(unittest)
+    )
 
     if not unittest:
         from ._compat import patch_json
@@ -119,6 +187,7 @@ def init(conf=None, debug=0, logfile=None, gunicorn=True, unittest=False):
 
     # We initialize the core
     app = BurpUI()
+    app.enable_logger()
     app.gunicorn = gunicorn
 
     app.config['CFG'] = None
@@ -131,60 +200,20 @@ def init(conf=None, debug=0, logfile=None, gunicorn=True, unittest=False):
         version_id='{}-{}'.format(__version__, __release__)
     )
 
-    # The debug argument used to be a boolean so we keep supporting this format
-    if isinstance(debug, bool):
-        if debug:
-            debug = logging.DEBUG
-        else:
-            debug = logging.NOTSET
-    else:
-        levels = [
-            logging.NOTSET,
-            logging.ERROR,
-            logging.WARNING,
-            logging.INFO,
-            logging.DEBUG
-        ]
-        if debug >= len(levels):
-            debug = len(levels) - 1
-        if not debug:
-            debug = 0
-        debug = levels[debug]
-
-    if debug != logging.NOTSET and not gunicorn:  # pragma: no cover
+    if debug and not gunicorn:  # pragma: no cover
         app.config['DEBUG'] = True and not unittest
         app.config['TESTING'] = True and not unittest
-
-    if logfile:
-        from logging import Formatter
-        from logging.handlers import RotatingFileHandler
-        file_handler = RotatingFileHandler(
-            logfile,
-            maxBytes=1024 * 1024 * 100,
-            backupCount=20
-        )
-        if debug < logging.INFO:
-            LOG_FORMAT = (
-                '-' * 80 + '\n' +
-                '%(levelname)s in %(module)s.%(funcName)s ' +
-                '[%(pathname)s:%(lineno)d]:\n' +
-                '%(message)s\n' +
-                '-' * 80
-            )
-        else:
-            LOG_FORMAT = ('[%(asctime)s] %(levelname)s in '
-                          '%(module)s.%(funcName)s: %(message)s')
-        file_handler.setLevel(debug)
-        file_handler.setFormatter(Formatter(LOG_FORMAT))
-        app.logger.addHandler(file_handler)
 
     # Still need to test conf file here because the init function can be called
     # by gunicorn directly
     app.config['CFG'] = lookup_config(conf)
 
+    logger.info('Using configuration: {}'.format(app.config['CFG']))
+
     app.setup(app.config['CFG'])
 
     if gunicorn:  # pragma: no cover
+        logger.info('Using gunicorn')
         from werkzeug.contrib.fixers import ProxyFix
         if app.storage and app.storage.lower() == 'redis':
             if app.redis:
@@ -197,6 +226,7 @@ def init(conf=None, debug=0, logfile=None, gunicorn=True, unittest=False):
             else:
                 host = 'localhost'
                 port = 6379
+            logger.debug('Using redis {}:{}'.format(host, port))
             try:
                 from redis import Redis
                 from flask_session import Session
@@ -206,7 +236,8 @@ def init(conf=None, debug=0, logfile=None, gunicorn=True, unittest=False):
                 app.config['SESSION_COOKIE_SECURE'] = app.scookie
                 ses = Session()
                 ses.init_app(app)
-            except:
+            except Exception as e:
+                logger.warning('Unable to initialize redis: {}'.format(str(e)))
                 pass
             api.cache.init_app(
                 app,

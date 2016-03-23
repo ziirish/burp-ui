@@ -865,9 +865,9 @@ class Parser(BUIparser):
                                         " </li></ul>",
     }
 
-    def __init__(self, app=None, conf=None):
+    def __init__(self, conf=None):
         """See :func:`burpui.misc.parser.interface.BUIparser.__init__`"""
-        super(Parser, self).__init__(app, conf)
+        super(Parser, self).__init__(conf)
         self._logger('info', 'Parser initialized with: %s', self.conf)
         self.clients = []
         self.clientconfdir = None
