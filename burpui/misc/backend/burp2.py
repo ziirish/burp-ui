@@ -661,7 +661,7 @@ class Burp(Burp1):
             try:
                 back['encrypted'] = log['encrypted']
                 try:
-                    ba['received'] = log['received']
+                    back['received'] = log['received']
                 except KeyError as e:
                     back['received'] = -1
                 try:
@@ -672,7 +672,8 @@ class Burp(Burp1):
                 # override date since the timestamp is odd
                 back['date'] = log['start']
                 ret.append(back)
-            except:
+            except Exception as e:
+                self._logger('warning', 'Unable to parse logs')
                 pass
 
         # Here we need to reverse the array so the backups are sorted by date ASC
@@ -706,7 +707,7 @@ class Burp(Burp1):
             else:
                 data['name'] = entry['name']
             data['mode'] = self._human_st_mode(entry['mode'])
-            if re.match('^(d|l)', t['mode']):
+            if re.match('^(d|l)', data['mode']):
                 data['type'] = 'd'
             else:
                 data['type'] = 'f'
