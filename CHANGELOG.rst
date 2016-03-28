@@ -4,6 +4,11 @@ Changelog
 Current
 -------
 
+- Add support for `Burp labels <https://git.ziirish.me/ziirish/burp-ui/issues/116>`_
+- Improvement: `Better logging system <https://git.ziirish.me/ziirish/burp-ui/issues/118>`_
+- Fix issue `#109 <https://git.ziirish.me/ziirish/burp-ui/issues/109>`_
+- Fix issue `#114 <https://git.ziirish.me/ziirish/burp-ui/issues/114>`_
+- Fix issue `#117 <https://git.ziirish.me/ziirish/burp-ui/issues/117>`_
 - `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/v0.1.0...master>`__
 
 0.1.3 (02/20/2016)
