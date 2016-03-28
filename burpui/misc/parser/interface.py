@@ -19,6 +19,8 @@ class BUIparser(BUIlogging):
     """
     __metaclass__ = ABCMeta
 
+    logger = logging.getLogger('burp-ui')
+
     def __init__(self, conf=None):
         """:func:`burpui.misc.parser.interface.BUIparser.__init__` instanciate
         the parser.
@@ -30,7 +32,6 @@ class BUIparser(BUIlogging):
         :type conf: str
         """
         self.conf = conf
-        self.logger = logging.getLogger('burp-ui')
 
     @abstractmethod
     def read_server_conf(self, conf=None):
