@@ -18,6 +18,28 @@ communication with the burp server(s) for you.
     details `here <http://burp.grke.org/contact.html>`_
 
 
+Compatibility
+-------------
+
++----------------------------+-------+-------+
+|   Burp version \ Backend   |   1   |   2   |
++============================+=======+=======+
+|         < 1.3.48           |       |       |
++----------------------------+-------+-------+
+|     1.3.48 => 1.4.40       |   X   |       |
++----------------------------+-------+-------+
+|     2.0.0 => 2.0.16        |       |       |
++----------------------------+-------+-------+
+| 2.0.18 => 2.0.X protocol 1 |       |   X   |
++----------------------------+-------+-------+
+| 2.0.18 => 2.0.X protocol 2 |       |   X*  |
++----------------------------+-------+-------+
+
+* The protocol 2 is in heavy development Burp side so the support in `Burp-UI`_
+is best effort and all features (such as server-initiated restoration) are not
+available.
+
+
 Known Issues
 ------------
 
@@ -28,22 +50,7 @@ where will find there the current opened issues.
 
 There are also a few issues unrelated to the code itself:
 
-1. SSL issue
-
-My new SSL certificate seem to be unknown on older systems like debian wheezy.
-Thus, you may have some SSL failure while trying to clone my repository.
-In order to fix this error, you can run the following command as root that will
-add my certificate in your trust list:
-
-::
-
-   echo -n | \
-   openssl s_client -showcerts -connect git.ziirish.me:443 \
-   -servername git.ziirish.me 2>/dev/null | \
-   sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' >>/etc/ssl/certs/ca-certificates.crt
-
-
-2. SSH issue
+1. SSH issue
 
 People that would like to clone the repository over SSH will face an
 authentication failure even if they added a valid SSH key in their user
