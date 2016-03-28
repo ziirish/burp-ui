@@ -4,7 +4,6 @@ demo-burp1:
   volumes:
     - /srv/demo/spool/burp1/backup:/var/spool/burp
     - /srv/demo/spool/burp1/tmp:/tmp/bui
-    - /srv/demo/conf/burp1/clients:/etc/burp/clientconfdir
 
 demo-burp2:
   restart: always
@@ -12,7 +11,6 @@ demo-burp2:
   volumes:
     - /srv/demo/spool/burp2/backup:/var/spool/burp
     - /srv/demo/spool/burp2/tmp:/tmp/bui
-    - /srv/demo/conf/burp2/clients:/etc/burp/clientconfdir
 
 demo-redis:
   restart: always
@@ -40,8 +38,6 @@ demo-cli2:
 demo-bui:
   restart: always
   build: docker-burpui/
-  volumes:
-    - /srv/demo/conf/bui:/etc/burp
   ports:
     - 127.0.0.1:5000:5000
   links:

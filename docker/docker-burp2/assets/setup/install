@@ -5,7 +5,7 @@ set -e
 SETUP_DIR="/app/setup"
 CONFIG_DIR="${SETUP_DIR}/config"
 BURP="https://git.ziirish.me/ziirish/burp.git"
-BURP_VERSION="2.0.32"
+BURP_VERSION="2.0.34"
 BURPUI="https://burpui.ziirish.me/builds/burp-ui.dev.tar.gz"
 
 # Install burp
@@ -106,6 +106,9 @@ echo "restore_client = agent" >>/etc/burp/burp-server.conf
 echo "monitor_browse_cache = 1" >>/etc/burp/burp-server.conf
 
 cp ${CONFIG_DIR}/burp-ui/buiagent.cfg /etc/burp/buiagent.cfg
+
+rm -rf /etc/burp/clientconfdir
+cp -r ${CONFIG_DIR}/burp/clientconfdir/ /etc/burp/
 
 mkdir -p /tmp/burp2/CA-client
 chgrp -R burpui /tmp/burp2

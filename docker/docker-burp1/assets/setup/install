@@ -103,6 +103,9 @@ echo "restore_client = agent" >>/etc/burp/burp-server.conf
 
 cp ${CONFIG_DIR}/burp-ui/buiagent.cfg /etc/burp/buiagent.cfg
 
+rm -rf /etc/burp/clientconfdir
+cp -r ${CONFIG_DIR}/burp/clientconfdir/ /etc/burp/
+
 mkdir -p /tmp/burp/{CA,CA-client}
 chgrp -R burpui /tmp/burp
 chmod -R g+w /tmp/burp

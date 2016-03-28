@@ -23,7 +23,6 @@ EXPOSE 10000/tcp
 
 VOLUME ["/srv/demo/spool/burp2/backup:/var/spool/burp"]
 VOLUME ["/srv/demo/spool/burp2/tmp:/tmp/bui"]
-VOLUME ["/srv/demo/conf/burp2/clients:/etc/burp/clientconfdir"]
 
 ENTRYPOINT ["/app/init"]
 CMD ["app:start"]
