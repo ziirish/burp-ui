@@ -16,6 +16,7 @@ class Parser(Burp1):
     boolean_srv = Burp1.boolean_srv + [
         u'acl',
         u'xattr',
+        u'server_can_override_includes',
     ]
     multi_cli = Burp1.multi_cli + [
         u'label',
@@ -29,6 +30,7 @@ class Parser(Burp1):
         u'randomise',
         u'manual_delete',
         u'label',
+        u'server_can_override_includes',
     ]
     placeholders = Burp1.placeholders
     placeholders.update({
@@ -37,11 +39,13 @@ class Parser(Burp1):
         u'randomise': u"max secs",
         u'manual_delete': u"path",
         u'label': u"some informations",
+        u'server_can_override_includes': u"0|1",
     })
     defaults = Burp1.defaults
     defaults.update({
         u'acl': True,
         u'xattr': True,
+        u'server_can_override_includes': True,
         u'randomise': 0,
         u'manual_delete': u'',
         u'label': u'',
@@ -71,9 +75,13 @@ class Parser(Burp1):
                           " Do not specify a path that is not on the same" +
                           " filesystem as the client storage directory.",
         u'label': "You can have multiple labels, and they can be overridden" +
-                   " in the client configuration files in clientconfdir on" +
-                   " the server. They will appear as an array of strings in" +
-                   " the server status monitor JSON output. The idea is to" +
-                   " provide a mechanism for arbitrary values to be passed" +
-                   " to clients of the server status monitor.",
+                  " in the client configuration files in clientconfdir on" +
+                  " the server. They will appear as an array of strings in" +
+                  " the server status monitor JSON output. The idea is to" +
+                  " provide a mechanism for arbitrary values to be passed" +
+                  " to clients of the server status monitor.",
+        u'server_can_override_includes': "To prevent the server from being" +
+                                          " able to override your local" +
+                                          " include/exclude list, set this" +
+                                          " to 0. The default is 1.",
     })
