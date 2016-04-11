@@ -152,6 +152,7 @@ class Parser(BUIparser):
         u'include_ext': u"extension",
         u'include_regex': u"regular expression",
         u'include': u"path",
+        u'include_glob': u"glob",
         u'keep': u"number",
         u'librsync': u"0|1",
         u'lockfile': u"path",
@@ -540,6 +541,13 @@ class Parser(BUIparser):
         u'include': u"Path to include in the backup. You can have multiple" +
                     " include lines. Use forward slashes '/', not" +
                     " backslashes '\\' as path delimiters.",
+        u'include_glob': u"Include paths that match the glob expression. For" +
+                         " example, '/home/*/Documents' will include" +
+                         " '/home/user1/Documents' and" +
+                         " '/home/user2/Documents' if directories 'user1'" +
+                         " and 'user2' exist in '/home'. The Windows" +
+                         " implementation currently limit the expression to" +
+                         " contain only one '*'.",
         u'keep': u"Number of backups to keep. This can be overridden by the" +
                  " client configuration files in clientconfdir on the" +
                  " server. Specify multiple 'keep' entries on separate lines" +
@@ -1278,7 +1286,47 @@ class Parser(BUIparser):
 
     def read_restore(self, name=None):
         """See :func:`burpui.misc.parser.interface.BUIparser.read_restore`"""
-        return
+        self.read_server_conf()
+
+        if not name:
+            raise BUIserverException('Missing name')
+
+        if not self.workingdir:
+            raise BUIserverException('Unable to find burp spool dir')
+
+        found = False
+        for cli in self.clients:
+            if cli['name'] == name:
+                found = True
+                break
+
+        if not found:
+            raise BUIserverException('Client \'{}\' not found'.format(name))
+
+        try:
+            path = os.path.join(self.workingdir, name, 'restore')
+
+            ret = {}
+            with codecs.open(path, 'r', 'utf-8') as restore:
+                for line in restore.readlines():
+                    line = line.rstrip()
+                    (key, val) = re.split(r' *= *', line)
+                    if key == 'regex':
+                        ret[key] = []
+                        for reg in val.split('|'):
+                            reg = reg.replace('^', '', 1)
+                            reg = reg.replace('\\', '')
+                            if reg.endswith('$'):
+                                ret[key].append({'key': reg.rstrip('$'), 'folder': False})
+                            else:
+                                ret[key].append({'key': reg, 'folder': True})
+                    else:
+                        ret[key] = val
+
+            return ret
+        except Exception as e:
+            print str(e)
+            return {}
 
     def server_initiated_restoration(
             self, name=None, backup=None, files=None,
