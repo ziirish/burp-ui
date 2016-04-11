@@ -19,9 +19,9 @@ from flask_cache import Cache
 from importlib import import_module
 from functools import wraps
 
-from .._compat import IS_GUNICORN
+from .._compat import IS_GUNICORN, PY3
 
-if sys.version_info >= (3, 0):  # pragma: no cover
+if PY3:  # pragma: no cover
     basestring = str
 
 EXEMPT_METHODS = set(['OPTIONS'])
@@ -143,17 +143,6 @@ class ApiWrapper(Api):
         self.bui = bui
         self.load_all()
 
-    def abort(self, code=500, message=None, **kwargs):
-        """Override :func:`flask_restplus.Api.abort` in order to raise
-        custom exceptions
-        """
-        if message and not isinstance(message, basestring):
-            try:
-                message = json.dumps(message)  # pragma: no cover
-            except:
-                message = None
-        super(ApiWrapper, self).abort(code, message, **kwargs)  # pragma: no cover
-
     def load_all(self):
         """hack to automatically import api modules"""
         if not self.loaded:
@@ -165,7 +154,8 @@ class ApiWrapper(Api):
                         ext == '.py' and
                         name not in ['__init__', '.', '..']):
                     mod = '.' + name
-                    import_module(mod, 'burpui.api')
+                    # module = import_module(mod, 'burpui.api')
+                    module = import_module(mod, __name__)
 
 
 apibp = Blueprint('api', __name__, url_prefix='/api')

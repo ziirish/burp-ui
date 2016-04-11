@@ -191,6 +191,7 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
     app.gunicorn = gunicorn
 
     app.config['CFG'] = None
+    app.config['BUNDLE_ERRORS'] = True
 
     app.secret_key = ('VpgOXNXAgcO81xFPyWj07ppN6kExNZeCDRShseNzFKV7ZCgmW2/eLn6x'
                       'Slt7pYAVBj12zx2Vv9Kw3Q3jd1266A==')
@@ -212,6 +213,7 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
 
     app.setup(app.config['CFG'])
 
+    # Manage gunicorn special tricks & improvements
     if gunicorn:  # pragma: no cover
         logger.info('Using gunicorn')
         from werkzeug.contrib.fixers import ProxyFix
@@ -258,12 +260,6 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
     else:
         api.cache.init_app(app)
 
-    # Then we load our routes
-    view.init_bui(app)
-    view.__url__ = __url__
-    view.__doc__ = __doc__
-    app.register_blueprint(view)
-
     # We initialize the API
     api.init_bui(app)
     api.version = __version__
@@ -271,6 +267,12 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
     api.__url__ = __url__
     api.__doc__ = __doc__
     app.register_blueprint(apibp)
+
+    # Then we load our routes
+    view.init_bui(app)
+    view.__url__ = __url__
+    view.__doc__ = __doc__
+    app.register_blueprint(view)
 
     # And the login_manager
     app.login_manager = LoginManager()

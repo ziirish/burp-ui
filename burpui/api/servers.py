@@ -24,8 +24,8 @@ class ServersStats(Resource):
     })
 
     @api.cache.cached(timeout=1800, key_prefix=cache_key)
-    @api.marshal_list_with(servers_fields, code=200, description='Success')
-    @api.doc(
+    @ns.marshal_list_with(servers_fields, code=200, description='Success')
+    @ns.doc(
         responses={
             500: 'Internal failure',
         },
@@ -117,8 +117,8 @@ class ServersReport(Resource):
     })
 
     @api.cache.cached(timeout=1800, key_prefix=cache_key)
-    @api.marshal_with(report_fields, code=200, description='Success')
-    @api.doc(
+    @ns.marshal_with(report_fields, code=200, description='Success')
+    @ns.doc(
         responses={
             403: 'Insufficient permissions',
             500: 'Internal failure',

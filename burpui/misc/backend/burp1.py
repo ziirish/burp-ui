@@ -155,7 +155,14 @@ class Burp(BUIbackend):
 
                 if tmpdir and os.path.exists(tmpdir) and not os.path.isdir(tmpdir):
                     self._logger('warning', "'%s' is not a directory", tmpdir)
+                    if tmpdir == G_TMPDIR:
+                        raise IOError("Cannot use '{}' as tmpdir".format(tmpdir))
                     tmpdir = G_TMPDIR
+                    if os.path.exists(tmpdir) and not os.path.isdir(tmpdir):
+                        raise IOError("Cannot use '{}' as tmpdir".format(tmpdir))
+                if tmpdir and not os.path.exists(tmpdir):
+                    os.makedirs(tmpdir)
+
 
                 if confcli and not os.path.isfile(confcli):
                     self._logger('warning', "The file '%s' does not exist", confcli)

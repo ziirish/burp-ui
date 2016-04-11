@@ -42,12 +42,13 @@ class Restore(Resource):
     - ``pass``: password to use for encrypted backups
     """
     parser = api.parser()
-    parser.add_argument('pass', type=str, help='Password to use for encrypted backups', location='form', nullable=True)
-    parser.add_argument('format', type=str, required=True, help='Returning archive format', location='form', choices=('zip', 'tar.gz', 'tar.bz2'), default='zip', nullable=False)
+    parser.add_argument('pass', help='Password to use for encrypted backups', location='form', nullable=True)
+    parser.add_argument('format', required=True, help='Returning archive format', location='form', choices=('zip', 'tar.gz', 'tar.bz2'), default='zip', nullable=False)
     parser.add_argument('strip', type=int, help='Number of elements to strip in the path', default=0, location='form', nullable=True)
-    parser.add_argument('list', type=str, required=True, help='List of files/directories to restore (example: \'{"restore":[{"folder":true,"key":"/etc"}]}\')', location='form', nullable=False)
+    parser.add_argument('list', required=True, help='List of files/directories to restore (example: \'{"restore":[{"folder":true,"key":"/etc"}]}\')', location='form', nullable=False)
 
-    @api.doc(
+    @ns.expect(parser)
+    @ns.doc(
         params={
             'server': 'Which server to collect data from when in multi-agent mode',
             'name': 'Client name',
@@ -59,7 +60,6 @@ class Restore(Resource):
             403: 'Insufficient permissions',
             500: 'Internal failure',
         },
-        parser=parser
     )
     def post(self, server=None, name=None, backup=None):
         """Performs an online restoration
@@ -86,14 +86,14 @@ class Restore(Resource):
         resp = None
         # Check params
         if not l or not name or not backup:
-            api.abort(400, 'missing arguments')
+            self.abort(400, 'missing arguments')
         # Manage ACL
         if (api.bui.acl and
                 (not api.bui.acl.is_client_allowed(current_user.get_id(),
                                                    name,
                                                    server) and not
                  api.bui.acl.is_admin(current_user.get_id()))):
-            api.abort(403, 'You are not allowed to perform a restoration for this client')
+            self.abort(403, 'You are not allowed to perform a restoration for this client')
         if server:
             filename = 'restoration_%d_%s_on_%s_at_%s.%s' % (
                 backup,
@@ -113,7 +113,7 @@ class Restore(Resource):
             if not archive:
                 if err:
                     return make_response(err, 500)
-                api.abort(500)
+                self.abort(500)
             try:
                 # Trick to delete the file while sending it to the client.
                 # First, we open the file in reading mode so that a file handler
@@ -139,7 +139,7 @@ class Restore(Resource):
                 resp.set_cookie('fileDownload', 'true')
             except Exception as e:
                 api.bui.cli._logger('error', str(e))
-                api.abort(500, str(e))
+                self.abort(500, str(e))
         else:
             # Multi-agent mode
             socket = None
@@ -203,11 +203,11 @@ class Restore(Resource):
                 raise e
             except Exception as e:
                 api.bui.cli._logger('error', str(e))
-                api.abort(500, str(e))
+                self.abort(500, str(e))
         return resp
 
 
-@ns.route('/sserver-restore/<name>/<int:backup>',
+@ns.route('/server-restore/<name>/<int:backup>',
           '/<server>/server-restore/<name>/<int:backup>',
           endpoint='server_restore')
 class ServerRestore(Resource):
@@ -224,13 +224,14 @@ class ServerRestore(Resource):
     - ``restoreto-sc``: restore files on an other client
     """
     parser = api.parser()
-    parser.add_argument('list-sc', type=str, required=True, help='List of files/directories to restore (example: \'{"restore":[{"folder":true,"key":"/etc"}]}\')', location='form', nullable=False)
+    parser.add_argument('list-sc', required=True, help='List of files/directories to restore (example: \'{"restore":[{"folder":true,"key":"/etc"}]}\')', location='form', nullable=False)
     parser.add_argument('strip-sc', type=int, help='Number of elements to strip in the path', default=0, location='form', nullable=True)
-    parser.add_argument('prefix-sc', type=str, help='Prefix to the restore path', location='form', nullable=True)
+    parser.add_argument('prefix-sc', help='Prefix to the restore path', location='form', nullable=True)
     parser.add_argument('force-sc', type=boolean, help='Whether to overwrite existing files', default=False, location='form', nullable=True)
-    parser.add_argument('restoreto-sc', type=str, help='Restore files on an other client', location='form', nullable=True)
+    parser.add_argument('restoreto-sc', help='Restore files on an other client', location='form', nullable=True)
 
-    @api.doc(
+    @ns.expect(parser)
+    @ns.doc(
         params={
             'server': 'Which server to collect data from when in multi-agent mode',
             'name': 'Client name',
@@ -242,7 +243,6 @@ class ServerRestore(Resource):
             403: 'Insufficient permissions',
             500: 'Internal failure',
         },
-        parser=parser
     )
     def put(self, server=None, name=None, backup=None):
         """Schedule a server-initiated restoration
@@ -269,16 +269,16 @@ class ServerRestore(Resource):
         j = []
         # Check params
         if not l or not name or not backup:
-            api.abort(400, 'Missing options')
+            self.abort(400, 'Missing options')
         # Manage ACL
         if (api.bui.acl and
                 (not api.bui.acl.is_client_allowed(current_user.get_id(),
                                                    name,
                                                    server) and not
                  api.bui.acl.is_admin(current_user.get_id()))):
-            api.abort(403, 'You are not allowed to perform a restoration for this client')
+            self.abort(403, 'You are not allowed to perform a restoration for this client')
         try:
             j = api.bui.cli.server_restore(name, backup, l, s, f, p, to, server)
             return {'notif': j}, 201
         except BUIserverException as e:
-            api.abort(500, str(e))
+            self.abort(500, str(e))

@@ -7,7 +7,6 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
-# This is a submodule we can also use "from ..api import api"
 from . import api, cache_key
 from .custom import fields, Resource
 from ..exceptions import BUIserverException
@@ -33,14 +32,14 @@ class RunningClients(Resource):
     in multi-agent mode.
     """
     parser = api.parser()
-    parser.add_argument('serverName', type=str, help='Which server to collect data from when in multi-agent mode')
+    parser.add_argument('serverName', help='Which server to collect data from when in multi-agent mode')
 
-    @api.doc(
+    @ns.expect(parser)
+    @ns.doc(
         params={
             'server': 'Which server to collect data from when in multi-agent mode',
             'client': 'Client name',
         },
-        parser=parser
     )
     def get(self, client=None, server=None):
         """Returns a list of clients currently running a backup
@@ -110,8 +109,8 @@ class RunningBackup(Resource):
         'running': fields.Boolean(required=True, description='Is there a backup running right now'),
     })
 
-    @api.marshal_with(running_fields, code=200, description='Success')
-    @api.doc(
+    @ns.marshal_with(running_fields, code=200, description='Success')
+    @ns.doc(
         params={
             'server': 'Which server to collect data from when in multi-agent mode',
         }
@@ -174,7 +173,7 @@ class ClientsReport(Resource):
     in multi-agent mode.
     """
     parser = api.parser()
-    parser.add_argument('serverName', type=str, help='Which server to collect data from when in multi-agent mode')
+    parser.add_argument('serverName', help='Which server to collect data from when in multi-agent mode')
     stats_fields = api.model('ClientsStats', {
         'total': fields.Integer(required=True, description='Number of files', default=0),
         'totsize': fields.Integer(required=True, description='Total size occupied by all the backups of this client', default=0),
@@ -194,8 +193,9 @@ class ClientsReport(Resource):
     })
 
     @api.cache.cached(timeout=1800, key_prefix=cache_key)
-    @api.marshal_with(report_fields, code=200, description='Success')
-    @api.doc(
+    @ns.marshal_with(report_fields, code=200, description='Success')
+    @ns.expect(parser)
+    @ns.doc(
         params={
             'server': 'Which server to collect data from when in multi-agent mode',
         },
@@ -203,7 +203,6 @@ class ClientsReport(Resource):
             403: 'Insufficient permissions',
             500: 'Internal failure',
         },
-        parser=parser
     )
     def get(self, server=None):
         """Returns a global report about all the clients of a given server
@@ -261,7 +260,7 @@ class ClientsReport(Resource):
                 (not api.bui.acl.is_admin(current_user.get_id()) and
                  server not in
                  api.bui.acl.servers(current_user.get_id()))):
-            api.abort(403, 'Sorry, you don\'t have any rights on this server')
+            self.abort(403, 'Sorry, you don\'t have any rights on this server')
         clients = []
         if (api.bui.acl and not
                 api.bui.acl.is_admin(current_user.get_id())):
@@ -270,7 +269,7 @@ class ClientsReport(Resource):
             try:
                 clients = api.bui.cli.get_all_clients(agent=server)
             except BUIserverException as e:
-                api.abort(500, str(e))
+                self.abort(500, str(e))
         j = api.bui.cli.get_clients_report(clients, server)
         return j
 
@@ -288,7 +287,7 @@ class ClientsStats(Resource):
     in multi-agent mode.
     """
     parser = api.parser()
-    parser.add_argument('serverName', type=str, help='Which server to collect data from when in multi-agent mode')
+    parser.add_argument('serverName', help='Which server to collect data from when in multi-agent mode')
     client_fields = api.model('ClientsStatsSingle', {
         'last': fields.DateTime(required=True, dt_format='iso8601', description='Date of last backup'),
         'name': fields.String(required=True, description='Client name'),
@@ -298,8 +297,9 @@ class ClientsStats(Resource):
     })
 
     @api.cache.cached(timeout=1800, key_prefix=cache_key)
-    @api.marshal_list_with(client_fields, code=200, description='Success')
-    @api.doc(
+    @ns.marshal_list_with(client_fields, code=200, description='Success')
+    @ns.expect(parser)
+    @ns.doc(
         params={
             'server': 'Which server to collect data from when in multi-agent mode',
         },
@@ -307,7 +307,6 @@ class ClientsStats(Resource):
             403: 'Insufficient permissions',
             500: 'Internal failure',
         },
-        parser=parser
     )
     def get(self, server=None):
         """Returns a list of clients with their states
@@ -353,11 +352,11 @@ class ClientsStats(Resource):
                     (not api.bui.acl.is_admin(current_user.get_id()) and
                      server not in
                      api.bui.acl.servers(current_user.get_id()))):
-                api.abort(403, 'Sorry, you don\'t have any rights on this server')
+                self.abort(403, 'Sorry, you don\'t have any rights on this server')
             j = api.bui.cli.get_all_clients(agent=server)
             if (api.bui.acl and not
                     api.bui.acl.is_admin(current_user.get_id())):
                 j = [x for x in j if x['name'] in api.bui.acl.clients(current_user.get_id(), server)]
         except BUIserverException as e:
-            api.abort(500, str(e))
+            self.abort(500, str(e))
         return j

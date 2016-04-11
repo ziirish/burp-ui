@@ -65,16 +65,17 @@ class Counters(Resource):
     are working on.
     """
     parser = api.parser()
-    parser.add_argument('serverName', type=str, help='Which server to collect data from when in multi-agent mode')
-    parser.add_argument('clientName', type=str, help='Client name')
+    parser.add_argument('serverName', help='Which server to collect data from when in multi-agent mode')
+    parser.add_argument('clientName', help='Client name')
     monitor_fields = api.model('Monitor', {
         'client': fields.String(required=True, description='Client name'),
         'agent': fields.String(description='Server (agent) name'),
         'counters': fields.Nested(counters_fields, description='Various statistics about the running backup'),
     })
 
-    @api.marshal_with(monitor_fields, code=200, description='Success')
-    @api.doc(
+    @ns.marshal_with(monitor_fields, code=200, description='Success')
+    @ns.expect(parser)
+    @ns.doc(
         params={
             'server': 'Which server to collect data from when in multi-agent mode',
             'client': 'Client name',
@@ -84,7 +85,6 @@ class Counters(Resource):
             403: 'Insufficient permissions',
             404: 'Client not found in the running clients list',
         },
-        parser=parser
     )
     def get(self, server=None, client=None):
         """Returns counters for a given client
@@ -101,16 +101,16 @@ class Counters(Resource):
         client = client or args['clientName']
         # Check params
         if not client:
-            api.abort(400, 'No client name provided')
+            self.abort(400, 'No client name provided')
         # Manage ACL
         if (api.bui.acl and
             (not api.bui.acl.is_client_allowed(self.username, client, server) or
              not self.is_admin)):
-            api.abort(403)
+            self.abort(403)
         api.bui.cli.is_one_backup_running()
         if isinstance(api.bui.cli.running, dict):
             if server and client not in api.bui.cli.running[server]:
-                api.abort(404, "'{}' not found in the list of running clients for '{}'".format(client, server))
+                self.abort(404, "'{}' not found in the list of running clients for '{}'".format(client, server))
             else:
                 found = False
                 for (k, a) in iteritems(api.bui.cli.running):
@@ -119,7 +119,7 @@ class Counters(Resource):
                     api.bort(404, "'{}' not found in running clients".format(client))
         else:
             if client not in api.bui.cli.running:
-                api.abort(404, "'{}' not found in running clients".format(client))
+                self.abort(404, "'{}' not found in running clients".format(client))
         try:
             counters = api.bui.cli.get_counters(client, agent=server)
         except BUIserverException:
@@ -144,19 +144,19 @@ class Live(Resource):
     in multi-agent mode.
     """
     parser = api.parser()
-    parser.add_argument('serverName', type=str, help='Which server to collect data from when in multi-agent mode')
+    parser.add_argument('serverName', help='Which server to collect data from when in multi-agent mode')
     live_fields = api.model('Live', {
         'client': fields.String(required=True, description='Client name'),
         'agent': fields.String(description='Server (agent) name'),
         'counters': fields.Nested(counters_fields, description='Various statistics about the running backup'),
     })
 
-    @api.marshal_list_with(live_fields, code=200, description='Success')
-    @api.doc(
+    @ns.marshal_list_with(live_fields, code=200, description='Success')
+    @ns.expect(parser)
+    @ns.doc(
         params={
             'server': 'Which server to collect data from when in multi-agent mode',
         },
-        parser=parser
     )
     def get(self, server=None):
         """Returns a list of clients that are currently running a backup
@@ -204,7 +204,7 @@ class Live(Resource):
                 not self.is_admin and
                 server and
                 server not in api.bui.acl.servers(self.username)):
-            api.abort(403, 'You are not allowed to view stats of this server')
+            self.abort(403, 'You are not allowed to view stats of this server')
         if server:
             l = api.bui.cli.is_one_backup_running(server)[server]
             # ACL
@@ -252,14 +252,14 @@ class Alert(Resource):
     This resource is part of the :mod:`burpui.api.misc` module.
     """
     parser = api.parser()
-    parser.add_argument('message', required=True, help='Message to display', type=str, location='form')
-    parser.add_argument('level', help='Alert level', location='form', type=str, choices=('danger', 'warning', 'info', 'success'), default='danger')
+    parser.add_argument('message', required=True, help='Message to display', location='form')
+    parser.add_argument('level', help='Alert level', location='form', choices=('danger', 'warning', 'info', 'success'), default='danger')
 
-    @api.doc(
+    @ns.expect(parser)
+    @ns.doc(
         responses={
             200: 'Success',
         },
-        parser=parser
     )
     def post(self):
         """Propagate a message to the next screen (or whatever reads the session)"""
@@ -282,7 +282,7 @@ class About(Resource):
     """
     api.LOGIN_NOT_REQUIRED.append('about')
     parser = api.parser()
-    parser.add_argument('serverName', type=str, help='Which server to collect data from when in multi-agent mode')
+    parser.add_argument('serverName', help='Which server to collect data from when in multi-agent mode')
     burp_fields = api.model('Burp', {
         'name': fields.String(required=True, description='Instance name', default='Burp{}'.format(api.bui.vers)),
         'client': fields.String(description='Burp client version'),
@@ -296,12 +296,12 @@ class About(Resource):
     })
 
     @api.cache.cached(timeout=3600, key_prefix=cache_key)
-    @api.marshal_with(about_fields, code=200, description='Success')
-    @api.doc(
+    @ns.marshal_with(about_fields, code=200, description='Success')
+    @ns.expect(parser)
+    @ns.doc(
         params={
             'server': 'Which server to collect data from when in multi-agent mode',
         },
-        parser=parser
     )
     def get(self, server=None):
         """Returns various informations about Burp-UI"""
@@ -381,8 +381,8 @@ class History(Resource):
 
     """
     parser = api.parser()
-    parser.add_argument('serverName', type=str, help='Which server to collect data from when in multi-agent mode')
-    parser.add_argument('clientName', type=str, help='Which client to collect data from')
+    parser.add_argument('serverName', help='Which server to collect data from when in multi-agent mode')
+    parser.add_argument('clientName', help='Which client to collect data from')
     event_fields = api.model('Event', {
         'title': fields.String(required=True, description='Event name'),
         'start': fields.DateTime(dt_format='iso8601', description='Start time of the event', attribute='date'),
@@ -399,8 +399,9 @@ class History(Resource):
     })
 
     @api.cache.cached(timeout=1800, key_prefix=cache_key)
-    @api.marshal_list_with(history_fields, code=200, description='Success')
-    @api.doc(
+    @ns.marshal_list_with(history_fields, code=200, description='Success')
+    @ns.expect(parser)
+    @ns.doc(
         params={
             'server': 'Which server to collect data from when in multi-agent mode',
             'client': 'Client name',
@@ -408,7 +409,6 @@ class History(Resource):
         responses={
             200: 'Success',
         },
-        parser=parser
     )
     def get(self, client=None, server=None):
         """Returns a list of calendars describing the backups that have been
@@ -455,11 +455,11 @@ class History(Resource):
 
         if (server and api.bui.acl and not self.is_admin and
                 server not in api.bui.acl.servers(self.username)):
-            api.abort(403, "You are not allowed to view this server infos")
+            self.abort(403, "You are not allowed to view this server infos")
 
         if (client and api.bui.acl and not self.is_admin and not
                 api.bui.acl.is_client_allowed(self.username, client, server)):
-            api.abort(403, "You are not allowed to view this client infos")
+            self.abort(403, "You are not allowed to view this client infos")
 
         if client:
             (color, text) = self.gen_colors(client, server)

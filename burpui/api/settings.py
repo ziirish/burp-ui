@@ -171,7 +171,7 @@ class ServerSettings(Resource):
         # Only the admin can edit the configuration
         if (api.bui.acl and not
                 api.bui.acl.is_admin(current_user.get_id())):
-            api.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
+            self.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
 
         try:
             conf = unquote(conf)
@@ -214,7 +214,7 @@ class ClientSettings(Resource):
         # Only the admin can edit the configuration
         if (api.bui.acl and not
                 api.bui.acl.is_admin(current_user.get_id())):
-            api.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
+            self.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
 
         try:
             conf = unquote(conf)
@@ -237,21 +237,21 @@ class ClientSettings(Resource):
           endpoint='new_client')
 class NewClient(Resource):
     parser = api.parser()
-    parser.add_argument('newclient', type=str, required=True, help="No 'newclient' provided")
+    parser.add_argument('newclient', required=True, help="No 'newclient' provided")
 
     def put(self, server=None):
         # Only the admin can edit the configuration
         if (api.bui.acl and not
                 api.bui.acl.is_admin(current_user.get_id())):
-            api.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
+            self.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
 
         newclient = self.parser.parse_args()['newclient']
         if not newclient:
-            api.abort(400, 'No client name provided')
+            self.abort(400, 'No client name provided')
         clients = api.bui.cli.clients_list(server)
         for cl in clients:
             if cl['name'] == newclient:
-                api.abort(409, "Client '{}' already exists".format(newclient))
+                self.abort(409, "Client '{}' already exists".format(newclient))
         # clientconfdir = api.bui.cli.get_parser_attr('clientconfdir', server)
         # if not clientconfdir:
         #    flash('Could not proceed, no \'clientconfdir\' find', 'warning')
@@ -274,18 +274,18 @@ class NewClient(Resource):
 class PathExpander(Resource):
 
     parser = api.parser()
-    parser.add_argument('path', type=str, required=True, help="No 'path' provided")
+    parser.add_argument('path', required=True, help="No 'path' provided")
 
     def get(self, server=None, client=None):
         # Only the admin can edit the configuration
         if (api.bui.acl and not
                 api.bui.acl.is_admin(current_user.get_id())):
-            api.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
+            self.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
 
         path = self.parser.parse_args()['path']
         paths = api.bui.cli.expand_path(path, client, server)
         if not paths:
-            api.abort(500, 'Path not found')
+            self.abort(500, 'Path not found')
         return {'result': paths}
 
 
@@ -300,7 +300,7 @@ class DeleteClient(Resource):
         # Only the admin can edit the configuration
         if (api.bui.acl and not
                 api.bui.acl.is_admin(current_user.get_id())):
-            api.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
+            self.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
 
         # clear the cache when we remove a client
         api.cache.clear()

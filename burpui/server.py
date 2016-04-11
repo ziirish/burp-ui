@@ -122,8 +122,7 @@ class BUIServer(Flask):
                         raise e
                     self.acl_engine = self._safe_config_get(config.get, 'acl')
                 else:
-                    # I know that's ugly, but hey, I need it!
-                    self.login_manager._login_disabled = True
+                    self.config['LOGIN_DISABLED'] = True
                     # No login => no ACL
                     self.acl_engine = 'none'
                     self.auth = 'none'
