@@ -7,11 +7,13 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
-# This is a submodule we can also use "from ..api import api"
+import os
+
 from . import api, cache_key
 from .custom import fields, Resource
 from ..exceptions import BUIserverException
 from flask_login import current_user
+from flask_restplus.inputs import boolean
 
 ns = api.namespace('client', 'Client methods')
 
@@ -31,8 +33,10 @@ class ClientTree(Resource):
     are working on.
     """
     parser = api.parser()
-    parser.add_argument('serverName', type=str, help='Which server to collect data from when in multi-agent mode')
-    parser.add_argument('root', type=str, help='Root path to expand')
+    parser.add_argument('serverName', help='Which server to collect data from when in multi-agent mode')
+    parser.add_argument('root', help='Root path to expand. You may specify several of them', action='append')
+    parser.add_argument('recursive', type=boolean, help='Returns the whole tree instead of just the sub-tree', nullable=True, required=False, default=False)
+    parser.add_argument('selected', type=boolean, help='Make the returned path selected at load time. Only works if \'recursive\' is True', nullable=True, required=False, default=False)
     node_fields = api.model('ClientTree', {
         'date': fields.DateTime(required=True, dt_format='iso8601', description='Human representation of the backup date'),
         'gid': fields.Integer(required=True, description='gid owner of the node'),
@@ -43,22 +47,22 @@ class ClientTree(Resource):
         'size': fields.String(required=True, description='Human readable size. Example: "12.0KiB"'),
         'type': fields.String(required=True, description='Node type. Example: "d"'),
         'uid': fields.Integer(required=True, description='uid owner of the node'),
+        'selected': fields.Boolean(required=False, default=False, description='Is path selected'),
     })
 
     @api.cache.cached(timeout=3600, key_prefix=cache_key)
-    @api.marshal_list_with(node_fields, code=200, description='Success')
-    @api.doc(
+    @ns.marshal_list_with(node_fields, code=200, description='Success')
+    @ns.expect(parser)
+    @ns.doc(
         params={
             'server': 'Which server to collect data from when in multi-agent mode',
             'name': 'Client name',
             'backup': 'Backup number',
-            'root': 'Root path to expand',
         },
         responses={
             '403': 'Insufficient permissions',
             '500': 'Internal failure',
         },
-        parser=parser
     )
     def get(self, server=None, name=None, backup=None):
         """Returns a list of 'nodes' under a given path
@@ -102,17 +106,59 @@ class ClientTree(Resource):
         j = []
         if not name or not backup:  # pargma: no cover
             return j
-        root = args['root']
+        root_list = sorted(args['root'])
         try:
-            if (api.bui.acl and
-                    (not api.bui.acl.is_admin(current_user.get_id()) and not
-                     api.bui.acl.is_client_allowed(current_user.get_id(),
-                                                   name,
-                                                   server))):
-                api.abort(403, 'Sorry, you are not allowed to view this client')
-            j = api.bui.cli.get_tree(name, backup, root, agent=server)
+            def uniquify(entries):
+                seen = set()
+                seen_add = seen.add
+                new_entries = []
+                for entry in entries:
+                    conv = tuple(entry.items())
+                    if conv not in seen:
+                        seen_add(conv)
+                        new_entries.append(entry)
+                return new_entries
+
+            for root in root_list:
+                if (api.bui.acl and
+                        (not api.bui.acl.is_admin(current_user.get_id()) and not
+                         api.bui.acl.is_client_allowed(current_user.get_id(),
+                                                       name,
+                                                       server))):
+                    self.abort(403, 'Sorry, you are not allowed to view this client')
+                if args['recursive']:
+                    path = ''
+                    if not root or root == '/':
+                        j = api.bui.cli.get_tree(name, backup, root, agent=server)
+                        if args['selected']:
+                            for entry in j:
+                                if not entry['parent']:
+                                    entry['selected'] = True
+                                    break
+                    else:
+                        # fetch the root first
+                        j = api.bui.cli.get_tree(name, backup, agent=None)
+                        root = root.rstrip('/')
+                        to_select = root.rsplit('/', 1)
+                        paths = root.split('/')
+                        for sub in paths:
+                            path = os.path.join(path, sub)
+                            if not path:
+                                path = '/'
+                            if path == to_select[0]:
+                                temp = api.bui.cli.get_tree(name, backup, path, agent=server)
+                                for entry in temp:
+                                    if entry['name'] == to_select[1]:
+                                        entry['selected'] = args['selected']
+                                        break
+                            else:
+                                temp = api.bui.cli.get_tree(name, backup, path, agent=server)
+                            j += temp
+                else:
+                    j = api.bui.cli.get_tree(name, backup, root, agent=server)
+            j = uniquify(j)
         except BUIserverException as e:
-            api.abort(500, str(e))
+            self.abort(500, str(e))
         return j
 
 
@@ -131,7 +177,7 @@ class ClientReport(Resource):
     in multi-agent mode.
     """
     parser = api.parser()
-    parser.add_argument('serverName', type=str, help='Which server to collect data from when in multi-agent mode')
+    parser.add_argument('serverName', help='Which server to collect data from when in multi-agent mode')
     report_tpl_fields = api.model('ClientReportTpl', {
         'changed': fields.Integer(required=True, description='Number of changed files', default=0),
         'deleted': fields.Integer(required=True, description='Number of deleted files', default=0),
@@ -165,8 +211,9 @@ class ClientReport(Resource):
     })
 
     @api.cache.cached(timeout=1800, key_prefix=cache_key)
-    @api.marshal_with(report_fields, code=200, description='Success')
-    @api.doc(
+    @ns.marshal_with(report_fields, code=200, description='Success')
+    @ns.expect(parser)
+    @ns.doc(
         params={
             'server': 'Which server to collect data from when in multi-agent mode',
             'name': 'Client name',
@@ -176,7 +223,6 @@ class ClientReport(Resource):
             '403': 'Insufficient permissions',
             '500': 'Internal failure',
         },
-        parser=parser
     )
     def get(self, server=None, name=None, backup=None):
         """Returns a global report of a given backup/client
@@ -328,22 +374,22 @@ class ClientReport(Resource):
         j = []
         if not name:
             err = [[1, 'No client defined']]
-            api.abort(400, err)
+            self.abort(400, err)
         if (api.bui.acl and not
                 api.bui.acl.is_client_allowed(current_user.get_id(),
                                               name,
                                               server)):
-            api.abort(403, 'You don\'t have rights to view this client report')
+            self.abort(403, 'You don\'t have rights to view this client report')
         if backup:
             try:
                 j = api.bui.cli.get_backup_logs(backup, name, agent=server)
             except BUIserverException as e:
-                api.abort(500, str(e))
+                self.abort(500, str(e))
         else:
             try:
                 cl = api.bui.cli.get_client(name, agent=server)
             except BUIserverException as e:
-                api.abort(500, str(e))
+                self.abort(500, str(e))
             err = []
             for c in cl:
                 try:
@@ -353,7 +399,7 @@ class ClientReport(Resource):
                     if temp not in err:
                         err.append(temp)
             if err:
-                api.abort(500, err)
+                self.abort(500, err)
         return j
 
 
@@ -370,7 +416,7 @@ class ClientStats(Resource):
     in multi-agent mode.
     """
     parser = api.parser()
-    parser.add_argument('serverName', type=str, help='Which server to collect data from when in multi-agent mode')
+    parser.add_argument('serverName', help='Which server to collect data from when in multi-agent mode')
     client_fields = api.model('ClientStats', {
         'number': fields.Integer(required=True, description='Backup number'),
         'received': fields.Integer(required=True, description='Bytes received'),
@@ -381,8 +427,9 @@ class ClientStats(Resource):
     })
 
     @api.cache.cached(timeout=1800, key_prefix=cache_key)
-    @api.marshal_list_with(client_fields, code=200, description='Success')
-    @api.doc(
+    @ns.marshal_list_with(client_fields, code=200, description='Success')
+    @ns.expect(parser)
+    @ns.doc(
         params={
             'server': 'Which server to collect data from when in multi-agent mode',
             'name': 'Client name',
@@ -391,7 +438,6 @@ class ClientStats(Resource):
             '403': 'Insufficient permissions',
             '500': 'Internal failure',
         },
-        parser=parser
     )
     def get(self, server=None, name=None):
         """Returns a list of backups for a given client
@@ -430,8 +476,8 @@ class ClientStats(Resource):
                     not api.bui.acl.is_client_allowed(current_user.get_id(),
                                                       name,
                                                       server))):
-                api.abort(403, 'Sorry, you cannot access this client')
+                self.abort(403, 'Sorry, you cannot access this client')
             j = api.bui.cli.get_client(name, agent=server)
         except BUIserverException as e:
-            api.abort(500, str(e))
+            self.abort(500, str(e))
         return j

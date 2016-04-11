@@ -52,11 +52,11 @@
 		},
 		source: function() { 
 			r = [];
-			$.getJSON('{{ url_for("api.client_tree", name=cname, backup=nbackup, server=server) }}', function(data) {
+			$.getJSON('{{ url_for("api.client_tree", name=cname, backup=nbackup, server=server) }}?root=/opt/scripts&recursive=true&selected=true', function(data) {
 				$.each(data, function(j, c) {
 					l = (c.type === "d");
 					f = (c.type === "d");
-					s = {title: c.name, key: c.name, lazy: l, folder: f, uid: c.uid, gid: c.gid, date: c.date, mode: c.mode, size: c.size, inodes: c.inodes};
+					s = {title: c.name, key: c.parent+c.name, lazy: l, folder: f, uid: c.uid, gid: c.gid, date: c.date, mode: c.mode, size: c.size, inodes: c.inodes, selected: c.selected};
 					r.push(s);
 				});
 			})
@@ -77,7 +77,7 @@
 				$.each(data, function(j, c) {
 					l = (c.type === "d");
 					f = (c.type === "d");
-					s = {title: c.name, key: c.parent+c.name, lazy: l, folder: f, uid: c.uid, gid: c.gid, date: c.date, mode: c.mode, size: c.size, inodes: c.inodes};
+					s = {title: c.name, key: c.parent+c.name, lazy: l, folder: f, uid: c.uid, gid: c.gid, date: c.date, mode: c.mode, size: c.size, inodes: c.inodes, selected: c.selected};
 					r.push(s);
 				});
 			})
