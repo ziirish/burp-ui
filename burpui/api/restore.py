@@ -16,8 +16,8 @@ from time import gmtime, strftime, time
 # This is a submodule we can also use "from ..api import api"
 from . import api
 from .custom import Resource
+from .custom.inputs import boolean
 from ..exceptions import BUIserverException
-from flask_restplus.inputs import boolean
 from flask_login import current_user
 from flask import Response, send_file, make_response, after_this_request
 from werkzeug.datastructures import Headers
