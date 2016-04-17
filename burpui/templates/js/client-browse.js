@@ -12,7 +12,7 @@
 	 * ]
 	 * This JSON is then parsed into another one to initialize our tree.
 	 * Each 'directory' is expandable.
-	 * A new JSON is returned for each one of then on-demand.
+	 * A new JSON is returned for each one of them on-demand.
 	 * JSON output:
 	 * [
 	 *   {
@@ -27,6 +27,8 @@
 	 *   }
 	 * ]
 	 */
+	var fixNeeded = false;
+
 	$("#tree").fancytree({
 		checkbox: true,
 		selectMode: 3,
@@ -38,6 +40,8 @@
 				checkbox: "glyphicon glyphicon-unchecked",
 				checkboxSelected: "glyphicon glyphicon-check",
 				checkboxUnknown: "glyphicon glyphicon-share",
+				dragHelper: "glyphicon glyphicon-play",
+				dropMarker: "glyphicon glyphicon-arrow-right",
 				error: "glyphicon glyphicon-warning-sign",
 				expanderClosed: "glyphicon glyphicon-plus-sign",
 				expanderLazy: "glyphicon glyphicon-plus-sign",
@@ -46,19 +50,14 @@
 				// expanderOpen: "glyphicon glyphicon-collapse-down",
 				folder: "glyphicon glyphicon-folder-close",
 				folderOpen: "glyphicon glyphicon-folder-open",
-				loading: "icon-refresh-animate glyphicon glyphicon-refresh"
-				// loading: "icon-spinner icon-spin"
+				loading: "glyphicon glyphicon-refresh glyphicon-spin"
 			}
 		},
 		source: function() { 
 			r = [];
-			$.getJSON('{{ url_for("api.client_tree", name=cname, backup=nbackup, server=server) }}?root=/opt/scripts&recursive=true&selected=true', function(data) {
-				$.each(data, function(j, c) {
-					l = (c.type === "d");
-					f = (c.type === "d");
-					s = {title: c.name, key: c.parent+c.name, lazy: l, folder: f, uid: c.uid, gid: c.gid, date: c.date, mode: c.mode, size: c.size, inodes: c.inodes, selected: c.selected};
-					r.push(s);
-				});
+			//$.getJSON('{{ url_for("api.client_tree", name=cname, backup=nbackup, server=server) }}?root=/opt&recursive=true&selected=true', function(data) {
+			$.getJSON('{{ url_for("api.client_tree", name=cname, backup=nbackup, server=server) }}', function(data) {
+				r = data;
 			})
 			.fail(myFail);
 			$("#waiting-container").hide();
@@ -66,36 +65,29 @@
 			return r;
 		},
 		lazyLoad: function(event, data) {
+			fixNeeded = true;
 			var node = data.node;
-			// ugly hack to display a "loading" icon while retrieving data
-			node._isLoading = true;
-			node.renderStatus();
-			r = [];
 			p = node.key;
 			if (p !== "/") p += '/';
-			$.getJSON('{{ url_for("api.client_tree", name=cname, backup=nbackup, server=server) }}?root='+p, function(data) {
-				$.each(data, function(j, c) {
-					l = (c.type === "d");
-					f = (c.type === "d");
-					s = {title: c.name, key: c.parent+c.name, lazy: l, folder: f, uid: c.uid, gid: c.gid, date: c.date, mode: c.mode, size: c.size, inodes: c.inodes, selected: c.selected};
-					r.push(s);
-				});
-			})
-			.fail(myFail);
-			data.result = r;
-			node._isLoading = false;
-			node.renderStatus();
+			data.result = { url: '{{ url_for("api.client_tree", name=cname, backup=nbackup, server=server) }}?root='+p, debugDelay: 500 };
 		},
-		/*
-		// TODO: make it recursively loadable
 		loadChildren: function(event, data) {
+			// This is a hack to select all children of a selected node after
+			// lazy loading.
+			// The 'fixNeeded' flag is here to ensure we apply the fix only after
+			// a lazy loading.
+			if (fixNeeded) {
+				data.node.fixSelection3AfterClick();
+			}
+			// TODO: make it recursively loadable
+			/*
 			data.node.visit(function(subNode){
 				if( subNode.isUndefined() && subNode.isExpanded() ) {
 					subNode.load();
 				}
 			});
+			*/
 		},
-		*/
 		scrollParent: $(window),
 		renderColumns: function(event, data) {
 			var node = data.node;
@@ -108,27 +100,33 @@
 			$tdList.eq(5).text(node.data.date);
 		},
 		select: function(event, data) {
-			var s = data.tree.getSelectedNodes();
-			if (s.length > 0) {
-				$("#restore-form").show();
-				$("#server-initiated-form").show();
-				v = [];
-				$.each(s, function(i, n) {
-					v.push({key: n.key, folder: n.folder});
-				});
-				r = {restore:v};
-				$("input[name=list]").val(JSON.stringify(r));
-				$("input[name=list-sc]").val(JSON.stringify(r));
-			} else {
-				$("#restore-form").hide();
-				$("#server-initiated-form").hide();
-				$("input[name=list]").val('');
-				$("input[name=list-sc]").val('');
-			}
+			toggleRestorationForms(data.tree);
 		}
 	});
 
 	var tree = $("#tree").fancytree("getTree");
+
+	var toggleRestorationForms = function(my_tree) {
+		var s = my_tree.getSelectedNodes();
+		if (s.length > 0) {
+			$("#restore-form").show();
+			$("#server-initiated-form").show();
+			v = [];
+			$.each(s, function(i, n) {
+				v.push({key: n.key, folder: n.folder});
+			});
+			r = {restore:v};
+			$("input[name=list]").val(JSON.stringify(r));
+			$("input[name=list-sc]").val(JSON.stringify(r));
+		} else {
+			$("#restore-form").hide();
+			$("#server-initiated-form").hide();
+			$("input[name=list]").val('');
+			$("input[name=list-sc]").val('');
+		}
+	};
+
+	toggleRestorationForms(tree);
 
 	$("input[name=search-tree]").keyup(function(e){
 		var n,
