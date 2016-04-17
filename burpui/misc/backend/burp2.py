@@ -337,7 +337,7 @@ class Burp(Burp1):
             return ret
         try:
             logs = query['clients'][0]['backups'][0]['logs']['list']
-        except KeyError as e:
+        except KeyError:
             self._logger('warning', 'No logs found')
             return ret
         if 'backup_stats' in logs:
@@ -374,7 +374,7 @@ class Burp(Burp1):
             for line in log:
                 if re.search(r'Protocol: 2$', line):
                     return 2
-        except KeyError as e:
+        except KeyError:
             # Assume protocol 1 in all cases unless explicitly found Protocol 2
             return 1
         return 1
@@ -438,7 +438,7 @@ class Burp(Burp1):
             return ret
         try:
             back = query['clients'][0]['backups'][0]
-        except KeyError as e:
+        except KeyError:
             self._logger('warning', 'No backup found')
             return ret
         if 'backup_stats' not in back['logs']:
@@ -499,7 +499,7 @@ class Burp(Burp1):
 
         try:
             client = query['clients'][0]
-        except KeyError as e:
+        except KeyError:
             self._logger('warning', 'Client not found')
             return ret
 
@@ -575,7 +575,7 @@ class Burp(Burp1):
             return False
         try:
             return query['clients'][0]['run_status'] in ['running']
-        except KeyError as e:
+        except KeyError:
             self._logger('warning', 'Client not found')
             return False
         return False
@@ -649,7 +649,7 @@ class Burp(Burp1):
             return ret
         try:
             backups = query['clients'][0]['backups']
-        except KeyError as e:
+        except KeyError:
             self._logger('warning', 'Client not found')
             return ret
         for backup in backups:
@@ -668,17 +668,17 @@ class Burp(Burp1):
                 back['encrypted'] = log['encrypted']
                 try:
                     back['received'] = log['received']
-                except KeyError as e:
+                except KeyError:
                     back['received'] = -1
                 try:
                     back['size'] = log['totsize']
-                except KeyError as e:
+                except KeyError:
                     back['size'] = -1
                 back['end'] = log['end']
                 # override date since the timestamp is odd
                 back['date'] = log['start']
                 ret.append(back)
-            except Exception as e:
+            except Exception:
                 self._logger('warning', 'Unable to parse logs')
                 pass
 
@@ -686,7 +686,7 @@ class Burp(Burp1):
         ret.reverse()
         return ret
 
-    def get_tree(self, name=None, backup=None, root=None, agent=None):
+    def get_tree(self, name=None, backup=None, root=None, level=-1, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_tree`"""
         ret = []
         if not name or not backup:
@@ -704,7 +704,7 @@ class Burp(Burp1):
             return ret
         try:
             backup = query['clients'][0]['backups'][0]
-        except KeyError as e:
+        except KeyError:
             return ret
         for entry in backup['browse']['entries']:
             data = {}
@@ -715,14 +715,19 @@ class Burp(Burp1):
             data['mode'] = self._human_st_mode(entry['mode'])
             if re.match('^(d|l)', data['mode']):
                 data['type'] = 'd'
+                data['folder'] = True
             else:
                 data['type'] = 'f'
+                data['folder'] = False
             data['inodes'] = entry['nlink']
             data['uid'] = entry['uid']
             data['gid'] = entry['gid']
             data['parent'] = top
             data['size'] = '{0:.1eM}'.format(_hr(entry['size']))
             data['date'] = entry['mtime']
+            data['fullname'] = os.path.join(top, entry['name'])
+            data['level'] = level
+            data['children'] = []
             ret.append(data)
         return ret
 
@@ -746,7 +751,7 @@ class Burp(Burp1):
             return ret
         try:
             return query['clients'][0]['labels']
-        except KeyError as e:
+        except KeyError:
             return ret
 
     # Same as in Burp1 backend

@@ -163,7 +163,6 @@ class Burp(BUIbackend):
                 if tmpdir and not os.path.exists(tmpdir):
                     os.makedirs(tmpdir)
 
-
                 if confcli and not os.path.isfile(confcli):
                     self._logger('warning', "The file '%s' does not exist", confcli)
                     confcli = None
@@ -784,7 +783,7 @@ class Burp(BUIbackend):
         res.reverse()
         return res
 
-    def get_tree(self, name=None, backup=None, root=None, agent=None):
+    def get_tree(self, name=None, backup=None, root=None, level=-1, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_tree`"""
         res = []
         if not name or not backup:
@@ -812,8 +811,10 @@ class Burp(BUIbackend):
                 if match:
                     if re.match(r'^(d|l)', match.group(1)):
                         tree['type'] = 'd'
+                        tree['folder'] = True
                     else:
                         tree['type'] = 'f'
+                        tree['folder'] = False
                     spl = re.split(r'\s+', line, 7)
                     tree['mode'] = spl[0]
                     tree['inodes'] = spl[1]
@@ -823,6 +824,9 @@ class Burp(BUIbackend):
                     tree['date'] = '{0} {1}'.format(spl[5], spl[6])
                     tree['name'] = spl[7]
                     tree['parent'] = top
+                    tree['fullname'] = os.path.join(top, spl[7])
+                    tree['level'] = level
+                    tree['children'] = []
                     res.append(tree)
         return res
 

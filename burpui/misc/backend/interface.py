@@ -379,7 +379,7 @@ class BUIbackend(BUIlogging):
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
     @abstractmethod
-    def get_tree(self, name=None, backup=None, root=None, agent=None):
+    def get_tree(self, name=None, backup=None, root=None, level=-1, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.get_tree`
         function returns a list of dict representing files/dir (with their
         attr) within a given path
@@ -392,6 +392,9 @@ class BUIbackend(BUIlogging):
 
         :param root: Root path to look into
         :type root: str
+
+        :param level: Level of the tree relative to its root
+        :type level: int
 
         :param agent: What server to ask (only in multi-agent mode)
         :type agent: str
@@ -408,9 +411,13 @@ class BUIbackend(BUIlogging):
                     "mode": "drwxr-xr-x",
                     "name": "/",
                     "parent": "",
+                    "fullname": "/",
+                    "level": -1,
                     "size": "12.0KiB",
                     "type": "d",
-                    "uid": "0"
+                    "uid": "0",
+                    "folder": True,
+                    "children": []
                 }
             ]
         """
