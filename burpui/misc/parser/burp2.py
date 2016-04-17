@@ -13,24 +13,24 @@ class Parser(Burp1):
     string_srv = Burp1.string_srv + [
         u'manual_delete',
     ]
-    boolean_srv = Burp1.boolean_srv + [
+    boolean_add = [
         u'acl',
         u'xattr',
         u'server_can_override_includes',
+        u'glob_after_script_pre',
     ]
+    boolean_srv = Burp1.boolean_srv + boolean_add
+    boolean_cli = Burp1.boolean_cli + boolean_add
     multi_cli = Burp1.multi_cli + [
         u'label',
     ]
     integer_cli = Burp1.integer_cli + [
         u'randomise',
     ]
-    fields_cli = Burp1.fields_cli + [
-        u'acl',
-        u'xattr',
+    fields_cli = Burp1.fields_cli + boolean_add + [
         u'randomise',
         u'manual_delete',
         u'label',
-        u'server_can_override_includes',
     ]
     placeholders = Burp1.placeholders
     placeholders.update({
@@ -40,29 +40,31 @@ class Parser(Burp1):
         u'manual_delete': u"path",
         u'label': u"some informations",
         u'server_can_override_includes': u"0|1",
+        u'glob_after_script_pre': u"0|1",
     })
     defaults = Burp1.defaults
     defaults.update({
         u'acl': True,
         u'xattr': True,
         u'server_can_override_includes': True,
+        u'glob_after_script_pre': True,
         u'randomise': 0,
         u'manual_delete': u'',
         u'label': u'',
     })
     doc = Burp1.doc
     doc.update({
-        u'acl': "If acl support is compiled into burp, this allows you to" +
+        u'acl': u"If acl support is compiled into burp, this allows you to" +
                 " decide whether or not to backup acls at runtime. The" +
                 " default is '1'.",
-        u'xattr': "If xattr support is compiled into burp, this allows you" +
+        u'xattr': u"If xattr support is compiled into burp, this allows you" +
                   " to decide whether or not to backup xattrs at runtime." +
                   " The default is '1'.",
-        u'randomise': "When running a timed backup, sleep for a random" +
+        u'randomise': u"When running a timed backup, sleep for a random" +
                       " number of seconds (between 0 and the number given)" +
                       " before contacting the server. Alternatively, this" +
                       " can be specified by the '-q' command line option.",
-        u'manual_delete': "This can be overridden by the clientconfdir" +
+        u'manual_delete': u"This can be overridden by the clientconfdir" +
                           " configuration files in clientconfdir on the" +
                           " server. When the server needs to delete old" +
                           " backups, or rubble left over from generating" +
@@ -74,14 +76,18 @@ class Parser(Burp1):
                           " job, or similar, to delete the files yourself." +
                           " Do not specify a path that is not on the same" +
                           " filesystem as the client storage directory.",
-        u'label': "You can have multiple labels, and they can be overridden" +
+        u'label': u"You can have multiple labels, and they can be overridden" +
                   " in the client configuration files in clientconfdir on" +
                   " the server. They will appear as an array of strings in" +
                   " the server status monitor JSON output. The idea is to" +
                   " provide a mechanism for arbitrary values to be passed" +
                   " to clients of the server status monitor.",
-        u'server_can_override_includes': "To prevent the server from being" +
-                                          " able to override your local" +
-                                          " include/exclude list, set this" +
-                                          " to 0. The default is 1.",
+        u'server_can_override_includes': u"To prevent the server from being" +
+                                         " able to override your local" +
+                                         " include/exclude list, set this" +
+                                         " to 0. The default is 1.",
+        u'glob_after_script_pre': u"Set this to 0 if you do not want" +
+                                  " include_glob settings to be evaluated" +
+                                  " after the pre script is run. The default" +
+                                  " is 1.",
     })
