@@ -7,13 +7,14 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
+import logging
+import inspect
+import json
+
 from flask_restplus import Resource as ResourcePlus
 from flask_restplus.errors import abort
 from flask_login import current_user
 from ..._compat import PY3
-
-import logging
-import inspect
 
 if PY3:
     basestring = str
@@ -41,9 +42,23 @@ class Resource(ResourcePlus):
             except:
                 message = None
         # Add extra logs when raising abort exception
-        (frm, filename, line_no, func, source_code, source_index) = inspect.stack()[1]
+        (
+            frm,
+            filename,
+            line_no,
+            func,
+            source_code,
+            source_index
+        ) = inspect.stack()[1]
         mod = inspect.getmodule(frm)
         self.logger.debug('Abort in {}:{}'.format(filename, line_no))
-        self.logger.warning('[{}] {}: {}{}'.format(mod.__name__, code, message, ' - {}'.format(kwargs) if kwargs else ''))
+        self.logger.warning(
+            '[{}] {}: {}{}'.format(
+                mod.__name__,
+                code,
+                message,
+                ' - {}'.format(kwargs) if kwargs else ''
+            )
+        )
         # This raises a Flask Exception
         abort(code, message, **kwargs)

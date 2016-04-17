@@ -10,7 +10,6 @@
 """
 import os
 import sys
-import json
 
 from flask import Blueprint, Response, request
 from flask_restplus import Api
@@ -154,8 +153,7 @@ class ApiWrapper(Api):
                         ext == '.py' and
                         name not in ['__init__', '.', '..']):
                     mod = '.' + name
-                    # module = import_module(mod, 'burpui.api')
-                    module = import_module(mod, __name__)
+                    import_module(mod, __name__)
 
 
 apibp = Blueprint('api', __name__, url_prefix='/api')

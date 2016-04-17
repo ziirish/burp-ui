@@ -150,8 +150,10 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
         handler = StreamHandler()
 
     if verbose > logging.DEBUG:
-        LOG_FORMAT = ('[%(asctime)s] %(levelname)s in '
-                          '%(module)s.%(funcName)s: %(message)s')
+        LOG_FORMAT = (
+            '[%(asctime)s] %(levelname)s in '
+            '%(module)s.%(funcName)s: %(message)s'
+        )
     else:
         LOG_FORMAT = (
             '-' * 80 + '\n' +
@@ -191,7 +193,8 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
     app.gunicorn = gunicorn
 
     app.config['CFG'] = None
-    app.config['BUNDLE_ERRORS'] = True
+    # FIXME: strange behavior when bundling errors
+    # app.config['BUNDLE_ERRORS'] = True
 
     app.secret_key = ('VpgOXNXAgcO81xFPyWj07ppN6kExNZeCDRShseNzFKV7ZCgmW2/eLn6x'
                       'Slt7pYAVBj12zx2Vv9Kw3Q3jd1266A==')

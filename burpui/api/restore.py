@@ -42,12 +42,14 @@ class Restore(Resource):
     - ``pass``: password to use for encrypted backups
     """
     parser = api.parser()
-    parser.add_argument('pass', help='Password to use for encrypted backups', location='form', nullable=True)
-    parser.add_argument('format', required=True, help='Returning archive format', location='form', choices=('zip', 'tar.gz', 'tar.bz2'), default='zip', nullable=False)
-    parser.add_argument('strip', type=int, help='Number of elements to strip in the path', default=0, location='form', nullable=True)
-    parser.add_argument('list', required=True, help='List of files/directories to restore (example: \'{"restore":[{"folder":true,"key":"/etc"}]}\')', location='form', nullable=False)
+    parser.add_argument('pass', help='Password to use for encrypted backups', location=('form', 'json'), nullable=True)
+    parser.add_argument('format', required=False, help='Returning archive format', location=('form', 'json'), choices=('zip', 'tar.gz', 'tar.bz2'), default='zip', nullable=True)
+    parser.add_argument('strip', type=int, help='Number of elements to strip in the path', default=0, location=('form', 'json'), nullable=True)
+    parser.add_argument('list', required=True, help='List of files/directories to restore', location=('form', 'json'), nullable=False)
+    # FIXME: the example json seems interpreted during the raise of the exception
+    # parser.add_argument('list', required=True, help='List of files/directories to restore (example: \'{"restore":[{"folder":true,"key":"/etc"}]}\')', location=('form', 'json'), nullable=False)
 
-    @ns.expect(parser)
+    @ns.expect(parser, validate=True)
     @ns.doc(
         params={
             'server': 'Which server to collect data from when in multi-agent mode',
