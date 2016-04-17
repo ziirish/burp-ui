@@ -1,8 +1,8 @@
 Badges
 ======
 
-.. image:: https://ci.ziirish.me/projects/1/status.png?ref=master
-    :target: https://ci.ziirish.me/projects/1?ref=master
+.. image:: https://git.ziirish.me/ci/projects/1/status.png?ref=master
+    :target: https://git.ziirish.me/ci/projects/1?ref=master
     :alt: Build Status
 
 .. image:: https://readthedocs.org/projects/burp-ui/badge/?version=latest
