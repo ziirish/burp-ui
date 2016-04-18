@@ -216,6 +216,8 @@ class ClientTree(Resource):
             self.abort(403, 'Sorry, you are not allowed to view this client')
 
         try:
+            root_list_clean = []
+
             for root in root_list:
                 if args['recursive']:
                     path = ''
@@ -240,6 +242,7 @@ class ClientTree(Resource):
                     if not root:
                         root = '/'
                     to_select_list.append(to_select)
+                    root_list_clean.append(root)
                     paths = root.split('/')
                     for level, sub in enumerate(paths, start=1):
                         path = os.path.join(path, sub)
@@ -271,7 +274,7 @@ class ClientTree(Resource):
                         if entry['parent'] == parent and entry['name'] == fold:
                             entry['selected'] = True
                             break
-                    if entry['parent'] in root_list:
+                    if entry['parent'] in root_list_clean:
                         entry['selected'] = True
 
             if not root_list:
