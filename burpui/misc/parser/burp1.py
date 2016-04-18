@@ -1312,20 +1312,20 @@ class Parser(BUIparser):
                     line = line.rstrip()
                     (key, val) = re.split(r' *= *', line)
                     if key == 'regex':
-                        ret[key] = []
+                        ret['list'] = []
                         for reg in val.split('|'):
                             reg = reg.replace('^', '', 1)
                             reg = reg.replace('\\', '')
                             if reg.endswith('$'):
-                                ret[key].append({'key': reg.rstrip('$'), 'folder': False})
+                                ret['list'].append({'key': reg.rstrip('$'), 'folder': False})
                             else:
-                                ret[key].append({'key': reg, 'folder': True})
+                                ret['list'].append({'key': reg, 'folder': True})
                     else:
                         ret[key] = val
+                ret['found'] = True
 
             return ret
-        except Exception as e:
-            print str(e)
+        except Exception:
             return {}
 
     def server_initiated_restoration(

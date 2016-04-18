@@ -15,7 +15,7 @@ from time import gmtime, strftime, time
 
 # This is a submodule we can also use "from ..api import api"
 from . import api
-from .custom import Resource
+from .custom import fields, Resource
 from .custom.inputs import boolean
 from ..exceptions import BUIserverException
 from flask_login import current_user
@@ -209,7 +209,9 @@ class Restore(Resource):
         return resp
 
 
-@ns.route('/server-restore/<name>/<int:backup>',
+@ns.route('/server-restore/<name>',
+          '/server-restore/<name>/<int:backup>',
+          '/<server>/server-restore/<name>',
           '/<server>/server-restore/<name>/<int:backup>',
           endpoint='server_restore')
 class ServerRestore(Resource):
@@ -231,6 +233,82 @@ class ServerRestore(Resource):
     parser.add_argument('prefix-sc', help='Prefix to the restore path', location='form', nullable=True)
     parser.add_argument('force-sc', type=boolean, help='Whether to overwrite existing files', default=False, location='form', nullable=True)
     parser.add_argument('restoreto-sc', help='Restore files on an other client', location='form', nullable=True)
+
+    list_fields = api.model('ListRestoreFiles', {
+        'key': fields.String(
+            required=True,
+            description='Path to a file/directory to restore'
+        ),
+        'folder': fields.Boolean(
+            required=True,
+            description='Is the path pointed to a directory'
+        )
+    })
+    restoration_fields = api.model('EditRestoration', {
+        'backup': fields.Integer(
+            required=True,
+            description='Backup number to restore'
+        ),
+        'strip': fields.Integer(
+            required=False,
+            description='Number of leading path to strip while restoring'
+        ),
+        'prefix': fields.String(
+            required=False,
+            description='Where to restore files',
+            attribute='restoreprefix'
+        ),
+        'force': fields.Boolean(
+            required=False,
+            description='Whether to replace files that are already present',
+            default=False,
+            attribute='overwrite'
+        ),
+        'orig_client': fields.String(
+            required=False,
+            description='Name of the client to restore from when different' +
+                        ' from the current one'
+        ),
+        'found': fields.Boolean(
+            required=False,
+            description='Did we found a restore file',
+            default=False
+        ),
+        'list': fields.Nested(
+            list_fields,
+            as_list=True,
+            description='List of path to restore'
+        )
+    })
+
+    @ns.marshal_with(restoration_fields, code=200, description='Success')
+    @ns.doc(
+        params={
+            'server': 'Which server to collect data from when in multi-agent mode',
+            'name': 'Client name',
+        },
+        responses={
+            201: 'Success',
+            400: 'Missing parameter',
+            403: 'Insufficient permissions',
+            500: 'Internal failure',
+        },
+    )
+    def get(self, server=None, name=None):
+        if not name:
+            self.abort(400, 'Missing options')
+        # Manage ACL
+        if (api.bui.acl and
+                (not api.bui.acl.is_client_allowed(current_user.get_id(),
+                                                   name,
+                                                   server) and not
+                 api.bui.acl.is_admin(current_user.get_id()))):
+            self.abort(403, 'You are not allowed to edit a restoration for this client')
+        try:
+            json = api.bui.cli.is_server_restore(name, server)
+            return json
+        except BUIserverException as e:
+            self.abort(500, str(e))
 
     @ns.expect(parser)
     @ns.doc(
@@ -263,24 +341,40 @@ class ServerRestore(Resource):
         :returns: Status message (success or failure)
         """
         args = self.parser.parse_args()
-        l = args['list-sc']
-        s = args['strip-sc']
-        p = args['prefix-sc']
-        f = args['force-sc']
+        files_list = args['list-sc']
+        strip = args['strip-sc']
+        prefix = args['prefix-sc']
+        force = args['force-sc']
         to = args['restoreto-sc']
-        j = []
+        json = []
         # Check params
-        if not l or not name or not backup:
+        if not files_list or not name or not backup:
             self.abort(400, 'Missing options')
         # Manage ACL
         if (api.bui.acl and
                 (not api.bui.acl.is_client_allowed(current_user.get_id(),
                                                    name,
                                                    server) and not
-                 api.bui.acl.is_admin(current_user.get_id()))):
-            self.abort(403, 'You are not allowed to perform a restoration for this client')
+                 api.bui.acl.is_admin(current_user.get_id()) and
+                 (to and not
+                  api.bui.acl.is_client_allowed(current_user.get_id(),
+                                                to,
+                                                server)))):
+            self.abort(
+                403,
+                'You are not allowed to perform a restoration for this client'
+            )
         try:
-            j = api.bui.cli.server_restore(name, backup, l, s, f, p, to, server)
-            return {'notif': j}, 201
+            json = api.bui.cli.server_restore(
+                name,
+                backup,
+                files_list,
+                strip,
+                force,
+                prefix,
+                to,
+                server
+            )
+            return {'notif': json}, 201
         except BUIserverException as e:
             self.abort(500, str(e))

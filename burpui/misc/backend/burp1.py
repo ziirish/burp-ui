@@ -830,6 +830,14 @@ class Burp(BUIbackend):
                     res.append(tree)
         return res
 
+    def is_server_restore(self, client=None, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.is_server_restore`"""
+        return self.parser.read_restore(client)
+
+    def delete_server_restore(self, client=None, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.delete_server_restore`"""
+        pass
+
     def server_restore(self, name=None, backup=None, files=None, strip=None, force=None, prefix=None, restoreto=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.server_restore`"""
         if not name or not backup or not files:
