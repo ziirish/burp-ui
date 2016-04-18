@@ -15,6 +15,61 @@ from ...exceptions import BUIserverException
 from ..._compat import IS_GUNICORN, ConfigParser, local, pickle
 
 
+INTERFACE_METHODS = BUIbackend.__abstractmethods__
+
+
+class ProxyCall(object):
+    """Class to dispatch call of unknown methods in order to dynamically
+    call agents one without maintaining the explicit list of methods.
+    """
+    def __init__(self, proxy, method, network=False):
+        """
+        :param proxy: Class to proxify
+        :type proxy: :class:`burpui.misc.backend.multi.Burp`
+
+        :param method: Name of the method to proxify
+        :type method: str
+
+        :param network: Is it a custom call over network
+        :type network: bool
+        """
+        self.proxy = proxy
+        self.method = method
+        self.network = network
+
+    def __call__(self, *args, **kwargs):
+        """This is were the proxy call (and the magic) occurs"""
+        # retrieve the original function prototype
+        proto = getattr(BUIbackend, self.method)
+        args_name = list(proto.__code__.co_varnames)
+        # skip self
+        args_name.pop(0)
+        # we transform unnamed arguments to named ones
+        # example:
+        #     def my_function(toto, tata=None, titi=None):
+        #
+        #     x = my_function('blah', titi='blih')
+        #
+        # => {'toto': 'blah', 'titi': 'blih'}
+        encoded_args = {}
+        for idx, opt in enumerate(args):
+            encoded_args[args_name[idx]] = opt
+        encoded_args.update(kwargs)
+
+        # Special case for network calls
+        if self.network:
+            data = {'func': self.method, 'args': encoded_args}
+            return json.loads(self.proxy.do_command(data))
+        # normal case for "standard" interface
+        if 'agent' not in encoded_args:
+            raise AttributeError()
+        agentName = encoded_args['agent']
+        # we don't need this argument anymore
+        del encoded_args['agent']
+        agent = self.proxy.servers[agentName]
+        return getattr(agent, self.method)(**encoded_args)
+
+
 class Burp(BUIbackend):
     """The :class:`burpui.misc.backend.multi.Burp` class provides a consistent
     backend to interact with ``agents``.
@@ -32,6 +87,12 @@ class Burp(BUIbackend):
     :param conf: Configuration file to use
     :type conf: str
     """
+    # These functions MUST be implemented because we inherit an abstract class.
+    # The hack here is to get the list of the functions and let the interpreter
+    # think we don't have to implement them.
+    # Thanks to this list, we know what function are implemented by our backend.
+    foreign = INTERFACE_METHODS
+    BUIbackend.__abstractmethods__ = frozenset()
 
     def __init__(self, server=None, conf=None):
         self.app = server
@@ -63,25 +124,16 @@ class Burp(BUIbackend):
         for (key, serv) in iteritems(self.servers):
             self.app.config['SERVERS'].append(key)
 
-    def status(self, query='\n', agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.status`"""
-        return self.servers[agent].status(query)
-
-    def get_backup_logs(self, number, client, forward=False, agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.get_backup_logs`"""
-        return self.servers[agent].get_backup_logs(number, client, forward)
-
-    def get_clients_report(self, clients, agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.get_clients_report`"""
-        return self.servers[agent].get_clients_report(clients)
-
-    def get_counters(self, name=None, agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.get_counters`"""
-        return self.servers[agent].get_counters(name)
-
-    def is_backup_running(self, name=None, agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.is_backup_running`"""
-        return self.servers[agent].is_backup_running(name)
+    def __getattribute__(self, name):
+        # always return this value because we need it and if we don't do that
+        # we'll end up with an infinite loop
+        if name == 'foreign':
+            return object.__getattribute__(self, name)
+        # now we can retrieve the 'foreign' list and know if the object called
+        # needs to be "proxified"
+        if name in self.foreign:
+            return ProxyCall(self, name)
+        return object.__getattribute__(self, name)
 
     def _backup_running_parallel(self):
         """Use :mod:`multiprocessing` or :mod:`gevent` to retrieve a list of
@@ -149,60 +201,6 @@ class Burp(BUIbackend):
             self.running = r
         self.refresh = time.time()
         return r
-
-    def get_all_clients(self, agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.get_all_clients`"""
-        if agent not in self.servers:
-            return []
-        return self.servers[agent].get_all_clients()
-
-    def get_client(self, name=None, agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.get_client`"""
-        return self.servers[agent].get_client(name)
-
-    def get_tree(self, name=None, backup=None, root=None, agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.get_tree`"""
-        return self.servers[agent].get_tree(name, backup, root)
-
-    def restore_files(self, name=None, backup=None, files=None, strip=None, archive='zip', password=None, agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.restore_files`"""
-        return self.servers[agent].restore_files(name, backup, files, strip, archive, password)
-
-    def read_conf_cli(self, client=None, conf=None, agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.read_conf_cli`"""
-        return self.servers[agent].read_conf_cli(client, conf)
-
-    def read_conf_srv(self, conf=None, agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.read_conf_srv`"""
-        return self.servers[agent].read_conf_srv(conf)
-
-    def store_conf_cli(self, data, client=None, conf=None, agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.store_conf_cli`"""
-        return self.servers[agent].store_conf_cli(data, client, conf)
-
-    def store_conf_srv(self, data, conf=None, agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.store_conf_srv`"""
-        return self.servers[agent].store_conf_srv(data, conf)
-
-    def expand_path(self, path=None, client=None, agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.expand_path`"""
-        return self.servers[agent].expand_path(path, client)
-
-    def delete_client(self, client=None, agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.delete_client`"""
-        return self.servers[agent].delete_client(client)
-
-    def clients_list(self, agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.clients_list`"""
-        return self.servers[agent].clients_list()
-
-    def get_parser_attr(self, attr=None, agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.get_parser_attr`"""
-        return self.servers[agent].get_parser_attr(attr)
-
-    def server_restore(self, name=None, backup=None, files=None, strip=None, force=None, prefix=None, restoreto=None, agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.server_restore`"""
-        return self.servers[agent].server_restore(name, backup, files, strip, force, prefix, restoreto)
 
     def _get_version_parallel(self, method=None):
         """Use :mod:`multiprocessing` or :mod:`gevent` to retrieve versions"""
@@ -278,10 +276,6 @@ class Burp(BUIbackend):
             return self._get_version_parallel('get_server_version')
         return self.servers[agent].get_server_version()
 
-    def get_client_labels(self, client=None, agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.get_client_labels`"""
-        return self.servers[agent].get_client_labels(client)
-
 
 class NClient(BUIbackend, local):
     """The :class:`burpui.misc.backend.multi.NClient` class provides a
@@ -305,6 +299,12 @@ class NClient(BUIbackend, local):
     :param ssl: Use SSL to communicate with the agent
     :type ssl: bool
     """
+    # These functions MUST be implemented because we inherit an abstract class.
+    # The hack here is to get the list of the functions and let the interpreter
+    # think we don't have to implement them.
+    # Thanks to this list, we know what function are implemented by our backend.
+    foreign = INTERFACE_METHODS
+    BUIbackend.__abstractmethods__ = frozenset()
 
     def __init__(self, app=None, host=None, port=None, password=None, ssl=None, timeout=5):
         self.host = host
@@ -314,6 +314,17 @@ class NClient(BUIbackend, local):
         self.connected = False
         self.app = app
         self.timeout = timeout or 5
+
+    def __getattribute__(self, name):
+        # always return this value because we need it and if we don't do that
+        # we'll end up with an infinite loop
+        if name == 'foreign':
+            return object.__getattribute__(self, name)
+        # now we can retrieve the 'foreign' list and know if the object called
+        # needs a dynamic implementation
+        if name in self.foreign:
+            return ProxyCall(self, name, network=True)
+        return object.__getattribute__(self, name)
 
     def conn(self, notimeout=False):
         """Connects to the agent if needed"""
@@ -451,66 +462,6 @@ class NClient(BUIbackend, local):
     Utilities functions
     """
 
-    def status(self, query='\n', agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.status`"""
-        data = {'func': 'status', 'args': {'query': query}}
-        return json.loads(self.do_command(data))
-
-    def get_backup_logs(self, number, client, forward=False, agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.get_backup_logs`"""
-        data = {'func': 'get_backup_logs', 'args': {'number': number, 'client': client, 'forward': forward}}
-        return json.loads(self.do_command(data))
-
-    def get_clients_report(self, clients, agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.get_clients_report`"""
-        data = {'func': 'get_clients_report', 'args': {'clients': clients}}
-        return json.loads(self.do_command(data))
-
-    def get_counters(self, name=None, agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.get_counters`"""
-        data = {'func': 'get_counters', 'args': {'name': name}}
-        return json.loads(self.do_command(data))
-
-    def is_backup_running(self, name=None, agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.is_backup_running`"""
-        data = {'func': 'is_backup_running', 'args': {'name': name}}
-        return json.loads(self.do_command(data))
-
-    def is_one_backup_running(self, agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.is_one_backup_running`"""
-        data = {'func': 'is_one_backup_running', 'args': {'agent': agent}}
-        return json.loads(self.do_command(data))
-
-    def get_all_clients(self, agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.get_all_clients`"""
-        data = {'func': 'get_all_clients', 'args': None}
-        return json.loads(self.do_command(data))
-
-    def get_client(self, name=None, agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.get_client`"""
-        data = {'func': 'get_client', 'args': {'name': name}}
-        return json.loads(self.do_command(data))
-
-    def get_tree(self, name=None, backup=None, root=None, agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.get_tree`"""
-        data = {'func': 'get_tree', 'args': {'name': name, 'backup': backup, 'root': root}}
-        return json.loads(self.do_command(data))
-
-    def restore_files(self, name=None, backup=None, files=None, strip=None, archive='zip', password=None, agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.restore_files`"""
-        data = {'func': 'restore_files', 'args': {'name': name, 'backup': backup, 'files': files, 'strip': strip, 'archive': archive, 'password': password}}
-        return self.do_command(data)
-
-    def read_conf_cli(self, client=None, conf=None, agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.read_conf_cli`"""
-        data = {'func': 'read_conf_cli', 'args': {'conf': conf, 'client': client}}
-        return json.loads(self.do_command(data))
-
-    def read_conf_srv(self, conf=None, agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.read_conf_srv`"""
-        data = {'func': 'read_conf_srv', 'args': {'conf': conf}}
-        return json.loads(self.do_command(data))
-
     def store_conf_cli(self, data, client=None, conf=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.store_conf_cli`"""
         # serialize data as it is a nested dict
@@ -527,42 +478,3 @@ class NClient(BUIbackend, local):
         data = {'func': 'store_conf_srv', 'args': b64encode(pickle.dumps({'data': data, 'conf': conf}, -1)), 'pickled': True}
         return json.loads(self.do_command(data))
 
-    def expand_path(self, path=None, client=None, agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.expand_path`"""
-        data = {'func': 'expand_path', 'args': {'path': path, 'client': client}}
-        return json.loads(self.do_command(data))
-
-    def delete_client(self, client=None, agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.delete_client`"""
-        data = {'func': 'delete_client', 'args': {'client': client}}
-        return json.loads(self.do_command(data))
-
-    def clients_list(self, agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.clients_list`"""
-        data = {'func': 'clients_list', 'args': None}
-        return json.loads(self.do_command(data))
-
-    def get_parser_attr(self, attr=None, agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.get_parser_attr`"""
-        data = {'func': 'get_parser_attr', 'args': {'attr': attr}}
-        return json.loads(self.do_command(data))
-
-    def server_restore(self, name=None, backup=None, files=None, strip=None, force=None, prefix=None, restoreto=None, agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.server_restore`"""
-        data = {'func': 'server_restore', 'args': {'name': name, 'backup': backup, 'files': files, 'strip': strip, 'force': force, 'prefix': prefix, 'restoreto': restoreto}}
-        return json.loads(self.do_command(data))
-
-    def get_client_version(self, agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.get_client_version`"""
-        data = {'func': 'get_client_version', 'args': None}
-        return json.loads(self.do_command(data))
-
-    def get_server_version(self, agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.get_server_version`"""
-        data = {'func': 'get_server_version', 'args': None}
-        return json.loads(self.do_command(data))
-
-    def get_client_labels(self, client=None, agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.get_client_labels`"""
-        data = {'func': 'get_client_labels', 'args': {'client': client}}
-        return json.loads(self.do_command(data))
