@@ -210,9 +210,12 @@ class Restore(Resource):
 
 
 @ns.route('/server-restore/<name>',
-          '/server-restore/<name>/<int:backup>',
           '/<server>/server-restore/<name>',
+          methods=['GET'],
+          endpoint='is_server_restore')
+@ns.route('/server-restore/<name>/<int:backup>',
           '/<server>/server-restore/<name>/<int:backup>',
+          methods=['PUT'],
           endpoint='server_restore')
 class ServerRestore(Resource):
     """The :class:`burpui.api.restore.ServerRestore` resource allows you to
@@ -228,7 +231,7 @@ class ServerRestore(Resource):
     - ``restoreto-sc``: restore files on an other client
     """
     parser = api.parser()
-    parser.add_argument('list-sc', required=True, help='List of files/directories to restore (example: \'{"restore":[{"folder":true,"key":"/etc"}]}\')', location='form', nullable=False)
+    parser.add_argument('list-sc', required=True, help='List of files/directories to restore', location='form', nullable=False)
     parser.add_argument('strip-sc', type=int, help='Number of elements to strip in the path', default=0, location='form', nullable=True)
     parser.add_argument('prefix-sc', help='Prefix to the restore path', location='form', nullable=True)
     parser.add_argument('force-sc', type=boolean, help='Whether to overwrite existing files', default=False, location='form', nullable=True)
@@ -295,6 +298,19 @@ class ServerRestore(Resource):
         },
     )
     def get(self, server=None, name=None):
+        """Reads the content of the *restore* file if present
+
+        **GET** method provided by the webservice.
+
+        :param server: Which server to collect data from when in multi-agent
+                       mode
+        :type server: str
+
+        :param name: The client we are working on
+        :type name: str
+
+        :returns: The content of the restore file
+        """
         if not name:
             self.abort(400, 'Missing options')
         # Manage ACL
@@ -329,7 +345,8 @@ class ServerRestore(Resource):
 
         **PUT** method provided by the webservice.
 
-        :param server: Which server to collect data from when in multi-agent mode
+        :param server: Which server to collect data from when in multi-agent
+                       mode
         :type server: str
 
         :param name: The client we are working on
