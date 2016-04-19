@@ -73,7 +73,7 @@ class human_readable(long):
         return "{0:{1}}".format(t, width) if width != "" else t
 
 
-if sys.version_info >= (3, 0):  # pragma: no cover
+if PY3:  # pragma: no cover
     class BUIlogger(logging.Logger):
         padding = 0
         """Logger class for more convenience"""
@@ -180,6 +180,24 @@ class BUIcompress():
                 self.arch.write(path, arcname)
         elif self.archive in ['tar.gz', 'tar.bz2']:
             self.arch.add(path, arcname=arcname, recursive=False)
+
+
+class Custom(object):
+    """Allows to register a list of overridden methods through a decorator"""
+    # List of overridden methods
+    overridden = []
+
+    # Decorator
+    def override(self, func):
+        """Decorator to register functions that have been marked as
+        overridden
+        """
+        fname = func.func_name
+        if fname not in self.overridden:
+            self.overridden.append(fname)
+        def wrapper(*args, **kwargs):
+            return func(*args, **kwargs)
+        return wrapper
 
 
 def basic_login_from_request(request, app):
