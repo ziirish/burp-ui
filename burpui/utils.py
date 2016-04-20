@@ -182,22 +182,22 @@ class BUIcompress():
             self.arch.add(path, arcname=arcname, recursive=False)
 
 
-class Custom(object):
-    """Allows to register a list of overridden methods through a decorator"""
-    # List of overridden methods
-    overridden = []
+def implement(func):
+    """A decorator indicating the method is implemented.
 
-    # Decorator
-    def override(self, func):
-        """Decorator to register functions that have been marked as
-        overridden
-        """
-        fname = func.func_name
-        if fname not in self.overridden:
-            self.overridden.append(fname)
-        def wrapper(*args, **kwargs):
-            return func(*args, **kwargs)
-        return wrapper
+    For the agent and the 'multi' backend, we inherit the backend interface but
+    we don't really implement it because we just act as a proxy.
+    But maintaining the exhaustive list of methods in several places to always
+    implement the same "proxy" thing was painful so I ended up cheating to
+    dynamically implement those methods thanks to the __getattribute__ magic
+    function.
+
+    But sometimes we want to implement specific things, hence this decorator
+    to indicate we don't want the default "magic" implementation and use the 
+    custom implementation instead.
+    """
+    func.__ismethodimplemented__ = True
+    return func
 
 
 def basic_login_from_request(request, app):

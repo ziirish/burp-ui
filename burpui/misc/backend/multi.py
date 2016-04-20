@@ -13,7 +13,7 @@ from six import iteritems
 from .interface import BUIbackend
 from ...exceptions import BUIserverException
 from ..._compat import IS_GUNICORN, ConfigParser, local, pickle
-from ...utils import Custom
+from ...utils import implement
 
 
 INTERFACE_METHODS = BUIbackend.__abstractmethods__
@@ -94,8 +94,7 @@ class Burp(BUIbackend):
     # Thanks to this list, we know what function are implemented by our backend.
     foreign = INTERFACE_METHODS
     BUIbackend.__abstractmethods__ = frozenset()
-
-    custom = Custom()
+    last_getattr = None
 
     def __init__(self, server=None, conf=None):
         self.app = server
@@ -130,12 +129,20 @@ class Burp(BUIbackend):
     def __getattribute__(self, name):
         # always return this value because we need it and if we don't do that
         # we'll end up with an infinite loop
-        if name == 'foreign':
+        if name == 'foreign' or name == 'last_getattr':
             return object.__getattribute__(self, name)
         # now we can retrieve the 'foreign' list and know if the object called
         # needs to be "proxified"
-        if name in self.foreign and name not in self.custom.overridden:
-            return ProxyCall(self, name)
+        if name in self.foreign and name != self.last_getattr:
+            self.last_getattr = name
+            proxy = True
+            try:
+                func = getattr(self, name)
+                proxy = not getattr(func, '__ismethodimplemented__', False)
+            except:
+                pass
+            if proxy:
+                return ProxyCall(self, name)
         return object.__getattribute__(self, name)
 
     def _backup_running_parallel(self):
@@ -192,7 +199,7 @@ class Burp(BUIbackend):
 
         return r
 
-    @custom.override
+    @implement
     def is_one_backup_running(self, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.is_one_backup_running`"""
         r = []
@@ -268,14 +275,14 @@ class Burp(BUIbackend):
 
         return r
 
-    @custom.override
+    @implement
     def get_client_version(self, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_client_version`"""
         if not agent:
             return self._get_version_parallel('get_client_version')
         return self.servers[agent].get_client_version()
 
-    @custom.override
+    @implement
     def get_server_version(self, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_server_version`"""
         if not agent:
@@ -311,8 +318,7 @@ class NClient(BUIbackend, local):
     # Thanks to this list, we know what function are implemented by our backend.
     foreign = INTERFACE_METHODS
     BUIbackend.__abstractmethods__ = frozenset()
-
-    custom = Custom()
+    last_getattr = None
 
     def __init__(self, app=None, host=None, port=None, password=None, ssl=None, timeout=5):
         self.host = host
@@ -326,13 +332,21 @@ class NClient(BUIbackend, local):
     def __getattribute__(self, name):
         # always return this value because we need it and if we don't do that
         # we'll end up with an infinite loop
-        if name == 'foreign':
+        if name == 'foreign' or name == 'last_getattr':
             return object.__getattribute__(self, name)
         # now we can retrieve the 'foreign' list and know if the object called
         # needs a dynamic implementation
         #if name in self.foreign and name not in dir(self):
-        if name in self.foreign and name not in self.custom.overridden:
-            return ProxyCall(self, name, network=True)
+        if name in self.foreign and name != self.last_getattr:
+            self.last_getattr = name
+            proxy = True
+            try:
+                func = getattr(self, name)
+                proxy = not getattr(func, '__ismethodimplemented__', False)
+            except:
+                pass
+            if proxy:
+                return ProxyCall(self, name, network=True)
         return object.__getattribute__(self, name)
 
     def conn(self, notimeout=False):
@@ -471,7 +485,7 @@ class NClient(BUIbackend, local):
     Utilities functions
     """
 
-    @custom.override
+    @implement
     def store_conf_cli(self, data, client=None, conf=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.store_conf_cli`"""
         # serialize data as it is a nested dict
@@ -480,7 +494,7 @@ class NClient(BUIbackend, local):
         data = {'func': 'store_conf_cli', 'args': b64encode(pickle.dumps({'data': data, 'conf': conf, 'client': client}, -1)), 'pickled': True}
         return json.loads(self.do_command(data))
 
-    @custom.override
+    @implement
     def store_conf_srv(self, data, conf=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.store_conf_srv`"""
         # serialize data as it is a nested dict
