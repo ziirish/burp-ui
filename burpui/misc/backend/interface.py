@@ -7,6 +7,8 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
+import logging
+
 from abc import ABCMeta, abstractmethod
 
 from ...utils import BUIlogging
@@ -39,6 +41,8 @@ class BUIbackend(BUIlogging):
     app = Dummy()
     # Defaults config parameters
     defaults = {}
+
+    logger = logging.getLogger('burp-ui')
 
     def __init__(self, server=None, conf=None):  # pragma: no cover
         if server:

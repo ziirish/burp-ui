@@ -60,6 +60,8 @@ class ProxyCall(object):
         # Special case for network calls
         if self.network:
             data = {'func': self.method, 'args': encoded_args}
+            if self.method == 'restore_files':
+                return self.proxy.do_command(data)
             return json.loads(self.proxy.do_command(data))
         # normal case for "standard" interface
         if 'agent' not in encoded_args:
@@ -137,11 +139,13 @@ class Burp(BUIbackend):
             self.last_getattr = name
             proxy = True
             try:
-                func = getattr(self, name)
+                func = object.__getattribute__(self, name)
                 proxy = not getattr(func, '__ismethodimplemented__', False)
             except:
                 pass
+            self.logger.debug('func: {} - {}'.format(name, proxy))
             if proxy:
+                self.last_getattr = None
                 return ProxyCall(self, name)
         return object.__getattribute__(self, name)
 
@@ -341,11 +345,13 @@ class NClient(BUIbackend, local):
             self.last_getattr = name
             proxy = True
             try:
-                func = getattr(self, name)
+                func = object.__getattribute__(self, name)
                 proxy = not getattr(func, '__ismethodimplemented__', False)
             except:
                 pass
+            self.logger.debug('func: {} - {}'.format(name, proxy))
             if proxy:
+                self.last_getattr = None
                 return ProxyCall(self, name, network=True)
         return object.__getattribute__(self, name)
 
