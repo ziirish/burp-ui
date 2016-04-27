@@ -49,12 +49,47 @@ If you are using this sample configuration file, make sure to create the
 ::
 
     apt-get install gunicorn
+    cp /usr/local/share/burpui/contrib/gunicorn/burp-ui /etc/gunicorn.d/
     useradd -r -d /var/lib/burpui -c 'Burp-UI daemon user' burpui
     mkdir /etc/burp
     cp /usr/local/share/burpui/etc/burpui.sample.cfg /etc/burp/burpui.cfg
     mkdir -p /var/log/gunicorn
     chown -R burpui: /var/log/gunicorn
     service gunicorn restart
+
+
+You will also need a custom client configuration and you will have to create the
+certificates accordingly:
+
+::
+
+    cat >/var/lib/burpui/burp.conf<<EOF
+    mode = client
+    port = 4971
+    status_port = 4972
+    server = 127.0.0.1
+    password = abcdefgh
+    cname = bui-agent1
+    pidfile = /var/lib/burpui/bui-agent1.client.pid
+    syslog = 0
+    stdout = 1
+    progress_counter = 1
+    ca_burp_ca = /usr/sbin/burp_ca
+    ca_csr_dir = /var/lib/burpui/CA-client
+    ssl_cert_ca = /var/lib/burpui/ssl_cert_ca.pem
+    ssl_cert = /var/lib/burpui/ssl_cert-client.pem
+    ssl_key = /var/lib/burpui/ssl_cert-client.key
+    ssl_peer_cn = burpserver
+    EOF
+    burp_ca --name bui-agent1 --ca burpCA --key --request --sign --batch
+    cp /etc/burp/ssl_cert_ca.pem /var/lib/burpui/
+    cp -a /etc/burp/CA/bui-agent1.crt /var/lib/burpui/ssl_cert-client.pem
+    cp -a /etc/burp/CA/bui-agent1.key /var/lib/burpui/ssl_cert-client.key
+    chown -R burpui: /var/lib/burpui/
+
+
+Finally, make sure you set ``bconfcli: /var/lib/burpui/burp.conf`` in your 
+`Burp-UI`_ configuration file.
 
 
 Reverse Proxy

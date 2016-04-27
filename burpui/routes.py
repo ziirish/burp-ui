@@ -252,8 +252,9 @@ def login():
 @view.route('/logout')
 @login_required
 def logout():
-    if 'authenticated' in session:
-        session.pop('authenticated')
+    sess = session._get_current_object()
+    if 'authenticated' in sess:
+        sess.pop('authenticated')
     logout_user()
     return redirect(url_for('.home'))
 
