@@ -211,7 +211,7 @@ class Restore(Resource):
 
 @ns.route('/server-restore/<name>',
           '/<server>/server-restore/<name>',
-          methods=['GET'],
+          methods=['GET', 'DELETE'],
           endpoint='is_server_restore')
 @ns.route('/server-restore/<name>/<int:backup>',
           '/<server>/server-restore/<name>/<int:backup>',
@@ -321,8 +321,47 @@ class ServerRestore(Resource):
                  api.bui.acl.is_admin(current_user.get_id()))):
             self.abort(403, 'You are not allowed to edit a restoration for this client')
         try:
-            json = api.bui.cli.is_server_restore(name, server)
-            return json
+            return api.bui.cli.is_server_restore(name, server)
+        except BUIserverException as e:
+            self.abort(500, str(e))
+
+    @ns.doc(
+        params={
+            'server': 'Which server to collect data from when in multi-agent mode',
+            'name': 'Client name',
+        },
+        responses={
+            201: 'Success',
+            400: 'Missing parameter',
+            403: 'Insufficient permissions',
+            500: 'Internal failure',
+        },
+    )
+    def delete(self, server=None, name=None):
+        """Remove the *restore* file if present
+
+        **DELETE** method provided by the webservice.
+
+        :param server: Which server to collect data from when in multi-agent
+                       mode
+        :type server: str
+
+        :param name: The client we are working on
+        :type name: str
+
+        :returns: Status message (success or failure)
+        """
+        if not name:
+            self.abort(400, 'Missing options')
+        # Manage ACL
+        if (api.bui.acl and
+                (not api.bui.acl.is_client_allowed(current_user.get_id(),
+                                                   name,
+                                                   server) and not
+                 api.bui.acl.is_admin(current_user.get_id()))):
+            self.abort(403, 'You are not allowed to cancel a restoration for this client')
+        try:
+            return api.bui.cli.delete_server_restore(name, server)
         except BUIserverException as e:
             self.abort(500, str(e))
 

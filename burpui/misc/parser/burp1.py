@@ -1280,12 +1280,8 @@ class Parser(BUIparser):
         key = key.strip()
         return key not in keys
 
-    def cancel_restore(self, name=None):
-        """See :func:`burpui.misc.parser.interface.BUIparser.cancel_restore`"""
-        return
-
-    def read_restore(self, name=None):
-        """See :func:`burpui.misc.parser.interface.BUIparser.read_restore`"""
+    def _get_server_restore_path(self, name=None):
+        """Returns the path of the 'server restore' file"""
         self.read_server_conf()
 
         if not name:
@@ -1303,9 +1299,23 @@ class Parser(BUIparser):
         if not found:
             raise BUIserverException('Client \'{}\' not found'.format(name))
 
-        try:
-            path = os.path.join(self.workingdir, name, 'restore')
+        return os.path.join(self.workingdir, name, 'restore')
 
+    def cancel_restore(self, name=None):
+        """See :func:`burpui.misc.parser.interface.BUIparser.cancel_restore`"""
+        path = self._get_server_restore_path(name)
+        try:
+            if os.path.exists(path):
+                os.unlink(path)
+        except OSError as e:
+            return [[2, 'Unable to cancel restoration: {}'.format(str(e))]]
+        return [[0, 'Restoration successfully canceled']]
+
+    def read_restore(self, name=None):
+        """See :func:`burpui.misc.parser.interface.BUIparser.read_restore`"""
+        path = self._get_server_restore_path(name)
+
+        try:
             ret = {}
             with codecs.open(path, 'r', 'utf-8') as restore:
                 for line in restore.readlines():
@@ -1332,22 +1342,8 @@ class Parser(BUIparser):
             self, name=None, backup=None, files=None,
             strip=None, force=None, prefix=None, restoreto=None):
         """See :func:`burpui.misc.parser.interface.BUIparser.server_initiated_restoration`"""
-        self.read_server_conf()
-
         if not name or not backup or not files:
             raise BUIserverException('At least one argument is missing')
-
-        if not self.workingdir:
-            raise BUIserverException('Unable to find burp spool dir')
-
-        found = False
-        for cli in self.clients:
-            if cli['name'] == name:
-                found = True
-                break
-
-        if not found:
-            raise BUIserverException('Client \'{}\' not found'.format(name))
 
         flist = json.loads(files)
         if 'restore' not in flist:
@@ -1378,7 +1374,7 @@ class Parser(BUIparser):
 
                 client = restoreto
 
-            path = os.path.join(self.workingdir, client, 'restore')
+            path = self._get_server_restore_path(client)
             with codecs.open(path, 'w', 'utf-8') as f:
                 f.write('backup = {}\n'.format(backup))
                 f.write('regex = {}\n'.format(full_reg.rstrip('|')))
