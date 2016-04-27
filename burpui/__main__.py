@@ -111,7 +111,7 @@ def agent(options=None):
 
     check_config(conf)
 
-    agent = Agent(conf, options.log, options.logfile)
+    agent = Agent(conf, options.log, options.logfile, options.debug)
     agent.run()
 
 

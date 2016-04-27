@@ -68,11 +68,11 @@ class BUIAgent(BUIbackend):
         'version': g_version, 'password': g_password
     }
 
-    def __init__(self, conf=None, debug=False, logfile=None):
+    def __init__(self, conf=None, level=0, logfile=None, debug=False):
         self.conf = conf
-        self.dbg = debug
+        self.debug = debug
         self.padding = 1
-        if debug > logging.NOTSET:
+        if level > logging.NOTSET:
             logging.addLevelName(DISCLOSURE, 'DISCLOSURE')
             levels = [
                 logging.CRITICAL,
@@ -82,9 +82,9 @@ class BUIAgent(BUIbackend):
                 logging.DEBUG,
                 DISCLOSURE
             ]
-            if debug >= len(levels):
-                debug = len(levels) - 1
-            lvl = levels[debug]
+            if level >= len(levels):
+                level = len(levels) - 1
+            lvl = levels[level]
             self.app.logger = logging.getLogger('burp-ui')
             self.set_logger(self.app.logger)
             self.logger.setLevel(lvl)
