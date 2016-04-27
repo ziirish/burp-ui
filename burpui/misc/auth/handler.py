@@ -45,8 +45,9 @@ class UserAuthHandler(BUIhandler):
 class UserHandler(BUIuser):
     """See :class:`burpui.misc.auth.interface.BUIuser`"""
     def __init__(self, backends=None, name=None):
+        sess = session._get_current_object()
         self.active = False
-        self.authenticated = session.get('authenticated', False)
+        self.authenticated = sess.get('authenticated', False)
         self.backends = backends
         self.name = name
         self.real = None
@@ -73,7 +74,8 @@ class UserHandler(BUIuser):
                     break
         elif self.real:  # pragma: no cover
             self.authenticated = self.real.login(name, passwd)
-        session['authenticated'] = self.authenticated
+        sess = session._get_current_object()
+        sess['authenticated'] = self.authenticated
         return self.authenticated
 
     @property
