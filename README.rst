@@ -58,14 +58,14 @@ Documentation
 =============
 
 The documentation is hosted on `readthedocs <https://readthedocs.org>`_ at the
-following address: `burp-ui.readthedocs.org
-<https://burp-ui.readthedocs.org/en/latest/>`_
+following address: `burp-ui.readthedocs.io
+<https://burp-ui.readthedocs.io/en/latest/>`_
 
 
 FAQ
 ===
 
-A `FAQ <https://burp-ui.readthedocs.org/en/latest/faq.html>`_ is available with
+A `FAQ <https://burp-ui.readthedocs.io/en/latest/faq.html>`_ is available with
 the documentation.
 
 
@@ -73,7 +73,7 @@ Community
 =========
 
 Please refer to the `Contributing
-<https://burp-ui.readthedocs.org/en/latest/contributing.html>`_ page.
+<https://burp-ui.readthedocs.io/en/latest/contributing.html>`_ page.
 
 
 Notes
@@ -83,7 +83,7 @@ Feel free to report any issues on my `gitlab
 <https://git.ziirish.me/ziirish/burp-ui/issues>`_.
 I have closed the *github tracker* to have a unique tracker system.
 Also please, read the `Contributing
-<https://burp-ui.readthedocs.org/en/latest/contributing.html>`_
+<https://burp-ui.readthedocs.io/en/latest/contributing.html>`_
 page before reporting any issue to make sure we have all the informations to
 help you.
 
