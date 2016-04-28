@@ -1307,6 +1307,8 @@ class Parser(BUIparser):
         try:
             if os.path.exists(path):
                 os.unlink(path)
+            else:
+                return [[1, 'There is no restoration scheduled for this client']]
         except OSError as e:
             return [[2, 'Unable to cancel restoration: {}'.format(str(e))]]
         return [[0, 'Restoration successfully canceled']]
