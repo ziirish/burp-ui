@@ -663,11 +663,11 @@ class Burp(Burp1):
                 try:
                     back['received'] = log['received']
                 except KeyError as e:
-                    back['received'] = -1
+                    back['received'] = 0
                 try:
                     back['size'] = log['totsize']
                 except KeyError as e:
-                    back['size'] = -1
+                    back['size'] = 0
                 back['end'] = log['end']
                 # override date since the timestamp is odd
                 back['date'] = log['start']
