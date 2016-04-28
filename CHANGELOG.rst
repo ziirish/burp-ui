@@ -101,7 +101,7 @@ Current
 - Fix issue `#70 <https://git.ziirish.me/ziirish/burp-ui/issues/70>`_
 - Fix issue `#71 <https://git.ziirish.me/ziirish/burp-ui/issues/71>`_
 - Fix issue `#72 <https://git.ziirish.me/ziirish/burp-ui/issues/72>`_
-- doc on `readthedocs <http://burp-ui.readthedocs.org/en/latest/>`_
+- doc on `readthedocs <http://burp-ui.readthedocs.io/en/latest/>`_
 - Two merge requests from Wade Fitzpatrick (`!1 <https://git.ziirish.me/ziirish/burp-ui/merge_requests/1>`_ and `!2 <https://git.ziirish.me/ziirish/burp-ui/merge_requests/2>`_)
 - API refactoring
 - Security fixes
