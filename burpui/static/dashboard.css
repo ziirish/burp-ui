@@ -304,6 +304,14 @@ legend[id] {
   cursor: pointer;
 }
 
+.bold {
+  font-weight: bold;
+}
+
+.italic {
+  font-style: italic;
+}
+
 .ui-select-bootstrap .ui-select-choices-row > a {
   color: #fff;
 }
