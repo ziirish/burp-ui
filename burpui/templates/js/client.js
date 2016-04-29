@@ -85,16 +85,43 @@ var _client = function() {
 	} else {
 		_client_table.api().ajax.reload( null, false );
 	}
+	url = '{{ url_for("api.is_server_restore", name=cname, server=server) }}';
+	$.getJSON(url, function(d) {
+		if (d.found) {
+			$('#edit-restore').show();
+		}
+	}).fail(myFail);
 };
 
 $(document).ready(function() {
-	$('a.toggle-vis').on( 'click', function (e) {
+	$('a.toggle-vis').on('click', function(e) {
 		e.preventDefault();
 
 		// Get the column API object
 		var column = _client_table.api().column( $(this).attr('data-column') );
+		var vis = column.visible();
+
+		if (vis) {
+			$(this).addClass('italic');
+		} else {
+			$(this).removeClass('italic');
+		}
 
 		// Toggle the visibility
-		column.visible( ! column.visible() );
+		column.visible( ! vis );
+	});
+
+	$('#btn-cancel-restore').on('click', function(e) {
+		$.ajax({
+			url: '{{ url_for("api.is_server_restore", name=cname, server=server) }}',
+			type: 'DELETE'
+		}).done(function(data) {
+			$.each(data, function(i, n) {
+				notif(n[0], n[1]);
+				if (n[0] == 0) {
+					$('#edit-restore').hide();
+				}
+			});
+		}).fail(myFail);
 	});
 });
