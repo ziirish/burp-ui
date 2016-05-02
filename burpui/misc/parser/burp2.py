@@ -4,7 +4,7 @@ from .burp1 import Parser as Burp1
 
 # inherit Burp1 parser so we can just override available options
 class Parser(Burp1):
-    """Implements :class:`burpui.misc.parser.burp1.Parser`"""
+    """Extends :class:`burpui.misc.parser.burp1.Parser`"""
     pver = 2
 
     multi_srv = Burp1.multi_srv + [
@@ -19,15 +19,18 @@ class Parser(Burp1):
         u'server_can_override_includes',
         u'glob_after_script_pre',
     ]
+    boolean_add_cli = [
+        u'enabled',
+    ]
     boolean_srv = Burp1.boolean_srv + boolean_add
-    boolean_cli = Burp1.boolean_cli + boolean_add
+    boolean_cli = Burp1.boolean_cli + boolean_add + boolean_add_cli
     multi_cli = Burp1.multi_cli + [
         u'label',
     ]
     integer_cli = Burp1.integer_cli + [
         u'randomise',
     ]
-    fields_cli = Burp1.fields_cli + boolean_add + [
+    fields_cli = Burp1.fields_cli + boolean_add + boolean_add_cli + [
         u'randomise',
         u'manual_delete',
         u'label',
@@ -41,6 +44,7 @@ class Parser(Burp1):
         u'label': u"some informations",
         u'server_can_override_includes': u"0|1",
         u'glob_after_script_pre': u"0|1",
+        u'enabled': u"0|1",
     })
     defaults = Burp1.defaults
     defaults.update({
@@ -51,6 +55,7 @@ class Parser(Burp1):
         u'randomise': 0,
         u'manual_delete': u'',
         u'label': u'',
+        u'enabled': True,
     })
     doc = Burp1.doc
     doc.update({
@@ -90,4 +95,8 @@ class Parser(Burp1):
                                   " include_glob settings to be evaluated" +
                                   " after the pre script is run. The default" +
                                   " is 1.",
+        u'enabled': u"Set this to 0 if you want to disable all clients. The" +
+                    " default is 1. This option can be overridden per-client" +
+                    " in the client configuration files in clientconfdir on" +
+                    " the server.",
     })
