@@ -679,8 +679,8 @@ class BUIbackend(BUIlogging):
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
     @abstractmethod
-    def delete_server_restore(self, client=None, agent=None):
-        """The :func:`burpui.misc.backend.interface.BUIbackend.delete_server_restore`
+    def cancel_server_restore(self, client=None, agent=None):
+        """The :func:`burpui.misc.backend.interface.BUIbackend.cancel_server_restore`
         function is used to delete the server-initiated restoration file of a
         given client.
 

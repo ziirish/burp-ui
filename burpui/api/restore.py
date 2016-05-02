@@ -365,7 +365,7 @@ class ServerRestore(Resource):
                  api.bui.acl.is_admin(current_user.get_id()))):
             self.abort(403, 'You are not allowed to cancel a restoration for this client')
         try:
-            return api.bui.cli.delete_server_restore(name, server)
+            return api.bui.cli.cancel_server_restore(name, server)
         except BUIserverException as e:
             self.abort(500, str(e))
 

@@ -207,8 +207,9 @@ class BUIparser(BUIlogging):
 
     @abstractmethod
     def cancel_restore(self, name=None):
-        """:func:`burpui.misc.parser.interface.BUIparser.cancel_restore called
-        by ... in order to cancel a server-initiated restoration.
+        """:func:`burpui.misc.parser.interface.BUIparser.cancel_restore` called
+        by :func:`burpui.misc.backend.interface.BUIbackend.cancel_server_restore`
+        in order to cancel a server-initiated restoration.
 
         :param name: Client name
         :type name: str
@@ -220,13 +221,20 @@ class BUIparser(BUIlogging):
 
     @abstractmethod
     def read_restore(self, name=None):
-        """:func:`burpui.misc.parser.interface.BUIparser.read_restore called
-        by ... in order to read a server-initiated restoration file.
+        """:func:`burpui.misc.parser.interface.BUIparser.read_restore` called
+        by :func:`burpui.misc.backend.interface.BUIbackend.is_server_restore`
+        in order to read a server-initiated restoration file.
 
         :param name: Client name
         :type name: str
 
         :returns: A dict describing the content of the file
+        """
+        raise NotImplementedError("Sorry, the current Parser does not implement this method!")  # pragma: no cover
+
+    @abstractmethod
+    def server_initiated_backup(self, name=None):
+        """:func:`burpui.misc.parser.interface.BUIparser.server_initiated_backup`
         """
         raise NotImplementedError("Sorry, the current Parser does not implement this method!")  # pragma: no cover
 
