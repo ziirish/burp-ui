@@ -55,8 +55,12 @@
 		},
 		source: function() { 
 			r = [];
-			//$.getJSON('{{ url_for("api.client_tree", name=cname, backup=nbackup, server=server) }}?root=/opt&recursive=true&selected=true', function(data) {
-			$.getJSON('{{ url_for("api.client_tree", name=cname, backup=nbackup, server=server) }}', function(data) {
+			{% if edit and edit.found -%}
+			url = '{{ url_for("api.client_tree", name=cname, backup=nbackup, server=server, root=edit.roots, recursive=True, selected=True) }}';
+			{% else -%}
+			url = '{{ url_for("api.client_tree", name=cname, backup=nbackup, server=server) }}';
+			{% endif -%}
+			$.getJSON(url, function(data) {
 				r = data;
 			})
 			.fail(myFail);
@@ -229,7 +233,7 @@
 		e.stopPropagation();
 	});
 
-	{%if encrypted -%}
+	{% if encrypted -%}
 	$("#perform").attr("disabled", "disabled");
 	$("#pass").on('change', function() {
 		if ($(this).val().length > 0) {
@@ -239,5 +243,26 @@
 			$("#perform").attr("disabled", "disabled");
 			$("#notice").show();
 		}
+	});
+	{% endif -%}
+
+	{% if edit -%}
+	$('#btn-cancel-restore').on('click', function(e) {
+		{% if edit.orig_client -%}
+		url = '{{ url_for("api.is_server_restore", name=edit.to, server=server) }}';
+		{% else -%}
+		url = '{{ url_for("api.is_server_restore", name=cname, server=server) }}';
+		{% endif -%}
+		$.ajax({
+			url: url,
+			type: 'DELETE'
+		}).done(function(data) {
+			$.each(data, function(i, n) {
+				notif(n[0], n[1]);
+				if (n[0] == 0) {
+					$('#btn-cancel-restore').hide();
+				}
+			});
+		}).fail(myFail);
 	});
 	{% endif -%}

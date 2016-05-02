@@ -147,6 +147,21 @@ def live_monitor(server=None, name=None):
     return render_template('live-monitor.html', live=True, cname=name, server=server)
 
 
+@view.route('/edit-server-initiated-restore/<name>', methods=['GET'])
+@view.route('/<server>/edit-server-initiated-restore/<name>', methods=['GET'])
+@login_required
+def edit_server_initiated_restore(server=None, name=None):
+    data = view.bui.cli.is_server_restore(name, server)
+    to = None
+    if not data or not data['found']:
+        flash('Sorry, there are no restore file found for this client', 'warning')
+        return redirect(url_for('.home'))
+    if data.get('orig_client'):
+        to = name
+        name = data['orig_client']
+    return redirect(url_for('.client_browse', server=server, name=name, backup=data['backup'], edit=1, to=to))
+
+
 @view.route('/client-browse/<name>', methods=['GET'])
 @view.route('/<server>/client-browse/<name>', methods=['GET'])
 @view.route('/client-browse/<name>/<int:backup>')
@@ -154,15 +169,23 @@ def live_monitor(server=None, name=None):
 @view.route('/client-browse/<name>/<int:backup>/<int:encrypted>')
 @view.route('/<server>/client-browse/<name>/<int:backup>/<int:encrypted>')
 @login_required
-def client_browse(server=None, name=None, backup=None, encrypted=None):
+def client_browse(server=None, name=None, backup=None, encrypted=None, edit=None):
     """Browse a specific backup of a specific client"""
     if request.args.get('encrypted') == '1':
         encrypted = 1
+    if request.args.get('edit') == '1':
+        to = request.args.get('to') or name
+        edit = view.bui.cli.is_server_restore(to, server)
+        if not edit or not edit['found']:
+            flash('Sorry, there are no restore file found for this client', 'warning')
+            edit = None
+        else:
+            edit['roots'] = [x['key'] for x in edit['list']]
     server = server or request.args.get('serverName')
     bkp = request.args.get('backup')
     if bkp and not backup:
         return redirect(url_for('.client_browse', name=name, backup=bkp, encrypted=encrypted, server=server))
-    return render_template('client-browse.html', tree=True, backup=True, overview=True, cname=name, nbackup=backup, encrypted=encrypted, server=server)
+    return render_template('client-browse.html', tree=True, backup=True, overview=True, cname=name, nbackup=backup, encrypted=encrypted, server=server, edit=edit)
 
 
 @view.route('/client-report/<name>')

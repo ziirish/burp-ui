@@ -1335,6 +1335,7 @@ class Parser(BUIparser):
                     else:
                         ret[key] = val
                 ret['found'] = True
+                ret['to'] = name
 
             return ret
         except Exception:

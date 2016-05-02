@@ -267,6 +267,10 @@ class ServerRestore(Resource):
             default=False,
             attribute='overwrite'
         ),
+        'to': fields.String(
+            required=False,
+            description='What client the restoration is intended to',
+        ),
         'orig_client': fields.String(
             required=False,
             description='Name of the client to restore from when different' +
