@@ -59,44 +59,44 @@ class Parser(Burp1):
     })
     doc = Burp1.doc
     doc.update({
-        u'acl': u"If acl support is compiled into burp, this allows you to" +
-                " decide whether or not to backup acls at runtime. The" +
+        u'acl': u"If acl support is compiled into burp, this allows you to"
+                " decide whether or not to backup acls at runtime. The"
                 " default is '1'.",
-        u'xattr': u"If xattr support is compiled into burp, this allows you" +
-                  " to decide whether or not to backup xattrs at runtime." +
+        u'xattr': u"If xattr support is compiled into burp, this allows you"
+                  " to decide whether or not to backup xattrs at runtime."
                   " The default is '1'.",
-        u'randomise': u"When running a timed backup, sleep for a random" +
-                      " number of seconds (between 0 and the number given)" +
-                      " before contacting the server. Alternatively, this" +
+        u'randomise': u"When running a timed backup, sleep for a random"
+                      " number of seconds (between 0 and the number given)"
+                      " before contacting the server. Alternatively, this"
                       " can be specified by the '-q' command line option.",
-        u'manual_delete': u"This can be overridden by the clientconfdir" +
-                          " configuration files in clientconfdir on the" +
-                          " server. When the server needs to delete old" +
-                          " backups, or rubble left over from generating" +
-                          " reverse patches with librsync=1, it will" +
-                          " normally delete them in place. If you use the" +
-                          " 'manual_delete' option, the files will be moved" +
-                          " to the path specified for deletion at a later" +
-                          " point. You will then need to configure a cron" +
-                          " job, or similar, to delete the files yourself." +
-                          " Do not specify a path that is not on the same" +
+        u'manual_delete': u"This can be overridden by the clientconfdir"
+                          " configuration files in clientconfdir on the"
+                          " server. When the server needs to delete old"
+                          " backups, or rubble left over from generating"
+                          " reverse patches with librsync=1, it will"
+                          " normally delete them in place. If you use the"
+                          " 'manual_delete' option, the files will be moved"
+                          " to the path specified for deletion at a later"
+                          " point. You will then need to configure a cron"
+                          " job, or similar, to delete the files yourself."
+                          " Do not specify a path that is not on the same"
                           " filesystem as the client storage directory.",
-        u'label': u"You can have multiple labels, and they can be overridden" +
-                  " in the client configuration files in clientconfdir on" +
-                  " the server. They will appear as an array of strings in" +
-                  " the server status monitor JSON output. The idea is to" +
-                  " provide a mechanism for arbitrary values to be passed" +
+        u'label': u"You can have multiple labels, and they can be overridden"
+                  " in the client configuration files in clientconfdir on"
+                  " the server. They will appear as an array of strings in"
+                  " the server status monitor JSON output. The idea is to"
+                  " provide a mechanism for arbitrary values to be passed"
                   " to clients of the server status monitor.",
-        u'server_can_override_includes': u"To prevent the server from being" +
-                                         " able to override your local" +
-                                         " include/exclude list, set this" +
+        u'server_can_override_includes': u"To prevent the server from being"
+                                         " able to override your local"
+                                         " include/exclude list, set this"
                                          " to 0. The default is 1.",
-        u'glob_after_script_pre': u"Set this to 0 if you do not want" +
-                                  " include_glob settings to be evaluated" +
-                                  " after the pre script is run. The default" +
+        u'glob_after_script_pre': u"Set this to 0 if you do not want"
+                                  " include_glob settings to be evaluated"
+                                  " after the pre script is run. The default"
                                   " is 1.",
-        u'enabled': u"Set this to 0 if you want to disable all clients. The" +
-                    " default is 1. This option can be overridden per-client" +
-                    " in the client configuration files in clientconfdir on" +
+        u'enabled': u"Set this to 0 if you want to disable all clients. The"
+                    " default is 1. This option can be overridden per-client"
+                    " in the client configuration files in clientconfdir on"
                     " the server.",
     })
