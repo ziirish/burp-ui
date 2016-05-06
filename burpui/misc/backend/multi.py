@@ -12,7 +12,7 @@ from six import iteritems
 
 from .interface import BUIbackend
 from ...exceptions import BUIserverException
-from ..._compat import IS_GUNICORN, ConfigParser, local, pickle
+from ..._compat import IS_GUNICORN, ConfigParser, pickle
 from ...utils import implement
 
 
@@ -294,7 +294,7 @@ class Burp(BUIbackend):
         return self.servers[agent].get_server_version()
 
 
-class NClient(BUIbackend, local):
+class NClient(BUIbackend):
     """The :class:`burpui.misc.backend.multi.NClient` class provides a
     consistent backend to interact with ``agents``.
 

@@ -29,10 +29,8 @@ else:
 
 if 'gunicorn' in os.environ.get('SERVER_SOFTWARE', ''):
     IS_GUNICORN = True
-    from gevent.local import local  # noqa
 else:
     IS_GUNICORN = False
-    local = object
 
 
 # maps module name -> attribute name -> original item

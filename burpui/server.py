@@ -58,6 +58,10 @@ class BUIServer(Flask):
         """Enable or disable the logger"""
         self.builogger.disabled = not enable
 
+    @property
+    def logger(self):
+        return self.builogger
+
     def setup(self, conf=None):
         """The :func:`burpui.server.BUIServer.setup` functions is used to setup
         the whole server by parsing the configuration file and loading the

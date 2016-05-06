@@ -193,6 +193,12 @@ class BUIAgent(BUIbackend):
                         self.request.sendall(buf)
                         buf = f.read(1024)
                 os.unlink(res)
+                lengthbuf = self.request.recv(8)
+                length, = struct.unpack('!Q', lengthbuf)
+                data = self.recvall(length)
+                txt = data.decode('UTF-8')
+                if txt == 'RE':
+                    return
             else:
                 self.request.sendall(struct.pack('!Q', len(res)))
                 self.request.sendall(res.encode('UTF-8'))
