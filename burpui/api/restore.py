@@ -295,14 +295,13 @@ class ServerRestore(Resource):
             'name': 'Client name',
         },
         responses={
-            201: 'Success',
             400: 'Missing parameter',
             403: 'Insufficient permissions',
             500: 'Internal failure',
         },
     )
     def get(self, server=None, name=None):
-        """Reads the content of the *restore* file if present
+        """Reads the content of the 'restore' file if present
 
         **GET** method provided by the webservice.
 
@@ -335,14 +334,14 @@ class ServerRestore(Resource):
             'name': 'Client name',
         },
         responses={
-            201: 'Success',
+            200: 'Success',
             400: 'Missing parameter',
             403: 'Insufficient permissions',
             500: 'Internal failure',
         },
     )
     def delete(self, server=None, name=None):
-        """Remove the *restore* file if present
+        """Remove the 'restore' file if present
 
         **DELETE** method provided by the webservice.
 
@@ -435,6 +434,6 @@ class ServerRestore(Resource):
                 to,
                 server
             )
-            return {'notif': json}, 201
+            return json, 201
         except BUIserverException as e:
             self.abort(500, str(e))
