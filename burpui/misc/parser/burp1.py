@@ -1438,7 +1438,6 @@ class Parser(BUIparser):
         """See :func:`burpui.misc.parser.interface.BUIparser.read_backup`"""
         path = self._get_server_backup_path(name)
         ret = os.path.exists(path)
-        print path, ret
         return os.path.exists(path)
 
     def server_initiated_backup(self, name=None):
