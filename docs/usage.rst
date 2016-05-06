@@ -282,6 +282,10 @@ Burp2
     Make sure you have read and understood the `requirements
     <requirements.html#burp2>`__ first.
 
+.. note::
+    The `gunicorn <gunicorn.html#daemon>`__ documentation may help you
+    configuring your system.
+
 The *burp-2* backend can be enabled by setting the *version* option to *2* in
 the ``[Global]`` section of your `burpui.cfg`_ file:
 
