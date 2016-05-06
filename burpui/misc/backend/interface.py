@@ -700,12 +700,12 @@ class BUIbackend(BUIlogging):
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
     @abstractmethod
-    def server_restore(self, name=None, backup=None, files=None, strip=None, force=None, prefix=None, restoreto=None, agent=None):
+    def server_restore(self, client=None, backup=None, files=None, strip=None, force=None, prefix=None, restoreto=None, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.server_restore`
         function is used to schedule a server-side initiated restoration.
 
-        :param name: Client name
-        :type name: str
+        :param client: Client name
+        :type client: str
 
         :param backup: Backup number
         :type backup: int
@@ -724,6 +724,59 @@ class BUIbackend(BUIlogging):
 
         :param retoreto: Restore on an other client
         :type restoreto: str
+
+        :param agent: What server to ask (only in multi-agent mode)
+        :type agent: str
+
+        :returns: A list of notifications to return to the UI (success or
+                  failure)
+        """
+        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+
+    @abstractmethod
+    def is_server_backup(self, client=None, agent=None):
+        """The :func:`burpui.misc.backend.interface.BUIbackend.is_server_backup`
+        function is used to know if there is a server-initiated backup file
+        in place.
+
+        :param client: The name of the client to look for
+        :type client: str
+
+        :param agent: What server to ask (only in multi-agent mode)
+        :type agent: str
+
+        :returns: A dict like: {'is_server_backup': True}
+        """
+        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+
+    @abstractmethod
+    def cancel_server_backup(self, client=None, agent=None):
+        """The :func:`burpui.misc.backend.interface.BUIbackend.cancel_server_backup`
+        function is used to delete the server-initiated backup file of a given
+        client.
+
+        :param client: The name of the client to look for
+        :type client: str
+
+        :param agent: What server to ask (only in multi-agent mode)
+        :type agent: str
+
+        :returns: A list of notifications to return to the UI (success or
+                  failure)
+
+        Example::
+
+            [[0, "Success"]]
+        """
+        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+
+    @abstractmethod
+    def server_backup(self, client=None, agent=None):
+        """The :func:`burpui.misc.backend.interface.BUIbackend.server_backup`
+        function is used to schedule a server-side initiated backup.
+
+        :param client: Client name
+        :type client: str
 
         :param agent: What server to ask (only in multi-agent mode)
         :type agent: str
@@ -762,7 +815,7 @@ class BUIbackend(BUIlogging):
         """The :func:`burpui.misc.backend.interface.BUIbackend.get_client_labels`
         function returns a list of labels (if any) for a given client.
 
-        .. note:: Labels are only available with Burp 2.0.34 and above
+        .. note:: Labels are only available since Burp 2.0.34
 
         :param client: The client for which you want the labels
         :type client: str

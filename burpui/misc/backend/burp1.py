@@ -119,7 +119,6 @@ class Burp(BUIbackend):
         self.server_version = None
         self.app = None
         self.zip64 = False
-        self.logger = logging.getLogger('burp-ui')
         if server:
             if hasattr(server, 'zip64'):
                 self.zip64 = server.zip64
@@ -838,12 +837,24 @@ class Burp(BUIbackend):
         """See :func:`burpui.misc.backend.interface.BUIbackend.cancel_server_restore`"""
         return self.parser.cancel_restore(client)
 
-    def server_restore(self, name=None, backup=None, files=None, strip=None, force=None, prefix=None, restoreto=None, agent=None):
+    def server_restore(self, client=None, backup=None, files=None, strip=None, force=None, prefix=None, restoreto=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.server_restore`"""
-        if not name or not backup or not files:
+        if not client or not backup or not files:
             raise BUIserverException('At least one argument is missing')
 
-        return self.parser.server_initiated_restoration(name, backup, files, strip, force, prefix, restoreto)
+        return self.parser.server_initiated_restoration(client, backup, files, strip, force, prefix, restoreto)
+
+    def is_server_backup(self, client=None, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.is_server_backup`"""
+        return self.parser.read_backup(client)
+
+    def cancel_server_backup(self, client=None, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.cancel_server_backup`"""
+        return self.parser.cancel_backup(client)
+
+    def server_backup(self, client=None, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.server_backup`"""
+        return self.parser.server_initiated_backup(client)
 
     def restore_files(self, name=None, backup=None, files=None, strip=None, archive='zip', password=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.restore_files`"""

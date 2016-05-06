@@ -216,9 +216,7 @@
 		})
 		.fail(myFail)
 		.done(function(data) {
-			if (data.notif) {
-				notif(data.notif[0], data.notif[1]);
-			}
+			notif(data[0], data[1]);
 		});
 
 		return false;
@@ -257,12 +255,10 @@
 			url: url,
 			type: 'DELETE'
 		}).done(function(data) {
-			$.each(data, function(i, n) {
-				notif(n[0], n[1]);
-				if (n[0] == 0) {
-					$('#btn-cancel-restore').hide();
-				}
-			});
+			notif(data[0], data[1]);
+			if (data[0] == 0) {
+				$('#btn-cancel-restore').hide();
+			}
 		}).fail(myFail);
 	});
 	{% endif -%}

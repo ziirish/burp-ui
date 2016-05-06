@@ -45,12 +45,20 @@
             </div>
           </div>
           <br />
-          <div id="edit-restore" style="display: none;">
-            <div class="form-inline col-md-6">
+          <div id="left" class="form-inline col-md-6">
+            <div class="edit-restore" style="display: none;">
               <a href="{{ url_for('view.edit_server_initiated_restore', name=cname, server=server) }}" id="btn-edit-restore" class="btn btn-info"><span class="glyphicon glyphicon-pencil"></span>&nbsp;Edit restore</a>
             </div>
-            <div class="form-inline col-md-6 text-right">
+            <div class="scheduled-backup">
+              <button type="button" id="btn-schedule-backup" class="btn btn-info"><span class="glyphicon glyphicon-time"></span>&nbsp;Schedule backup</button>
+            </div>
+          </div>
+          <div id="right" class="form-inline col-md-6 text-right">
+            <div class="edit-restore" style="display: none;">
               <button type="button" id="btn-cancel-restore" class="btn btn-danger"><span class="glyphicon glyphicon-trash"></span>&nbsp;Cancel restore</button>
+            </div>
+            <div class="cancel-backup" style="display: none;">
+              <button type="button" id="btn-cancel-backup" class="btn btn-danger"><span class="glyphicon glyphicon-trash"></span>&nbsp;Cancel backup</button>
             </div>
           </div>
         </div>

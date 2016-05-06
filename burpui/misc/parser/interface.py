@@ -118,20 +118,25 @@ class BUIparser(BUIlogging):
                 ],
             }
         """
-        raise NotImplementedError("Sorry, the current Parser does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Parser does not implement this method!"
+        )  # pragma: no cover
 
     @abstractmethod
     def store_client_conf(self, data, client=None, conf=None):
         """:func:`burpui.misc.parser.interface.BUIparser.store_client_conf` is
         used by :func:`burpui.misc.backend.BUIbackend.store_conf_cli`.
 
-        It works the same way as :func:`burpui.misc.parser.interface.BUIparser.store_conf`
+        It works the same way as
+        :func:`burpui.misc.parser.interface.BUIparser.store_conf`
         with an extra parameter:
 
         :param client: Name of the client for which to apply this config
         :type client: str
         """
-        raise NotImplementedError("Sorry, the current Parser does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Parser does not implement this method!"
+        )  # pragma: no cover
 
     @abstractmethod
     def store_conf(self, data, conf=None, mode='srv'):
@@ -156,7 +161,9 @@ class BUIparser(BUIlogging):
 
             [[0, "Success"]]
         """
-        raise NotImplementedError("Sorry, the current Parser does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Parser does not implement this method!"
+        )  # pragma: no cover
 
     @abstractmethod
     def path_expander(self, pattern=None, client=None):
@@ -172,7 +179,9 @@ class BUIparser(BUIlogging):
 
         :returns: A list of files or an empty list
         """
-        raise NotImplementedError("Sorry, the current Parser does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Parser does not implement this method!"
+        )  # pragma: no cover
 
     @abstractmethod
     def list_clients(self):
@@ -181,7 +190,9 @@ class BUIparser(BUIlogging):
 
         :returns: A list of clients with their configuration file
         """
-        raise NotImplementedError("Sorry, the current Parser does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Parser does not implement this method!"
+        )  # pragma: no cover
 
     @abstractmethod
     def remove_client(self, client=None):
@@ -193,7 +204,9 @@ class BUIparser(BUIlogging):
         :returns: A list of notifications to return to the UI (success or
                   failure)
         """
-        raise NotImplementedError("Sorry, the current Parser does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Parser does not implement this method!"
+        )  # pragma: no cover
 
     @abstractmethod
     def read_client_conf(self, client=None, conf=None):
@@ -201,14 +214,18 @@ class BUIparser(BUIlogging):
         called by :func:`burpui.misc.backend.interface.BUIbackend.read_conf_cli`
         in order to parse the burp-clients configuration files.
 
-        It works the same way as :func:`burpui.misc.parser.interface.BUIparser.read_server_conf`
+        It works the same way as
+        :func:`burpui.misc.parser.interface.BUIparser.read_server_conf`
         """
-        raise NotImplementedError("Sorry, the current Parser does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Parser does not implement this method!"
+        )  # pragma: no cover
 
     @abstractmethod
     def cancel_restore(self, name=None):
         """:func:`burpui.misc.parser.interface.BUIparser.cancel_restore` called
-        by :func:`burpui.misc.backend.interface.BUIbackend.cancel_server_restore`
+        by
+        :func:`burpui.misc.backend.interface.BUIbackend.cancel_server_restore`
         in order to cancel a server-initiated restoration.
 
         :param name: Client name
@@ -217,7 +234,9 @@ class BUIparser(BUIlogging):
         :returns: A list of notifications to return to the UI (success or
                   failure)
         """
-        raise NotImplementedError("Sorry, the current Parser does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Parser does not implement this method!"
+        )  # pragma: no cover
 
     @abstractmethod
     def read_restore(self, name=None):
@@ -230,17 +249,22 @@ class BUIparser(BUIlogging):
 
         :returns: A dict describing the content of the file
         """
-        raise NotImplementedError("Sorry, the current Parser does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Parser does not implement this method!"
+        )  # pragma: no cover
 
     @abstractmethod
-    def server_initiated_backup(self, name=None):
-        """:func:`burpui.misc.parser.interface.BUIparser.server_initiated_backup`
+    def server_initiated_restoration(
+            self,
+            name=None,
+            backup=None,
+            files=None,
+            strip=None,
+            force=None,
+            prefix=None,
+            restoreto=None):
         """
-        raise NotImplementedError("Sorry, the current Parser does not implement this method!")  # pragma: no cover
-
-    @abstractmethod
-    def server_initiated_restoration(self, name=None, backup=None, files=None, strip=None, force=None, prefix=None):
-        """:func:`burpui.misc.parser.interface.BUIparser.server_initiated_restoration`
+        :func:`burpui.misc.parser.interface.BUIparser.server_initiated_restoration`
         called by :func:`burpui.misc.backend.interface.BUIbackend.server_restore`
         in order to create server-initiated restoration file.
 
@@ -268,4 +292,53 @@ class BUIparser(BUIlogging):
         :returns: A list of notifications to return to the UI (success or
                   failure)
         """
-        raise NotImplementedError("Sorry, the current Parser does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Parser does not implement this method!"
+        )  # pragma: no cover
+
+    @abstractmethod
+    def cancel_backup(self, name=None):
+        """:func:`burpui.misc.parser.interface.BUIparser.cancel_backup` called
+        by :func:`burpui.misc.backend.interface.BUIbackend.cancel_server_backup`
+        in order to cancel a server-initiated backup.
+
+        :param name: Client name
+        :type name: str
+
+        :returns: A list of notifications to return to the UI (success or
+                  failure)
+        """
+        raise NotImplementedError(
+            "Sorry, the current Parser does not implement this method!"
+        )  # pragma: no cover
+
+    @abstractmethod
+    def read_backup(self, name=None):
+        """:func:`burpui.misc.parser.interface.BUIparser.read_backup` called
+        by :func:`burpui.misc.backend.interface.BUIbackend.is_server_backup`
+        in order to test the existence of a server-initiated backup file.
+
+        :param name: Client name
+        :type name: str
+
+        :returns: A True if the file is found, else False.
+        """
+        raise NotImplementedError(
+            "Sorry, the current Parser does not implement this method!"
+        )  # pragma: no cover
+
+    @abstractmethod
+    def server_initiated_backup(self, name=None):
+        """:func:`burpui.misc.parser.interface.BUIparser.server_initiated_backup`
+        called by :func:`burpui.misc.backend.interface.BUIbackend.server_backup`
+        in order to create a server-initiated backup file.
+
+        :param name: Client name
+        :type name: str
+
+        :returns: A list of notifications to return to the UI (success or
+                  failure)
+        """
+        raise NotImplementedError(
+            "Sorry, the current Parser does not implement this method!"
+        )  # pragma: no cover

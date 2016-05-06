@@ -85,10 +85,22 @@ var _client = function() {
 	} else {
 		_client_table.api().ajax.reload( null, false );
 	}
-	url = '{{ url_for("api.is_server_restore", name=cname, server=server) }}';
-	$.getJSON(url, function(d) {
+
+	url_restore = '{{ url_for("api.is_server_restore", name=cname, server=server) }}';
+	$.getJSON(url_restore, function(d) {
 		if (d.found) {
-			$('#edit-restore').show();
+			$('.edit-restore').show();
+			$('.scheduled-backup').hide();
+			$('.cancel-backup').hide();
+		}
+	}).fail(myFail);
+
+	url_backup = '{{ url_for("api.is_server_backup", name=cname, server=server) }}';
+	$.getJSON(url_backup, function(d) {
+		if (d.is_server_backup) {
+			$('.cancel-backup').show();
+			$('.scheduled-backup').hide();
+			$('.edit-restore').hide();
 		}
 	}).fail(myFail);
 };
@@ -116,12 +128,37 @@ $(document).ready(function() {
 			url: '{{ url_for("api.is_server_restore", name=cname, server=server) }}',
 			type: 'DELETE'
 		}).done(function(data) {
-			$.each(data, function(i, n) {
-				notif(n[0], n[1]);
-				if (n[0] == 0) {
-					$('#edit-restore').hide();
-				}
-			});
+			notif(data[0], data[1]);
+			if (data[0] == 0) {
+				$('.edit-restore').hide();
+				$('.scheduled-backup').show();
+			}
+		}).fail(myFail);
+	});
+
+	$('#btn-cancel-backup').on('click', function(e) {
+		$.ajax({
+			url: '{{ url_for("api.is_server_backup", name=cname, server=server) }}',
+			type: 'DELETE'
+		}).done(function(data) {
+			notif(data[0], data[1]);
+			if (data[0] == 0) {
+				$('.cancel-backup').hide();
+				$('.scheduled-backup').show();
+			}
+		}).fail(myFail);
+	});
+
+	$('#btn-schedule-backup').on('click', function(e) {
+		$.ajax({
+			url: '{{ url_for("api.server_backup", name=cname, server=server) }}',
+			type: 'PUT'
+		}).done(function(data) {
+			notif(data[0], data[1]);
+			if (data[0] == 0) {
+				$('.cancel-backup').show();
+				$('.scheduled-backup').hide();
+			}
 		}).fail(myFail);
 	});
 });
