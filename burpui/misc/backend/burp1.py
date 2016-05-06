@@ -272,7 +272,7 @@ class Burp(BUIbackend):
         :param retry: Flag to stop trying because this function is recursive
         :type retry: bool
 
-        :returns: True or False wether we could find a valid address or not
+        :returns: True or False whether we could find a valid address or not
         """
         family = Burp._get_inet_family(addr)
         try:

@@ -280,7 +280,7 @@ class BUIparser(BUIlogging):
         :param strip: Number of leading path to strip
         :type strip: int
 
-        :param force: Wether to force overriding files or not
+        :param force: Whether to force overriding files or not
         :type force: bool
 
         :param prefix: Where to restore files
