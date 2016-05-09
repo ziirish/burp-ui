@@ -612,12 +612,16 @@ class Burp(BUIbackend):
             if not client:
                 continue
             stats = self.get_backup_logs(client[-1]['number'], cli['name'])
+            windows = stats['windows'] if 'windows' in stats else "unknown"
+            totsize = stats['totsize'] if 'totsize' in stats else 0
+            total = stats['total']['total'] if \
+                'total' in stats and 'total' in stats['total'] else 0
             cls.append({
                 'name': cli['name'],
                 'stats': {
-                    'windows': stats['windows'],
-                    'totsize': stats['totsize'],
-                    'total': stats['total']['total']
+                    'windows': windows,
+                    'totsize': totsize,
+                    'total': total
                 }
             })
             bkp.append({'name': cli['name'], 'number': len(client)})
