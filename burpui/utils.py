@@ -201,20 +201,23 @@ def implement(func):
 
 
 def basic_login_from_request(request, app):
-    if app.auth != 'none':
-        creds = request.headers.get('Authorization')
-        if creds:
-            creds = creds.replace('Basic ', '', 1)
-            try:
-                import base64
-                login, password = base64.b64decode(creds.encode('utf-8')).decode('utf-8').split(':')
-            except:  # pragma: no cover
-                pass
-            if login:
-                user = app.uhandler.user(login)
-                if user.active and user.login(login, password):
-                    from flask_login import login_user
-                    login_user(user)
-                    return user
+    """Check 'Authorization' headers and log the user in if possible.
 
+    :param request: The input request
+    :type request: :class:`flask.Request`
+
+    :param app: The application context
+    :type app: :class:`burpui.server.BUIServer`
+    """
+    if app.auth != 'none':
+        auth = request.authorization
+        if auth:
+            app.logger.debug('Found user: {}'.format(auth.username))
+            user = app.uhandler.user(auth.username)
+            if user.active and user.login(auth.username, auth.password):
+                from flask_login import login_user
+                login_user(user)
+                app.logger.debug('Successfully logged in')
+                return user
+            app.logger.warning('Failed to log-in')
     return None
