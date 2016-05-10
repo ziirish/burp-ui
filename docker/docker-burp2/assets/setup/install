@@ -4,18 +4,13 @@ set -e
 
 SETUP_DIR="/app/setup"
 CONFIG_DIR="${SETUP_DIR}/config"
-BURP="https://git.ziirish.me/ziirish/burp.git"
-BURP_VERSION="2.0.34"
 BURPUI="https://burpui.ziirish.me/builds/burp-ui.dev.tar.gz"
 
-# Install burp
-git clone $BURP
-cd burp
-git checkout tags/$BURP_VERSION
-autoreconf -vif
-./configure --prefix=/usr --sysconfdir=/etc/burp --localstatedir=/var
-make -j4
-make install-all
+echo "deb http://ziirish.info/repos/debian/jessie zi-latest main" >/etc/apt/sources.list.d/ziirish.list
+wget https://ziirish.info/repos/debian.gpg -O- | apt-key add -
+
+apt-get update
+apt-get install burp-server burp-client
 
 cd
 
