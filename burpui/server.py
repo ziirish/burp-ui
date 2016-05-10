@@ -7,32 +7,36 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
-import traceback
-import sys
 import os
+import sys
 import logging
+import traceback
 
 from .misc.auth.handler import UserAuthHandler
 from ._compat import ConfigParser
+from datetime import timedelta
 
 from flask import Flask
 
 
-g_port = '5000'
-g_bind = '::'
-g_refresh = '180'
-g_liverefresh = '5'
-g_ssl = 'False'
-g_standalone = 'True'
-g_sslcert = ''
-g_sslkey = ''
-g_version = '1'
-g_auth = 'basic'
-g_acl = ''
-g_storage = ''
-g_redis = ''
-g_zip64 = 'False'
-g_scookie = 'False'
+G_PORT = '5000'
+G_BIND = '::'
+G_REFRESH = '180'
+G_LIVEREFRESH = '5'
+G_SSL = 'False'
+G_STANDALONE = 'True'
+G_SSLCERT = ''
+G_SSLKEY = ''
+G_VERSION = '1'
+G_AUTH = 'basic'
+G_ACL = ''
+G_STORAGE = ''
+G_REDIS = ''
+G_ZIP64 = 'False'
+G_SCOOKIE = 'False'
+G_APPSECRET = 'random'
+G_COOKIETIME = '14'
+G_INCLUDES = '/etc/burp'
 
 
 class BUIServer(Flask):
@@ -48,7 +52,6 @@ class BUIServer(Flask):
         :param app: The Flask application to launch
         """
         self.init = False
-        # Create a dummy logger
         # We cannot override the Flask's logger so we use our own
         self.builogger = logging.getLogger('burp-ui')
         self.builogger.disabled = True
@@ -78,12 +81,24 @@ class BUIServer(Flask):
             raise IOError('No configuration file found')
 
         self.defaults = {
-            'port': g_port, 'bind': g_bind,
-            'refresh': g_refresh, 'ssl': g_ssl, 'sslcert': g_sslcert,
-            'sslkey': g_sslkey, 'version': g_version, 'auth': g_auth,
-            'standalone': g_standalone, 'acl': g_acl,
-            'liverefresh': g_liverefresh, 'storage': g_storage,
-            'redis': g_redis, 'zip64': g_zip64, 'scookie': g_scookie
+            'port': G_PORT,
+            'bind': G_BIND,
+            'refresh': G_REFRESH,
+            'ssl': G_SSL,
+            'sslcert': G_SSLCERT,
+            'sslkey': G_SSLKEY,
+            'version': G_VERSION,
+            'auth': G_AUTH,
+            'standalone': G_STANDALONE,
+            'acl': G_ACL,
+            'liverefresh': G_LIVEREFRESH,
+            'storage': G_STORAGE,
+            'redis': G_REDIS,
+            'zip64': G_ZIP64,
+            'scookie': G_SCOOKIE,
+            'appsecret': G_APPSECRET,
+            'cookietime': G_COOKIETIME,
+            'includes': G_INCLUDES,
         }
         config = ConfigParser.ConfigParser(self.defaults)
         with open(conf) as fp:
@@ -117,7 +132,7 @@ class BUIServer(Flask):
                     try:
                         self.uhandler = UserAuthHandler(self)
                     except Exception as e:
-                        self.builogger.critical(
+                        self.logger.critical(
                             'Import Exception, module \'{0}\': {1}'.format(
                                 self.auth,
                                 str(e)
@@ -152,7 +167,7 @@ class BUIServer(Flask):
                         self.acl = BUIacl
                         self.acl = self.acl_handler.acl
                     except Exception as e:
-                        self.builogger.critical(
+                        self.logger.critical(
                             'Import Exception, module \'{0}\': {1}'.format(
                                 self.acl_engine,
                                 str(e)
@@ -188,11 +203,35 @@ class BUIServer(Flask):
                     'redis',
                     'Production'
                 )
-                self.scookie = self._safe_config_get(
-                    config.getboolean,
-                    'scookie',
-                    'Production',
-                    cast=bool
+
+                # Security options
+                self.config['SESSION_COOKIE_SECURE'] = \
+                    self.config['REMEMBER_COOKIE_SECURE'] = \
+                    self._safe_config_get(
+                        config.getboolean,
+                        'scookie',
+                        'Security',
+                        cast=bool
+                    ) or self.ssl
+                self.config['SECRET_KEY'] = self._safe_config_get(
+                    config.get,
+                    'appsecret',
+                    'Security'
+                )
+                self.config['REMEMBER_COOKIE_DURATION'] = \
+                    self.config['PERMANENT_SESSION_LIFETIME'] = \
+                    timedelta(
+                        days=self._safe_config_get(
+                            config.getint,
+                            'cookietime',
+                            'Security',
+                            cast=int
+                        )
+                    )
+                self.includes = self._safe_config_get(
+                    config.get,
+                    'includes',
+                    'Security'
                 )
 
                 # Experimental features
@@ -204,28 +243,29 @@ class BUIServer(Flask):
                 )
 
             except ConfigParser.NoOptionError as e:
-                self.builogger.error(str(e))
+                self.logger.error(str(e))
 
         self.config['STANDALONE'] = self.standalone
 
-        self.builogger.info('burp version: {}'.format(self.vers))
-        self.builogger.info('listen port: {}'.format(self.port))
-        self.builogger.info('bind addr: {}'.format(self.bind))
-        self.builogger.info('use ssl: {}'.format(self.ssl))
-        self.builogger.info('standalone: {}'.format(self.standalone))
-        self.builogger.info('sslcert: {}'.format(self.sslcert))
-        self.builogger.info('sslkey: {}'.format(self.sslkey))
-        self.builogger.info('refresh: {}'.format(self.config['REFRESH']))
-        self.builogger.info('liverefresh: {}'.format(self.config['LIVEREFRESH']))
-        self.builogger.info('auth: {}'.format(self.auth))
-        self.builogger.info('acl: {}'.format(self.acl_engine))
-        self.builogger.info('zip64: {}'.format(self.zip64))
+        self.logger.info('burp version: {}'.format(self.vers))
+        self.logger.info('listen port: {}'.format(self.port))
+        self.logger.info('bind addr: {}'.format(self.bind))
+        self.logger.info('use ssl: {}'.format(self.ssl))
+        self.logger.info('standalone: {}'.format(self.standalone))
+        self.logger.info('sslcert: {}'.format(self.sslcert))
+        self.logger.info('sslkey: {}'.format(self.sslkey))
+        self.logger.info('refresh: {}'.format(self.config['REFRESH']))
+        self.logger.info('liverefresh: {}'.format(self.config['LIVEREFRESH']))
+        self.logger.info('auth: {}'.format(self.auth))
+        self.logger.info('acl: {}'.format(self.acl_engine))
+        self.logger.info('zip64: {}'.format(self.zip64))
 
         if self.standalone:
             module = 'burpui.misc.backend.burp{0}'.format(self.vers)
         else:
             module = 'burpui.misc.backend.multi'
-        # This instanciation is used for development purpose only
+
+        # This is used for development purpose only
         from .misc.backend.burp1 import Burp as BurpGeneric
         self.cli = BurpGeneric(dummy=True)
         try:
@@ -237,7 +277,7 @@ class BUIServer(Flask):
             self.cli = Client(self, conf=conf)
         except Exception as e:
             traceback.print_exc()
-            self.builogger.critical(
+            self.logger.critical(
                 'Failed loading backend for Burp version {0}: {1}'.format(
                     self.vers,
                     str(e)
@@ -268,9 +308,9 @@ class BUIServer(Flask):
         try:
             return callback(sect, key)
         except ConfigParser.NoOptionError as e:
-            self.builogger.error(str(e))
+            self.logger.error(str(e))
         except ConfigParser.NoSectionError as e:
-            self.builogger.warning(str(e))
+            self.logger.warning(str(e))
             if key in self.defaults:
                 if cast:
                     try:

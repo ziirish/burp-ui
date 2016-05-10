@@ -143,7 +143,7 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
         handler = RotatingFileHandler(
             logfile,
             maxBytes=1024 * 1024 * 100,
-            backupCount=20
+            backupCount=5
         )
     else:
         from logging import StreamHandler
@@ -196,8 +196,14 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
     # FIXME: strange behavior when bundling errors
     # app.config['BUNDLE_ERRORS'] = True
 
-    app.secret_key = ('VpgOXNXAgcO81xFPyWj07ppN6kExNZeCDRShseNzFKV7ZCgmW2/eLn6x'
-                      'Slt7pYAVBj12zx2Vv9Kw3Q3jd1266A==')
+    app.config['REMEMBER_COOKIE_HTTPONLY'] = True
+    # manage application secret key
+    if not app.secret_key or app.secret_key == 'random':
+        from base64 import b64encode
+        app.secret_key = b64encode(os.urandom(256))
+    elif app.secret_key == 'none':
+        app.secret_key = None
+
     app.jinja_env.globals.update(
         isinstance=isinstance,
         list=list,
@@ -238,7 +244,6 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
                 red = Redis(host=host, port=port)
                 app.config['SESSION_TYPE'] = 'redis'
                 app.config['SESSION_REDIS'] = red
-                app.config['SESSION_COOKIE_SECURE'] = app.scookie
                 ses = Session()
                 ses.init_app(app)
             except Exception as e:
@@ -297,7 +302,7 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
         """User loader callback"""
         if app.auth != 'none':
             return app.uhandler.user(userid)
-        return None  # pragma: no cover
+        return None
 
     @app.login_manager.request_loader
     def load_user_from_request(request):
