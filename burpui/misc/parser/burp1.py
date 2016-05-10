@@ -876,7 +876,7 @@ class Parser(BUIparser):
     def __init__(self, conf=None):
         """See :func:`burpui.misc.parser.interface.BUIparser.__init__`"""
         super(Parser, self).__init__(conf)
-        self._logger('info', 'Parser initialized with: %s', self.conf)
+        self.logger.info('Parser initialized with: %s', self.conf)
         self.clients = []
         self.clientconfdir = None
         self.workingdir = None
@@ -894,7 +894,7 @@ class Parser(BUIparser):
                 path = os.path.join(self.clientconfdir, path)
             else:
                 path = os.path.join(self.root, path)
-        self._logger('debug', 'reading file: %s', path)
+        self.logger.debug('reading file: %s', path)
         with codecs.open(path, 'r', 'utf-8') as fil:
             ret = [x.rstrip('\n') for x in fil.readlines()]
 

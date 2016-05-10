@@ -96,11 +96,13 @@ class Burp(BUIbackend):
     # Thanks to this list, we know what function are implemented by our backend.
     foreign = INTERFACE_METHODS
     BUIbackend.__abstractmethods__ = frozenset()
-    last_getattr = None
 
     def __init__(self, server=None, conf=None):
+        """
+        :param server: Application context
+        :type server: :class:`burpui.server.BUIServer`
+        """
         self.app = server
-        self.logger = logging.getLogger('burp-ui')
         self.acl_handler = server.acl_handler
         self.servers = {}
         self.app.config['SERVERS'] = []
@@ -122,22 +124,22 @@ class Burp(BUIbackend):
                         self.servers[r.group(1)] = NClient(self.app, host, port, password, ssl, timeout)
 
         if not self.servers:
-            self.app.logger.error('No agent configured!')
+            self.logger.error('No agent configured!')
         else:
-            self.app.logger.debug(self.servers)
+            self.logger.debug(self.servers)
         for (key, serv) in iteritems(self.servers):
             self.app.config['SERVERS'].append(key)
 
     def __getattribute__(self, name):
         # always return this value because we need it and if we don't do that
         # we'll end up with an infinite loop
-        if name == 'foreign' or name == 'last_getattr':
+        if name == 'foreign':
             return object.__getattribute__(self, name)
         # now we can retrieve the 'foreign' list and know if the object called
-        # needs to be "proxified"
-        if name in self.foreign and name != self.last_getattr:
-            self.last_getattr = name
+        # needs to be "proxyfied"
+        if name in self.foreign:
             proxy = True
+            func = None
             try:
                 func = object.__getattribute__(self, name)
                 proxy = not getattr(func, '__ismethodimplemented__', False)
@@ -145,8 +147,9 @@ class Burp(BUIbackend):
                 pass
             self.logger.debug('func: {} - {}'.format(name, proxy))
             if proxy:
-                self.last_getattr = None
                 return ProxyCall(self, name)
+            elif func:
+                return func
         return object.__getattribute__(self, name)
 
     def _backup_running_parallel(self):
@@ -322,7 +325,6 @@ class NClient(BUIbackend):
     # Thanks to this list, we know what function are implemented by our backend.
     foreign = INTERFACE_METHODS
     BUIbackend.__abstractmethods__ = frozenset()
-    last_getattr = None
 
     def __init__(self, app=None, host=None, port=None, password=None, ssl=None, timeout=5):
         self.host = host
@@ -336,14 +338,14 @@ class NClient(BUIbackend):
     def __getattribute__(self, name):
         # always return this value because we need it and if we don't do that
         # we'll end up with an infinite loop
-        if name == 'foreign' or name == 'last_getattr':
+        if name == 'foreign':
             return object.__getattribute__(self, name)
         # now we can retrieve the 'foreign' list and know if the object called
         # needs a dynamic implementation
         #if name in self.foreign and name not in dir(self):
-        if name in self.foreign and name != self.last_getattr:
-            self.last_getattr = name
+        if name in self.foreign:
             proxy = True
+            func = None
             try:
                 func = object.__getattribute__(self, name)
                 proxy = not getattr(func, '__ismethodimplemented__', False)
@@ -351,8 +353,9 @@ class NClient(BUIbackend):
                 pass
             self.logger.debug('func: {} - {}'.format(name, proxy))
             if proxy:
-                self.last_getattr = None
                 return ProxyCall(self, name, network=True)
+            elif func:
+                return func
         return object.__getattribute__(self, name)
 
     def conn(self, notimeout=False):
@@ -362,10 +365,10 @@ class NClient(BUIbackend):
                 return
             self.sock = self.do_conn(notimeout)
             self.connected = True
-            self.app.logger.debug('OK, connected to agent %s:%s', self.host, self.port)
+            self.logger.debug('OK, connected to agent %s:%s', self.host, self.port)
         except Exception as e:
             self.connected = False
-            self.app.logger.error('Could not connect to %s:%s => %s', self.host, self.port, str(e))
+            self.logger.error('Could not connect to %s:%s => %s', self.host, self.port, str(e))
 
     def do_conn(self, notimeout=False):
         """Do the actual connection to the agent"""
@@ -380,7 +383,7 @@ class NClient(BUIbackend):
             try:
                 ret.connect((self.host, self.port))
             except Exception as e:
-                self.app.logger.error('ERROR: %s', str(e))
+                self.logger.error('ERROR: %s', str(e))
                 raise e
         else:
             if not notimeout:
@@ -421,18 +424,18 @@ class NClient(BUIbackend):
             length = len(raw)
             self.sock.sendall(struct.pack('!Q', length))
             self.sock.sendall(raw.encode('UTF-8'))
-            self.app.logger.debug("Sending: %s", raw)
+            self.logger.debug("Sending: %s", raw)
             tmp = self.sock.recv(2).decode('UTF-8')
-            self.app.logger.debug("recv: '%s'", tmp)
+            self.logger.debug("recv: '%s'", tmp)
             if 'ER' == tmp:
                 lengthbuf = self.sock.recv(8)
                 length, = struct.unpack('!Q', lengthbuf)
                 err = self.recvall(length).decode('UTF-8')
                 raise BUIserverException(err)
             if 'OK' != tmp:
-                self.app.logger.debug('Ooops, unsuccessful!')
+                self.logger.debug('Ooops, unsuccessful!')
                 return res
-            self.app.logger.debug("Data sent successfully")
+            self.logger.debug("Data sent successfully")
             tmp = 'OK'
             if data['func'] == 'restore_files':
                 tmp = self.sock.recv(2)
@@ -454,19 +457,19 @@ class NClient(BUIbackend):
                 return self.do_command(data, True)
             elif e.errno == errno.ECONNRESET:
                 self.connected = False
-                self.app.logger.error('!!! {} !!!\nPlease check your SSL configuration on both sides!'.format(str(e)))
+                self.logger.error('!!! {} !!!\nPlease check your SSL configuration on both sides!'.format(str(e)))
             else:
                 toclose = True
-                self.app.logger.error('!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
+                self.logger.error('!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
         except socket.timeout as e:
             if self.app.gunicorn and not restarted:
                 self.connected = False
                 return self.do_command(data, True)
             toclose = True
-            self.app.logger.error('!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
+            self.logger.error('!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
         except Exception as e:
             toclose = True
-            self.app.logger.error('!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
+            self.logger.error('!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
         finally:
             self.close(toclose)
 

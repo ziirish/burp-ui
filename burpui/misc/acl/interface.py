@@ -17,7 +17,7 @@ class BUIaclLoader:
     load the actual ACL backend"""
     __metaclass__ = ABCMeta
 
-    builogger = logging.getLogger('burp-ui')
+    logger = logging.getLogger('burp-ui')
 
     def __init__(self, app=None):
         """:func:`burpui.misc.acl.interface.BUIaclLoader.__init__` instanciate

@@ -11,22 +11,16 @@ import logging
 
 from abc import ABCMeta, abstractmethod
 
-from ...utils import BUIlogging
 from ..._compat import ConfigParser
 
 
-class Dummy(object):
-    logger = None
-    pass
-
-
-class BUIbackend(BUIlogging):
+class BUIbackend(object):
     """The :class:`burpui.misc.backend.interface.BUIbackend` class provides
     a consistent interface backend for any ``burp`` server.
 
     :param server: ``Flask`` server instance in order to access logger
                    and/or some global settings
-    :type server: :class:`Flask`
+    :type server: :class:`burpui.server.BUIServer`
 
     :param conf: Configuration file to use
     :type conf: str
@@ -37,17 +31,17 @@ class BUIbackend(BUIlogging):
     running = []
     # do we need to refresh the cache?
     refresh = None
-    # Flask object
-    app = Dummy()
     # Defaults config parameters
     defaults = {}
 
     logger = logging.getLogger('burp-ui')
 
     def __init__(self, server=None, conf=None):  # pragma: no cover
-        if server:
-            if hasattr(server, 'app'):
-                self.app = server.app
+        """
+        :param server: Application context
+        :type server: :class:`burpui.server.BUIServer`
+        """
+        self.app = server
 
     """
     Utilities functions
@@ -75,23 +69,14 @@ class BUIbackend(BUIlogging):
         try:
             return callback(sect, key)
         except ConfigParser.NoOptionError as e:
-            self._logger('error', str(e))
+            self.logger.error(str(e))
         except ConfigParser.NoSectionError as e:
-            self._logger('warning', str(e))
+            self.logger.warning(str(e))
             if key in self.defaults:
                 if cast:
                     return cast(self.defaults[key])
                 return self.defaults[key]
         return None
-
-    def set_logger(self, logger):
-        """The :func:`burpui.misc.backend.interface.BUIbackend.set_logger`
-        function is used to set the global logger of the application.
-
-        :param logger: Logger object
-        :type logger: Logger
-        """
-        self.logger = logger
 
     @abstractmethod
     def status(self, query='\n', agent=None):

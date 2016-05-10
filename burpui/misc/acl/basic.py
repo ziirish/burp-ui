@@ -27,10 +27,10 @@ class ACLloader(BUIaclLoader):
                     try:
                         adms = json.loads(temp)
                     except Exception as e:
-                        self.builogger.error(str(e))
+                        self.logger.error(str(e))
                         adms = [temp]
                 except Exception as e:
-                    self.builogger.warning(str(e))
+                    self.logger.warning(str(e))
                 for opt in c.options('BASIC:ACL'):
                     if opt == 'admin':
                         continue
@@ -41,16 +41,16 @@ class ACLloader(BUIaclLoader):
                         if isinstance(rec, dict):
                             self.servers[opt] = rec.keys()
                     except Exception as e:
-                        self.builogger.error(str(e))
+                        self.logger.error(str(e))
                         rec = [lit]
                     self.clients[opt] = rec
 
         if adms:
             self.admins = adms
         self._acl = BasicACL(self)
-        self.builogger.debug('admins: ' + str(self.admins))
-        self.builogger.debug('clients: ' + str(self.clients))
-        self.builogger.debug('servers: ' + str(self.servers))
+        self.logger.debug('admins: ' + str(self.admins))
+        self.logger.debug('clients: ' + str(self.clients))
+        self.logger.debug('servers: ' + str(self.servers))
 
     @property
     def acl(self):

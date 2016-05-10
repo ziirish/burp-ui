@@ -35,7 +35,7 @@ class BasicLoader(BUIloader):
                             pass
                         continue  # pragma: no cover
                     self.users[opt] = c.get('BASIC', opt)
-                    self.builogger.info('Loading user: {}'.format(opt))
+                    self.logger.info('Loading user: {}'.format(opt))
 
     def fetch(self, uid=None):
         """:func:`burpui.misc.auth.basic.BasicLoader.fetch` searches for a user

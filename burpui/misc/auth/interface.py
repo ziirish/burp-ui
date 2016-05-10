@@ -13,7 +13,7 @@ import logging
 
 
 class BUIloader:
-    builogger = logging.getLogger('burp-ui')
+    logger = logging.getLogger('burp-ui')
 
 
 class BUIhandler:

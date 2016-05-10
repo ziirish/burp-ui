@@ -140,7 +140,7 @@ class Restore(Resource):
                                  mimetype='application/zip')
                 resp.set_cookie('fileDownload', 'true')
             except Exception as e:
-                api.bui.cli._logger('error', str(e))
+                api.bui.cli.logger.error(str(e))
                 self.abort(500, str(e))
         else:
             # Multi-agent mode
@@ -153,10 +153,10 @@ class Restore(Resource):
                                                                 f,
                                                                 p,
                                                                 server)
-                api.bui.cli._logger('debug', 'Need to get {} Bytes : {}'.format(length, socket))
+                api.bui.cli.logger.debug('Need to get {} Bytes : {}'.format(length, socket))
 
                 if err:
-                    api.bui.cli._logger('debug', 'Something went wrong: {}'.format(err))
+                    api.bui.cli.logger.debug('Something went wrong: {}'.format(err))
                     socket.sendall(struct.pack('!Q', 2))
                     socket.sendall(b'RE')
                     socket.close()
@@ -180,7 +180,7 @@ class Restore(Resource):
                         if not buf:
                             continue
                         received += len(buf)
-                        api.bui.cli._logger('debug', '{}/{}'.format(received, l))
+                        api.bui.cli.logger.debug('{}/{}'.format(received, l))
                         yield buf
                     sock.sendall(struct.pack('!Q', 2))
                     sock.sendall(b'RE')
@@ -204,7 +204,7 @@ class Restore(Resource):
             except HTTPException as e:
                 raise e
             except Exception as e:
-                api.bui.cli._logger('error', str(e))
+                api.bui.cli.logger.error(str(e))
                 self.abort(500, str(e))
         return resp
 

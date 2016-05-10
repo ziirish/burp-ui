@@ -153,7 +153,7 @@ class Burp(BUIbackend):
                 tmpdir = self._safe_config_get(config.get, 'tmpdir')
 
                 if tmpdir and os.path.exists(tmpdir) and not os.path.isdir(tmpdir):
-                    self._logger('warning', "'%s' is not a directory", tmpdir)
+                    self.logger.warning("'%s' is not a directory", tmpdir)
                     if tmpdir == G_TMPDIR:
                         raise IOError("Cannot use '{}' as tmpdir".format(tmpdir))
                     tmpdir = G_TMPDIR
@@ -163,43 +163,43 @@ class Burp(BUIbackend):
                     os.makedirs(tmpdir)
 
                 if confcli and not os.path.isfile(confcli):
-                    self._logger('warning', "The file '%s' does not exist", confcli)
+                    self.logger.warning("The file '%s' does not exist", confcli)
                     confcli = None
 
                 if confsrv and not os.path.isfile(confsrv):
-                    self._logger('warning', "The file '%s' does not exist", confsrv)
+                    self.logger.warning("The file '%s' does not exist", confsrv)
                     confsrv = None
 
                 if self.host not in ['127.0.0.1', '::1']:
-                    self._logger('warning', "Invalid value for 'bhost'. Must be '127.0.0.1' or '::1'. Falling back to '%s'", G_BURPHOST)
+                    self.logger.warning("Invalid value for 'bhost'. Must be '127.0.0.1' or '::1'. Falling back to '%s'", G_BURPHOST)
                     self.host = G_BURPHOST
 
                 if strip and not strip.startswith('/'):
-                    self._logger('warning', "Please provide an absolute path for the 'stripbin' option. Fallback to '%s'", G_STRIPBIN)
+                    self.logger.warning("Please provide an absolute path for the 'stripbin' option. Fallback to '%s'", G_STRIPBIN)
                     strip = G_STRIPBIN
                 elif strip and not re.match(r'^\S+$', strip):
-                    self._logger('warning', "Incorrect value for the 'stripbin' option. Fallback to '%s'", G_STRIPBIN)
+                    self.logger.warning("Incorrect value for the 'stripbin' option. Fallback to '%s'", G_STRIPBIN)
                     strip = G_STRIPBIN
                 elif strip and (not os.path.isfile(strip) or not os.access(strip, os.X_OK)):
-                    self._logger('warning', "'%s' does not exist or is not executable. Fallback to '%s'", strip, G_STRIPBIN)
+                    self.logger.warning("'%s' does not exist or is not executable. Fallback to '%s'", strip, G_STRIPBIN)
                     strip = G_STRIPBIN
 
                 if strip and (not os.path.isfile(strip) or not os.access(strip, os.X_OK)):  # pragma: no cover
-                    self._logger('error', "Ooops, '%s' not found or is not executable", strip)
+                    self.logger.error("Ooops, '%s' not found or is not executable", strip)
                     strip = None
 
                 if bbin and not bbin.startswith('/'):
-                    self._logger('warning', "Please provide an absolute path for the 'burpbin' option. Fallback to '%s'", G_BURPBIN)
+                    self.logger.warning("Please provide an absolute path for the 'burpbin' option. Fallback to '%s'", G_BURPBIN)
                     bbin = G_BURPBIN
                 elif bbin and not re.match(r'^\S+$', bbin):
-                    self._logger('warning', "Incorrect value for the 'burpbin' option. Fallback to '%s'", G_BURPBIN)
+                    self.logger.warning("Incorrect value for the 'burpbin' option. Fallback to '%s'", G_BURPBIN)
                     bbin = G_BURPBIN
                 elif bbin and (not os.path.isfile(bbin) or not os.access(bbin, os.X_OK)):
-                    self._logger('warning', "'%s' does not exist or is not executable. Fallback to '%s'", bbin, G_BURPBIN)
+                    self.logger.warning("'%s' does not exist or is not executable. Fallback to '%s'", bbin, G_BURPBIN)
                     bbin = G_BURPBIN
 
                 if bbin and (not os.path.isfile(bbin) or not os.access(bbin, os.X_OK)):  # pragma: no cover
-                    self._logger('error', "Ooops, '%s' not found or is not executable", bbin)
+                    self.logger.error("Ooops, '%s' not found or is not executable", bbin)
                     bbin = None
 
                 self.burpbin = bbin
@@ -231,13 +231,13 @@ class Burp(BUIbackend):
         except:
             pass
 
-        self._logger('info', 'burp port: %d', self.port)
-        self._logger('info', 'burp host: %s', self.host)
-        self._logger('info', 'burp binary: %s', self.burpbin)
-        self._logger('info', 'strip binary: %s', self.stripbin)
-        self._logger('info', 'burp conf cli: %s', self.burpconfcli)
-        self._logger('info', 'burp conf srv: %s', self.burpconfsrv)
-        self._logger('info', 'tmpdir: %s', self.tmpdir)
+        self.logger.info('burp port: %d', self.port)
+        self.logger.info('burp host: %s', self.host)
+        self.logger.info('burp binary: %s', self.burpbin)
+        self.logger.info('strip binary: %s', self.stripbin)
+        self.logger.info('burp conf cli: %s', self.burpconfcli)
+        self.logger.info('burp conf srv: %s', self.burpconfsrv)
+        self.logger.info('tmpdir: %s', self.tmpdir)
         try:
             # make the connection
             self.status()
@@ -281,27 +281,27 @@ class Burp(BUIbackend):
             sock.close()
             return True
         except socket.error:
-            self._logger('warning', 'Cannot contact burp server at %s:%s', addr, self.port)
+            self.logger.warning('Cannot contact burp server at %s:%s', addr, self.port)
             if not retry:
                 new_addr = ''
                 if self.host == '127.0.0.1':
                     new_addr = '::1'
                 else:
                     new_addr = '127.0.0.1'
-                self._logger('info', 'Trying %s:%s instead', new_addr, self.port)
+                self.logger.info('Trying %s:%s instead', new_addr, self.port)
                 if self._test_burp_server_address(new_addr, True):
-                    self._logger('info', '%s:%s is reachable, switching to it for this runtime', new_addr, self.port)
+                    self.logger.info('%s:%s is reachable, switching to it for this runtime', new_addr, self.port)
                     self.host = new_addr
                     self.family = Burp._get_inet_family(new_addr)
                     return True
-                self._logger('error', 'Cannot guess burp server address')
+                self.logger.error('Cannot guess burp server address')
         return False
 
     def status(self, query='\n', agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.status`"""
         result = []
         try:
-            self._logger('info', "query: '{}'".format(query.rstrip()))
+            self.logger.info("query: '{}'".format(query.rstrip()))
             qry = b''
             if not query.endswith('\n'):  # pragma: no cover
                 qry += '{0}\n'.format(query).encode('utf-8')
@@ -324,10 +324,10 @@ class Burp(BUIbackend):
                     pass
                 result.append(line)
             fileobj.close()
-            self._logger('debug', '=> {}'.format(result))
+            self.logger.debug('=> {}'.format(result))
             return result
         except socket.error:
-            self._logger('error', 'Cannot contact burp server at %s:%s', self.host, self.port)
+            self.logger.error('Cannot contact burp server at %s:%s', self.host, self.port)
             raise BUIserverException('Cannot contact burp server at {0}:{1}'.format(self.host, self.port))
 
     def get_backup_logs(self, number, client, forward=False, agent=None):
@@ -587,7 +587,7 @@ class Burp(BUIbackend):
             for (key, regex) in iteritems(lookup_complex):
                 reg = re.search(regex, line)
                 if reg:
-                    # self._logger('debug', "match[1]: '{0}'".format(reg.group(1)))
+                    # self.logger.debug("match[1]: '{0}'".format(reg.group(1)))
                     spl = re.split(r'\s+', reg.group(1))
                     if len(spl) < 5:
                         return {}
@@ -641,12 +641,12 @@ class Burp(BUIbackend):
         if not filemap:
             return res
         for line in filemap:
-            # self._logger('debug', 'line: {0}'.format(line))
+            # self.logger.debug('line: {0}'.format(line))
             reg = re.search(r'^{0}\s+(\d)\s+(\S)\s+(.+)$'.format(name), line)
             if reg and reg.group(2) == 'r' and int(reg.group(1)) == 2:
                 count = 0
                 for val in reg.group(3).split('\t'):
-                    # self._logger('debug', '{0}: {1}'.format(self.counters[c], v))
+                    # self.logger.debug('{0}: {1}'.format(self.counters[c], v))
                     if val and count > 0 and count < 15:
                         try:
                             vals = map(int, val.split('/'))
@@ -764,7 +764,7 @@ class Burp(BUIbackend):
         for line in filemap:
             if not re.match('^{0}\t'.format(cli), line):
                 continue
-            # self._logger('debug', "line: '{0}'".format(line))
+            # self.logger.debug("line: '{0}'".format(line))
             regex = re.compile(r'\s*(\S+)\s+\d\s+(\S)\s+(.+)')
             match = regex.search(line)
             if match.group(3) == "0" or match.group(2) not in ['i', 'c', 'C']:
@@ -903,14 +903,14 @@ class Burp(BUIbackend):
         if strip and strip.isdigit() and int(strip) > 0:
             cmd.append('-s')
             cmd.append(strip)
-        self._logger('debug', cmd)
+        self.logger.debug(cmd)
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         out, _ = proc.communicate()
         status = proc.wait()
         if password:
             os.remove(tmpfile)
-        self._logger('debug', out)
-        self._logger('debug', 'command returned: %d', status)
+        self.logger.debug(out)
+        self.logger.debug('command returned: %d', status)
         # hack to handle client-side encrypted backups
         # this is now handled client-side, but we should never trust user input
         # so we need to handle it server-side too
@@ -938,21 +938,22 @@ class Burp(BUIbackend):
                         test_strip = False
                         otp = None
                         try:
-                            otp = subprocess.check_output([self.stripbin, '-p', '-i', path])
+                            with open(os.devnull, 'w') as devnul:
+                                otp = subprocess.check_output([self.stripbin, '-p', '-i', path], stderr=devnul)
                         except subprocess.CalledProcessError as exc:
-                            self._logger('debug', "Stripping failed on '{}': {}".format(path, str(exc)))
+                            self.logger.debug("Stripping failed on '{}': {}".format(path, str(exc)))
                         if not otp:
                             stripping = False
 
                     if stripping and os.path.isfile(path):
-                        self._logger('debug', "stripping file: %s", path)
+                        self.logger.debug("stripping file: %s", path)
                         shutil.move(path, path + '.tmp')
                         status = subprocess.call([self.stripbin, '-i', path + '.tmp', '-o', path])
                         if status != 0:
                             os.remove(path)
                             shutil.move(path + '.tmp', path)
                             stripping = False
-                            self._logger('debug', "Disable stripping since this file does not seem to embed VSS headers")
+                            self.logger.debug("Disable stripping since this file does not seem to embed VSS headers")
                         else:
                             os.remove(path + '.tmp')
 

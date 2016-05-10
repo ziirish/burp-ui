@@ -32,7 +32,7 @@ if IS_GUNICORN:
         import gevent
         from gevent.queue import Queue
         ret = []
-        api.bui.cli._logger('debug', 'Using gevent')
+        api.bui.cli.logger.debug('Using gevent')
 
         if not callable(func):
             api.abort(500, 'The provided \'func\' is not callable!')

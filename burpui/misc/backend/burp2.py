@@ -57,7 +57,7 @@ class Burp(Burp1):
         global G_BURPBIN, G_STRIPBIN, G_BURPCONFCLI, G_BURPCONFSRV, G_TMPDIR, \
             G_TIMEOUT, BURP_MINIMAL_VERSION
         self.proc = None
-        self.app = None
+        self.app = server
         self.client_version = None
         self.server_version = None
         self.zip64 = False
@@ -113,8 +113,7 @@ class Burp(Burp1):
 
                     if (tmpdir and os.path.exists(tmpdir) and
                             not os.path.isdir(tmpdir)):
-                        self._logger(
-                            'warning',
+                        self.logger.warning(
                             "'%s' is not a directory",
                             tmpdir
                         )
@@ -131,32 +130,28 @@ class Burp(Burp1):
                         os.makedirs(tmpdir)
 
                     if confcli and not os.path.isfile(confcli):
-                        self._logger(
-                            'warning',
+                        self.logger.warning(
                             "The file '%s' does not exist",
                             confcli
                         )
                         confcli = G_BURPCONFCLI
 
                     if confsrv and not os.path.isfile(confsrv):
-                        self._logger(
-                            'warning',
+                        self.logger.warning(
                             "The file '%s' does not exist",
                             confsrv
                         )
                         confsrv = G_BURPCONFSRV
 
                     if strip and not strip.startswith('/'):
-                        self._logger(
-                            'warning',
+                        self.logger.warning(
                             "Please provide an absolute path for the"
                             " 'stripbin' option. Fallback to '%s'",
                             G_STRIPBIN
                         )
                         strip = G_STRIPBIN
                     elif strip and not re.match(r'^\S+$', strip):
-                        self._logger(
-                            'warning',
+                        self.logger.warning(
                             "Incorrect value for the 'stripbin' option."
                             " Fallback to '%s'",
                             G_STRIPBIN
@@ -164,8 +159,7 @@ class Burp(Burp1):
                         strip = G_STRIPBIN
                     elif (strip and (not os.path.isfile(strip) or
                                      not os.access(strip, os.X_OK))):
-                        self._logger(
-                            'warning',
+                        self.logger.warning(
                             "'%s' does not exist or is not executable."
                             " Fallback to '%s'",
                             strip, G_STRIPBIN
@@ -174,24 +168,21 @@ class Burp(Burp1):
 
                     if (strip and (not os.path.isfile(strip) or
                                    not os.access(strip, os.X_OK))):
-                        self._logger(
-                            'error',
+                        self.logger.error(
                             "Ooops, '%s' not found or is not executable",
                             strip
                         )
                         strip = None
 
                     if bbin and not bbin.startswith('/'):
-                        self._logger(
-                            'warning',
+                        self.logger.warning(
                             "Please provide an absolute path for the 'burpbin'"
                             " option. Fallback to '%s'",
                             G_BURPBIN
                         )
                         bbin = G_BURPBIN
                     elif bbin and not re.match(r'^\S+$', bbin):
-                        self._logger(
-                            'warning',
+                        self.logger.warning(
                             "Incorrect value for the 'burpbin' option."
                             " Fallback to '%s'",
                             G_BURPBIN
@@ -199,8 +190,7 @@ class Burp(Burp1):
                         bbin = G_BURPBIN
                     elif (bbin and (not os.path.isfile(bbin) or
                                     not os.access(bbin, os.X_OK))):
-                        self._logger(
-                            'warning',
+                        self.logger.warning(
                             "'%s' does not exist or is not executable."
                             " Fallback to '%s'",
                             bbin,
@@ -210,8 +200,7 @@ class Burp(Burp1):
 
                     if (bbin and (not os.path.isfile(bbin) or
                                   not os.access(bbin, os.X_OK))):
-                        self._logger(
-                            'critical',
+                        self.logger.critical(
                             "Ooops, '%s' not found or is not executable",
                             bbin
                         )
@@ -226,9 +215,9 @@ class Burp(Burp1):
                     self.burpconfcli = confcli
                     self.burpconfsrv = confsrv
                 except ConfigParser.NoOptionError as exp:
-                    self._logger('error', str(exp))
+                    self.logger.error(str(exp))
                 except ConfigParser.NoSectionError as exp:
-                    self._logger('warning', str(exp))
+                    self.logger.warning(str(exp))
 
         # check the burp version because this backend only supports clients
         # newer than BURP_MINIMAL_VERSION
@@ -252,12 +241,12 @@ class Burp(Burp1):
 
         self.parser = Parser(self.burpconfsrv)
 
-        self._logger('info', 'burp binary: {}'.format(self.burpbin))
-        self._logger('info', 'strip binary: {}'.format(self.stripbin))
-        self._logger('info', 'burp conf cli: {}'.format(self.burpconfcli))
-        self._logger('info', 'burp conf srv: {}'.format(self.burpconfsrv))
-        self._logger('info', 'command timeout: {}'.format(self.timeout))
-        self._logger('info', 'burp version: {}'.format(self.client_version))
+        self.logger.info('burp binary: {}'.format(self.burpbin))
+        self.logger.info('strip binary: {}'.format(self.stripbin))
+        self.logger.info('burp conf cli: {}'.format(self.burpconfcli))
+        self.logger.info('burp conf srv: {}'.format(self.burpconfsrv))
+        self.logger.info('command timeout: {}'.format(self.timeout))
+        self.logger.info('burp version: {}'.format(self.client_version))
         try:
             # make the connection
             self.status()
@@ -312,7 +301,7 @@ class Burp(Burp1):
         self.proc.stdin.write('j:pretty-print-off\n')
         jso = self._read_proc_stdout()
         if self._is_warning(jso):
-            self._logger('info', jso['warning'])
+            self.logger.info(jso['warning'])
 
     def _proc_is_alive(self):
         """Check if the burp client process is still alive"""
@@ -404,7 +393,7 @@ class Burp(Burp1):
                     break
             except (TimeoutError, IOError, Exception) as exp:
                 # the os throws an exception if there is no data or timeout
-                self._logger('warning', str(exp))
+                self.logger.warning(str(exp))
                 self._kill_burp()
                 break
         return jso
@@ -412,7 +401,7 @@ class Burp(Burp1):
     def status(self, query='c:\n', agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.status`"""
         try:
-            self._logger('info', "query: '{}'".format(query.rstrip()))
+            self.logger.info("query: '{}'".format(query.rstrip()))
             if not query.endswith('\n'):
                 query = '{0}\n'.format(query)
             if not self._proc_is_alive():
@@ -424,20 +413,20 @@ class Burp(Burp1):
             self.proc.stdin.write(query)
             jso = self._read_proc_stdout()
             if self._is_warning(jso):
-                self._logger('warning', jso['warning'])
-                self._logger('debug', 'Nothing interesting to return')
+                self.logger.warning(jso['warning'])
+                self.logger.debug('Nothing interesting to return')
                 return None
 
-            self._logger('debug', '=> {}'.format(jso))
+            self.logger.debug('=> {}'.format(jso))
             return jso
         except TimeoutError as exp:
             msg = 'Cannot send command: {}'.format(str(exp))
-            self._logger('error', msg)
+            self.logger.error(msg)
             self._kill_burp()
             raise BUIserverException(msg)
         except (OSError, Exception) as exp:
             msg = 'Cannot launch burp process: {}'.format(str(exp))
-            self._logger('error', msg)
+            self.logger.error(msg)
             raise BUIserverException(msg)
 
     def get_backup_logs(self, number, client, forward=False, agent=None):
@@ -454,7 +443,7 @@ class Burp(Burp1):
         try:
             logs = query['clients'][0]['backups'][0]['logs']['list']
         except KeyError:
-            self._logger('warning', 'No logs found')
+            self.logger.warning('No logs found')
             return ret
         if 'backup_stats' in logs:
             ret = self._parse_backup_stats(number, client, forward)
@@ -565,10 +554,10 @@ class Burp(Burp1):
         try:
             back = query['clients'][0]['backups'][0]
         except KeyError:
-            self._logger('warning', 'No backup found')
+            self.logger.warning('No backup found')
             return ret
         if 'backup_stats' not in back['logs']:
-            self._logger('warning', 'No stats found for backup')
+            self.logger.warning('No stats found for backup')
             return ret
         stats = None
         try:
@@ -634,7 +623,7 @@ class Burp(Burp1):
         try:
             client = query['clients'][0]
         except KeyError:
-            self._logger('warning', 'Client not found')
+            self.logger.warning('Client not found')
             return ret
 
         # check the client is currently backing-up
@@ -720,7 +709,7 @@ class Burp(Burp1):
         try:
             return query['clients'][0]['run_status'] in ['running']
         except KeyError:
-            self._logger('warning', 'Client not found')
+            self.logger.warning('Client not found')
             return False
         return False
 
@@ -798,7 +787,7 @@ class Burp(Burp1):
         try:
             backups = query['clients'][0]['backups']
         except KeyError:
-            self._logger('warning', 'Client not found')
+            self.logger.warning('Client not found')
             return ret
         for backup in backups:
             back = {}
@@ -827,7 +816,7 @@ class Burp(Burp1):
                 back['date'] = log['start']
                 ret.append(back)
             except Exception:
-                self._logger('warning', 'Unable to parse logs')
+                self.logger.warning('Unable to parse logs')
                 pass
 
         # Here we need to reverse the array so the backups are sorted by date

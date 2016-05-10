@@ -7,13 +7,12 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
-from ...utils import BUIlogging
 from abc import ABCMeta, abstractmethod
 
 import logging
 
 
-class BUIparser(BUIlogging):
+class BUIparser(object):
     """:class:`burpui.misc.parser.interface.BUIparser` defines a generic
     interface for ``burp`` configuration files parser.
     """
@@ -151,7 +150,8 @@ class BUIparser(BUIlogging):
         :param conf: Force the file path (for file inclusions for instance)
         :type conf: str
 
-        :param mode: We actually use the same method for clients and server files
+        :param mode: We actually use the same method for clients and server
+                     files
         :type mode: str
 
         :returns: A list of notifications to return to the UI (success or

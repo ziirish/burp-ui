@@ -13,6 +13,7 @@ from logging.handlers import RotatingFileHandler
 from .exceptions import BUIserverException
 from .misc.backend.interface import BUIbackend
 from ._compat import ConfigParser, pickle
+from .utils import BUIlogging
 
 g_port = u'10000'
 g_bind = u'::'
@@ -43,9 +44,8 @@ class BurpHandler(BUIbackend):
             mod = __import__(module, fromlist=['Burp'])
             Client = mod.Burp
             self.backend = Client(conf=conf)
-            self.backend.set_logger(self.logger)
         except Exception as e:
-            self._logger('error', '{}\n\nFailed loading backend for Burp version {}: {}'.format(traceback.format_exc(), self.vers, str(e)))
+            self.logger.error('{}\n\nFailed loading backend for Burp version {}: {}'.format(traceback.format_exc(), self.vers, str(e)))
             sys.exit(2)
 
     def __getattribute__(self, name):
@@ -60,7 +60,7 @@ class BurpHandler(BUIbackend):
         return object.__getattribute__(self, name)
 
 
-class BUIAgent(BUIbackend):
+class BUIAgent(BUIbackend, BUIlogging):
     BUIbackend.__abstractmethods__ = frozenset()
     defaults = {
         'port': g_port, 'bind': g_bind,
@@ -85,8 +85,6 @@ class BUIAgent(BUIbackend):
             if level >= len(levels):
                 level = len(levels) - 1
             lvl = levels[level]
-            self.app.logger = logging.getLogger('burp-ui')
-            self.set_logger(self.app.logger)
             self.logger.setLevel(lvl)
             if lvl > logging.DEBUG:
                 LOG_FORMAT = '[%(asctime)s] %(levelname)s in %(module)s.%(funcName)s: %(message)s'
