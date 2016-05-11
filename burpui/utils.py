@@ -249,9 +249,12 @@ class ReverseProxied(object):
     def __call__(self, environ, start_response):
         script_name = environ.get('HTTP_X_SCRIPT_NAME', self.app.prefix)
         if script_name:
-            environ['SCRIPT_NAME'] = script_name
-            path_info = environ['PATH_INFO']
-            if path_info.startswith(script_name):
-                environ['PATH_INFO'] = path_info[len(script_name):]
+            if script_name.startswith('/'):
+                environ['SCRIPT_NAME'] = script_name
+                path_info = environ['PATH_INFO']
+                if path_info.startswith(script_name):
+                    environ['PATH_INFO'] = path_info[len(script_name):]
+            else:
+                self.app.warning("'prefix' must start with a '/'!")
 
         return self.wsgi_app(environ, start_response)
