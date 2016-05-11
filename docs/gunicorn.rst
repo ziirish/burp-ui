@@ -110,10 +110,10 @@ restart `Gunicorn`_:
     service gunicorn restart
 
 
-Reverse Proxy
+Reverse-Proxy
 -------------
 
-You may want to add a reverse proxy so `Burp-UI`_ can be accessed on port 80 (or
+You may want to add a reverse-proxy so `Burp-UI`_ can be accessed on port 80 (or
 443) along with other applications.
 
 Here is a sample configuration for Nginx:
@@ -141,6 +141,47 @@ Here is a sample configuration for Nginx:
         }
     }
 
+
+Sub-root path
+^^^^^^^^^^^^^
+
+You can host `Burp-UI`_ behind a sub-root path. For instance ``/burpui``.
+To accomplish this, you can either setup your reverse-proxy to announce the
+desired *prefix*, or you can use the ``prefix`` option in your `Burp-UI`_
+configuration file (see `usage <usage.html>`_ for details).
+
+If you want to configure this reverse-proxy side, you need to announce the HTTP
+Header ``X-Script-Name``.
+
+Here is a sample configuration for Nginx:
+
+::
+
+    server {
+        listen 80;
+        server_name example.com;
+
+        access_log  /var/log/nginx/burpui.access.log;
+        error_log   /var/log/nginx/burpui.error.log;
+
+        location /burpui {
+
+            # you need to change this to "https", if you set "ssl" directive to "on"
+            proxy_set_header   X-FORWARDED_PROTO http;
+            proxy_set_header   Host              $http_host;
+            proxy_set_header   X-Forwarded-For   $remote_addr;
+            # Our service is hosted behind the "/burpui" prefix
+            proxy_set_header   X-Script-Name     /burpui;
+
+            proxy_read_timeout 300;
+            proxy_connect_timeout 300;
+
+            proxy_pass http://localhost:5000;
+        }
+    }
+
+
+.. warning:: If your *prefix* does not start with a '/', it will be ignored.
 
 Production
 ----------

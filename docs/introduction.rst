@@ -35,9 +35,9 @@ Compatibility
 | 2.0.18 => 2.0.X protocol 2 |       |   X*  |
 +----------------------------+-------+-------+
 
-* The protocol 2 is in heavy development Burp side so the support in `Burp-UI`_
-is best effort and all features (such as server-initiated restoration) are not
-available.
+\* The protocol 2 is in heavy development Burp side so the support in
+`Burp-UI`_ is best effort and all features (such as server-initiated
+restoration) are not available.
 
 
 Known Issues

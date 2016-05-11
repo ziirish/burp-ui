@@ -37,6 +37,7 @@ G_SCOOKIE = 'False'
 G_APPSECRET = 'random'
 G_COOKIETIME = '14'
 G_INCLUDES = '/etc/burp'
+G_PREFIX = ''
 
 
 class BUIServer(Flask):
@@ -99,6 +100,7 @@ class BUIServer(Flask):
             'appsecret': G_APPSECRET,
             'cookietime': G_COOKIETIME,
             'includes': G_INCLUDES,
+            'prefix': G_PREFIX,
         }
         config = ConfigParser.ConfigParser(self.defaults)
         with open(conf) as fp:
@@ -127,6 +129,11 @@ class BUIServer(Flask):
                 )
                 self.sslcert = self._safe_config_get(config.get, 'sslcert')
                 self.sslkey = self._safe_config_get(config.get, 'sslkey')
+                self.prefix = self._safe_config_get(config.get, 'prefix')
+                if self.prefix and not self.prefix.startswith('/'):
+                    if self.prefix.lower != 'none':
+                        self.logger.warning("'prefix' must start with a '/'!")
+                    self.prefix = ''
                 self.auth = self._safe_config_get(config.get, 'auth')
                 if self.auth and self.auth.lower() != 'none':
                     try:
@@ -205,14 +212,12 @@ class BUIServer(Flask):
                 )
 
                 # Security options
-                self.config['SESSION_COOKIE_SECURE'] = \
-                    self.config['REMEMBER_COOKIE_SECURE'] = \
-                    self._safe_config_get(
-                        config.getboolean,
-                        'scookie',
-                        'Security',
-                        cast=bool
-                    ) or self.ssl
+                self.scookie = self._safe_config_get(
+                    config.getboolean,
+                    'scookie',
+                    'Security',
+                    cast=bool
+                )
                 self.config['SECRET_KEY'] = self._safe_config_get(
                     config.get,
                     'appsecret',
@@ -254,6 +259,12 @@ class BUIServer(Flask):
         self.logger.info('standalone: {}'.format(self.standalone))
         self.logger.info('sslcert: {}'.format(self.sslcert))
         self.logger.info('sslkey: {}'.format(self.sslkey))
+        self.logger.info('prefix: {}'.format(self.prefix))
+        self.logger.info('secure cookie: {}'.format(self.scookie))
+        self.logger.info(
+            'cookietime: {}'.format(self.config['REMEMBER_COOKIE_DURATION'])
+        )
+        self.logger.info('includes: {}'.format(self.includes))
         self.logger.info('refresh: {}'.format(self.config['REFRESH']))
         self.logger.info('liverefresh: {}'.format(self.config['LIVEREFRESH']))
         self.logger.info('auth: {}'.format(self.auth))

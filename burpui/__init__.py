@@ -111,7 +111,7 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
     """
     from flask_login import LoginManager
     from flask_bower import Bower
-    from .utils import basic_login_from_request
+    from .utils import basic_login_from_request, ReverseProxied
     from .server import BUIServer as BurpUI
     from .routes import view
     from .api import api, apibp
@@ -197,12 +197,6 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
     # app.config['BUNDLE_ERRORS'] = True
 
     app.config['REMEMBER_COOKIE_HTTPONLY'] = True
-    # manage application secret key
-    if not app.secret_key or app.secret_key == 'random':
-        from base64 import b64encode
-        app.secret_key = b64encode(os.urandom(256))
-    elif app.secret_key == 'none':
-        app.secret_key = None
 
     app.jinja_env.globals.update(
         isinstance=isinstance,
@@ -221,6 +215,15 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
     logger.info('Using configuration: {}'.format(app.config['CFG']))
 
     app.setup(app.config['CFG'])
+
+    # manage application secret key
+    if not app.secret_key or app.secret_key == 'random':
+        from base64 import b64encode
+        app.secret_key = b64encode(os.urandom(256))
+    elif app.secret_key == 'none':
+        app.secret_key = None
+
+    app.wsgi_app = ReverseProxied(app.wsgi_app, app)
 
     # Manage gunicorn special tricks & improvements
     if gunicorn:  # pragma: no cover
@@ -296,6 +299,17 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
     app.config.setdefault('BOWER_REPLACE_URL_FOR', True)
     bower = Bower()
     bower.init_app(app)
+
+    @app.before_request
+    def setup_request():
+        if app.scookie:
+            from flask import request
+            criteria = [
+                request.is_secure,
+                request.headers.get('X-Forwarded-Proto', 'http') == 'https'
+            ]
+            app.config['SESSION_COOKIE_SECURE'] = \
+                app.config['REMEMBER_COOKIE_SECURE'] = any(criteria)
 
     @app.login_manager.user_loader
     def load_user(userid):

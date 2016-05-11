@@ -63,6 +63,12 @@ The `burpui.cfg`_ configuration file contains a ``[Global]`` section as follow:
     # list misc/acl directory to see the available backends
     # default is no ACL
     acl: basic
+    # You can change the prefix if you are behind a reverse-proxy under a custom
+    # root path. For example: /burpui
+    # You can also configure your reverse-proxy to announce the prefix through the
+    # 'X-Script-Name' header. In this case, the bellow prefix will be ignored in
+    # favour of the one announced by your reverse-proxy
+    prefix: none
 
 
 Each option is commented, but here is a more detailed documentation:
@@ -93,6 +99,8 @@ Each option is commented, but here is a more detailed documentation:
   (see `Modes`_ for more details)
 - *auth*: What `Authentication`_ backend to use.
 - *acl*: What `ACL`_ module to use.
+- *prefix*: You can host `Burp-UI`_ behind a sub-root path. See the `gunicorn
+  <gunicorn.html#sub-root-path>`__ page for details.
 
 
 There is also a ``[UI]`` section in which you can configure some *UI*
