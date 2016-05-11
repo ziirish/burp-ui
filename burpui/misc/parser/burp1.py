@@ -873,10 +873,11 @@ class Parser(BUIparser):
                                         " </li></ul>",
     }
 
-    def __init__(self, conf=None):
+    def __init__(self, backend=None):
         """See :func:`burpui.misc.parser.interface.BUIparser.__init__`"""
-        super(Parser, self).__init__(conf)
-        self.logger.info('Parser initialized with: %s', self.conf)
+        super(Parser, self).__init__(backend)
+        self.logger.info('Parser initialized with: {}'.format(self.conf))
+        self.logger.info('includes: {}'.format(self.backend.includes))
         self.clients = []
         self.clientconfdir = None
         self.workingdir = None
@@ -888,6 +889,8 @@ class Parser(BUIparser):
 
     def _readfile(self, path=None, client=False):
         if not path:
+            return []
+        if not self._is_secure_path(path):
             return []
         if path != self.conf and not path.startswith('/'):
             if client:
@@ -961,10 +964,22 @@ class Parser(BUIparser):
 
         return dic, boolean, multi, integer, includes, includes_ext
 
+    def _is_secure_path(self, path=None):
+        """Check if the accessed path is allowed or not"""
+        if not self.backend.includes:
+            # don't check
+            return True
+        path = os.path.normpath(path)
+        cond = [ path.startswith(x) for x in self.backend.includes.split(',')]
+        if not any(cond):
+            self.logger.warning(
+                'Tried to access non-allowed path: {}'.format(path)
+            )
+            return False
+        return True
+
     def path_expander(self, pattern=None, client=None):
         """See :func:`burpui.misc.parser.interface.BUIparser.path_expander`"""
-        # TODO: enhance security by allowing only some paths
-        # (ie. remove '..' if needed) os.path.normpath
         if not pattern:
             return []
         if not pattern.startswith('/'):
@@ -973,11 +988,12 @@ class Parser(BUIparser):
             else:
                 pattern = os.path.join(self.root, pattern)
         if not re.search(r'\?|\*|\[.*\]', pattern):
-            return [pattern]
+            return [pattern] if self._is_secure_path(pattern) else []
         else:
             return [
                 x for x in glob(pattern)
-                if os.path.isfile(x) and not x.endswith('~')
+                if os.path.isfile(x) and not x.endswith('~') and
+                   self._is_secure_path(x)
             ]
 
     def remove_client(self, client=None):
@@ -1126,6 +1142,15 @@ class Parser(BUIparser):
                 mconf = os.path.join(self.root, mconf)
         if not mconf:
             return [[1, 'Sorry, no configuration file defined']]
+
+        if not self._is_secure_path(mconf):
+            return [
+                [
+                    2,
+                    'Sorry you are not allowed to access this path:'
+                    ' {}'.format(mconf)
+                ]
+            ]
 
         dirname = os.path.dirname(mconf)
         if not os.path.exists(dirname):

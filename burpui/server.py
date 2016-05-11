@@ -32,11 +32,9 @@ G_AUTH = 'basic'
 G_ACL = ''
 G_STORAGE = ''
 G_REDIS = ''
-G_ZIP64 = 'False'
 G_SCOOKIE = 'False'
 G_APPSECRET = 'random'
 G_COOKIETIME = '14'
-G_INCLUDES = '/etc/burp'
 G_PREFIX = ''
 
 
@@ -95,11 +93,9 @@ class BUIServer(Flask):
             'liverefresh': G_LIVEREFRESH,
             'storage': G_STORAGE,
             'redis': G_REDIS,
-            'zip64': G_ZIP64,
             'scookie': G_SCOOKIE,
             'appsecret': G_APPSECRET,
             'cookietime': G_COOKIETIME,
-            'includes': G_INCLUDES,
             'prefix': G_PREFIX,
         }
         config = ConfigParser.ConfigParser(self.defaults)
@@ -233,19 +229,6 @@ class BUIServer(Flask):
                             cast=int
                         )
                     )
-                self.includes = self._safe_config_get(
-                    config.get,
-                    'includes',
-                    'Security'
-                )
-
-                # Experimental features
-                self.zip64 = self._safe_config_get(
-                    config.getboolean,
-                    'zip64',
-                    'Experimental',
-                    cast=bool
-                )
 
             except ConfigParser.NoOptionError as e:
                 self.logger.error(str(e))
@@ -264,12 +247,10 @@ class BUIServer(Flask):
         self.logger.info(
             'cookietime: {}'.format(self.config['REMEMBER_COOKIE_DURATION'])
         )
-        self.logger.info('includes: {}'.format(self.includes))
         self.logger.info('refresh: {}'.format(self.config['REFRESH']))
         self.logger.info('liverefresh: {}'.format(self.config['LIVEREFRESH']))
         self.logger.info('auth: {}'.format(self.auth))
         self.logger.info('acl: {}'.format(self.acl_engine))
-        self.logger.info('zip64: {}'.format(self.zip64))
 
         if self.standalone:
             module = 'burpui.misc.backend.burp{0}'.format(self.vers)

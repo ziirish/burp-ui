@@ -138,6 +138,56 @@ follow:
 
 These settings are only used when Gunicorn is enabled and used.
 
+Experimental
+------------
+
+There is a ``[Experimental]`` section for features that have not been deeply
+tested:
+
+::
+
+    [Experimental]
+    ## This section contains some experimental features that have not been deeply
+    ## tested yet
+    # enable zip64 feature. Python doc says:
+    # « ZIP64 extensions are disabled by default because the default zip and unzip
+    # commands on Unix (the InfoZIP utilities) don’t support these extensions. »
+    zip64: false
+
+
+These options are also available in the `bui-agent`_ configuration file.
+
+Security
+--------
+
+The ``[Security]`` section contains options to harden the security of the
+application:
+
+::
+
+    [Security]
+    ## This section contains some security options. Make sure you understand the
+    ## security implications before changing these.
+    # list of 'root' paths allowed when sourcing files in the configuration.
+    # Set this to 'none' if you don't want any restrictions, keeping in mind this
+    # can lead to accessing sensible files. Defaults to '/etc/burp'.
+    # Note: you can have several paths separated by comas.
+    # Example: /etc/burp,/etc/burp.d
+    includes: /etc/burp
+    # remember_cookie duration in days
+    cookietime: 14
+    # whether to use a secure cookie for https or not. If set to false, cookies
+    # won't have the 'secure' flag.
+    # This setting is only useful when HTTPS is detected
+    scookie: false
+    # application secret to secure cookies. If you don't set anything, the default
+    # value is 'random' which will generate a new secret after every restart of your
+    # application. You can also set it to 'none' although this is not recommended.
+    appsecret: random
+
+
+Some of these options are also available in the `bui-agent`_ configuration file.
+
 Modes
 -----
 

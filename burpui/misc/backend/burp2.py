@@ -35,6 +35,8 @@ G_BURPCONFCLI = u'/etc/burp/burp.conf'
 G_BURPCONFSRV = u'/etc/burp/burp-server.conf'
 G_TMPDIR = u'/tmp/bui'
 G_TIMEOUT = u'5'
+G_ZIP64 = False
+G_INCLUDES = u'/etc/burp'
 
 
 # Some functions are the same as in Burp1 backend
@@ -60,21 +62,21 @@ class Burp(Burp1):
         self.app = server
         self.client_version = None
         self.server_version = None
-        self.zip64 = False
-        if server:
-            if hasattr(server, 'zip64'):
-                self.zip64 = server.zip64
+        self.zip64 = G_ZIP64
         self.burpbin = G_BURPBIN
         self.stripbin = G_STRIPBIN
         self.burpconfcli = G_BURPCONFCLI
         self.burpconfsrv = G_BURPCONFSRV
+        self.includes = G_INCLUDES
         self.defaults = {
             'burpbin': G_BURPBIN,
             'stripbin': G_STRIPBIN,
             'bconfcli': G_BURPCONFCLI,
             'bconfsrv': G_BURPCONFSRV,
             'timeout': G_TIMEOUT,
-            'tmpdir': G_TMPDIR
+            'tmpdir': G_TMPDIR,
+            'zip64': G_ZIP64,
+            'includes': G_INCLUDES,
         }
         self.running = []
         version = ''
@@ -109,7 +111,26 @@ class Burp(Burp1):
                         sect='Burp2',
                         cast=int
                     )
-                    tmpdir = self._safe_config_get(config.get, 'tmpdir')
+                    tmpdir = self._safe_config_get(
+                        config.get,
+                        'tmpdir',
+                        sect='Burp2'
+                    )
+
+                    # Experimental options
+                    self.zip64 = self._safe_config_get(
+                        config.getboolean,
+                        'zip64',
+                        sect='Experimental',
+                        cast=bool
+                    )
+
+                    # Security options
+                    self.includes = self._safe_config_get(
+                        config.get,
+                        'includes',
+                        sect='Security'
+                    )
 
                     if (tmpdir and os.path.exists(tmpdir) and
                             not os.path.isdir(tmpdir)):
@@ -239,7 +260,7 @@ class Burp(Burp1):
 
         self.client_version = version.replace('burp-', '')
 
-        self.parser = Parser(self.burpconfsrv)
+        self.parser = Parser(self)
 
         self.logger.info('burp binary: {}'.format(self.burpbin))
         self.logger.info('strip binary: {}'.format(self.stripbin))
@@ -247,6 +268,9 @@ class Burp(Burp1):
         self.logger.info('burp conf srv: {}'.format(self.burpconfsrv))
         self.logger.info('command timeout: {}'.format(self.timeout))
         self.logger.info('burp version: {}'.format(self.client_version))
+        self.logger.info('tmpdir: {}'.format(self.tmpdir))
+        self.logger.info('zip64: {}'.format(self.zip64))
+        self.logger.info('includes: {}'.format(self.includes))
         try:
             # make the connection
             self.status()

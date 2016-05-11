@@ -20,17 +20,15 @@ class BUIparser(object):
 
     logger = logging.getLogger('burp-ui')
 
-    def __init__(self, conf=None):
+    def __init__(self, backend=None):
         """:func:`burpui.misc.parser.interface.BUIparser.__init__` instanciate
         the parser.
 
-        :param app: The application context
-        :type app: :class:`burpui.server.BUIServer`
-
-        :param conf: The main configuration file
-        :type conf: str
+        :param backend: The application backend
+        :type backend: :class:`burpui.misc.backend.BUIbackend`
         """
-        self.conf = conf
+        self.backend = backend
+        self.conf = backend.burpconfsrv
 
     @abstractmethod
     def read_server_conf(self, conf=None):

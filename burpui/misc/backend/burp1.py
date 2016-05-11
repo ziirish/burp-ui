@@ -35,6 +35,8 @@ G_STRIPBIN = u'/usr/sbin/vss_strip'
 G_BURPCONFCLI = None
 G_BURPCONFSRV = u'/etc/burp/burp-server.conf'
 G_TMPDIR = u'/tmp/bui'
+G_ZIP64 = False
+G_INCLUDES = '/etc/burp'
 
 
 class Burp(BUIbackend):
@@ -118,10 +120,7 @@ class Burp(BUIbackend):
         self.client_version = None
         self.server_version = None
         self.app = None
-        self.zip64 = False
-        if server:
-            if hasattr(server, 'zip64'):
-                self.zip64 = server.zip64
+        self.zip64 = G_ZIP64
         self.host = G_BURPHOST
         self.port = int(G_BURPPORT)
         self.burpbin = G_BURPBIN
@@ -129,6 +128,7 @@ class Burp(BUIbackend):
         self.burpconfcli = G_BURPCONFCLI
         self.burpconfsrv = G_BURPCONFSRV
         self.tmpdir = G_TMPDIR
+        self.includes = G_INCLUDES
         self.running = []
         self.defaults = {
             'bport': G_BURPPORT,
@@ -137,7 +137,9 @@ class Burp(BUIbackend):
             'stripbin': G_STRIPBIN,
             'bconfcli': G_BURPCONFCLI,
             'bconfsrv': G_BURPCONFSRV,
-            'tmpdir': G_TMPDIR
+            'tmpdir': G_TMPDIR,
+            'zip64': G_ZIP64,
+            'includes': G_INCLUDES,
         }
         if conf:
             config = ConfigParser.ConfigParser(self.defaults)
@@ -151,6 +153,21 @@ class Burp(BUIbackend):
                 confcli = self._safe_config_get(config.get, 'bconfcli')
                 confsrv = self._safe_config_get(config.get, 'bconfsrv')
                 tmpdir = self._safe_config_get(config.get, 'tmpdir')
+
+                # Experimental options
+                self.zip64 = self._safe_config_get(
+                    config.getboolean,
+                    'zip64',
+                    sect='Experimental',
+                    cast=bool
+                )
+
+                # Security options
+                self.includes = self._safe_config_get(
+                    config.get,
+                    'includes',
+                    sect='Security'
+                )
 
                 if tmpdir and os.path.exists(tmpdir) and not os.path.isdir(tmpdir):
                     self.logger.warning("'%s' is not a directory", tmpdir)
@@ -208,7 +225,7 @@ class Burp(BUIbackend):
                 self.burpconfsrv = confsrv
                 self.tmpdir = tmpdir
 
-        self.parser = Parser(self.burpconfsrv)
+        self.parser = Parser(self)
 
         self.family = Burp._get_inet_family(self.host)
         self._test_burp_server_address(self.host)
@@ -231,13 +248,15 @@ class Burp(BUIbackend):
         except:
             pass
 
-        self.logger.info('burp port: %d', self.port)
-        self.logger.info('burp host: %s', self.host)
-        self.logger.info('burp binary: %s', self.burpbin)
-        self.logger.info('strip binary: %s', self.stripbin)
-        self.logger.info('burp conf cli: %s', self.burpconfcli)
-        self.logger.info('burp conf srv: %s', self.burpconfsrv)
-        self.logger.info('tmpdir: %s', self.tmpdir)
+        self.logger.info('burp port: {}'.format(self.port))
+        self.logger.info('burp host: {}'.format(self.host))
+        self.logger.info('burp binary: {}'.format(self.burpbin))
+        self.logger.info('strip binary: {}'.format(self.stripbin))
+        self.logger.info('burp conf cli: {}'.format(self.burpconfcli))
+        self.logger.info('burp conf srv: {}'.format(self.burpconfsrv))
+        self.logger.info('tmpdir: {}'.format(self.tmpdir))
+        self.logger.info('zip64: {}'.format(self.zip64))
+        self.logger.info('includes: {}'.format(self.includes))
         try:
             # make the connection
             self.status()

@@ -247,6 +247,8 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
                 red = Redis(host=host, port=port)
                 app.config['SESSION_TYPE'] = 'redis'
                 app.config['SESSION_REDIS'] = red
+                app.config['SESSION_USE_SIGNER'] = app.secret_key != None
+                app.config['SESSION_PERMANENT'] = False
                 ses = Session()
                 ses.init_app(app)
             except Exception as e:
