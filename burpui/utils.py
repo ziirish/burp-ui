@@ -230,15 +230,30 @@ class ReverseProxied(object):
     different than what is used locally.
 
     In nginx:
-    location /myprefix {
-        proxy_pass http://192.168.0.1:5001;
-        proxy_set_header Host $host;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Scheme $scheme;
-        proxy_set_header X-Script-Name /myprefix;
+
+    ::
+
+        location /myprefix {
+            proxy_pass http://192.168.0.1:5001;
+            proxy_set_header Host $host;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Scheme $scheme;
+            proxy_set_header X-Script-Name /myprefix;
         }
 
-    :param app: the WSGI application
+
+    In Apache:
+
+    ::
+    
+        <Location /myprefix>
+            ProxyPass http://192.168.0.1:5001
+            ProxyPassReverse http://192.168.0.1:5001
+            RequestHeader set X-Script-Name /myprefix
+        </Location>
+
+
+    :param wsgi_app: the WSGI application
 
     Inspired by: http://flask.pocoo.org/snippets/35/
     '''
