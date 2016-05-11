@@ -7,6 +7,8 @@ Current
 - Add: allow to `edit a server-initiated restoration <https://git.ziirish.me/ziirish/burp-ui/issues/125>`_
 - Add: allow to `cancel a server-initiated restoration <https://git.ziirish.me/ziirish/burp-ui/issues/112>`_
 - Add: support for `Burp labels <https://git.ziirish.me/ziirish/burp-ui/issues/116>`_
+- Add: `server-initiated backups <https://git.ziirish.me/ziirish/burp-ui/issues/119>`_
+- Add: support `sub-root path <https://git.ziirish.me/ziirish/burp-ui/issues/128>`_
 - Add: new Burp 2 settings
 - Improvement: `Better logging system <https://git.ziirish.me/ziirish/burp-ui/issues/118>`_
 - Fix: issue `#109 <https://git.ziirish.me/ziirish/burp-ui/issues/109>`_
