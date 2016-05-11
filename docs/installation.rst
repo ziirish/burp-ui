@@ -107,7 +107,7 @@ Options
    optional arguments:
      -h, --help            show this help message and exit
      -v, --verbose         increase output verbosity (e.g., -vv is more than -v)
-     -d, --debug           alias for -v
+     -d, --debug           enable debug mode
      -V, --version         print version and exit
      -c <CONFIG>, --config <CONFIG>
                            configuration file

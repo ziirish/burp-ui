@@ -44,8 +44,8 @@ Known Issues
 ------------
 
 Because it's an Open Source project, people are free (and encouraged) to open
-issues in the `bug-tracker <https://git.ziirish.me/ziirish/burp-ui/issues>`_
-where will find there the current opened issues.
+issues in the `bug-tracker <https://git.ziirish.me/ziirish/burp-ui/issues>`_.
+You will also find there the current opened issues.
 
 
 There are also a few issues unrelated to the code itself:
