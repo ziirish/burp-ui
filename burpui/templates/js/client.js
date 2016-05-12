@@ -92,6 +92,9 @@ var _client = function() {
 			$('.edit-restore').show();
 			$('.scheduled-backup').hide();
 			$('.cancel-backup').hide();
+		} else {
+			$('.edit-restore').hide();
+			$('.scheduled-backup').show();
 		}
 	}).fail(myFail);
 
@@ -101,6 +104,9 @@ var _client = function() {
 			$('.cancel-backup').show();
 			$('.scheduled-backup').hide();
 			$('.edit-restore').hide();
+		} else {
+			$('.scheduled-backup').show();
+			$('.cancel-backup').hide();
 		}
 	}).fail(myFail);
 };
