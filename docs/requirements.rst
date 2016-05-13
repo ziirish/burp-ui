@@ -9,6 +9,14 @@ burp-server for some features.
     free to contribute for other distributions!
 
 
+Python
+------
+
+`Burp-UI`_ is built against python 2.7. The support for python 2.6 has been
+removed since it is not supported anymore by the CPython core team.
+Unit tests are ran against python 2.7 and python 3.4. If you encounter
+compilation errors with one of these version, feel free to report them.
+
 Debian Wheezy
 -------------
 
