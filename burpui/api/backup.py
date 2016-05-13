@@ -10,7 +10,6 @@
 from . import api
 from .custom import Resource
 from ..exceptions import BUIserverException
-from flask_login import current_user
 
 ns = api.namespace('backup', 'Backup methods')
 
@@ -59,10 +58,10 @@ class ServerBackup(Resource):
             self.abort(400, 'Missing options')
         # Manage ACL
         if (api.bui.acl and
-                (not api.bui.acl.is_client_allowed(current_user.get_id(),
+                (not api.bui.acl.is_client_allowed(self.username,
                                                    name,
                                                    server) and not
-                 api.bui.acl.is_admin(current_user.get_id()))):
+                 self.is_admin)):
             self.abort(403, 'You are not allowed to access this client')
         try:
             return {'is_server_backup': api.bui.cli.is_server_backup(name, server)}
@@ -99,10 +98,10 @@ class ServerBackup(Resource):
             self.abort(400, 'Missing options')
         # Manage ACL
         if (api.bui.acl and
-                (not api.bui.acl.is_client_allowed(current_user.get_id(),
+                (not api.bui.acl.is_client_allowed(self.username,
                                                    name,
                                                    server) and not
-                 api.bui.acl.is_admin(current_user.get_id()))):
+                 self.is_admin)):
             self.abort(403, 'You are not allowed to cancel a backup for this client')
         try:
             return api.bui.cli.cancel_server_backup(name, server)
@@ -141,12 +140,12 @@ class ServerBackup(Resource):
             self.abort(400, 'Missing options')
         # Manage ACL
         if (api.bui.acl and
-                (not api.bui.acl.is_client_allowed(current_user.get_id(),
+                (not api.bui.acl.is_client_allowed(self.username,
                                                    name,
                                                    server) and not
-                 api.bui.acl.is_admin(current_user.get_id()) and
+                 self.is_admin and
                  (to and not
-                  api.bui.acl.is_client_allowed(current_user.get_id(),
+                  api.bui.acl.is_client_allowed(self.username,
                                                 to,
                                                 server)))):
             self.abort(

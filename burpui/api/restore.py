@@ -18,7 +18,6 @@ from . import api
 from .custom import fields, Resource
 from .custom.inputs import boolean
 from ..exceptions import BUIserverException
-from flask_login import current_user
 from flask import Response, send_file, make_response, after_this_request
 from werkzeug.datastructures import Headers
 from werkzeug.exceptions import HTTPException
@@ -91,10 +90,10 @@ class Restore(Resource):
             self.abort(400, 'missing arguments')
         # Manage ACL
         if (api.bui.acl and
-                (not api.bui.acl.is_client_allowed(current_user.get_id(),
+                (not api.bui.acl.is_client_allowed(self.username,
                                                    name,
                                                    server) and not
-                 api.bui.acl.is_admin(current_user.get_id()))):
+                 self.is_admin)):
             self.abort(403, 'You are not allowed to perform a restoration for this client')
         if server:
             filename = 'restoration_%d_%s_on_%s_at_%s.%s' % (
@@ -318,10 +317,10 @@ class ServerRestore(Resource):
             self.abort(400, 'Missing options')
         # Manage ACL
         if (api.bui.acl and
-                (not api.bui.acl.is_client_allowed(current_user.get_id(),
+                (not api.bui.acl.is_client_allowed(self.username,
                                                    name,
                                                    server) and not
-                 api.bui.acl.is_admin(current_user.get_id()))):
+                 self.is_admin)):
             self.abort(403, 'You are not allowed to edit a restoration for this client')
         try:
             return api.bui.cli.is_server_restore(name, server)
@@ -358,10 +357,10 @@ class ServerRestore(Resource):
             self.abort(400, 'Missing options')
         # Manage ACL
         if (api.bui.acl and
-                (not api.bui.acl.is_client_allowed(current_user.get_id(),
+                (not api.bui.acl.is_client_allowed(self.username,
                                                    name,
                                                    server) and not
-                 api.bui.acl.is_admin(current_user.get_id()))):
+                 self.is_admin)):
             self.abort(403, 'You are not allowed to cancel a restoration for this client')
         try:
             return api.bui.cli.cancel_server_restore(name, server)
@@ -411,12 +410,12 @@ class ServerRestore(Resource):
             self.abort(400, 'Missing options')
         # Manage ACL
         if (api.bui.acl and
-                (not api.bui.acl.is_client_allowed(current_user.get_id(),
+                (not api.bui.acl.is_client_allowed(self.username,
                                                    name,
                                                    server) and not
-                 api.bui.acl.is_admin(current_user.get_id()) and
+                 self.is_admin and
                  (to and not
-                  api.bui.acl.is_client_allowed(current_user.get_id(),
+                  api.bui.acl.is_client_allowed(self.username,
                                                 to,
                                                 server)))):
             self.abort(

@@ -13,7 +13,6 @@ from . import api, cache_key
 from .custom import fields, Resource
 from .custom.inputs import boolean
 from ..exceptions import BUIserverException
-from flask_login import current_user
 from flask_restplus.marshalling import marshal
 
 ns = api.namespace('client', 'Client methods')
@@ -209,8 +208,8 @@ class ClientTree(Resource):
         to_select_list = []
 
         if (api.bui.acl and
-                (not api.bui.acl.is_admin(current_user.get_id()) and not
-                 api.bui.acl.is_client_allowed(current_user.get_id(),
+                (not self.is_admin and not
+                 api.bui.acl.is_client_allowed(self.username,
                                                name,
                                                server))):
             self.abort(403, 'Sorry, you are not allowed to view this client')
@@ -610,7 +609,7 @@ class ClientReport(Resource):
             err = [[1, 'No client defined']]
             self.abort(400, err)
         if (api.bui.acl and not
-                api.bui.acl.is_client_allowed(current_user.get_id(),
+                api.bui.acl.is_client_allowed(self.username,
                                               name,
                                               server)):
             self.abort(403, 'You don\'t have rights to view this client report')
@@ -727,8 +726,8 @@ class ClientStats(Resource):
         server = server or self.parser.parse_args()['serverName']
         try:
             if (api.bui.acl and (
-                    not api.bui.acl.is_admin(current_user.get_id()) and
-                    not api.bui.acl.is_client_allowed(current_user.get_id(),
+                    not self.is_admin and
+                    not api.bui.acl.is_client_allowed(self.username,
                                                       name,
                                                       server))):
                 self.abort(403, 'Sorry, you cannot access this client')

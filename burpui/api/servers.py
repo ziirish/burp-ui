@@ -5,8 +5,6 @@ from . import api, cache_key, parallel_loop
 from .custom import fields, Resource
 from ..exceptions import BUIserverException
 
-from flask_login import current_user
-
 ns = api.namespace('servers', 'Servers methods')
 
 
@@ -59,10 +57,9 @@ class ServersStats(Resource):
         if hasattr(api.bui.cli, 'servers'):
             restrict = []
             check = False
-            if (api.bui.acl and not
-                    api.bui.acl.is_admin(current_user.get_id())):
+            if api.bui.acl and not self.is_admin:
                 check = True
-                restrict = api.bui.acl.servers(current_user.get_id())
+                restrict = api.bui.acl.servers(self.username)
 
             def get_servers_info(serv, output, restrict, check, username):
                 try:
@@ -84,7 +81,7 @@ class ServersStats(Resource):
                 except BUIserverException as e:
                     output.put(str(e))
 
-            r = parallel_loop(get_servers_info, api.bui.cli.servers, restrict, check, current_user.get_id())
+            r = parallel_loop(get_servers_info, api.bui.cli.servers, restrict, check, self.username)
 
         return r
 
@@ -162,10 +159,9 @@ class ServersReport(Resource):
         if hasattr(api.bui.cli, 'servers'):
             restrict = []
             check = False
-            if (api.bui.acl and not
-                    api.bui.acl.is_admin(current_user.get_id())):
+            if api.bui.acl and not self.is_admin:
                 check = True
-                restrict = api.bui.acl.servers(current_user.get_id())
+                restrict = api.bui.acl.servers(self.username)
 
             stats = []
 
@@ -211,7 +207,7 @@ class ServersReport(Resource):
                 except BUIserverException as e:
                     output.put(str(e))
 
-            stats = parallel_loop(get_servers_stats, api.bui.cli.servers, restrict, check, current_user.get_id())
+            stats = parallel_loop(get_servers_stats, api.bui.cli.servers, restrict, check, self.username)
             backups = []
             servers = []
             for serv in stats:
