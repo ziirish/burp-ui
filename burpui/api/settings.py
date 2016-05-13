@@ -7,18 +7,11 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
-import sys
-
-# This is a submodule we can also use "from ..api import api"
 from . import api
 from .custom import Resource
-from flask_login import current_user
+from .._compat import unquote
 from flask import jsonify, request, url_for
 from werkzeug.datastructures import ImmutableMultiDict
-if sys.version_info >= (3, 0):  # noqa
-    from urllib.parse import unquote
-else:
-    from urllib import unquote
 
 ns = api.namespace('settings', 'Settings methods')
 
@@ -36,6 +29,10 @@ class ServerSettings(Resource):
     """
 
     def post(self, conf=None, server=None):
+        # Only the admin can edit the configuration
+        if api.bui.acl and not self.is_admin:
+            self.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
+
         noti = api.bui.cli.store_conf_srv(request.form, conf, server)
         return {'notif': noti}, 200
 
@@ -169,8 +166,7 @@ class ServerSettings(Resource):
         :returns: The *JSON* described above.
         """
         # Only the admin can edit the configuration
-        if (api.bui.acl and not
-                api.bui.acl.is_admin(current_user.get_id())):
+        if api.bui.acl and not self.is_admin:
             self.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
 
         try:
@@ -195,6 +191,10 @@ class ServerSettings(Resource):
 class ClientsList(Resource):
 
     def get(self, server=None):
+        # Only the admin can edit the configuration
+        if api.bui.acl and not self.is_admin:
+            self.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
+
         res = api.bui.cli.clients_list(server)
         return jsonify(result=res)
 
@@ -207,13 +207,16 @@ class ClientsList(Resource):
 class ClientSettings(Resource):
 
     def post(self, server=None, client=None, conf=None):
+        # Only the admin can edit the configuration
+        if api.bui.acl and not self.is_admin:
+            self.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
+
         noti = api.bui.cli.store_conf_cli(request.form, client, conf, server)
         return jsonify(notif=noti)
 
     def get(self, server=None, client=None, conf=None):
         # Only the admin can edit the configuration
-        if (api.bui.acl and not
-                api.bui.acl.is_admin(current_user.get_id())):
+        if api.bui.acl and not self.is_admin:
             self.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
 
         try:
@@ -241,8 +244,7 @@ class NewClient(Resource):
 
     def put(self, server=None):
         # Only the admin can edit the configuration
-        if (api.bui.acl and not
-                api.bui.acl.is_admin(current_user.get_id())):
+        if api.bui.acl and not self.is_admin:
             self.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
 
         newclient = self.parser.parse_args()['newclient']
@@ -278,8 +280,7 @@ class PathExpander(Resource):
 
     def get(self, server=None, client=None):
         # Only the admin can edit the configuration
-        if (api.bui.acl and not
-                api.bui.acl.is_admin(current_user.get_id())):
+        if api.bui.acl and not self.is_admin:
             self.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
 
         path = self.parser.parse_args()['path']
@@ -298,8 +299,7 @@ class DeleteClient(Resource):
 
     def delete(self, server=None, client=None):
         # Only the admin can edit the configuration
-        if (api.bui.acl and not
-                api.bui.acl.is_admin(current_user.get_id())):
+        if api.bui.acl and not self.is_admin:
             self.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
 
         # clear the cache when we remove a client
