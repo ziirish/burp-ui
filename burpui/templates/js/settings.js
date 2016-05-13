@@ -350,7 +350,7 @@ app.controller('ConfigCtrl', function($scope, $http) {
 		});
 	};
 	$scope.deleteClient = function() {
-		api = '{{ url_for("api.delete_client", client=client, server=server) }}';
+		api = '{{ url_for("api.client_settings", client=client, server=server) }}';
 		$.ajax({
 			url: api,
 			type: 'DELETE'
