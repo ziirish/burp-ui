@@ -23,7 +23,7 @@ __title__ = 'burp-ui'
 __author__ = 'Benjamin SANS (Ziirish)'
 __author_email__ = 'hi+burpui@ziirish.me'
 __url__ = 'https://git.ziirish.me/ziirish/burp-ui'
-__doc__ = 'https://burp-ui.readthedocs.io/en/stable/'
+__doc__ = 'https://burp-ui.readthedocs.io/en/latest/'
 __description__ = ('Burp-UI is a web-ui for burp backup written in python with '
                    'Flask and jQuery/Bootstrap')
 __license__ = 'BSD 3-clause'

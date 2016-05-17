@@ -48,7 +48,7 @@ Ask questions in the `discussion forum <https://burpui.ziirish.me/>`__. Do not
 use the issue tracker for this purpose.
 
 ``Burp-UI`` has extensive online documentation please read the `doc
-<https://burp-ui.readthedocs.io/en/stable/>`__.
+<https://burp-ui.readthedocs.io/en/latest/>`__.
 
 
 Troubleshooting
