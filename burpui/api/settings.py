@@ -310,3 +310,18 @@ class PathExpander(Resource):
         if not paths:
             self.abort(500, 'Path not found')
         return {'result': paths}
+
+
+@ns.route('/options',
+          '<server>/options',
+          endpoint='setting_options')
+class SettingOptions(Resource):
+
+    def get(self, server=None):
+        """Returns various setting options"""
+        if api.bui.acl and not self.is_admin:
+            self.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
+
+        return {
+            'is_revocation_enabled': api.bui.cli.revocation_enabled(server),
+        }

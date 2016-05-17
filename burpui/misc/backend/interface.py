@@ -631,12 +631,18 @@ class BUIbackend(object):
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
     @abstractmethod
-    def delete_client(self, client=None, agent=None):
+    def delete_client(self, client=None, delete=False, revoke=False, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.delete_client`
         function is used to delete a client from burp's configuration.
 
         :param client: The name of the client to remove
         :type client: str
+
+        :param delete: Whether to delete the associated certificate
+        :type delete: bool
+
+        :param revoke: Whether to revoke the associated certificate
+        :type revoke: bool
 
         :param agent: What server to ask (only in multi-agent mode)
         :type agent: str
@@ -730,7 +736,7 @@ class BUIbackend(object):
         :param agent: What server to ask (only in multi-agent mode)
         :type agent: str
 
-        :returns: A dict like: {'is_server_backup': True}
+        :returns: True or False
         """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
@@ -768,6 +774,19 @@ class BUIbackend(object):
 
         :returns: A list of notifications to return to the UI (success or
                   failure)
+        """
+        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+
+    @abstractmethod
+    def revocation_enabled(self, agent=None):
+        """The
+        :func:`burpui.misc.backend.interface.BUIbackend.revocation_enabled`
+        function is used to know if the revocation feature is enabled or not.
+
+        :param agent: What server to ask (only in multi-agent mode)
+        :type agent: str
+
+        :returns: True or False
         """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 

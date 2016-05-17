@@ -37,6 +37,7 @@ G_BURPCONFSRV = u'/etc/burp/burp-server.conf'
 G_TMPDIR = u'/tmp/bui'
 G_ZIP64 = False
 G_INCLUDES = '/etc/burp'
+G_REVOKE = False
 
 
 class Burp(BUIbackend):
@@ -129,6 +130,7 @@ class Burp(BUIbackend):
         self.burpconfsrv = G_BURPCONFSRV
         self.tmpdir = G_TMPDIR
         self.includes = G_INCLUDES
+        self.revoke = G_REVOKE
         self.running = []
         self.defaults = {
             'bport': G_BURPPORT,
@@ -140,6 +142,7 @@ class Burp(BUIbackend):
             'tmpdir': G_TMPDIR,
             'zip64': G_ZIP64,
             'includes': G_INCLUDES,
+            'revoke': G_REVOKE,
         }
         if conf:
             config = ConfigParser.ConfigParser(self.defaults)
@@ -158,14 +161,18 @@ class Burp(BUIbackend):
                 self.zip64 = self._safe_config_get(
                     config.getboolean,
                     'zip64',
-                    sect='Experimental',
-                    cast=bool
+                    sect='Experimental'
                 )
 
                 # Security options
                 self.includes = self._safe_config_get(
                     config.get,
                     'includes',
+                    sect='Security'
+                )
+                self.revoke = self._safe_config_get(
+                    config.getboolean,
+                    'revoke',
                     sect='Security'
                 )
 
@@ -257,6 +264,7 @@ class Burp(BUIbackend):
         self.logger.info('tmpdir: {}'.format(self.tmpdir))
         self.logger.info('zip64: {}'.format(self.zip64))
         self.logger.info('includes: {}'.format(self.includes))
+        self.logger.info('revoke: {}'.format(self.revoke))
         try:
             # make the connection
             self.status()
@@ -1020,11 +1028,11 @@ class Burp(BUIbackend):
             return []
         return self.parser.path_expander(path, client)
 
-    def delete_client(self, client=None, agent=None):
+    def delete_client(self, client=None, delete=False, revoke=False, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.delete_client`"""
         if not client:
             return [2, "No client provided"]
-        return self.parser.remove_client(client)
+        return self.parser.remove_client(client, delete, revoke)
 
     def clients_list(self, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.clients_list`"""
@@ -1038,6 +1046,12 @@ class Burp(BUIbackend):
             return getattr(self.parser, attr)
         except:
             return []
+
+    def revocation_enabled(self, agent=None):
+        """See
+        :func:`burpui.misc.backend.interface.BUIbackend.revocation_enabled`
+        """
+        return self.revoke
 
     def get_client_version(self, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_client_version`"""

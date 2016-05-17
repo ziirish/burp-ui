@@ -37,6 +37,7 @@ G_TMPDIR = u'/tmp/bui'
 G_TIMEOUT = u'5'
 G_ZIP64 = False
 G_INCLUDES = u'/etc/burp'
+G_REVOKE = False
 
 
 # Some functions are the same as in Burp1 backend
@@ -68,6 +69,7 @@ class Burp(Burp1):
         self.burpconfcli = G_BURPCONFCLI
         self.burpconfsrv = G_BURPCONFSRV
         self.includes = G_INCLUDES
+        self.revoke = G_REVOKE
         self.defaults = {
             'burpbin': G_BURPBIN,
             'stripbin': G_STRIPBIN,
@@ -77,6 +79,7 @@ class Burp(Burp1):
             'tmpdir': G_TMPDIR,
             'zip64': G_ZIP64,
             'includes': G_INCLUDES,
+            'revoke': G_REVOKE,
         }
         self.running = []
         version = ''
@@ -129,6 +132,11 @@ class Burp(Burp1):
                     self.includes = self._safe_config_get(
                         config.get,
                         'includes',
+                        sect='Security'
+                    )
+                    self.revoke = self._safe_config_get(
+                        config.getboolean,
+                        'revoke',
                         sect='Security'
                     )
 
@@ -271,6 +279,7 @@ class Burp(Burp1):
         self.logger.info('tmpdir: {}'.format(self.tmpdir))
         self.logger.info('zip64: {}'.format(self.zip64))
         self.logger.info('includes: {}'.format(self.includes))
+        self.logger.info('revoke: {}'.format(self.revoke))
         try:
             # make the connection
             self.status()

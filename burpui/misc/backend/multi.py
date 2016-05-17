@@ -65,7 +65,7 @@ class ProxyCall(object):
             return json.loads(self.proxy.do_command(data))
         # normal case for "standard" interface
         if 'agent' not in encoded_args:
-            raise AttributeError()
+            raise AttributeError(str(encoded_args))
         agentName = encoded_args['agent']
         # we don't need this argument anymore
         del encoded_args['agent']

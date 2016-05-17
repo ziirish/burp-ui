@@ -174,6 +174,8 @@ application:
     # Note: you can have several paths separated by comas.
     # Example: /etc/burp,/etc/burp.d
     includes: /etc/burp
+    # enable certificates revocation
+    revoke: false
     # remember_cookie duration in days
     cookietime: 14
     # whether to use a secure cookie for https or not. If set to false, cookies
