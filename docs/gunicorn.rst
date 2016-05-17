@@ -28,6 +28,12 @@ play with:
 - debug: Whether to run `Burp-UI`_ in debug mode or not to get some extra logging
 - logfile: Path to a logfile in order to log `Burp-UI`_ internal messages
 
+.. warning:: You need **MUST** set the *appsecret* option in your configuration
+             file when using gunicorn.
+             The default *magic* value 'random' cannot be used. If you
+             don't change the settings the default value will be 'none' and your
+             cookies won't be secured.
+
 Daemon
 ------
 
