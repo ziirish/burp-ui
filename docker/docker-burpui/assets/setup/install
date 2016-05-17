@@ -67,7 +67,7 @@ cp ${CONFIG_DIR}/gunicorn.d/burp-ui /etc/gunicorn.d/burp-ui
 mkdir -p /etc/burp
 cp ${CONFIG_DIR}/burp-ui/burpui.cfg /etc/burp/burpui.cfg
 rand=$(dd if=/dev/urandom bs=256 count=1 2>/dev/null | base64 | sed ':a;N;$!ba;s/\n//g')
-sed -i "s/@RANDOM@/$rand/" /etc/burp/burpui.cfg
+perl -i -pe "s#@RANDOM@#$rand#" /etc/burp/burpui.cfg
 
 # patch demo with piwik
 REP=$(cat ${CONFIG_DIR}/patch/piwik.patch)
