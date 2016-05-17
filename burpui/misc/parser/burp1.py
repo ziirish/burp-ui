@@ -72,6 +72,7 @@ class Parser(BUIparser):
         u'notify_success_changes_only': False,  # bool
         u'notify_success_script': u'',  # file
         u'notify_success_warnings_only': False,  # bool
+        u'password': u'',
         u'password_check': True,  # bool
         u'path_length_warn': True,  # bool
         u'pidfile': u'',
@@ -171,6 +172,7 @@ class Parser(BUIparser):
         u'notify_success_changes_only': u"0|1",
         u'notify_success_script': u"path",
         u'notify_success_warnings_only': u"0|1",
+        u'password': u"password",
         u'password_check': u"0|1",
         u'pidfile': u"path",
         u'port': u"port number",
@@ -640,6 +642,7 @@ class Parser(BUIparser):
                                          " notify_success_changes_only are"
                                          " not turned on, success"
                                          " notifications are always sent.",
+        u'password': u"Defines the password to send to the server.",
         u'password_check': u"Allows you to turn client password checking on"
                            " or off. The default is on. SSL certificates"
                            " will still be checked if you turn passwords"
@@ -1002,6 +1005,7 @@ class Parser(BUIparser):
             return [2, "No client provided"]
         try:
             os.unlink(os.path.join(self.clientconfdir, client))
+            self._list_clients(True)
             return [0, "'{}' successfully removed".format(client)]
         except OSError as exp:
             return [2, str(exp)]
