@@ -18,7 +18,7 @@ Changelog
 - Fix: issue `#117 <https://git.ziirish.me/ziirish/burp-ui/issues/117>`_
 - Fix: issue `#123 <https://git.ziirish.me/ziirish/burp-ui/issues/123>`_
 - Doc
-- `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/v0.1.0...master>`__
+- `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/v0.1.0...v0.2.0>`__
 
 0.1.3 (02/20/2016)
 ------------------
