@@ -10,7 +10,7 @@ echo "deb http://ziirish.info/repos/debian/jessie zi-latest main" >/etc/apt/sour
 wget https://ziirish.info/repos/debian.gpg -O- | apt-key add -
 
 apt-get update
-apt-get install burp-server burp-client
+apt-get install -y burp-server burp-client
 
 cd
 
