@@ -127,7 +127,7 @@ class BUIServer(Flask):
                 self.sslkey = self._safe_config_get(config.get, 'sslkey')
                 self.prefix = self._safe_config_get(config.get, 'prefix')
                 if self.prefix and not self.prefix.startswith('/'):
-                    if self.prefix.lower != 'none':
+                    if self.prefix.lower() != 'none':
                         self.logger.warning("'prefix' must start with a '/'!")
                     self.prefix = ''
                 self.auth = self._safe_config_get(config.get, 'auth')

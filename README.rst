@@ -5,8 +5,8 @@ Badges
     :target: https://git.ziirish.me/ci/projects/1?ref=master
     :alt: Build Status
 
-.. image:: https://readthedocs.org/projects/burp-ui/badge/?version=latest
-    :target: https://readthedocs.org/projects/burp-ui/?badge=latest
+.. image:: https://readthedocs.org/projects/burp-ui/badge/?version=stable
+    :target: https://readthedocs.org/projects/burp-ui/?badge=stable
     :alt: Documentation Status
 
 Introduction
@@ -59,13 +59,13 @@ Documentation
 
 The documentation is hosted on `readthedocs <https://readthedocs.org>`_ at the
 following address: `burp-ui.readthedocs.io
-<https://burp-ui.readthedocs.io/en/latest/>`_
+<https://burp-ui.readthedocs.io/en/stable/>`_
 
 
 FAQ
 ===
 
-A `FAQ <https://burp-ui.readthedocs.io/en/latest/faq.html>`_ is available with
+A `FAQ <https://burp-ui.readthedocs.io/en/stable/faq.html>`_ is available with
 the documentation.
 
 
@@ -73,7 +73,7 @@ Community
 =========
 
 Please refer to the `Contributing
-<https://burp-ui.readthedocs.io/en/latest/contributing.html>`_ page.
+<https://burp-ui.readthedocs.io/en/stable/contributing.html>`_ page.
 
 
 Notes
@@ -83,7 +83,7 @@ Feel free to report any issues on my `gitlab
 <https://git.ziirish.me/ziirish/burp-ui/issues>`_.
 I have closed the *github tracker* to have a unique tracker system.
 Also please, read the `Contributing
-<https://burp-ui.readthedocs.io/en/latest/contributing.html>`_
+<https://burp-ui.readthedocs.io/en/stable/contributing.html>`_
 page before reporting any issue to make sure we have all the informations to
 help you.
 

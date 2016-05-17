@@ -23,7 +23,7 @@ __title__ = 'burp-ui'
 __author__ = 'Benjamin SANS (Ziirish)'
 __author_email__ = 'hi+burpui@ziirish.me'
 __url__ = 'https://git.ziirish.me/ziirish/burp-ui'
-__doc__ = 'https://burp-ui.readthedocs.io/en/latest/'
+__doc__ = 'https://burp-ui.readthedocs.io/en/stable/'
 __description__ = ('Burp-UI is a web-ui for burp backup written in python with '
                    'Flask and jQuery/Bootstrap')
 __license__ = 'BSD 3-clause'
@@ -217,10 +217,12 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
     app.setup(app.config['CFG'])
 
     # manage application secret key
-    if not app.secret_key or app.secret_key == 'random':
+    if not app.secret_key or app.secret_key.lower() == 'random' and \
+            not gunicorn:
         from base64 import b64encode
         app.secret_key = b64encode(os.urandom(256))
-    elif app.secret_key == 'none':
+    elif app.secret_key.lower() == 'none' or \
+            (app.secret_key.lower() == 'random' and gunicorn):
         app.secret_key = None
 
     app.wsgi_app = ReverseProxied(app.wsgi_app, app)
