@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.2.0 (05/17/2016)
+0.2.1 (05/17/2016)
 ------------------
 
 - Add: allow to `edit a server-initiated restoration <https://git.ziirish.me/ziirish/burp-ui/issues/125>`_
