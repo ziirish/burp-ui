@@ -1,8 +1,8 @@
 Changelog
 =========
 
-Current
--------
+0.2.0 (05/17/2016)
+------------------
 
 - Add: allow to `edit a server-initiated restoration <https://git.ziirish.me/ziirish/burp-ui/issues/125>`_
 - Add: allow to `cancel a server-initiated restoration <https://git.ziirish.me/ziirish/burp-ui/issues/112>`_
@@ -10,7 +10,8 @@ Current
 - Add: `server-initiated backups <https://git.ziirish.me/ziirish/burp-ui/issues/119>`_
 - Add: support `sub-root path <https://git.ziirish.me/ziirish/burp-ui/issues/128>`_
 - Add: new Burp 2 settings
-- Improvement: `Better logging system <https://git.ziirish.me/ziirish/burp-ui/issues/118>`_
+- Improvement: `better logging system <https://git.ziirish.me/ziirish/burp-ui/issues/118>`_
+- Improvement: `new security options <https://git.ziirish.me/ziirish/burp-ui/issues/86>`_
 - Fix: issue `#109 <https://git.ziirish.me/ziirish/burp-ui/issues/109>`_
 - Fix: issue `#113 <https://git.ziirish.me/ziirish/burp-ui/issues/113>`_
 - Fix: issue `#114 <https://git.ziirish.me/ziirish/burp-ui/issues/114>`_
