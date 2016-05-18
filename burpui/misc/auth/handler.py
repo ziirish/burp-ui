@@ -79,14 +79,6 @@ class UserHandler(BUIuser):
         sess['authenticated'] = self.authenticated
         return self.authenticated
 
-    @property
-    def is_active(self):
-        return self.active
-
-    @property
-    def is_authenticated(self):
-        return self.authenticated
-
     def get_id(self):
         try:
             return unicode(self.id)

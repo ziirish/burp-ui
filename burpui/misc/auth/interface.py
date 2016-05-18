@@ -66,3 +66,17 @@ class BUIuser(UserMixin):
         :returns: True if the name and password match, otherwise False
         """
         return False  # pragma: no cover
+
+    @property
+    def is_active(self):
+        """
+        :returns: True if user is active, otherwise False
+        """
+        return self.active
+
+    @property
+    def is_authenticated(self):
+        """
+        :returns: True if a user is authenticated, otherwise False
+        """
+        return self.authenticated

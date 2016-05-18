@@ -68,7 +68,7 @@ class BasicLoader(BUIloader):
 
 class UserHandler(BUIhandler):
     """See :class:`burpui.misc.auth.interface.BUIhandler`"""
-    def __init__(self, app=None, auth=None):
+    def __init__(self, app=None):
         """See :func:`burpui.misc.auth.interface.BUIhandler.__init__`"""
         self.basic = BasicLoader(app, self)
         self.users = {}
@@ -98,14 +98,6 @@ class BasicUser(BUIuser):
     def login(self, name=None, passwd=None):
         """See :func:`burpui.misc.auth.interface.BUIuser.login`"""
         self.authenticated = self.basic.check(name, passwd)
-        return self.authenticated
-
-    @property
-    def is_active(self):  # pragma: no cover
-        return self.active
-
-    @property
-    def is_authenticated(self):  # pragma: no cover
         return self.authenticated
 
     def get_id(self):

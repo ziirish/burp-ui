@@ -186,7 +186,7 @@ class UserHandler(BUIhandler):
     """The :class:`burpui.misc.auth.ldap.UserHandler` class maintains a list of
     ``Burp-UI`` users.
     """
-    def __init__(self, app=None, auth=None):
+    def __init__(self, app=None):
         """:func:`burpui.misc.auth.ldap.UserHandler.__init__` creates the
         handler instance
 
@@ -249,22 +249,6 @@ class LdapUser(BUIuser):
             self.authenticated = False
             self.active = False
             return False
-
-    @property
-    def is_active(self):
-        """:func:`burpui.misc.auth.ldap.LdapUser.is_active` function
-
-        :returns: True if user is active, otherwise False
-        """
-        return self.active
-
-    @property
-    def is_authenticated(self):
-        """:func:`burpui.misc.auth.ldap.LdapUser.is_authenticated` function
-
-        :returns: True if a user is authenticated, otherwise False
-        """
-        return self.authenticated
 
     def get_id(self):
         """:func:`burpui.misc.auth.ldap.LdapUser.get_id` function
