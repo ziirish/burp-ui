@@ -19,24 +19,23 @@ class BUIloader:
 class BUIhandler:
     """The :class:`burpui.misc.auth.interface.BUIhandler` class maintains a list
     of ``Burp-UI`` users.
+
+    :param app: Instance of the app we are running in
+    :type app: :class:`burpui.server.BUIServer`
     """
     __metaclass__ = ABCMeta
 
     priority = 0
 
     def __init__(self, app=None):
-        """:func:`burpui.misc.auth.interface.BUIhandler.__init__`
-
-        :param app: Instance of the app we are running in
-        :type app: :class:`burpui.server.BUIServer`
-        """
+        """Constructor"""
         pass  # pragma: no cover
 
     @abstractmethod
     def user(self, name=None):
         """The :func:`burpui.misc.auth.interface.BUIhandler.user` function
-        returns the :class:`flask_login.UserMixin` object corresponding to
-        the given user name.
+        returns the :class:`flask_login:flask_login.UserMixin` object
+        corresponding to the given user name.
 
         :param name: Name of the user
         :type name: str
@@ -48,7 +47,7 @@ class BUIhandler:
 
 class BUIuser(UserMixin):
     """The :class:`burpui.misc.auth.interface.BUIuser` class extends the
-    :class:`flask_login.UserMixin` class.
+    :class:`flask_login:flask_login.UserMixin` class.
     """
     __metaclass__ = ABCMeta
 
