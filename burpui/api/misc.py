@@ -104,9 +104,9 @@ class Counters(Resource):
             self.abort(400, 'No client name provided')
         # Manage ACL
         if (api.bui.acl and
-            (not api.bui.acl.is_client_allowed(self.username, client, server) or
-             not self.is_admin)):
-            self.abort(403)
+            not (api.bui.acl.is_client_allowed(self.username, client, server) or
+                 self.is_admin)):
+            self.abort(403, "Not allowed to view '{}' counters".format(client))
         api.bui.cli.is_one_backup_running()
         if isinstance(api.bui.cli.running, dict):
             if server and client not in api.bui.cli.running[server]:
