@@ -15,6 +15,7 @@ import codecs
 import sys
 import json
 
+from ast import literal_eval
 from select import select
 from six import iteritems
 
@@ -35,9 +36,9 @@ G_BURPCONFCLI = u'/etc/burp/burp.conf'
 G_BURPCONFSRV = u'/etc/burp/burp-server.conf'
 G_TMPDIR = u'/tmp/bui'
 G_TIMEOUT = u'5'
-G_ZIP64 = False
+G_ZIP64 = u'False'
 G_INCLUDES = u'/etc/burp'
-G_REVOKE = False
+G_REVOKE = u'False'
 
 
 # Some functions are the same as in Burp1 backend
@@ -63,13 +64,14 @@ class Burp(Burp1):
         self.app = server
         self.client_version = None
         self.server_version = None
-        self.zip64 = G_ZIP64
+        self.zip64 = literal_eval(G_ZIP64)
+        self.timeout = int(G_TIMEOUT)
         self.burpbin = G_BURPBIN
         self.stripbin = G_STRIPBIN
         self.burpconfcli = G_BURPCONFCLI
         self.burpconfsrv = G_BURPCONFSRV
         self.includes = G_INCLUDES
-        self.revoke = G_REVOKE
+        self.revoke = literal_eval(G_REVOKE)
         self.defaults = {
             'burpbin': G_BURPBIN,
             'stripbin': G_STRIPBIN,
@@ -88,14 +90,16 @@ class Burp(Burp1):
             with codecs.open(conf, 'r', 'utf-8') as conffile:
                 config.readfp(conffile)
                 try:
-                    bbin = self._safe_config_get(
-                        config.get,
+                    self.burpbin = self._get_binary_path(
+                        config,
                         'burpbin',
+                        G_BURPBIN,
                         sect='Burp2'
                     )
-                    strip = self._safe_config_get(
-                        config.get,
+                    self.stripbin = self._get_binary_path(
+                        config,
                         'stripbin',
+                        G_STRIPBIN,
                         sect='Burp2'
                     )
                     confcli = self._safe_config_get(
@@ -172,75 +176,14 @@ class Burp(Burp1):
                         )
                         confsrv = G_BURPCONFSRV
 
-                    if strip and not strip.startswith('/'):
-                        self.logger.warning(
-                            "Please provide an absolute path for the"
-                            " 'stripbin' option. Fallback to '%s'",
-                            G_STRIPBIN
-                        )
-                        strip = G_STRIPBIN
-                    elif strip and not re.match(r'^\S+$', strip):
-                        self.logger.warning(
-                            "Incorrect value for the 'stripbin' option."
-                            " Fallback to '%s'",
-                            G_STRIPBIN
-                        )
-                        strip = G_STRIPBIN
-                    elif (strip and (not os.path.isfile(strip) or
-                                     not os.access(strip, os.X_OK))):
-                        self.logger.warning(
-                            "'%s' does not exist or is not executable."
-                            " Fallback to '%s'",
-                            strip, G_STRIPBIN
-                        )
-                        strip = G_STRIPBIN
 
-                    if (strip and (not os.path.isfile(strip) or
-                                   not os.access(strip, os.X_OK))):
-                        self.logger.error(
-                            "Ooops, '%s' not found or is not executable",
-                            strip
-                        )
-                        strip = None
-
-                    if bbin and not bbin.startswith('/'):
-                        self.logger.warning(
-                            "Please provide an absolute path for the 'burpbin'"
-                            " option. Fallback to '%s'",
-                            G_BURPBIN
-                        )
-                        bbin = G_BURPBIN
-                    elif bbin and not re.match(r'^\S+$', bbin):
-                        self.logger.warning(
-                            "Incorrect value for the 'burpbin' option."
-                            " Fallback to '%s'",
-                            G_BURPBIN
-                        )
-                        bbin = G_BURPBIN
-                    elif (bbin and (not os.path.isfile(bbin) or
-                                    not os.access(bbin, os.X_OK))):
-                        self.logger.warning(
-                            "'%s' does not exist or is not executable."
-                            " Fallback to '%s'",
-                            bbin,
-                            G_BURPBIN
-                        )
-                        bbin = G_BURPBIN
-
-                    if (bbin and (not os.path.isfile(bbin) or
-                                  not os.access(bbin, os.X_OK))):
-                        self.logger.critical(
-                            "Ooops, '%s' not found or is not executable",
-                            bbin
-                        )
+                    if not self.burpbin:
                         # The burp binary is mandatory for this backend
                         raise Exception(
                             'This backend *CAN NOT* work without a burp binary'
                         )
 
                     self.tmpdir = tmpdir
-                    self.burpbin = bbin
-                    self.stripbin = strip
                     self.burpconfcli = confcli
                     self.burpconfsrv = confsrv
                 except ConfigParser.NoOptionError as exp:

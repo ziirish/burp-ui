@@ -19,6 +19,7 @@ import tempfile
 import codecs
 import logging
 
+from ast import literal_eval
 from pipes import quote
 from six import iteritems
 
@@ -32,12 +33,12 @@ G_BURPPORT = u'4972'
 G_BURPHOST = u'::1'
 G_BURPBIN = u'/usr/sbin/burp'
 G_STRIPBIN = u'/usr/sbin/vss_strip'
-G_BURPCONFCLI = None
+G_BURPCONFCLI = u''
 G_BURPCONFSRV = u'/etc/burp/burp-server.conf'
 G_TMPDIR = u'/tmp/bui'
-G_ZIP64 = False
-G_INCLUDES = '/etc/burp'
-G_REVOKE = False
+G_ZIP64 = u'False'
+G_INCLUDES = u'/etc/burp'
+G_REVOKE = u'False'
 
 
 class Burp(BUIbackend):
@@ -121,7 +122,7 @@ class Burp(BUIbackend):
         self.client_version = None
         self.server_version = None
         self.app = None
-        self.zip64 = G_ZIP64
+        self.zip64 = literal_eval(G_ZIP64)
         self.host = G_BURPHOST
         self.port = int(G_BURPPORT)
         self.burpbin = G_BURPBIN
@@ -130,7 +131,7 @@ class Burp(BUIbackend):
         self.burpconfsrv = G_BURPCONFSRV
         self.tmpdir = G_TMPDIR
         self.includes = G_INCLUDES
-        self.revoke = G_REVOKE
+        self.revoke = literal_eval(G_REVOKE)
         self.running = []
         self.defaults = {
             'bport': G_BURPPORT,
@@ -151,8 +152,16 @@ class Burp(BUIbackend):
 
                 self.port = self._safe_config_get(config.getint, 'bport', cast=int)
                 self.host = self._safe_config_get(config.get, 'bhost')
-                bbin = self._safe_config_get(config.get, 'burpbin')
-                strip = self._safe_config_get(config.get, 'stripbin')
+                self.burpbin = self._get_binary_path(
+                    config,
+                    'burpbin',
+                    G_BURPBIN
+                )
+                self.stripbin = self._get_binary_path(
+                    config,
+                    'stripbin',
+                    G_STRIPBIN
+                )
                 confcli = self._safe_config_get(config.get, 'bconfcli')
                 confsrv = self._safe_config_get(config.get, 'bconfsrv')
                 tmpdir = self._safe_config_get(config.get, 'tmpdir')
@@ -198,36 +207,6 @@ class Burp(BUIbackend):
                     self.logger.warning("Invalid value for 'bhost'. Must be '127.0.0.1' or '::1'. Falling back to '%s'", G_BURPHOST)
                     self.host = G_BURPHOST
 
-                if strip and not strip.startswith('/'):
-                    self.logger.warning("Please provide an absolute path for the 'stripbin' option. Fallback to '%s'", G_STRIPBIN)
-                    strip = G_STRIPBIN
-                elif strip and not re.match(r'^\S+$', strip):
-                    self.logger.warning("Incorrect value for the 'stripbin' option. Fallback to '%s'", G_STRIPBIN)
-                    strip = G_STRIPBIN
-                elif strip and (not os.path.isfile(strip) or not os.access(strip, os.X_OK)):
-                    self.logger.warning("'%s' does not exist or is not executable. Fallback to '%s'", strip, G_STRIPBIN)
-                    strip = G_STRIPBIN
-
-                if strip and (not os.path.isfile(strip) or not os.access(strip, os.X_OK)):  # pragma: no cover
-                    self.logger.error("Ooops, '%s' not found or is not executable", strip)
-                    strip = None
-
-                if bbin and not bbin.startswith('/'):
-                    self.logger.warning("Please provide an absolute path for the 'burpbin' option. Fallback to '%s'", G_BURPBIN)
-                    bbin = G_BURPBIN
-                elif bbin and not re.match(r'^\S+$', bbin):
-                    self.logger.warning("Incorrect value for the 'burpbin' option. Fallback to '%s'", G_BURPBIN)
-                    bbin = G_BURPBIN
-                elif bbin and (not os.path.isfile(bbin) or not os.access(bbin, os.X_OK)):
-                    self.logger.warning("'%s' does not exist or is not executable. Fallback to '%s'", bbin, G_BURPBIN)
-                    bbin = G_BURPBIN
-
-                if bbin and (not os.path.isfile(bbin) or not os.access(bbin, os.X_OK)):  # pragma: no cover
-                    self.logger.error("Ooops, '%s' not found or is not executable", bbin)
-                    bbin = None
-
-                self.burpbin = bbin
-                self.stripbin = strip
                 self.burpconfcli = confcli
                 self.burpconfsrv = confsrv
                 self.tmpdir = tmpdir
@@ -272,6 +251,32 @@ class Burp(BUIbackend):
             pass
 
     # Utilities functions
+    def _get_binary_path(self, config, field, default=None, sect='Burp1'):
+        """Helper function to retrieve a binary path from the configuration
+
+        :param field: Field name to look for
+        :type field: str
+
+        :param default: Default value in case the retrieved value is not correct
+        :type default: str
+        """
+        temp = self._safe_config_get(config.get, field, sect)
+
+        if temp and not temp.startswith('/'):
+            self.logger.warning("Please provide an absolute path for the '{}' option. Fallback to '{}'".format(field, default))
+            temp = default
+        elif temp and not re.match(r'^\S+$', temp):
+            self.logger.warning("Incorrect value for the '{}' option. Fallback to '{}'".format(field, default))
+            temp = default
+        elif temp and (not os.path.isfile(temp) or not os.access(temp, os.X_OK)):
+            self.logger.warning("'{}' does not exist or is not executable. Fallback to '{}'".format(temp, default))
+            temp = default
+
+        if temp and (not os.path.isfile(temp) or not os.access(temp, os.X_OK)):  # pragma: no cover
+            self.logger.error("Ooops, '{}' not found or is not executable".format(temp))
+            temp = None
+
+        return temp
 
     @staticmethod
     def _get_inet_family(addr):
@@ -1028,11 +1033,11 @@ class Burp(BUIbackend):
             return []
         return self.parser.path_expander(path, client)
 
-    def delete_client(self, client=None, delete=False, revoke=False, agent=None):
+    def delete_client(self, client=None, delcert=False, revoke=False, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.delete_client`"""
         if not client:
             return [2, "No client provided"]
-        return self.parser.remove_client(client, delete, revoke)
+        return self.parser.remove_client(client, delcert, revoke)
 
     def clients_list(self, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.clients_list`"""
