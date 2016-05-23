@@ -67,6 +67,7 @@ app.controller('LiveCtrl', function($scope, $http, $interval) {
 		.error(function(data, status, headers, config) {
 			$scope.stopTimer();
 			errorsHandler(data);
+			notif(NOTIF_INFO, 'Will redirect you in 5 seconds');
 			setTimeout(function() {
 				document.location = '{{ url_for("view.home") }}';
 			}, 5000);

@@ -1,3 +1,7 @@
+var NOTIF_SUCCESS = 0;
+var NOTIF_WARNING = 1;
+var NOTIF_ERROR   = 2;
+var NOTIF_INFO    = 3;
 
 var pad = function(num, size) {
 	var s = "0000000" + num;
@@ -105,7 +109,7 @@ var xhrErrorsHandler = function(xhr) {
 		json = xhr.responseJSON;
 		return errorsHandler(json);
 	} else if ('responseText' in xhr) {
-		notif(2, xhr.responseText);
+		notif(NOTIF_ERROR, xhr.responseText);
 		return true;
 	}
 	return false;
@@ -123,7 +127,7 @@ var myFail = function(xhr, stat, err) {
 	} else if (err) {
 		msg += '<pre>'+err+'</pre>';
 	}
-	notif(2, msg);
+	notif(NOTIF_ERROR, msg);
 };
 
 {% if not login -%}
