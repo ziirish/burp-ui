@@ -627,11 +627,15 @@ class Burp(Burp1):
             'errors'
         ]
         # translation table to be compatible with burp1
-        translate = {'bytes_estimated': 'estimated_bytes'}
+        def translate(cntr):
+            translate_table = {'bytes_estimated': 'estimated_bytes'}
+            try:
+                return translate_table[cntr]
+            except KeyError:
+                return cntr
+
         for counter in backup['counters']:
-            name = counter['name']
-            if name in translate:
-                name = translate[name]
+            name = translate(counter['name'])
             if counter['name'] not in single:
                 ret[name] = [
                     counter['count'],
