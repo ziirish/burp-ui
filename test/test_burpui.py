@@ -165,10 +165,6 @@ class BurpuiAPITestCase(TestCase):
         response = self.client.get(url_for('api.counters'))
         self.assert400(response)
 
-    def test_servers_json(self):
-        response = self.client.get(url_for('api.servers_stats'))
-        self.assertEquals(response.json, [])
-
     def test_live(self):
         response = self.client.get(url_for('api.live'))
         self.assertEquals(response.json, [])
