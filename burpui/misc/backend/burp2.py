@@ -649,11 +649,11 @@ class Burp(Burp1):
 
         if 'bytes' not in ret:
             ret['bytes'] = 0
-        if ret.viewkeys() & {'time_start', 'estimated_bytes', 'bytes'}:
+        if ret.viewkeys() & {'time_start', 'estimated_bytes', 'bytes_received'}:
             try:
                 diff = time.time() - int(ret['time_start'])
                 byteswant = int(ret['estimated_bytes'])
-                bytesgot = int(ret['bytes'])
+                bytesgot = int(ret['bytes_received'])
                 bytespersec = bytesgot / diff
                 bytesleft = byteswant - bytesgot
                 ret['speed'] = bytespersec
@@ -666,7 +666,8 @@ class Burp(Burp1):
                 ret['timeleft'] = -1
         try:
             ret['percent'] = round(
-                float(ret['bytes']) / float(ret['estimated_bytes']) * 100
+                float(ret['bytes_received']) /
+                float(ret['estimated_bytes']) * 100
             )
         except:
             # You know... division by 0
