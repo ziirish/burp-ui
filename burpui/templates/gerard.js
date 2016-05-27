@@ -294,11 +294,11 @@ var _fit_menu = function() {
 		target.hover(
 			// mouse in
 			function() {
-				$(this).find('.dtl').stop( true, true ).animate({width: 'toggle'});
+				$(this).find('.dtl').stop( true, true ).animate({width: 'toggle'}, 100);
 			},
 			// mouse out
 			function() {
-				$(this).find('.dtl').stop( true, true ).animate({width: 'toggle'});
+				$(this).find('.dtl').stop( true, true ).animate({width: 'toggle'}, 100);
 			}
 		);
 		target.find('.dtl').hide();
