@@ -6,6 +6,17 @@ stages:
   - build
   - deploy
 
+test:lint:
+  stage: test
+  image: ziirish/python:2.7
+  script:
+  - pip install flake8 pylint
+  - make flake8
+  tags:
+  - lint
+  except:
+  - tags
+
 test:py2.7:
   stage: test
   image: ziirish/python:2.7
