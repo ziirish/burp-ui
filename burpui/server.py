@@ -220,15 +220,14 @@ class BUIServer(Flask):
                     'Security'
                 )
                 self.config['REMEMBER_COOKIE_DURATION'] = \
-                    self.config['PERMANENT_SESSION_LIFETIME'] = \
-                    timedelta(
+                    self.config['PERMANENT_SESSION_LIFETIME'] = timedelta(
                         days=self._safe_config_get(
                             config.getint,
                             'cookietime',
                             'Security',
                             cast=int
                         )
-                    )
+                )
 
             except ConfigParser.NoOptionError as e:
                 self.logger.error(str(e))

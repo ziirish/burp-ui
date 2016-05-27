@@ -193,7 +193,7 @@ def implement(func):
     function.
 
     But sometimes we want to implement specific things, hence this decorator
-    to indicate we don't want the default "magic" implementation and use the 
+    to indicate we don't want the default "magic" implementation and use the
     custom implementation instead.
     """
     func.__ismethodimplemented__ = True
@@ -245,7 +245,7 @@ class ReverseProxied(object):
     In Apache:
 
     ::
-    
+
         <Location /myprefix>
             ProxyPass http://192.168.0.1:5001
             ProxyPassReverse http://192.168.0.1:5001

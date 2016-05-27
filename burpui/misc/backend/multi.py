@@ -6,7 +6,6 @@ import time
 import json
 import struct
 import traceback
-import logging
 
 from six import iteritems
 
@@ -69,7 +68,15 @@ class ProxyCall(object):
         agentName = encoded_args['agent']
         # we don't need this argument anymore
         del encoded_args['agent']
-        agent = self.proxy.servers[agentName]
+        try:
+            agent = self.proxy.servers[agentName]
+        except KeyError:
+            # This exception should be forwarded to the final user
+            if not agentName:
+                msg = "You must provide an agent name"
+            else:
+                msg = "Agent '{}' not found".format(agentName)
+            raise BUIserverException(msg)
         return getattr(agent, self.method)(**encoded_args)
 
 
@@ -342,7 +349,6 @@ class NClient(BUIbackend):
             return object.__getattribute__(self, name)
         # now we can retrieve the 'foreign' list and know if the object called
         # needs a dynamic implementation
-        #if name in self.foreign and name not in dir(self):
         if name in self.foreign:
             proxy = True
             func = None
@@ -511,4 +517,3 @@ class NClient(BUIbackend):
         from base64 import b64encode
         data = {'func': 'store_conf_srv', 'args': b64encode(pickle.dumps({'data': data, 'conf': conf}, -1)), 'pickled': True}
         return json.loads(self.do_command(data))
-

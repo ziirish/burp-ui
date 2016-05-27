@@ -631,15 +631,15 @@ class BUIbackend(object):
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
     @abstractmethod
-    def delete_client(self, client=None, delete=False, revoke=False, agent=None):
+    def delete_client(self, client=None, delcert=False, revoke=False, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.delete_client`
         function is used to delete a client from burp's configuration.
 
         :param client: The name of the client to remove
         :type client: str
 
-        :param delete: Whether to delete the associated certificate
-        :type delete: bool
+        :param delcert: Whether to delete the associated certificate
+        :type delcert: bool
 
         :param revoke: Whether to revoke the associated certificate
         :type revoke: bool

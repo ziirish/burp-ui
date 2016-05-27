@@ -17,7 +17,6 @@ import shutil
 import subprocess
 import tempfile
 import codecs
-import logging
 
 from ast import literal_eval
 from pipes import quote

@@ -176,7 +176,6 @@ class Burp(Burp1):
                         )
                         confsrv = G_BURPCONFSRV
 
-
                     if not self.burpbin:
                         # The burp binary is mandatory for this backend
                         raise Exception(
@@ -626,6 +625,7 @@ class Burp(Burp1):
             'warnings',
             'errors'
         ]
+
         # translation table to be compatible with burp1
         def translate(cntr):
             translate_table = {'bytes_estimated': 'estimated_bytes'}
