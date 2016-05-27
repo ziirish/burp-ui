@@ -187,7 +187,7 @@ with open(os.path.join(ROOT, 'requirements.txt')) as f:
 with open(os.path.join(ROOT, 'test-requirements.txt')) as f:
     test_requires = [x.strip() for x in f if x.strip()]
 
-dev_requires = ['flake8']
+dev_requires = ['flake8', 'pylint']
 
 datadir = os.path.join('share', 'burpui', 'etc')
 contrib = os.path.join('share', 'burpui', 'contrib')
