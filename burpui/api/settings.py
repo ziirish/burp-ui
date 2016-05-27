@@ -9,6 +9,7 @@
 """
 from . import api
 from .custom import Resource
+from .custom.inputs import boolean
 from .._compat import unquote
 from flask import jsonify, request, url_for
 from werkzeug.datastructures import ImmutableMultiDict
@@ -28,6 +29,17 @@ class ServerSettings(Resource):
     This resource is part of the :mod:`burpui.api.settings` module.
     """
 
+    @ns.doc(
+        params={
+            'conf': 'Path of the configuration file',
+            'server': 'Which server to collect data from when in multi-agent mode',
+        },
+        responses={
+            200: 'Success',
+            403: 'Insufficient permissions',
+            500: 'Internal failure',
+        }
+    )
     def post(self, conf=None, server=None):
         """Saves the server configuration"""
         # Only the admin can edit the configuration
@@ -37,6 +49,17 @@ class ServerSettings(Resource):
         noti = api.bui.cli.store_conf_srv(request.form, conf, server)
         return {'notif': noti}, 200
 
+    @ns.doc(
+        params={
+            'conf': 'Path of the configuration file',
+            'server': 'Which server to collect data from when in multi-agent mode',
+        },
+        responses={
+            200: 'Success',
+            403: 'Insufficient permissions',
+            500: 'Internal failure',
+        }
+    )
     def get(self, conf=None, server=None):
         """Reads the server configuration
 
@@ -193,6 +216,16 @@ class ServerSettings(Resource):
           endpoint='clients_list')
 class ClientsList(Resource):
 
+    @ns.doc(
+        params={
+            'server': 'Which server to collect data from when in multi-agent mode',
+        },
+        responses={
+            200: 'Success',
+            403: 'Insufficient permissions',
+            500: 'Internal failure',
+        }
+    )
     def get(self, server=None):
         """Returns a list of clients"""
         # Only the admin can edit the configuration
@@ -217,6 +250,21 @@ class ClientSettings(Resource):
     parser = api.parser()
     parser.add_argument('newclient', required=True, help="No 'newclient' provided")
 
+    parser_delete = api.parser()
+    parser_delete.add_argument('revoke', type=boolean, help='Whether to revoke the certificate or not', default=False, nullable=True)
+    parser_delete.add_argument('delcert', type=boolean, help='Whether to delete the certificate or not', default=False, nullable=True)
+
+    @ns.doc(
+        params={
+            'server': 'Which server to collect data from when in multi-agent mode',
+        },
+        responses={
+            200: 'Success',
+            400: 'Missing parameter',
+            403: 'Insufficient permissions',
+            500: 'Internal failure',
+        }
+    )
     def put(self, server=None):
         """Creates a new client"""
         # Only the admin can edit the configuration
@@ -243,6 +291,18 @@ class ClientSettings(Resource):
         api.cache.clear()
         return {'notif': noti}, 201
 
+    @ns.doc(
+        params={
+            'server': 'Which server to collect data from when in multi-agent mode',
+            'client': 'Client name',
+            'conf': 'Path of the configuration file',
+        },
+        responses={
+            200: 'Success',
+            403: 'Insufficient permissions',
+            500: 'Internal failure',
+        }
+    )
     def post(self, server=None, client=None, conf=None):
         """Saves a given client configuration"""
         # Only the admin can edit the configuration
@@ -252,6 +312,18 @@ class ClientSettings(Resource):
         noti = api.bui.cli.store_conf_cli(request.form, client, conf, server)
         return {'notif': noti}
 
+    @ns.doc(
+        params={
+            'server': 'Which server to collect data from when in multi-agent mode',
+            'client': 'Client name',
+            'conf': 'Path of the configuration file',
+        },
+        responses={
+            200: 'Success',
+            403: 'Insufficient permissions',
+            500: 'Internal failure',
+        }
+    )
     def get(self, server=None, client=None, conf=None):
         """Reads a given client configuration"""
         # Only the admin can edit the configuration
@@ -275,7 +347,19 @@ class ClientSettings(Resource):
             'defaults': api.bui.cli.get_parser_attr('defaults', server)
         }
 
+    @ns.doc(
+        params={
+            'server': 'Which server to collect data from when in multi-agent mode',
+            'client': 'Client name',
+        },
+        responses={
+            200: 'Success',
+            403: 'Insufficient permissions',
+            500: 'Internal failure',
+        }
+    )
     def delete(self, server=None, client=None):
+        """Deletes a given client"""
         # Only the admin can edit the configuration
         if api.bui.acl and not self.is_admin:
             self.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
@@ -295,6 +379,17 @@ class PathExpander(Resource):
     parser = api.parser()
     parser.add_argument('path', required=True, help="No 'path' provided")
 
+    @ns.doc(
+        params={
+            'server': 'Which server to collect data from when in multi-agent mode',
+            'client': 'Client name',
+        },
+        responses={
+            200: 'Success',
+            403: 'Insufficient permissions',
+            500: 'Internal failure',
+        }
+    )
     def get(self, server=None, client=None):
         """Expends a given path
 
@@ -313,10 +408,20 @@ class PathExpander(Resource):
 
 
 @ns.route('/options',
-          '<server>/options',
+          '/<server>/options',
           endpoint='setting_options')
 class SettingOptions(Resource):
 
+    @ns.doc(
+        params={
+            'server': 'Which server to collect data from when in multi-agent mode',
+        },
+        responses={
+            200: 'Success',
+            403: 'Insufficient permissions',
+            500: 'Internal failure',
+        }
+    )
     def get(self, server=None):
         """Returns various setting options"""
         if api.bui.acl and not self.is_admin:

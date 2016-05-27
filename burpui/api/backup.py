@@ -143,11 +143,7 @@ class ServerBackup(Resource):
                 (not api.bui.acl.is_client_allowed(self.username,
                                                    name,
                                                    server) and not
-                 self.is_admin and
-                 (to and not
-                  api.bui.acl.is_client_allowed(self.username,
-                                                to,
-                                                server)))):
+                 self.is_admin)):
             self.abort(
                 403,
                 'You are not allowed to schedule a backup for this client'

@@ -5,56 +5,55 @@ from . import api, cache_key, parallel_loop
 from .custom import fields, Resource
 from ..exceptions import BUIserverException
 
-ns = api.namespace('servers', 'Servers methods')
+if not api.bui.standalone:
+    ns = api.namespace('servers', 'Servers methods')
 
+    @ns.route('/stats', endpoint='servers_stats')
+    class ServersStats(Resource):
+        """The :class:`burpui.api.servers.ServersStats` resource allows you to
+        retrieve statistics about servers/agents.
 
-@ns.route('/stats', endpoint='servers_stats')
-class ServersStats(Resource):
-    """The :class:`burpui.api.servers.ServersStats` resource allows you to
-    retrieve statistics about servers/agents.
-
-    This resource is part of the :mod:`burpui.api.servers` module.
-    """
-    servers_fields = api.model('Servers', {
-        'alive': fields.Boolean(required=True, description='Is the server reachable'),
-        'clients': fields.Integer(required=True, description='Number of clients managed by this server'),
-        'name': fields.String(required=True, description='Server name'),
-    })
-
-    @api.cache.cached(timeout=1800, key_prefix=cache_key)
-    @ns.marshal_list_with(servers_fields, code=200, description='Success')
-    @ns.doc(
-        responses={
-            500: 'Internal failure',
-        },
-    )
-    def get(self):
-        """Returns a list of servers (agents) with basic stats
-
-        **GET** method provided by the webservice.
-
-        The *JSON* returned is:
-        ::
-
-            [
-              {
-                'alive': true,
-                'clients': 2,
-                'name': 'burp1',
-              },
-              {
-                'alive': false,
-                'clients': 0,
-                'name': 'burp2',
-              },
-            ]
-
-
-        :returns: The *JSON* described above.
+        This resource is part of the :mod:`burpui.api.servers` module.
         """
+        servers_fields = api.model('Servers', {
+            'alive': fields.Boolean(required=True, description='Is the server reachable'),
+            'clients': fields.Integer(required=True, description='Number of clients managed by this server'),
+            'name': fields.String(required=True, description='Server name'),
+        })
 
-        r = []
-        if hasattr(api.bui.cli, 'servers'):
+        @api.cache.cached(timeout=1800, key_prefix=cache_key)
+        @ns.marshal_list_with(servers_fields, code=200, description='Success')
+        @ns.doc(
+            responses={
+                500: 'Internal failure',
+            },
+        )
+        def get(self):
+            """Returns a list of servers (agents) with basic stats
+
+            **GET** method provided by the webservice.
+
+            The *JSON* returned is:
+            ::
+
+                [
+                  {
+                    'alive': true,
+                    'clients': 2,
+                    'name': 'burp1',
+                  },
+                  {
+                    'alive': false,
+                    'clients': 0,
+                    'name': 'burp2',
+                  },
+                ]
+
+
+            :returns: The *JSON* described above.
+            """
+
+            r = []
             restrict = []
             check = False
             if api.bui.acl and not self.is_admin:
@@ -83,80 +82,78 @@ class ServersStats(Resource):
 
             r = parallel_loop(get_servers_info, api.bui.cli.servers, restrict, check, self.username)
 
-        return r
+            return r
 
+    @ns.route('/report', endpoint='servers_report')
+    class ServersReport(Resource):
+        """The :class:`burpui.api.servers.ServersReport` resource allows you to
+        retrieve a report about servers/agents.
 
-@ns.route('/report', endpoint='servers_report')
-class ServersReport(Resource):
-    """The :class:`burpui.api.servers.ServersReport` resource allows you to
-    retrieve a report about servers/agents.
-
-    This resource is part of the :mod:`burpui.api.servers` module.
-    """
-    stats_fields = api.model('ServersStats', {
-        'total': fields.Integer(required=True, description='Number of files', default=0),
-        'totsize': fields.Integer(required=True, description='Total size occupied by all the backups of this server', default=0),
-        'linux': fields.Integer(required=True, description='Total number of Linux/Unix clients on this server', default=0),
-        'windows': fields.Integer(required=True, description='Total number of Windows clients on this server', default=0),
-        'unknown': fields.Integer(required=True, description='Total number of Unknown clients on this server', default=0),
-    })
-    server_fields = api.model('ServersReport', {
-        'name': fields.String(required=True, description='Server name'),
-        'stats': fields.Nested(stats_fields, required=True),
-    })
-    backup_fields = api.model('ServersBackup', {
-        'name': fields.String(required=True, description='Server name'),
-        'number': fields.Integer(required=True, description='Number of backups on this server', default=0),
-    })
-    report_fields = api.model('ServersReportFull', {
-        'backups': fields.Nested(backup_fields, as_list=True, required=True),
-        'servers': fields.Nested(server_fields, as_list=True, required=True),
-    })
-
-    @api.cache.cached(timeout=1800, key_prefix=cache_key)
-    @ns.marshal_with(report_fields, code=200, description='Success')
-    @ns.doc(
-        responses={
-            403: 'Insufficient permissions',
-            500: 'Internal failure',
-        },
-    )
-    def get(self):
-        """Returns a global report about all the servers managed by Burp-UI
-
-        **GET** method provided by the webservice.
-
-        The *JSON* returned is:
-        ::
-
-            {
-              "backups": [
-                {
-                  "name": "AGENT1",
-                  "number": 49
-                }
-              ],
-              "servers": [
-                {
-                  "name": "AGENT1",
-                  "stats": {
-                    "linux": 4,
-                    "total": 349705,
-                    "totsize": 119400711726,
-                    "unknown": 0,
-                    "windows": 1
-                  }
-                }
-              ]
-            }
-
-        The output is filtered by the :mod:`burpui.misc.acl` module so that you
-        only see stats about the clients/servers you are authorized to.
-
-        :returns: The *JSON* described above.
+        This resource is part of the :mod:`burpui.api.servers` module.
         """
-        r = {}
-        if hasattr(api.bui.cli, 'servers'):
+        stats_fields = api.model('ServersStats', {
+            'total': fields.Integer(required=True, description='Number of files', default=0),
+            'totsize': fields.Integer(required=True, description='Total size occupied by all the backups of this server', default=0),
+            'linux': fields.Integer(required=True, description='Total number of Linux/Unix clients on this server', default=0),
+            'windows': fields.Integer(required=True, description='Total number of Windows clients on this server', default=0),
+            'unknown': fields.Integer(required=True, description='Total number of Unknown clients on this server', default=0),
+        })
+        server_fields = api.model('ServersReport', {
+            'name': fields.String(required=True, description='Server name'),
+            'stats': fields.Nested(stats_fields, required=True),
+        })
+        backup_fields = api.model('ServersBackup', {
+            'name': fields.String(required=True, description='Server name'),
+            'number': fields.Integer(required=True, description='Number of backups on this server', default=0),
+        })
+        report_fields = api.model('ServersReportFull', {
+            'backups': fields.Nested(backup_fields, as_list=True, required=True),
+            'servers': fields.Nested(server_fields, as_list=True, required=True),
+        })
+
+        @api.cache.cached(timeout=1800, key_prefix=cache_key)
+        @ns.marshal_with(report_fields, code=200, description='Success')
+        @ns.doc(
+            responses={
+                403: 'Insufficient permissions',
+                500: 'Internal failure',
+            },
+        )
+        def get(self):
+            """Returns a global report about all the servers managed by Burp-UI
+
+            **GET** method provided by the webservice.
+
+            The *JSON* returned is:
+            ::
+
+                {
+                  "backups": [
+                    {
+                      "name": "AGENT1",
+                      "number": 49
+                    }
+                  ],
+                  "servers": [
+                    {
+                      "name": "AGENT1",
+                      "stats": {
+                        "linux": 4,
+                        "total": 349705,
+                        "totsize": 119400711726,
+                        "unknown": 0,
+                        "windows": 1
+                      }
+                    }
+                  ]
+                }
+
+            The output is filtered by the :mod:`burpui.misc.acl` module so that you
+            only see stats about the clients/servers you are authorized to.
+
+            :returns: The *JSON* described above.
+            """
+            r = {}
             restrict = []
             check = False
             if api.bui.acl and not self.is_admin:
@@ -217,4 +214,4 @@ class ServersReport(Resource):
             r['backups'] = backups
             r['servers'] = servers
 
-        return r
+            return r

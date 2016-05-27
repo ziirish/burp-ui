@@ -12,13 +12,14 @@ import os
 import sys
 
 from flask import Blueprint, Response, request
-from flask_restplus import Api
+from flask_restplus import Api as ApiPlus
 from flask_login import current_user
 from flask_cache import Cache
 from importlib import import_module
 from functools import wraps
 
 from .._compat import IS_GUNICORN, PY3
+from ..exceptions import BUIserverException
 
 if PY3:  # pragma: no cover
     basestring = str
@@ -125,7 +126,7 @@ def api_login_required(func):
     return decorated_view
 
 
-class ApiWrapper(Api):
+class Api(ApiPlus):
     """Wrapper class around :class:`flask_restplus.Api`"""
     cache = Cache(config={'CACHE_TYPE': 'null', 'CACHE_NO_NULL_WARNING': True})
     loaded = False
@@ -157,4 +158,14 @@ class ApiWrapper(Api):
 
 
 apibp = Blueprint('api', __name__, url_prefix='/api')
-api = ApiWrapper(apibp, title='Burp-UI API', description='Burp-UI API to interact with burp', doc='/doc', decorators=[api_login_required])
+api = Api(apibp, title='Burp-UI API', description='Burp-UI API to interact with burp', doc='/doc', decorators=[api_login_required])
+
+
+@api.errorhandler(BUIserverException)
+def handle_bui_server_exception(error):
+    """Forward a BUIserverException to the final user
+
+    :param error: Custom exception
+    :type error: :class:`burpui.exceptions.BUIserverException`
+    """
+    return {'message': error.description}, error.code

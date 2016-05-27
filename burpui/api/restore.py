@@ -41,12 +41,12 @@ class Restore(Resource):
     - ``pass``: password to use for encrypted backups
     """
     parser = api.parser()
-    parser.add_argument('pass', help='Password to use for encrypted backups', location=('form', 'json'), nullable=True)
-    parser.add_argument('format', required=False, help='Returning archive format', location=('form', 'json'), choices=('zip', 'tar.gz', 'tar.bz2'), default='zip', nullable=True)
-    parser.add_argument('strip', type=int, help='Number of elements to strip in the path', default=0, location=('form', 'json'), nullable=True)
-    parser.add_argument('list', required=True, help='List of files/directories to restore', location=('form', 'json'), nullable=False)
+    parser.add_argument('pass', help='Password to use for encrypted backups', nullable=True)
+    parser.add_argument('format', required=False, help='Returning archive format', choices=('zip', 'tar.gz', 'tar.bz2'), default='zip', nullable=True)
+    parser.add_argument('strip', type=int, help='Number of elements to strip in the path', default=0, nullable=True)
+    parser.add_argument('list', required=True, help='List of files/directories to restore', nullable=False)
     # FIXME: the example json seems interpreted during the raise of the exception
-    # parser.add_argument('list', required=True, help='List of files/directories to restore (example: \'{"restore":[{"folder":true,"key":"/etc"}]}\')', location=('form', 'json'), nullable=False)
+    # parser.add_argument('list', required=True, help='List of files/directories to restore (example: \'{"restore":[{"folder":true,"key":"/etc"}]}\')', nullable=False)
 
     @ns.expect(parser, validate=True)
     @ns.doc(
@@ -230,11 +230,11 @@ class ServerRestore(Resource):
     - ``restoreto-sc``: restore files on an other client
     """
     parser = api.parser()
-    parser.add_argument('list-sc', required=True, help='List of files/directories to restore', location='form', nullable=False)
-    parser.add_argument('strip-sc', type=int, help='Number of elements to strip in the path', default=0, location='form', nullable=True)
-    parser.add_argument('prefix-sc', help='Prefix to the restore path', location='form', nullable=True)
-    parser.add_argument('force-sc', type=boolean, help='Whether to overwrite existing files', default=False, location='form', nullable=True)
-    parser.add_argument('restoreto-sc', help='Restore files on an other client', location='form', nullable=True)
+    parser.add_argument('list-sc', required=True, help='List of files/directories to restore', nullable=False)
+    parser.add_argument('strip-sc', type=int, help='Number of elements to strip in the path', default=0, nullable=True)
+    parser.add_argument('prefix-sc', help='Prefix to the restore path', nullable=True)
+    parser.add_argument('force-sc', type=boolean, help='Whether to overwrite existing files', default=False, nullable=True)
+    parser.add_argument('restoreto-sc', help='Restore files on an other client', nullable=True)
 
     list_fields = api.model('ListRestoreFiles', {
         'key': fields.String(
