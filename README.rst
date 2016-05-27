@@ -117,7 +117,7 @@ Also note that this project is made with the Awesome `Flask`_ micro-framework.
 Thanks
 ======
 
-Thank you all for your feedbacks and bug reports those are making the project
+Thank you all for your feedbacks and bug reports. Those are making the project
 moving forward.
 
 Thank you to the `Flask`_'s developers and community.
