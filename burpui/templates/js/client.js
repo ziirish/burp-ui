@@ -42,7 +42,7 @@ var _client_table = $('#table-client').dataTable( {
 				return data;
 			}
 		},
-		fail: function(xhr, stat, err) {
+		error: function(xhr, stat, err) {
 			myFail(xhr, stat, err);
 			$('#table-client').hide();
 			$('#client-alert').show();
@@ -134,7 +134,7 @@ $(document).ready(function() {
 			url: '{{ url_for("api.is_server_restore", name=cname, server=server) }}',
 			type: 'DELETE'
 		}).done(function(data) {
-			notif(data[0], data[1]);
+			notifAll(data);
 			if (data[0] == 0) {
 				$('.edit-restore').hide();
 				$('.scheduled-backup').show();
@@ -147,7 +147,7 @@ $(document).ready(function() {
 			url: '{{ url_for("api.is_server_backup", name=cname, server=server) }}',
 			type: 'DELETE'
 		}).done(function(data) {
-			notif(data[0], data[1]);
+			notifAll(data);
 			if (data[0] == 0) {
 				$('.cancel-backup').hide();
 				$('.scheduled-backup').show();
@@ -160,7 +160,7 @@ $(document).ready(function() {
 			url: '{{ url_for("api.server_backup", name=cname, server=server) }}',
 			type: 'PUT'
 		}).done(function(data) {
-			notif(data[0], data[1]);
+			notifAll(data);
 			if (data[0] == 0) {
 				$('.cancel-backup').show();
 				$('.scheduled-backup').hide();

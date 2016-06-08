@@ -216,7 +216,7 @@
 		})
 		.fail(myFail)
 		.done(function(data) {
-			notif(data[0], data[1]);
+			notifAll(data);
 		});
 
 		return false;
@@ -255,7 +255,7 @@
 			url: url,
 			type: 'DELETE'
 		}).done(function(data) {
-			notif(data[0], data[1]);
+			notifAll(data);
 			if (data[0] == 0) {
 				$('#btn-cancel-restore').hide();
 			}

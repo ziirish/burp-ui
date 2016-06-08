@@ -330,7 +330,7 @@ app.controller('ConfigCtrl', function($scope, $http) {
 			/* The server answered correctly but some errors may have occurred server
 			 * side so we display them */
 			if (data.notif) {
-				notif(data.notif[0], data.notif[1])
+				notifAll(data.notif)
 				$scope.inc_invalid[index] = true;
 			} else if (data.result) {
 				$scope.paths[index] = [];
@@ -357,13 +357,10 @@ app.controller('ConfigCtrl', function($scope, $http) {
 		})
 		.fail(myFail)
 		.done(function(data) {
-			/* The server answered correctly but some errors may have occurred server
-			 * side so we display them */
-			if (data.notif) {
-				notif(data.notif[0], data.notif[1]);
-				if (data.notif[0] == 0) {
-					document.location = '{{ url_for("view.settings", server=server) }}';
-				}
+			redirect = data[0][0] == 0;
+			notifAll(data, redirect);
+			if (redirect) {
+				document.location = '{{ url_for("view.settings", server=server) }}';
 			}
 		});
 	};

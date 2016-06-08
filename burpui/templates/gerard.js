@@ -41,6 +41,37 @@ var _bytes_human_readable = function(bytes, si) {
 	return bytes.toFixed(1)+' '+units[u];
 };
 
+var notifAll = function(messages, forward) {
+	forward = (typeof forward === "undefined") ? false : forward;
+	if (messages instanceof Array && messages.length > 0) {
+		if (messages[0] instanceof Array) {
+			$.each(messages, function(i, n) {
+				if (n.length == 3) {
+					timeout = n[2];
+				} else {
+					timeout = undefined;
+				}
+				if (forward) {
+					$.post('{{ url_for("api.alert") }}', {'message': n[1], 'level': String(n[0])});
+				} else {
+					notif(n[0], n[1], timeout);
+				}
+			});
+		} else {
+			if (forward) {
+				$.post('{{ url_for("api.alert") }}', {'message': messages[1], 'level': messages[0]});
+			} else {
+				if (messages.length == 3) {
+					timeout = messages[2];
+				} else {
+					timeout = undefined;
+				}
+				notif(messages[0], messages[1], timeout);
+			}
+		}
+	}
+};
+
 var notif = function(type, message, timeout) {
 	timeout = (typeof timeout === "undefined") ? 5000 : timeout;
 	var t = '';
