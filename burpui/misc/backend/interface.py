@@ -601,7 +601,7 @@ class BUIbackend(object):
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
     @abstractmethod
-    def expand_path(self, path=None, client=None, agent=None):
+    def expand_path(self, path=None, source=None, client=None, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.expand_path`
         function is used to expand path of file inclusions glob the user can
         set in the setting panel.
@@ -609,6 +609,9 @@ class BUIbackend(object):
 
         :param path: The glob/path to expand
         :type path: str
+
+        :param source: In which file are we working
+        :type source: str
 
         :param client: The client name when working on client files
         :type client: str

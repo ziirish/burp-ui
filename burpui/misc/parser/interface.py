@@ -20,16 +20,6 @@ class BUIparser(object):
 
     logger = logging.getLogger('burp-ui')
 
-    def __init__(self, backend=None):
-        """:func:`burpui.misc.parser.interface.BUIparser.__init__` instanciate
-        the parser.
-
-        :param backend: The application backend
-        :type backend: :class:`burpui.misc.backend.BUIbackend`
-        """
-        self.backend = backend
-        self.conf = backend.burpconfsrv
-
     @abstractmethod
     def read_server_conf(self, conf=None):
         """:func:`burpui.misc.parser.interface.BUIparser.read_server_conf` is
@@ -136,7 +126,7 @@ class BUIparser(object):
         )  # pragma: no cover
 
     @abstractmethod
-    def store_conf(self, data, conf=None, mode='srv'):
+    def store_conf(self, data, conf=None, client=None, mode='srv'):
         """:func:`burpui.misc.parser.interface.BUIparser.store_conf` is used to
         store the configuration from the web-ui into the actual configuration
         files.
@@ -147,6 +137,9 @@ class BUIparser(object):
 
         :param conf: Force the file path (for file inclusions for instance)
         :type conf: str
+
+        :param client: Client name
+        :type client: str
 
         :param mode: We actually use the same method for clients and server
                      files
@@ -164,13 +157,16 @@ class BUIparser(object):
         )  # pragma: no cover
 
     @abstractmethod
-    def path_expander(self, pattern=None, client=None):
+    def path_expander(self, pattern=None, source=None, client=None):
         """:func:`burpui.misc.parser.interface.BUIparser.path_expander` is used
         to expand path of file inclusions glob the user can set in the setting
         panel.
 
         :param pattern: The glob/path to expand
         :type pattern: str
+
+        :param source: What file we are working in
+        :type source: str
 
         :param client: The client name when working on client files
         :type client: str
@@ -193,12 +189,19 @@ class BUIparser(object):
         )  # pragma: no cover
 
     @abstractmethod
-    def remove_client(self, client=None):
+    def remove_client(self, client=None, delcert=False, revoke=False):
         """:func:`burpui.misc.parser.interface.BUIparser.remove_client` is used
         to delete a client from burp's configuration.
 
         :param client: The name of the client to remove
         :type client: str
+
+        :param delcert: Whether to delete the associated certificate
+        :type delcert: bool
+
+        :param revoke: Whether to revoke the associated certificate
+        :type revoke: bool
+
         :returns: A list of notifications to return to the UI (success or
                   failure)
         """

@@ -1,4 +1,10 @@
 # -*- coding: utf8 -*-
+"""
+.. module:: burpui.misc.parser.burp2
+    :platform: Unix
+    :synopsis: Burp-UI configuration file parser for Burp2.
+.. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
+"""
 from .burp1 import Parser as Burp1
 
 

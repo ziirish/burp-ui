@@ -364,9 +364,13 @@ class ClientSettings(Resource):
         if api.bui.acl and not self.is_admin:
             self.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
 
+        args = self.parser_delete.parse_args()
+        delcert = args.get('delcert', False)
+        revoke = args.get('revoke', False)
+
         # clear the cache when we remove a client
         api.cache.clear()
-        return {'notif': api.bui.cli.delete_client(client, agent=server)}, 200
+        return api.bui.cli.delete_client(client, delcert=delcert, revoke=revoke, agent=server), 200
 
 
 @ns.route('/path-expander',
@@ -378,6 +382,7 @@ class PathExpander(Resource):
 
     parser = api.parser()
     parser.add_argument('path', required=True, help="No 'path' provided")
+    parser.add_argument('source', required=False, help="Which file is it included in")
 
     @ns.doc(
         params={
@@ -400,10 +405,16 @@ class PathExpander(Resource):
         if api.bui.acl and not self.is_admin:
             self.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
 
-        path = self.parser.parse_args()['path']
-        paths = api.bui.cli.expand_path(path, client, server)
+        args = self.parser.parse_args()
+        path = args['path']
+        source = args['source']
+        if path:
+            path = unquote(path)
+        if source:
+            source = unquote(source)
+        paths = api.bui.cli.expand_path(path, source, client, server)
         if not paths:
-            self.abort(500, 'Path not found')
+            self.abort(403, 'Path not found')
         return {'result': paths}
 
 

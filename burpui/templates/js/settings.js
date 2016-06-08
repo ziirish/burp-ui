@@ -315,9 +315,9 @@ app.controller('ConfigCtrl', function($scope, $http) {
 	$scope.expandPath = function(index) {
 		path = $scope.includes[index];
 		{% if client -%}
-		api = '{{ url_for("api.path_expander", client=client, server=server) }}';
+		api = '{{ url_for("api.path_expander", client=client, server=server, source=conf) }}';
 		{% else -%}
-		api = '{{ url_for("api.path_expander", server=server) }}';
+		api = '{{ url_for("api.path_expander", server=server, source=conf) }}';
 		{% endif -%}
 		$scope.inc_invalid = {};
 		$.ajax({

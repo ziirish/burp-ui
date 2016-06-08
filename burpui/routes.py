@@ -1,21 +1,16 @@
 # -*- coding: utf8 -*-
 import math
-import sys
 
-from flask import request, render_template, redirect, url_for, abort, flash, Blueprint, session
+from flask import request, render_template, redirect, url_for, abort, flash, Blueprint as FlaskBlueprint, session
 from flask_login import login_user, login_required, logout_user, current_user
 
+from ._compat import quote
 from .forms import LoginForm
 from .exceptions import BUIserverException
 from .utils import human_readable as _hr
 
-if sys.version_info >= (3, 0):
-    from urllib.parse import quote
-else:
-    from urllib import quote
 
-
-class BPWrapper(Blueprint):
+class Blueprint(FlaskBlueprint):
     bui = None
     __url__ = None
     __doc__ = None
@@ -27,7 +22,7 @@ class BPWrapper(Blueprint):
         """
         self.bui = bui
 
-view = BPWrapper('view', __name__, template_folder='templates')
+view = Blueprint('view', 'burpui', template_folder='templates')
 
 
 """
@@ -96,6 +91,8 @@ def settings(server=None, conf=None):
     if not conf:
         try:
             conf = quote(request.args.get('conf'), safe='')
+            if conf:
+                return redirect(url_for('.settings', server=server, conf=conf))
         except:
             pass
     server = server or request.args.get('serverName')
@@ -116,6 +113,8 @@ def cli_settings(server=None, client=None, conf=None):
     if not conf:
         try:
             conf = quote(request.args.get('conf'), safe='')
+            if conf:
+                return redirect(url_for('.cli_settings', server=server, client=client, conf=conf))
         except:
             pass
     client = client or request.args.get('client')

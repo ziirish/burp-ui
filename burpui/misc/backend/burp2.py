@@ -38,6 +38,7 @@ G_TMPDIR = u'/tmp/bui'
 G_TIMEOUT = u'5'
 G_ZIP64 = u'False'
 G_INCLUDES = u'/etc/burp'
+G_ENFORCE = u'False'
 G_REVOKE = u'False'
 
 
@@ -72,6 +73,7 @@ class Burp(Burp1):
         self.burpconfsrv = G_BURPCONFSRV
         self.includes = G_INCLUDES
         self.revoke = literal_eval(G_REVOKE)
+        self.enforce = literal_eval(G_ENFORCE)
         self.defaults = {
             'burpbin': G_BURPBIN,
             'stripbin': G_STRIPBIN,
@@ -82,6 +84,7 @@ class Burp(Burp1):
             'zip64': G_ZIP64,
             'includes': G_INCLUDES,
             'revoke': G_REVOKE,
+            'enforce': G_ENFORCE,
         }
         self.running = []
         version = ''
@@ -136,6 +139,11 @@ class Burp(Burp1):
                     self.includes = self._safe_config_get(
                         config.get,
                         'includes',
+                        sect='Security'
+                    )
+                    self.enforce = self._safe_config_get(
+                        config.getboolean,
+                        'enforce',
                         sect='Security'
                     )
                     self.revoke = self._safe_config_get(
@@ -221,6 +229,7 @@ class Burp(Burp1):
         self.logger.info('tmpdir: {}'.format(self.tmpdir))
         self.logger.info('zip64: {}'.format(self.zip64))
         self.logger.info('includes: {}'.format(self.includes))
+        self.logger.info('enforce: {}'.format(self.enforce))
         self.logger.info('revoke: {}'.format(self.revoke))
         try:
             # make the connection

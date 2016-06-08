@@ -22,10 +22,10 @@ except ImportError:
 
 if sys.version_info[0] >= 3:
     PY3 = True
-    from urllib.parse import unquote  # noqa
+    from urllib.parse import unquote, quote  # noqa
 else:
     PY3 = False
-    from urllib import unquote  # noqa
+    from urllib import unquote, quote  # noqa
 
 if 'gunicorn' in os.environ.get('SERVER_SOFTWARE', ''):
     IS_GUNICORN = True

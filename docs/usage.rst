@@ -174,6 +174,9 @@ application:
     # Note: you can have several paths separated by comas.
     # Example: /etc/burp,/etc/burp.d
     includes: /etc/burp
+    # if files already included in config do not respect the above restriction, we
+    # prune them
+    enforce: false
     # enable certificates revocation
     revoke: false
     # remember_cookie duration in days

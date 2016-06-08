@@ -54,7 +54,7 @@ class BUIServer(Flask):
         # We cannot override the Flask's logger so we use our own
         self.builogger = logging.getLogger('burp-ui')
         self.builogger.disabled = True
-        super(BUIServer, self).__init__(__name__)
+        super(BUIServer, self).__init__('burpui')
 
     def enable_logger(self, enable=True):
         """Enable or disable the logger"""
