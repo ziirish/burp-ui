@@ -7,6 +7,7 @@ CONFIG = {
         '--bind=0.0.0.0:5000',
         '--user=burpui',
         '--workers=5',
+        '--timeout=300',
         '--worker-class=gevent',
         '--access-logfile=/var/log/gunicorn/burp-ui_access.log',
         '--error-logfile=/var/log/gunicorn/burp-ui_error.log',
