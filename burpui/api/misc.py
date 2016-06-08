@@ -252,22 +252,39 @@ class Alert(Resource):
     This resource is part of the :mod:`burpui.api.misc` module.
     """
     parser = api.parser()
-    parser.add_argument('message', required=True, help='Message to display', location='form')
-    parser.add_argument('level', help='Alert level', location='form', choices=('danger', 'warning', 'info', 'success'), default='danger')
+    parser.add_argument('message', required=True, help='Message to display')
+    parser.add_argument('level', help='Alert level', choices=('danger', 'warning', 'info', 'success', '0', '1', '2', '3'), default='danger')
 
     @ns.expect(parser)
     @ns.doc(
         responses={
-            200: 'Success',
+            201: 'Success',
         },
     )
     def post(self):
         """Propagate a message to the next screen (or whatever reads the session)"""
+        def translate(level):
+            levels = ['danger', 'warning', 'info', 'success']
+            convert = {
+                '0': 'success',
+                '1': 'warning',
+                '2': 'error',
+                '3': 'info'
+            }
+            if not level:
+                return 'danger'
+            # return the converted value or the one we already had
+            new = convert.get(level, level)
+            # if the level is not handled, assume 'danger'
+            if new not in levels:
+                return 'danger'
+            return new
+
         args = self.parser.parse_args()
         message = args['message']
-        level = args['level'] or 'danger'
-        flash(args['message'], level)
-        return {'message': message}, 201
+        level = translate(args['level'])
+        flash(message, level)
+        return {'message': message, 'level': level}, 201
 
 
 @ns.route('/about',
