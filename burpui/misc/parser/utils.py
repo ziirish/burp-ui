@@ -409,10 +409,11 @@ class Config(File):
     def set_default(self, path):
         self.default = path
         self.name = path
-        if not self.parser:
-            self.parser = self.get_default().parser
-        if not self.mode:
-            self.mode = self.get_default().mode
+        default = self.get_default()
+        if not self.parser and default:
+            self.parser = getattr(self.get_default(), 'parser')
+        if not self.mode and default:
+            self.mode = getattr(self.get_default(), 'mode')
 
     def get_default(self, exc=False):
         if self.default:

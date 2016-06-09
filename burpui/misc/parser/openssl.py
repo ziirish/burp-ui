@@ -37,7 +37,7 @@ class OSSLAuth(object):
         self._load_crl()
 
     def _load_crl(self):
-        crl_path = self.ossl_conf.get_crl_path(self.name)
+        crl_path = self._get_crl_path()
         try:
             with open(crl_path) as crl:
                 self.crl = crypto.load_crl(
@@ -52,6 +52,13 @@ class OSSLAuth(object):
         return '{}.crt'.format(
             os.path.join(self.ossl_conf.values.get('CA_DIR'), client)
         )
+
+    def _get_crl_path(self):
+        """Returns the CRL path of a given CA"""
+        path = self.ossl_conf.values.get('CA_DIR')
+        if not path:
+            return ''
+        return '{}/CA_{}.crl'.format(path, self.name)
 
     def check_client_revoked(self, client):
         """Check whether the given client certificate has been revoked
@@ -163,14 +170,6 @@ class OSSLConf(object):
         """Mapping of the configuration file into a dict"""
         self._parse()
         return self.conf
-
-    def get_crl_path(self, ca_name):
-        """Returns the CRL path of a given CA"""
-        self._parse()
-        path = self.conf.get('CA_DIR')
-        if not path:
-            return None
-        return '{}/CA_{}.crl'.format(path, ca_name)
 
     def _read(self):
         """Read the file if possible"""

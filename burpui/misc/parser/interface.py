@@ -189,6 +189,20 @@ class BUIparser(object):
         )  # pragma: no cover
 
     @abstractmethod
+    def is_client_revoked(self, client=None):
+        """:func:`burpui.misc.parser.interface.BUIparser.is_client_revoked` is
+        used to check if a given client has it's certificate revoked or not.
+
+        :param client: The name of the client to check
+        :type client: str
+
+        :returns: True or False
+        """
+        raise NotImplementedError(
+            "Sorry, the current Parser does not implement this method!"
+        )  # pragma: no cover
+
+    @abstractmethod
     def remove_client(self, client=None, delcert=False, revoke=False):
         """:func:`burpui.misc.parser.interface.BUIparser.remove_client` is used
         to delete a client from burp's configuration.

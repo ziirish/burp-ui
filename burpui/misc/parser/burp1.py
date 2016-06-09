@@ -735,9 +735,9 @@ class Parser(Doc):
         if 'restore' not in flist:
             raise BUIserverException('Wrong call')
 
-        full_reg = ur''
+        full_reg = r''
         for rest in flist['restore']:
-            reg = ur''
+            reg = r''
             if rest['folder'] and rest['key'] != '/':
                 reg += '^' + re.escape(rest['key']) + '/|'
             else:
