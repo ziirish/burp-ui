@@ -277,8 +277,8 @@ class Parser(Doc):
         res = []
         for cli in os.listdir(self.clientconfdir):
             full_file = os.path.join(self.clientconfdir, cli)
-            if (os.path.isfile(full_file) and not cli.startswith('.')
-                    and not cli.endswith('~')):
+            if (os.path.isfile(full_file) and not cli.startswith('.') and
+                    not cli.endswith('~')):
                 res.append({
                     'name': cli,
                     'value': full_file

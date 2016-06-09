@@ -595,7 +595,8 @@ class History(Resource):
                 break
 
         if not color_found:
-            rand = lambda: random.randint(0, 255)
+            def rand():
+                return random.randint(0, 255)
             red = rand()
             green = rand()
             blue = rand()
