@@ -10,7 +10,7 @@ import os
 
 from collections import OrderedDict
 from glob import glob
-from six import iteritems
+from six import iteritems, viewkeys
 
 
 class Option(object):
@@ -269,7 +269,7 @@ class File(dict):
 
     def _refresh_types(self):
         if self._dirty:
-            for key in self.types.viewkeys():
+            for key in viewkeys(self.types):
                 self.types[key] = OrderedDict()
 
             for key, opt in iteritems(self.options):
@@ -446,7 +446,7 @@ class Config(File):
 
             # cleanup "caches"
             self.options = OrderedDict()
-            for key in self.types.viewkeys():
+            for key in viewkeys(self.types):
                 self.types[key] = OrderedDict()
 
             # now update caches with new values

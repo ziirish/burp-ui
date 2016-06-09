@@ -14,7 +14,7 @@ import codecs
 from copy import deepcopy
 from glob import glob
 from hashlib import md5
-from six import iteritems
+from six import iteritems, viewkeys
 
 from .doc import Doc
 from .utils import Config, File
@@ -608,7 +608,7 @@ class Parser(Doc):
             pass
 
         oldkeys = [self._get_line_key(x) for x in orig]
-        newkeys = list(set(data.viewkeys()) - set(oldkeys))
+        newkeys = list(set(viewkeys(data)) - set(oldkeys))
 
         already_multi = []
         already_file = []
@@ -618,7 +618,7 @@ class Parser(Doc):
             with codecs.open(mconf, 'w', 'utf-8') as fil:
                 # f.write('# Auto-generated configuration using Burp-UI\n')
                 for line in orig:
-                    if (self._line_removed(line, data.viewkeys()) and
+                    if (self._line_removed(line, viewkeys(data)) and
                             not self._line_is_comment(line) and
                             not self._line_is_file_include(line)):
                         # The line was removed, we comment it
@@ -636,7 +636,7 @@ class Parser(Doc):
                         else:
                             fil.write('#{}\n'.format(line))
                             del conffile[ori]
-                    elif self._get_line_key(line, False) in data.viewkeys():
+                    elif self._get_line_key(line, False) in viewkeys(data):
                         # The line is still present or has been un-commented,
                         # rewrite it with eventual changes
                         key = self._get_line_key(line, False)

@@ -20,7 +20,7 @@ import codecs
 
 from ast import literal_eval
 from pipes import quote
-from six import iteritems
+from six import iteritems, viewkeys
 
 from .interface import BUIbackend
 from ..parser.burp1 import Parser
@@ -708,7 +708,7 @@ class Burp(BUIbackend):
 
         if 'bytes' not in res:
             res['bytes'] = 0
-        if res.viewkeys() & {'start', 'estimated_bytes', 'bytes_in'}:
+        if viewkeys(res) & {'start', 'estimated_bytes', 'bytes_in'}:
             try:
                 diff = time.time() - int(res['start'])
                 byteswant = int(res['estimated_bytes'])

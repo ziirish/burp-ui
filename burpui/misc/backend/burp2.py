@@ -17,7 +17,7 @@ import json
 
 from ast import literal_eval
 from select import select
-from six import iteritems
+from six import iteritems, viewkeys
 
 from .burp1 import Burp as Burp1
 from ..parser.burp2 import Parser
@@ -658,7 +658,7 @@ class Burp(Burp1):
 
         if 'bytes' not in ret:
             ret['bytes'] = 0
-        if ret.viewkeys() & {'time_start', 'estimated_bytes', 'bytes_received'}:
+        if viewkeys(ret) & {'time_start', 'estimated_bytes', 'bytes_received'}:
             try:
                 diff = time.time() - int(ret['time_start'])
                 byteswant = int(ret['estimated_bytes'])
