@@ -254,6 +254,7 @@ class ClientSettings(Resource):
     parser_delete.add_argument('revoke', type=boolean, help='Whether to revoke the certificate or not', default=False, nullable=True)
     parser_delete.add_argument('delcert', type=boolean, help='Whether to delete the certificate or not', default=False, nullable=True)
 
+    @ns.expect(parser)
     @ns.doc(
         params={
             'server': 'Which server to collect data from when in multi-agent mode',
@@ -347,6 +348,7 @@ class ClientSettings(Resource):
             'defaults': api.bui.cli.get_parser_attr('defaults', server)
         }
 
+    @ns.expect(parser_delete)
     @ns.doc(
         params={
             'server': 'Which server to collect data from when in multi-agent mode',

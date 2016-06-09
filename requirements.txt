@@ -8,3 +8,4 @@ WTForms==2.0.2
 arrow==0.7.0
 tzlocal==1.2
 six==1.10.0
+pyOpenSSL==16.0.0

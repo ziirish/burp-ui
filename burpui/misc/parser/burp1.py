@@ -18,7 +18,7 @@ from six import iteritems
 
 from .doc import Doc
 from .utils import Config, File
-from .openssl import OSSLConf
+from .openssl import OSSLConf, OSSLAuth
 from ...exceptions import BUIserverException
 
 
@@ -56,6 +56,11 @@ class Parser(Doc):
             self.openssl_conf = OSSLConf(ca_conf)
         else:
             self.openssl_conf = OSSLConf(os.devnull)
+        self.openssl_auth = OSSLAuth(
+            self.server_conf.get('ca_name'),
+            self.openssl_conf,
+            self.server_conf
+        )
 
     @staticmethod
     def _line_is_comment(line):
@@ -359,30 +364,60 @@ class Parser(Doc):
                 not x.endswith('.back') and self._is_secure_path(x)
             ]
 
+    def is_client_revoked(self, client=None):
+        """See :func:`burpui.misc.parser.interface.BUIparser.is_client_revoked`
+        """
+        if not client:
+            return False
+        return self.openssl_auth.check_client_revoked(client)
+
     def remove_client(self, client=None, delcert=False, revoke=False):
         """See :func:`burpui.misc.parser.interface.BUIparser.remove_client`"""
         res = []
+        revoked = False
+        removed = False
         if not client:
             return [[2, "No client provided"]]
         try:
             path = os.path.join(self.clientconfdir, client)
             os.unlink(path)
             res.append([0, "'{}' successfully removed".format(client)])
+            removed = True
+
             if client in self.client_conf:
                 del self.client_conf[client]
+
             if path in self.md5:
                 # we always set both at the same time so we are sure both exist
                 del self.md5[path]
                 del self.filecache[path]
-            if revoke and self.backend.cli.revocation_enabled():
-                # revoke cert
-                pass
-            if delcert:
-                ca_dir = self.openssl_conf.values.get('CA_DIR')
 
-            self._refresh_cache()
         except OSError as exp:
             res.append([2, str(exp)])
+
+        if revoke and self.backend.revocation_enabled() and removed:
+            # revoke cert
+            revoked = self.openssl_auth.revoke_client(client)
+            if revoked:
+                res.append([0, "'{}' successfully revoked".format(client)])
+            else:
+                res.append([2, "Error while revoking the certificate"])
+
+        if delcert:
+            ca_dir = self.openssl_conf.values.get('CA_DIR')
+            path = os.path.join(ca_dir, client)
+            try:
+                os.unlink('{}.csr'.format(path))
+            except OSError as exp:
+                res.append([1, str(exp)])
+            try:
+                os.unlink('{}.crt'.format(path))
+            except OSError as exp:
+                res.append([2, str(exp)])
+            if not revoked:
+                res.append([1, "The client certificate may still be used!"])
+
+        self._refresh_cache()
         return res
 
     def read_client_conf(self, client=None, conf=None):

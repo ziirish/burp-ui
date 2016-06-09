@@ -323,7 +323,7 @@ class File(dict):
 
     def __str__(self):
         ret = u''
-        for key, val in iteritems(self.options):
+        for _, val in iteritems(self.options):
             tmp = str(val)
             if tmp:
                 ret += tmp + '\n'
@@ -363,8 +363,8 @@ class File(dict):
         self._dirty = True
         return self.options.pop(*args)
 
-    def __cmp__(self, dict):
-        return cmp(self.options, dict)
+    def __cmp__(self, dic):
+        return cmp(self.options, dic)
 
     def __contains__(self, item):
         return item in self.options
@@ -441,7 +441,7 @@ class Config(File):
     def _refresh(self):
         if self._dirty or \
                 any([x.dirty
-                    for _, x in iteritems(self.files)]):
+                     for _, x in iteritems(self.files)]):
 
             # cleanup "caches"
             self.options = OrderedDict()
@@ -531,9 +531,9 @@ class Config(File):
         self._dirty = True
         return self.get_default(True).pop(*args)
 
-    def __cmp__(self, dict):
+    def __cmp__(self, dic):
         self._refresh()
-        return cmp(self.options, dict)
+        return cmp(self.options, dic)
 
     def __contains__(self, item):
         self._refresh()
