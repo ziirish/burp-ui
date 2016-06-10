@@ -409,7 +409,7 @@ $(function() {
 		{% if clients -%}
 		_clients();
 		{% endif -%}
-		{% if client -%}
+		{% if client and not settings -%}
 		_client();
 		{% endif -%}
 		{% if servers and overview -%}

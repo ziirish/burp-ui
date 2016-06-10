@@ -17,12 +17,14 @@ from tzlocal import get_localzone
 class DateTime(fields.DateTime):
     """Custom DateTime parser on top of :mod:`arrow` to provide lossless dates"""
     def parse(self, value):
+        """Parse the value"""
         if value is None:
             return None
         a = arrow.get(value)
         return fields.DateTime.parse(self, a.to(str(get_localzone())).datetime)
 
     def format(self, value):
+        """Format the value"""
         try:
             new_value = self.parse(value)
             if self.dt_format == 'iso8601':
@@ -38,6 +40,7 @@ class DateTime(fields.DateTime):
 class BackupNumber(fields.String):
     """Custom BackupNumber field"""
     def format(self, value):
+        """Format the value"""
         try:
             return fields.String.format(self, '{0:07d}'.format(int(value)))
         except ValueError as e:

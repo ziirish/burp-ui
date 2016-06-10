@@ -25,6 +25,7 @@ class Resource(ResourcePlus):
     logger = logging.getLogger('burp-ui')
 
     def __init__(self, api=None, *args, **kwargs):
+        """Constructor"""
         self.username = current_user.get_id()
         self.is_admin = api.bui.acl and api.bui.acl.is_admin(self.username)
         self.cache = api.cache

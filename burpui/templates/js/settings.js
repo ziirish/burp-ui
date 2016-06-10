@@ -116,6 +116,7 @@ app.controller('ConfigCtrl', function($scope, $http) {
 	$scope.suggest = {};
 	$scope.invalid = {};
 	$scope.paths = {};
+	$scope.revokeEnabled = false;
 	$scope.inc_invalid = {};
 	$scope.old = {};
 	$scope.new = {
@@ -155,6 +156,10 @@ app.controller('ConfigCtrl', function($scope, $http) {
 			$scope.includes_ext = data.results.includes_ext;
 			$('#waiting-container').hide();
 			$('#settings-panel').show();
+		});
+	$http.get('{{ url_for("api.setting_options", server=server) }}')
+		.success(function(data, status, headers, config) {
+			$scope.revokeEnabled = data.is_revocation_enabled;
 		});
 	/* Our form is submitted asynchronously thanks to this callback */
 	$scope.submit = function(e) {
@@ -353,7 +358,8 @@ app.controller('ConfigCtrl', function($scope, $http) {
 		api = '{{ url_for("api.client_settings", client=client, server=server) }}';
 		$.ajax({
 			url: api,
-			type: 'DELETE'
+			type: 'DELETE',
+			data: { delcert: $('#delcert').is(':checked'), revoke: $('#revoke').is(':checked') }
 		})
 		.fail(myFail)
 		.done(function(data) {
@@ -412,5 +418,8 @@ $(document).ready(function() {
 		if (target.length == 0) target = $('html');
 		$('html, body').animate({ scrollTop: target.offset().top }, 500);
 		return false;
+	});
+	$(".dropdown-menu label, .dropdown-menu input, .dropdown-menu li").click(function(e) {
+		e.stopPropagation();
 	});
 });

@@ -196,11 +196,19 @@
                 </div>
               </fieldset>
               {% endraw %}
-              <div class="form-group">
+              <div class="btn-toolbar">
                 <div class="col-lg-3 col-lg-offset-3">
                   <button type="submit" class="btn btn-primary" ng-disabled="!setSettings.$valid">Submit</button>
+                </div>
+                <div class="col-lg-6">
                   {% if client and not conf -%}
-                  <button type="button" class="btn btn-danger" ng-click="deleteClient()">Remove '{{ client }}'</button>
+                  <div class="btn-group dropupi text-right">
+                    <button type="button" class="btn btn-danger" ng-click="deleteClient()">Remove '{{ client }}'</button>
+                    <button class="btn btn-danger dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
+                    <ul class="dropdown-menu browse">
+                      <li><label for="delcert">Remove associated certificate:&nbsp;</label><input type="checkbox" id="delcert" name="delcert"></li>
+                      <li><label for="revoke">Revoke associated certificate:&nbsp;</label><input type="checkbox" id="revoke" name="revoke" ng-disabled="!revokeEnabled"></li>
+                  </div>
                   {% endif -%}
                 </div>
               </div>
