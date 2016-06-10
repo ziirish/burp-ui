@@ -11,7 +11,6 @@ import json
 import shutil
 import codecs
 
-from copy import deepcopy
 from glob import glob
 from hashlib import md5
 from six import iteritems, viewkeys
@@ -150,7 +149,7 @@ class Parser(Doc):
             clients = self._list_clients(True)
 
         for cli in clients:
-            self.client_conf[cli['name']] = deepcopy(self.server_conf)
+            self.client_conf[cli['name']] = self.server_conf.clone()
             data, path, cached = self._readfile(cli['value'])
             if not cached:
                 parsed = self._parse_lines(data, path, 'cli')

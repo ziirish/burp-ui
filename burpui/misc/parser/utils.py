@@ -8,6 +8,7 @@
 """
 import os
 
+from copy import copy
 from collections import OrderedDict
 from glob import glob
 from six import iteritems, viewkeys
@@ -213,6 +214,12 @@ class File(dict):
             'string': OrderedDict(),
         }
 
+    def clone(self):
+        cpy = File(self.parser, self.name, self.mode)
+        cpy.options = copy(self.options)
+        cpy.types = copy(self.types)
+        return cpy
+
     def clean(self):
         self._dirty = False
         for _, opt in iteritems(self.options):
@@ -405,6 +412,15 @@ class Config(File):
             else:
                 self.files[path] = parsed
             self.files.get(path).set_name(path)
+
+    def clone(self):
+        default = self.get_default().clone()
+        cpy = Config(self.name, default, self.parser, self.mode)
+        for path, parsed in iteritems(self.files):
+            if path == self.name:
+                continue
+            cpy.add_file(parsed.clone(), path)
+        return cpy
 
     def set_default(self, path):
         self.default = path
