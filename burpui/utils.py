@@ -374,9 +374,10 @@ class BUIConfig(object):
                     new.write('# @release@ - {}\n'.format(__release__))
                     for line in ori.readlines():
                         line = line.rstrip('\n')
-                        search = re.search(r'^\s*\[([^\]]+)\]\s*', line)
+                        search = re.search(r'^\s*(#?)\s*\[([^\]]+)\]\s*', line)
                         if search:
-                            current_section = search.group(1)
+                            if not search.group(1):
+                                current_section = search.group(2)
                         # if we find old style config lines, we convert them
                         elif re.match(r'^\s*\S+\s*:\s*.+$', line) and \
                                 re.match(r'^\s*[^\[]', line):
