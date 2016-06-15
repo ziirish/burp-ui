@@ -8,18 +8,26 @@
 
 """
 import os
+import re
 import math
 import string
 import sys
+import codecs
+import json
+import shutil
 import zipfile
 import tarfile
 import logging
+import configobj
+import validate
 
 from inspect import currentframe, getouterframes
 from ._compat import PY3
+from . import __version__, __release__
 
 if PY3:
     long = int  # pragma: no cover
+    basestring = str  # pragma: no cover
 
 
 class human_readable(long):
@@ -273,3 +281,205 @@ class ReverseProxied(object):
                 self.app.warning("'prefix' must start with a '/'!")
 
         return self.wsgi_app(environ, start_response)
+
+
+class BUIConfig(object):
+    """Custom config parser"""
+    logger = logging.getLogger('burp-ui')
+
+    def __init__(self, config, explain=False, defaults=None):
+        """Wrapper around the ConfigObj class
+
+        :param config: Configuration to parse
+        :type config: str, list or File
+
+        :param explain: Whether to explain the parsing errors or not
+        :type explain: bool
+
+        :param defaults: Default options
+        :type defaults: dict
+        """
+        self.conf = {}
+        self.section = None
+        self.defaults = defaults
+        self.validator = validate.Validator()
+        try:
+            self.conf = configobj.ConfigObj(config, encoding='utf-8')
+        except configobj.ConfigObjError as exp:
+            # We were unable to parse the config, maybe we need to
+            # convert/update it
+            self.logger.warning(
+                'Unable to parse the configuration... Trying to convert it'
+            )
+            # if conversion is successful, give it another try
+            if self._convert(config):
+                # This time, if it fails, the exception will be forwarded
+                try:
+                    self.conf = configobj.ConfigObj(config)
+                except configobj.ConfigObjError as exp2:
+                    if explain:
+                        self._explain(exp2)
+                    else:
+                        raise exp2
+            else:
+                if explain:
+                    self._explain(exp)
+                else:
+                    raise exp
+
+    @property
+    def options(self):
+        """ConfigObj object"""
+        return self.conf
+
+    @staticmethod
+    def string_lower_list(value):
+        if not value:
+            raise validate.VdtMissingValue('Option not found')
+        if not isinstance(value, list):
+            return [str(value).lower()]
+        return [str(x).lower() for x in value]
+
+    def update_defaults(self, new_defaults):
+        """Add new defaults"""
+        self.defaults.update(new_defaults)
+
+    def default_section(self, section):
+        """Set the default section"""
+        self.section = section
+
+    def _convert(self, config):
+        """Convert an old config to a new one"""
+        sav = '{}.back'.format(config)
+        current_section = None
+
+        if os.path.exists(sav):
+            self.logger.error(
+                'Looks like the configuration file has already been converted'
+            )
+            return False
+
+        try:
+            shutil.copy(config, sav)
+        except IOError as exp:
+            self.logger.error(str(exp))
+            return False
+
+        try:
+            with codecs.open(sav, 'r', 'utf-8') as ori:
+                with codecs.open(config, 'w', 'utf-8') as new:
+                    # We add some headers
+                    new.write('# Auto-generated file from a previous version\n')
+                    new.write('# @version@ - {}\n'.format(__version__))
+                    new.write('# @release@ - {}\n'.format(__release__))
+                    for line in ori.readlines():
+                        line = line.rstrip('\n')
+                        search = re.search(r'^\s*\[([^\]]+)\]\s*', line)
+                        if search:
+                            current_section = search.group(1)
+                        # if we find old style config lines, we convert them
+                        elif re.match(r'^\s*\S+\s*:\s*.+$', line) and \
+                                re.match(r'^\s*[^\[]', line):
+                            key, val = re.split(r'\s*:\s*', line, 1)
+                            # We support *objects* but we need to serialize them
+                            try:
+                                jsn = json.loads(val)
+                                # special case, we re-format the admin value
+                                if current_section == 'BASIC:ACL' and \
+                                        key == 'admin' and \
+                                        isinstance(jsn, list):
+                                    val = ','.join(jsn)
+                                elif isinstance(jsn, list) or \
+                                        isinstance(jsn, dict):
+                                    val = "'{}'".format(json.dumps(jsn))
+                            except ValueError:
+                                pass
+                            line = '{} = {}'.format(key, val)
+
+                        new.write('{}\n'.format(line))
+
+        except IOError as exp:
+            self.logger.error(str(exp))
+            return False
+        return True
+
+    @staticmethod
+    def _explain(exception):
+        """Explain parsing errors
+
+        :param exception: Exception object
+        :type exception: :class:`configobj.ConfigObjError`
+        """
+        message = u'\n'
+        for error in exception.errors:
+            message += error.message + '\n'
+
+        raise configobj.ConfigObjError(message.rstrip('\n'))
+
+    def safe_get(
+            self,
+            key,
+            cast='pass',
+            section=None,
+            defaults=None):
+        """Safely return the asked option
+
+        :param key: Key name
+        :type key: str
+
+        :param cast: How to cast the option
+        :type cast: str
+
+        :param section: Section name
+        :type section: str
+
+        :param defaults: Default options
+        :type defaults: dict
+
+        :returns: The value of the asked option
+        """
+        # The configobj validator is sooo broken. We need to workaround it...
+        defaults = defaults or self.defaults
+        section = section or self.section
+        if section not in self.conf:
+            self.logger.warning("No '{}' section found".format(section))
+            if defaults:
+                return defaults.get(section, {}).get(key)
+            return None
+
+        val = self.conf.get(section).get(key)
+        default = None
+        if defaults and section in defaults and \
+                key in defaults.get(section):
+            default = defaults.get(section, {}).get(key)
+        try:
+            caster = self.validator.functions.get(cast)
+            if not caster:
+                try:
+                    caster = getattr(self, cast)
+                except AttributeError:
+                    self.logger.error(
+                        "'{}': no such validator".format(cast)
+                    )
+                    return val
+            ret = caster(val)
+            self.logger.debug(
+                '[{}]:{} - found: {}, default: {}'.format(
+                    section,
+                    key,
+                    val,
+                    default
+                )
+            )
+        except validate.ValidateError as exp:
+            self.logger.warning(
+                '[{}]:{} - found: {}, default: {}\n{}'.format(
+                    section,
+                    key,
+                    val,
+                    default,
+                    str(exp)
+                )
+            )
+            ret = default
+        return ret

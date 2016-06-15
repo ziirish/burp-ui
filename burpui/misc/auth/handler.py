@@ -1,11 +1,9 @@
 # -*- coding: utf8 -*-
+import os
+
 from .interface import BUIhandler, BUIuser
 from importlib import import_module
 from flask import session
-
-import re
-import os
-import json
 
 
 class UserAuthHandler(BUIhandler):
@@ -17,10 +15,7 @@ class UserAuthHandler(BUIhandler):
         self.backends = []
         if self.app.auth:
             me, _ = os.path.splitext(os.path.basename(__file__))
-            try:
-                back = json.loads(self.app.auth)
-            except:
-                back = re.split(' *,+ *', self.app.auth)
+            back = self.app.auth
             for au in back:
                 if au == me:
                     self.app.logger.error('Recursive import not permited!')

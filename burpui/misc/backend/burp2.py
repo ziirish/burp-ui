@@ -11,11 +11,9 @@ import re
 import os
 import time
 import subprocess
-import codecs
 import sys
 import json
 
-from ast import literal_eval
 from select import select
 from six import iteritems, viewkeys
 
@@ -23,7 +21,6 @@ from .burp1 import Burp as Burp1
 from ..parser.burp2 import Parser
 from ...utils import human_readable as _hr
 from ...exceptions import BUIserverException
-from ..._compat import ConfigParser
 
 if sys.version_info < (3, 3):
     TimeoutError = OSError
@@ -35,11 +32,11 @@ G_STRIPBIN = u'/usr/sbin/vss_strip'
 G_BURPCONFCLI = u'/etc/burp/burp.conf'
 G_BURPCONFSRV = u'/etc/burp/burp-server.conf'
 G_TMPDIR = u'/tmp/bui'
-G_TIMEOUT = u'5'
-G_ZIP64 = u'False'
-G_INCLUDES = u'/etc/burp'
-G_ENFORCE = u'False'
-G_REVOKE = u'False'
+G_TIMEOUT = 5
+G_ZIP64 = False
+G_INCLUDES = [u'/etc/burp']
+G_ENFORCE = False
+G_REVOKE = False
 
 
 # Some functions are the same as in Burp1 backend
@@ -54,149 +51,146 @@ class Burp(Burp1):
                    and/or some global settings
     :type server: :class:`burpui.server.BUIServer`
 
-    :param conf: Configuration file to use
-    :type conf: str
+    :param conf: Configuration to use
+    :type conf: :class:`burpui.utils.BUIConfig`
     """
 
     def __init__(self, server=None, conf=None):
-        global G_BURPBIN, G_STRIPBIN, G_BURPCONFCLI, G_BURPCONFSRV, G_TMPDIR, \
-            G_TIMEOUT, BURP_MINIMAL_VERSION
+        """
+        :param server: ``Burp-UI`` server instance in order to access logger
+                       and/or some global settings
+        :type server: :class:`burpui.server.BUIServer`
+
+        :param conf: Configuration to use
+        :type conf: :class:`burpui.utils.BUIConfig`
+        """
         self.proc = None
         self.app = server
         self.client_version = None
         self.server_version = None
-        self.zip64 = literal_eval(G_ZIP64)
-        self.timeout = int(G_TIMEOUT)
+        self.zip64 = G_ZIP64
+        self.timeout = G_TIMEOUT
         self.burpbin = G_BURPBIN
         self.stripbin = G_STRIPBIN
         self.burpconfcli = G_BURPCONFCLI
         self.burpconfsrv = G_BURPCONFSRV
         self.includes = G_INCLUDES
-        self.revoke = literal_eval(G_REVOKE)
-        self.enforce = literal_eval(G_ENFORCE)
+        self.revoke = G_REVOKE
+        self.enforce = G_ENFORCE
         self.defaults = {
-            'burpbin': G_BURPBIN,
-            'stripbin': G_STRIPBIN,
-            'bconfcli': G_BURPCONFCLI,
-            'bconfsrv': G_BURPCONFSRV,
-            'timeout': G_TIMEOUT,
-            'tmpdir': G_TMPDIR,
-            'zip64': G_ZIP64,
-            'includes': G_INCLUDES,
-            'revoke': G_REVOKE,
-            'enforce': G_ENFORCE,
+            'Burp2': {
+                'burpbin': G_BURPBIN,
+                'stripbin': G_STRIPBIN,
+                'bconfcli': G_BURPCONFCLI,
+                'bconfsrv': G_BURPCONFSRV,
+                'timeout': G_TIMEOUT,
+                'tmpdir': G_TMPDIR,
+            },
+            'Experimental': {
+                'zip64': G_ZIP64,
+            },
+            'Security': {
+                'includes': G_INCLUDES,
+                'revoke': G_REVOKE,
+                'enforce': G_ENFORCE,
+            },
         }
         self.running = []
         version = ''
         if conf:
-            config = ConfigParser.ConfigParser(self.defaults)
-            with codecs.open(conf, 'r', 'utf-8') as conffile:
-                config.readfp(conffile)
-                try:
-                    self.burpbin = self._get_binary_path(
-                        config,
-                        'burpbin',
-                        G_BURPBIN,
-                        sect='Burp2'
-                    )
-                    self.stripbin = self._get_binary_path(
-                        config,
-                        'stripbin',
-                        G_STRIPBIN,
-                        sect='Burp2'
-                    )
-                    confcli = self._safe_config_get(
-                        config.get,
-                        'bconfcli',
-                        sect='Burp2'
-                    )
-                    confsrv = self._safe_config_get(
-                        config.get,
-                        'bconfsrv',
-                        sect='Burp2'
-                    )
-                    self.timeout = self._safe_config_get(
-                        config.getint,
-                        'timeout',
-                        sect='Burp2',
-                        cast=int
-                    )
-                    tmpdir = self._safe_config_get(
-                        config.get,
-                        'tmpdir',
-                        sect='Burp2'
-                    )
+            conf.update_defaults(self.defaults)
+            conf.default_section('Burp2')
+            self.burpbin = self._get_binary_path(
+                conf,
+                'burpbin',
+                G_BURPBIN,
+                sect='Burp2'
+            )
+            self.stripbin = self._get_binary_path(
+                conf,
+                'stripbin',
+                G_STRIPBIN,
+                sect='Burp2'
+            )
+            confcli = conf.safe_get(
+                'bconfcli'
+            )
+            confsrv = conf.safe_get(
+                'bconfsrv'
+            )
+            self.timeout = conf.safe_get(
+                'timeout',
+                'integer'
+            )
+            tmpdir = conf.safe_get(
+                'tmpdir'
+            )
 
-                    # Experimental options
-                    self.zip64 = self._safe_config_get(
-                        config.getboolean,
-                        'zip64',
-                        sect='Experimental',
-                        cast=bool
+            # Experimental options
+            self.zip64 = conf.safe_get(
+                'zip64',
+                'boolean',
+                section='Experimental'
+            )
+
+            # Security options
+            self.includes = conf.safe_get(
+                'includes',
+                'force_list',
+                section='Security'
+            )
+            self.enforce = conf.safe_get(
+                'enforce',
+                'boolean',
+                section='Security'
+            )
+            self.revoke = conf.safe_get(
+                'revoke',
+                'boolean',
+                section='Security'
+            )
+
+            if (tmpdir and os.path.exists(tmpdir) and
+                    not os.path.isdir(tmpdir)):
+                self.logger.warning(
+                    "'%s' is not a directory",
+                    tmpdir
+                )
+                if tmpdir == G_TMPDIR:
+                    raise IOError(
+                        "Cannot use '{}' as tmpdir".format(tmpdir)
                     )
-
-                    # Security options
-                    self.includes = self._safe_config_get(
-                        config.get,
-                        'includes',
-                        sect='Security'
+                tmpdir = G_TMPDIR
+                if os.path.exists(tmpdir) and not os.path.isdir(tmpdir):
+                    raise IOError(
+                        "Cannot use '{}' as tmpdir".format(tmpdir)
                     )
-                    self.enforce = self._safe_config_get(
-                        config.getboolean,
-                        'enforce',
-                        sect='Security'
-                    )
-                    self.revoke = self._safe_config_get(
-                        config.getboolean,
-                        'revoke',
-                        sect='Security'
-                    )
+            if tmpdir and not os.path.exists(tmpdir):
+                os.makedirs(tmpdir)
 
-                    if (tmpdir and os.path.exists(tmpdir) and
-                            not os.path.isdir(tmpdir)):
-                        self.logger.warning(
-                            "'%s' is not a directory",
-                            tmpdir
-                        )
-                        if tmpdir == G_TMPDIR:
-                            raise IOError(
-                                "Cannot use '{}' as tmpdir".format(tmpdir)
-                            )
-                        tmpdir = G_TMPDIR
-                        if os.path.exists(tmpdir) and not os.path.isdir(tmpdir):
-                            raise IOError(
-                                "Cannot use '{}' as tmpdir".format(tmpdir)
-                            )
-                    if tmpdir and not os.path.exists(tmpdir):
-                        os.makedirs(tmpdir)
+            if confcli and not os.path.isfile(confcli):
+                self.logger.warning(
+                    "The file '%s' does not exist",
+                    confcli
+                )
+                confcli = G_BURPCONFCLI
 
-                    if confcli and not os.path.isfile(confcli):
-                        self.logger.warning(
-                            "The file '%s' does not exist",
-                            confcli
-                        )
-                        confcli = G_BURPCONFCLI
+            if confsrv and not os.path.isfile(confsrv):
+                self.logger.warning(
+                    "The file '%s' does not exist",
+                    confsrv
+                )
+                confsrv = G_BURPCONFSRV
 
-                    if confsrv and not os.path.isfile(confsrv):
-                        self.logger.warning(
-                            "The file '%s' does not exist",
-                            confsrv
-                        )
-                        confsrv = G_BURPCONFSRV
+            if not self.burpbin:
+                # The burp binary is mandatory for this backend
+                raise Exception(
+                    'This backend *CAN NOT* work without a burp binary'
+                )
 
-                    if not self.burpbin:
-                        # The burp binary is mandatory for this backend
-                        raise Exception(
-                            'This backend *CAN NOT* work without a burp binary'
-                        )
-
-                    self.tmpdir = tmpdir
-                    self.burpconfcli = confcli
-                    self.burpconfsrv = confsrv
-                except ConfigParser.NoOptionError as exp:
-                    self.logger.error(str(exp))
-                except ConfigParser.NoSectionError as exp:
-                    self.logger.warning(str(exp))
+            self.tmpdir = tmpdir
+            self.burpconfcli = confcli
+            self.burpconfsrv = confsrv
 
         # check the burp version because this backend only supports clients
         # newer than BURP_MINIMAL_VERSION
@@ -575,6 +569,10 @@ class Burp(Burp1):
                         backup[name][key] = 0
         if 'start' in backup and 'end' in backup:
             backup['duration'] = backup['end'] - backup['start']
+
+        # Needed for graphs
+        if 'received' not in backup:
+            backup['received'] = 1
 
         return backup
 

@@ -13,29 +13,29 @@ import logging
 import traceback
 
 from .misc.auth.handler import UserAuthHandler
-from ._compat import ConfigParser
+from .utils import BUIConfig
 from datetime import timedelta
 
 from flask import Flask
 
 
-G_PORT = '5000'
-G_BIND = '::'
-G_REFRESH = '180'
-G_LIVEREFRESH = '5'
-G_SSL = 'False'
-G_STANDALONE = 'True'
-G_SSLCERT = ''
-G_SSLKEY = ''
-G_VERSION = '1'
-G_AUTH = 'basic'
-G_ACL = ''
-G_STORAGE = ''
-G_REDIS = ''
-G_SCOOKIE = 'False'
-G_APPSECRET = 'random'
-G_COOKIETIME = '14'
-G_PREFIX = ''
+G_PORT = 5000
+G_BIND = u'::'
+G_REFRESH = 180
+G_LIVEREFRESH = 5
+G_SSL = False
+G_STANDALONE = True
+G_SSLCERT = u''
+G_SSLKEY = u''
+G_VERSION = 1
+G_AUTH = [u'basic']
+G_ACL = u'none'
+G_STORAGE = u''
+G_REDIS = u''
+G_SCOOKIE = False
+G_APPSECRET = u'random'
+G_COOKIETIME = 14
+G_PREFIX = u''
 
 
 class BUIServer(Flask):
@@ -43,6 +43,34 @@ class BUIServer(Flask):
     The :class:`burpui.server.BUIServer` class provides the ``Burp-UI`` server.
     """
     gunicorn = False
+
+    defaults = {
+        'Global': {
+            'port': G_PORT,
+            'bind': G_BIND,
+            'ssl': G_SSL,
+            'standalone': G_STANDALONE,
+            'sslcert': G_SSLCERT,
+            'sslkey': G_SSLKEY,
+            'version': G_VERSION,
+            'auth': G_AUTH,
+            'acl': G_ACL,
+            'prefix': G_PREFIX,
+        },
+        'UI': {
+            'refresh': G_REFRESH,
+            'liverefresh': G_LIVEREFRESH,
+        },
+        'Security': {
+            'scookie': G_SCOOKIE,
+            'appsecret': G_APPSECRET,
+            'cookietime': G_COOKIETIME,
+        },
+        'Production': {
+            'storage': G_STORAGE,
+            'redis': G_REDIS,
+        }
+    }
 
     def __init__(self):
         """The :class:`burpui.server.BUIServer` class provides the ``Burp-UI``
@@ -79,158 +107,137 @@ class BUIServer(Flask):
         if not conf:
             raise IOError('No configuration file found')
 
-        self.defaults = {
-            'port': G_PORT,
-            'bind': G_BIND,
-            'refresh': G_REFRESH,
-            'ssl': G_SSL,
-            'sslcert': G_SSLCERT,
-            'sslkey': G_SSLKEY,
-            'version': G_VERSION,
-            'auth': G_AUTH,
-            'standalone': G_STANDALONE,
-            'acl': G_ACL,
-            'liverefresh': G_LIVEREFRESH,
-            'storage': G_STORAGE,
-            'redis': G_REDIS,
-            'scookie': G_SCOOKIE,
-            'appsecret': G_APPSECRET,
-            'cookietime': G_COOKIETIME,
-            'prefix': G_PREFIX,
-        }
-        config = ConfigParser.ConfigParser(self.defaults)
-        with open(conf) as fp:
-            config.readfp(fp)
+        # Raise exception if errors are encountered during parsing
+        self.conf = BUIConfig(conf, True, self.defaults)
+        self.conf.default_section('Global')
+
+        self.port = self.conf.safe_get(
+            'port',
+            'integer'
+        )
+        self.bind = self.conf.safe_get('bind')
+        self.vers = self.conf.safe_get(
+            'version',
+            'integer'
+        )
+        self.ssl = self.conf.safe_get(
+            'ssl',
+            'boolean'
+        )
+        self.standalone = self.conf.safe_get(
+            'standalone',
+            'boolean'
+        )
+        self.sslcert = self.conf.safe_get(
+            'sslcert'
+        )
+        self.sslkey = self.conf.safe_get(
+            'sslkey'
+        )
+        self.prefix = self.conf.safe_get(
+            'prefix'
+        )
+        if self.prefix and not self.prefix.startswith('/'):
+            if self.prefix.lower() != 'none':
+                self.logger.warning("'prefix' must start with a '/'!")
+            self.prefix = ''
+
+        self.auth = self.conf.safe_get(
+            'auth',
+            'string_lower_list'
+        )
+        if self.auth and 'none' not in self.auth:
             try:
-                self.port = self._safe_config_get(
-                    config.getint,
-                    'port',
-                    cast=int
+                self.uhandler = UserAuthHandler(self)
+            except Exception as e:
+                self.logger.critical(
+                    'Import Exception, module \'{0}\': {1}'.format(
+                        self.auth,
+                        str(e)
+                    )
                 )
-                self.bind = self._safe_config_get(config.get, 'bind')
-                self.vers = self._safe_config_get(
-                    config.getint,
-                    'version',
-                    cast=int
-                )
-                self.ssl = self._safe_config_get(
-                    config.getboolean,
-                    'ssl',
-                    cast=bool
-                )
-                self.standalone = self._safe_config_get(
-                    config.getboolean,
-                    'standalone',
-                    cast=bool
-                )
-                self.sslcert = self._safe_config_get(config.get, 'sslcert')
-                self.sslkey = self._safe_config_get(config.get, 'sslkey')
-                self.prefix = self._safe_config_get(config.get, 'prefix')
-                if self.prefix and not self.prefix.startswith('/'):
-                    if self.prefix.lower() != 'none':
-                        self.logger.warning("'prefix' must start with a '/'!")
-                    self.prefix = ''
-                self.auth = self._safe_config_get(config.get, 'auth')
-                if self.auth and self.auth.lower() != 'none':
-                    try:
-                        self.uhandler = UserAuthHandler(self)
-                    except Exception as e:
-                        self.logger.critical(
-                            'Import Exception, module \'{0}\': {1}'.format(
-                                self.auth,
-                                str(e)
-                            )
-                        )
-                        raise e
-                    self.acl_engine = self._safe_config_get(config.get, 'acl')
-                else:
-                    self.config['LOGIN_DISABLED'] = True
-                    # No login => no ACL
-                    self.acl_engine = 'none'
-                    self.auth = 'none'
+                raise e
+            self.acl_engine = self.conf.safe_get(
+                'acl'
+            )
+        else:
+            self.config['LOGIN_DISABLED'] = True
+            # No login => no ACL
+            self.acl_engine = 'none'
+            self.auth = 'none'
 
-                if self.acl_engine and self.acl_engine.lower() != 'none':
-                    try:
-                        # Try to load submodules from our current environment
-                        # first
-                        sys.path.insert(
-                            0,
-                            os.path.dirname(os.path.abspath(__file__))
-                        )
-                        mod = __import__(
-                            'burpui.misc.acl.{0}'.format(
-                                self.acl_engine.lower()
-                            ),
-                            fromlist=['ACLloader']
-                        )
-                        ACLloader = mod.ACLloader
-                        self.acl_handler = ACLloader(self)
-                        # for development purpose only
-                        from .misc.acl.interface import BUIacl
-                        self.acl = BUIacl
-                        self.acl = self.acl_handler.acl
-                    except Exception as e:
-                        self.logger.critical(
-                            'Import Exception, module \'{0}\': {1}'.format(
-                                self.acl_engine,
-                                str(e)
-                            )
-                        )
-                        raise e
-                else:
-                    self.acl_handler = False
-                    self.acl = False
+        if self.acl_engine and self.acl_engine.lower() != 'none':
+            try:
+                # Try to load submodules from our current environment
+                # first
+                sys.path.insert(
+                    0,
+                    os.path.dirname(os.path.abspath(__file__))
+                )
+                mod = __import__(
+                    'burpui.misc.acl.{0}'.format(
+                        self.acl_engine.lower()
+                    ),
+                    fromlist=['ACLloader']
+                )
+                ACLloader = mod.ACLloader
+                self.acl_handler = ACLloader(self)
+                # for development purpose only
+                from .misc.acl.interface import BUIacl
+                self.acl = BUIacl
+                self.acl = self.acl_handler.acl
+            except Exception as e:
+                self.logger.critical(
+                    'Import Exception, module \'{0}\': {1}'.format(
+                        self.acl_engine,
+                        str(e)
+                    )
+                )
+                raise e
+        else:
+            self.acl_handler = False
+            self.acl = False
 
-                # UI options
-                self.config['REFRESH'] = self._safe_config_get(
-                    config.getint,
-                    'refresh',
-                    'UI',
-                    cast=int
-                )
-                self.config['LIVEREFRESH'] = self._safe_config_get(
-                    config.getint,
-                    'liverefresh',
-                    'UI',
-                    cast=int
-                )
+        # UI options
+        self.config['REFRESH'] = self.conf.safe_get(
+            'refresh',
+            'integer',
+            'UI'
+        )
+        self.config['LIVEREFRESH'] = self.conf.safe_get(
+            'liverefresh',
+            'integer',
+            'UI'
+        )
 
-                # Production options
-                self.storage = self._safe_config_get(
-                    config.get,
-                    'storage',
-                    'Production'
-                )
-                self.redis = self._safe_config_get(
-                    config.get,
-                    'redis',
-                    'Production'
-                )
+        # Production options
+        self.storage = self.conf.safe_get(
+            'storage',
+            section='Production'
+        )
+        self.redis = self.conf.safe_get(
+            'redis',
+            section='Production'
+        )
 
-                # Security options
-                self.scookie = self._safe_config_get(
-                    config.getboolean,
-                    'scookie',
-                    'Security',
-                    cast=bool
+        # Security options
+        self.scookie = self.conf.safe_get(
+            'scookie',
+            'boolean',
+            section='Security'
+        )
+        self.config['SECRET_KEY'] = self.conf.safe_get(
+            'appsecret',
+            section='Security'
+        )
+        self.config['REMEMBER_COOKIE_DURATION'] = \
+            self.config['PERMANENT_SESSION_LIFETIME'] = timedelta(
+                days=self.conf.safe_get(
+                    'cookietime',
+                    'integer',
+                    section='Security'
                 )
-                self.config['SECRET_KEY'] = self._safe_config_get(
-                    config.get,
-                    'appsecret',
-                    'Security'
-                )
-                self.config['REMEMBER_COOKIE_DURATION'] = \
-                    self.config['PERMANENT_SESSION_LIFETIME'] = timedelta(
-                        days=self._safe_config_get(
-                            config.getint,
-                            'cookietime',
-                            'Security',
-                            cast=int
-                        )
-                )
-
-            except ConfigParser.NoOptionError as e:
-                self.logger.error(str(e))
+        )
 
         self.config['STANDALONE'] = self.standalone
 
@@ -265,7 +272,7 @@ class BUIServer(Flask):
             sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
             mod = __import__(module, fromlist=['Burp'])
             Client = mod.Burp
-            self.cli = Client(self, conf=conf)
+            self.cli = Client(self, conf=self.conf)
         except Exception as e:
             traceback.print_exc()
             self.logger.critical(
@@ -277,39 +284,6 @@ class BUIServer(Flask):
             sys.exit(2)
 
         self.init = True
-
-    def _safe_config_get(self, callback, key, sect='Global', cast=None):
-        """:func:`burpui.server.BUIServer._safe_config_get` is a wrapper to
-        handle Exceptions throwed by :mod:`ConfigParser`.
-
-        :param callback: Function to wrap
-        :type callback: callable
-
-        :param key: Key to retrieve
-        :type key: str
-
-        :param sect: Section of the config file to read
-        :type sect: str
-
-        :param cast: Cast the returned value if provided
-        :type case: callable
-
-        :returns: The value returned by the `callback`
-        """
-        try:
-            return callback(sect, key)
-        except ConfigParser.NoOptionError as e:
-            self.logger.error(str(e))
-        except ConfigParser.NoSectionError as e:
-            self.logger.warning(str(e))
-            if key in self.defaults:
-                if cast:
-                    try:
-                        return cast(self.defaults[key])
-                    except ValueError:
-                        return None
-                return self.defaults[key]
-        return None
 
     def manual_run(self):
         """The :func:`burpui.server.BUIServer.manual_run` functions is used to

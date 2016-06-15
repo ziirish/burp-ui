@@ -1,6 +1,5 @@
 # -*- coding: utf8 -*-
 from .interface import BUIacl, BUIaclLoader
-from ..._compat import ConfigParser
 
 import json
 
@@ -8,7 +7,11 @@ import json
 class ACLloader(BUIaclLoader):
     """See :class:`burpui.misc.acl.interface.BUIaclLoader`"""
     def __init__(self, app=None):
-        """See :func:`burpui.misc.acl.interface.BUIaclLoader.__init__`"""
+        """See :func:`burpui.misc.acl.interface.BUIaclLoader.__init__`
+
+        :param app: Application context
+        :type app: :class:`burpui.server.BUIServer`
+        """
         self.app = app
         self.admins = [
             'admin'
@@ -16,34 +19,23 @@ class ACLloader(BUIaclLoader):
         self.clients = {}
         self.servers = {}
         self.standalone = self.app.standalone
-        conf = self.app.config['CFG']
-        c = ConfigParser.ConfigParser()
+        conf = self.app.conf
         adms = []
-        with open(conf) as fp:
-            c.readfp(fp)
-            if c.has_section('BASIC:ACL'):
+        if 'BASIC:ACL' in conf.options:
+            adms = conf.safe_get('admin', 'force_list', section='BASIC:ACL')
+            for opt in conf.options.get('BASIC:ACL').keys():
+                if opt == 'admin':
+                    continue
+                lit = conf.safe_get(opt, section='BASIC:ACL')
+                rec = []
                 try:
-                    temp = c.get('BASIC:ACL', 'admin')
-                    try:
-                        adms = json.loads(temp)
-                    except Exception as e:
-                        self.logger.error(str(e))
-                        adms = [temp]
+                    rec = json.loads(lit)
+                    if isinstance(rec, dict):
+                        self.servers[opt] = rec.keys()
                 except Exception as e:
-                    self.logger.warning(str(e))
-                for opt in c.options('BASIC:ACL'):
-                    if opt == 'admin':
-                        continue
-                    lit = c.get('BASIC:ACL', opt)
-                    rec = []
-                    try:
-                        rec = json.loads(lit)
-                        if isinstance(rec, dict):
-                            self.servers[opt] = rec.keys()
-                    except Exception as e:
-                        self.logger.error(str(e))
-                        rec = [lit]
-                    self.clients[opt] = rec
+                    self.logger.error(str(e))
+                    rec = [lit]
+                self.clients[opt] = rec
 
         if adms:
             self.admins = adms

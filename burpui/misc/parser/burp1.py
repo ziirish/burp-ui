@@ -258,7 +258,7 @@ class Parser(Doc):
             # don't check
             return True
         path = os.path.normpath(path)
-        cond = [path.startswith(x) for x in self.backend.includes.split(',')]
+        cond = [path.startswith(x) for x in self.backend.includes]
         if not any(cond):
             self.logger.warning(
                 'Tried to access non-allowed path: {}'.format(path)
@@ -459,7 +459,8 @@ class Parser(Doc):
         res2[u'includes'] = parsed.flatten('include', False).keys()
         res2[u'includes_ext'] = parsed.include
 
-        self.filecache[path]['parsed'] = res2
+        if path in self.filecache:
+            self.filecache[path]['parsed'] = res2
 
         res.update(res2)
         return res
@@ -503,7 +504,8 @@ class Parser(Doc):
         res2[u'includes'] = parsed.flatten('include', False).keys()
         res2[u'includes_ext'] = parsed.include
 
-        self.filecache[path]['parsed'] = res2
+        if path in self.filecache:
+            self.filecache[path]['parsed'] = res2
 
         res.update(res2)
         return res

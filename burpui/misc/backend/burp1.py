@@ -16,9 +16,7 @@ import json
 import shutil
 import subprocess
 import tempfile
-import codecs
 
-from ast import literal_eval
 from pipes import quote
 from six import iteritems, viewkeys
 
@@ -26,19 +24,19 @@ from .interface import BUIbackend
 from ..parser.burp1 import Parser
 from ...utils import human_readable as _hr, BUIcompress
 from ...exceptions import BUIserverException
-from ..._compat import ConfigParser, unquote, PY3
+from ..._compat import unquote, PY3
 
-G_BURPPORT = u'4972'
+G_BURPPORT = 4972
 G_BURPHOST = u'::1'
 G_BURPBIN = u'/usr/sbin/burp'
 G_STRIPBIN = u'/usr/sbin/vss_strip'
 G_BURPCONFCLI = u''
 G_BURPCONFSRV = u'/etc/burp/burp-server.conf'
 G_TMPDIR = u'/tmp/bui'
-G_ZIP64 = u'False'
-G_INCLUDES = u'/etc/burp'
-G_ENFORCE = u'False'
-G_REVOKE = u'False'
+G_ZIP64 = False
+G_INCLUDES = [u'/etc/burp']
+G_ENFORCE = False
+G_REVOKE = False
 
 
 class Burp(BUIbackend):
@@ -110,8 +108,8 @@ class Burp(BUIbackend):
                        and/or some global settings
         :type server: :class:`burpui.server.BUIServer`
 
-        :param conf: Configuration file to use
-        :type conf: str
+        :param conf: Configuration to use
+        :type conf: :class:`burpui.utils.BUIConfig`
 
         :param dummy: Does not instanciate the object (used for development
                       purpose)
@@ -122,101 +120,105 @@ class Burp(BUIbackend):
         self.client_version = None
         self.server_version = None
         self.app = None
-        self.zip64 = literal_eval(G_ZIP64)
+        self.zip64 = G_ZIP64
         self.host = G_BURPHOST
-        self.port = int(G_BURPPORT)
+        self.port = G_BURPPORT
         self.burpbin = G_BURPBIN
         self.stripbin = G_STRIPBIN
         self.burpconfcli = G_BURPCONFCLI
         self.burpconfsrv = G_BURPCONFSRV
         self.tmpdir = G_TMPDIR
         self.includes = G_INCLUDES
-        self.revoke = literal_eval(G_REVOKE)
-        self.enforce = literal_eval(G_ENFORCE)
+        self.revoke = G_REVOKE
+        self.enforce = G_ENFORCE
         self.running = []
         self.defaults = {
-            'bport': G_BURPPORT,
-            'bhost': G_BURPHOST,
-            'burpbin': G_BURPBIN,
-            'stripbin': G_STRIPBIN,
-            'bconfcli': G_BURPCONFCLI,
-            'bconfsrv': G_BURPCONFSRV,
-            'tmpdir': G_TMPDIR,
-            'zip64': G_ZIP64,
-            'includes': G_INCLUDES,
-            'revoke': G_REVOKE,
-            'enforce': G_ENFORCE,
+            'Burp1': {
+                'bport': G_BURPPORT,
+                'bhost': G_BURPHOST,
+                'burpbin': G_BURPBIN,
+                'stripbin': G_STRIPBIN,
+                'bconfcli': G_BURPCONFCLI,
+                'bconfsrv': G_BURPCONFSRV,
+                'tmpdir': G_TMPDIR,
+            },
+            'Experimental': {
+                'zip64': G_ZIP64,
+            },
+            'Security': {
+                'includes': G_INCLUDES,
+                'revoke': G_REVOKE,
+                'enforce': G_ENFORCE,
+            },
         }
         if conf:
-            config = ConfigParser.ConfigParser(self.defaults)
-            with codecs.open(conf, 'r', 'utf-8') as fileobj:
-                config.readfp(fileobj)
+            conf.update_defaults(self.defaults)
+            conf.default_section('Burp1')
+            self.port = conf.safe_get('bport', 'integer')
+            self.host = conf.safe_get('bhost')
+            self.burpbin = self._get_binary_path(
+                conf,
+                'burpbin',
+                G_BURPBIN
+            )
+            self.stripbin = self._get_binary_path(
+                conf,
+                'stripbin',
+                G_STRIPBIN
+            )
+            confcli = conf.safe_get('bconfcli')
+            confsrv = conf.safe_get('bconfsrv')
+            tmpdir = conf.safe_get('tmpdir')
 
-                self.port = self._safe_config_get(config.getint, 'bport', cast=int)
-                self.host = self._safe_config_get(config.get, 'bhost')
-                self.burpbin = self._get_binary_path(
-                    config,
-                    'burpbin',
-                    G_BURPBIN
-                )
-                self.stripbin = self._get_binary_path(
-                    config,
-                    'stripbin',
-                    G_STRIPBIN
-                )
-                confcli = self._safe_config_get(config.get, 'bconfcli')
-                confsrv = self._safe_config_get(config.get, 'bconfsrv')
-                tmpdir = self._safe_config_get(config.get, 'tmpdir')
+            # Experimental options
+            self.zip64 = conf.safe_get(
+                'zip64',
+                'boolean',
+                section='Experimental'
+            )
 
-                # Experimental options
-                self.zip64 = self._safe_config_get(
-                    config.getboolean,
-                    'zip64',
-                    sect='Experimental'
-                )
+            # Security options
+            self.includes = conf.safe_get(
+                'includes',
+                'force_list',
+                section='Security'
+            )
+            self.enforce = conf.safe_get(
+                'enforce',
+                'boolean',
+                section='Security'
+            )
+            self.revoke = conf.safe_get(
+                'revoke',
+                'boolean',
+                section='Security'
+            )
 
-                # Security options
-                self.includes = self._safe_config_get(
-                    config.get,
-                    'includes',
-                    sect='Security'
-                )
-                self.enforce = self._safe_config_get(
-                    config.getboolean,
-                    'enforce',
-                    sect='Security'
-                )
-                self.revoke = self._safe_config_get(
-                    config.getboolean,
-                    'revoke',
-                    sect='Security'
-                )
+            if tmpdir and os.path.exists(tmpdir) and not os.path.isdir(tmpdir):
+                self.logger.warning("'%s' is not a directory", tmpdir)
+                if tmpdir == G_TMPDIR:
+                    raise IOError("Cannot use '{}' as tmpdir".format(tmpdir))
+                tmpdir = G_TMPDIR
+                if os.path.exists(tmpdir) and not os.path.isdir(tmpdir):
+                    raise IOError("Cannot use '{}' as tmpdir".format(tmpdir))
+            if tmpdir and not os.path.exists(tmpdir):
+                os.makedirs(tmpdir)
 
-                if tmpdir and os.path.exists(tmpdir) and not os.path.isdir(tmpdir):
-                    self.logger.warning("'%s' is not a directory", tmpdir)
-                    if tmpdir == G_TMPDIR:
-                        raise IOError("Cannot use '{}' as tmpdir".format(tmpdir))
-                    tmpdir = G_TMPDIR
-                    if os.path.exists(tmpdir) and not os.path.isdir(tmpdir):
-                        raise IOError("Cannot use '{}' as tmpdir".format(tmpdir))
-                if tmpdir and not os.path.exists(tmpdir):
-                    os.makedirs(tmpdir)
+            if confcli and not os.path.isfile(confcli):
+                self.logger.warning("The file '%s' does not exist", confcli)
+                confcli = None
 
-                if confcli and not os.path.isfile(confcli):
-                    self.logger.warning("The file '%s' does not exist", confcli)
-                    confcli = None
+            if confsrv and not os.path.isfile(confsrv):
+                self.logger.warning("The file '%s' does not exist", confsrv)
+                confsrv = None
 
-                if confsrv and not os.path.isfile(confsrv):
-                    self.logger.warning("The file '%s' does not exist", confsrv)
-                    confsrv = None
+            if self.host not in ['127.0.0.1', '::1']:
+                self.logger.warning("Invalid value for 'bhost'. Must be '127.0.0.1' or '::1'. Falling back to '%s'", G_BURPHOST)
+                self.host = G_BURPHOST
 
-                if self.host not in ['127.0.0.1', '::1']:
-                    self.logger.warning("Invalid value for 'bhost'. Must be '127.0.0.1' or '::1'. Falling back to '%s'", G_BURPHOST)
-                    self.host = G_BURPHOST
-
-                self.burpconfcli = confcli
-                self.burpconfsrv = confsrv
-                self.tmpdir = tmpdir
+            self.burpconfcli = confcli
+            self.burpconfsrv = confsrv
+            self.tmpdir = tmpdir
 
         self.parser = Parser(self)
 
@@ -268,7 +270,7 @@ class Burp(BUIbackend):
         :param default: Default value in case the retrieved value is not correct
         :type default: str
         """
-        temp = self._safe_config_get(config.get, field, sect)
+        temp = config.safe_get(field, section=sect)
 
         if temp and not temp.startswith('/'):
             self.logger.warning("Please provide an absolute path for the '{}' option. Fallback to '{}'".format(field, default))
@@ -533,6 +535,11 @@ class Burp(BUIbackend):
                 backup[ckey[0]][ckey[1]] = int(val)
             else:
                 backup[ckey] = int(val)
+
+        # Needed for graphs
+        if 'received' not in backup:
+            backup['received'] = 1
+
         return backup
 
     def _parse_backup_log(self, filemap, number, client=None, agent=None):

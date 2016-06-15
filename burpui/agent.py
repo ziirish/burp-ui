@@ -12,16 +12,16 @@ from gevent.server import StreamServer
 from logging.handlers import RotatingFileHandler
 from .exceptions import BUIserverException
 from .misc.backend.interface import BUIbackend
-from ._compat import ConfigParser, pickle
-from .utils import BUIlogging
+from ._compat import pickle
+from .utils import BUIlogging, BUIConfig
 
-g_port = u'10000'
-g_bind = u'::'
-g_ssl = u''
-g_version = u'1'
-g_sslcert = u''
-g_sslkey = u''
-g_password = u'password'
+G_PORT = 10000
+G_BIND = u'::'
+G_SSL = False
+G_VERSION = 1
+G_SSLCERT = u''
+G_SSLKEY = u''
+G_PASSWORD = u'password'
 
 DISCLOSURE = 5
 
@@ -63,13 +63,18 @@ class BurpHandler(BUIbackend):
 class BUIAgent(BUIbackend, BUIlogging):
     BUIbackend.__abstractmethods__ = frozenset()
     defaults = {
-        'port': g_port, 'bind': g_bind,
-        'ssl': g_ssl, 'sslcert': g_sslcert, 'sslkey': g_sslkey,
-        'version': g_version, 'password': g_password
+        'Global': {
+            'port': G_PORT,
+            'bind': G_BIND,
+            'ssl': G_SSL,
+            'sslcert': G_SSLCERT,
+            'sslkey': G_SSLKEY,
+            'version': G_VERSION,
+            'password': G_PASSWORD,
+        },
     }
 
     def __init__(self, conf=None, level=0, logfile=None, debug=False):
-        self.conf = conf
         self.debug = debug
         self.padding = 1
         if level > logging.NOTSET:
@@ -102,28 +107,21 @@ class BUIAgent(BUIbackend, BUIlogging):
             handler.setLevel(lvl)
             handler.setFormatter(logging.Formatter(LOG_FORMAT))
             self.logger.addHandler(handler)
-            self._logger('info', 'conf: ' + self.conf)
+            self._logger('info', 'conf: ' + conf)
             self._logger('info', 'level: ' + logging.getLevelName(lvl))
-        if not self.conf:
+        if not conf:
             raise IOError('No configuration file found')
 
-        config = ConfigParser.ConfigParser(self.defaults)
-        with open(self.conf) as fp:
-            config.readfp(fp)
-            try:
-                self.port = self._safe_config_get(config.getint, 'port', 'Global', cast=int)
-                self.bind = self._safe_config_get(config.get, 'bind', 'Global')
-                self.vers = self._safe_config_get(config.getint, 'version', 'Global', cast=int)
-                try:
-                    self.ssl = config.getboolean('Global', 'ssl')
-                except ValueError:
-                    self._logger('warning', "Wrong value for 'ssl' key! Assuming 'false'")
-                    self.ssl = False
-                self.sslcert = self._safe_config_get(config.get, 'sslcert', 'Global')
-                self.sslkey = self._safe_config_get(config.get, 'sslkey', 'Global')
-                self.password = self._safe_config_get(config.get, 'password', 'Global')
-            except ConfigParser.NoOptionError as e:
-                raise e
+        # Raise exception if errors are encountered during parsing
+        self.conf = BUIConfig(conf, True, self.defaults)
+        self.conf.default_section('Global')
+        self.port = self.conf.safe_get('port', 'integer')
+        self.bind = self.conf.safe_get('bind')
+        self.vers = self.conf.safe_get('version', 'integer')
+        self.ssl = self.conf.safe_get('ssl', 'boolean')
+        self.sslcert = self.conf.safe_get('sslcert')
+        self.sslkey = self.conf.safe_get('sslkey')
+        self.password = self.conf.safe_get('password')
 
         self.cli = BurpHandler(self.vers, self.logger, self.conf)
         if not self.ssl:
