@@ -24,12 +24,12 @@ class BurpuiLiveTestCase(LiveServerTestCase):
     def create_app(self):
         conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../share/burpui/etc/burpui.sample.cfg')
         bui = BUIinit(debug=12, gunicorn=False, unittest=True)
+        bui.setup(conf)
         bui.config['DEBUG'] = False
         bui.config['TESTING'] = True
         bui.config['LOGIN_DISABLED'] = True
         bui.config['LIVESERVER_PORT'] = 5001
         bui.config['CFG'] = conf
-        bui.setup(conf)
         bui.login_manager.init_app(bui)
         return bui
 
@@ -88,10 +88,10 @@ class BurpuiAPITestCase(TestCase):
     def create_app(self):
         conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test2.cfg')
         bui = BUIinit(gunicorn=False, unittest=True)
+        bui.setup(conf)
         bui.config['TESTING'] = True
         bui.config['LOGIN_DISABLED'] = True
         bui.config['CFG'] = conf
-        bui.setup(conf)
         bui.login_manager.init_app(bui)
         self.bui = bui
         return bui
@@ -208,10 +208,10 @@ class BurpuiRoutesTestCase(TestCase):
     def create_app(self):
         conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test4.cfg')
         bui = BUIinit(conf, gunicorn=False, unittest=True)
+        bui.setup(conf)
         bui.config['TESTING'] = True
         bui.config['LOGIN_DISABLED'] = True
         bui.config['LIVESERVER_PORT'] = 5001
-        bui.setup(conf)
         bui.config['SECRET_KEY'] = 'toto'
         bui.login_manager.init_app(bui)
         return bui
@@ -289,7 +289,6 @@ class BurpuiACLTestCase(TestCase):
         bui.config['TESTING'] = True
         bui.config['LIVESERVER_PORT'] = 5001
         bui.config['WTF_CSRF_ENABLED'] = False
-        bui.config['SECRET_KEY'] = 'toto'
         bui.cli.port = 9999
         return bui
 
