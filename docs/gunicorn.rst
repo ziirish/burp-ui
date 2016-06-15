@@ -53,21 +53,21 @@ There is a sample configuration file available
 `here <https://git.ziirish.me/ziirish/burp-ui/blob/master/contrib/gunicorn.d/burp-ui>`__.
 
 If you are using this sample configuration file, make sure to create the
-*backup* user with the appropriate permissions first:
+*burp-ui* user with the appropriate permissions first:
 
 ::
 
     # install the gunicorn package
     apt-get install gunicorn
     # copy the gunicorn sample configuration
-    cp /usr/local/share/burpui/contrib/gunicorn/burp-ui /etc/gunicorn.d/
-    # create the backup user
-    useradd -r -d /var/lib/backup -c 'Backup daemon user' backup
+    cp /usr/local/share/burpui/contrib/gunicorn.d/burp-ui /etc/gunicorn.d/
+    # create the burp-ui user
+    useradd -r -d /var/lib/burp-ui -c 'Burp-UI daemon user' burp-ui
     mkdir /etc/burp
     # copy the burp-ui sample configuration file
     cp /usr/local/share/burpui/etc/burpui.sample.cfg /etc/burp/burpui.cfg
     mkdir -p /var/log/gunicorn
-    chown -R backup: /var/log/gunicorn
+    chown -R burp-ui: /var/log/gunicorn
 
 
 You will also need a custom client configuration and you will have to create the
@@ -83,7 +83,7 @@ certificates accordingly:
     server = 127.0.0.1
     password = abcdefgh
     cname = bui-agent1
-    pidfile = /var/lib/backup/bui-agent1.client.pid
+    pidfile = /var/lib/burp-ui/bui-agent1.client.pid
     syslog = 0
     stdout = 1
     progress_counter = 1
@@ -96,10 +96,10 @@ certificates accordingly:
     EOF
     # generate the certificates
     burp_ca --name bui-agent1 --ca burpCA --key --request --sign --batch
-    cp /etc/burp/ssl_cert_ca.pem /var/lib/backup/
-    cp -a /etc/burp/CA/bui-agent1.crt /var/lib/backup/ssl_cert-client.pem
-    cp -a /etc/burp/CA/bui-agent1.key /var/lib/backup/ssl_cert-client.key
-    chown -R backup: /var/lib/backup/
+    cp /etc/burp/ssl_cert_ca.pem /var/lib/burp-ui/
+    cp -a /etc/burp/CA/bui-agent1.crt /var/lib/burp-ui/ssl_cert-client.pem
+    cp -a /etc/burp/CA/bui-agent1.key /var/lib/burp-ui/ssl_cert-client.key
+    chown -R burp-ui: /var/lib/burp-ui/
 
 
 Now you need to add the *bui-agent1* client to the authorized clients:
@@ -110,7 +110,7 @@ Now you need to add the *bui-agent1* client to the authorized clients:
     echo "restore_client = bui-agent1" >>/etc/burp/burp-server.conf
 
 
-Finally, make sure you set ``bconfcli: /var/lib/backup/burp.conf`` in your 
+Finally, make sure you set ``bconfcli: /var/lib/burp-ui/burp.conf`` in your 
 `Burp-UI`_ configuration filei (*/etc/burp/burpui.cfg*), and then you can
 restart `Gunicorn`_:
 
@@ -127,16 +127,16 @@ First of all, add the following lines in your */etc/burp/burp-server.conf*:
 
 ::
 
-    user = backup
-    group = backup
+    user = burp-ui
+    group = burp-ui
 
 
 Then you need to fix some permissions:
 
 ::
 
-    chown -R backup: /etc/burp/{burp-server.conf,burpui.cfg,CA,CA.cnf,clientconfdir,dhfile.pem,ssl_cert_ca.pem,ssl_cert-server.key,ssl_cert-server.pem} /var/spool/burp
-    chgrp backup /etc/burp
+    chown -R burp-ui: /etc/burp/{burp-server.conf,burpui.cfg,CA,CA.cnf,clientconfdir,dhfile.pem,ssl_cert_ca.pem,ssl_cert-server.key,ssl_cert-server.pem} /var/spool/burp
+    chgrp burp-ui /etc/burp
     chmod g+rwx /etc/burp
 
 
