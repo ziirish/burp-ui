@@ -18,7 +18,7 @@ class BasicLoader(BUIloader):
         """
         self.app = app
         self.users = {
-            'admin': 'admin'
+            'admin': generate_password_hash('admin')
         }
         conf = self.app.conf
         if 'BASIC' in conf.options:

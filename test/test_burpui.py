@@ -12,7 +12,7 @@ else:
     from urllib2 import urlopen
 
 from flask_testing import LiveServerTestCase, TestCase
-from flask import url_for
+from flask import url_for, session
 
 sys.path.append('{0}/..'.format(os.path.join(os.path.dirname(os.path.realpath(__file__)))))
 
@@ -212,6 +212,7 @@ class BurpuiRoutesTestCase(TestCase):
         bui.config['LOGIN_DISABLED'] = True
         bui.config['LIVESERVER_PORT'] = 5001
         bui.setup(conf)
+        bui.config['SECRET_KEY'] = 'toto'
         bui.login_manager.init_app(bui)
         return bui
 
@@ -279,33 +280,45 @@ class BurpuiACLTestCase(TestCase):
             password=password
         ), follow_redirects=True)
 
+    def logout(self):
+        return self.client.get(url_for('view.logout'), follow_redirects=True)
+
     def create_app(self):
         conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test6.cfg')
         bui = BUIinit(conf, False, None, False, unittest=True)
         bui.config['TESTING'] = True
         bui.config['LIVESERVER_PORT'] = 5001
         bui.config['WTF_CSRF_ENABLED'] = False
+        bui.config['SECRET_KEY'] = 'toto'
         bui.cli.port = 9999
         return bui
 
     def test_login_ko(self):
-        rv = self.login('admin', 'toto')
-        assert 'Wrong username or password' in rv.data.decode('utf-8')
+        with self.client:
+            rv = self.login('admin', 'toto')
+            assert 'Wrong username or password' in rv.data.decode('utf-8')
+            self.logout()
 
     def test_config_render(self):
-        rv = self.login('admin', 'admin')
-        response = self.client.get(url_for('view.settings'))
-        assert 'Burp Configuration' in response.data.decode('utf-8')
+        with self.client:
+            rv = self.login('admin', 'admin')
+            response = self.client.get(url_for('view.settings'))
+            assert 'Burp Configuration' in response.data.decode('utf-8')
+            self.logout()
 
     def test_config_render_ko(self):
-        rv = self.login('user1', 'password')
-        response = self.client.get(url_for('view.settings'))
-        self.assert403(response)
+        with self.client:
+            rv = self.login('user1', 'password')
+            response = self.client.get(url_for('view.settings'))
+            self.assert403(response)
+            self.logout()
 
     def test_cli_settings_ko(self):
-        rv = self.login('user1', 'password')
-        response = self.client.get(url_for('api.client_settings', client='toto'))
-        self.assert403(response)
+        with self.client:
+            rv = self.login('user1', 'password')
+            response = self.client.get(url_for('api.client_settings', client='toto'))
+            self.assert403(response)
+            self.logout()
 
 
 class BurpuiTestInit(TestCase):

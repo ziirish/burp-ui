@@ -217,13 +217,14 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
     app.setup(app.config['CFG'])
 
     # manage application secret key
-    if not app.secret_key or app.secret_key.lower() == 'random' and \
-            not gunicorn:
+    if app.secret_key and (app.secret_key.lower() == 'none' or \
+            (app.secret_key.lower() == 'random' and gunicorn)):
+        logger.warning('Your setup is not secure! Please consider setting a'
+                       ' secret key in your configuration file')
+        app.secret_key = 'Burp-UI'
+    if not app.secret_key or app.secret_key.lower() == 'random':
         from base64 import b64encode
         app.secret_key = b64encode(os.urandom(256))
-    elif app.secret_key.lower() == 'none' or \
-            (app.secret_key.lower() == 'random' and gunicorn):
-        app.secret_key = None
 
     app.wsgi_app = ReverseProxied(app.wsgi_app, app)
 

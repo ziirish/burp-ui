@@ -230,13 +230,11 @@ class BUIServer(Flask):
             'appsecret',
             section='Security'
         )
+        days = self.conf.safe_get('cookietime', 'integer', section='Security') \
+            or 0
         self.config['REMEMBER_COOKIE_DURATION'] = \
             self.config['PERMANENT_SESSION_LIFETIME'] = timedelta(
-                days=self.conf.safe_get(
-                    'cookietime',
-                    'integer',
-                    section='Security'
-                )
+                days=days
         )
 
         self.config['STANDALONE'] = self.standalone

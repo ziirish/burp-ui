@@ -37,7 +37,7 @@ class ACLloader(BUIaclLoader):
                     rec = [lit]
                 self.clients[opt] = rec
 
-        if adms:
+        if adms and adms != [None]:
             self.admins = adms
         self._acl = BasicACL(self)
         self.logger.debug('admins: ' + str(self.admins))
