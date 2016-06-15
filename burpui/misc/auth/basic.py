@@ -1,5 +1,6 @@
 # -*- coding: utf8 -*-
 import re
+import codecs
 
 from .interface import BUIhandler, BUIuser, BUIloader
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -9,49 +10,64 @@ class BasicLoader(BUIloader):
     """The :class:`burpui.misc.auth.basic.BasicLoader` class loads the *Basic*
     users.
     """
+    section = 'BASIC'
+
     def __init__(self, app=None, handler=None):
         """:func:`burpui.misc.auth.basic.BasicLoader.__init__` loads users from
         the configuration file.
 
         :param app: Instance of the app we are running in
         :type app: :class:`burpui.server.BUIServer`
+
+        :param handler: Instance of handler
+        :type handler: :class:`burpui.misc.auth.interface.BUIhandler`
         """
         self.app = app
+        self.conf = self.app.conf
+        self.handler = handler
+        self.handler.add_user = self.add_user
+        # handler.del_user = True
+        # handler.change_password = True
+        self._load_users()
+
+    def _load_users(self):
         self.users = {
             'admin': generate_password_hash('admin')
         }
-        conf = self.app.conf
-        if 'BASIC' in conf.options:
+        if self.section in self.conf.options:
             # check passwords are salted
             salted = False
-            if len(conf.options.comments['BASIC']) > 0:
+            if len(self.conf.options.comments[self.section]) > 0:
                 if re.match(
                         r'^\s*#+\s*@salted@',
-                        conf.options.comments['BASIC'][-1]):
+                        self.conf.options.comments[self.section][-1]):
                     salted = True
             self.users = {}
-            for opt in conf.options.get('BASIC').keys():
+            for opt in self.conf.options.get(self.section).keys():
                 if opt == 'priority':
                     # Maybe the handler argument is None, maybe the 'priority'
                     # option is missing. We don't care.
                     try:
-                        handler.priority = conf.safe_get(opt, section='BASIC')
+                        self.handler.priority = self.conf.safe_get(
+                            opt,
+                            section=self.section
+                        )
                     except:
                         pass
                     continue  # pragma: no cover
-                pwd = conf.safe_get(opt, section='BASIC')
+                pwd = self.conf.safe_get(opt, section=self.section)
                 if not salted:
                     pwd = generate_password_hash(pwd)
-                    conf.options['BASIC'][opt] = pwd
+                    self.conf.options[self.section][opt] = pwd
                 self.users[opt] = pwd
                 self.logger.info('Loading user: {}'.format(opt))
 
             if not salted:
-                conf.options.comments['BASIC'].append(
+                self.conf.options.comments[self.section].append(
                     '# Please DO NOT touch the following line'
                 )
-                conf.options.comments['BASIC'].append('# @salted@')
-                conf.options.write()
+                self.conf.options.comments[self.section].append('# @salted@')
+                self.conf.options.write()
 
     def fetch(self, uid=None):
         """:func:`burpui.misc.auth.basic.BasicLoader.fetch` searches for a user
@@ -81,6 +97,46 @@ class BasicLoader(BUIloader):
         """
         return uid in self.users and \
             check_password_hash(self.users[uid], passwd)
+
+    def _setup_users(self):
+        """Setup user management"""
+        if self.section not in self.conf.options:
+            # look for the section in the comments
+            conffile = self.conf.options.filename
+            ori = []
+            with codecs.open(conffile, 'r', 'utf-8') as config:
+                ori = [x.rstrip('\n') for x in config.readlines()]
+            if ori:
+                with codecs.open(conffile, 'w', 'utf-8') as config:
+                    found = False
+                    for line in ori:
+                        if re.match(r'^\s*#+\s*\[{}\]'.format(self.section),
+                                    line):
+                            config.write('[{}]\n'.format(self.section))
+                            found = True
+                        else:
+                            config.write('{}\n'.format(line))
+
+                    if not found:
+                        config.write(
+                            '# Please DO NOT touch the following line\n'
+                        )
+                        config.write('# @salted@\n')
+                        config.write('[{}]\n'.format(self.section))
+
+            self.conf.options.reload()
+
+    def add_user(self, user, passwd):
+        """Add a user"""
+        self._setup_users()
+        if user in self.users:
+            self.logger.warning("user '{}' already exists".format(user))
+            return False
+        pwd = generate_password_hash(passwd)
+        self.conf.options[self.section][user] = pwd
+        self.conf.options.write()
+        self._load_users()
+        return True
 
 
 class UserHandler(BUIhandler):

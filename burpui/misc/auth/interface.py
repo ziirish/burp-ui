@@ -27,6 +27,10 @@ class BUIhandler:
 
     priority = 0
 
+    add_user = False
+    del_user = False
+    change_password = False
+
     def __init__(self, app=None):
         """Constructor"""
         pass  # pragma: no cover
