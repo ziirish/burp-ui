@@ -765,7 +765,7 @@ class Parser(Doc):
             with codecs.open(path, 'w', 'utf-8') as fil:
                 fil.write('backup = {}\n'.format(backup))
                 fil.write('regex = {}\n'.format(full_reg.rstrip('|')))
-                if strip:
+                if strip and strip > 0:  # 0 is False, but we are sure now
                     fil.write('strip = {}\n'.format(strip))
                 if prefix:
                     fil.write('restoreprefix = {}\n'.format(prefix))

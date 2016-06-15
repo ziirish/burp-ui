@@ -947,9 +947,9 @@ class Burp(BUIbackend):
         elif self.burpconfcli:
             cmd.append('-c')
             cmd.append(self.burpconfcli)
-        if strip and strip.isdigit() and int(strip) > 0:
+        if strip and strip > 0:  # 0 is False, but we are sure now
             cmd.append('-s')
-            cmd.append(strip)
+            cmd.append(str(strip))
         self.logger.debug(cmd)
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         out, _ = proc.communicate()
