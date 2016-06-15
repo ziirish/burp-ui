@@ -1,6 +1,8 @@
 # -*- coding: utf8 -*-
+import re
+
 from .interface import BUIhandler, BUIuser, BUIloader
-from ..._compat import ConfigParser
+from werkzeug.security import check_password_hash, generate_password_hash
 
 
 class BasicLoader(BUIloader):
@@ -18,24 +20,38 @@ class BasicLoader(BUIloader):
         self.users = {
             'admin': 'admin'
         }
-        conf = self.app.config['CFG']
-        c = ConfigParser.ConfigParser()
-        c.optionxform = str
-        with open(conf) as fp:
-            c.readfp(fp)
-            if c.has_section('BASIC'):
-                self.users = {}
-                for opt in c.options('BASIC'):
-                    if opt == 'priority':
-                        # Maybe the handler argument is None, maybe the 'priority'
-                        # option is missing. We don't care.
-                        try:
-                            handler.priority = c.getint('BASIC', opt)
-                        except:
-                            pass
-                        continue  # pragma: no cover
-                    self.users[opt] = c.get('BASIC', opt)
-                    self.logger.info('Loading user: {}'.format(opt))
+        conf = self.app.conf
+        if 'BASIC' in conf.options:
+            # check passwords are salted
+            salted = False
+            if len(conf.options.comments['BASIC']) > 0:
+                if re.match(
+                        r'^\s*#+\s*@salted@',
+                        conf.options.comments['BASIC'][-1]):
+                    salted = True
+            self.users = {}
+            for opt in conf.options.get('BASIC').keys():
+                if opt == 'priority':
+                    # Maybe the handler argument is None, maybe the 'priority'
+                    # option is missing. We don't care.
+                    try:
+                        handler.priority = conf.safe_get(opt, section='BASIC')
+                    except:
+                        pass
+                    continue  # pragma: no cover
+                pwd = conf.safe_get(opt, section='BASIC')
+                if not salted:
+                    pwd = generate_password_hash(pwd)
+                    conf.options['BASIC'][opt] = pwd
+                self.users[opt] = pwd
+                self.logger.info('Loading user: {}'.format(opt))
+
+            if not salted:
+                conf.options.comments['BASIC'].append(
+                    '# Please DO NOT touch the following line'
+                )
+                conf.options.comments['BASIC'].append('# @salted@')
+                conf.options.write()
 
     def fetch(self, uid=None):
         """:func:`burpui.misc.auth.basic.BasicLoader.fetch` searches for a user
@@ -63,7 +79,8 @@ class BasicLoader(BUIloader):
 
         :returns: True if there is a match, otherwise False
         """
-        return uid in self.users and self.users[uid] == passwd
+        return uid in self.users and \
+            check_password_hash(self.users[uid], passwd)
 
 
 class UserHandler(BUIhandler):
