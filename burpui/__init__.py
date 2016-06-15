@@ -217,8 +217,8 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
     app.setup(app.config['CFG'])
 
     # manage application secret key
-    if app.secret_key and (app.secret_key.lower() == 'none' or \
-            (app.secret_key.lower() == 'random' and gunicorn)):
+    if app.secret_key and (app.secret_key.lower() == 'none' or
+                           (app.secret_key.lower() == 'random' and gunicorn)):
         logger.warning('Your setup is not secure! Please consider setting a'
                        ' secret key in your configuration file')
         app.secret_key = 'Burp-UI'
