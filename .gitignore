@@ -1,6 +1,6 @@
 *.pyc
 *.swp
-burpui-dev.cfg
+burpui-dev.cfg*
 burpui/RELEASE
 devel.sh
 *.egg*
