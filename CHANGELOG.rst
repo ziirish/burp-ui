@@ -1,6 +1,16 @@
 Changelog
 =========
 
+Current
+-------
+
+- **BREAKING**: New configuration file format to allow further improvements (The conversion is automatic)
+- **BREAKING**: Passwords are now *salted* for the *BASIC* authentication backend
+- Add: `client certificate revocation <https://git.ziirish.me/ziirish/burp-ui/issues/131>`_
+- Fix: issue `#134 <https://git.ziirish.me/ziirish/burp-ui/issues/134>`_
+- Fix: issue `#135 <https://git.ziirish.me/ziirish/burp-ui/issues/135>`_
+- `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/v0.2.1...master>`__
+
 0.2.1 (05/17/2016)
 ------------------
 
