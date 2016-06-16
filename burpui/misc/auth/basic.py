@@ -10,7 +10,7 @@ class BasicLoader(BUIloader):
     """The :class:`burpui.misc.auth.basic.BasicLoader` class loads the *Basic*
     users.
     """
-    section = 'BASIC'
+    section = name = 'BASIC'
 
     def __init__(self, app=None, handler=None):
         """:func:`burpui.misc.auth.basic.BasicLoader.__init__` loads users from
@@ -26,8 +26,8 @@ class BasicLoader(BUIloader):
         self.conf = self.app.conf
         self.handler = handler
         self.handler.add_user = self.add_user
-        # handler.del_user = True
-        # handler.change_password = True
+        self.handler.del_user = self.del_user
+        self.handler.change_password = self.change_password
         self._load_users()
 
     def _load_users(self):
@@ -51,7 +51,7 @@ class BasicLoader(BUIloader):
                         self.handler.priority = self.conf.safe_get(
                             opt,
                             section=self.section
-                        )
+                        ) or 0
                     except:
                         pass
                     continue  # pragma: no cover
@@ -103,6 +103,7 @@ class BasicLoader(BUIloader):
         if self.section not in self.conf.options:
             # look for the section in the comments
             conffile = self.conf.options.filename
+            last = ''
             ori = []
             with codecs.open(conffile, 'r', 'utf-8') as config:
                 ori = [x.rstrip('\n') for x in config.readlines()]
@@ -112,10 +113,18 @@ class BasicLoader(BUIloader):
                     for line in ori:
                         if re.match(r'^\s*#+\s*\[{}\]'.format(self.section),
                                     line):
+                            if not last or \
+                                    not re.match(r'^\s*#+\s*@salted@', last):
+                                config.write(
+                                    '# Please DO NOT touch the following line\n'
+                                )
+                                config.write('# @salted@\n')
+
                             config.write('[{}]\n'.format(self.section))
                             found = True
                         else:
                             config.write('{}\n'.format(line))
+                            last = line
 
                     if not found:
                         config.write(
@@ -131,6 +140,35 @@ class BasicLoader(BUIloader):
         self._setup_users()
         if user in self.users:
             self.logger.warning("user '{}' already exists".format(user))
+            return False
+        pwd = generate_password_hash(passwd)
+        self.conf.options[self.section][user] = pwd
+        self.conf.options.write()
+        self._load_users()
+        return True
+
+    def del_user(self, user):
+        """Delete a user"""
+        self._setup_users()
+        if user not in self.users:
+            self.logger.error("user '{}' does not exist".format(user))
+            return False
+        if user == 'admin' and len(self.users.keys()) == 1:
+            self.logger.warning('trying to delete the admin account!')
+            return False
+        del self.conf.options[self.section][user]
+        self.conf.options.write()
+        self._load_users()
+        return True
+
+    def change_password(self, user, passwd):
+        """Change a user password"""
+        self._setup_users()
+        if user not in self.users:
+            self.logger.error("user '{}' does not exist".format(user))
+            return False
+        if check_password_hash(self.users[user], passwd):
+            self.logger.warning('password is the same')
             return False
         pwd = generate_password_hash(passwd)
         self.conf.options[self.section][user] = pwd
@@ -168,9 +206,9 @@ class BasicUser(BUIuser):
             self.id = res
             self.active = True
 
-    def login(self, name=None, passwd=None):
+    def login(self, passwd=None):
         """See :func:`burpui.misc.auth.interface.BUIuser.login`"""
-        self.authenticated = self.basic.check(name, passwd)
+        self.authenticated = self.basic.check(self.name, passwd)
         return self.authenticated
 
     def get_id(self):
