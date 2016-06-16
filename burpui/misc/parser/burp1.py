@@ -19,6 +19,7 @@ from .doc import Doc
 from .utils import Config, File
 from .openssl import OSSLConf, OSSLAuth
 from ...exceptions import BUIserverException
+from ...utils import NOTIF_ERROR, NOTIF_OK, NOTIF_WARN
 
 
 class Parser(Doc):
@@ -376,11 +377,11 @@ class Parser(Doc):
         revoked = False
         removed = False
         if not client:
-            return [[2, "No client provided"]]
+            return [[NOTIF_ERROR, "No client provided"]]
         try:
             path = os.path.join(self.clientconfdir, client)
             os.unlink(path)
-            res.append([0, "'{}' successfully removed".format(client)])
+            res.append([NOTIF_OK, "'{}' successfully removed".format(client)])
             removed = True
 
             if client in self.client_conf:
@@ -392,15 +393,15 @@ class Parser(Doc):
                 del self.filecache[path]
 
         except OSError as exp:
-            res.append([2, str(exp)])
+            res.append([NOTIF_ERROR, str(exp)])
 
         if revoke and self.backend.revocation_enabled() and removed:
             # revoke cert
             revoked = self.openssl_auth.revoke_client(client)
             if revoked:
-                res.append([0, "'{}' successfully revoked".format(client)])
+                res.append([NOTIF_OK, "'{}' successfully revoked".format(client)])
             else:
-                res.append([2, "Error while revoking the certificate"])
+                res.append([NOTIF_ERROR, "Error while revoking the certificate"])
 
         if delcert:
             ca_dir = self.openssl_conf.values.get('CA_DIR')
@@ -408,13 +409,13 @@ class Parser(Doc):
             try:
                 os.unlink('{}.csr'.format(path))
             except OSError as exp:
-                res.append([1, str(exp)])
+                res.append([NOTIF_WARN, str(exp)])
             try:
                 os.unlink('{}.crt'.format(path))
             except OSError as exp:
-                res.append([2, str(exp)])
+                res.append([NOTIF_ERROR, str(exp)])
             if not revoked:
-                res.append([1, "The client certificate may still be used!"])
+                res.append([NOTIF_WARN, "The client certificate may still be used!"])
 
         self._refresh_cache()
         return res
@@ -525,7 +526,7 @@ class Parser(Doc):
         if conf and not conf.startswith('/'):
             conf = os.path.join(self.clientconfdir, conf)
         if not conf and not client:
-            return [[2, 'Sorry, no client defined']]
+            return [[NOTIF_ERROR, 'Sorry, no client defined']]
         elif client and not conf:
             conf = os.path.join(self.clientconfdir, client)
         ret = self.store_conf(data, conf, client, mode='cli')
@@ -542,12 +543,12 @@ class Parser(Doc):
             if mconf != self.conf and not mconf.startswith('/'):
                 mconf = os.path.join(self.root, mconf)
         if not mconf:
-            return [[1, 'Sorry, no configuration file defined']]
+            return [[NOTIF_WARN, 'Sorry, no configuration file defined']]
 
         if not self._is_secure_path(mconf):
             return [
                 [
-                    2,
+                    NOTIF_ERROR,
                     'Sorry you are not allowed to access this path:'
                     ' {}'.format(mconf)
                 ]
@@ -558,7 +559,7 @@ class Parser(Doc):
             try:
                 os.makedirs(dirname)
             except OSError as exp:
-                return [[1, str(exp)]]
+                return [[NOTIF_WARN, str(exp)]]
 
         ref = '{}.bui.init.back~'.format(mconf)
         bak = '{}.back~'.format(mconf)
@@ -567,12 +568,12 @@ class Parser(Doc):
             try:
                 shutil.copy(mconf, ref)
             except IOError as exp:
-                return [[2, str(exp)]]
+                return [[NOTIF_ERROR, str(exp)]]
         elif os.path.isfile(mconf):
             try:
                 shutil.copy(mconf, bak)
             except IOError as exp:
-                return [[2, str(exp)]]
+                return [[NOTIF_ERROR, str(exp)]]
 
         if client:
             conffile = self.client_conf[client].get_file(mconf)
@@ -593,7 +594,7 @@ class Parser(Doc):
                         typ = 'integers'
                     # highlight the wrong parameters
                     errs.append([
-                        2,
+                        NOTIF_ERROR,
                         "Sorry, the file '{}' does not exist".format(dat),
                         key,
                         typ
@@ -671,9 +672,9 @@ class Parser(Doc):
                     if inc not in already_file:
                         self._write_key(fil, '.', inc, conf=conffile)
         except Exception as exp:
-            return [[2, str(exp)]]
+            return [[NOTIF_ERROR, str(exp)]]
 
-        return [[0, 'Configuration successfully saved.']]
+        return [[NOTIF_OK, 'Configuration successfully saved.']]
 
     def cancel_restore(self, name=None):
         """See :func:`burpui.misc.parser.interface.BUIparser.cancel_restore`"""
@@ -682,10 +683,10 @@ class Parser(Doc):
             if os.path.exists(path):
                 os.unlink(path)
             else:
-                return [1, 'There is no restoration scheduled for this client']
+                return [NOTIF_WARN, 'There is no restoration scheduled for this client']
         except OSError as exp:
-            return [2, 'Unable to cancel restoration: {}'.format(str(exp))]
-        return [0, 'Restoration successfully canceled']
+            return [NOTIF_ERROR, 'Unable to cancel restoration: {}'.format(str(exp))]
+        return [NOTIF_OK, 'Restoration successfully canceled']
 
     def read_restore(self, name=None):
         """See :func:`burpui.misc.parser.interface.BUIparser.read_restore`"""
@@ -774,11 +775,11 @@ class Parser(Doc):
                 if restoreto:
                     fil.write('orig_client = {}\n'.format(name))
 
-            return [0, 'Server-initiated restoration successfully scheduled']
+            return [NOTIF_OK, 'Server-initiated restoration successfully scheduled']
 
         except Exception as exp:
             return [
-                2,
+                NOTIF_ERROR,
                 "Unable to schedule a server-initiated restoration:"
                 " {}".format(str(exp))
             ]
@@ -790,10 +791,10 @@ class Parser(Doc):
             if os.path.exists(path):
                 os.unlink(path)
             else:
-                return [1, 'There is no backup scheduled for this client']
+                return [NOTIF_WARN, 'There is no backup scheduled for this client']
         except OSError as exp:
-            return [2, 'Unable to cancel backup: {}'.format(str(exp))]
-        return [0, 'Backup successfully canceled']
+            return [NOTIF_ERROR, 'Unable to cancel backup: {}'.format(str(exp))]
+        return [NOTIF_OK, 'Backup successfully canceled']
 
     def read_backup(self, name=None):
         """See :func:`burpui.misc.parser.interface.BUIparser.read_backup`"""
@@ -818,8 +819,8 @@ class Parser(Doc):
                 os.utime(path, None)
         except OSError as exp:
             return [
-                2,
+                NOTIF_ERROR,
                 'Unable to schedule a server-initiated backup:'
                 ' {}'.format(str(exp))
             ]
-        return [0, 'Backup successfully scheduled']
+        return [NOTIF_OK, 'Backup successfully scheduled']
