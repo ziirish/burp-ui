@@ -11,7 +11,7 @@ from six import iteritems
 
 from .interface import BUIbackend
 from ...exceptions import BUIserverException
-from ..._compat import IS_GUNICORN, ConfigParser, pickle
+from ..._compat import IS_GUNICORN, pickle
 from ...utils import implement
 
 
@@ -108,6 +108,9 @@ class Burp(BUIbackend):
         """
         :param server: Application context
         :type server: :class:`burpui.server.BUIServer`
+
+        :param conf: Configuration
+        :type conf: :class:`burpui.utils.BUIConfig`
         """
         self.app = server
         self.acl_handler = server.acl_handler
@@ -115,27 +118,22 @@ class Burp(BUIbackend):
         self.app.config['SERVERS'] = []
         self.running = {}
         if conf:
-            config = ConfigParser.ConfigParser()
-            with open(conf) as fp:
-                config.readfp(fp)
-                for sec in config.sections():
-                    r = re.match('^Agent:(.+)$', sec)
-                    if r:
-                        ssl = False
-                        host = self._safe_config_get(config.get, 'host', sec)
-                        port = self._safe_config_get(config.getint, 'port', sec, cast=int)
-                        password = self._safe_config_get(config.get, 'password', sec)
-                        ssl = self._safe_config_get(config.getboolean, 'ssl', sec, cast=bool)
-                        timeout = self._safe_config_get(config.getint, 'timeout', sec, cast=int)
+            for sect in conf.options.keys():
+                r = re.match('^Agent:(.+)$', sect)
+                if r:
+                    host = conf.safe_get('host', section=sect)
+                    port = conf.safe_get('port', 'integer', section=sect) or 10000
+                    password = conf.safe_get('password', section=sect)
+                    ssl = conf.safe_get('ssl', 'boolean', section=sect) or False
+                    timeout = conf.safe_get('timeout', 'integer', section=sect) or 5
 
-                        self.servers[r.group(1)] = NClient(self.app, host, port, password, ssl, timeout)
+                    self.servers[r.group(1)] = NClient(self.app, host, port, password, ssl, timeout)
+                    self.app.config['SERVERS'].append(r.group(1))
 
         if not self.servers:
             self.logger.error('No agent configured!')
         else:
             self.logger.debug(self.servers)
-        for (key, serv) in iteritems(self.servers):
-            self.app.config['SERVERS'].append(key)
 
     def __getattribute__(self, name):
         # always return this value because we need it and if we don't do that

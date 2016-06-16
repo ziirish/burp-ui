@@ -222,7 +222,7 @@ def basic_login_from_request(request, app):
         if auth:
             app.logger.debug('Found user: {}'.format(auth.username))
             user = app.uhandler.user(auth.username)
-            if user.active and user.login(auth.username, auth.password):
+            if user.active and user.login(auth.password):
                 from flask_login import login_user
                 login_user(user)
                 app.logger.debug('Successfully logged in')

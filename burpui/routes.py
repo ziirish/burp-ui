@@ -262,7 +262,7 @@ def login():
     form = LoginForm(request.form)
     if form.validate_on_submit():
         user = view.bui.uhandler.user(form.username.data)
-        if user.is_active and user.login(form.username.data, passwd=form.password.data):
+        if user.is_active and user.login(form.password.data):
             login_user(user, remember=form.remember.data)
             flash('Logged in successfully', 'success')
             return redirect(request.args.get("next") or url_for('.home'))

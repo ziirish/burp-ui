@@ -56,12 +56,9 @@ class BUIuser(UserMixin):
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def login(self, name=None, passwd=None):
+    def login(self, passwd=None):
         """The :func:`burpui.misc.auth.interface.BUIuser.login` function
         checks if the profided username and password match.
-
-        :param name: Username
-        :type name: str
 
         :param passwd: Password
         :type passwd: str

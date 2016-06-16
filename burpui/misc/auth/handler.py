@@ -56,20 +56,20 @@ class UserHandler(BUIuser):
                 self.active = True
                 break
 
-    def login(self, name=None, passwd=None):
+    def login(self, passwd=None):
         """See :func:`burpui.misc.auth.interface.BUIuser.login`"""
         if not self.real:
             self.authenticated = False
             for back in self.backends:
-                u = back.user(name)
+                u = back.user(self.name)
                 res = u.get_id()
-                if u.login(name, passwd):
+                if u.login(passwd):
                     self.authenticated = True
                     self.id = res
                     self.real = u
                     break
         elif self.real:  # pragma: no cover
-            self.authenticated = self.real.login(name, passwd)
+            self.authenticated = self.real.login(passwd)
         sess = session._get_current_object()
         sess['authenticated'] = self.authenticated
         return self.authenticated

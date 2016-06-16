@@ -2,7 +2,6 @@
 from six import viewitems
 
 from .interface import BUIhandler, BUIuser, BUIloader
-from ..._compat import ConfigParser
 
 import ssl
 
@@ -16,6 +15,8 @@ class LdapLoader(BUIloader):
     """The :class:`burpui.misc.auth.ldap.LdapLoader` handles searching for and
     binding as a :class:`burpui.misc.auth.ldap.LdapUser` user.
     """
+    section = name = 'LDAP'
+
     def __init__(self, app=None, handler=None):
         """:func:`burpui.misc.auth.ldap.LdapLoader.__init__` establishes a
         connection to the LDAP server.
@@ -24,19 +25,21 @@ class LdapLoader(BUIloader):
         :type app: :class:`burpui.server.BUIServer`
         """
         self.app = app
-        conf = self.app.config['CFG']
+        conf = self.app.conf
         defaults = {
-            'host': 'localhost',
-            'port': None,
-            'encryption': None,
-            'binddn': None,
-            'bindpw': None,
-            'filter': None,
-            'base': None,
-            'searchattr': 'uid',
-            'validate': 'none',
-            'version': None,
-            'cafile': None
+            'LDAP': {
+                'host': 'localhost',
+                'port': None,
+                'encryption': None,
+                'binddn': None,
+                'bindpw': None,
+                'filter': None,
+                'base': None,
+                'searchattr': 'uid',
+                'validate': 'none',
+                'version': None,
+                'cafile': None,
+            }
         }
         mapping = {
             'host': 'host',
@@ -51,22 +54,19 @@ class LdapLoader(BUIloader):
             'version': 'version',
             'cafile': 'cafile'
         }
-        c = ConfigParser.ConfigParser(defaults)
-        with open(conf) as fp:
-            c.readfp(fp)
-            # Maybe the handler argument is None, maybe the 'priority'
-            # option is missing. We don't care.
-            try:
-                handler.priority = c.getint('LDAP', 'priority')
-            except:
-                pass
-            for (opt, key) in viewitems(mapping):
-                try:
-                    setattr(self, opt, c.get('LDAP', key))
-                except ConfigParser.NoOptionError as e:
-                    self.logger.info(str(e))
-                except ConfigParser.NoSectionError as e:
-                    self.logger.error(str(e))
+        conf.update_defaults(defaults)
+        # Maybe the handler argument is None, maybe the 'priority'
+        # option is missing. We don't care.
+        try:
+            handler.priority = conf.safe_get(
+                'priority',
+                'integer',
+                section=self.section
+            ) or 0
+        except:
+            pass
+        for (opt, key) in viewitems(mapping):
+            setattr(self, opt, conf.safe_get(key, 'string', section=self.section))
 
         if self.validate and self.validate.lower() in ['none', 'optional', 'required']:
             self.validate = getattr(ssl, 'CERT_{}'.format(self.validate.upper()))
@@ -228,12 +228,9 @@ class LdapUser(BUIuser):
             self.id = found['dn']
             self.active = True
 
-    def login(self, name=None, passwd=None):
+    def login(self, passwd=None):
         """:func:`burpui.misc.auth.ldap.LdapUser.login` function finds a user in
         the LDAP server and authenticates that user using an LDAP bind.
-
-        :param name: login name of the user to authenticate as
-        :type name: str
 
         :param passwd: password to bind to the LDAP server with
         :type passwd: str
@@ -242,7 +239,7 @@ class LdapUser(BUIuser):
                   False if found but bind failed;
                   otherwise de-activates the user and returns False
         """
-        if self.ldap.fetch(name):
+        if self.ldap.fetch(self.name):
             self.authenticated = self.ldap.check(self.id, passwd)
             return self.authenticated
         else:
