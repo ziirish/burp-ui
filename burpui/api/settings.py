@@ -11,6 +11,7 @@ from . import api
 from .custom import Resource
 from .custom.inputs import boolean
 from .._compat import unquote
+from ..utils import NOTIF_INFO
 from flask import jsonify, request, url_for
 from werkzeug.datastructures import ImmutableMultiDict
 
@@ -285,9 +286,9 @@ class ClientSettings(Resource):
         #    return redirect(request.referrer)
         noti = api.bui.cli.store_conf_cli(ImmutableMultiDict(), newclient, None, server)
         if server:
-            noti.append([3, '<a href="{}">Click here</a> to edit \'{}\' configuration'.format(url_for('view.cli_settings', server=server, client=newclient), newclient)])
+            noti.append([NOTIF_INFO, '<a href="{}">Click here</a> to edit \'{}\' configuration'.format(url_for('view.cli_settings', server=server, client=newclient), newclient)])
         else:
-            noti.append([3, '<a href="{}">Click here</a> to edit \'{}\' configuration'.format(url_for('view.cli_settings', client=newclient), newclient)])
+            noti.append([NOTIF_INFO, '<a href="{}">Click here</a> to edit \'{}\' configuration'.format(url_for('view.cli_settings', client=newclient), newclient)])
         # clear the cache when we add a new client
         api.cache.clear()
         return {'notif': noti}, 201

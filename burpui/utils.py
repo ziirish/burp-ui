@@ -25,6 +25,11 @@ from inspect import currentframe, getouterframes
 from ._compat import PY3
 from . import __version__, __release__
 
+NOTIF_OK = 0
+NOTIF_WARN = 1
+NOTIF_ERROR = 2
+NOTIF_INFO = 3
+
 if PY3:
     long = int  # pragma: no cover
     basestring = str  # pragma: no cover

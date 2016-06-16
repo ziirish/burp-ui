@@ -13,6 +13,7 @@ from . import api, cache_key
 from .custom import fields, Resource
 from .custom.inputs import boolean
 from ..exceptions import BUIserverException
+from ..utils import NOTIF_ERROR
 from flask_restplus.marshalling import marshal
 
 ns = api.namespace('client', 'Client methods')
@@ -634,7 +635,7 @@ class ClientReport(Resource):
                         )
                     )
                 except BUIserverException as e:
-                    temp = [2, str(e)]
+                    temp = [NOTIF_ERROR, str(e)]
                     if temp not in err:
                         err.append(temp)
             if err:
