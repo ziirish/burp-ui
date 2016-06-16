@@ -226,6 +226,7 @@ setup(
     extras_require={
         'ssl': ['pyOpenSSL'],
         'ldap_authentication': ['ldap3'],
+        'local_authentication': ['pam'],
         'extra': ['ujson'],
         'gunicorn': ['gevent'],
         'gunicorn-extra': ['redis', 'Flask-Session'],

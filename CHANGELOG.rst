@@ -4,9 +4,10 @@ Changelog
 Current
 -------
 
-- **BREAKING**: New configuration file format to allow further improvements (The conversion is automatic)
-- **BREAKING**: Passwords are now *salted* for the *BASIC* authentication backend
+- **BREAKING**: New configuration file format to allow further improvements (The conversion is automatic, but LDAP settings might need some attention)
+- **BREAKING**: Passwords are now *salted* for the *BASIC* authentication backend (The conversion is automatic too)
 - Add: `client certificate revocation <https://git.ziirish.me/ziirish/burp-ui/issues/131>`_
+- Add: new `local authentication backend <https://git.ziirish.me/ziirish/burp-ui/issues/130>`_
 - Fix: issue `#134 <https://git.ziirish.me/ziirish/burp-ui/issues/134>`_
 - Fix: issue `#135 <https://git.ziirish.me/ziirish/burp-ui/issues/135>`_
 - `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/v0.2.1...master>`__
