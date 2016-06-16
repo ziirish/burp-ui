@@ -26,6 +26,7 @@ class LdapLoader(BUIloader):
         """
         self.app = app
         conf = self.app.conf
+        handler.name = self.name
         defaults = {
             'LDAP': {
                 'host': 'localhost',
@@ -201,6 +202,10 @@ class UserHandler(BUIhandler):
         if name not in self.users:
             self.users[name] = LdapUser(self.ldap, name)
         return self.users[name]
+
+    @property
+    def loader(self):
+        return self.ldap
 
 
 class LdapUser(BUIuser):

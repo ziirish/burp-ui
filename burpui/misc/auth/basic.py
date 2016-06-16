@@ -3,6 +3,7 @@ import re
 import codecs
 
 from .interface import BUIhandler, BUIuser, BUIloader
+from ...utils import NOTIF_ERROR, NOTIF_OK, NOTIF_WARN
 from werkzeug.security import check_password_hash, generate_password_hash
 
 
@@ -25,6 +26,7 @@ class BasicLoader(BUIloader):
         self.app = app
         self.conf = self.app.conf
         self.handler = handler
+        self.handler.name = self.name
         self.handler.add_user = self.add_user
         self.handler.del_user = self.del_user
         self.handler.change_password = self.change_password
@@ -139,42 +141,50 @@ class BasicLoader(BUIloader):
         """Add a user"""
         self._setup_users()
         if user in self.users:
-            self.logger.warning("user '{}' already exists".format(user))
-            return False
+            message = "user '{}' already exists".format(user)
+            self.logger.warning(message)
+            return False, message, NOTIF_WARN
         pwd = generate_password_hash(passwd)
         self.conf.options[self.section][user] = pwd
         self.conf.options.write()
         self._load_users()
-        return True
+        message = "user '{}' successfully added".format(user)
+        return True, message, NOTIF_OK
 
     def del_user(self, user):
         """Delete a user"""
         self._setup_users()
         if user not in self.users:
-            self.logger.error("user '{}' does not exist".format(user))
-            return False
+            message = "user '{}' does not exist".format(user)
+            self.logger.error(message)
+            return False, message, NOTIF_ERROR
         if user == 'admin' and len(self.users.keys()) == 1:
-            self.logger.warning('trying to delete the admin account!')
-            return False
+            message = 'trying to delete the admin account!'
+            self.logger.warning(message)
+            return False, message, NOTIF_WARN
         del self.conf.options[self.section][user]
         self.conf.options.write()
         self._load_users()
-        return True
+        message = "user '{}' successfully removed".format(user)
+        return True, message, NOTIF_OK
 
     def change_password(self, user, passwd):
         """Change a user password"""
         self._setup_users()
         if user not in self.users:
-            self.logger.error("user '{}' does not exist".format(user))
-            return False
+            message = "user '{}' does not exist".format(user)
+            self.logger.error(message)
+            return False, message, NOTIF_ERROR
         if check_password_hash(self.users[user], passwd):
-            self.logger.warning('password is the same')
-            return False
+            message = 'password is the same'
+            self.logger.warning(message)
+            return False, message, NOTIF_WARN
         pwd = generate_password_hash(passwd)
         self.conf.options[self.section][user] = pwd
         self.conf.options.write()
         self._load_users()
-        return True
+        message = "user '{}' successfully updated".format(user)
+        return True, message, NOTIF_OK
 
 
 class UserHandler(BUIhandler):
@@ -189,6 +199,10 @@ class UserHandler(BUIhandler):
         if name not in self.users:
             self.users[name] = BasicUser(self.basic, name)
         return self.users[name]
+
+    @property
+    def loader(self):
+        return self.basic
 
 
 class BasicUser(BUIuser):

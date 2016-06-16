@@ -19,6 +19,7 @@ class LocalLoader(BUIloader):
         """
         self.app = app
         self.users = None
+        handler.name = self.name
         conf = self.app.conf
         if self.section in conf.options:
             # Maybe the handler argument is None, maybe the 'priority'
@@ -84,6 +85,10 @@ class UserHandler(BUIhandler):
         if name not in self.users:
             self.users[name] = LocalUser(self.local, name)
         return self.users[name]
+
+    @property
+    def loader(self):
+        return self.local
 
 
 class LocalUser(BUIuser):

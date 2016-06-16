@@ -27,6 +27,8 @@ class BUIhandler:
 
     priority = 0
 
+    name = None
+
     add_user = False
     del_user = False
     change_password = False
@@ -47,6 +49,10 @@ class BUIhandler:
         :returns: The corresponding user object
         """
         return None  # pragma: no cover
+
+    @property
+    def loader(self):
+        return None
 
 
 class BUIuser(UserMixin):
