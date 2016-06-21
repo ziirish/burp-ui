@@ -30,7 +30,7 @@ class RunningClients(Resource):
     An optional ``GET`` parameter called ``serverName`` is supported when running
     in multi-agent mode.
     """
-    parser = api.parser()
+    parser = ns.parser()
     parser.add_argument('serverName', help='Which server to collect data from when in multi-agent mode')
 
     @ns.expect(parser)
@@ -103,7 +103,7 @@ class RunningBackup(Resource):
 
     This resource is part of the :mod:`burpui.api.clients` module.
     """
-    running_fields = api.model('Running', {
+    running_fields = ns.model('Running', {
         'running': fields.Boolean(required=True, description='Is there a backup running right now'),
     })
 
@@ -169,22 +169,22 @@ class ClientsReport(Resource):
     An optional ``GET`` parameter called ``serverName`` is supported when running
     in multi-agent mode.
     """
-    parser = api.parser()
+    parser = ns.parser()
     parser.add_argument('serverName', help='Which server to collect data from when in multi-agent mode')
-    stats_fields = api.model('ClientsStats', {
+    stats_fields = ns.model('ClientsStats', {
         'total': fields.Integer(required=True, description='Number of files', default=0),
         'totsize': fields.Integer(required=True, description='Total size occupied by all the backups of this client', default=0),
         'windows': fields.String(required=True, description='Is the client a windows machine', default='unknown'),
     })
-    client_fields = api.model('ClientsReport', {
+    client_fields = ns.model('ClientsReport', {
         'name': fields.String(required=True, description='Client name'),
         'stats': fields.Nested(stats_fields, required=True),
     })
-    backup_fields = api.model('ClientsBackup', {
+    backup_fields = ns.model('ClientsBackup', {
         'name': fields.String(required=True, description='Client name'),
         'number': fields.Integer(required=True, description='Number of backups on this client', default=0),
     })
-    report_fields = api.model('Report', {
+    report_fields = ns.model('Report', {
         'backups': fields.Nested(backup_fields, as_list=True, required=True),
         'clients': fields.Nested(client_fields, as_list=True, required=True),
     })
@@ -282,9 +282,9 @@ class ClientsStats(Resource):
     An optional ``GET`` parameter called ``serverName`` is supported when running
     in multi-agent mode.
     """
-    parser = api.parser()
+    parser = ns.parser()
     parser.add_argument('serverName', help='Which server to collect data from when in multi-agent mode')
-    client_fields = api.model('ClientsStatsSingle', {
+    client_fields = ns.model('ClientsStatsSingle', {
         'last': fields.DateTime(required=True, dt_format='iso8601', description='Date of last backup'),
         'name': fields.String(required=True, description='Client name'),
         'state': fields.String(required=True, description='Current state of the client (idle, backup, etc.)'),
@@ -355,3 +355,99 @@ class ClientsStats(Resource):
         except BUIserverException as e:
             self.abort(500, str(e))
         return j
+
+
+@ns.route('/all',
+          '/<server>/all',
+          endpoint='clients_all')
+class AllClients(Resource):
+    """The :class:`burpui.api.clients.AllClients` resource allows you to
+    retrieve a list of all clients with their associated server (if any).
+
+    An optional ``GET`` parameter called ``serverName`` is supported when
+    running in multi-agent mode.
+    """
+    parser = ns.parser()
+    parser.add_argument('serverName', help='Which server to collect data from when in multi-agent mode')
+    client_fields = ns.model('AllClients', {
+        'name': fields.String(required=True, description='Client name'),
+        'agent': fields.String(required=False, default=None, description='Associated Agent name'),
+    })
+
+    @ns.marshal_list_with(client_fields, code=200, description='Success')
+    @ns.expect(parser)
+    @ns.doc(
+        params={
+            'server': 'Which server to collect data from when in multi-agent mode',
+        },
+        responses={
+            200: 'Success',
+            403: 'Insufficient permissions',
+        },
+    )
+    def get(self, server=None):
+        """Returns a list of all clients with their associated Agent if any
+
+        **GET** method provided by the webservice.
+
+        The *JSON* returned is:
+
+        ::
+
+            [
+              {
+                "name": "client1",
+                "agent": "agent1"
+              },
+              {
+                "name": "client2",
+                "agent": "agent1"
+              },
+              {
+                "name": "client3",
+                "agent": "agent2"
+              }
+            ]
+
+
+        The output is filtered by the :mod:`burpui.misc.acl` module so that you
+        only see stats about the clients you are authorized to.
+
+        :param server: Which server to collect data from when in multi-agent mode
+        :type server: str
+
+        :returns: The *JSON* described above
+        """
+        ret = []
+        args = self.parser.parse_args()
+        server = server or args['serverName']
+
+        if (server and api.bui.acl and not self.is_admin and
+                server not in api.bui.acl.servers(self.username)):
+            self.abort(403, "You are not allowed to view this server infos")
+
+        if server:
+            clients = api.bui.cli.get_all_clients(agent=server)
+            if api.bui.acl and not self.is_admin:
+                ret = [{'name': x, 'agent': server} for x in clients if x['name'] in api.bui.acl.clients(self.username, server)]
+            return ret
+
+        if api.bui.standalone:
+            if api.bui.acl and not self.is_admin:
+                ret = [{'name': x} for x in api.bui.acl.clients(self.username)]
+            else:
+                ret = [{'name': x['name']} for x in api.bui.cli.get_all_clients()]
+        else:
+            grants = {}
+            if api.bui.acl and not self.is_admin:
+                for serv in api.bui.acl.servers(self.username):
+                    grants[serv] = api.bui.acl.clients(self.username, serv)
+            else:
+                for serv in api.bui.cli.servers:
+                    grants[serv] = 'all'
+            for (serv, clients) in iteritems(grants):
+                if not isinstance(clients, list):
+                    clients = [x['name'] for x in api.bui.cli.get_all_clients(agent=serv)]
+                ret += [{'name': x, 'agent': serv} for x in clients]
+
+        return ret
