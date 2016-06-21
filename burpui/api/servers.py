@@ -15,7 +15,7 @@ if not api.bui.standalone:
 
         This resource is part of the :mod:`burpui.api.servers` module.
         """
-        servers_fields = api.model('Servers', {
+        servers_fields = ns.model('Servers', {
             'alive': fields.Boolean(required=True, description='Is the server reachable'),
             'clients': fields.Integer(required=True, description='Number of clients managed by this server'),
             'name': fields.String(required=True, description='Server name'),
@@ -91,22 +91,22 @@ if not api.bui.standalone:
 
         This resource is part of the :mod:`burpui.api.servers` module.
         """
-        stats_fields = api.model('ServersStats', {
+        stats_fields = ns.model('ServersStats', {
             'total': fields.Integer(required=True, description='Number of files', default=0),
             'totsize': fields.Integer(required=True, description='Total size occupied by all the backups of this server', default=0),
             'linux': fields.Integer(required=True, description='Total number of Linux/Unix clients on this server', default=0),
             'windows': fields.Integer(required=True, description='Total number of Windows clients on this server', default=0),
             'unknown': fields.Integer(required=True, description='Total number of Unknown clients on this server', default=0),
         })
-        server_fields = api.model('ServersReport', {
+        server_fields = ns.model('ServersReport', {
             'name': fields.String(required=True, description='Server name'),
             'stats': fields.Nested(stats_fields, required=True),
         })
-        backup_fields = api.model('ServersBackup', {
+        backup_fields = ns.model('ServersBackup', {
             'name': fields.String(required=True, description='Server name'),
             'number': fields.Integer(required=True, description='Number of backups on this server', default=0),
         })
-        report_fields = api.model('ServersReportFull', {
+        report_fields = ns.model('ServersReportFull', {
             'backups': fields.Nested(backup_fields, as_list=True, required=True),
             'servers': fields.Nested(server_fields, as_list=True, required=True),
         })

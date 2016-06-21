@@ -40,7 +40,7 @@ class Restore(Resource):
     - ``format``: returning archive format
     - ``pass``: password to use for encrypted backups
     """
-    parser = api.parser()
+    parser = ns.parser()
     parser.add_argument('pass', help='Password to use for encrypted backups', nullable=True)
     parser.add_argument('format', required=False, help='Returning archive format', choices=('zip', 'tar.gz', 'tar.bz2'), default='zip', nullable=True)
     parser.add_argument('strip', type=int, help='Number of elements to strip in the path', default=0, nullable=True)
@@ -229,14 +229,14 @@ class ServerRestore(Resource):
     - ``force-sc``: whether to overwrite existing files
     - ``restoreto-sc``: restore files on an other client
     """
-    parser = api.parser()
+    parser = ns.parser()
     parser.add_argument('list-sc', required=True, help='List of files/directories to restore', nullable=False)
     parser.add_argument('strip-sc', type=int, help='Number of elements to strip in the path', default=0, nullable=True)
     parser.add_argument('prefix-sc', help='Prefix to the restore path', nullable=True)
     parser.add_argument('force-sc', type=boolean, help='Whether to overwrite existing files', default=False, nullable=True)
     parser.add_argument('restoreto-sc', help='Restore files on an other client', nullable=True)
 
-    list_fields = api.model('ListRestoreFiles', {
+    list_fields = ns.model('ListRestoreFiles', {
         'key': fields.String(
             required=True,
             description='Path to a file/directory to restore'
@@ -246,7 +246,7 @@ class ServerRestore(Resource):
             description='Is the path pointed to a directory'
         )
     })
-    restoration_fields = api.model('EditRestoration', {
+    restoration_fields = ns.model('EditRestoration', {
         'backup': fields.Integer(
             required=True,
             description='Backup number to restore'

@@ -19,7 +19,7 @@ import re
 
 ns = api.namespace('misc', 'Misc methods')
 
-counters_fields = api.model('Counters', {
+counters_fields = ns.model('Counters', {
     'phase': fields.Integer(description='Backup phase'),
     'Total': fields.List(fields.Integer, description='new/deleted/scanned/unchanged/total', attribute='total'),
     'Files': fields.List(fields.Integer, description='new/deleted/scanned/unchanged/total', attribute='files'),
@@ -64,10 +64,10 @@ class Counters(Resource):
     A mandatory ``GET`` parameter called ``clientName`` is used to know what client we
     are working on.
     """
-    parser = api.parser()
+    parser = ns.parser()
     parser.add_argument('serverName', help='Which server to collect data from when in multi-agent mode')
     parser.add_argument('clientName', help='Client name')
-    monitor_fields = api.model('Monitor', {
+    monitor_fields = ns.model('Monitor', {
         'client': fields.String(required=True, description='Client name'),
         'agent': fields.String(description='Server (agent) name'),
         'counters': fields.Nested(counters_fields, description='Various statistics about the running backup'),
@@ -143,9 +143,9 @@ class Live(Resource):
     An optional ``GET`` parameter called ``serverName`` is supported when running
     in multi-agent mode.
     """
-    parser = api.parser()
+    parser = ns.parser()
     parser.add_argument('serverName', help='Which server to collect data from when in multi-agent mode')
-    live_fields = api.model('Live', {
+    live_fields = ns.model('Live', {
         'client': fields.String(required=True, description='Client name'),
         'agent': fields.String(description='Server (agent) name'),
         'counters': fields.Nested(counters_fields, description='Various statistics about the running backup'),
@@ -251,7 +251,7 @@ class Alert(Resource):
 
     This resource is part of the :mod:`burpui.api.misc` module.
     """
-    parser = api.parser()
+    parser = ns.parser()
     parser.add_argument('message', required=True, help='Message to display')
     parser.add_argument('level', help='Alert level', choices=('danger', 'warning', 'info', 'success', '0', '1', '2', '3'), default='danger')
 
@@ -298,14 +298,14 @@ class About(Resource):
     in multi-agent mode.
     """
     api.LOGIN_NOT_REQUIRED.append('about')
-    parser = api.parser()
+    parser = ns.parser()
     parser.add_argument('serverName', help='Which server to collect data from when in multi-agent mode')
-    burp_fields = api.model('Burp', {
+    burp_fields = ns.model('Burp', {
         'name': fields.String(required=True, description='Instance name', default='Burp{}'.format(api.bui.vers)),
         'client': fields.String(description='Burp client version'),
         'server': fields.String(description='Burp server version'),
     })
-    about_fields = api.model('About', {
+    about_fields = ns.model('About', {
         'version': fields.String(required=True, description='Burp-UI version'),
         'release': fields.String(description='Burp-UI release (commit number)'),
         'api': fields.String(description='Burp-UI API documentation URL'),
@@ -361,8 +361,6 @@ class History(Resource):
     running in multi-agent mode and ``clientName`` is also allowed to filter
     by client.
 
-    TODO:
-
     ::
 
         $('#calendar').fullCalendar({
@@ -397,10 +395,10 @@ class History(Resource):
         });
 
     """
-    parser = api.parser()
+    parser = ns.parser()
     parser.add_argument('serverName', help='Which server to collect data from when in multi-agent mode')
     parser.add_argument('clientName', help='Which client to collect data from')
-    event_fields = api.model('Event', {
+    event_fields = ns.model('Event', {
         'title': fields.String(required=True, description='Event name'),
         'start': fields.DateTime(dt_format='iso8601', description='Start time of the event', attribute='date'),
         'end': fields.DateTime(dt_format='iso8601', description='End time of the event'),
@@ -408,7 +406,7 @@ class History(Resource):
         'backup': fields.BackupNumber(description='Backup number', attribute='number'),
         'url': fields.String(description='Callback URL'),
     })
-    history_fields = api.model('History', {
+    history_fields = ns.model('History', {
         'events': fields.Nested(event_fields, as_list=True, description='Events list'),
         'color': fields.String(description='Background color'),
         'textColor': fields.String(description='Text color'),
@@ -425,6 +423,7 @@ class History(Resource):
         },
         responses={
             200: 'Success',
+            403: 'Insufficient permissions',
         },
     )
     def get(self, client=None, server=None):

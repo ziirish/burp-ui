@@ -33,7 +33,7 @@ class ClientTree(Resource):
     A mandatory ``GET`` parameter called ``root`` is used to know what path we
     are working on.
     """
-    parser = api.parser()
+    parser = ns.parser()
     parser.add_argument(
         'serverName',
         help='Which server to collect data from when in multi-agent mode'
@@ -60,7 +60,7 @@ class ClientTree(Resource):
         required=False,
         default=False
     )
-    node_fields = api.model('ClientTree', {
+    node_fields = ns.model('ClientTree', {
         'date': fields.DateTime(
             required=True,
             dt_format='iso8601',
@@ -336,12 +336,12 @@ class ClientReport(Resource):
     An optional ``GET`` parameter called ``serverName`` is supported when
     running in multi-agent mode.
     """
-    parser = api.parser()
+    parser = ns.parser()
     parser.add_argument(
         'serverName',
         help='Which server to collect data from when in multi-agent mode'
     )
-    report_tpl_fields = api.model('ClientReportTpl', {
+    report_tpl_fields = ns.model('ClientReportTpl', {
         'changed': fields.Integer(
             required=True,
             description='Number of changed files',
@@ -373,7 +373,7 @@ class ClientReport(Resource):
             default=0
         ),
     })
-    report_fields = api.model('ClientReport', {
+    report_fields = ns.model('ClientReport', {
         'dir': fields.Nested(
             report_tpl_fields,
             required=True
@@ -655,12 +655,12 @@ class ClientStats(Resource):
     An optional ``GET`` parameter called ``serverName`` is supported when
     running in multi-agent mode.
     """
-    parser = api.parser()
+    parser = ns.parser()
     parser.add_argument(
         'serverName',
         help='Which server to collect data from when in multi-agent mode'
     )
-    client_fields = api.model('ClientStats', {
+    client_fields = ns.model('ClientStats', {
         'number': fields.Integer(required=True, description='Backup number'),
         'received': fields.Integer(required=True, description='Bytes received'),
         'size': fields.Integer(required=True, description='Total size'),

@@ -248,10 +248,10 @@ class ClientsList(Resource):
           endpoint='client_settings',
           methods=['GET', 'POST', 'DELETE'])
 class ClientSettings(Resource):
-    parser = api.parser()
+    parser = ns.parser()
     parser.add_argument('newclient', required=True, help="No 'newclient' provided")
 
-    parser_delete = api.parser()
+    parser_delete = ns.parser()
     parser_delete.add_argument('revoke', type=boolean, help='Whether to revoke the certificate or not', default=False, nullable=True)
     parser_delete.add_argument('delcert', type=boolean, help='Whether to delete the certificate or not', default=False, nullable=True)
 
@@ -383,7 +383,7 @@ class ClientSettings(Resource):
           endpoint='path_expander')
 class PathExpander(Resource):
 
-    parser = api.parser()
+    parser = ns.parser()
     parser.add_argument('path', required=True, help="No 'path' provided")
     parser.add_argument('source', required=False, help="Which file is it included in")
 
