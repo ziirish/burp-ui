@@ -96,7 +96,7 @@ def settings(server=None, conf=None):
         except:
             pass
     server = server or request.args.get('serverName')
-    return render_template('settings.html', settings=True, server=server, conf=conf)
+    return render_template('settings.html', settings=True, server=server, conf=conf, ng_controller='ConfigCtrl')
 
 
 @view.route('/client/client-settings')
@@ -119,7 +119,7 @@ def cli_settings(server=None, client=None, conf=None):
             pass
     client = client or request.args.get('client')
     server = server or request.args.get('serverName')
-    return render_template('settings.html', settings=True, client=client, server=server, conf=conf)
+    return render_template('settings.html', settings=True, client=client, server=server, conf=conf, ng_controller='ConfigCtrl')
 
 
 @view.route('/live-monitor')
@@ -143,7 +143,7 @@ def live_monitor(server=None, name=None):
             flash('Sorry, there are no running backups', 'warning')
             return redirect(url_for('.home'))
 
-    return render_template('live-monitor.html', live=True, cname=name, server=server)
+    return render_template('live-monitor.html', live=True, cname=name, server=server, ng_controller='LiveCtrl')
 
 
 @view.route('/edit-server-initiated-restore/<name>', methods=['GET'])
@@ -184,7 +184,7 @@ def client_browse(server=None, name=None, backup=None, encrypted=None, edit=None
     bkp = request.args.get('backup')
     if bkp and not backup:
         return redirect(url_for('.client_browse', name=name, backup=bkp, encrypted=encrypted, server=server))
-    return render_template('client-browse.html', tree=True, backup=True, overview=True, cname=name, nbackup=backup, encrypted=encrypted, server=server, edit=edit)
+    return render_template('client-browse.html', tree=True, backup=True, overview=True, cname=name, nbackup=backup, encrypted=encrypted, server=server, edit=edit, ng_controller='BrowseCtrl')
 
 
 @view.route('/client-report/<name>')

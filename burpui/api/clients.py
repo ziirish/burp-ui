@@ -374,6 +374,7 @@ class AllClients(Resource):
         'agent': fields.String(required=False, default=None, description='Associated Agent name'),
     })
 
+    @api.cache.cached(timeout=1800, key_prefix=cache_key)
     @ns.marshal_list_with(client_fields, code=200, description='Success')
     @ns.expect(parser)
     @ns.doc(
@@ -429,7 +430,9 @@ class AllClients(Resource):
         if server:
             clients = api.bui.cli.get_all_clients(agent=server)
             if api.bui.acl and not self.is_admin:
-                ret = [{'name': x, 'agent': server} for x in clients if x['name'] in api.bui.acl.clients(self.username, server)]
+                ret = [{'name': x, 'agent': server} for x in api.bui.acl.clients(self.username, server)]
+            else:
+                ret = [{'name': x['name'], 'agent': server} for x in clients]
             return ret
 
         if api.bui.standalone:

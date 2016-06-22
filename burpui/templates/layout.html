@@ -39,7 +39,7 @@
     {% include "topbar.html" %}
 
     <div class="container-fluid">
-			<div class="row" {% if settings %}ng-controller="ConfigCtrl"{% elif live %}ng-controller="LiveCtrl"{% endif %}>
+      <div class="row" {% if ng_controller %}ng-controller="{{ ng_controller }}"{% endif %}>
         {% if not live and not login and not about -%}
         {% include "sidebar.html" %}
         {% endif -%}
@@ -68,15 +68,7 @@
     <script src="{{ url_for('bower.static', filename='datatables/media/js/dataTables.bootstrap.min.js') }}"></script>
     <script src="{{ url_for('bower.static', filename='datatables-responsive/js/dataTables.responsive.js') }}"></script>
     {% endif -%}
-    {% if tree -%}
-    <!-- Fancytree Javascript
-    ================================================== -->
-    <script src="{{ url_for('bower.static', filename='jquery.fancytree/dist/jquery.fancytree-all.min.js') }}"></script>
-    <!-- FileDownload Javascript
-    ================================================== -->
-    <script src="{{ url_for('bower.static', filename='jquery-file-download/src/Scripts/jquery.fileDownload.js') }}"></script>
-    {% endif -%}
-    {% if about or live or calendar or settings -%}
+    {% if about or live or calendar or settings or ng_controller -%}
     <!-- configuration angular views
     ================================================== -->
     <script src="{{ url_for('bower.static', filename='angular/angular.min.js') }}"></script>
@@ -84,6 +76,14 @@
     <script src="{{ url_for('bower.static', filename='angular-sanitize/angular-sanitize.min.js') }}"></script>
     <script src="{{ url_for('bower.static', filename='angular-resource/angular-resource.min.js') }}"></script>
     <script src="{{ url_for('bower.static', filename='angular-animate/angular-animate.min.js') }}"></script>
+    {% endif -%}
+    {% if tree -%}
+    <!-- Fancytree Javascript
+    ================================================== -->
+    <script src="{{ url_for('bower.static', filename='jquery.fancytree/dist/jquery.fancytree-all.min.js') }}"></script>
+    <!-- FileDownload Javascript
+    ================================================== -->
+    <script src="{{ url_for('bower.static', filename='jquery-file-download/src/Scripts/jquery.fileDownload.js') }}"></script>
     {% endif -%}
     {% if settings -%}
     <!-- configuration panel Javascript

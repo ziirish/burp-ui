@@ -216,6 +216,9 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
 
     app.setup(app.config['CFG'])
 
+    if debug:
+        app.config.setdefault('TEMPLATES_AUTO_RELOAD', True)
+
     # manage application secret key
     if app.secret_key and (app.secret_key.lower() == 'none' or
                            (app.secret_key.lower() == 'random' and gunicorn)):

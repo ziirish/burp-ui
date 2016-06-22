@@ -3,6 +3,12 @@ var NOTIF_WARNING = 1;
 var NOTIF_ERROR   = 2;
 var NOTIF_INFO    = 3;
 
+var _async_ajax = function(b) {
+	$.ajaxSetup({
+		async: b
+	});
+};
+
 var pad = function(num, size) {
 	var s = "0000000" + num;
 	return s.substr(s.length-size);
@@ -76,19 +82,19 @@ var notif = function(type, message, timeout) {
 	timeout = (typeof timeout === "undefined") ? 5000 : timeout;
 	var t = '';
 	switch(type) {
-		case 0:
+		case NOTIF_SUCCESS:
 			t = 'success';
 			i = '<span class="glyphicon glyphicon-ok-sign"></span> ';
 			break;
-		case 1:
+		case NOTIF_WARNING:
 			t = 'warning';
 			i = '<span class="glyphicon glyphicon-question-sign"></span> ';
 			break;
-		case 2:
+		case NOTIF_ERROR:
 			t = 'danger';
 			i = '<span class="glyphicon glyphicon-exclamation-sign"></span> ';
 			break;
-		case 3:
+		case NOTIF_INFO:
 		default:
 			t = 'info';
 			i = '<span class="glyphicon glyphicon-info-sign"></span> ';
@@ -262,6 +268,8 @@ $('#input-client').typeahead({
 	{% endif -%}
 {% endif -%}
 
+_async_ajax(false);
+
 {% if servers and overview -%}
 {% include "js/servers.js" %}
 {% endif -%}
@@ -309,11 +317,9 @@ $('#input-client').typeahead({
 {% include "js/calendar.js" %}
 {% endif -%}
 
-var _async_ajax = function(b) {
-	$.ajaxSetup({
-		async: b
-	});
-};
+{% if tree -%}
+{% include "js/client-browse.js" %}
+{% endif -%}
 
 var _fit_menu = function() {
 	size = $(window).width();
@@ -337,7 +343,6 @@ var _fit_menu = function() {
 }
 
 $(function() {
-	_async_ajax(false);
 
 	/***
 	 * Show the notifications
@@ -423,9 +428,5 @@ $(function() {
 	var refresh_running = setInterval(function () {
 		_check_running();
 	}, {{ config.REFRESH * 1000 }});
-	{% endif -%}
-
-	{% if tree -%}
-	{% include "js/client-browse.js" %}
 	{% endif -%}
 });

@@ -1,32 +1,33 @@
 
-	/***
-	 * Here is our tree to browse a specific backup
-	 * The tree is first initialized with the 'root' part of the backup.
-	 * JSON example:
-	 * [
-	 *   {
-	 *     "name": "/",
-	 *     "parent": "",
-	 *     "type": "d"
-	 *   }
-	 * ]
-	 * This JSON is then parsed into another one to initialize our tree.
-	 * Each 'directory' is expandable.
-	 * A new JSON is returned for each one of them on-demand.
-	 * JSON output:
-	 * [
-	 *   {
-	 *     "name": "etc",
-	 *     "parent": "/",
-	 *     "type": "d"
-	 *   },
-	 *   {
-	 *     "name": "home",
-	 *     "parent": "/",
-	 *     "type": "d"
-	 *   }
-	 * ]
-	 */
+/***
+ * Here is our tree to browse a specific backup
+ * The tree is first initialized with the 'root' part of the backup.
+ * JSON example:
+ * [
+ *   {
+ *     "name": "/",
+ *     "parent": "",
+ *     "type": "d"
+ *   }
+ * ]
+ * This JSON is then parsed into another one to initialize our tree.
+ * Each 'directory' is expandable.
+ * A new JSON is returned for each one of them on-demand.
+ * JSON output:
+ * [
+ *   {
+ *     "name": "etc",
+ *     "parent": "/",
+ *     "type": "d"
+ *   },
+ *   {
+ *     "name": "home",
+ *     "parent": "/",
+ *     "type": "d"
+ *   }
+ * ]
+ */
+$( document ).ready(function() {
 	var fixNeeded = false;
 
 	$("#tree").fancytree({
@@ -262,3 +263,19 @@
 		}).fail(myFail);
 	});
 	{% endif -%}
+});
+
+var app = angular.module('MainApp', ['ngSanitize']);
+
+app.controller('BrowseCtrl', function($scope, $http) {
+	$scope.sc_restore = {};
+	{% if edit and edit.orig_client -%}
+	$scope.sc_restore.to = '{{ edit.to }}';
+	{% endif -%}
+	$http.get('{{ url_for("api.clients_all", server=server) }}')
+		.then(function(response) {
+			$scope.sc_restore.clients = response.data;
+		}, function(response) {
+			notifAll(response.data);
+		});
+});

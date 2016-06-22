@@ -300,6 +300,10 @@ legend[id] {
   text-decoration: none;
 }
 
+.browse > li > select {
+  color: black;
+}
+
 .clickable {
   cursor: pointer;
 }

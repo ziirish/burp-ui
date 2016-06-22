@@ -363,7 +363,7 @@ app.controller('ConfigCtrl', function($scope, $http) {
 		})
 		.fail(myFail)
 		.done(function(data) {
-			redirect = data[0][0] == 0;
+			redirect = data[0][0] == NOTIF_SUCCESS;
 			notifAll(data, redirect);
 			if (redirect) {
 				document.location = '{{ url_for("view.settings", server=server) }}';
@@ -385,7 +385,7 @@ app.controller('ConfigCtrl', function($scope, $http) {
 			 * side so we display them */
 			if (data.notif) {
 				notif(data.notif[0][0], data.notif[0][1]);
-				if (data.notif[0][0] == 0) {
+				if (data.notif[0][0] == NOTIF_SUCCESS) {
 					$scope.getClientsList();
 					notif(data.notif[1][0], data.notif[1][1], 20000);
 				}
