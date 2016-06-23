@@ -9,6 +9,8 @@ BURPUI="https://burpui.ziirish.me/builds/burp-ui.dev.tar.gz"
 cd
 
 apt-get remove -y python-cffi
+apt-get update
+apt-get install -y libssl-dev
 
 # Install burp-ui
 pip install --upgrade pip
