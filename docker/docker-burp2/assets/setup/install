@@ -18,6 +18,7 @@ cd
 pip install --upgrade pip
 pip install gevent
 pip install "requests[security]"
+pip install --upgrade cffi
 pip install --upgrade $BURPUI
 pip install ujson
 
