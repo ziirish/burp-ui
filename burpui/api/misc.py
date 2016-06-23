@@ -12,7 +12,7 @@ from .custom import fields, Resource
 from ..exceptions import BUIserverException
 
 from six import iteritems
-from flask import flash, url_for
+from flask import flash, url_for, current_app as bui
 
 import random
 import re
@@ -103,25 +103,25 @@ class Counters(Resource):
         if not client:
             self.abort(400, 'No client name provided')
         # Manage ACL
-        if (api.bui.acl and
-            not (api.bui.acl.is_client_allowed(self.username, client, server) or
+        if (bui.acl and
+            not (bui.acl.is_client_allowed(self.username, client, server) or
                  self.is_admin)):
             self.abort(403, "Not allowed to view '{}' counters".format(client))
-        api.bui.cli.is_one_backup_running()
-        if isinstance(api.bui.cli.running, dict):
-            if server and client not in api.bui.cli.running[server]:
+        bui.cli.is_one_backup_running()
+        if isinstance(bui.cli.running, dict):
+            if server and client not in bui.cli.running[server]:
                 self.abort(404, "'{}' not found in the list of running clients for '{}'".format(client, server))
             else:
                 found = False
-                for (k, a) in iteritems(api.bui.cli.running):
+                for (k, a) in iteritems(bui.cli.running):
                     found = found or (client in a)
                 if not found:
                     api.bort(404, "'{}' not found in running clients".format(client))
         else:
-            if client not in api.bui.cli.running:
+            if client not in bui.cli.running:
                 self.abort(404, "'{}' not found in running clients".format(client))
         try:
-            counters = api.bui.cli.get_counters(client, agent=server)
+            counters = bui.cli.get_counters(client, agent=server)
         except BUIserverException:
             counters = {}
         res = {}
@@ -200,26 +200,26 @@ class Live(Resource):
         server = server or args['serverName']
         r = []
         # ACL
-        if (api.bui.acl and
+        if (bui.acl and
                 not self.is_admin and
                 server and
-                server not in api.bui.acl.servers(self.username)):
+                server not in bui.acl.servers(self.username)):
             self.abort(403, 'You are not allowed to view stats of this server')
         if server:
-            l = api.bui.cli.is_one_backup_running(server)[server]
+            l = bui.cli.is_one_backup_running(server)[server]
             # ACL
-            if api.bui.acl and not self.is_admin:
-                allowed = api.bui.acl.clients(self.username, server)
+            if bui.acl and not self.is_admin:
+                allowed = bui.acl.clients(self.username, server)
                 l = [x for x in l if x in allowed]
         else:
-            l = api.bui.cli.is_one_backup_running()
+            l = bui.cli.is_one_backup_running()
         if isinstance(l, dict):
             for (k, a) in iteritems(l):
                 for c in a:
                     # ACL
-                    if (api.bui.acl and
+                    if (bui.acl and
                             not self.is_admin and
-                            not api.bui.acl.is_client_allowed(
+                            not bui.acl.is_client_allowed(
                                 self.username,
                                 c,
                                 k)):
@@ -228,7 +228,7 @@ class Live(Resource):
                     s['client'] = c
                     s['agent'] = k
                     try:
-                        s['counters'] = api.bui.cli.get_counters(c, agent=k)
+                        s['counters'] = bui.cli.get_counters(c, agent=k)
                     except BUIserverException:
                         s['counters'] = {}
                     r.append(s)
@@ -237,7 +237,7 @@ class Live(Resource):
                 s = {}
                 s['client'] = c
                 try:
-                    s['counters'] = api.bui.cli.get_counters(c, agent=server)
+                    s['counters'] = bui.cli.get_counters(c, agent=server)
                 except BUIserverException:
                     s['counters'] = {}
                 r.append(s)
@@ -301,7 +301,7 @@ class About(Resource):
     parser = ns.parser()
     parser.add_argument('serverName', help='Which server to collect data from when in multi-agent mode')
     burp_fields = ns.model('Burp', {
-        'name': fields.String(required=True, description='Instance name', default='Burp{}'.format(api.bui.vers)),
+        'name': fields.String(required=True, description='Instance name', default='Burp'),
         'client': fields.String(description='Burp client version'),
         'server': fields.String(description='Burp server version'),
     })
@@ -329,8 +329,8 @@ class About(Resource):
         r['release'] = api.release
         r['api'] = url_for('api.doc')
         r['burp'] = []
-        cli = api.bui.cli.get_client_version(server)
-        srv = api.bui.cli.get_server_version(server)
+        cli = bui.cli.get_client_version(server)
+        srv = bui.cli.get_server_version(server)
         multi = {}
         if isinstance(cli, dict):
             for (name, v) in iteritems(cli):
@@ -469,12 +469,12 @@ class History(Resource):
         client = client or args['clientName']
         server = server or args['serverName']
 
-        if (server and api.bui.acl and not self.is_admin and
-                server not in api.bui.acl.servers(self.username)):
+        if (server and bui.acl and not self.is_admin and
+                server not in bui.acl.servers(self.username)):
             self.abort(403, "You are not allowed to view this server infos")
 
-        if (client and api.bui.acl and not self.is_admin and not
-                api.bui.acl.is_client_allowed(self.username, client, server)):
+        if (client and bui.acl and not self.is_admin and not
+                bui.acl.is_client_allowed(self.username, client, server)):
             self.abort(403, "You are not allowed to view this client infos")
 
         if client:
@@ -491,9 +491,9 @@ class History(Resource):
             ret.append(feed)
             return ret
         elif server:
-            clients = api.bui.cli.get_all_clients(agent=server)
-            if api.bui.acl and not self.is_admin:
-                clients = [x for x in clients if x['name'] in api.bui.acl.clients(self.username, server)]
+            clients = bui.cli.get_all_clients(agent=server)
+            if bui.acl and not self.is_admin:
+                clients = [x for x in clients if x['name'] in bui.acl.clients(self.username, server)]
             for cl in clients:
                 (color, text) = self.gen_colors(cl['name'], server)
                 feed = {
@@ -505,11 +505,11 @@ class History(Resource):
                 ret.append(feed)
             return ret
 
-        if api.bui.standalone:
-            if api.bui.acl and not self.is_admin:
-                clients_list = api.bui.acl.clients(self.username)
+        if bui.standalone:
+            if bui.acl and not self.is_admin:
+                clients_list = bui.acl.clients(self.username)
             else:
-                clients_list = [x['name'] for x in api.bui.cli.get_all_clients()]
+                clients_list = [x['name'] for x in bui.cli.get_all_clients()]
             for cl in clients_list:
                 (color, text) = self.gen_colors(cl)
                 feed = {
@@ -522,15 +522,15 @@ class History(Resource):
             return ret
         else:
             grants = {}
-            if api.bui.acl and not self.is_admin:
-                for serv in api.bui.acl.servers(self.username):
-                    grants[serv] = api.bui.acl.clients(self.username, serv)
+            if bui.acl and not self.is_admin:
+                for serv in bui.acl.servers(self.username):
+                    grants[serv] = bui.acl.clients(self.username, serv)
             else:
-                for serv in api.bui.cli.servers:
+                for serv in bui.cli.servers:
                     grants[serv] = 'all'
             for (serv, clients) in iteritems(grants):
                 if not isinstance(clients, list):
-                    clients = [x['name'] for x in api.bui.cli.get_all_clients(agent=serv)]
+                    clients = [x['name'] for x in bui.cli.get_all_clients(agent=serv)]
                 for cl in clients:
                     (color, text) = self.gen_colors(cl, serv)
                     feed = {
@@ -545,7 +545,7 @@ class History(Resource):
 
     def gen_colors(self, client=None, agent=None):
         """Generates color for an events feed"""
-        labels = api.bui.cli.get_client_labels(client, agent)
+        labels = bui.cli.get_client_labels(client, agent)
         HTML_COLOR = r'((?P<hex>#(?P<red_hex>[0-9a-f]{1,2})(?P<green_hex>[0-9a-f]{1,2})(?P<blue_hex>[0-9a-f]{1,2}))|(?P<rgb>rgb\s*\(\s*(?P<red>2[0-5]{2}|2[0-4]\d|[0-1]?\d\d?)\s*,\s*(?P<green>2[0-5]{2}|2[0-4]\d|[0-1]?\d\d?)\s*,\s*(?P<blue>2[0-5]{2}|2[0-4]\d|[0-1]?\d\d?)\s*\))|(?P<plain>[\w-]+$))'
         color_found = False
         color = None
@@ -611,7 +611,7 @@ class History(Resource):
 
     def gen_events(self, client, server=None):
         """Creates events for a given client"""
-        events = api.bui.cli.get_client(client, agent=server)
+        events = bui.cli.get_client(client, agent=server)
         for ev in events:
             ev['title'] = 'Client: {0}, Backup n°{1:07d}'.format(client, int(ev['number']))
             if server:

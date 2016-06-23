@@ -12,6 +12,7 @@ from .custom import fields, Resource
 #  from ..exceptions import BUIserverException
 
 from six import iteritems
+from flask import current_app as bui
 
 ns = api.namespace('admin', 'Admin methods')
 
@@ -58,11 +59,11 @@ class AuthUsers(Resource):
         :returns: Users
         """
         # Manage ACL
-        if not api.bui.acl or not self.is_admin:
+        if not bui.acl or not self.is_admin:
             self.abort(403, "Not allowed to view users list")
 
         try:
-            handler = getattr(api.bui, 'uhandler')
+            handler = getattr(bui, 'uhandler')
         except AttributeError:
             handler = None
 
@@ -107,11 +108,11 @@ class AuthUsers(Resource):
         """Create a new user"""
         args = self.parser_add.parse_args()
         # Manage ACL
-        if not api.bui.acl or not self.is_admin:
+        if not bui.acl or not self.is_admin:
             self.abort(403, "Not allowed to view users list")
 
         try:
-            handler = getattr(api.bui, 'uhandler')
+            handler = getattr(bui, 'uhandler')
         except AttributeError:
             handler = None
 
@@ -156,11 +157,11 @@ class AuthUsers(Resource):
         """Change user password"""
         args = self.parser_del.parse_args()
         # Manage ACL
-        if not api.bui.acl or not self.is_admin:
+        if not bui.acl or not self.is_admin:
             self.abort(403, "Not allowed to view users list")
 
         try:
-            handler = getattr(api.bui, 'uhandler')
+            handler = getattr(bui, 'uhandler')
         except AttributeError:
             handler = None
 
@@ -204,11 +205,11 @@ class AuthUsers(Resource):
         """Delete a user"""
         args = self.parser_mod.parse_args()
         # Manage ACL
-        if not api.bui.acl or not self.is_admin:
+        if not bui.acl or not self.is_admin:
             self.abort(403, "Not allowed to view users list")
 
         try:
-            handler = getattr(api.bui, 'uhandler')
+            handler = getattr(bui, 'uhandler')
         except AttributeError:
             handler = None
 
@@ -269,11 +270,11 @@ class AuthBackends(Resource):
         :returns: Backends
         """
         # Manage ACL
-        if not api.bui.acl or not self.is_admin:
+        if not bui.acl or not self.is_admin:
             self.abort(403, "Not allowed to view users list")
 
         try:
-            handler = getattr(api.bui, 'uhandler')
+            handler = getattr(bui, 'uhandler')
         except AttributeError:
             handler = None
 

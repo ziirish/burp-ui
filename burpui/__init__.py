@@ -86,6 +86,11 @@ def lookup_config(conf=None):
     return ret
 
 
+def create_app(*args, **kwargs):
+    """Alias for init"""
+    return init(*args, **kwargs)
+
+
 def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debug=False):
     """Initialize the whole application.
 
@@ -280,15 +285,14 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
         api.cache.init_app(app)
 
     # We initialize the API
-    api.init_bui(app)
     api.version = __version__
     api.release = __release__
     api.__url__ = __url__
     api.__doc__ = __doc__
+    api.load_all()
     app.register_blueprint(apibp)
 
     # Then we load our routes
-    view.init_bui(app)
     view.__url__ = __url__
     view.__doc__ = __doc__
     app.register_blueprint(view)

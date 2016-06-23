@@ -11,7 +11,7 @@
 import os
 import sys
 
-from flask import Blueprint, Response, request
+from flask import Blueprint, Response, request, current_app as bui
 from flask_restplus import Api as ApiPlus
 from flask_login import current_user
 from flask_cache import Cache
@@ -33,7 +33,7 @@ if IS_GUNICORN:
         import gevent
         from gevent.queue import Queue
         ret = []
-        api.bui.cli.logger.debug('Using gevent')
+        bui.cli.logger.debug('Using gevent')
 
         if not callable(func):
             api.abort(500, 'The provided \'func\' is not callable!')
@@ -114,9 +114,9 @@ def api_login_required(func):
             name = func.func_name
         except:  # pragma: no cover
             name = func.__name__
-        if (api.bui.auth != 'none' and
+        if (bui.auth != 'none' and
                 name not in api.LOGIN_NOT_REQUIRED and
-                not api.bui.config.get('LOGIN_DISABLED', False)):
+                not bui.config.get('LOGIN_DISABLED', False)):
             if not current_user.is_authenticated:
                 return Response(
                     'Could not verify your access level for that URL.\n'
@@ -134,14 +134,6 @@ class Api(ApiPlus):
     __doc__ = None
     __url__ = None
     LOGIN_NOT_REQUIRED = []
-
-    def init_bui(self, bui):
-        """Loads the right context.
-        :param bui: application context
-        :type bui: :class:`burpui.server.BUIServer`
-        """
-        self.bui = bui
-        self.load_all()
 
     def load_all(self):
         """hack to automatically import api modules"""

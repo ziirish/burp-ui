@@ -10,15 +10,15 @@
 import select
 import struct
 
-from zlib import adler32
-from time import gmtime, strftime, time
-
 # This is a submodule we can also use "from ..api import api"
 from . import api
 from .custom import fields, Resource
 from .custom.inputs import boolean
 from ..exceptions import BUIserverException
-from flask import Response, send_file, make_response, after_this_request
+
+from zlib import adler32
+from time import gmtime, strftime, time
+from flask import Response, send_file, make_response, after_this_request, current_app as bui
 from werkzeug.datastructures import Headers
 from werkzeug.exceptions import HTTPException
 
@@ -89,10 +89,10 @@ class Restore(Resource):
         if not l or not name or not backup:
             self.abort(400, 'missing arguments')
         # Manage ACL
-        if (api.bui.acl and
-                (not api.bui.acl.is_client_allowed(self.username,
-                                                   name,
-                                                   server) and not
+        if (bui.acl and
+                (not bui.acl.is_client_allowed(self.username,
+                                               name,
+                                               server) and not
                  self.is_admin)):
             self.abort(403, 'You are not allowed to perform a restoration for this client')
         if server:
@@ -110,7 +110,7 @@ class Restore(Resource):
                 f)
         if not server:
             # Standalone mode, we can just return the file unless there were errors
-            archive, err = api.bui.cli.restore_files(name, backup, l, s, f, p)
+            archive, err = bui.cli.restore_files(name, backup, l, s, f, p)
             if not archive:
                 if err:
                     return make_response(err, 500)
@@ -139,23 +139,23 @@ class Restore(Resource):
                                  mimetype='application/zip')
                 resp.set_cookie('fileDownload', 'true')
             except Exception as e:
-                api.bui.cli.logger.error(str(e))
+                bui.cli.logger.error(str(e))
                 self.abort(500, str(e))
         else:
             # Multi-agent mode
             socket = None
             try:
-                socket, length, err = api.bui.cli.restore_files(name,
-                                                                backup,
-                                                                l,
-                                                                s,
-                                                                f,
-                                                                p,
-                                                                server)
-                api.bui.cli.logger.debug('Need to get {} Bytes : {}'.format(length, socket))
+                socket, length, err = bui.cli.restore_files(name,
+                                                            backup,
+                                                            l,
+                                                            s,
+                                                            f,
+                                                            p,
+                                                            server)
+                bui.cli.logger.debug('Need to get {} Bytes : {}'.format(length, socket))
 
                 if err:
-                    api.bui.cli.logger.debug('Something went wrong: {}'.format(err))
+                    bui.cli.logger.debug('Something went wrong: {}'.format(err))
                     socket.sendall(struct.pack('!Q', 2))
                     socket.sendall(b'RE')
                     socket.close()
@@ -179,7 +179,7 @@ class Restore(Resource):
                         if not buf:
                             continue
                         received += len(buf)
-                        api.bui.cli.logger.debug('{}/{}'.format(received, l))
+                        bui.cli.logger.debug('{}/{}'.format(received, l))
                         yield buf
                     sock.sendall(struct.pack('!Q', 2))
                     sock.sendall(b'RE')
@@ -203,7 +203,7 @@ class Restore(Resource):
             except HTTPException as e:
                 raise e
             except Exception as e:
-                api.bui.cli.logger.error(str(e))
+                bui.cli.logger.error(str(e))
                 self.abort(500, str(e))
         return resp
 
@@ -316,14 +316,14 @@ class ServerRestore(Resource):
         if not name:
             self.abort(400, 'Missing options')
         # Manage ACL
-        if (api.bui.acl and
-                (not api.bui.acl.is_client_allowed(self.username,
-                                                   name,
-                                                   server) and not
+        if (bui.acl and
+                (not bui.acl.is_client_allowed(self.username,
+                                               name,
+                                               server) and not
                  self.is_admin)):
             self.abort(403, 'You are not allowed to edit a restoration for this client')
         try:
-            return api.bui.cli.is_server_restore(name, server)
+            return bui.cli.is_server_restore(name, server)
         except BUIserverException as e:
             self.abort(500, str(e))
 
@@ -356,14 +356,14 @@ class ServerRestore(Resource):
         if not name:
             self.abort(400, 'Missing options')
         # Manage ACL
-        if (api.bui.acl and
-                (not api.bui.acl.is_client_allowed(self.username,
-                                                   name,
-                                                   server) and not
+        if (bui.acl and
+                (not bui.acl.is_client_allowed(self.username,
+                                               name,
+                                               server) and not
                  self.is_admin)):
             self.abort(403, 'You are not allowed to cancel a restoration for this client')
         try:
-            return api.bui.cli.cancel_server_restore(name, server)
+            return bui.cli.cancel_server_restore(name, server)
         except BUIserverException as e:
             self.abort(500, str(e))
 
@@ -409,21 +409,21 @@ class ServerRestore(Resource):
         if not files_list or not name or not backup:
             self.abort(400, 'Missing options')
         # Manage ACL
-        if (api.bui.acl and
-                (not api.bui.acl.is_client_allowed(self.username,
-                                                   name,
-                                                   server) and not
+        if (bui.acl and
+                (not bui.acl.is_client_allowed(self.username,
+                                               name,
+                                               server) and not
                  self.is_admin and
                  (to and not
-                  api.bui.acl.is_client_allowed(self.username,
-                                                to,
-                                                server)))):
+                  bui.acl.is_client_allowed(self.username,
+                                            to,
+                                            server)))):
             self.abort(
                 403,
                 'You are not allowed to perform a restoration for this client'
             )
         try:
-            json = api.bui.cli.server_restore(
+            json = bui.cli.server_restore(
                 name,
                 backup,
                 files_list,

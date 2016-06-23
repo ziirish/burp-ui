@@ -14,7 +14,9 @@ from .custom import fields, Resource
 from .custom.inputs import boolean
 from ..exceptions import BUIserverException
 from ..utils import NOTIF_ERROR
+
 from flask_restplus.marshalling import marshal
+from flask import current_app as bui
 
 ns = api.namespace('client', 'Client methods')
 
@@ -208,11 +210,11 @@ class ClientTree(Resource):
         paths_loaded = []
         to_select_list = []
 
-        if (api.bui.acl and
+        if (bui.acl and
                 (not self.is_admin and not
-                 api.bui.acl.is_client_allowed(self.username,
-                                               name,
-                                               server))):
+                 bui.acl.is_client_allowed(self.username,
+                                           name,
+                                           server))):
             self.abort(403, 'Sorry, you are not allowed to view this client')
 
         try:
@@ -223,7 +225,7 @@ class ClientTree(Resource):
                     path = ''
                     # fetch the root first if not already loaded
                     if not root_loaded:
-                        part = api.bui.cli.get_tree(
+                        part = bui.cli.get_tree(
                             name,
                             backup,
                             level=0,
@@ -250,7 +252,7 @@ class ClientTree(Resource):
                             path = '/'
                         if path in paths_loaded:
                             continue
-                        temp = api.bui.cli.get_tree(
+                        temp = bui.cli.get_tree(
                             name,
                             backup,
                             path,
@@ -260,7 +262,7 @@ class ClientTree(Resource):
                         paths_loaded.append(path)
                         part += temp
                 else:
-                    part = api.bui.cli.get_tree(
+                    part = bui.cli.get_tree(
                         name,
                         backup,
                         root,
@@ -278,7 +280,7 @@ class ClientTree(Resource):
                         entry['selected'] = True
 
             if not root_list:
-                json = api.bui.cli.get_tree(name, backup, agent=server)
+                json = bui.cli.get_tree(name, backup, agent=server)
                 if args['selected']:
                     for entry in json:
                         if not entry['parent']:
@@ -609,26 +611,26 @@ class ClientReport(Resource):
         if not name:
             err = [[1, 'No client defined']]
             self.abort(400, err)
-        if (api.bui.acl and not
-                api.bui.acl.is_client_allowed(self.username,
-                                              name,
-                                              server)):
+        if (bui.acl and not
+                bui.acl.is_client_allowed(self.username,
+                                          name,
+                                          server)):
             self.abort(403, 'You don\'t have rights to view this client report')
         if backup:
             try:
-                j = api.bui.cli.get_backup_logs(backup, name, agent=server)
+                j = bui.cli.get_backup_logs(backup, name, agent=server)
             except BUIserverException as e:
                 self.abort(500, str(e))
         else:
             try:
-                cl = api.bui.cli.get_client(name, agent=server)
+                cl = bui.cli.get_client(name, agent=server)
             except BUIserverException as e:
                 self.abort(500, str(e))
             err = []
             for c in cl:
                 try:
                     j.append(
-                        api.bui.cli.get_backup_logs(
+                        bui.cli.get_backup_logs(
                             c['number'],
                             name,
                             agent=server
@@ -726,13 +728,13 @@ class ClientStats(Resource):
         """
         server = server or self.parser.parse_args()['serverName']
         try:
-            if (api.bui.acl and (
+            if (bui.acl and (
                     not self.is_admin and
-                    not api.bui.acl.is_client_allowed(self.username,
-                                                      name,
-                                                      server))):
+                    not bui.acl.is_client_allowed(self.username,
+                                                  name,
+                                                  server))):
                 self.abort(403, 'Sorry, you cannot access this client')
-            j = api.bui.cli.get_client(name, agent=server)
+            j = bui.cli.get_client(name, agent=server)
         except BUIserverException as e:
             self.abort(500, str(e))
         return j

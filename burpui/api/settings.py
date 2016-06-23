@@ -12,7 +12,8 @@ from .custom import Resource
 from .custom.inputs import boolean
 from .._compat import unquote
 from ..utils import NOTIF_INFO
-from flask import jsonify, request, url_for
+
+from flask import jsonify, request, url_for, current_app as bui
 from werkzeug.datastructures import ImmutableMultiDict
 
 ns = api.namespace('settings', 'Settings methods')
@@ -44,10 +45,10 @@ class ServerSettings(Resource):
     def post(self, conf=None, server=None):
         """Saves the server configuration"""
         # Only the admin can edit the configuration
-        if api.bui.acl and not self.is_admin:
+        if bui.acl and not self.is_admin:
             self.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
 
-        noti = api.bui.cli.store_conf_srv(request.form, conf, server)
+        noti = bui.cli.store_conf_srv(request.form, conf, server)
         return {'notif': noti}, 200
 
     @ns.doc(
@@ -193,23 +194,23 @@ class ServerSettings(Resource):
         :returns: The *JSON* described above.
         """
         # Only the admin can edit the configuration
-        if api.bui.acl and not self.is_admin:
+        if bui.acl and not self.is_admin:
             self.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
 
         try:
             conf = unquote(conf)
         except:
             pass
-        r = api.bui.cli.read_conf_srv(conf, server)
+        r = bui.cli.read_conf_srv(conf, server)
         return jsonify(results=r,
-                       boolean=api.bui.cli.get_parser_attr('boolean_srv', server),
-                       string=api.bui.cli.get_parser_attr('string_srv', server),
-                       integer=api.bui.cli.get_parser_attr('integer_srv', server),
-                       multi=api.bui.cli.get_parser_attr('multi_srv', server),
-                       server_doc=api.bui.cli.get_parser_attr('doc', server),
-                       suggest=api.bui.cli.get_parser_attr('values', server),
-                       placeholders=api.bui.cli.get_parser_attr('placeholders', server),
-                       defaults=api.bui.cli.get_parser_attr('defaults', server))
+                       boolean=bui.cli.get_parser_attr('boolean_srv', server),
+                       string=bui.cli.get_parser_attr('string_srv', server),
+                       integer=bui.cli.get_parser_attr('integer_srv', server),
+                       multi=bui.cli.get_parser_attr('multi_srv', server),
+                       server_doc=bui.cli.get_parser_attr('doc', server),
+                       suggest=bui.cli.get_parser_attr('values', server),
+                       placeholders=bui.cli.get_parser_attr('placeholders', server),
+                       defaults=bui.cli.get_parser_attr('defaults', server))
 
 
 @ns.route('/clients',
@@ -230,10 +231,10 @@ class ClientsList(Resource):
     def get(self, server=None):
         """Returns a list of clients"""
         # Only the admin can edit the configuration
-        if api.bui.acl and not self.is_admin:
+        if bui.acl and not self.is_admin:
             self.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
 
-        res = api.bui.cli.clients_list(server)
+        res = bui.cli.clients_list(server)
         return jsonify(result=res)
 
 
@@ -270,21 +271,21 @@ class ClientSettings(Resource):
     def put(self, server=None):
         """Creates a new client"""
         # Only the admin can edit the configuration
-        if api.bui.acl and not self.is_admin:
+        if bui.acl and not self.is_admin:
             self.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
 
         newclient = self.parser.parse_args()['newclient']
         if not newclient:
             self.abort(400, 'No client name provided')
-        clients = api.bui.cli.clients_list(server)
+        clients = bui.cli.clients_list(server)
         for cl in clients:
             if cl['name'] == newclient:
                 self.abort(409, "Client '{}' already exists".format(newclient))
-        # clientconfdir = api.bui.cli.get_parser_attr('clientconfdir', server)
+        # clientconfdir = bui.cli.get_parser_attr('clientconfdir', server)
         # if not clientconfdir:
         #    flash('Could not proceed, no \'clientconfdir\' find', 'warning')
         #    return redirect(request.referrer)
-        noti = api.bui.cli.store_conf_cli(ImmutableMultiDict(), newclient, None, server)
+        noti = bui.cli.store_conf_cli(ImmutableMultiDict(), newclient, None, server)
         if server:
             noti.append([NOTIF_INFO, '<a href="{}">Click here</a> to edit \'{}\' configuration'.format(url_for('view.cli_settings', server=server, client=newclient), newclient)])
         else:
@@ -308,10 +309,10 @@ class ClientSettings(Resource):
     def post(self, server=None, client=None, conf=None):
         """Saves a given client configuration"""
         # Only the admin can edit the configuration
-        if api.bui.acl and not self.is_admin:
+        if bui.acl and not self.is_admin:
             self.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
 
-        noti = api.bui.cli.store_conf_cli(request.form, client, conf, server)
+        noti = bui.cli.store_conf_cli(request.form, client, conf, server)
         return {'notif': noti}
 
     @ns.doc(
@@ -329,24 +330,24 @@ class ClientSettings(Resource):
     def get(self, server=None, client=None, conf=None):
         """Reads a given client configuration"""
         # Only the admin can edit the configuration
-        if api.bui.acl and not self.is_admin:
+        if bui.acl and not self.is_admin:
             self.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
 
         try:
             conf = unquote(conf)
         except:
             pass
-        r = api.bui.cli.read_conf_cli(client, conf, server)
+        r = bui.cli.read_conf_cli(client, conf, server)
         return {
             'results': r,
-            'boolean': api.bui.cli.get_parser_attr('boolean_cli', server),
-            'string': api.bui.cli.get_parser_attr('string_cli', server),
-            'integer': api.bui.cli.get_parser_attr('integer_cli', server),
-            'multi': api.bui.cli.get_parser_attr('multi_cli', server),
-            'server_doc': api.bui.cli.get_parser_attr('doc', server),
-            'suggest': api.bui.cli.get_parser_attr('values', server),
-            'placeholders': api.bui.cli.get_parser_attr('placeholders', server),
-            'defaults': api.bui.cli.get_parser_attr('defaults', server)
+            'boolean': bui.cli.get_parser_attr('boolean_cli', server),
+            'string': bui.cli.get_parser_attr('string_cli', server),
+            'integer': bui.cli.get_parser_attr('integer_cli', server),
+            'multi': bui.cli.get_parser_attr('multi_cli', server),
+            'server_doc': bui.cli.get_parser_attr('doc', server),
+            'suggest': bui.cli.get_parser_attr('values', server),
+            'placeholders': bui.cli.get_parser_attr('placeholders', server),
+            'defaults': bui.cli.get_parser_attr('defaults', server)
         }
 
     @ns.expect(parser_delete)
@@ -364,7 +365,7 @@ class ClientSettings(Resource):
     def delete(self, server=None, client=None):
         """Deletes a given client"""
         # Only the admin can edit the configuration
-        if api.bui.acl and not self.is_admin:
+        if bui.acl and not self.is_admin:
             self.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
 
         args = self.parser_delete.parse_args()
@@ -373,7 +374,7 @@ class ClientSettings(Resource):
 
         # clear the cache when we remove a client
         api.cache.clear()
-        return api.bui.cli.delete_client(client, delcert=delcert, revoke=revoke, agent=server), 200
+        return bui.cli.delete_client(client, delcert=delcert, revoke=revoke, agent=server), 200
 
 
 @ns.route('/path-expander',
@@ -405,7 +406,7 @@ class PathExpander(Resource):
         files matching the expression.
         """
         # Only the admin can edit the configuration
-        if api.bui.acl and not self.is_admin:
+        if bui.acl and not self.is_admin:
             self.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
 
         args = self.parser.parse_args()
@@ -415,7 +416,7 @@ class PathExpander(Resource):
             path = unquote(path)
         if source:
             source = unquote(source)
-        paths = api.bui.cli.expand_path(path, source, client, server)
+        paths = bui.cli.expand_path(path, source, client, server)
         if not paths:
             self.abort(403, 'Path not found')
         return {'result': paths}
@@ -438,9 +439,9 @@ class SettingOptions(Resource):
     )
     def get(self, server=None):
         """Returns various setting options"""
-        if api.bui.acl and not self.is_admin:
+        if bui.acl and not self.is_admin:
             self.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
 
         return {
-            'is_revocation_enabled': api.bui.cli.revocation_enabled(server),
+            'is_revocation_enabled': bui.cli.revocation_enabled(server),
         }

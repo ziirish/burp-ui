@@ -11,6 +11,8 @@ from . import api
 from .custom import Resource
 from ..exceptions import BUIserverException
 
+from flask import current_app as bui
+
 ns = api.namespace('backup', 'Backup methods')
 
 
@@ -57,14 +59,14 @@ class ServerBackup(Resource):
         if not name:
             self.abort(400, 'Missing options')
         # Manage ACL
-        if (api.bui.acl and
-                (not api.bui.acl.is_client_allowed(self.username,
-                                                   name,
-                                                   server) and not
+        if (bui.acl and
+                (not bui.acl.is_client_allowed(self.username,
+                                               name,
+                                               server) and not
                  self.is_admin)):
             self.abort(403, 'You are not allowed to access this client')
         try:
-            return {'is_server_backup': api.bui.cli.is_server_backup(name, server)}
+            return {'is_server_backup': bui.cli.is_server_backup(name, server)}
         except BUIserverException as e:
             self.abort(500, str(e))
 
@@ -97,14 +99,14 @@ class ServerBackup(Resource):
         if not name:
             self.abort(400, 'Missing options')
         # Manage ACL
-        if (api.bui.acl and
-                (not api.bui.acl.is_client_allowed(self.username,
-                                                   name,
-                                                   server) and not
+        if (bui.acl and
+                (not bui.acl.is_client_allowed(self.username,
+                                               name,
+                                               server) and not
                  self.is_admin)):
             self.abort(403, 'You are not allowed to cancel a backup for this client')
         try:
-            return api.bui.cli.cancel_server_backup(name, server)
+            return bui.cli.cancel_server_backup(name, server)
         except BUIserverException as e:
             self.abort(500, str(e))
 
@@ -139,17 +141,17 @@ class ServerBackup(Resource):
         if not name:
             self.abort(400, 'Missing options')
         # Manage ACL
-        if (api.bui.acl and
-                (not api.bui.acl.is_client_allowed(self.username,
-                                                   name,
-                                                   server) and not
+        if (bui.acl and
+                (not bui.acl.is_client_allowed(self.username,
+                                               name,
+                                               server) and not
                  self.is_admin)):
             self.abort(
                 403,
                 'You are not allowed to schedule a backup for this client'
             )
         try:
-            json = api.bui.cli.server_backup(name, server)
+            json = bui.cli.server_backup(name, server)
             return json, 201
         except BUIserverException as e:
             self.abort(500, str(e))

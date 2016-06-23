@@ -1,7 +1,7 @@
 # -*- coding: utf8 -*-
 import math
 
-from flask import request, render_template, redirect, url_for, abort, flash, Blueprint as FlaskBlueprint, session
+from flask import request, render_template, redirect, url_for, abort, flash, Blueprint as FlaskBlueprint, session, current_app as bui
 from flask_login import login_user, login_required, logout_user, current_user
 
 from ._compat import quote
@@ -11,16 +11,8 @@ from .utils import human_readable as _hr
 
 
 class Blueprint(FlaskBlueprint):
-    bui = None
     __url__ = None
     __doc__ = None
-
-    def init_bui(self, bui):
-        """Loads the right context.
-        :param bui: application context
-        :type bui: :class:`burpui.server.BUIServer`
-        """
-        self.bui = bui
 
 view = Blueprint('view', 'burpui', template_folder='templates')
 
@@ -68,7 +60,7 @@ And here is the main site
 def calendar(server=None, client=None):
     server = server or request.args.get('serverName')
     client = client or request.args.get('clientName')
-    if not view.bui.standalone:
+    if not bui.standalone:
         servers = not server and not client
         clients = bool(server)
         cli = bool(client)
@@ -86,7 +78,7 @@ def calendar(server=None, client=None):
 @login_required
 def settings(server=None, conf=None):
     # Only the admin can edit the configuration
-    if view.bui.acl and not view.bui.acl.is_admin(current_user.get_id()):
+    if bui.acl and not bui.acl.is_admin(current_user.get_id()):
         abort(403)
     if not conf:
         try:
@@ -108,7 +100,7 @@ def settings(server=None, conf=None):
 @login_required
 def cli_settings(server=None, client=None, conf=None):
     # Only the admin can edit the configuration
-    if view.bui.acl and not view.bui.acl.is_admin(current_user.get_id()):
+    if bui.acl and not bui.acl.is_admin(current_user.get_id()):
         abort(403)
     if not conf:
         try:
@@ -130,15 +122,15 @@ def cli_settings(server=None, client=None, conf=None):
 def live_monitor(server=None, name=None):
     """Live status monitor view"""
     server = server or request.args.get('serverName')
-    view.bui.cli.is_one_backup_running()
-    if view.bui.standalone:
-        if not view.bui.cli.running:
+    bui.cli.is_one_backup_running()
+    if bui.standalone:
+        if not bui.cli.running:
             flash('Sorry, there are no running backups', 'warning')
             return redirect(url_for('.home'))
     else:
         run = False
-        for a in view.bui.cli.servers:
-            run = run or (a in view.bui.cli.running and view.bui.cli.running[a])
+        for a in bui.cli.servers:
+            run = run or (a in bui.cli.running and bui.cli.running[a])
         if not run:
             flash('Sorry, there are no running backups', 'warning')
             return redirect(url_for('.home'))
@@ -150,7 +142,7 @@ def live_monitor(server=None, name=None):
 @view.route('/<server>/edit-server-initiated-restore/<name>', methods=['GET'])
 @login_required
 def edit_server_initiated_restore(server=None, name=None):
-    data = view.bui.cli.is_server_restore(name, server)
+    data = bui.cli.is_server_restore(name, server)
     to = None
     if not data or not data['found']:
         flash('Sorry, there are no restore file found for this client', 'warning')
@@ -174,7 +166,7 @@ def client_browse(server=None, name=None, backup=None, encrypted=None, edit=None
         encrypted = 1
     if request.args.get('edit') == '1':
         to = request.args.get('to') or name
-        edit = view.bui.cli.is_server_restore(to, server)
+        edit = bui.cli.is_server_restore(to, server)
         if not edit or not edit['found']:
             flash('Sorry, there are no restore file found for this client', 'warning')
             edit = None
@@ -194,7 +186,7 @@ def client_report(server=None, name=None):
     """Specific client report"""
     server = server or request.args.get('serverName')
     try:
-        l = view.bui.cli.get_client(name, agent=server)
+        l = bui.cli.get_client(name, agent=server)
     except BUIserverException:
         l = []
     if len(l) == 1:
@@ -232,7 +224,7 @@ def client(server=None, name=None):
     """Specific client overview"""
     c = name or request.args.get('name')
     server = server or request.args.get('serverName')
-    if view.bui.cli.is_backup_running(c, agent=server):
+    if bui.cli.is_backup_running(c, agent=server):
         return redirect(url_for('.live_monitor', name=c, server=server))
     return render_template('client.html', client=True, overview=True, cname=c, server=server)
 
@@ -261,7 +253,7 @@ def servers_report():
 def login():
     form = LoginForm(request.form)
     if form.validate_on_submit():
-        user = view.bui.uhandler.user(form.username.data)
+        user = bui.uhandler.user(form.username.data)
         if user.is_active and user.login(form.password.data):
             login_user(user, remember=form.remember.data)
             flash('Logged in successfully', 'success')
@@ -291,7 +283,7 @@ def about():
 @login_required
 def home():
     """Home page"""
-    if view.bui.standalone:
+    if bui.standalone:
         return redirect(url_for('.clients'))
     else:
         server = request.args.get('serverName')

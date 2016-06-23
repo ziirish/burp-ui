@@ -14,6 +14,7 @@ import json
 from flask_restplus import Resource as ResourcePlus
 from flask_restplus.errors import abort
 from flask_login import current_user
+from flask import current_app as bui
 from ..._compat import PY3
 
 if PY3:
@@ -27,7 +28,7 @@ class Resource(ResourcePlus):
     def __init__(self, api=None, *args, **kwargs):
         """Constructor"""
         self.username = current_user.get_id()
-        self.is_admin = api.bui.acl and api.bui.acl.is_admin(self.username)
+        self.is_admin = bui.acl and bui.acl.is_admin(self.username)
         self.cache = api.cache
         ResourcePlus.__init__(self, api, *args, **kwargs)
 
