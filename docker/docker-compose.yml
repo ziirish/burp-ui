@@ -39,7 +39,7 @@ demo-bui:
   restart: always
   build: docker-burpui/
   ports:
-    - 127.0.0.1:5000:5000
+    - 127.0.0.1:5005:5000
   links:
     - demo-redis
     - demo-burp1
