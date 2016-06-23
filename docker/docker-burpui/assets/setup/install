@@ -8,6 +8,8 @@ BURPUI="https://burpui.ziirish.me/builds/burp-ui.dev.tar.gz"
 
 cd
 
+apt-get remove -y python-cffi
+
 # Install burp-ui
 pip install --upgrade pip
 pip install "requests[security]"
