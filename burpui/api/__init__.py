@@ -18,83 +18,13 @@ from flask_cache import Cache
 from importlib import import_module
 from functools import wraps
 
-from .._compat import IS_GUNICORN, PY3
+from .._compat import PY3
 from ..exceptions import BUIserverException
 
 if PY3:  # pragma: no cover
     basestring = str
 
 EXEMPT_METHODS = set(['OPTIONS'])
-
-# Implement a "parallel loop" routine either with gipc or multiprocessing
-# depending if we are under gunicorn or not
-if IS_GUNICORN:
-    def parallel_loop(func=None, elem=None, *args, **kwargs):
-        import gevent
-        from gevent.queue import Queue
-        ret = []
-        bui.cli.logger.debug('Using gevent')
-
-        if not callable(func):
-            api.abort(500, 'The provided \'func\' is not callable!')
-        if not elem:
-            return []
-
-        output = Queue()
-
-        processes = [
-            gevent.spawn(
-                func,
-                e,
-                output,
-                *args,
-                **kwargs
-            ) for e in elem
-        ]
-        # wait for process termination
-        gevent.joinall(processes)
-
-        for p in processes:
-            tmp = output.get()
-            if isinstance(tmp, basestring):
-                api.abort(500, tmp)
-            elif tmp:
-                ret.append(tmp)
-
-        return ret
-
-else:
-    def parallel_loop(func=None, elem=None, *args, **kwargs):
-        import multiprocessing
-        ret = []
-
-        if not callable(func):
-            api.abort(500, 'The provided \'func\' is not callable!')
-        if not elem:
-            return []
-
-        # create our process pool/queue
-        output = multiprocessing.Queue()
-        processes = [
-            multiprocessing.Process(
-                target=func,
-                args=((e, output) + args),
-                kwargs=kwargs
-            ) for e in elem
-        ]
-        # start the processes
-        [p.start() for p in processes]
-        # wait for process termination
-        [p.join() for p in processes]
-
-        for p in processes:
-            tmp = output.get()
-            if isinstance(tmp, basestring):
-                api.abort(500, tmp)
-            elif tmp:
-                ret.append(tmp)
-
-        return ret
 
 
 def cache_key():

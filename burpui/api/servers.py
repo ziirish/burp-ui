@@ -1,7 +1,7 @@
 # -*- coding: utf8 -*-
 
 # This is a submodule we can also use "from ..api import api"
-from . import api, cache_key, parallel_loop
+from . import api, cache_key
 from .custom import fields, Resource
 from ..exceptions import BUIserverException
 
@@ -66,27 +66,23 @@ class ServersStats(Resource):
             check = True
             restrict = bui.acl.servers(self.username)
 
-        def get_servers_info(serv, output, restrict, check, username):
-            try:
+        try:
+            for serv in bui.cli.servers:
                 if check and serv in restrict:
-                    output.put({
+                    r.append({
                         'name': serv,
-                        'clients': len(bui.acl.clients(username, serv)),
+                        'clients': len(bui.acl.clients(self.username, serv)),
                         'alive': bui.cli.servers[serv].ping()
                     })
-                    return
                 elif not check:
-                    output.put({
+                    r.append({
                         'name': serv,
                         'clients': len(bui.cli.servers[serv].get_all_clients(serv)),
                         'alive': bui.cli.servers[serv].ping()
                     })
-                    return
-                output.put(None)
-            except BUIserverException as e:
-                output.put(str(e))
 
-        r = parallel_loop(get_servers_info, bui.cli.servers, restrict, check, self.username)
+        except BUIserverException as e:
+            self.abort(500, str(e))
 
         return r
 
@@ -167,10 +163,10 @@ class ServersReport(Resource):
             check = True
             restrict = bui.acl.servers(self.username)
 
-        stats = []
-
-        def get_servers_stats(serv, output, restrict, check, username):
-            try:
+        backups = []
+        servers = []
+        try:
+            for serv in bui.cli.servers:
                 out = {
                     'name': serv,
                     'stats': {
@@ -183,19 +179,16 @@ class ServersReport(Resource):
                     'number': 0
                 }
                 if check and serv not in restrict:
-                    output.put(None)
-                    return
+                    continue
                 clients = []
-                if (bui.acl and not
-                        bui.acl.is_admin(username)):
-                    clients = [{'name': x} for x in bui.acl.clients(username, serv)]
+                if bui.acl and not self.is_admin:
+                    clients = [{'name': x} for x in bui.acl.clients(self.username, serv)]
                 else:
                     clients = bui.cli.get_all_clients(agent=serv)
 
                 j = bui.cli.get_clients_report(clients, serv)
                 if 'clients' not in j or 'backups' not in j:
-                    output.put(None)
-                    return
+                    continue
                 for stats in j['clients']:
                     for key in ['total', 'totsize']:
                         out['stats'][key] += stats['stats'][key]
@@ -207,16 +200,11 @@ class ServersReport(Resource):
                         out['stats']['unknown'] += 1
                 for bkp in j['backups']:
                     out['number'] += bkp['number']
-                output.put(out)
-            except BUIserverException as e:
-                output.put(str(e))
+                backups.append({'name': serv, 'number': out['number']})
+                servers.append({'name': serv, 'number': out['stats']})
 
-        stats = parallel_loop(get_servers_stats, bui.cli.servers, restrict, check, self.username)
-        backups = []
-        servers = []
-        for serv in stats:
-            backups.append({'name': serv['name'], 'number': serv['number']})
-            servers.append({'name': serv['name'], 'stats': serv['stats']})
+        except BUIserverException as e:
+            self.abort(500, str(e))
 
         r['backups'] = backups
         r['servers'] = servers
