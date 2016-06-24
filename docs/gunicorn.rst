@@ -18,10 +18,8 @@ You will then be able to launch `Burp-UI`_ this way:
 
 ::
 
-    SERVER_SOFTWARE=gunicorn gunicorn -k gevent -w 4 'burpui:init(conf="/path/to/burpui.cfg")'
+    gunicorn -k gevent -w 4 'burpui:create_app(conf="/path/to/burpui.cfg")'
 
-
-.. note:: The ``SERVER_SOFTWARE=gunicorn`` is mandatory
 
 When using ``gunicorn``, the command line options are not available. Instead,
 run the `Burp-UI`_ ``init`` method directly. Here are the parameters you can

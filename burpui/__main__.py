@@ -46,7 +46,7 @@ def main():
 
 
 def server(options=None):
-    from burpui import init, lookup_config
+    from burpui import create_app, lookup_config
 
     if not options:
         options = parse_args(mode=False)
@@ -54,7 +54,7 @@ def server(options=None):
     conf = lookup_config(options.config)
     check_config(conf)
 
-    server = init(conf, options.log, options.logfile, False, debug=options.debug)
+    server = create_app(conf, options.log, options.logfile, False, debug=options.debug)
 
     server.manual_run()
 
