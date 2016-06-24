@@ -13,6 +13,7 @@ import math
 import string
 import sys
 import codecs
+import datetime
 import json
 import shutil
 import zipfile
@@ -291,6 +292,9 @@ class ReverseProxied(object):
 class BUIConfig(object):
     """Custom config parser"""
     logger = logging.getLogger('burp-ui')
+    delta = datetime.timedelta(seconds=30)
+    last = datetime.datetime.now() - delta
+    mtime = 0
 
     def __init__(self, config, explain=False, defaults=None):
         """Wrapper around the ConfigObj class
@@ -305,11 +309,14 @@ class BUIConfig(object):
         :type defaults: dict
         """
         self.conf = {}
+        self.conffile = config
         self.section = None
         self.defaults = defaults
         self.validator = validate.Validator()
         try:
             self.conf = configobj.ConfigObj(config, encoding='utf-8')
+            self.last = datetime.datetime.now()
+            self.mtime = os.path.getmtime(self.conffile)
         except configobj.ConfigObjError as exp:
             # We were unable to parse the config, maybe we need to
             # convert/update it
@@ -327,6 +334,7 @@ class BUIConfig(object):
                     else:
                         raise exp2
             else:
+                self.logger.critical('Unable to convert configuration')
                 if explain:
                     self._explain(exp)
                 else:
@@ -335,6 +343,8 @@ class BUIConfig(object):
     @property
     def options(self):
         """ConfigObj object"""
+        if (datetime.datetime.now() - self.last) > self.delta:
+            self._refresh()
         return self.conf
 
     @staticmethod
@@ -344,6 +354,15 @@ class BUIConfig(object):
         if not isinstance(value, list):
             return [str(value).lower()]
         return [str(x).lower() for x in value]
+
+    def _refresh(self):
+        """Refresh conf"""
+        self.last = datetime.datetime.now()
+        mtime = os.path.getmtime(self.conffile)
+        if mtime != self.mtime:
+            self.logger.debug('Configuration changed')
+            self.mtime = mtime
+            self.conf.reload()
 
     def update_defaults(self, new_defaults):
         """Add new defaults"""
