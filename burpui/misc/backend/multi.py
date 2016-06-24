@@ -11,7 +11,7 @@ from six import iteritems
 
 from .interface import BUIbackend
 from ...exceptions import BUIserverException
-from ..._compat import IS_GUNICORN, pickle
+from ..._compat import pickle
 from ...utils import implement
 
 
@@ -157,60 +157,6 @@ class Burp(BUIbackend):
                 return func
         return object.__getattribute__(self, name)
 
-    def _backup_running_parallel(self):
-        """Use :mod:`multiprocessing` or :mod:`gevent` to retrieve a list of
-        running backups
-        """
-        if IS_GUNICORN:
-            import gevent
-            from gevent.queue import Queue
-        else:
-            import multiprocessing
-            Queue = multiprocessing.Queue
-
-        r = {}
-        output = Queue()
-
-        def get_running(a, i, output):
-            output.put((i, self.servers[a].is_one_backup_running(a)))
-
-        # If we are running under gunicorn, use a gevent-safe method
-        if IS_GUNICORN:
-            processes = [
-                (
-                    gevent.spawn(
-                        get_running,
-                        a,
-                        i,
-                        output
-                    ),
-                    a
-                ) for (i, a) in enumerate(self.servers)
-            ]
-            greens = [p for (p, a) in processes]
-            gevent.joinall(greens)
-        else:
-            processes = [
-                (
-                    multiprocessing.Process(
-                        target=get_running,
-                        args=(a, i, output)
-                    ),
-                    a
-                ) for (i, a) in enumerate(self.servers)
-            ]
-            [p.start() for (p, a) in processes]
-            [p.join() for (p, a) in processes]
-
-        results = [output.get() for (p, a) in processes]
-        results.sort()
-
-        for (i, (p, a)) in enumerate(processes):
-            # results contains a tuple (index, response) so we 'split' it
-            _, r[a] = results[i]
-
-        return r
-
     @implement
     def is_one_backup_running(self, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.is_one_backup_running`"""
@@ -219,71 +165,25 @@ class Burp(BUIbackend):
             r = self.servers[agent].is_one_backup_running(agent)
             self.running[agent] = r
         else:
-            r = self._backup_running_parallel()
+            r = {}
+            for name, serv in iteritems(self.servers):
+                r[name] = serv.is_one_backup_running()
 
             self.running = r
         self.refresh = time.time()
         return r
 
-    def _get_version_parallel(self, method=None):
-        """Use :mod:`multiprocessing` or :mod:`gevent` to retrieve versions"""
-        if IS_GUNICORN:
-            import gevent
-            from gevent.queue import Queue
-        else:
-            import multiprocessing
-            Queue = multiprocessing.Queue
+    def _get_version(self, method=None):
+        """get versions"""
 
         if not method:
             raise BUIserverException('Wrong method call')
 
         r = {}
-        output = Queue()
 
-        def get_client_vers(key, i, output):
-            output.put((i, self.servers[key].get_client_version()))
-
-        def get_server_vers(key, i, output):
-            output.put((i, self.servers[key].get_server_version()))
-
-        if method == 'get_client_version':
-            func = get_client_vers
-        else:
-            func = get_server_vers
-
-        # If we are running under gunicorn, use a gevent-safe method
-        if IS_GUNICORN:
-            processes = [
-                (
-                    gevent.spawn(
-                        func,
-                        k,
-                        i,
-                        output
-                    ),
-                    k
-                ) for (i, (k, s)) in enumerate(iteritems(self.servers))
-            ]
-            greens = [p for (p, a) in processes]
-            gevent.joinall(greens)
-        else:
-            processes = [
-                (
-                    multiprocessing.Process(
-                        target=func,
-                        args=(k, i, output)
-                    ),
-                    k
-                ) for (i, (k, s)) in enumerate(iteritems(self.servers))
-            ]
-            [p.start() for (p, k) in processes]
-            [p.join() for (p, k) in processes]
-
-        results = [output.get() for (p, k) in processes]
-        results.sort()
-
-        for (i, (p, k)) in enumerate(processes):
-            _, r[k] = results[i]
+        for name, serv in iteritems(self.servers):
+            func = getattr(serv, method)
+            r[name] = func()
 
         return r
 
@@ -291,14 +191,14 @@ class Burp(BUIbackend):
     def get_client_version(self, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_client_version`"""
         if not agent:
-            return self._get_version_parallel('get_client_version')
+            return self._get_version('get_client_version')
         return self.servers[agent].get_client_version()
 
     @implement
     def get_server_version(self, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_server_version`"""
         if not agent:
-            return self._get_version_parallel('get_server_version')
+            return self._get_version('get_server_version')
         return self.servers[agent].get_server_version()
 
 

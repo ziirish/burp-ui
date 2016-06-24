@@ -8,7 +8,6 @@
 
 """
 import sys
-import os
 
 try:
     import ConfigParser  # noqa
@@ -26,11 +25,6 @@ if sys.version_info[0] >= 3:
 else:
     PY3 = False
     from urllib import unquote, quote  # noqa
-
-if 'gunicorn' in os.environ.get('SERVER_SOFTWARE', ''):
-    IS_GUNICORN = True
-else:
-    IS_GUNICORN = False
 
 
 # maps module name -> attribute name -> original item
