@@ -316,6 +316,14 @@ class BurpuiACLTestCase(TestCase):
             assert 'Burp Configuration' in response.data.decode('utf-8')
             self.logout()
 
+    def test_admin_api(self):
+        with self.client:
+            rv = self.login('admin', 'admin')
+            response = self.client.get(url_for('api.auth_users'))
+            response2 = self.client.get(url_for('api.auth_backends'))
+            self.assertEqual(response.json, [{u'id': u'admin', u'name': u'admin', u'backend': u'BASIC'}, {u'id': u'user1', u'name': u'user1', u'backend': u'BASIC'}])
+            self.assertEqual(response2.json, [{u'add': True, u'del': True, u'name': u'BASIC', u'mod': True}])
+
     def test_config_render_ko(self):
         with self.client:
             rv = self.login('user1', 'password')
