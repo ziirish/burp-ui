@@ -31,15 +31,16 @@ class BasicLoader(BUIloader):
         self.handler.add_user = self.add_user
         self.handler.del_user = self.del_user
         self.handler.change_password = self.change_password
-        self.load_users()
+        self.load_users(True)
 
     def load_users(self, force=False):
-        self.users = {
-            'admin': generate_password_hash('admin')
-        }
         if not force and self.conf_id:
             if not self.conf.changed(self.conf_id):
                 return
+
+        self.users = {
+            'admin': generate_password_hash('admin')
+        }
 
         if self.section in self.conf.options:
             # TODO: improve salt detection to not break everything
