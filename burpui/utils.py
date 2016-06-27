@@ -362,6 +362,8 @@ class BUIConfig(object):
 
     def changed(self, id):
         """Check if the conf has changed"""
+        if (datetime.datetime.now() - self.last) > self.delta:
+            self._refresh()
         return id != self.mtime
 
     def _refresh(self):
