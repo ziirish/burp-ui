@@ -25,18 +25,24 @@ class BasicLoader(BUIloader):
         """
         self.app = app
         self.conf = self.app.conf
+        self.conf_id = None
         self.handler = handler
         self.handler.name = self.name
         self.handler.add_user = self.add_user
         self.handler.del_user = self.del_user
         self.handler.change_password = self.change_password
-        self._load_users()
+        self.load_users()
 
-    def _load_users(self):
+    def load_users(self, force=False):
         self.users = {
             'admin': generate_password_hash('admin')
         }
+        if not force and self.conf_id:
+            if not self.conf.changed(self.conf_id):
+                return
+
         if self.section in self.conf.options:
+            # TODO: improve salt detection to not break everything
             # check passwords are salted
             salted = False
             if len(self.conf.options.comments[self.section]) > 0:
@@ -70,6 +76,7 @@ class BasicLoader(BUIloader):
                 )
                 self.conf.options.comments[self.section].append('# @salted@')
                 self.conf.options.write()
+            self.conf_id = self.conf.id
 
     def fetch(self, uid=None):
         """:func:`burpui.misc.auth.basic.BasicLoader.fetch` searches for a user
@@ -147,7 +154,7 @@ class BasicLoader(BUIloader):
         pwd = generate_password_hash(passwd)
         self.conf.options[self.section][user] = pwd
         self.conf.options.write()
-        self._load_users()
+        self.load_users(True)
         message = "user '{}' successfully added".format(user)
         return True, message, NOTIF_OK
 
@@ -164,7 +171,7 @@ class BasicLoader(BUIloader):
             return False, message, NOTIF_WARN
         del self.conf.options[self.section][user]
         self.conf.options.write()
-        self._load_users()
+        self.load_users(True)
         message = "user '{}' successfully removed".format(user)
         return True, message, NOTIF_OK
 
@@ -182,7 +189,7 @@ class BasicLoader(BUIloader):
         pwd = generate_password_hash(passwd)
         self.conf.options[self.section][user] = pwd
         self.conf.options.write()
-        self._load_users()
+        self.load_users(True)
         message = "user '{}' successfully updated".format(user)
         return True, message, NOTIF_OK
 
@@ -197,6 +204,7 @@ class UserHandler(BUIhandler):
     def user(self, name=None):
         """See :func:`burpui.misc.auth.interface.BUIhandler.user`"""
         if name not in self.users:
+            self.basic.load_users()
             self.users[name] = BasicUser(self.basic, name)
         return self.users[name]
 

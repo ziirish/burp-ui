@@ -347,6 +347,11 @@ class BUIConfig(object):
             self._refresh()
         return self.conf
 
+    @property
+    def id(self):
+        """Conf ID to detect changes"""
+        return self.mtime
+
     @staticmethod
     def string_lower_list(value):
         if not value:
@@ -354,6 +359,10 @@ class BUIConfig(object):
         if not isinstance(value, list):
             return [str(value).lower()]
         return [str(x).lower() for x in value]
+
+    def changed(self, id):
+        """Check if the conf has changed"""
+        return id != self.mtime
 
     def _refresh(self):
         """Refresh conf"""

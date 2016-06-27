@@ -33,16 +33,16 @@ class AuthUsers(Resource):
         'backend': fields.String(required=True, description='Backend name'),
     })
     parser_add = ns.parser()
-    parser_add.add_argument('name', required=True, help='Username')
-    parser_add.add_argument('password', required=True, help='Password')
-    parser_add.add_argument('backend', required=True, help='Backend')
+    parser_add.add_argument('name', required=True, help='Username', location='values')
+    parser_add.add_argument('password', required=True, help='Password', location='values')
+    parser_add.add_argument('backend', required=True, help='Backend', location='values')
 
     parser_mod = ns.parser()
-    parser_mod.add_argument('password', required=True, help='Password')
-    parser_mod.add_argument('backend', required=True, help='Backend')
+    parser_mod.add_argument('password', required=True, help='Password', location='values')
+    parser_mod.add_argument('backend', required=True, help='Backend', location='values')
 
     parser_del = ns.parser()
-    parser_del.add_argument('backend', required=True, help='Backend')
+    parser_del.add_argument('backend', required=True, help='Backend', location='values')
 
     @ns.marshal_list_with(user_fields, code=200, description='Success')
     @ns.doc(
@@ -109,7 +109,7 @@ class AuthUsers(Resource):
         args = self.parser_add.parse_args()
         # Manage ACL
         if not bui.acl or not self.is_admin:
-            self.abort(403, "Not allowed to view users list")
+            self.abort(403, "Not allowed to create users")
 
         try:
             handler = getattr(bui, 'uhandler')
@@ -154,11 +154,11 @@ class AuthUsers(Resource):
         },
     )
     def delete(self, name):
-        """Change user password"""
+        """Delete a user"""
         args = self.parser_del.parse_args()
         # Manage ACL
         if not bui.acl or not self.is_admin:
-            self.abort(403, "Not allowed to view users list")
+            self.abort(403, "Not allowed to delete this user")
 
         try:
             handler = getattr(bui, 'uhandler')
@@ -202,11 +202,11 @@ class AuthUsers(Resource):
         },
     )
     def post(self, name):
-        """Delete a user"""
+        """Change user password"""
         args = self.parser_mod.parse_args()
         # Manage ACL
-        if not bui.acl or not self.is_admin:
-            self.abort(403, "Not allowed to view users list")
+        if name != self.username or not bui.acl or not self.is_admin:
+            self.abort(403, "Not allowed to modify this user")
 
         try:
             handler = getattr(bui, 'uhandler')
