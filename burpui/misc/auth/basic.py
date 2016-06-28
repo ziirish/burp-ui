@@ -36,7 +36,7 @@ class BasicLoader(BUIloader):
     def load_users(self, force=False):
         if not force and self.conf_id:
             if not self.conf.changed(self.conf_id):
-                return
+                return False
 
         self.users = {
             'admin': generate_password_hash('admin')
@@ -78,6 +78,7 @@ class BasicLoader(BUIloader):
                 self.conf.options.comments[self.section].append('# @salted@')
                 self.conf.options.write()
             self.conf_id = self.conf.id
+        return True
 
     def fetch(self, uid=None):
         """:func:`burpui.misc.auth.basic.BasicLoader.fetch` searches for a user
@@ -200,14 +201,21 @@ class UserHandler(BUIhandler):
     def __init__(self, app=None):
         """See :func:`burpui.misc.auth.interface.BUIhandler.__init__`"""
         self.basic = BasicLoader(app, self)
+        self.change = False
         self.users = {}
 
     def user(self, name=None):
         """See :func:`burpui.misc.auth.interface.BUIhandler.user`"""
         if name not in self.users:
-            self.basic.load_users()
+            self.change = self.basic.load_users()
             self.users[name] = BasicUser(self.basic, name)
         return self.users[name]
+
+    @property
+    def changed(self):
+        ret = self.change or self.basic.load_users()
+        self.change = False
+        return ret
 
     @property
     def loader(self):
