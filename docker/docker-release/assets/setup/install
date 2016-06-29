@@ -104,6 +104,8 @@ cp ${CONFIG_DIR}/burp-ui/burpui.cfg /etc/burp/burpui.cfg
 
 cat ${CONFIG_DIR}/burp/burp.conf >/etc/burp/burp.conf
 cat ${CONFIG_DIR}/burp/burp-server.conf >/etc/burp/burp-server.conf
+rm -rf /etc/burp/clientconfdir/*
+echo "password = abcdefgh" >/etc/burp/clientconfdir/agent
 
 # configure redis
 sed -i "s/^daemonize yes/daemonize no/" /etc/redis/redis.conf
