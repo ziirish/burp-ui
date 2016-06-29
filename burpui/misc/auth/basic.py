@@ -26,6 +26,7 @@ class BasicLoader(BUIloader):
         self.app = app
         self.conf = self.app.conf
         self.conf_id = None
+        self.users = {}
         self.handler = handler
         self.handler.name = self.name
         self.handler.add_user = self.add_user
@@ -39,20 +40,30 @@ class BasicLoader(BUIloader):
                 return False
 
         self.users = {
-            'admin': generate_password_hash('admin')
+            'admin': {'pwd': generate_password_hash('admin'), 'salted': True}
         }
 
         if self.section in self.conf.options:
-            # TODO: improve salt detection to not break everything
             # check passwords are salted
             salted = False
-            if len(self.conf.options.comments[self.section]) > 0:
-                if re.match(
-                        r'^\s*#+\s*@salted@',
-                        self.conf.options.comments[self.section][-1]):
-                    salted = True
+            # This is not necessary for now. Maybe will use this some day
+            # TODO: clean this?
+            ## if len(self.conf.options.comments[self.section]) > 0:
+            ##     if re.match(
+            ##             r'^\s*#+\s*@salted@',
+            ##             self.conf.options.comments[self.section][-1]):
+            ##         salted = True
+            # allow mixed logins (plain and hashed)
+            # TODO: defaults to False for 0.4.0
+            mixed = self.conf.safe_get(
+                'mixed',
+                cast='boolean',
+                section=self.section,
+                defaults={self.section: {'mixed': True}}
+            )
             self.users = {}
             for opt in self.conf.options.get(self.section).keys():
+                salt = True
                 if opt == 'priority':
                     # Maybe the handler argument is None, maybe the 'priority'
                     # option is missing. We don't care.
@@ -65,11 +76,19 @@ class BasicLoader(BUIloader):
                         pass
                     continue  # pragma: no cover
                 pwd = self.conf.safe_get(opt, section=self.section)
-                if not salted:
-                    pwd = generate_password_hash(pwd)
-                    self.conf.options[self.section][opt] = pwd
-                self.users[opt] = pwd
-                self.logger.info('Loading user: {}'.format(opt))
+                if not salted or mixed:
+                    if not re.match(r'^pbkdf2:.+\$.+\$.+', pwd):
+                        if mixed:
+                            salt = False
+                        else:
+                            # mixed not allowed so we convert plain passwords
+                            pwd = generate_password_hash(pwd)
+                            self.conf.options[self.section][opt] = pwd
+                self.users[opt] = {'pwd': pwd, 'salted': salt}
+                self.logger.info('Loading user: {} ({})'.format(
+                    opt,
+                    'hashed' if salt else 'plain')
+                )
 
             if not salted:
                 self.conf.options.comments[self.section].append(
@@ -89,6 +108,7 @@ class BasicLoader(BUIloader):
 
         :returns: The given UID if the user exists or None
         """
+        self.load_users()
         if uid in self.users:
             return uid
 
@@ -106,8 +126,13 @@ class BasicLoader(BUIloader):
 
         :returns: True if there is a match, otherwise False
         """
-        return uid in self.users and \
-            check_password_hash(self.users[uid], passwd)
+        self.load_users()
+        if uid in self.users:
+            if self.users[uid]['salted']:
+                return check_password_hash(self.users[uid]['pwd'], passwd)
+            else:
+                return self.users[uid]['pwd'] == passwd
+        return False
 
     def _setup_users(self):
         """Setup user management"""
@@ -124,12 +149,14 @@ class BasicLoader(BUIloader):
                     for line in ori:
                         if re.match(r'^\s*#+\s*\[{}\]'.format(self.section),
                                     line):
-                            if not last or \
-                                    not re.match(r'^\s*#+\s*@salted@', last):
-                                config.write(
-                                    '# Please DO NOT touch the following line\n'
-                                )
-                                config.write('# @salted@\n')
+                            # Not useful for now
+                            # TODO: clean this?
+                            ## if not last or \
+                            ##         not re.match(r'^\s*#+\s*@salted@', last):
+                            ##     config.write(
+                            ##         '# Please DO NOT touch the following line\n'
+                            ##     )
+                            ##     config.write('# @salted@\n')
 
                             config.write('[{}]\n'.format(self.section))
                             found = True
@@ -138,10 +165,10 @@ class BasicLoader(BUIloader):
                             last = line
 
                     if not found:
-                        config.write(
-                            '# Please DO NOT touch the following line\n'
-                        )
-                        config.write('# @salted@\n')
+                        ## config.write(
+                        ##     '# Please DO NOT touch the following line\n'
+                        ## )
+                        ## config.write('# @salted@\n')
                         config.write('[{}]\n'.format(self.section))
 
             self.conf.options.reload()
@@ -163,6 +190,7 @@ class BasicLoader(BUIloader):
     def del_user(self, user):
         """Delete a user"""
         self._setup_users()
+        self.load_users(True)
         if user not in self.users:
             message = "user '{}' does not exist".format(user)
             self.logger.error(message)
@@ -172,6 +200,7 @@ class BasicLoader(BUIloader):
             self.logger.warning(message)
             return False, message, NOTIF_WARN
         del self.conf.options[self.section][user]
+        del self.users[user]
         self.conf.options.write()
         self.load_users(True)
         message = "user '{}' successfully removed".format(user)
@@ -180,6 +209,7 @@ class BasicLoader(BUIloader):
     def change_password(self, user, passwd):
         """Change a user password"""
         self._setup_users()
+        self.load_users(True)
         if user not in self.users:
             message = "user '{}' does not exist".format(user)
             self.logger.error(message)
