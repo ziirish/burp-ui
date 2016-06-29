@@ -29,6 +29,9 @@
  */
 
 var _client_table = $('#table-client').dataTable( {
+	{% if session.pageLength -%}
+	pageLength: {{ session.pageLength }},
+	{% endif -%}
 	responsive: true,
 	ajax: {
 		url: '{{ url_for("api.client_stats", name=cname, server=server) }}',
@@ -110,6 +113,10 @@ var _client = function() {
 		}
 	}).fail(myFail);
 };
+
+$('#table-client').on('length.dt', function(e, settings, len) {
+	$.post( '{{ url_for("api.prefs_ui") }}', {pageLength: len} );
+});
 
 $(document).ready(function() {
 	$('a.toggle-vis').on('click', function(e) {

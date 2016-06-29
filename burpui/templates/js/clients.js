@@ -43,6 +43,9 @@ var __date = {
  */
 
 var _clients_table = $('#table-clients').dataTable( {
+	{% if session.pageLength -%}
+	pageLength: {{ session.pageLength }},
+	{% endif -%}
 	responsive: true,
 	ajax: {
 		url: '{{ url_for("api.clients_stats", server=server) }}',
@@ -86,3 +89,7 @@ var _clients = function() {
 		_clients_table.api().ajax.reload( null, false );
 	}
 };
+
+$('#table-clients').on('length.dt', function(e, settings, len) {
+	$.post( '{{ url_for("api.prefs_ui") }}', {pageLength: len} );
+});
