@@ -45,6 +45,7 @@ class UserHandler(BUIuser):
         self.active = False
         self.authenticated = sess.get('authenticated', False)
         self.backends = backends
+        self.back = None
         self.name = name
         self.real = None
 
@@ -67,8 +68,13 @@ class UserHandler(BUIuser):
                     self.authenticated = True
                     self.id = res
                     self.real = u
+                    self.back = back
                     break
         elif self.real:  # pragma: no cover
+            if self.back and getattr(self.back, 'changed', False):
+                self.real = None
+                self.back = None
+                return self.login(passwd)
             self.authenticated = self.real.login(passwd)
         sess = session._get_current_object()
         sess['authenticated'] = self.authenticated
