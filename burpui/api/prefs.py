@@ -8,11 +8,11 @@
 
 """
 from . import api
-from .custom import fields, Resource
+from .custom import Resource
 #  from ..exceptions import BUIserverException
 
-from six import iteritems, viewkeys
-from flask import current_app as bui, session
+from six import viewkeys
+from flask import session
 
 ns = api.namespace('preferences', 'Preferences methods')
 
