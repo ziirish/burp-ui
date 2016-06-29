@@ -498,24 +498,26 @@ class BUIConfig(object):
                         "'{}': no such validator".format(cast)
                     )
                     return val
-            ret = caster(val)
+            ret = caster(val) or default
             self.logger.debug(
-                '[{}]:{} - found: {}, default: {}'.format(
-                    section,
-                    key,
-                    val,
-                    default
-                )
-            )
-        except validate.ValidateError as exp:
-            self.logger.warning(
-                '[{}]:{} - found: {}, default: {}\n{}'.format(
+                '[{}]:{} - found: {}, default: {} -> {}'.format(
                     section,
                     key,
                     val,
                     default,
+                    ret
+                )
+            )
+        except validate.ValidateError as exp:
+            ret = default
+            self.logger.warning(
+                '[{}]:{} - found: {}, default: {} -> {}\n{}'.format(
+                    section,
+                    key,
+                    val,
+                    default,
+                    ret,
                     str(exp)
                 )
             )
-            ret = default
         return ret

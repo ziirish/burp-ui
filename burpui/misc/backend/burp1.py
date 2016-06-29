@@ -270,7 +270,7 @@ class Burp(BUIbackend):
         :param default: Default value in case the retrieved value is not correct
         :type default: str
         """
-        temp = config.safe_get(field, section=sect)
+        temp = config.safe_get(field, section=sect) or default
 
         if temp and not temp.startswith('/'):
             self.logger.warning("Please provide an absolute path for the '{}' option. Fallback to '{}'".format(field, default))
