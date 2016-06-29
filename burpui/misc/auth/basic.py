@@ -48,11 +48,11 @@ class BasicLoader(BUIloader):
             salted = False
             # This is not necessary for now. Maybe will use this some day
             # TODO: clean this?
-            ## if len(self.conf.options.comments[self.section]) > 0:
-            ##     if re.match(
-            ##             r'^\s*#+\s*@salted@',
-            ##             self.conf.options.comments[self.section][-1]):
-            ##         salted = True
+            # if len(self.conf.options.comments[self.section]) > 0:
+            #     if re.match(
+            #             r'^\s*#+\s*@salted@',
+            #             self.conf.options.comments[self.section][-1]):
+            #         salted = True
             # allow mixed logins (plain and hashed)
             # TODO: defaults to False for 0.4.0
             mixed = self.conf.safe_get(
@@ -139,7 +139,7 @@ class BasicLoader(BUIloader):
         if self.section not in self.conf.options:
             # look for the section in the comments
             conffile = self.conf.options.filename
-            last = ''
+            # last = ''
             ori = []
             with codecs.open(conffile, 'r', 'utf-8') as config:
                 ori = [x.rstrip('\n') for x in config.readlines()]
@@ -151,24 +151,24 @@ class BasicLoader(BUIloader):
                                     line):
                             # Not useful for now
                             # TODO: clean this?
-                            ## if not last or \
-                            ##         not re.match(r'^\s*#+\s*@salted@', last):
-                            ##     config.write(
-                            ##         '# Please DO NOT touch the following line\n'
-                            ##     )
-                            ##     config.write('# @salted@\n')
+                            # if not last or \
+                            #         not re.match(r'^\s*#+\s*@salted@', last):
+                            #     config.write(
+                            #         '# Please DO NOT touch the following line\n'
+                            #     )
+                            #     config.write('# @salted@\n')
 
                             config.write('[{}]\n'.format(self.section))
                             found = True
                         else:
                             config.write('{}\n'.format(line))
-                            last = line
+                            # last = line
 
                     if not found:
-                        ## config.write(
-                        ##     '# Please DO NOT touch the following line\n'
-                        ## )
-                        ## config.write('# @salted@\n')
+                        # config.write(
+                        #     '# Please DO NOT touch the following line\n'
+                        # )
+                        # config.write('# @salted@\n')
                         config.write('[{}]\n'.format(self.section))
 
             self.conf.options.reload()
