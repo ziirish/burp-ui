@@ -394,10 +394,11 @@ Authentication
 
 `Burp-UI`_ provides some authentication backends in order to restrict access
 only to granted users.
-There are currently two different backends:
+There are currently three different backends:
 
 - `LDAP`_
 - `Basic`_
+- `Local`_
 
 To disable the *authentication* backend, set the *auth* option of the
 ``[Global]`` section of your `burpui.cfg`_ file to *none*:
@@ -406,6 +407,19 @@ To disable the *authentication* backend, set the *auth* option of the
 
     [Global]
     auth: none
+
+
+You can use multiple backends, they will be sorted by priority or in the order
+they are defined if no priority is found.
+If a user is present in several backends, the first one that matches both login
+and password will be used.
+
+Example:
+
+::
+
+    [Global]
+    auth: basic,ldap
 
 
 LDAP
@@ -428,6 +442,8 @@ Now you can add *ldap* specific options:
 
     # ldapauth specific options
     [LDAP]
+    # Backend priority. Higher is first
+    priority = 1
     # LDAP host
     host: 127.0.0.1
     # LDAP port
@@ -489,13 +505,48 @@ Now you can add *basic* specific options:
     # Note: in case you leave this section commented, the default login/password
     # is admin/admin
     [BASIC]
-    admin: password
-    user1: otherpassword
+    # Backend priority. Higher is first
+    priority = 2
+    # Allow both plain and hashed passwords
+    # WARNING: This will defaults to false in v0.4.0
+    mixed = true
+    admin: pbkdf2:sha1:1000$12345678$password
+    user1: pbkdf2:sha1:1000$87654321$otherpassword
 
 
 .. note::
     Each line defines a new user with the *key* as the username and the *value*
     as the password
+
+.. warning::
+    Since v0.3.0, passwords must be hashed
+
+Local
+^^^^^
+
+In order for the *local* authentication backend to be enabled, you need to set
+the *auth* option of the ``[Global]`` section of your `burpui.cfg`_ file to
+*local*:
+
+::
+
+    [Global]
+    auth: local
+
+
+Now you can add *local* specific options:
+
+::
+
+    # localauth specific options
+    # Note: if not running as root, then burp-ui must be run as group 'shadow' to
+    # allow PAM to work
+    [LOCAL]
+    # Backend priority. Higher is first
+    priority: 3
+    # List of local users allowed to login. If you don't set this setting, every
+    # local user will be able to login
+    users: user1,user2
 
 
 ACL
@@ -538,18 +589,18 @@ Now you can add *basic acl* specific options:
     # access to all clients whereas other users will only see the client that have
     # the same name
     [BASIC:ACL]
-    # Please note the double-quote around the username on the admin line are
+    admin: user1,user2
+    # Please note the double-quotes and single-quotes on the following lines are
     # mandatory!
-    admin: ["user1","user2"]
     # You can also overwrite the default behavior by specifying which clients a
     # user can access
-    user3: ["client4", "client5"]
+    user3: '["client4", "client5"]'
     # In case you are not in a standalone mode, you can also specify which clients
     # a user can access on a specific Agent
-    user4: {"agent1": ["client6", "client7"], "agent2": ["client8"]}
+    user4: '{"agent1": ["client6", "client7"], "agent2": ["client8"]}'
 
 
-.. warning:: The double-quotes are **mendatory**
+.. warning:: The double-quotes and single-quotes are **mendatory**
 
 
 .. _Burp: http://burp.grke.org/
