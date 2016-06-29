@@ -1,0 +1,69 @@
+#!/bin/bash
+set -e
+
+trap appStop SIGINT SIGTERM
+
+appStart () {
+  # start supervisord
+  /usr/bin/supervisord -c /etc/supervisor/supervisord.conf
+
+  chown -R burpui: /srv
+
+  echo "Starting crond..."
+  supervisorctl start cron >/dev/null
+
+  echo "Starting burp..."
+  supervisorctl start burp >/dev/null
+
+  echo "Starting redis..."
+  supervisorctl start redis >/dev/null
+
+  echo "Starting gunicorn..."
+  /etc/init.d/gunicorn restart >/dev/null
+
+  # watch the access logs
+  tail -F /var/log/gunicorn/burp-ui_info.log
+}
+
+appStop() {
+  echo ""
+  echo "Stopping gunicorn..."
+  /etc/init.d/gunicorn stop >/dev/null
+  echo "Stopping burp..."
+  supervisorctl stop burp >/dev/null
+  echo "Stopping redis..."
+  supervisorctl stop redis >/dev/null
+  echo "Stopping crond..."
+  supervisorctl stop cron >/dev/null
+  echo "Stopping supervisord..."
+  kill -15 $(cat /var/run/supervisord.pid)
+  exit
+}
+
+appHelp () {
+  echo "Available options:"
+  echo " app:start          - Starts the gitlab server (default)"
+  echo " app:help           - Displays the help"
+  echo " [command]          - Execute the specified linux command eg. bash."
+}
+
+case "$1" in
+  app:start)
+    appStart
+    ;;
+  *)
+    if [ -x $1 ]; then
+      $1
+    else
+      prog=$(which $1)
+      if [ -n "${prog}" ] ; then
+        shift 1
+        $prog $@
+      else
+        appHelp
+      fi
+    fi
+    ;;
+esac
+
+exit 0

@@ -1,0 +1,114 @@
+#!/bin/bash
+# Build: @build@
+set -e
+
+SETUP_DIR="/app/setup"
+CONFIG_DIR="${SETUP_DIR}/config"
+BURPUI="https://burpui.ziirish.me/builds/burp-ui.dev.tar.gz"
+
+echo "deb http://ziirish.info/repos/debian/jessie zi-latest main" >/etc/apt/sources.list.d/ziirish.list
+wget https://ziirish.info/repos/debian.gpg -O- | apt-key add -
+
+cd
+
+apt-get remove -y python-cffi
+apt-get update
+apt-get install -y libssl-dev burp-server burp-client
+
+# Install burp-ui
+pip install --upgrade pip
+pip install "requests[security]"
+pip install --upgrade cffi
+cd /burp-ui
+python setup.py install
+pip install ujson
+pip install gevent
+pip install redis
+pip install Flask-Session
+
+# Create burp-ui User
+useradd -r -d /var/lib/burpui -c 'Burp-UI daemon user' -u 5337 burpui
+
+mkdir -p /var/log/gunicorn
+chown -R burpui: /var/log/gunicorn
+
+# configure supervisord log rotation
+cat > /etc/logrotate.d/supervisord <<EOF
+/var/log/supervisor/*.log {
+  weekly
+  missingok
+  rotate 52
+  compress
+  delaycompress
+  notifempty
+  copytruncate
+}
+EOF
+
+# configure gunicorn log rotation
+cat > /etc/logrotate.d/gunicorn <<EOF
+/var/log/gunicorn/*.log {
+  daily
+  missingok
+  rotate 14
+  compress
+  delaycompress
+  notifempty
+  copytruncate
+}
+EOF
+
+# configure supervisord to start crond
+cat > /etc/supervisor/conf.d/cron.conf <<EOF
+[program:cron]
+priority=20
+directory=/tmp
+command=/usr/sbin/cron -f
+user=root
+autostart=false
+autorestart=true
+stdout_logfile=/var/log/supervisor/%(program_name)s.log
+stderr_logfile=/var/log/supervisor/%(program_name)s.log
+EOF
+
+# configure supervisord to start redis
+cat >/etc/supervisor/conf.d/redis.conf <<EOF
+[program:redis]
+directory=/tmp
+command=/usr/bin/redis-server /etc/redis/redis.conf
+user=root
+autostart=false
+autorestart=true
+stdout_logfile=/var/log/supervisor/%(program_name)s.log
+stderr_logfile=/var/log/supervisor/%(program_name)s.log
+EOF
+
+# configure supervisord to start burp
+cat > /etc/supervisor/conf.d/burp.conf <<EOF
+[program:burp]
+priority=20
+directory=/tmp
+command=/usr/sbin/burp -F -c /etc/burp/burp-server.conf
+user=burpui
+autostart=false
+autorestart=true
+stdout_logfile=/var/log/supervisor/%(program_name)s.log
+stderr_logfile=/var/log/supervisor/%(program_name)s.log
+EOF
+
+cp ${CONFIG_DIR}/gunicorn.d/burp-ui /etc/gunicorn.d/burp-ui
+
+mkdir -p /etc/burp
+cp ${CONFIG_DIR}/burp-ui/burpui.cfg /etc/burp/burpui.cfg
+
+cat ${CONFIG_DIR}/burp/burp.conf >/etc/burp/burp.conf
+cat ${CONFIG_DIR}/burp/burp-server.conf >/etc/burp/burp-server.conf
+
+# configure redis
+sed -i "s/^daemonize yes/daemonize no/" /etc/redis/redis.conf
+sed -i "s|^dir /var/lib/redis|dir /srv/redis|" /etc/redis/redis.conf
+
+chown -R burpui: /etc/burp
+
+# cleanup
+rm -rf /var/lib/apt/lists/*
