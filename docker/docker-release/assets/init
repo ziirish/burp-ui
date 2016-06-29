@@ -7,6 +7,8 @@ appStart () {
   # start supervisord
   /usr/bin/supervisord -c /etc/supervisor/supervisord.conf
 
+  mkdir -p /srv/redis
+  mkdir -p /srv/backup
   chown -R burpui: /srv
 
   echo "Starting crond..."

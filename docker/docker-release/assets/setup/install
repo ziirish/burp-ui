@@ -20,6 +20,7 @@ pip install --upgrade pip
 pip install "requests[security]"
 pip install --upgrade cffi
 cd /burp-ui
+pip install -r requirements.txt
 python setup.py install
 pip install ujson
 pip install gevent
