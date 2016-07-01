@@ -33,22 +33,28 @@ class Option(object):
         self._dirty = True
 
     def update(self, value):
+        """Change the option value"""
         self._dirty = True
         self.value = value
 
     def clean(self):
+        """Mark the option as clean"""
         self._dirty = False
 
     def parse(self):
+        """Parse the option value"""
         return self.value
 
     def dump(self):
+        """Return the option representation to store in configuration file"""
         return "{} {} {}".format(self.name, self.delim, self.value)
 
     def __repr__(self):
+        """Option representation"""
         return "{} -> {}".format(self.name, self.parse())
 
     def __str__(self):
+        """Option to string"""
         return self.dump()
 
 
@@ -70,6 +76,7 @@ class OptionInt(Option):
     type = 'integer'
 
     def parse(self):
+        """Parse the option value"""
         return int(self.value)
 
 
@@ -82,6 +89,7 @@ class OptionBool(Option):
     type = 'boolean'
 
     def parse(self):
+        """Parse the option value"""
         try:
             return int(self.value) == 1
         except ValueError:
@@ -119,6 +127,7 @@ class OptionMulti(Option):
         return self.value.index(value)
 
     def dump(self):
+        """Return the option representation to store in configuration file"""
         ret = u''
         for val in self.value:
             ret += '{} {} {}\n'.format(self.name, self.delim, val)
@@ -161,6 +170,7 @@ class OptionInc(Option):
         return absolute
 
     def extend(self):
+        """Helper function for the parsing"""
         if not self._dirty and self.extended:
             return self.extended
         paths = []
@@ -174,9 +184,11 @@ class OptionInc(Option):
         return paths
 
     def parse(self):
+        """Parse the option value"""
         return self.extend()
 
     def dump(self):
+        """Return the option representation to store in configuration file"""
         if self.extend() and not self.parser.backend.enforce:
             return '. {}'.format(self.name)
         # if the include did not match anything, we can safely remove it
@@ -286,6 +298,38 @@ class File(dict):
 
     def _options_for_type(self, typ):
         return getattr(self.parser, '{}_{}'.format(typ, self.mode), [])
+
+    def _type_for_option(self, opt):
+        if opt == u'.':
+            return 'include'
+
+        for typ in ['boolean', 'integer', 'multi', 'string']:
+            if opt in self._options_for_type(typ):
+                return typ
+        return None
+
+    def _new_opt(self, key, value=None, typ=None):
+        typ = typ or self._type_for_option(key)
+
+        if typ == 'boolean':
+            return OptionBool(key, value)
+        if typ == 'integer':
+            return OptionInt(key, value)
+        if typ == 'multi':
+            opt = self.options.get(key, OptionMulti(key))
+            opt.append(value)
+            return opt
+        if typ == 'include':
+            key = value
+            opt = OptionInc(
+                self.parser,
+                key,
+                value,
+                root=self.name,
+                mode=self.mode
+            )
+
+        return OptionStr(key, value)
 
     def get(self, key, default=None):
         try:
@@ -479,9 +523,12 @@ class Config(File):
         self._refresh()
         try:
             obj = self.options[key]
-            return obj if raw else obj.parse()
         except KeyError:
-            return default
+            if self.parser and key in self.parser.defaults:
+                obj = self._new_opt(key, self.parser.defaults[key])
+            else:
+                return default
+        return obj if raw else obj.parse()
 
     def get_raw(self, key, default=None):
         return self._get(key, default, True)
