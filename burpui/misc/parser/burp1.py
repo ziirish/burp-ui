@@ -42,6 +42,7 @@ class Parser(Doc):
         self.clients = []
         self.server_conf = {}
         self.client_conf = {}
+        self.clients_conf = {}
         self.clientconfdir = None
         self.workingdir = None
         self.root = None
@@ -127,7 +128,7 @@ class Parser(Doc):
         # empty all the caches
         if purge:
             self.server_conf = {}
-            self.client_conf = {}
+            self.clients_conf = {}
             self.md5 = {}
             self.filecache = {}
         self._list_clients(True)
@@ -142,7 +143,17 @@ class Parser(Doc):
             self.server_conf.set_default(self.conf)
         self._parse_conf_recursive(self.server_conf)
 
-    def _load_conf_cli(self, name=None):
+    def _load_conf_cli(self):
+        """Load the client configuration file"""
+        self.client_conf = Config()
+        data, path, cached = self._readfile(self.confcli)
+        if not cached:
+            parsed = self._parse_lines(data, path, 'cli')
+            self.client_conf.add_file(parsed, self.confcli)
+            self.client_conf.set_default(self.confcli)
+        self._parse_conf_recursive(self.client_conf, client=True)
+
+    def _load_conf_clients(self, name=None):
         """Load a given client configuration file (or all)"""
         if name:
             clients = [name]
@@ -150,14 +161,14 @@ class Parser(Doc):
             clients = self._list_clients(True)
 
         for cli in clients:
-            self.client_conf[cli['name']] = self.server_conf.clone()
+            self.clients_conf[cli['name']] = self.server_conf.clone()
             data, path, cached = self._readfile(cli['value'])
             if not cached:
                 parsed = self._parse_lines(data, path, 'cli')
-                self.client_conf[cli['name']].add_file(parsed, path)
-                self.client_conf[cli['name']].set_default(path)
+                self.clients_conf[cli['name']].add_file(parsed, path)
+                self.clients_conf[cli['name']].set_default(path)
             self._parse_conf_recursive(
-                self.client_conf[cli['name']],
+                self.clients_conf[cli['name']],
                 client=True
             )
 
@@ -165,6 +176,7 @@ class Parser(Doc):
         """Load all configurations"""
         self._load_conf_srv()
         self._load_conf_cli()
+        self._load_conf_clients()
 
     def _parse_conf_recursive(self, conf=None, parsed=None, client=False):
         """Parses a conf recursively
@@ -203,7 +215,8 @@ class Parser(Doc):
             return ret, path, False
         if not self._is_secure_path(path):
             return ret, path, False
-        if path != self.conf and not path.startswith('/'):
+        if (path != self.conf or path != self.confcli) and \
+                not path.startswith('/'):
             if client:
                 path = os.path.join(self.clientconfdir, path)
             else:
@@ -384,8 +397,8 @@ class Parser(Doc):
             res.append([NOTIF_OK, "'{}' successfully removed".format(client)])
             removed = True
 
-            if client in self.client_conf:
-                del self.client_conf[client]
+            if client in self.clients_conf:
+                del self.clients_conf[client]
 
             if path in self.md5:
                 # we always set both at the same time so we are sure both exist
@@ -451,7 +464,7 @@ class Parser(Doc):
             res.update(self.filecache[path]['parsed'])
             return res
 
-        parsed = self.client_conf[client].get_file(path)
+        parsed = self.clients_conf[client].get_file(path)
         res2 = {}
         res2[u'common'] = parsed.string
         res2[u'boolean'] = parsed.boolean
@@ -576,7 +589,7 @@ class Parser(Doc):
                 return [[NOTIF_ERROR, str(exp)]]
 
         if client:
-            conffile = self.client_conf[client].get_file(mconf)
+            conffile = self.clients_conf[client].get_file(mconf)
         else:
             conffile = self.server_conf.get_file(mconf)
 

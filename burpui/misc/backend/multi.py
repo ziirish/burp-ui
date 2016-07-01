@@ -188,6 +188,14 @@ class Burp(BUIbackend):
         return r
 
     @implement
+    def get_parser(self, agent=None):
+        # Need to return a proxy object to interact with a remote parser
+        if not agent:
+            raise BUIserverException('No agent provided')
+
+        return None
+
+    @implement
     def get_client_version(self, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_client_version`"""
         if not agent:

@@ -833,3 +833,10 @@ class BUIbackend(object):
         :returns: A list of labels or an empty list
         """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+
+    @abstractmethod
+    def get_parser(self, agent=None):
+        """The :func:`burpui.misc.backend.interface.BUIbackend.get_parser`
+        function returns the parser of the current backend.
+        """
+        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover

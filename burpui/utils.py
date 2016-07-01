@@ -502,8 +502,8 @@ class BUIConfig(object):
                     )
                     return val
             ret = caster(val)
-            # special case for boolean
-            if not ret and ret is not False:
+            # special case for boolean and integer, etc.
+            if ret is None:
                 ret = default
             self.logger.debug(
                 '[{}]:{} - found: {}, default: {} -> {}'.format(

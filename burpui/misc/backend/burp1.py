@@ -1085,3 +1085,7 @@ class Burp(BUIbackend):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_client_labels`"""
         # Not supported with Burp 1.x.x so we just return an empty list
         return []
+
+    def get_parser(self, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.get_parser`"""
+        return self.parser
