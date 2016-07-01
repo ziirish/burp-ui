@@ -46,6 +46,7 @@ class BasicLoader(BUIloader):
         if self.section in self.conf.options:
             # check passwords are salted
             salted = False
+            changed = False
             # This is not necessary for now. Maybe will use this some day
             # TODO: clean this?
             # if len(self.conf.options.comments[self.section]) > 0:
@@ -59,7 +60,7 @@ class BasicLoader(BUIloader):
                 'mixed',
                 cast='boolean',
                 section=self.section,
-                defaults={self.section: {'mixed': True}}
+                defaults=True
             )
             self.users = {}
             for opt in self.conf.options.get(self.section).keys():
@@ -75,6 +76,9 @@ class BasicLoader(BUIloader):
                     except:
                         pass
                     continue  # pragma: no cover
+                # list of reserved options
+                if opt in ['mixed']:
+                    continue
                 pwd = self.conf.safe_get(opt, section=self.section)
                 if not salted or mixed:
                     if not re.match(r'^pbkdf2:.+\$.+\$.+', pwd):
@@ -84,18 +88,21 @@ class BasicLoader(BUIloader):
                             # mixed not allowed so we convert plain passwords
                             pwd = generate_password_hash(pwd)
                             self.conf.options[self.section][opt] = pwd
+                            changed = True
                 self.users[opt] = {'pwd': pwd, 'salted': salt}
                 self.logger.info('Loading user: {} ({})'.format(
                     opt,
                     'hashed' if salt else 'plain')
                 )
 
-            if not salted:
-                self.conf.options.comments[self.section].append(
-                    '# Please DO NOT touch the following line'
-                )
-                self.conf.options.comments[self.section].append('# @salted@')
+            if changed:
                 self.conf.options.write()
+            # if not salted:
+            #     self.conf.options.comments[self.section].append(
+            #         '# Please DO NOT touch the following line'
+            #     )
+            #     self.conf.options.comments[self.section].append('# @salted@')
+            #     self.conf.options.write()
             self.conf_id = self.conf.id
         return True
 
