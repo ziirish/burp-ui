@@ -272,7 +272,7 @@ class BUIServer(Flask):
             Client = mod.Burp
             self.cli = Client(self, conf=self.conf)
         except Exception as e:
-            traceback.print_exc()
+            self.logger.critical(traceback.format_exc())
             self.logger.critical(
                 'Failed loading backend for Burp version {0}: {1}'.format(
                     self.vers,
