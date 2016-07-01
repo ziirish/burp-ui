@@ -470,18 +470,21 @@ class BUIConfig(object):
         :type section: str
 
         :param defaults: Default options
-        :type defaults: dict
+        :type defaults: dict, mixed
 
         :returns: The value of the asked option
         """
         # The configobj validator is sooo broken. We need to workaround it...
-        defaults = defaults or self.defaults
         section = section or self.section
         if section not in self.conf:
             self.logger.warning("No '{}' section found".format(section))
             if defaults:
                 return defaults.get(section, {}).get(key)
             return None
+        # if the defaults argument is not a list, assume it's a single value
+        if defaults and not isinstance(defaults, dict):
+            defaults = {section: {key: defaults}}
+        defaults = defaults or self.defaults
 
         val = self.conf.get(section).get(key)
         default = None
@@ -498,7 +501,10 @@ class BUIConfig(object):
                         "'{}': no such validator".format(cast)
                     )
                     return val
-            ret = caster(val) or default
+            ret = caster(val)
+            # special case for boolean
+            if not ret and ret is not False:
+                ret = default
             self.logger.debug(
                 '[{}]:{} - found: {}, default: {} -> {}'.format(
                     section,
