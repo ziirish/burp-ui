@@ -470,7 +470,10 @@ class Parser(Doc):
         res2[u'boolean'] = parsed.boolean
         res2[u'integer'] = parsed.integer
         res2[u'multi'] = parsed.multi
-        res2[u'includes'] = parsed.flatten('include', False).keys()
+        res2[u'includes'] = [
+            x
+            for x in parsed.flatten('include', False).keys()
+        ]
         res2[u'includes_ext'] = parsed.include
 
         if path in self.filecache:
@@ -515,7 +518,10 @@ class Parser(Doc):
         res2[u'boolean'] = parsed.boolean
         res2[u'integer'] = parsed.integer
         res2[u'multi'] = parsed.multi
-        res2[u'includes'] = parsed.flatten('include', False).keys()
+        res2[u'includes'] = [
+            x
+            for x in parsed.flatten('include', False).keys()
+        ]
         res2[u'includes_ext'] = parsed.include
 
         if path in self.filecache:

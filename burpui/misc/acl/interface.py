@@ -8,14 +8,14 @@
 
 """
 from abc import ABCMeta, abstractmethod, abstractproperty
+from six import with_metaclass
 
 import logging
 
 
-class BUIaclLoader:
+class BUIaclLoader(with_metaclass(ABCMeta, object)):
     """The :class:`burpui.misc.acl.interface.BUIaclLoader` class is used to
     load the actual ACL backend"""
-    __metaclass__ = ABCMeta
 
     logger = logging.getLogger('burp-ui')
 
@@ -35,11 +35,10 @@ class BUIaclLoader:
         return None  # pragma: no cover
 
 
-class BUIacl:
+class BUIacl(with_metaclass(ABCMeta, object)):
     """The :class:`burpui.misc.acl.interface.BUIacl` class represents the ACL
     engine.
     """
-    __metaclass__ = ABCMeta
 
     @abstractmethod
     def is_admin(self, username=None):

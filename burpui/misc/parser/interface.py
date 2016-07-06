@@ -8,15 +8,15 @@
 
 """
 from abc import ABCMeta, abstractmethod
+from six import with_metaclass
 
 import logging
 
 
-class BUIparser(object):
+class BUIparser(with_metaclass(ABCMeta, object)):
     """:class:`burpui.misc.parser.interface.BUIparser` defines a generic
     interface for ``burp`` configuration files parser.
     """
-    __metaclass__ = ABCMeta
 
     logger = logging.getLogger('burp-ui')
 

@@ -12,9 +12,10 @@ import logging
 from abc import ABCMeta, abstractmethod
 
 from ..._compat import ConfigParser
+from six import with_metaclass
 
 
-class BUIbackend(object):
+class BUIbackend(with_metaclass(ABCMeta, object)):
     """The :class:`burpui.misc.backend.interface.BUIbackend` class provides
     a consistent interface backend for any ``burp`` server.
 
@@ -25,7 +26,6 @@ class BUIbackend(object):
     :param conf: Configuration file to use
     :type conf: str
     """
-    __metaclass__ = ABCMeta
 
     # cache the running clients
     running = []
