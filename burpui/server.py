@@ -36,6 +36,7 @@ G_SCOOKIE = False
 G_APPSECRET = u'random'
 G_COOKIETIME = 14
 G_PREFIX = u''
+G_NO_SERVER_RESTORE = False
 
 
 class BUIServer(Flask):
@@ -69,6 +70,9 @@ class BUIServer(Flask):
         'Production': {
             'storage': G_STORAGE,
             'redis': G_REDIS,
+        },
+        'Experimental': {
+            'noserverrestore': G_NO_SERVER_RESTORE,
         }
     }
 
@@ -218,6 +222,13 @@ class BUIServer(Flask):
         self.redis = self.conf.safe_get(
             'redis',
             section='Production'
+        )
+
+        # Experimental options
+        self.noserverrestore = self.conf.safe_get(
+            'noserverrestore',
+            'boolean',
+            section='Experimental'
         )
 
         # Security options
