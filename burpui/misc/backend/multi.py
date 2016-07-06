@@ -10,12 +10,14 @@ import traceback
 from six import iteritems
 
 from .interface import BUIbackend
+from ..parser.interface import BUIparser
 from ...exceptions import BUIserverException
 from ..._compat import pickle
 from ...utils import implement
 
 
 INTERFACE_METHODS = BUIbackend.__abstractmethods__
+PARSER_INTERFACE_METHODS = BUIparser.__abstractmethods__
 
 
 class ProxyCall(object):
@@ -78,6 +80,70 @@ class ProxyCall(object):
                 msg = "Agent '{}' not found".format(agentName)
             raise BUIserverException(msg)
         return getattr(agent, self.method)(**encoded_args)
+
+
+class ProxyParserCall(object):
+    """Class that actually calls the Parser method"""
+    def __init__(self, agent, method):
+        """
+        :param agent: Agent to use
+        :type agent: :class:`burpui.misc.backend.multi.NClient`
+
+        :param method: Name of the method to proxify
+        :type method: str
+        """
+        self.agent = agent
+        self.method = method
+
+    def __call__(self, *args, **kwargs):
+        """This is were the proxy call (and the magic) occurs"""
+        # retrieve the original function prototype
+        proto = getattr(BUIparser, self.method)
+        args_name = list(proto.__code__.co_varnames)
+        # skip self
+        args_name.pop(0)
+        # we transform unnamed arguments to named ones
+        # example:
+        #     def my_function(toto, tata=None, titi=None):
+        #
+        #     x = my_function('blah', titi='blih')
+        #
+        # => {'toto': 'blah', 'titi': 'blih'}
+        encoded_args = {}
+        for idx, opt in enumerate(args):
+            encoded_args[args_name[idx]] = opt
+        encoded_args.update(kwargs)
+
+        data = {'func': 'proxy_parser', 'method': self.method, 'args': encoded_args}
+        return json.loads(self.agent.do_command(data))
+
+
+class ProxyParser(BUIparser):
+    """Class to generate a "virtual" parser object"""
+    # These functions MUST be implemented because we inherit an abstract class.
+    # The hack here is to get the list of the functions and let the interpreter
+    # think we don't have to implement them.
+    # Thanks to this list, we know what function are implemented by our backend.
+    foreign = PARSER_INTERFACE_METHODS
+    BUIbackend.__abstractmethods__ = frozenset()
+
+    def __init__(self, agent):
+        """
+        :param agent: Agent to use
+        :type agent: :class:`burpui.misc.backend.multi.NClient`
+        """
+        self.agent = agent
+
+    def __getattribute__(self, name):
+        # always return this value because we need it and if we don't do that
+        # we'll end up with an infinite loop
+        if name == 'foreign':
+            return object.__getattribute__(self, name)
+        # now we can retrieve the 'foreign' list and know if the object called
+        # needs to be "proxyfied"
+        if name in self.foreign:
+            return ProxyParserCall(self.agent, name)
+        return object.__getattribute__(self, name)
 
 
 class Burp(BUIbackend):
@@ -193,7 +259,7 @@ class Burp(BUIbackend):
         if not agent:
             raise BUIserverException('No agent provided')
 
-        return None
+        return ProxyParser(self.servers.get(agent))
 
     @implement
     def get_client_version(self, agent=None):
@@ -410,16 +476,38 @@ class NClient(BUIbackend):
     def store_conf_cli(self, data, client=None, conf=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.store_conf_cli`"""
         # serialize data as it is a nested dict
-        # TODO: secure the serialization
+        import hmac
+        import hashlib
         from base64 import b64encode
-        data = {'func': 'store_conf_cli', 'args': b64encode(pickle.dumps({'data': data, 'conf': conf, 'client': client}, -1)), 'pickled': True}
+        from werkzeug.datastructures import ImmutableMultiDict
+        if not isinstance(data, ImmutableMultiDict):
+            msg = 'Wrong data type'
+            self.logger.warning(msg)
+            raise BUIserverException(msg)
+        key = '{}{}'.format(self.password, 'store_conf_cli')
+        key = key.encode(encoding='utf-8')
+        pickles = pickle.dumps({'data': data, 'conf': conf, 'client': client}, -1)
+        bytes_pickles = pickles.encode(encoding='utf-8')
+        digest = hmac.new(key, bytes_pickles, hashlib.sha1).hexdigest()
+        data = {'func': 'store_conf_cli', 'args': b64encode(pickles), 'pickled': True, 'digest': digest}
         return json.loads(self.do_command(data))
 
     @implement
     def store_conf_srv(self, data, conf=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.store_conf_srv`"""
         # serialize data as it is a nested dict
-        # TODO: secure the serialization
+        import hmac
+        import hashlib
         from base64 import b64encode
-        data = {'func': 'store_conf_srv', 'args': b64encode(pickle.dumps({'data': data, 'conf': conf}, -1)), 'pickled': True}
+        from werkzeug.datastructures import ImmutableMultiDict
+        if not isinstance(data, ImmutableMultiDict):
+            msg = 'Wrong data type'
+            self.logger.warning(msg)
+            raise BUIserverException(msg)
+        key = u'{}{}'.format(self.password, 'store_conf_srv')
+        key = key.encode(encoding='utf-8')
+        pickles = b64encode(pickle.dumps({'data': data, 'conf': conf}, -1))
+        bytes_pickles = pickles.encode(encoding='utf-8')
+        digest = hmac.new(key, bytes_pickles, hashlib.sha1).hexdigest()
+        data = {'func': 'store_conf_srv', 'args': pickles, 'pickled': True, 'digest': digest}
         return json.loads(self.do_command(data))
