@@ -444,4 +444,5 @@ class SettingOptions(Resource):
 
         return {
             'is_revocation_enabled': bui.cli.revocation_enabled(server),
+            'server_can_restore': bui.cli.get_parser(agent=server).param('server_can_restore', 'client_conf'),
         }

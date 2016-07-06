@@ -12,12 +12,13 @@ from .custom import fields, Resource
 from ..exceptions import BUIserverException
 
 from six import iteritems
-from flask import flash, url_for, current_app as bui
+from flask import flash, url_for, current_app
 
 import random
 import re
 
 ns = api.namespace('misc', 'Misc methods')
+bui = current_app  # type: BUIServer
 
 counters_fields = ns.model('Counters', {
     'phase': fields.Integer(description='Backup phase'),

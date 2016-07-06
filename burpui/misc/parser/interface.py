@@ -357,3 +357,23 @@ class BUIparser(with_metaclass(ABCMeta, object)):
         raise NotImplementedError(
             "Sorry, the current Parser does not implement this method!"
         )  # pragma: no cover
+
+    @abstractmethod
+    def param(self, name, obj='server_conf', client=None):
+        """:func:`burpui.misc.parser.interface.BUIparser.param`
+        lookup for a given param in the conf.
+
+        :param name: Param name
+        :type name: str
+
+        :param obj: Object to look param for
+        :type obj: str
+
+        :param client: Search for a given client param
+        :type client: str
+
+        :returns: The asked param
+        """
+        raise NotImplementedError(
+            "Sorry, the current Parser does not implement this method!"
+        )  # pragma: no cover

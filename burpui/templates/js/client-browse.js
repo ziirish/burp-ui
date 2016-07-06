@@ -278,4 +278,10 @@ app.controller('BrowseCtrl', function($scope, $http) {
 		}, function(response) {
 			notifAll(response.data);
 		});
+	$http.get('{{ url_for("api.setting_options", server=server) }}')
+		.then(function(response) {
+			$scope.sc_restore.enabled = response.data.server_can_restore;
+		}, function(response) {
+			notifAll(response.data);
+		});
 });

@@ -125,7 +125,7 @@ class ProxyParser(BUIparser):
     # think we don't have to implement them.
     # Thanks to this list, we know what function are implemented by our backend.
     foreign = PARSER_INTERFACE_METHODS
-    BUIbackend.__abstractmethods__ = frozenset()
+    BUIparser.__abstractmethods__ = frozenset()
 
     def __init__(self, agent):
         """

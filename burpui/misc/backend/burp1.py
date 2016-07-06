@@ -893,6 +893,10 @@ class Burp(BUIbackend):
         if not client or not backup or not files:
             raise BUIserverException('At least one argument is missing')
 
+        # TODO: maybe someday we'd like to block server initiated restore
+        # if not self.parser.client_conf.get('server_can_restore'):
+        #     raise BUIserverException('Server initiated restoration is disabled')
+
         return self.parser.server_initiated_restoration(client, backup, files, strip, force, prefix, restoreto)
 
     def is_server_backup(self, client=None, agent=None):
@@ -1061,11 +1065,8 @@ class Burp(BUIbackend):
     def get_parser_attr(self, attr=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_parser_attr`"""
         if not attr or not self.parser:
-            return []
-        try:
-            return getattr(self.parser, attr)
-        except:
-            return []
+            raise BUIserverException('Wrong call')
+        return getattr(self.parser, attr, [])
 
     def revocation_enabled(self, agent=None):
         """See
@@ -1088,4 +1089,6 @@ class Burp(BUIbackend):
 
     def get_parser(self, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_parser`"""
-        return self.parser
+        if self.parser:
+            return self.parser
+        raise BUIserverException('Missing parser')

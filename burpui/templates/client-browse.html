@@ -86,7 +86,7 @@
                 </div>
               </div>
             </form>
-            <form id="form-server-initiated" class="form-inline col-md-6 text-right" method="POST" role="form" action"{{ url_for('api.server_restore', name=cname, backup=nbackup, server=server) }}">
+            <form id="form-server-initiated" class="form-inline col-md-6 text-right" method="POST" role="form" action"{{ url_for('api.server_restore', name=cname, backup=nbackup, server=server) }}" ng-show="sc_restore.enabled">
               <input type="hidden" name="list-sc">
               <div id="server-initiated-form" style="display:none;">
                 <div class="btn-group dropup">

@@ -210,6 +210,30 @@ class Parser(Doc):
                     self._parse_conf_recursive(conf, tmp, client)
 
     def _readfile(self, path=None, client=False):
+        """Read a given file. If the file has already been parsed, then return
+        it from cache
+
+        :param path: Path of the file to parse
+        :type path: str
+
+        :param client: Whether it is a client file or not
+        :type client: bool
+
+        :returns: tuple like: (file, path, cache)
+
+        Example: (file, '/etc/burp/burp-server.conf', True)
+
+        Where *file* is like:
+
+        ::
+
+            [
+                'line 1',
+                'line 2',
+                '...',
+                'line n'
+            ]
+        """
         ret = []
         if not path:
             return ret, path, False
@@ -239,6 +263,7 @@ class Parser(Doc):
         return ret, path, False
 
     def _parse_lines(self, data, name=None, mode='srv'):
+        """Parse the lines contained in *data*"""
         conffile = File(self, name, mode=mode)
         for line in data:
             if re.match(r'^\s*#', line):
@@ -843,3 +868,15 @@ class Parser(Doc):
                 ' {}'.format(str(exp))
             ]
         return [NOTIF_OK, 'Backup successfully scheduled']
+
+    def param(self, name, obj='server_conf', client=None):
+        """See :func:`burpui.misc.parser.interface.BUIparser.param`"""
+        try:
+            if client:
+                obj = 'clients_conf'
+            my_obj = getattr(self, obj)
+        except AttributeError:
+            raise BUIserverException('The requested object could not be found')
+        if client:
+            return my_obj.get(client, {}).get(name, '')
+        return my_obj.get(name, '')

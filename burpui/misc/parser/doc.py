@@ -114,6 +114,7 @@ class Doc(BUIparser):
         u'version_warn': True,  # bool
         u'vss_drives': u'',
         u'working_dir_recovery_method': u'',
+        u'server_can_restore': False,
     }
     placeholders = {
         u'.': u"path or glob",
@@ -284,6 +285,7 @@ class Doc(BUIparser):
         u'strip_vss',
         u'syslog',
         u'version_warn',
+        u'server_can_restore'
     ]
     integer_srv = [
         u'max_children',
@@ -399,6 +401,7 @@ class Doc(BUIparser):
         u'version_warn',
         u'vss_drives',
         u'working_dir_recovery_method',
+        u'server_can_restore'
     ]
     string_cli = list(set(string_srv) & set(fields_cli))
     string_cli += [u'ssl_peer_cn', u'password']
