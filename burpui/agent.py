@@ -153,14 +153,30 @@ class BUIAgent(BUIbackend, BUIlogging):
                 self.request.sendall(b'KO')
                 return
             try:
-                if j['func'] == 'restore_files':
+                if j['func'] == 'proxy_parser':
+                    if j['args']:
+                        res = json.dumps(getattr(self.cli, j['method'])(**j['args']))
+                    else:
+                        res = json.dumps(getattr(self.cli, j['method'])())
+                elif j['func'] == 'restore_files':
                     res, err = getattr(self.cli, j['func'])(**j['args'])
                 else:
                     if j['args']:
                         if 'pickled' in j and j['pickled']:
                             # de-serialize arguments if needed
+                            import hmac
+                            import hashlib
                             from base64 import b64decode
-                            j['args'] = pickle.loads(b64decode(j['args']))
+                            pickles = j['args']
+                            key = u'{}{}'.format(self.password, j['func'])
+                            key = key.encode(encoding='utf-8')
+                            bytes_pickles = pickles.encode(encoding='utf-8')
+                            digest = hmac.new(key, bytes_pickles, hashlib.sha1).hexdigest()
+                            if digest != j['digest']:
+                                self._logger('warning', 'Integrity check failed')
+                                self.request.sendall(b'KO')
+                                return
+                            j['args'] = pickle.loads(b64decode(pickles))
                         res = json.dumps(getattr(self.cli, j['func'])(**j['args']))
                     else:
                         res = json.dumps(getattr(self.cli, j['func'])())
