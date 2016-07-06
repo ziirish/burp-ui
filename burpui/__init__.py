@@ -188,10 +188,6 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
         from ._compat import patch_json
         patch_json()
 
-    if gunicorn:
-        from gevent import monkey
-        monkey.patch_all()
-
     # We initialize the core
     app = BurpUI()
     app.enable_logger()
