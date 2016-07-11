@@ -18,7 +18,7 @@ import random
 import re
 
 ns = api.namespace('misc', 'Misc methods')
-bui = current_app  # type: BUIServer
+bui = current_app  # type: burpui.server.BUIServer
 
 counters_fields = ns.model('Counters', {
     'phase': fields.Integer(description='Backup phase'),

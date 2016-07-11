@@ -178,6 +178,15 @@ class Parser(Doc):
         self._load_conf_cli()
         self._load_conf_clients()
 
+    def _new_client_conf(self, name, path):
+        """Create new client conf"""
+        conf = self.server_conf.clone()
+        parsed = File(self, path, 'cli')
+        conf.add_file(parsed, path)
+        conf.set_default(path)
+        self.clients_conf[name] = conf
+        return conf
+
     def _parse_conf_recursive(self, conf=None, parsed=None, client=False):
         """Parses a conf recursively
 
@@ -620,7 +629,10 @@ class Parser(Doc):
                 return [[NOTIF_ERROR, str(exp)]]
 
         if client:
-            conffile = self.clients_conf[client].get_file(mconf)
+            if client in self.clients_conf:
+                conffile = self.clients_conf[client].get_file(mconf)
+            else:
+                conffile = self._new_client_conf(client, mconf).get_file(mconf)
         else:
             conffile = self.server_conf.get_file(mconf)
 
