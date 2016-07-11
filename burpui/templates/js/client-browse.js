@@ -211,6 +211,7 @@ $( document ).ready(function() {
 		var url = "{{ url_for('api.server_restore', name=cname, backup=nbackup, server=server) }}";
 		$.ajax({
 			url: url,
+			headers: { 'X-From-UI': true },
 			type: 'PUT',
 			data: form.serialize(),
 			dataType: 'text json',
@@ -254,6 +255,7 @@ $( document ).ready(function() {
 		{% endif -%}
 		$.ajax({
 			url: url,
+			headers: { 'X-From-UI': true },
 			type: 'DELETE'
 		}).done(function(data) {
 			notifAll(data);
@@ -272,13 +274,13 @@ app.controller('BrowseCtrl', function($scope, $http) {
 	{% if edit and edit.orig_client -%}
 	$scope.sc_restore.to = '{{ edit.to }}';
 	{% endif -%}
-	$http.get('{{ url_for("api.clients_all", server=server) }}')
+	$http.get('{{ url_for("api.clients_all", server=server) }}', { headers: { 'X-From-UI': true } })
 		.then(function(response) {
 			$scope.sc_restore.clients = response.data;
 		}, function(response) {
 			notifAll(response.data);
 		});
-	$http.get('{{ url_for("api.setting_options", server=server) }}')
+	$http.get('{{ url_for("api.setting_options", server=server) }}', { headers: { 'X-From-UI': true } })
 		.then(function(response) {
 			$scope.sc_restore.enabled = response.data.server_can_restore;
 		}, function(response) {

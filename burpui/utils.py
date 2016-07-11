@@ -224,6 +224,8 @@ def basic_login_from_request(request, app):
     :type app: :class:`burpui.server.BUIServer`
     """
     if app.auth != 'none':
+        if request.headers.get('X-From-UI', False):
+            return None
         auth = request.authorization
         if auth:
             app.logger.debug('Found user: {}'.format(auth.username))

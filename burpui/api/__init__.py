@@ -48,6 +48,8 @@ def api_login_required(func):
                 name not in api.LOGIN_NOT_REQUIRED and
                 not bui.config.get('LOGIN_DISABLED', False)):
             if not current_user.is_authenticated:
+                if request.headers.get('X-From-UI', False):
+                    return Response('Access denied', 403)
                 return Response(
                     'Could not verify your access level for that URL.\n'
                     'You have to login with proper credentials', 401,

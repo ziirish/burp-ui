@@ -5,7 +5,8 @@ var NOTIF_INFO    = 3;
 
 var _async_ajax = function(b) {
 	$.ajaxSetup({
-		async: b
+		headers: { 'X-From-UI': true },
+		async: b,
 	});
 };
 

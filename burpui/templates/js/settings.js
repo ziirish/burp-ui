@@ -133,9 +133,9 @@ app.controller('ConfigCtrl', function($scope, $http) {
 		};
 	$scope.changed = false;
 	{% if client -%}
-	$http.get('{{ url_for("api.client_settings", client=client, conf=conf, server=server) }}')
+	$http.get('{{ url_for("api.client_settings", client=client, conf=conf, server=server) }}', { headers: { 'X-From-UI': true } })
 	{% else -%}
-	$http.get('{{ url_for("api.server_settings", conf=conf, server=server) }}')
+	$http.get('{{ url_for("api.server_settings", conf=conf, server=server) }}', { headers: { 'X-From-UI': true } })
 	{% endif -%}
 	  .then(function(response) {
 			data = response.data;
@@ -161,7 +161,7 @@ app.controller('ConfigCtrl', function($scope, $http) {
 			notifAll(response.data);
 			$('#waiting-container').hide();
 		});
-	$http.get('{{ url_for("api.setting_options", server=server) }}')
+	$http.get('{{ url_for("api.setting_options", server=server) }}', { headers: { 'X-From-UI': true } })
 		.then(function(response) {
 			$scope.revokeEnabled = response.data.is_revocation_enabled;
 		});
@@ -204,7 +204,8 @@ app.controller('ConfigCtrl', function($scope, $http) {
 			$.ajax({
 				url: form.attr('action'),
 				type: 'POST',
-				data: form.serialize()
+				data: form.serialize(),
+				headers: { 'X-From-UI': true },
 			})
 			.fail(myFail)
 			.done(function(data) {
@@ -332,7 +333,8 @@ app.controller('ConfigCtrl', function($scope, $http) {
 		$.ajax({
 			url: api,
 			type: 'GET',
-			data: {'path': path}
+			data: {'path': path},
+			headers: { 'X-From-UI': true },
 		})
 		.fail(myFail)
 		.done(function(data) {

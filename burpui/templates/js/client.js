@@ -35,6 +35,7 @@ var _client_table = $('#table-client').dataTable( {
 	responsive: true,
 	ajax: {
 		url: '{{ url_for("api.client_stats", name=cname, server=server) }}',
+		headers: { 'X-From-UI': true },
 		dataSrc: function (data) {
 			if (data.length == 0) {
 				$('#table-client').hide();
@@ -139,6 +140,7 @@ $(document).ready(function() {
 	$('#btn-cancel-restore').on('click', function(e) {
 		$.ajax({
 			url: '{{ url_for("api.is_server_restore", name=cname, server=server) }}',
+			headers: { 'X-From-UI': true },
 			type: 'DELETE'
 		}).done(function(data) {
 			notifAll(data);
@@ -152,6 +154,7 @@ $(document).ready(function() {
 	$('#btn-cancel-backup').on('click', function(e) {
 		$.ajax({
 			url: '{{ url_for("api.is_server_backup", name=cname, server=server) }}',
+			headers: { 'X-From-UI': true },
 			type: 'DELETE'
 		}).done(function(data) {
 			notifAll(data);
@@ -165,6 +168,7 @@ $(document).ready(function() {
 	$('#btn-schedule-backup').on('click', function(e) {
 		$.ajax({
 			url: '{{ url_for("api.server_backup", name=cname, server=server) }}',
+			headers: { 'X-From-UI': true },
 			type: 'PUT'
 		}).done(function(data) {
 			notifAll(data);

@@ -53,6 +53,7 @@ var _clients_table = $('#table-clients').dataTable( {
 			return data;
 		},
 		error: myFail,
+		headers: { 'X-From-UI': true },
 	},
 	order: [[2, 'desc']],
 	destroy: true,

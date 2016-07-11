@@ -22,7 +22,7 @@ var app = angular.module('MainApp', ['ngSanitize', 'ui.calendar', 'ui.bootstrap'
 app.controller('CalendarCtrl', function($scope, $http, $compile, uiCalendarConfig) {
 	$scope.eventSources = [];
 
-	$http.get('{{ url_for("api.history", client=cname, server=server) }}')
+	$http.get('{{ url_for("api.history", client=cname, server=server) }}', { headers: { 'X-From-UI': true } })
 		.success(function(data, status, headers, config) {
 			$scope.eventSources.splice(0);
 			angular.forEach(data, function(source) {

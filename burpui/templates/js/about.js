@@ -20,7 +20,7 @@ app.controller('AboutCtrl', function($scope, $http) {
 	$scope.api = '';
 	$scope.burp = Array();
 
-	$http.get('{{ url_for("api.about") }}')
+	$http.get('{{ url_for("api.about") }}', { headers: { 'X-From-UI': true } })
 		.success(function(data, status, headers, config) {
 			$scope.version = data.version;
 			$scope.api = data.api;

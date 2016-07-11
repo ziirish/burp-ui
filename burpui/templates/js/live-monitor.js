@@ -51,7 +51,7 @@ app.controller('LiveCtrl', function($scope, $http, $interval) {
 	};
 
 	$scope.load = function() {
-		$http.get(counters)
+		$http.get(counters, { headers: { 'X-From-UI': true } })
 		.success(function(data, status, headers, config) {
 			if (angular.isArray(data)) {
 				$scope.clients = data;
@@ -60,7 +60,7 @@ app.controller('LiveCtrl', function($scope, $http, $interval) {
 				$scope.clients.push(data);
 			}
 			if ($scope.clients.length == 0) {
-				$http.post('{{ url_for("api.alert") }}', {'message': 'No more backup running'});
+				$http.post('{{ url_for("api.alert") }}', {'message': 'No more backup running'}, { headers: { 'X-From-UI': true } });
 				document.location = '{{ url_for("view.home") }}';
 			}
 		})
