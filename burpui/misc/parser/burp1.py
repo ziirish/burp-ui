@@ -129,10 +129,13 @@ class Parser(Doc):
     def _md5(path):
         """Return the md5sum of a given file"""
         hash_md5 = md5()
-        with open(path, "rb") as bfile:
-            for chunk in iter(lambda: bfile.read(4096), b""):
-                hash_md5.update(chunk)
-        return hash_md5.hexdigest()
+        try:
+            with open(path, "rb") as bfile:
+                for chunk in iter(lambda: bfile.read(4096), b""):
+                    hash_md5.update(chunk)
+            return hash_md5.hexdigest()
+        except IOError:
+            return None
 
     def _file_changed(self, path):
         """Check whether a given file has changed since last read"""
