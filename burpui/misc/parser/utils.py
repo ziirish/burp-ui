@@ -230,8 +230,9 @@ class File(dict):
             'string': OrderedDict(),
         }
         try:
-            self.mtime = os.path.getmtime(self.name)
-        except os.errno:
+            if self.name:
+                self.mtime = os.path.getmtime(self.name)
+        except os.error:
             # try to get mtime
             pass
 
@@ -241,16 +242,21 @@ class File(dict):
         if (now - self.last) > self.delta:
             self.last = now
             try:
-                mtime = os.path.getmtime(self.name)
-            except os.errno:
+                if self.name:
+                    mtime = os.path.getmtime(self.name)
+                else:
+                    return True
+            except os.error:
                 return True
             oldmtime = self.mtime
             self.mtime = mtime
             return mtime != oldmtime
-        return self.mtime != 0
+        if self.mtime == 0:
+            return True
+        return False
 
     def clone(self):
-        cpy = File(self.parser, self.name, self.mode)
+        cpy = File(self.parser, name=self.name, mode=self.mode)
         cpy.options = copy(self.options)
         cpy.types = copy(self.types)
         return cpy
@@ -482,13 +488,13 @@ class Config(File):
 
     @property
     def changed(self):
-        for conf in self.files:
+        for path, conf in iteritems(self.files):
             if conf.changed:
                 return True
         return False
 
     def clone(self):
-        default = self.get_default().clone()
+        default = self.get_default(True).clone()
         cpy = Config(self.name, default, self.parser, self.mode)
         for path, parsed in iteritems(self.files):
             if path == self.name:
@@ -510,7 +516,7 @@ class Config(File):
             return self.get_file(self.default)
         if exc:
             raise ValueError('No default configuration found')
-        return {}
+        return File(self.parser, mode=self.mode)
 
     def add_file(self, parsed=None, path=None):
         idx = path or self.default
@@ -520,7 +526,8 @@ class Config(File):
         return self.files[idx]
 
     def get_file(self, path):
-        return self.files.get(path, File(self.parser, mode=self.mode))
+        ret = self.files.get(path, File(self.parser, mode=self.mode))
+        return ret
 
     def del_file(self, path):
         self._dirty = True

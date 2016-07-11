@@ -654,7 +654,7 @@ class Parser(Doc):
                 return [[NOTIF_ERROR, str(exp)]]
 
         if client:
-            conffile = self._get_client(name, mconf).get_file(mconf)
+            conffile = self._get_client(client, mconf).get_file(mconf)
         else:
             conffile = self.server_conf.get_file(mconf)
 
