@@ -7,6 +7,7 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 """
 import os
+import datetime
 
 from copy import copy
 from collections import OrderedDict
@@ -201,6 +202,9 @@ class File(dict):
     :param parser: Parser object
     :type parser: :class:`burpui.misc.parser.doc.Doc`
     """
+    delta = datetime.timedelta(seconds=30)
+    last = datetime.datetime.now() - delta
+    mtime = 0
 
     def __init__(self, parser, name=None, mode='srv'):
         """
@@ -225,6 +229,25 @@ class File(dict):
             'multi': OrderedDict(),
             'string': OrderedDict(),
         }
+        try:
+            self.mtime = os.path.getmtime(self.name)
+        except os.errno:
+            # try to get mtime
+            pass
+
+    @property
+    def changed(self):
+        now = datetime.datetime.now()
+        if (now - self.last) > self.delta:
+            self.last = now
+            try:
+                mtime = os.path.getmtime(self.name)
+            except os.errno:
+                return True
+            oldmtime = self.mtime
+            self.mtime = mtime
+            return mtime != oldmtime
+        return self.mtime != 0
 
     def clone(self):
         cpy = File(self.parser, self.name, self.mode)
@@ -456,6 +479,13 @@ class Config(File):
             else:
                 self.files[path] = parsed
             self.files.get(path).set_name(path)
+
+    @property
+    def changed(self):
+        for conf in self.files:
+            if conf.changed:
+                return True
+        return False
 
     def clone(self):
         default = self.get_default().clone()

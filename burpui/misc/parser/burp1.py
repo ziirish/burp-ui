@@ -40,9 +40,9 @@ class Parser(Doc):
         self.confcli = backend.burpconfcli
         self.logger.info('Parser initialized with: {}'.format(self.conf))
         self.clients = []
-        self.server_conf = {}
-        self.client_conf = {}
-        self.clients_conf = {}
+        self._server_conf = {}
+        self._client_conf = {}
+        self._clients_conf = {}
         self.clientconfdir = None
         self.workingdir = None
         self.root = None
@@ -62,6 +62,25 @@ class Parser(Doc):
             self.openssl_conf,
             self.server_conf
         )
+
+    @property
+    def server_conf(self):
+        if self._server_conf.changed:
+            self._load_conf_srv()
+        return self._server_conf
+
+    @property
+    def client_conf(self):
+        if self._client_conf.changed:
+            self._load_conf_cli()
+        return self._client_conf
+
+    @property
+    def clients_conf(self):
+        for client, conf in iteritems(self._client_conf):
+            if conf.changed:
+                self._load_conf_clients(client, conf.default)
+        return self._clients_conf
 
     @staticmethod
     def _line_is_comment(line):
@@ -127,48 +146,50 @@ class Parser(Doc):
         """Force cache refresh"""
         # empty all the caches
         if purge:
-            self.server_conf = {}
-            self.clients_conf = {}
+            self._server_conf = {}
+            self._client_conf = {}
+            self._clients_conf = {}
             self.md5 = {}
             self.filecache = {}
         self._list_clients(True)
 
     def _load_conf_srv(self):
         """Load the server configuration file"""
-        self.server_conf = Config()
+        self._server_conf = Config()
         data, path, cached = self._readfile(self.conf)
         if not cached:
             parsed = self._parse_lines(data, path, 'srv')
-            self.server_conf.add_file(parsed, self.conf)
-            self.server_conf.set_default(self.conf)
-        self._parse_conf_recursive(self.server_conf)
+            self._server_conf.add_file(parsed, self.conf)
+            self._server_conf.set_default(self.conf)
+        self._parse_conf_recursive(self._server_conf)
 
     def _load_conf_cli(self):
         """Load the client configuration file"""
-        self.client_conf = Config()
+        self._client_conf = Config()
         data, path, cached = self._readfile(self.confcli)
         if not cached:
             parsed = self._parse_lines(data, path, 'cli')
-            self.client_conf.add_file(parsed, self.confcli)
-            self.client_conf.set_default(self.confcli)
-        self._parse_conf_recursive(self.client_conf, client=True)
+            self._client_conf.add_file(parsed, self.confcli)
+            self._client_conf.set_default(self.confcli)
+        self._parse_conf_recursive(self._client_conf, client=True)
 
-    def _load_conf_clients(self, name=None):
+    def _load_conf_clients(self, name=None, in_path=None):
         """Load a given client configuration file (or all)"""
         if name:
-            clients = [name]
+            clients = [{'name': name, 'value': in_path}]
         else:
             clients = self._list_clients(True)
 
         for cli in clients:
-            self.clients_conf[cli['name']] = self.server_conf.clone()
-            data, path, cached = self._readfile(cli['value'])
+            self._clients_conf[cli['name']] = self.server_conf.clone()
+            parse = cli['value'] or cli['name']
+            data, path, cached = self._readfile(parse, client=True)
             if not cached:
                 parsed = self._parse_lines(data, path, 'cli')
-                self.clients_conf[cli['name']].add_file(parsed, path)
-                self.clients_conf[cli['name']].set_default(path)
+                self._clients_conf[cli['name']].add_file(parsed, path)
+                self._clients_conf[cli['name']].set_default(path)
             self._parse_conf_recursive(
-                self.clients_conf[cli['name']],
+                self._clients_conf[cli['name']],
                 client=True
             )
 
@@ -180,12 +201,16 @@ class Parser(Doc):
 
     def _new_client_conf(self, name, path):
         """Create new client conf"""
-        conf = self.server_conf.clone()
-        parsed = File(self, path, 'cli')
-        conf.add_file(parsed, path)
-        conf.set_default(path)
-        self.clients_conf[name] = conf
-        return conf
+        self._load_conf_clients(name, path)
+        return self.clients_conf[name]
+
+    def _get_client(self, name, path):
+        """Return client conf and refresh it if necessary"""
+        if name not in self._clients_conf:
+            return self._new_client_conf(name, path)
+        if self._clients_conf[name].changed:
+            self._load_conf_clients(name, path)
+        return self._clients_conf[name]
 
     def _parse_conf_recursive(self, conf=None, parsed=None, client=False):
         """Parses a conf recursively
@@ -431,8 +456,8 @@ class Parser(Doc):
             res.append([NOTIF_OK, "'{}' successfully removed".format(client)])
             removed = True
 
-            if client in self.clients_conf:
-                del self.clients_conf[client]
+            if client in self._clients_conf:
+                del self._clients_conf[client]
 
             if path in self.md5:
                 # we always set both at the same time so we are sure both exist
@@ -498,7 +523,7 @@ class Parser(Doc):
             res.update(self.filecache[path]['parsed'])
             return res
 
-        parsed = self.clients_conf[client].get_file(path)
+        parsed = self._get_client(client, path)
         res2 = {}
         res2[u'common'] = parsed.string
         res2[u'boolean'] = parsed.boolean
@@ -629,10 +654,7 @@ class Parser(Doc):
                 return [[NOTIF_ERROR, str(exp)]]
 
         if client:
-            if client in self.clients_conf:
-                conffile = self.clients_conf[client].get_file(mconf)
-            else:
-                conffile = self._new_client_conf(client, mconf).get_file(mconf)
+            conffile = self._get_client(name, mconf).get_file(mconf)
         else:
             conffile = self.server_conf.get_file(mconf)
 
