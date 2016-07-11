@@ -137,7 +137,8 @@ app.controller('ConfigCtrl', function($scope, $http) {
 	{% else -%}
 	$http.get('{{ url_for("api.server_settings", conf=conf, server=server) }}')
 	{% endif -%}
-		.success(function(data, status, headers, config) {
+	  .then(function(response) {
+			data = response.data;
 			$scope.bools = data.results.boolean;
 			$scope.all.bools = data.boolean;
 			$scope.strings = data.results.common;
@@ -156,10 +157,13 @@ app.controller('ConfigCtrl', function($scope, $http) {
 			$scope.includes_ext = data.results.includes_ext;
 			$('#waiting-container').hide();
 			$('#settings-panel').show();
+		}, function(response) {
+			notifAll(response.data);
+			$('#waiting-container').hide();
 		});
 	$http.get('{{ url_for("api.setting_options", server=server) }}')
-		.success(function(data, status, headers, config) {
-			$scope.revokeEnabled = data.is_revocation_enabled;
+		.then(function(response) {
+			$scope.revokeEnabled = response.data.is_revocation_enabled;
 		});
 	/* Our form is submitted asynchronously thanks to this callback */
 	$scope.submit = function(e) {
