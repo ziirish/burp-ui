@@ -505,11 +505,14 @@ class Config(File):
     def set_default(self, path):
         self.default = path
         self.name = path
-        default = self.get_default()
-        if not self.parser and default:
-            self.parser = getattr(self.get_default(), 'parser')
-        if not self.mode and default:
-            self.mode = getattr(self.get_default(), 'mode')
+        try:
+            default = self.get_default(True)
+            if not self.parser and default:
+                self.parser = getattr(self.get_default(), 'parser')
+            if not self.mode and default:
+                self.mode = getattr(self.get_default(), 'mode')
+        except ValueError:
+            pass
 
     def get_default(self, exc=False):
         if self.default:

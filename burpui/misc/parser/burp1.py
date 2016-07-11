@@ -184,15 +184,16 @@ class Parser(Doc):
             clients = self._list_clients(True)
 
         for cli in clients:
-            self._clients_conf[cli['name']] = self.server_conf.clone()
+            conf = self.server_conf.clone()
             parse = cli['value'] or cli['name']
             data, path, cached = self._readfile(parse, client=True)
             if not cached:
                 parsed = self._parse_lines(data, path, 'cli')
-                self._clients_conf[cli['name']].add_file(parsed, path)
-                self._clients_conf[cli['name']].set_default(path)
+                conf.add_file(parsed, path)
+                conf.set_default(path)
+                self._clients_conf[cli['name']] = conf
             self._parse_conf_recursive(
-                self._clients_conf[cli['name']],
+                conf,
                 client=True
             )
 
@@ -526,7 +527,8 @@ class Parser(Doc):
             res.update(self.filecache[path]['parsed'])
             return res
 
-        parsed = self._get_client(client, path)
+        config = self._get_client(client, path)
+        parsed = config.get_file(path)
         res2 = {}
         res2[u'common'] = parsed.string
         res2[u'boolean'] = parsed.boolean
