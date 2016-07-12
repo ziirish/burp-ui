@@ -13,6 +13,7 @@ jQuery/Bootstrap
 import os
 import sys
 import logging
+import warnings
 from logging import Formatter
 
 if sys.version_info < (3, 0):
@@ -36,6 +37,22 @@ try:  # pragma: no cover
     ).read().rstrip()
 except:  # pragma: no cover
     __release__ = 'unknown'
+
+warnings.simplefilter('always', RuntimeWarning)
+
+
+def get_redis_server(app):
+    if app.redis:
+        parts = app.redis.split(':')
+        host = parts[0]
+        try:
+            port = int(parts[1])
+        except (ValueError, IndexError):
+            port = 6379
+    else:
+        host = 'localhost'
+        port = 6379
+    return host, port
 
 
 def lookup_config(conf=None):
@@ -84,6 +101,40 @@ def lookup_config(conf=None):
                 break
 
     return ret
+
+
+def create_celery(app, warn=True):
+    """Create the Celery app if possible
+
+    :param app: Application context
+    :type app: :class:`burpui.server.BUIServer`
+    """
+    # singleton
+    if app.celery:
+        return app.celery
+
+    if app.config['WITH_CELERY'] and app.storage and \
+            app.storage.lower() == 'redis':
+        from celery import Celery
+        host, port = get_redis_server(app)
+        redis_url = 'redis://{}:{}/2'.format(host, port)
+        app.config['CELERY_BROKER_URL'] = redis_url
+        app.config['CELERY_RESULT_BACKEND'] = redis_url
+        celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
+        celery.conf.update(app.config)
+        app.celery = celery
+        return celery
+
+    if warn:
+        message = 'Something went wrong while initializing celery worker.\n' \
+                  'Maybe it is not enabled in your conf ' \
+                  '({}).'.format(app.config['CFG'])
+        warnings.warn(
+            message,
+            RuntimeWarning
+        )
+
+    return None
 
 
 def create_app(*args, **kwargs):
@@ -190,7 +241,8 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
 
     # We initialize the core
     app = BurpUI()
-    app.enable_logger()
+    if verbose:
+        app.enable_logger()
     app.gunicorn = gunicorn
 
     app.config['CFG'] = None
@@ -219,6 +271,7 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
 
     if debug:
         app.config.setdefault('TEMPLATES_AUTO_RELOAD', True)
+        app.config['TEMPLATES_AUTO_RELOAD'] = True
 
     # manage application secret key
     if app.secret_key and (app.secret_key.lower() == 'none' or
@@ -237,16 +290,7 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
         logger.info('Using gunicorn')
         from werkzeug.contrib.fixers import ProxyFix
         if app.storage and app.storage.lower() == 'redis':
-            if app.redis:
-                part = app.redis.split(':')
-                host = part[0]
-                try:
-                    port = int(part[1])
-                except:
-                    port = 6379
-            else:
-                host = 'localhost'
-                port = 6379
+            host, port = get_redis_server(app)
             logger.debug('Using redis {}:{}'.format(host, port))
             try:
                 from redis import Redis
@@ -280,11 +324,14 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
     else:
         api.cache.init_app(app)
 
+    create_celery(app, False)
+
     # We initialize the API
     api.version = __version__
     api.release = __release__
     api.__url__ = __url__
     api.__doc__ = __doc__
+    api.celery = app.celery
     api.load_all()
     app.register_blueprint(apibp)
 

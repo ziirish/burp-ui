@@ -213,6 +213,7 @@ setup(
         'console_scripts': [
             'burp-ui=burpui.__main__:server',
             'bui-agent=burpui.__main__:agent',
+            'bui-celery=burpui.__main__:celery',
         ],
     },
     data_files=[
@@ -234,6 +235,7 @@ setup(
         'test': test_requires,
         'dev': dev_requires,
         'debian_wheezy': ['functools32'],
+        'celery': ['Celery', 'redis'],
     },
     tests_require=test_requires,
     classifiers=[

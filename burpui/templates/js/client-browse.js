@@ -74,6 +74,7 @@ $( document ).ready(function() {
 			var node = data.node;
 			p = node.key;
 			if (p !== "/") p += '/';
+			p = encodeURIComponent(p);
 			data.result = { url: '{{ url_for("api.client_tree", name=cname, backup=nbackup, server=server) }}?root='+p, debugDelay: 500 };
 		},
 		loadChildren: function(event, data) {

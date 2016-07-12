@@ -1,5 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
+"""
+Burp-UI is a web-ui for burp backup written in python with Flask and
+jQuery/Bootstrap
+
+.. module:: burpui.__main__
+    :platform: Unix
+    :synopsis: Burp-UI main module.
+
+.. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
+"""
 import sys
 import os
 from argparse import ArgumentParser
@@ -18,9 +28,11 @@ def parse_args(mode=True, name=None):
     parser.add_argument('-c', '--config', dest='config', help='configuration file', metavar='<CONFIG>')
     parser.add_argument('-l', '--logfile', dest='logfile', help='output logs in defined file', metavar='<FILE>')
     if mode:
-        parser.add_argument('-m', '--mode', dest='mode', help='application mode (server or agent)', metavar='<agent|server>')
+        parser.add_argument('-m', '--mode', dest='mode', help='application mode (server, agent or celery)', metavar='<agent|server|celery>')
 
-    options = parser.parse_args()
+    options, unknown = parser.parse_known_args()
+    if options.mode and options.mode != 'celery':
+        options = parser.parse_args()
 
     if options.version:
         from burpui import __title__, __version__, __release__
@@ -41,8 +53,13 @@ def main():
 
     if not options.mode or options.mode == 'server':
         server(options)
-    else:
+    elif options.mode == 'agent':
         agent(options)
+    elif options.mode == 'celery':
+        celery()
+    else:
+        print('Wrong mode!')
+        sys.exit(1)
 
 
 def server(options=None):
@@ -113,6 +130,32 @@ def agent(options=None):
 
     agent = Agent(conf, options.log, options.logfile, options.debug)
     agent.run()
+
+
+def celery():
+    from burpui import lookup_config
+
+    parser = ArgumentParser('bui-celery')
+    parser.add_argument('-c', '--config', dest='config', help='configuration file', metavar='<CONFIG>')
+    parser.add_argument('-m', '--mode', dest='mode', help='application mode (server or agent)', metavar='<agent|server|worker>')
+
+    options, unknown = parser.parse_known_args()
+
+    conf = lookup_config(options.config)
+    check_config(conf)
+
+    env = os.environ
+    env['BUI_CONFIG'] = conf
+
+    args = [
+        'celery',
+        'worker',
+        '-A',
+        'celery_worker.celery'
+    ]
+    args += unknown
+
+    os.execvpe('celery', args, env)
 
 
 def check_config(conf):
