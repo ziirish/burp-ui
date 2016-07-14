@@ -8,16 +8,28 @@ from flask_migrate import Migrate, MigrateCommand
 
 # Try to load modules from our current env first
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
-from burpui import create_app
 
-config = os.getenv('BUI_CONFIG')
-app = create_app(config)
-db = app.db
 
-migrate = Migrate(app, db)
-manager = Manager(app)
+def create_manager():
+    from burpui import create_app
 
-manager.add_command('db', MigrateCommand)
+    config = os.getenv('BUI_CONFIG')
+    app = create_app(config)
+    db = app.db
+
+    if db:
+        migrate = Migrate(app, db)
+    else:
+        migrate = None
+
+    manager = Manager(app)
+
+    if db:
+        manager.add_command('db', MigrateCommand)
+
+    return manager, migrate, app
+
+manager, migrate, app = create_manager()
 
 
 @manager.command

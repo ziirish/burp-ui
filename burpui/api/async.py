@@ -34,14 +34,18 @@ LOCK_EXPIRE = 60 * 30  # Lock expires in 30 minutes
 @celery.task(bind=True)
 def perform_restore(self, client, backup,
                     files, strip, fmt, passwd, server=None, user=None):
-    acquire_lock = lambda: cache.add(self.name, 'true', LOCK_EXPIRE)
-    release_lock = lambda: cache.delete(self.name)
+    def acquire_lock(name):
+        cache.add(name, 'true', LOCK_EXPIRE)
+
+    def release_lock(name):
+        cache.delete(name)
+
     ret = None
 
-    if not acquire_lock():
+    if not acquire_lock(self.name):
         logger.warn('A task is already running. Wait for it')
     # The lock should be released after 30 minutes max
-    while not acquire_lock():
+    while not acquire_lock(self.name):
         time.sleep(30)
 
     try:
@@ -83,7 +87,7 @@ def perform_restore(self, client, backup,
             ret = {'filename': filename, 'path': archive, 'user': user}
 
     finally:
-        release_lock()
+        release_lock(self.name)
 
     return ret
 
