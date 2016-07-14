@@ -352,6 +352,7 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
     api.__url__ = __url__
     api.__doc__ = __doc__
     api.db = app.db
+    api.gapp = app
     api.celery = app.celery
     api.app_cli = app.cli
     api.cache = app.cache

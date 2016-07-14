@@ -57,6 +57,7 @@ def api_login_required(func):
 class Api(ApiPlus):
     """Wrapper class around :class:`flask_restplus.Api`"""
     db = None
+    gapp = None
     cache = None
     logger = logging.getLogger('burp-ui')
     loaded = False

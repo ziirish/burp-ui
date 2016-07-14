@@ -26,6 +26,7 @@ cache = api.cache
 celery = api.celery
 app_cli = api.app_cli
 db = api.db
+app = api.gapp
 logger = get_task_logger(__name__)
 
 LOCK_EXPIRE = 60 * 30  # Lock expires in 30 minutes
@@ -34,62 +35,65 @@ LOCK_EXPIRE = 60 * 30  # Lock expires in 30 minutes
 @celery.task(bind=True)
 def perform_restore(self, client, backup,
                     files, strip, fmt, passwd, server=None, user=None):
-    def acquire_lock(name):
-        cache.add(name, 'true', LOCK_EXPIRE)
+    with app.app_context():
+        def acquire_lock(name):
+            return cache.add(name, 'true', LOCK_EXPIRE)
 
-    def release_lock(name):
-        cache.delete(name)
+        def release_lock(name):
+            return cache.delete(name)
 
-    ret = None
+        ret = None
 
-    if not acquire_lock(self.name):
-        logger.warn('A task is already running. Wait for it')
-    # The lock should be released after 30 minutes max
-    while not acquire_lock(self.name):
-        time.sleep(30)
+        lock = acquire_lock(self.name)
+        if not lock:
+            logger.warn('A task is already running. Wait for it: {}'.format(lock))
+            # The lock should be released after 30 minutes max
+            while not lock:
+                lock = acquire_lock(self.name)
+                time.sleep(30)
 
-    try:
-        if server:
-            filename = 'restoration_%d_%s_on_%s_at_%s.%s' % (
-                backup,
-                client,
-                server,
-                strftime("%Y-%m-%d_%H_%M_%S", gmtime()),
-                fmt)
-        else:
-            filename = 'restoration_%d_%s_at_%s.%s' % (
-                backup,
-                client,
-                strftime("%Y-%m-%d_%H_%M_%S", gmtime()),
-                fmt)
-
-        self.update_state(state='STARTED', meta={'step': 'doing'})
-        archive, err = app_cli.restore_files(
-            client,
-            backup,
-            files,
-            strip,
-            fmt,
-            passwd,
-            server
-        )
-        if not archive:
-            if err:
-                self.update_state(state='FAILURE', meta={'error': err})
+        try:
+            if server:
+                filename = 'restoration_%d_%s_on_%s_at_%s.%s' % (
+                    backup,
+                    client,
+                    server,
+                    strftime("%Y-%m-%d_%H_%M_%S", gmtime()),
+                    fmt)
             else:
-                self.update_state(
-                    state='FAILURE',
-                    meta={'error': 'Something went wrong while restoring'}
-                )
-            logger.error('FAILURE: {}'.format(err))
-        else:
-            logger.debug('filename: {}, path: {}'.format(filename, archive))
-            ret = {'filename': filename, 'path': archive, 'user': user}
+                filename = 'restoration_%d_%s_at_%s.%s' % (
+                    backup,
+                    client,
+                    strftime("%Y-%m-%d_%H_%M_%S", gmtime()),
+                    fmt)
 
-    finally:
-        release_lock(self.name)
+            self.update_state(state='STARTED', meta={'step': 'doing'})
+            archive, err = app_cli.restore_files(
+                client,
+                backup,
+                files,
+                strip,
+                fmt,
+                passwd,
+                server
+            )
+            if not archive:
+                if err:
+                    self.update_state(state='FAILURE', meta={'error': err})
+                else:
+                    self.update_state(
+                        state='FAILURE',
+                        meta={'error': 'Something went wrong while restoring'}
+                    )
+                logger.error('FAILURE: {}'.format(err))
+            else:
+                logger.debug('filename: {}, path: {}'.format(filename, archive))
+                ret = {'filename': filename, 'path': archive, 'user': user}
 
-    return ret
+        finally:
+            release_lock(self.name)
+
+        return ret
 
 
 @ns.route('/status/<task_id>', endpoint='async_restore_status')
