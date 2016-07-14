@@ -15,7 +15,6 @@ import logging
 from flask import Blueprint, Response, request, current_app as bui
 from flask_restplus import Api as ApiPlus
 from flask_login import current_user
-from flask_cache import Cache
 from importlib import import_module
 from functools import wraps
 
@@ -57,10 +56,12 @@ def api_login_required(func):
 
 class Api(ApiPlus):
     """Wrapper class around :class:`flask_restplus.Api`"""
-    cache = Cache(config={'CACHE_TYPE': 'null', 'CACHE_NO_NULL_WARNING': True})
+    db = None
+    cache = None
     logger = logging.getLogger('burp-ui')
     loaded = False
     celery = None
+    app_cli = None
     release = None
     __doc__ = None
     __url__ = None

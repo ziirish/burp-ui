@@ -18,14 +18,15 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..
 
 
 def init_celery():
-    from burpui import create_app, create_celery
+    from burpui import create_app
     config = os.getenv('BUI_CONFIG')
     app = create_app(config)
-    cel = create_celery(app)
+    cel = app.celery
     if not cel:
         message = 'Something went wrong while initializing celery worker.\n' \
                   'Maybe it is not enabled in your conf ({}).'.format(config)
         raise Exception(message)
-    return cel
+    return cel, app
 
-celery = init_celery()
+celery, app = init_celery()
+app.app_context().push()
