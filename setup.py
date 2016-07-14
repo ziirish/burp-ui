@@ -214,6 +214,7 @@ setup(
             'burp-ui=burpui.__main__:server',
             'bui-agent=burpui.__main__:agent',
             'bui-celery=burpui.__main__:celery',
+            'bui-manage=burpui.__main__:manage',
         ],
     },
     data_files=[
@@ -236,6 +237,7 @@ setup(
         'dev': dev_requires,
         'debian_wheezy': ['functools32'],
         'celery': ['Celery', 'redis'],
+        'sql': ['Flask-SQLAlchemy', 'Flask-Migrate'],
     },
     tests_require=test_requires,
     classifiers=[
