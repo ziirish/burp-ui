@@ -14,9 +14,10 @@ import traceback
 
 from .misc.auth.handler import UserAuthHandler
 from .utils import BUIConfig
-from datetime import timedelta
 
+from datetime import timedelta
 from flask import Flask
+from flask_cache import Cache
 
 
 G_PORT = 5000
@@ -36,6 +37,7 @@ G_CELERY = False
 G_SCOOKIE = False
 G_APPSECRET = u'random'
 G_COOKIETIME = 14
+G_DATABASE = u''
 G_PREFIX = u''
 G_NO_SERVER_RESTORE = False
 
@@ -45,7 +47,9 @@ class BUIServer(Flask):
     The :class:`burpui.server.BUIServer` class provides the ``Burp-UI`` server.
     """
     gunicorn = False
+    db = None
     celery = None
+    cache = Cache(config={'CACHE_TYPE': 'null', 'CACHE_NO_NULL_WARNING': True})
 
     defaults = {
         'Global': {
@@ -73,6 +77,7 @@ class BUIServer(Flask):
             'storage': G_STORAGE,
             'redis': G_REDIS,
             'celery': G_CELERY,
+            'database': G_DATABASE,
         },
         'Experimental': {
             'noserverrestore': G_NO_SERVER_RESTORE,
@@ -231,6 +236,15 @@ class BUIServer(Flask):
             'boolean',
             section='Production'
         )
+        self.database = self.config['SQLALCHEMY_DATABASE_URI'] = \
+            self.conf.safe_get(
+                'database',
+                section='Production'
+        )
+        if self.database and self.database.lower() != 'none':
+            self.config['WITH_SQL'] = True
+        else:
+            self.config['WITH_SQL'] = False
 
         # Experimental options
         self.noserverrestore = self.conf.safe_get(
@@ -272,6 +286,9 @@ class BUIServer(Flask):
         self.logger.info('liverefresh: {}'.format(self.config['LIVEREFRESH']))
         self.logger.info('auth: {}'.format(self.auth))
         self.logger.info('acl: {}'.format(self.acl_engine))
+        self.logger.info('with celery: {}'.format(self.with_celery))
+        self.logger.info('redis: {}'.format(self.redis))
+        self.logger.info('database: {}'.format(self.database))
 
         if self.standalone:
             module = 'burpui.misc.backend.burp{0}'.format(self.vers)

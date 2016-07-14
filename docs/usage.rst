@@ -129,14 +129,16 @@ follow:
 ::
 
     [Production]
-    # storage backend for session, cache and celery. If set to 'defaul', celery
-    # won't work.
+    # storage backend for session and cache
     # may be either 'default' or 'redis'
     storage: default
     # redis server to connect to
     redis: localhost:6379
     # whether to use celery or not
     celery = false
+    # database url to store some persistent data
+    # example: sqlite:////var/lib/burpui/store.db
+    database = none
 
 
 Experimental

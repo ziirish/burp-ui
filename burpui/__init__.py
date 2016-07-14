@@ -41,9 +41,9 @@ except:  # pragma: no cover
 warnings.simplefilter('always', RuntimeWarning)
 
 
-def get_redis_server(app):
-    if app.redis:
-        parts = app.redis.split(':')
+def get_redis_server(myapp):
+    if myapp.redis and myapp.redis.lower() != 'none':
+        parts = myapp.redis.split(':')
         host = parts[0]
         try:
             port = int(parts[1])
@@ -103,32 +103,50 @@ def lookup_config(conf=None):
     return ret
 
 
-def create_celery(app, warn=True):
-    """Create the Celery app if possible
+def create_db(myapp):
+    """Create the SQLAlchemy instance if possible
 
-    :param app: Application context
-    :type app: :class:`burpui.server.BUIServer`
+    :param myapp: Application context
+    :type myapp: :class:`burpui.server.BUIServer`
     """
     # singleton
-    if app.celery:
-        return app.celery
+    if myapp.db:
+        return myapp.db
 
-    if app.config['WITH_CELERY'] and app.storage and \
-            app.storage.lower() == 'redis':
+    if myapp.config['WITH_SQL']:
+        from .models import db
+        db.init_app(myapp)
+        myapp.db = db
+        return db
+
+    return None
+
+
+def create_celery(myapp, warn=True):
+    """Create the Celery app if possible
+
+    :param myapp: Application context
+    :type myapp: :class:`burpui.server.BUIServer`
+    """
+    # singleton
+    if myapp.celery:
+        return myapp.celery
+
+    if myapp.config['WITH_CELERY']:
         from celery import Celery
-        host, port = get_redis_server(app)
+        host, port = get_redis_server(myapp)
         redis_url = 'redis://{}:{}/2'.format(host, port)
-        app.config['CELERY_BROKER_URL'] = redis_url
-        app.config['CELERY_RESULT_BACKEND'] = redis_url
-        celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
-        celery.conf.update(app.config)
-        app.celery = celery
+        myapp.config['CELERY_BROKER_URL'] = redis_url
+        myapp.config['CELERY_RESULT_BACKEND'] = redis_url
+        celery = Celery(myapp.name, broker=myapp.config['CELERY_BROKER_URL'])
+        celery.conf.update(myapp.config)
+        myapp.celery = celery
         return celery
 
     if warn:
         message = 'Something went wrong while initializing celery worker.\n' \
                   'Maybe it is not enabled in your conf ' \
-                  '({}).'.format(app.config['CFG'])
+                  '({}).'.format(myapp.config['CFG'])
         warnings.warn(
             message,
             RuntimeWarning
@@ -289,23 +307,23 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
     if gunicorn:  # pragma: no cover
         logger.info('Using gunicorn')
         from werkzeug.contrib.fixers import ProxyFix
-        if app.storage and app.storage.lower() == 'redis':
-            host, port = get_redis_server(app)
-            logger.debug('Using redis {}:{}'.format(host, port))
-            try:
-                from redis import Redis
-                from flask_session import Session
-                red = Redis(host=host, port=port)
-                app.config['SESSION_TYPE'] = 'redis'
-                app.config['SESSION_REDIS'] = red
-                app.config['SESSION_USE_SIGNER'] = app.secret_key is not None
-                app.config['SESSION_PERMANENT'] = False
-                ses = Session()
-                ses.init_app(app)
-            except Exception as e:
-                logger.warning('Unable to initialize redis: {}'.format(str(e)))
-                pass
-            api.cache.init_app(
+
+        app.wsgi_app = ProxyFix(app.wsgi_app)
+
+    if app.storage and app.storage.lower() == 'redis':
+        host, port = get_redis_server(app)
+        logger.debug('Using redis {}:{}'.format(host, port))
+        try:
+            from redis import Redis
+            from flask_session import Session
+            red = Redis(host=host, port=port)
+            app.config['SESSION_TYPE'] = 'redis'
+            app.config['SESSION_REDIS'] = red
+            app.config['SESSION_USE_SIGNER'] = app.secret_key is not None
+            app.config['SESSION_PERMANENT'] = False
+            ses = Session()
+            ses.init_app(app)
+            app.cache.init_app(
                 app,
                 config={
                     'CACHE_TYPE': 'redis',
@@ -316,22 +334,27 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
             )
             # clear cache at startup in case we removed or added servers
             with app.app_context():
-                api.cache.clear()
-        else:
-            api.cache.init_app(app)
-
-        app.wsgi_app = ProxyFix(app.wsgi_app)
+                app.cache.clear()
+        except Exception as e:
+            logger.warning('Unable to initialize redis: {}'.format(str(e)))
+            app.cache.init_app(app)
     else:
-        api.cache.init_app(app)
+        app.cache.init_app(app)
 
-    create_celery(app, False)
+    # Create celery app if enabled
+    create_celery(app, warn=False)
+    # Create SQLAlchemy if enabled
+    create_db(app)
 
     # We initialize the API
     api.version = __version__
     api.release = __release__
     api.__url__ = __url__
     api.__doc__ = __doc__
+    api.db = app.db
     api.celery = app.celery
+    api.app_cli = app.cli
+    api.cache = app.cache
     api.load_all()
     app.register_blueprint(apibp)
 
