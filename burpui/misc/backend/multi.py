@@ -395,9 +395,6 @@ class NClient(BUIbackend):
             return res
         try:
             data['password'] = self.password
-            if data['func'] == 'restore_files':
-                self.close()
-                self.conn(True)
             raw = json.dumps(data)
             length = len(raw)
             self.sock.sendall(struct.pack('!Q', length))
@@ -414,19 +411,11 @@ class NClient(BUIbackend):
                 self.logger.debug('Ooops, unsuccessful!')
                 return res
             self.logger.debug("Data sent successfully")
-            tmp = 'OK'
-            if data['func'] == 'restore_files':
-                tmp = self.sock.recv(2)
+            if data['func'] == 'get_file':
+                return self.sock
             lengthbuf = self.sock.recv(8)
             length, = struct.unpack('!Q', lengthbuf)
-            if data['func'] == 'restore_files':
-                err = None
-                if tmp == 'KO':
-                    err = self.recvall(length).decode('UTF-8')
-                res = (self.sock, length, err)
-                self.connected = False
-            else:
-                res = self.recvall(length).decode('UTF-8')
+            res = self.recvall(length).decode('UTF-8')
         except BUIserverException as e:
             raise e
         except IOError as e:
@@ -511,3 +500,9 @@ class NClient(BUIbackend):
         digest = hmac.new(key, bytes_pickles, hashlib.sha1).hexdigest()
         data = {'func': 'store_conf_srv', 'args': pickles, 'pickled': True, 'digest': digest}
         return json.loads(self.do_command(data))
+
+    @implement
+    def get_file(self, path, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.get_file`"""
+        data = {'func': 'get_file', 'path': path}
+        return self.do_command(data)

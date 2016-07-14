@@ -840,3 +840,10 @@ class BUIbackend(with_metaclass(ABCMeta, object)):
         function returns the parser of the current backend.
         """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+
+    @abstractmethod
+    def get_file(self, path, agent=None):
+        """The :func:`burpui.misc.backend.interface.BUIbackend.get_file`
+        function is used to retrieve a file on a remote agent.
+        """
+        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover

@@ -1092,3 +1092,8 @@ class Burp(BUIbackend):
         if self.parser:
             return self.parser
         raise BUIserverException('Missing parser')
+
+    def get_file(self, path, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.get_file`"""
+        # only used by the multi backend. We do nothing
+        return path
