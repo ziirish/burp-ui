@@ -28,10 +28,10 @@ def parse_args(mode=True, name=None):
     parser.add_argument('-c', '--config', dest='config', help='configuration file', metavar='<CONFIG>')
     parser.add_argument('-l', '--logfile', dest='logfile', help='output logs in defined file', metavar='<FILE>')
     if mode:
-        parser.add_argument('-m', '--mode', dest='mode', help='application mode (server, agent or celery)', metavar='<agent|server|celery>')
+        parser.add_argument('-m', '--mode', dest='mode', help='application mode', metavar='<agent|server|celery|manage>')
 
     options, unknown = parser.parse_known_args()
-    if options.mode and options.mode != 'celery':
+    if options.mode and options.mode not in ['celery', 'manage']:
         options = parser.parse_args()
 
     if options.version:
@@ -57,6 +57,8 @@ def main():
         agent(options)
     elif options.mode == 'celery':
         celery()
+    elif options.mode == 'manage':
+        manage()
     else:
         print('Wrong mode!')
         sys.exit(1)
@@ -137,7 +139,7 @@ def celery():
 
     parser = ArgumentParser('bui-celery')
     parser.add_argument('-c', '--config', dest='config', help='configuration file', metavar='<CONFIG>')
-    parser.add_argument('-m', '--mode', dest='mode', help='application mode (server or agent)', metavar='<agent|server|worker>')
+    parser.add_argument('-m', '--mode', dest='mode', help='application mode', metavar='<agent|server|worker|manage>')
 
     options, unknown = parser.parse_known_args()
 
@@ -156,6 +158,32 @@ def celery():
     args += unknown
 
     os.execvpe('celery', args, env)
+
+
+def manage():
+    from burpui import lookup_config
+
+    parser = ArgumentParser('bui-manage')
+    parser.add_argument('-c', '--config', dest='config', help='configuration file', metavar='<CONFIG>')
+    parser.add_argument('-m', '--mode', dest='mode', help='application mode', metavar='<agent|server|worker|manage>')
+
+    options, unknown = parser.parse_known_args()
+
+    conf = lookup_config(options.config)
+    check_config(conf)
+
+    root = os.path.join(os.path.dirname(os.path.realpath(__file__)))
+
+    env = os.environ
+    env['BUI_CONFIG'] = conf
+
+    args = [
+        sys.executable,
+        os.path.join(root, 'manage.py'),
+    ]
+    args += unknown
+
+    os.execvpe(sys.executable, args, env)
 
 
 def check_config(conf):
