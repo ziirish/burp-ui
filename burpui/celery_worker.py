@@ -17,12 +17,12 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
 
 
-def init_app():
+def init_app(conf):
     from burpui import create_app
-    config = os.getenv('BUI_CONFIG')
-    app = create_app(config)
+    app = create_app(conf)
     return app
 
+config = os.getenv('BUI_CONFIG')
 app = init_app()
 app.app_context().push()
 
