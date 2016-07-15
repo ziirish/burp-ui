@@ -7,6 +7,7 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
+import os
 import time
 import select
 import struct
@@ -17,7 +18,7 @@ from .custom import Resource
 from zlib import adler32
 from flask import url_for, Response, current_app as bui
 from time import gmtime, strftime
-from datetime import timedelta
+from datetime import timedelta, datetime
 from werkzeug.datastructures import Headers
 from celery.utils.log import get_task_logger
 
@@ -29,27 +30,70 @@ db = api.db
 app = api.gapp
 logger = get_task_logger(__name__)
 
+if db:
+    from ..models import Task
+    from celery.schedules import crontab
+
+    celery.conf['CELERYBEAT_SCHEDULE'] = {
+        'cleanup-restore-hourly': {
+            'task': 'burpui.api.async.cleanup_restore',
+            'schedule': crontab(minute='12'),  # run every hour
+        },
+    }
+
 LOCK_EXPIRE = 60 * 30  # Lock expires in 30 minutes
+
+
+@celery.task
+def cleanup_restore():
+    with app.app_context():
+        tasks = Task.query.filter_by(task='perform_restore').all()
+        for rec in tasks:
+            if rec.expire and datetime.utcnow() > rec.expire:
+                logger.info('Task expired: {}'.format(rec))
+                task = perform_restore.AsyncResult(rec.uuid)
+                try:
+                    if task.state != 'SUCCESS':
+                        logger.warn(
+                            'Task is not done yet or did not end ' \
+                            'successfully: {}'.format(task.state)
+                        )
+                        task.revoke(terminate=True)
+                        continue
+                    server = task.result.get('server')
+                    path = task.result.get('path')
+                    if server:
+                        if not app_cli.del_file(path):
+                            logger.warn("'{}' already removed".format(path))
+                    else:
+                        if os.path.isfile(path):
+                            os.unlink(path)
+                finally:
+                    db.session.delete(rec)
+                    db.session.commit()
+                    task.revoke()
 
 
 @celery.task(bind=True)
 def perform_restore(self, client, backup,
-                    files, strip, fmt, passwd, server=None, user=None):
+                    files, strip, fmt, passwd, server=None, user=None,
+                    expire=timedelta(minutes=60)):
     with app.app_context():
         def acquire_lock(name):
-            return cache.add(name, 'true', LOCK_EXPIRE)
+            return cache.cache.add(name, 'true', LOCK_EXPIRE)
 
         def release_lock(name):
-            return cache.delete(name)
+            return cache.cache.delete(name)
 
         ret = None
+        lock_name = '{}-{}'.format(self.name, server)
 
-        lock = acquire_lock(self.name)
-        if not lock:
-            logger.warn('A task is already running. Wait for it: {}'.format(lock))
-            # The lock should be released after 30 minutes max
-            while not lock:
-                lock = acquire_lock(self.name)
+        if not acquire_lock(lock_name):
+            logger.warn(
+                'A task is already running. Wait for it: {}'.format(lock_name)
+            )
+            # The lock should be released after LOCK_EXPLIRE max
+            while not acquire_lock(lock_name):
                 time.sleep(30)
 
         try:
@@ -87,12 +131,23 @@ def perform_restore(self, client, backup,
                     )
                 logger.error('FAILURE: {}'.format(err))
             else:
-                logger.debug('filename: {}, path: {}'.format(filename, archive))
-                ret = {'filename': filename, 'path': archive, 'user': user}
+                ret = {
+                    'filename': filename,
+                    'path': archive,
+                    'user': user,
+                    'server': server
+                }
+                logger.debug(ret)
 
         finally:
             release_lock(self.name)
 
+        if db:
+            curr = Task.query.filter_by(uuid=self.request.id).first()
+            if curr:
+                print curr, curr.expire
+                curr.expire = datetime.utcnow() + expire
+                db.session.commit()
         return ret
 
 
@@ -106,6 +161,12 @@ class AsyncRestoreStatus(Resource):
     def get(self, task_id):
         task = perform_restore.AsyncResult(task_id)
         if task.state == 'FAILURE':
+            if db:
+                rec = Task.query.filter_by(uuid=task_id).first()
+                if rec:
+                    db.session.delete(rec)
+                    db.session.commit()
+            task.revoke()
             self.abort(500, task.info['error'])
         if task.state == 'SUCCESS':
             return {
@@ -126,9 +187,10 @@ class AsyncGetFile(Resource):
     """
     def get(self, task_id, server=None):
         task = perform_restore.AsyncResult(task_id)
-        path = task.info.get('path')
+        path = task.result.get('path')
+        user = task.result.get('user')
         filename = task.result.get('filename')
-        return {'filename': filename, 'path': path}
+        return {'filename': filename, 'path': path, 'user': user}
 
     def stream_file(self, path, filename, server):
         socket = bui.cli.get_file(path, server)
@@ -234,11 +296,24 @@ class AsyncRestore(Resource):
         fmt = args['format'] or 'zip'
         passwd = args['pass']
         task = perform_restore.apply_async(
-            args=[name, backup, files, strip, fmt, passwd, server]
+            args=[
+                name,
+                backup,
+                files,
+                strip,
+                fmt,
+                passwd,
+                server,
+                self.username
+            ]
         )
         if db:
-            from ..models import Task
-            db_task = Task(task.id, 'perform_restore', timedelta(minutes=60))
+            db_task = Task(
+                task.id,
+                'perform_restore',
+                self.username,
+                timedelta(minutes=60)
+            )
             db.session.add(db_task)
             db.session.commit()
         return {'id': task.id, 'name': 'perform_restore'}
