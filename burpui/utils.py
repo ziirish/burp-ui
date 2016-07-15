@@ -213,8 +213,8 @@ def lookup_file(name=None, guess=True, directory=False, check=True):
     else:
         names = ['burpui.cfg', 'burpui.sample.cfg']
     roots = [
-        '.',
-        './share/burpui',
+        '',
+        'share/burpui',
         '/etc/burp',
         os.path.join(
             sys.prefix,
@@ -237,7 +237,7 @@ def lookup_file(name=None, guess=True, directory=False, check=True):
             'burpui',
         ),
     ]
-    prefixes = ['.', 'etc']
+    prefixes = ['', 'etc']
     for filename in names:
         for root in roots:
             for prefix in prefixes:
