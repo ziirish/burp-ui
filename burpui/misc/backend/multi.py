@@ -61,8 +61,6 @@ class ProxyCall(object):
         # Special case for network calls
         if self.network:
             data = {'func': self.method, 'args': encoded_args}
-            if self.method == 'restore_files':
-                return self.proxy.do_command(data)
             return json.loads(self.proxy.do_command(data))
         # normal case for "standard" interface
         if 'agent' not in encoded_args:
@@ -390,6 +388,7 @@ class NClient(BUIbackend):
         """Send a command to the remote agent"""
         self.conn()
         res = '[]'
+        err = None
         toclose = False
         if not data or not self.connected:
             return res
@@ -435,10 +434,17 @@ class NClient(BUIbackend):
             toclose = True
             self.logger.error('!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
         except Exception as e:
+            if data['func'] == 'restore_files':
+                err = str(e)
             toclose = True
             self.logger.error('!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
         finally:
             self.close(toclose)
+
+        if data['func'] == 'restore_files':
+            if err:
+                res = None
+            return res, err
 
         return res
 
@@ -500,6 +506,12 @@ class NClient(BUIbackend):
         digest = hmac.new(key, bytes_pickles, hashlib.sha1).hexdigest()
         data = {'func': 'store_conf_srv', 'args': pickles, 'pickled': True, 'digest': digest}
         return json.loads(self.do_command(data))
+
+    @implement
+    def restore_files(self, name=None, backup=None, files=None, strip=None, archive='zip', password=None, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.restore_files`"""
+        data = {'func': 'restore_files', 'args': {'name': name, 'backup': backup, 'files': files, 'strip': strip, 'archive': archive, 'password': password}}
+        return self.do_command(data)
 
     @implement
     def get_file(self, path, agent=None):
