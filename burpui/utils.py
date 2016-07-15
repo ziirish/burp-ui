@@ -198,7 +198,7 @@ class BUIcompress():
 
 def lookup_file(name=None, guess=True, directory=False, check=True):
     if name and isinstance(name, basestring):
-        if os.path.isfile(name) or name =='/dev/null':
+        if os.path.isfile(name) or name == '/dev/null':
             return name
         elif directory and os.path.isdir(name):
             return name
