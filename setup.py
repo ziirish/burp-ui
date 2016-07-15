@@ -189,8 +189,9 @@ with open(os.path.join(ROOT, 'test-requirements.txt')) as f:
 
 dev_requires = ['flake8', 'pylint']
 
-datadir = os.path.join('share', 'burpui', 'etc')
-contrib = os.path.join('share', 'burpui', 'contrib')
+datadir = os.path.join('share', 'burpui')
+confdir = os.path.join(datadir, 'etc')
+contrib = os.path.join(datadir, 'contrib')
 
 setup(
     name=name,
@@ -218,11 +219,12 @@ setup(
         ],
     },
     data_files=[
-        (datadir, [os.path.join(datadir, 'burpui.sample.cfg')]),
-        (datadir, [os.path.join(datadir, 'buiagent.sample.cfg')]),
+        (confdir, [os.path.join(confdir, 'burpui.sample.cfg')]),
+        (confdir, [os.path.join(confdir, 'buiagent.sample.cfg')]),
         (os.path.join(contrib, 'centos'), ['contrib/centos/init.sh']),
         (os.path.join(contrib, 'debian'), ['contrib/debian/init.sh']),
         (os.path.join(contrib, 'gunicorn.d'), ['contrib/gunicorn.d/burp-ui']),
+        (os.path.join(datadir, 'migrations'), ['migrations']),
     ],
     install_requires=requires,
     extras_require={
