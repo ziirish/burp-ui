@@ -182,8 +182,10 @@ def manage():
 
 
 def check_config(conf):
-    if not conf or not os.path.isfile(conf):
-        raise IOError('File not found: \'{0}\''.format(conf))
+    if not conf:
+        raise IOError('No configuration file found')
+    if not os.path.isfile(conf):
+        raise IOError('File does not exist: \'{0}\''.format(conf))
 
 
 if __name__ == '__main__':
