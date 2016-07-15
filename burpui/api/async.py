@@ -8,7 +8,6 @@
 
 """
 import os
-import time
 import select
 import struct
 
@@ -16,8 +15,8 @@ from . import api
 from .custom import Resource
 
 from zlib import adler32
-from flask import url_for, Response, current_app as bui
-from time import gmtime, strftime
+from flask import url_for, Response, current_app as bui, after_this_request, send_file
+from time import gmtime, strftime, time, sleep
 from datetime import timedelta, datetime
 from werkzeug.datastructures import Headers
 from celery.utils.log import get_task_logger
@@ -63,7 +62,7 @@ def cleanup_restore():
                     server = task.result.get('server')
                     path = task.result.get('path')
                     if server:
-                        if not app_cli.del_file(path):
+                        if not app_cli.del_file(path, agent=server):
                             logger.warn("'{}' already removed".format(path))
                     else:
                         if os.path.isfile(path):
@@ -94,7 +93,7 @@ def perform_restore(self, client, backup,
             )
             # The lock should be released after LOCK_EXPLIRE max
             while not acquire_lock(lock_name):
-                time.sleep(30)
+                sleep(30)
 
         try:
             if server:
@@ -140,7 +139,7 @@ def perform_restore(self, client, backup,
                 logger.debug(ret)
 
         finally:
-            release_lock(self.name)
+            release_lock(lock_name)
 
         if db:
             curr = Task.query.filter_by(uuid=self.request.id).first()
@@ -169,9 +168,10 @@ class AsyncRestoreStatus(Resource):
             task.revoke()
             self.abort(500, task.info['error'])
         if task.state == 'SUCCESS':
+            server = task.result.get('server')
             return {
                 'state': task.state,
-                'location': url_for('.async_get_file', task_id=task_id)
+                'location': url_for('.async_get_file', task_id=task_id, server=server)
             }
         return {'state': task.state}
 
@@ -187,13 +187,49 @@ class AsyncGetFile(Resource):
     """
     def get(self, task_id, server=None):
         task = perform_restore.AsyncResult(task_id)
+        if task.state != 'SUCCESS':
+            self.abort(500, 'Unsuccessful task: {}'.format(task.state))
         path = task.result.get('path')
         user = task.result.get('user')
+        dst_server = task.result.get('server')
         filename = task.result.get('filename')
-        return {'filename': filename, 'path': path, 'user': user}
+        if self.username != user or (dst_server and dst_server != server):
+            self.abort(403, 'Unauthorized access')
+        if dst_server:
+            return self.stream_file(path, filename, dst_server)
+
+        try:
+            # Trick to delete the file while sending it to the client.
+            # First, we open the file in reading mode so that a file handler
+            # is open on the file. Then we delete it as soon as the request
+            # ended. Because the fh is open, the file will be actually removed
+            # when the transfer is done and the send_file method has closed
+            # the fh. Only tested on Linux systems.
+            fh = open(path, 'r')
+
+            @after_this_request
+            def remove_file(response):
+                """Callback function to run after the client has handled
+                the request to remove temporary files.
+                """
+                os.remove(path)
+                return response
+
+            resp = send_file(fh,
+                             as_attachment=True,
+                             attachment_filename=filename,
+                             mimetype='application/zip')
+            resp.set_cookie('fileDownload', 'true')
+        except Exception as e:
+            bui.cli.logger.error(str(e))
+            self.abort(500, str(e))
+
+        return resp
 
     def stream_file(self, path, filename, server):
         socket = bui.cli.get_file(path, server)
+        if not socket:
+            self.abort(500)
         lengthbuf = socket.recv(8)
         length, = struct.unpack('!Q', lengthbuf)
 
@@ -215,7 +251,7 @@ class AsyncGetFile(Resource):
                 if not buf:
                     continue
                 received += len(buf)
-                bui.cli.logger.debug('{}/{}'.format(received, l))
+                self.logger.debug('{}/{}'.format(received, l))
                 yield buf
             sock.sendall(struct.pack('!Q', 2))
             sock.sendall(b'RE')
@@ -295,6 +331,15 @@ class AsyncRestore(Resource):
         strip = args['strip']
         fmt = args['format'] or 'zip'
         passwd = args['pass']
+        if not files or not name or not backup:
+            self.abort(400, 'missing arguments')
+        # Manage ACL
+        if (bui.acl and
+                (not bui.acl.is_client_allowed(self.username,
+                                               name,
+                                               server) and not
+                 self.is_admin)):
+            self.abort(403, 'You are not allowed to perform a restoration for this client')
         task = perform_restore.apply_async(
             args=[
                 name,
