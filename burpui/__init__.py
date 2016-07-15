@@ -233,7 +233,10 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
 
     # Still need to test conf file here because the init function can be called
     # by gunicorn directly
-    app.config['CFG'] = lookup_file(conf, guess=False)
+    if conf:
+        app.config['CFG'] = lookup_file(conf, guess=False)
+    else:
+        app.config['CFG'] = lookup_file()
 
     logger.info('Using configuration: {}'.format(app.config['CFG']))
 
