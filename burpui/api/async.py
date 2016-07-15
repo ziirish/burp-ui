@@ -55,7 +55,7 @@ def cleanup_restore():
                 try:
                     if task.state != 'SUCCESS':
                         logger.warn(
-                            'Task is not done yet or did not end ' \
+                            'Task is not done yet or did not end '
                             'successfully: {}'.format(task.state)
                         )
                         task.revoke(terminate=True)
