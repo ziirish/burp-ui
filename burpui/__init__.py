@@ -55,54 +55,6 @@ def get_redis_server(myapp):
     return host, port
 
 
-def lookup_config(conf=None):
-    ret = None
-    if conf:
-        if os.path.isfile(conf) or conf == '/dev/null':
-            ret = conf
-        else:
-            raise IOError('File not found: \'{0}\''.format(conf))
-    else:
-        root = os.path.join(
-            sys.prefix,
-            'share',
-            'burpui',
-            'etc'
-        )
-        root2 = os.path.join(
-            sys.prefix,
-            'local',
-            'share',
-            'burpui',
-            'etc'
-        )
-        root3 = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)),
-            '..',
-            '..',
-            '..',
-            '..',
-            'share',
-            'burpui',
-            'etc',
-        )
-        conf_files = [
-            '/etc/burp/burpui.cfg',
-            os.path.join(root, 'burpui.cfg'),
-            os.path.join(root, 'burpui.sample.cfg'),
-            os.path.join(root2, 'burpui.cfg'),
-            os.path.join(root2, 'burpui.sample.cfg'),
-            os.path.join(root3, 'burpui.cfg'),
-            os.path.join(root3, 'burpui.sample.cfg')
-        ]
-        for p in conf_files:
-            if os.path.isfile(p):
-                ret = p
-                break
-
-    return ret
-
-
 def create_db(myapp):
     """Create the SQLAlchemy instance if possible
 
@@ -185,7 +137,7 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
     """
     from flask_login import LoginManager
     from flask_bower import Bower
-    from .utils import basic_login_from_request, ReverseProxied
+    from .utils import basic_login_from_request, ReverseProxied, lookup_file
     from .server import BUIServer as BurpUI
     from .routes import view
     from .api import api, apibp
@@ -281,7 +233,7 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
 
     # Still need to test conf file here because the init function can be called
     # by gunicorn directly
-    app.config['CFG'] = lookup_config(conf)
+    app.config['CFG'] = lookup_file(conf, guess=False)
 
     logger.info('Using configuration: {}'.format(app.config['CFG']))
 

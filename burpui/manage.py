@@ -18,7 +18,11 @@ def create_manager():
     db = app.db
 
     if db:
-        migrate = Migrate(app, db)
+        mig_dir = os.getenv('BUI_MIGRATIONS')
+        if mig_dir:
+            migrate = Migrate(app, db, mig_dir)
+        else:
+            migrate = Migrate(app, db)
     else:
         migrate = None
 
