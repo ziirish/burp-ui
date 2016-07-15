@@ -1097,3 +1097,8 @@ class Burp(BUIbackend):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_file`"""
         # only used by the multi backend. We do nothing
         return path
+
+    def del_file(self, path, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.del_file`"""
+        # only used by the multi backend. We do nothing
+        return path

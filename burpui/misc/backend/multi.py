@@ -506,3 +506,9 @@ class NClient(BUIbackend):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_file`"""
         data = {'func': 'get_file', 'path': path}
         return self.do_command(data)
+
+    @implement
+    def del_file(self, path, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.del_file`"""
+        data = {'func': 'del_file', 'path': path}
+        return json.loads(self.do_command(data))

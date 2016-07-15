@@ -847,3 +847,10 @@ class BUIbackend(with_metaclass(ABCMeta, object)):
         function is used to retrieve a file on a remote agent.
         """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+
+    @abstractmethod
+    def del_file(self, path, agent=None):
+        """The :func:`burpui.misc.backend.interface.BUIbackend.del_file`
+        function is used to delete a file on a remote agent.
+        """
+        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover

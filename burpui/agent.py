@@ -57,6 +57,10 @@ class BurpHandler(BUIbackend):
         # is in the backend
         if name in self.foreign:
             return getattr(self.backend, name)
+        try:
+            return getattr(self.backend, name)
+        except AttributeError:
+            pass
         return object.__getattribute__(self, name)
 
 
@@ -140,6 +144,7 @@ class BUIAgent(BUIbackend, BUIlogging):
         try:
             self.request = request
             err = None
+            res = ''
             lengthbuf = self.request.recv(8)
             length, = struct.unpack('!Q', lengthbuf)
             data = self.recvall(length)
@@ -168,22 +173,55 @@ class BUIAgent(BUIbackend, BUIlogging):
                         self._logger('error', 'Restoration failed')
                         return
                 elif j['func'] == 'get_file':
+                    path = j['path']
+                    path = os.path.normpath(path)
+                    err = None
+                    if not path.startswith('/'):
+                        err = 'The path must be absolute! ({})'.format(path)
+                    if not path.startswith(self.cli.tmpdir):
+                        err = 'You are not allowed to access this path: ' \
+                              '({})'.format(path)
+                    if err:
+                        self.request.sendall(b'ER')
+                        self.request.sendall(struct.pack('!Q', len(err)))
+                        self.request.sendall(err.encode('UTF-8'))
+                        self._logger('error', err)
+                        return
+                    size = os.path.getsize(path)
                     self.request.sendall(b'OK')
-                    size = os.path.getsize(j['path'])
                     self.request.sendall(struct.pack('!Q', size))
-                    with open(res, 'rb') as f:
+                    with open(path, 'rb') as f:
                         buf = f.read(1024)
                         while buf:
                             self._logger('info', 'sending {} Bytes'.format(len(buf)))
                             self.request.sendall(buf)
                             buf = f.read(1024)
-                    os.unlink(res)
+                    os.unlink(path)
                     lengthbuf = self.request.recv(8)
                     length, = struct.unpack('!Q', lengthbuf)
                     data = self.recvall(length)
                     txt = data.decode('UTF-8')
                     if txt == 'RE':
                         return
+                elif j['func'] == 'del_file':
+                    path = j['path']
+                    path = os.path.normpath(path)
+                    err = None
+                    if not path.startswith('/'):
+                        err = 'The path must be absolute! ({})'.format(path)
+                    if not path.startswith(self.cli.tmpdir):
+                        err = 'You are not allowed to access this path: ' \
+                              '({})'.format(path)
+                    if err:
+                        self.request.sendall(b'ER')
+                        self.request.sendall(struct.pack('!Q', len(err)))
+                        self.request.sendall(err.encode('UTF-8'))
+                        self._logger('error', err)
+                        return
+                    res = json.dumps(False)
+                    if os.path.isfile(path):
+                        os.unlink(path)
+                        res = json.dumps(True)
                 else:
                     if j['args']:
                         if 'pickled' in j and j['pickled']:
