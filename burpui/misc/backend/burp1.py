@@ -965,7 +965,11 @@ class Burp(BUIbackend):
         # hack to handle client-side encrypted backups
         # this is now handled client-side, but we should never trust user input
         # so we need to handle it server-side too
-        if 'zstrm inflate error: -3' in out and 'transfer file returning: -1' in out:
+        if PY3:
+            decode = out.decode('utf-8')
+        else:
+            decode = out
+        if 'zstrm inflate error: -3' in decode and 'transfer file returning: -1' in decode:
             status = 1
             out = 'encrypted'
         # a return code of 2 means there were some warnings during restoration
