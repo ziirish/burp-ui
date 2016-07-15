@@ -133,9 +133,6 @@ def celery():
     args += unknown
     args += [x for x in options.remaining if x != '--']
 
-    print args, env
-    sys.exit(0)
-
     os.execvpe('celery', args, env)
 
 
@@ -174,9 +171,6 @@ def manage():
     ]
     args += unknown
     args += [x for x in options.remaining if x != '--']
-
-    print args, env
-    sys.exit(0)
 
     os.execvpe(sys.executable, args, env)
 
