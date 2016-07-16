@@ -74,6 +74,7 @@ $( document ).ready(function() {
 			var node = data.node;
 			p = node.key;
 			if (p !== "/") p += '/';
+			p = encodeURIComponent(p);
 			data.result = { url: '{{ url_for("api.client_tree", name=cname, backup=nbackup, server=server) }}?root='+p, debugDelay: 500 };
 		},
 		loadChildren: function(event, data) {
@@ -183,6 +184,36 @@ $( document ).ready(function() {
 		
 		$preparingFileModal.modal('toggle');
 
+		{% if config.WITH_CELERY -%}
+		var check_task = function(task_id) {
+			$.getJSON('{{ url_for("api.async_restore_status", task_id="") }}'+task_id)
+				.done(function(data) {
+					if (data.state != 'SUCCESS') {
+						setTimeout(function() {
+							check_task(task_id);
+						}, 2000);
+					} else {
+						$.fileDownload(data.location, {
+							successCallback: function (url) {
+								$preparingFileModal.modal('hide');
+							}
+						});
+					}
+				})
+				.fail(function(xhr, stat, err) {
+					$preparingFileModal.modal('hide');
+					myFail(xhr, stat, err);
+				});
+		};
+		$.post($(this).prop('action'), $(this).serialize())
+			.done(function(data) {
+				check_task(data.id);
+			})
+			.fail(function(xhr, stat, err) {
+				$preparingFileModal.modal('hide');
+				myFail(xhr, stat, err);
+			});
+		{% else -%}
 		$.fileDownload($(this).prop('action'), {
 			successCallback: function (url) {
 				$preparingFileModal.modal('hide');
@@ -200,6 +231,7 @@ $( document ).ready(function() {
 			httpMethod: "POST",
 			data: $(this).serialize()
 		});
+		{% endif -%}
 		e.preventDefault();
 		return false;
 	});

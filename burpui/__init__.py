@@ -13,6 +13,7 @@ jQuery/Bootstrap
 import os
 import sys
 import logging
+import warnings
 from logging import Formatter
 
 if sys.version_info < (3, 0):
@@ -37,58 +38,73 @@ try:  # pragma: no cover
 except:  # pragma: no cover
     __release__ = 'unknown'
 
+warnings.simplefilter('always', RuntimeWarning)
 
-def lookup_config(conf=None):
-    ret = None
-    if conf:
-        if os.path.isfile(conf) or conf == '/dev/null':
-            ret = conf
-        else:
-            raise IOError('File not found: \'{0}\''.format(conf))
+
+def get_redis_server(myapp):
+    if myapp.redis and myapp.redis.lower() != 'none':
+        parts = myapp.redis.split(':')
+        host = parts[0]
+        try:
+            port = int(parts[1])
+        except (ValueError, IndexError):
+            port = 6379
     else:
-        root = os.path.join(
-            sys.prefix,
-            'share',
-            'burpui',
-            'etc'
-        )
-        root2 = os.path.join(
-            sys.prefix,
-            'local',
-            'share',
-            'burpui',
-            'etc'
-        )
-        root3 = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)),
-            '..',
-            '..',
-            '..',
-            '..',
-            'share',
-            'burpui',
-            'etc',
-        )
-        conf_files = [
-            '/etc/burp/burpui.cfg',
-            os.path.join(root, 'burpui.cfg'),
-            os.path.join(root, 'burpui.sample.cfg'),
-            os.path.join(root2, 'burpui.cfg'),
-            os.path.join(root2, 'burpui.sample.cfg'),
-            os.path.join(root3, 'burpui.cfg'),
-            os.path.join(root3, 'burpui.sample.cfg')
-        ]
-        for p in conf_files:
-            if os.path.isfile(p):
-                ret = p
-                break
-
-    return ret
+        host = 'localhost'
+        port = 6379
+    return host, port
 
 
-def create_app(*args, **kwargs):
-    """Alias for init"""
-    return init(*args, **kwargs)
+def create_db(myapp):
+    """Create the SQLAlchemy instance if possible
+
+    :param myapp: Application context
+    :type myapp: :class:`burpui.server.BUIServer`
+    """
+    # singleton
+    if myapp.db:
+        return myapp.db
+
+    if myapp.config['WITH_SQL']:
+        from .models import db
+        db.init_app(myapp)
+        myapp.db = db
+        return db
+
+    return None
+
+
+def create_celery(myapp, warn=True):
+    """Create the Celery app if possible
+
+    :param myapp: Application context
+    :type myapp: :class:`burpui.server.BUIServer`
+    """
+    # singleton
+    if myapp.celery:
+        return myapp.celery
+
+    if myapp.config['WITH_CELERY']:
+        from celery import Celery
+        host, port = get_redis_server(myapp)
+        redis_url = 'redis://{}:{}/2'.format(host, port)
+        myapp.config['CELERY_BROKER_URL'] = redis_url
+        myapp.config['CELERY_RESULT_BACKEND'] = redis_url
+        celery = Celery(myapp.name, broker=myapp.config['CELERY_BROKER_URL'])
+        celery.conf.update(myapp.config)
+        myapp.celery = celery
+        return celery
+
+    if warn:
+        message = 'Something went wrong while initializing celery worker.\n' \
+                  'Maybe it is not enabled in your conf ' \
+                  '({}).'.format(myapp.config['CFG'])
+        warnings.warn(
+            message,
+            RuntimeWarning
+        )
+
+    return None
 
 
 def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debug=False):
@@ -116,7 +132,7 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
     """
     from flask_login import LoginManager
     from flask_bower import Bower
-    from .utils import basic_login_from_request, ReverseProxied
+    from .utils import basic_login_from_request, ReverseProxied, lookup_file
     from .server import BUIServer as BurpUI
     from .routes import view
     from .api import api, apibp
@@ -190,7 +206,8 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
 
     # We initialize the core
     app = BurpUI()
-    app.enable_logger()
+    if verbose:
+        app.enable_logger()
     app.gunicorn = gunicorn
 
     app.config['CFG'] = None
@@ -211,7 +228,10 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
 
     # Still need to test conf file here because the init function can be called
     # by gunicorn directly
-    app.config['CFG'] = lookup_config(conf)
+    if conf:
+        app.config['CFG'] = lookup_file(conf, guess=False)
+    else:
+        app.config['CFG'] = lookup_file()
 
     logger.info('Using configuration: {}'.format(app.config['CFG']))
 
@@ -219,6 +239,7 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
 
     if debug:
         app.config.setdefault('TEMPLATES_AUTO_RELOAD', True)
+        app.config['TEMPLATES_AUTO_RELOAD'] = True
 
     # manage application secret key
     if app.secret_key and (app.secret_key.lower() == 'none' or
@@ -236,32 +257,23 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
     if gunicorn:  # pragma: no cover
         logger.info('Using gunicorn')
         from werkzeug.contrib.fixers import ProxyFix
-        if app.storage and app.storage.lower() == 'redis':
-            if app.redis:
-                part = app.redis.split(':')
-                host = part[0]
-                try:
-                    port = int(part[1])
-                except:
-                    port = 6379
-            else:
-                host = 'localhost'
-                port = 6379
-            logger.debug('Using redis {}:{}'.format(host, port))
-            try:
-                from redis import Redis
-                from flask_session import Session
-                red = Redis(host=host, port=port)
-                app.config['SESSION_TYPE'] = 'redis'
-                app.config['SESSION_REDIS'] = red
-                app.config['SESSION_USE_SIGNER'] = app.secret_key is not None
-                app.config['SESSION_PERMANENT'] = False
-                ses = Session()
-                ses.init_app(app)
-            except Exception as e:
-                logger.warning('Unable to initialize redis: {}'.format(str(e)))
-                pass
-            api.cache.init_app(
+
+        app.wsgi_app = ProxyFix(app.wsgi_app)
+
+    if app.storage and app.storage.lower() == 'redis':
+        host, port = get_redis_server(app)
+        logger.debug('Using redis {}:{}'.format(host, port))
+        try:
+            from redis import Redis
+            from flask_session import Session
+            red = Redis(host=host, port=port)
+            app.config['SESSION_TYPE'] = 'redis'
+            app.config['SESSION_REDIS'] = red
+            app.config['SESSION_USE_SIGNER'] = app.secret_key is not None
+            app.config['SESSION_PERMANENT'] = False
+            ses = Session()
+            ses.init_app(app)
+            app.cache.init_app(
                 app,
                 config={
                     'CACHE_TYPE': 'redis',
@@ -272,19 +284,28 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
             )
             # clear cache at startup in case we removed or added servers
             with app.app_context():
-                api.cache.clear()
-        else:
-            api.cache.init_app(app)
-
-        app.wsgi_app = ProxyFix(app.wsgi_app)
+                app.cache.clear()
+        except Exception as e:
+            logger.warning('Unable to initialize redis: {}'.format(str(e)))
+            app.cache.init_app(app)
     else:
-        api.cache.init_app(app)
+        app.cache.init_app(app)
+
+    # Create celery app if enabled
+    create_celery(app, warn=False)
+    # Create SQLAlchemy if enabled
+    create_db(app)
 
     # We initialize the API
     api.version = __version__
     api.release = __release__
     api.__url__ = __url__
     api.__doc__ = __doc__
+    api.db = app.db
+    api.gapp = app
+    api.celery = app.celery
+    api.app_cli = app.cli
+    api.cache = app.cache
     api.load_all()
     app.register_blueprint(apibp)
 
@@ -333,3 +354,6 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
             return basic_login_from_request(request, app)
 
     return app
+
+
+create_app = init

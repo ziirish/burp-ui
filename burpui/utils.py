@@ -196,6 +196,58 @@ class BUIcompress():
             self.arch.add(path, arcname=arcname, recursive=False)
 
 
+def lookup_file(name=None, guess=True, directory=False, check=True):
+    if name and isinstance(name, basestring):
+        if os.path.isfile(name) or name == '/dev/null':
+            return name
+        elif directory and os.path.isdir(name):
+            return name
+        elif not guess:
+            if check:
+                raise IOError('File not found: \'{}\''.format(name))
+            return name
+    if name and isinstance(name, basestring):
+        names = [name]
+    elif name:
+        names = name
+    else:
+        names = ['burpui.cfg', 'burpui.sample.cfg']
+    roots = [
+        '',
+        'share/burpui',
+        '/etc/burp',
+        os.path.join(
+            sys.prefix,
+            'share',
+            'burpui',
+        ),
+        os.path.join(
+            sys.prefix,
+            'local',
+            'share',
+            'burpui',
+        ),
+        os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            '..',
+            '..',
+            '..',
+            '..',
+            'share',
+            'burpui',
+        ),
+    ]
+    prefixes = ['', 'etc']
+    for filename in names:
+        for root in roots:
+            for prefix in prefixes:
+                tmp = os.path.join(root, prefix, filename)
+                if directory and os.path.isdir(tmp):
+                    return tmp
+                elif os.path.isfile(tmp):
+                    return tmp
+
+
 def implement(func):
     """A decorator indicating the method is implemented.
 

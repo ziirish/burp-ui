@@ -1,8 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
+"""
+Burp-UI is a web-ui for burp backup written in python with Flask and
+jQuery/Bootstrap
+
+.. module:: burpui.__main__
+    :platform: Unix
+    :synopsis: Burp-UI main module.
+
+.. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
+"""
 import sys
 import os
-from argparse import ArgumentParser
+from argparse import ArgumentParser, REMAINDER
 
 # Try to load modules from our current env first
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
@@ -17,10 +27,14 @@ def parse_args(mode=True, name=None):
     parser.add_argument('-V', '--version', dest='version', help='print version and exit', action='store_true')
     parser.add_argument('-c', '--config', dest='config', help='configuration file', metavar='<CONFIG>')
     parser.add_argument('-l', '--logfile', dest='logfile', help='output logs in defined file', metavar='<FILE>')
+    parser.add_argument('-i', '--migrations', dest='migrations', help='migrations directory', metavar='<MIGRATIONSDIR>')
+    parser.add_argument('remaining', nargs=REMAINDER)
     if mode:
-        parser.add_argument('-m', '--mode', dest='mode', help='application mode (server or agent)', metavar='<agent|server>')
+        parser.add_argument('-m', '--mode', dest='mode', help='application mode', metavar='<agent|server|celery|manage>')
 
-    options = parser.parse_args()
+    options, unknown = parser.parse_known_args()
+    if options.mode and options.mode not in ['celery', 'manage']:
+        options = parser.parse_args()
 
     if options.version:
         from burpui import __title__, __version__, __release__
@@ -41,17 +55,28 @@ def main():
 
     if not options.mode or options.mode == 'server':
         server(options)
-    else:
+    elif options.mode == 'agent':
         agent(options)
+    elif options.mode == 'celery':
+        celery()
+    elif options.mode == 'manage':
+        manage()
+    else:
+        print('Wrong mode!')
+        sys.exit(1)
 
 
 def server(options=None):
-    from burpui import create_app, lookup_config
+    from burpui import create_app
+    from burpui.utils import lookup_file
 
     if not options:
         options = parse_args(mode=False)
 
-    conf = lookup_config(options.config)
+    if options.config:
+        conf = lookup_file(options.config, guess=False)
+    else:
+        conf = lookup_file()
     check_config(conf)
 
     server = create_app(conf, options.log, options.logfile, False, debug=options.debug)
@@ -61,6 +86,7 @@ def server(options=None):
 
 def agent(options=None):
     from burpui.agent import BUIAgent as Agent
+    from burpui.utils import lookup_file
     from burpui._compat import patch_json
 
     patch_json()
@@ -68,56 +94,92 @@ def agent(options=None):
     if not options:
         options = parse_args(mode=False, name='bui-agent')
 
-    conf = None
+    conf = ['buiagent.cfg', 'buiagent.sample.cfg']
     if options.config:
-        conf = options.config
+        conf = lookup_file(options.config, guess=False)
     else:
-        root = os.path.join(
-            sys.prefix,
-            'share',
-            'burpui',
-            'etc'
-        )
-        root2 = os.path.join(
-            sys.prefix,
-            'local',
-            'share',
-            'burpui',
-            'etc'
-        )
-        root3 = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)),
-            '..',
-            '..',
-            '..',
-            '..',
-            'share',
-            'burpui',
-            'etc',
-        )
-        conf_files = [
-            '/etc/burp/buiagent.cfg',
-            os.path.join(root, 'buiagent.cfg'),
-            os.path.join(root, 'buiagent.sample.cfg'),
-            os.path.join(root2, 'buiagent.cfg'),
-            os.path.join(root2, 'buiagent.sample.cfg'),
-            os.path.join(root3, 'buiagent.cfg'),
-            os.path.join(root3, 'buiagent.sample.cfg')
-        ]
-        for p in conf_files:
-            if os.path.isfile(p):
-                conf = p
-                break
-
+        conf = lookup_file(conf)
     check_config(conf)
 
     agent = Agent(conf, options.log, options.logfile, options.debug)
     agent.run()
 
 
+def celery():
+    from burpui.utils import lookup_file
+
+    parser = ArgumentParser('bui-celery')
+    parser.add_argument('-c', '--config', dest='config', help='configuration file', metavar='<CONFIG>')
+    parser.add_argument('-m', '--mode', dest='mode', help='application mode', metavar='<agent|server|worker|manage>')
+    parser.add_argument('remaining', nargs=REMAINDER)
+
+    options, unknown = parser.parse_known_args()
+
+    if options.config:
+        conf = lookup_file(options.config, guess=False)
+    else:
+        conf = lookup_file()
+    check_config(conf)
+
+    env = os.environ
+    env['BUI_CONFIG'] = conf
+
+    args = [
+        'celery',
+        'worker',
+        '-A',
+        'celery_worker.celery'
+    ]
+    args += unknown
+    args += [x for x in options.remaining if x != '--']
+
+    os.execvpe('celery', args, env)
+
+
+def manage():
+    from burpui.utils import lookup_file
+
+    parser = ArgumentParser('bui-manage')
+    parser.add_argument('-c', '--config', dest='config', help='configuration file', metavar='<CONFIG>')
+    parser.add_argument('-i', '--migrations', dest='migrations', help='migrations directory', metavar='<MIGRATIONSDIR>')
+    parser.add_argument('-m', '--mode', dest='mode', help='application mode', metavar='<agent|server|worker|manage>')
+    parser.add_argument('remaining', nargs=REMAINDER)
+
+    options, unknown = parser.parse_known_args()
+
+    if options.config:
+        conf = lookup_file(options.config, guess=False)
+    else:
+        conf = lookup_file()
+    check_config(conf)
+
+    if options.migrations:
+        migrations = lookup_file(options.migrations, guess=False, directory=True, check=False)
+    else:
+        migrations = lookup_file('migrations', directory=True)
+
+    root = os.path.join(os.path.dirname(os.path.realpath(__file__)))
+
+    env = os.environ
+    env['BUI_CONFIG'] = conf
+    if migrations:
+        env['BUI_MIGRATIONS'] = migrations
+
+    args = [
+        sys.executable,
+        os.path.join(root, 'manage.py'),
+    ]
+    args += unknown
+    args += [x for x in options.remaining if x != '--']
+
+    os.execvpe(sys.executable, args, env)
+
+
 def check_config(conf):
-    if not conf or not os.path.isfile(conf):
-        raise IOError('File not found: \'{0}\''.format(conf))
+    if not conf:
+        raise IOError('No configuration file found')
+    if not os.path.isfile(conf):
+        raise IOError('File does not exist: \'{0}\''.format(conf))
 
 
 if __name__ == '__main__':

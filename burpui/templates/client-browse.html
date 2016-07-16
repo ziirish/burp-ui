@@ -60,7 +60,11 @@
           </div>
           <br />
           <div class="row form-horizontal">
+            {% if config.WITH_CELERY -%}
+            <form id="form-restore" class="form-inline col-md-6" method="POST" role="form" action="{{ url_for('api.async_restore', name=cname, backup=nbackup, server=server) }}">
+            {% else -%}
             <form id="form-restore" class="form-inline col-md-6" method="POST" role="form" action="{{ url_for('api.restore', name=cname, backup=nbackup, server=server) }}">
+            {% endif -%}
               <input type="hidden" name="list">
               <div id="restore-form" style="display:none;">
                 {% if encrypted -%}

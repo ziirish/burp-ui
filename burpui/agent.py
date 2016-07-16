@@ -51,12 +51,16 @@ class BurpHandler(BUIbackend):
     def __getattribute__(self, name):
         # always return this value because we need it and if we don't do that
         # we'll end up with an infinite loop
-        if name == 'foreign':
+        if name == 'foreign' or name == 'backend':
             return object.__getattribute__(self, name)
         # now we can retrieve the 'foreign' list and know if the object called
         # is in the backend
         if name in self.foreign:
             return getattr(self.backend, name)
+        try:
+            return getattr(self.backend, name)
+        except AttributeError:
+            pass
         return object.__getattribute__(self, name)
 
 
@@ -140,6 +144,7 @@ class BUIAgent(BUIbackend, BUIlogging):
         try:
             self.request = request
             err = None
+            res = ''
             lengthbuf = self.request.recv(8)
             length, = struct.unpack('!Q', lengthbuf)
             data = self.recvall(length)
@@ -161,6 +166,62 @@ class BUIAgent(BUIbackend, BUIlogging):
                         res = json.dumps(getattr(parser, j['method'])())
                 elif j['func'] == 'restore_files':
                     res, err = getattr(self.cli, j['func'])(**j['args'])
+                    if err:
+                        self.request.sendall(b'ER')
+                        self.request.sendall(struct.pack('!Q', len(err)))
+                        self.request.sendall(err.encode('UTF-8'))
+                        self._logger('error', 'Restoration failed')
+                        return
+                elif j['func'] == 'get_file':
+                    path = j['path']
+                    path = os.path.normpath(path)
+                    err = None
+                    if not path.startswith('/'):
+                        err = 'The path must be absolute! ({})'.format(path)
+                    if not path.startswith(self.cli.tmpdir):
+                        err = 'You are not allowed to access this path: ' \
+                              '({})'.format(path)
+                    if err:
+                        self.request.sendall(b'ER')
+                        self.request.sendall(struct.pack('!Q', len(err)))
+                        self.request.sendall(err.encode('UTF-8'))
+                        self._logger('error', err)
+                        return
+                    size = os.path.getsize(path)
+                    self.request.sendall(b'OK')
+                    self.request.sendall(struct.pack('!Q', size))
+                    with open(path, 'rb') as f:
+                        buf = f.read(1024)
+                        while buf:
+                            self._logger('info', 'sending {} Bytes'.format(len(buf)))
+                            self.request.sendall(buf)
+                            buf = f.read(1024)
+                    os.unlink(path)
+                    lengthbuf = self.request.recv(8)
+                    length, = struct.unpack('!Q', lengthbuf)
+                    data = self.recvall(length)
+                    txt = data.decode('UTF-8')
+                    if txt == 'RE':
+                        return
+                elif j['func'] == 'del_file':
+                    path = j['path']
+                    path = os.path.normpath(path)
+                    err = None
+                    if not path.startswith('/'):
+                        err = 'The path must be absolute! ({})'.format(path)
+                    if not path.startswith(self.cli.tmpdir):
+                        err = 'You are not allowed to access this path: ' \
+                              '({})'.format(path)
+                    if err:
+                        self.request.sendall(b'ER')
+                        self.request.sendall(struct.pack('!Q', len(err)))
+                        self.request.sendall(err.encode('UTF-8'))
+                        self._logger('error', err)
+                        return
+                    res = json.dumps(False)
+                    if os.path.isfile(path):
+                        os.unlink(path)
+                        res = json.dumps(True)
                 else:
                     if j['args']:
                         if 'pickled' in j and j['pickled']:
@@ -191,36 +252,11 @@ class BUIAgent(BUIbackend, BUIlogging):
                 self.request.sendall(struct.pack('!Q', len(res)))
                 self.request.sendall(res.encode('UTF-8'))
                 return
-            if j['func'] == 'restore_files':
-                if err:
-                    self.request.sendall(b'KO')
-                    self.request.sendall(struct.pack('!Q', len(err)))
-                    self.request.sendall(err.encode('UTF-8'))
-                    self._logger('error', 'Restoration failed')
-                    return
-                self.request.sendall(b'OK')
-                size = os.path.getsize(res)
-                self.request.sendall(struct.pack('!Q', size))
-                with open(res, 'rb') as f:
-                    buf = f.read(1024)
-                    while buf:
-                        self._logger('info', 'sending {} Bytes'.format(len(buf)))
-                        self.request.sendall(buf)
-                        buf = f.read(1024)
-                os.unlink(res)
-                lengthbuf = self.request.recv(8)
-                length, = struct.unpack('!Q', lengthbuf)
-                data = self.recvall(length)
-                txt = data.decode('UTF-8')
-                if txt == 'RE':
-                    return
-            else:
-                self.request.sendall(struct.pack('!Q', len(res)))
-                self.request.sendall(res.encode('UTF-8'))
+            self.request.sendall(struct.pack('!Q', len(res)))
+            self.request.sendall(res.encode('UTF-8'))
         except AttributeError as e:
             self._logger('warning', '{}\nWrong method => {}'.format(traceback.format_exc(), str(e)))
             self.request.sendall(b'KO')
-            return
         except Exception as e:
             self._logger('error', '!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
         finally:

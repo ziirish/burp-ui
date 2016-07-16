@@ -14,9 +14,10 @@ import traceback
 
 from .misc.auth.handler import UserAuthHandler
 from .utils import BUIConfig
-from datetime import timedelta
 
+from datetime import timedelta
 from flask import Flask
+from flask_cache import Cache
 
 
 G_PORT = 5000
@@ -32,9 +33,11 @@ G_AUTH = [u'basic']
 G_ACL = u'none'
 G_STORAGE = u''
 G_REDIS = u''
+G_CELERY = False
 G_SCOOKIE = False
 G_APPSECRET = u'random'
 G_COOKIETIME = 14
+G_DATABASE = u''
 G_PREFIX = u''
 G_NO_SERVER_RESTORE = False
 
@@ -44,6 +47,9 @@ class BUIServer(Flask):
     The :class:`burpui.server.BUIServer` class provides the ``Burp-UI`` server.
     """
     gunicorn = False
+    db = None
+    celery = None
+    cache = Cache(config={'CACHE_TYPE': 'null', 'CACHE_NO_NULL_WARNING': True})
 
     defaults = {
         'Global': {
@@ -70,6 +76,8 @@ class BUIServer(Flask):
         'Production': {
             'storage': G_STORAGE,
             'redis': G_REDIS,
+            'celery': G_CELERY,
+            'database': G_DATABASE,
         },
         'Experimental': {
             'noserverrestore': G_NO_SERVER_RESTORE,
@@ -115,38 +123,38 @@ class BUIServer(Flask):
         self.conf = BUIConfig(conf, True, self.defaults)
         self.conf.default_section('Global')
 
-        self.port = self.conf.safe_get(
+        self.port = self.config['BUI_PORT'] = self.conf.safe_get(
             'port',
             'integer'
         )
-        self.bind = self.conf.safe_get('bind')
-        self.vers = self.conf.safe_get(
+        self.bind = self.config['BUI_BIND'] = self.conf.safe_get('bind')
+        self.vers = self.config['BUI_VERS'] = self.conf.safe_get(
             'version',
             'integer'
         )
-        self.ssl = self.conf.safe_get(
+        self.ssl = self.config['BUI_SSL'] = self.conf.safe_get(
             'ssl',
             'boolean'
         )
-        self.standalone = self.conf.safe_get(
+        self.standalone = self.config['STANDALONE'] = self.conf.safe_get(
             'standalone',
             'boolean'
         )
-        self.sslcert = self.conf.safe_get(
+        self.sslcert = self.config['BUI_SSLCERT'] = self.conf.safe_get(
             'sslcert'
         )
-        self.sslkey = self.conf.safe_get(
+        self.sslkey = self.config['BUI_SSLKEY'] = self.conf.safe_get(
             'sslkey'
         )
-        self.prefix = self.conf.safe_get(
+        self.prefix = self.config['BUI_PREFIX'] = self.conf.safe_get(
             'prefix'
         )
         if self.prefix and not self.prefix.startswith('/'):
             if self.prefix.lower() != 'none':
                 self.logger.warning("'prefix' must start with a '/'!")
-            self.prefix = ''
+            self.prefix = self.config['BUI_PREFIX'] = ''
 
-        self.auth = self.conf.safe_get(
+        self.auth = self.config['BUI_AUTH'] = self.conf.safe_get(
             'auth',
             'string_lower_list'
         )
@@ -161,14 +169,14 @@ class BUIServer(Flask):
                     )
                 )
                 raise e
-            self.acl_engine = self.conf.safe_get(
+            self.acl_engine = self.config['BUI_ACL'] = self.conf.safe_get(
                 'acl'
             )
         else:
             self.config['LOGIN_DISABLED'] = True
             # No login => no ACL
-            self.acl_engine = 'none'
-            self.auth = 'none'
+            self.acl_engine = self.config['BUI_ACL'] = 'none'
+            self.auth = self.config['BUI_AUTH'] = 'none'
 
         if self.acl_engine and self.acl_engine.lower() != 'none':
             try:
@@ -215,14 +223,28 @@ class BUIServer(Flask):
         )
 
         # Production options
-        self.storage = self.conf.safe_get(
+        self.storage = self.config['BUI_STORAGE'] = self.conf.safe_get(
             'storage',
             section='Production'
         )
-        self.redis = self.conf.safe_get(
+        self.redis = self.config['BUI_REDIS'] = self.conf.safe_get(
             'redis',
             section='Production'
         )
+        self.with_celery = self.config['WITH_CELERY'] = self.conf.safe_get(
+            'celery',
+            'boolean',
+            section='Production'
+        )
+        self.database = self.config['SQLALCHEMY_DATABASE_URI'] = \
+            self.conf.safe_get(
+                'database',
+                section='Production'
+        )
+        if self.database and self.database.lower() != 'none':
+            self.config['WITH_SQL'] = True
+        else:
+            self.config['WITH_SQL'] = False
 
         # Experimental options
         self.noserverrestore = self.conf.safe_get(
@@ -232,7 +254,7 @@ class BUIServer(Flask):
         )
 
         # Security options
-        self.scookie = self.conf.safe_get(
+        self.scookie = self.config['BUI_SCOOKIE'] = self.conf.safe_get(
             'scookie',
             'boolean',
             section='Security'
@@ -247,8 +269,6 @@ class BUIServer(Flask):
             self.config['PERMANENT_SESSION_LIFETIME'] = timedelta(
                 days=days
         )
-
-        self.config['STANDALONE'] = self.standalone
 
         self.logger.info('burp version: {}'.format(self.vers))
         self.logger.info('listen port: {}'.format(self.port))
@@ -266,6 +286,9 @@ class BUIServer(Flask):
         self.logger.info('liverefresh: {}'.format(self.config['LIVEREFRESH']))
         self.logger.info('auth: {}'.format(self.auth))
         self.logger.info('acl: {}'.format(self.acl_engine))
+        self.logger.info('with celery: {}'.format(self.with_celery))
+        self.logger.info('redis: {}'.format(self.redis))
+        self.logger.info('database: {}'.format(self.database))
 
         if self.standalone:
             module = 'burpui.misc.backend.burp{0}'.format(self.vers)

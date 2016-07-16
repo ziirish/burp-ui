@@ -841,9 +841,12 @@ class Burp(BUIbackend):
         if not root:
             top = ''
         else:
-            try:
-                top = root.decode('utf-8', 'replace')
-            except UnicodeDecodeError:
+            if not PY3:
+                try:
+                    top = root.decode('utf-8', 'replace')
+                except UnicodeDecodeError:
+                    top = root
+            else:
                 top = root
 
         filemap = self.status('c:{0}:b:{1}:p:{2}\n'.format(name, backup, top))
@@ -965,7 +968,11 @@ class Burp(BUIbackend):
         # hack to handle client-side encrypted backups
         # this is now handled client-side, but we should never trust user input
         # so we need to handle it server-side too
-        if 'zstrm inflate error: -3' in out and 'transfer file returning: -1' in out:
+        if PY3:
+            decode = out.decode('utf-8')
+        else:
+            decode = out
+        if 'zstrm inflate error: -3' in decode and 'transfer file returning: -1' in decode:
             status = 1
             out = 'encrypted'
         # a return code of 2 means there were some warnings during restoration
@@ -1092,3 +1099,13 @@ class Burp(BUIbackend):
         if self.parser:
             return self.parser
         raise BUIserverException('Missing parser')
+
+    def get_file(self, path, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.get_file`"""
+        # only used by the multi backend. We do nothing
+        return path
+
+    def del_file(self, path, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.del_file`"""
+        # only used by the multi backend. We do nothing
+        return path

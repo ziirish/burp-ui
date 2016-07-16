@@ -10,19 +10,15 @@
 """
 import os
 import sys
+import logging
 
 from flask import Blueprint, Response, request, current_app as bui
 from flask_restplus import Api as ApiPlus
 from flask_login import current_user
-from flask_cache import Cache
 from importlib import import_module
 from functools import wraps
 
-from .._compat import PY3
 from ..exceptions import BUIserverException
-
-if PY3:  # pragma: no cover
-    basestring = str
 
 EXEMPT_METHODS = set(['OPTIONS'])
 
@@ -60,12 +56,18 @@ def api_login_required(func):
 
 class Api(ApiPlus):
     """Wrapper class around :class:`flask_restplus.Api`"""
-    cache = Cache(config={'CACHE_TYPE': 'null', 'CACHE_NO_NULL_WARNING': True})
+    db = None
+    gapp = None
+    cache = None
+    logger = logging.getLogger('burp-ui')
     loaded = False
+    celery = None
+    app_cli = None
     release = None
     __doc__ = None
     __url__ = None
     LOGIN_NOT_REQUIRED = []
+    CELERY_REQUIRED = ['async']
 
     def load_all(self):
         """hack to automatically import api modules"""
@@ -78,7 +80,11 @@ class Api(ApiPlus):
                         ext == '.py' and
                         name not in ['__init__', '.', '..']):
                     mod = '.' + name
-                    import_module(mod, __name__)
+                    if name not in self.CELERY_REQUIRED or self.celery:
+                        self.logger.debug('Loading API module: {}'.format(mod))
+                        import_module(mod, __name__)
+                    else:
+                        self.logger.warning('Skipping API module: {}'.format(mod))
 
 
 apibp = Blueprint('api', __name__, url_prefix='/api')

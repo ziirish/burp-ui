@@ -10,7 +10,6 @@
 import select
 import struct
 
-# This is a submodule we can also use "from ..api import api"
 from . import api
 from .custom import fields, Resource
 from .custom.inputs import boolean

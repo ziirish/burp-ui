@@ -61,8 +61,6 @@ class ProxyCall(object):
         # Special case for network calls
         if self.network:
             data = {'func': self.method, 'args': encoded_args}
-            if self.method == 'restore_files':
-                return self.proxy.do_command(data)
             return json.loads(self.proxy.do_command(data))
         # normal case for "standard" interface
         if 'agent' not in encoded_args:
@@ -390,14 +388,12 @@ class NClient(BUIbackend):
         """Send a command to the remote agent"""
         self.conn()
         res = '[]'
+        err = None
         toclose = False
         if not data or not self.connected:
             return res
         try:
             data['password'] = self.password
-            if data['func'] == 'restore_files':
-                self.close()
-                self.conn(True)
             raw = json.dumps(data)
             length = len(raw)
             self.sock.sendall(struct.pack('!Q', length))
@@ -414,19 +410,11 @@ class NClient(BUIbackend):
                 self.logger.debug('Ooops, unsuccessful!')
                 return res
             self.logger.debug("Data sent successfully")
-            tmp = 'OK'
-            if data['func'] == 'restore_files':
-                tmp = self.sock.recv(2)
+            if data['func'] == 'get_file':
+                return self.sock
             lengthbuf = self.sock.recv(8)
             length, = struct.unpack('!Q', lengthbuf)
-            if data['func'] == 'restore_files':
-                err = None
-                if tmp == 'KO':
-                    err = self.recvall(length).decode('UTF-8')
-                res = (self.sock, length, err)
-                self.connected = False
-            else:
-                res = self.recvall(length).decode('UTF-8')
+            res = self.recvall(length).decode('UTF-8')
         except BUIserverException as e:
             raise e
         except IOError as e:
@@ -446,10 +434,17 @@ class NClient(BUIbackend):
             toclose = True
             self.logger.error('!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
         except Exception as e:
+            if data['func'] == 'restore_files':
+                err = str(e)
             toclose = True
             self.logger.error('!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
         finally:
             self.close(toclose)
+
+        if data['func'] == 'restore_files':
+            if err:
+                res = None
+            return res, err
 
         return res
 
@@ -510,4 +505,22 @@ class NClient(BUIbackend):
         bytes_pickles = pickles.encode(encoding='utf-8')
         digest = hmac.new(key, bytes_pickles, hashlib.sha1).hexdigest()
         data = {'func': 'store_conf_srv', 'args': pickles, 'pickled': True, 'digest': digest}
+        return json.loads(self.do_command(data))
+
+    @implement
+    def restore_files(self, name=None, backup=None, files=None, strip=None, archive='zip', password=None, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.restore_files`"""
+        data = {'func': 'restore_files', 'args': {'name': name, 'backup': backup, 'files': files, 'strip': strip, 'archive': archive, 'password': password}}
+        return self.do_command(data)
+
+    @implement
+    def get_file(self, path, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.get_file`"""
+        data = {'func': 'get_file', 'path': path}
+        return self.do_command(data)
+
+    @implement
+    def del_file(self, path, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.del_file`"""
+        data = {'func': 'del_file', 'path': path}
         return json.loads(self.do_command(data))

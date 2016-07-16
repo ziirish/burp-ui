@@ -13,4 +13,5 @@ include contrib/gunicorn.d/burp-ui
 include bower.json
 include .bowerrc
 graft burpui
+graft migrations
 global-exclude *.pyc
