@@ -841,9 +841,12 @@ class Burp(BUIbackend):
         if not root:
             top = ''
         else:
-            try:
-                top = root.decode('utf-8', 'replace')
-            except UnicodeDecodeError:
+            if not PY3:
+                try:
+                    top = root.decode('utf-8', 'replace')
+                except UnicodeDecodeError:
+                    top = root
+            else:
                 top = root
 
         filemap = self.status('c:{0}:b:{1}:p:{2}\n'.format(name, backup, top))
