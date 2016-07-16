@@ -107,11 +107,6 @@ def create_celery(myapp, warn=True):
     return None
 
 
-def create_app(*args, **kwargs):
-    """Alias for init"""
-    return init(*args, **kwargs)
-
-
 def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debug=False):
     """Initialize the whole application.
 
@@ -359,3 +354,6 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
             return basic_login_from_request(request, app)
 
     return app
+
+
+create_app = init
