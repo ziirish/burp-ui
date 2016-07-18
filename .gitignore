@@ -8,3 +8,4 @@ devel.sh
 dist
 _build
 .tags
+celerybeat-schedule
