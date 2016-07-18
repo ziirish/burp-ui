@@ -11,7 +11,7 @@ appStart () {
   supervisorctl start cron >/dev/null
 
   echo "Starting celery worker..."
-  supervisorctp start bui-celery >/dev/null
+  supervisorctl start bui-celery >/dev/null
 
   echo "Starting gunicorn..."
   /etc/init.d/gunicorn restart >/dev/null
