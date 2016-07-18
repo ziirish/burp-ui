@@ -14,12 +14,14 @@ import struct
 from . import api
 from .custom import Resource
 
+from six import iteritems
 from zlib import adler32
 from flask import url_for, Response, current_app as bui, after_this_request, \
     send_file
 from time import gmtime, strftime, time, sleep
 from datetime import timedelta, datetime
 from werkzeug.datastructures import Headers
+from celery.schedules import crontab
 from celery.utils.log import get_task_logger
 
 ns = api.namespace('async', 'Asynchronous methods')
@@ -29,19 +31,42 @@ app_cli = api.app_cli
 db = api.db
 app = api.gapp
 logger = get_task_logger(__name__)
+ME = __name__
+
+BEAT_SCHEDULE = {
+    'ping-backend-hourly': {
+        'task': '{}.ping_backend'.format(ME),
+        'schedule': crontab(minute='15'),  # run every hour
+    },
+}
 
 if db:
     from ..models import Task
-    from celery.schedules import crontab
 
-    celery.conf['CELERYBEAT_SCHEDULE'] = {
+    BEAT_SCHEDULE.update({
         'cleanup-restore-hourly': {
-            'task': 'burpui.api.async.cleanup_restore',
+            'task': '{}.cleanup_restore'.format(ME),
             'schedule': crontab(minute='12'),  # run every hour
         },
-    }
+    })
+
+if 'CELERYBEAT_SCHEDULE' in celery.conf and \
+        isinstance(celery.conf['CELERYBEAT_SCHEDULE'], dict):
+    celery.conf['CELERYBEAT_SCHEDULE'].update(BEAT_SCHEDULE)
+else:
+    celery.conf['CELERYBEAT_SCHEDULE'] = BEAT_SCHEDULE
 
 LOCK_EXPIRE = 60 * 30  # Lock expires in 30 minutes
+
+
+@celery.task
+def ping_backend():
+    with app.app_context():
+        if app.standalone:
+            logger.debug(app_cli.status())
+        else:
+            for server, backend in iteritems(app_cli.servers):
+                logger.debug(app_cli.status(agent=server))
 
 
 @celery.task

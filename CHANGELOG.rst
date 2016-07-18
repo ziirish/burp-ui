@@ -14,6 +14,7 @@ Current
 - Add: `remember some user settings <https://git.ziirish.me/ziirish/burp-ui/issues/133>`_
 - Add: `client certificate revocation <https://git.ziirish.me/ziirish/burp-ui/issues/131>`_
 - Add: new `local authentication backend <https://git.ziirish.me/ziirish/burp-ui/issues/130>`_
+- Add: implement backend `keepalive <https://git.ziirish.me/ziirish/burp-ui/issues/98>`_
 - Fix: disable Basic-Auth login from UI to prevent some bugs with sessions
 - Fix: issue `#134 <https://git.ziirish.me/ziirish/burp-ui/issues/134>`_
 - Fix: issue `#135 <https://git.ziirish.me/ziirish/burp-ui/issues/135>`_
