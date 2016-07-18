@@ -377,20 +377,27 @@ class NClient(BUIbackend):
 
     def do_command(self, data=None, restarted=False):
         """Send a command to the remote agent"""
-        self.conn()
         res = '[]'
         err = None
-        if not data or not self.connected:
+        if not data:
             return res
         try:
             data['password'] = self.password
+            # manage long running operations
+            if data['func'] in ['restore_files', 'get_file', 'del_file']:
+                self.connected = False
+                self.conn(notimeout=True)
+            else:
+                self.conn()
+            if not self.connected:
+                return res
             raw = json.dumps(data)
             length = len(raw)
             self.sock.sendall(struct.pack('!Q', length))
             self.sock.sendall(raw.encode('UTF-8'))
-            self.logger.debug("Sending: %s", raw)
+            self.logger.debug("Sending: {}".format(raw))
             tmp = self.sock.recv(2).decode('UTF-8')
-            self.logger.debug("recv: '%s'", tmp)
+            self.logger.debug("recv: '{}'".format(tmp))
             if 'ER' == tmp:
                 lengthbuf = self.sock.recv(8)
                 length, = struct.unpack('!Q', lengthbuf)
