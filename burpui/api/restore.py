@@ -109,13 +109,14 @@ class Restore(Resource):
                 name,
                 strftime("%Y-%m-%d_%H_%M_%S", gmtime()),
                 f)
+
+        archive, err = bui.cli.restore_files(name, backup, l, s, f, p, server)
+        if not archive:
+            if err:
+                return make_response(err, 500)
+            self.abort(500)
+
         if not server:
-            # Standalone mode, we can just return the file unless there were errors
-            archive, err = bui.cli.restore_files(name, backup, l, s, f, p)
-            if not archive:
-                if err:
-                    return make_response(err, 500)
-                self.abort(500)
             try:
                 # Trick to delete the file while sending it to the client.
                 # First, we open the file in reading mode so that a file handler
@@ -144,23 +145,15 @@ class Restore(Resource):
                 self.abort(500, str(e))
         else:
             # Multi-agent mode
-            socket = None
             try:
-                socket, length, err = bui.cli.restore_files(name,
-                                                            backup,
-                                                            l,
-                                                            s,
-                                                            f,
-                                                            p,
-                                                            server)
-                bui.cli.logger.debug('Need to get {} Bytes : {}'.format(length, socket))
+                socket = bui.cli.get_file(archive, server)
+                if not socket:
+                    self.abort(500)
 
-                if err:
-                    bui.cli.logger.debug('Something went wrong: {}'.format(err))
-                    socket.sendall(struct.pack('!Q', 2))
-                    socket.sendall(b'RE')
-                    socket.close()
-                    return make_response(err, 500)
+                lengthbuf = socket.recv(8)
+                length, = struct.unpack('!Q', lengthbuf)
+
+                bui.cli.logger.debug('Need to get {} Bytes : {}'.format(length, socket))
 
                 def stream_file(sock, l):
                     """The restoration took place on another server so we need
@@ -180,7 +173,7 @@ class Restore(Resource):
                         if not buf:
                             continue
                         received += len(buf)
-                        bui.cli.logger.debug('{}/{}'.format(received, l))
+                        self.logger.debug('{}/{}'.format(received, l))
                         yield buf
                     sock.sendall(struct.pack('!Q', 2))
                     sock.sendall(b'RE')
