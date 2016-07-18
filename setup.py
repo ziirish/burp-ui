@@ -192,6 +192,8 @@ dev_requires = ['flake8', 'pylint']
 datadir = os.path.join('share', 'burpui')
 confdir = os.path.join(datadir, 'etc')
 contrib = os.path.join(datadir, 'contrib')
+migrations = [(os.path.join(datadir, root), [os.path.join(root, f) for f in files if not f.endswith('.pyc')])
+    for root, dirs, files in os.walk('migrations')]
 
 setup(
     name=name,
@@ -224,8 +226,7 @@ setup(
         (os.path.join(contrib, 'centos'), ['contrib/centos/init.sh']),
         (os.path.join(contrib, 'debian'), ['contrib/debian/init.sh']),
         (os.path.join(contrib, 'gunicorn.d'), ['contrib/gunicorn.d/burp-ui']),
-        (os.path.join(datadir, 'migrations'), ['migrations']),
-    ],
+    ] + migrations,
     install_requires=requires,
     extras_require={
         'ssl': ['pyOpenSSL'],

@@ -33,7 +33,7 @@ def parse_args(mode=True, name=None):
         parser.add_argument('-m', '--mode', dest='mode', help='application mode', metavar='<agent|server|celery|manage>')
 
     options, unknown = parser.parse_known_args()
-    if options.mode and options.mode not in ['celery', 'manage']:
+    if mode and options.mode and options.mode not in ['celery', 'manage']:
         options = parser.parse_args()
 
     if options.version:

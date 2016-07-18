@@ -6,6 +6,7 @@ Current
 
 - **BREAKING**: New configuration file format to allow further improvements (The conversion is automatic, but LDAP settings might need some attention)
 - **BREAKING**: Passwords are now *salted* for the *BASIC* authentication backend (The conversion is automatic too)
+- **BREAKING**: If you plan to use the SQL storage along with gunicorn, you **MUST** add the *--preload* parameter (see the *gunicorn.d/burp-ui* file)
 - Add: `Celery <http://www.celeryproject.org/>`_ support for asynchronous tasks
 - Add: `SQLAlchemy <http://www.sqlalchemy.org/>`_ support for persistent storage
 - Add: `RESTful restore <https://git.ziirish.me/ziirish/burp-ui/issues/111>`_
