@@ -401,6 +401,7 @@ class NClient(BUIbackend):
                 return res
             self.logger.debug("Data sent successfully")
             if data['func'] == 'get_file':
+                self.connected = False
                 return self.sock
             lengthbuf = self.sock.recv(8)
             length, = struct.unpack('!Q', lengthbuf)

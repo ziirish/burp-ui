@@ -87,12 +87,13 @@ def cleanup_restore():
                         continue
                     server = task.result.get('server')
                     path = task.result.get('path')
-                    if server:
-                        if not app_cli.del_file(path, agent=server):
-                            logger.warn("'{}' already removed".format(path))
-                    else:
-                        if os.path.isfile(path):
-                            os.unlink(path)
+                    if path:
+                        if server:
+                            if not app_cli.del_file(path, agent=server):
+                                logger.warn("'{}' already removed".format(path))
+                        else:
+                            if os.path.isfile(path):
+                                os.unlink(path)
                 finally:
                     db.session.delete(rec)
                     db.session.commit()

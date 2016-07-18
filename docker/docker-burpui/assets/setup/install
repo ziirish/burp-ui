@@ -74,7 +74,7 @@ cat > /etc/supervisor/conf.d/bui-celery.conf <<EOF
 [program:bui-celery]
 priority=20
 directory=/tmp
-command=/usr/local/bin/bui-celery --beat
+command=/usr/local/bin/bui-celery --beat -s /var/lib/burpui/celerybeat-schedule
 user=burpui
 autostart=false
 autorestart=true

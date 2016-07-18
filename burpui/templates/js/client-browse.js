@@ -196,7 +196,17 @@ $( document ).ready(function() {
 						$.fileDownload(data.location, {
 							successCallback: function (url) {
 								$preparingFileModal.modal('hide');
-							}
+							},
+							failCallback: function (responseHtml, url) {
+								$preparingFileModal.modal('hide');
+								if (responseHtml == 'encrypted') {
+									msg = 'The backup seems encrypted, please provide the encryption key in the \'Download options\' form.';
+								} else {
+									msg = responseHtml;
+								}
+								$("#error-response").empty().html(msg);
+								$("#error-modal").modal('toggle');
+							},
 						});
 					}
 				})
