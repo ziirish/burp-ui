@@ -54,6 +54,12 @@ counters_fields = ns.model('Counters', {
           '/counters/<client>',
           '/<server>/counters/<client>',
           endpoint='counters')
+@ns.doc(
+    params={
+        'server': 'Which server to collect data from when in multi-agent mode',
+        'client': 'Client name',
+    },
+)
 class Counters(Resource):
     """The :class:`burpui.api.misc.Counters` resource allows you to
     render the *live view* template of a given client.
@@ -77,10 +83,6 @@ class Counters(Resource):
     @ns.marshal_with(monitor_fields, code=200, description='Success')
     @ns.expect(parser)
     @ns.doc(
-        params={
-            'server': 'Which server to collect data from when in multi-agent mode',
-            'client': 'Client name',
-        },
         responses={
             400: 'Missing argument',
             403: 'Insufficient permissions',
@@ -135,6 +137,11 @@ class Counters(Resource):
 @ns.route('/monitor',
           '/<server>/monitor',
           endpoint='live')
+@ns.doc(
+    params={
+        'server': 'Which server to collect data from when in multi-agent mode',
+    },
+)
 class Live(Resource):
     """The :class:`burpui.api.misc.Live` resource allows you to
     retrieve a list of servers that are currently *alive*.
@@ -154,11 +161,6 @@ class Live(Resource):
 
     @ns.marshal_list_with(live_fields, code=200, description='Success')
     @ns.expect(parser)
-    @ns.doc(
-        params={
-            'server': 'Which server to collect data from when in multi-agent mode',
-        },
-    )
     def get(self, server=None):
         """Returns a list of clients that are currently running a backup
 
@@ -291,6 +293,11 @@ class Alert(Resource):
 @ns.route('/about',
           '/<server>/about',
           endpoint='about')
+@ns.doc(
+    params={
+        'server': 'Which server to collect data from when in multi-agent mode',
+    },
+)
 class About(Resource):
     """The :class:`burpui.api.misc.About` resource allows you to retrieve
     various informations about ``Burp-UI``
@@ -316,11 +323,6 @@ class About(Resource):
     @api.cache.cached(timeout=3600, key_prefix=cache_key)
     @ns.marshal_with(about_fields, code=200, description='Success')
     @ns.expect(parser)
-    @ns.doc(
-        params={
-            'server': 'Which server to collect data from when in multi-agent mode',
-        },
-    )
     def get(self, server=None):
         """Returns various informations about Burp-UI"""
         args = self.parser.parse_args()
@@ -354,6 +356,12 @@ class About(Resource):
           '/<server>/history',
           '/<server>/history/<client>',
           endpoint='history')
+@ns.doc(
+    params={
+        'server': 'Which server to collect data from when in multi-agent mode',
+        'client': 'Client name',
+    },
+)
 class History(Resource):
     """The :class:`burpui.api.misc.History` resource allows you to retrieve
     an history of the backups
@@ -418,10 +426,6 @@ class History(Resource):
     @ns.marshal_list_with(history_fields, code=200, description='Success')
     @ns.expect(parser)
     @ns.doc(
-        params={
-            'server': 'Which server to collect data from when in multi-agent mode',
-            'client': 'Client name',
-        },
         responses={
             200: 'Success',
             403: 'Insufficient permissions',

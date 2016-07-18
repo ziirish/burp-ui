@@ -24,6 +24,12 @@ ns = api.namespace('settings', 'Settings methods')
           '/server-config/<path:conf>',
           '/<server>/server-config/<path:conf>',
           endpoint='server_settings')
+@ns.doc(
+    params={
+        'conf': 'Path of the configuration file',
+        'server': 'Which server to collect data from when in multi-agent mode',
+    },
+)
 class ServerSettings(Resource):
     """The :class:`burpui.api.settings.ServerSettings` resource allows you to
     read and write the server's configuration.
@@ -32,10 +38,6 @@ class ServerSettings(Resource):
     """
 
     @ns.doc(
-        params={
-            'conf': 'Path of the configuration file',
-            'server': 'Which server to collect data from when in multi-agent mode',
-        },
         responses={
             200: 'Success',
             403: 'Insufficient permissions',
@@ -52,10 +54,6 @@ class ServerSettings(Resource):
         return {'notif': noti}, 200
 
     @ns.doc(
-        params={
-            'conf': 'Path of the configuration file',
-            'server': 'Which server to collect data from when in multi-agent mode',
-        },
         responses={
             200: 'Success',
             403: 'Insufficient permissions',
@@ -216,12 +214,14 @@ class ServerSettings(Resource):
 @ns.route('/clients',
           '/<server>/clients',
           endpoint='clients_list')
+@ns.doc(
+    params={
+        'server': 'Which server to collect data from when in multi-agent mode',
+    },
+)
 class ClientsList(Resource):
 
     @ns.doc(
-        params={
-            'server': 'Which server to collect data from when in multi-agent mode',
-        },
         responses={
             200: 'Success',
             403: 'Insufficient permissions',
@@ -242,25 +242,17 @@ class ClientsList(Resource):
           '/<server>/config',
           endpoint='new_client',
           methods=['PUT'])
-@ns.route('/config/<client>',
-          '/config/<client>/<path:conf>',
-          '/<server>/config/<client>',
-          '/<server>/config/<client>/<path:conf>',
-          endpoint='client_settings',
-          methods=['GET', 'POST', 'DELETE'])
-class ClientSettings(Resource):
+@ns.doc(
+    params={
+        'server': 'Which server to collect data from when in multi-agent mode',
+    },
+)
+class NewClientSettings(Resource):
     parser = ns.parser()
     parser.add_argument('newclient', required=True, help="No 'newclient' provided")
 
-    parser_delete = ns.parser()
-    parser_delete.add_argument('revoke', type=boolean, help='Whether to revoke the certificate or not', default=False, nullable=True)
-    parser_delete.add_argument('delcert', type=boolean, help='Whether to delete the certificate or not', default=False, nullable=True)
-
     @ns.expect(parser)
     @ns.doc(
-        params={
-            'server': 'Which server to collect data from when in multi-agent mode',
-        },
         responses={
             200: 'Success',
             400: 'Missing parameter',
@@ -294,12 +286,26 @@ class ClientSettings(Resource):
         api.cache.clear()
         return {'notif': noti}, 201
 
+
+@ns.route('/config/<client>',
+          '/config/<client>/<path:conf>',
+          '/<server>/config/<client>',
+          '/<server>/config/<client>/<path:conf>',
+          endpoint='client_settings',
+          methods=['GET', 'POST', 'DELETE'])
+@ns.doc(
+    params={
+        'server': 'Which server to collect data from when in multi-agent mode',
+        'client': 'Client name',
+        'conf': 'Path of the configuration file',
+    },
+)
+class ClientSettings(Resource):
+    parser_delete = ns.parser()
+    parser_delete.add_argument('revoke', type=boolean, help='Whether to revoke the certificate or not', default=False, nullable=True)
+    parser_delete.add_argument('delcert', type=boolean, help='Whether to delete the certificate or not', default=False, nullable=True)
+
     @ns.doc(
-        params={
-            'server': 'Which server to collect data from when in multi-agent mode',
-            'client': 'Client name',
-            'conf': 'Path of the configuration file',
-        },
         responses={
             200: 'Success',
             403: 'Insufficient permissions',
@@ -316,11 +322,6 @@ class ClientSettings(Resource):
         return {'notif': noti}
 
     @ns.doc(
-        params={
-            'server': 'Which server to collect data from when in multi-agent mode',
-            'client': 'Client name',
-            'conf': 'Path of the configuration file',
-        },
         responses={
             200: 'Success',
             403: 'Insufficient permissions',
@@ -352,17 +353,13 @@ class ClientSettings(Resource):
 
     @ns.expect(parser_delete)
     @ns.doc(
-        params={
-            'server': 'Which server to collect data from when in multi-agent mode',
-            'client': 'Client name',
-        },
         responses={
             200: 'Success',
             403: 'Insufficient permissions',
             500: 'Internal failure',
         }
     )
-    def delete(self, server=None, client=None):
+    def delete(self, server=None, client=None, conf=None):
         """Deletes a given client"""
         # Only the admin can edit the configuration
         if bui.acl and not self.is_admin:
@@ -382,6 +379,12 @@ class ClientSettings(Resource):
           '/path-expander/<client>',
           '/<server>/path-expander/<client>',
           endpoint='path_expander')
+@ns.doc(
+    params={
+        'server': 'Which server to collect data from when in multi-agent mode',
+        'client': 'Client name',
+    },
+)
 class PathExpander(Resource):
 
     parser = ns.parser()
@@ -389,10 +392,6 @@ class PathExpander(Resource):
     parser.add_argument('source', required=False, help="Which file is it included in")
 
     @ns.doc(
-        params={
-            'server': 'Which server to collect data from when in multi-agent mode',
-            'client': 'Client name',
-        },
         responses={
             200: 'Success',
             403: 'Insufficient permissions',
@@ -425,12 +424,14 @@ class PathExpander(Resource):
 @ns.route('/options',
           '/<server>/options',
           endpoint='setting_options')
+@ns.doc(
+    params={
+        'server': 'Which server to collect data from when in multi-agent mode',
+    },
+)
 class SettingOptions(Resource):
 
     @ns.doc(
-        params={
-            'server': 'Which server to collect data from when in multi-agent mode',
-        },
         responses={
             200: 'Success',
             403: 'Insufficient permissions',

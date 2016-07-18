@@ -27,6 +27,13 @@ ns = api.namespace('restore', 'Restore methods')
 @ns.route('/archive/<name>/<int:backup>',
           '/<server>/archive/<name>/<int:backup>',
           endpoint='restore')
+@ns.doc(
+    params={
+        'server': 'Which server to collect data from when in multi-agent mode',
+        'name': 'Client name',
+        'backup': 'Backup number',
+    },
+)
 class Restore(Resource):
     """The :class:`burpui.api.restore.Restore` resource allows you to
     perform a file restoration.
@@ -49,11 +56,6 @@ class Restore(Resource):
 
     @ns.expect(parser, validate=True)
     @ns.doc(
-        params={
-            'server': 'Which server to collect data from when in multi-agent mode',
-            'name': 'Client name',
-            'backup': 'Backup number',
-        },
         responses={
             200: 'Success',
             400: 'Missing parameter',
@@ -211,30 +213,18 @@ class Restore(Resource):
           '/<server>/server-restore/<name>',
           methods=['GET', 'DELETE'],
           endpoint='is_server_restore')
-@ns.route('/server-restore/<name>/<int:backup>',
-          '/<server>/server-restore/<name>/<int:backup>',
-          methods=['PUT'],
-          endpoint='server_restore')
+@ns.doc(
+    params={
+        'server': 'Which server to collect data from when in multi-agent mode',
+        'name': 'Client name',
+    },
+)
 class ServerRestore(Resource):
     """The :class:`burpui.api.restore.ServerRestore` resource allows you to
-    prepare a file restoration.
+    monitor or cancel a server-initiated restoration.
 
     This resource is part of the :mod:`burpui.api.restore` module.
-
-    The following parameters are supported:
-    - ``list-sc``: list of files/directories to restore
-    - ``strip-sc``: number of elements to strip in the path
-    - ``prefix-sc``: prefix to the restore path
-    - ``force-sc``: whether to overwrite existing files
-    - ``restoreto-sc``: restore files on an other client
     """
-    parser = ns.parser()
-    parser.add_argument('list-sc', required=True, help='List of files/directories to restore', nullable=False)
-    parser.add_argument('strip-sc', type=int, help='Number of elements to strip in the path', default=0, nullable=True)
-    parser.add_argument('prefix-sc', help='Prefix to the restore path', nullable=True)
-    parser.add_argument('force-sc', type=boolean, help='Whether to overwrite existing files', default=False, nullable=True)
-    parser.add_argument('restoreto-sc', help='Restore files on an other client', nullable=True)
-
     list_fields = ns.model('ListRestoreFiles', {
         'key': fields.String(
             required=True,
@@ -288,10 +278,6 @@ class ServerRestore(Resource):
 
     @ns.marshal_with(restoration_fields, code=200, description='Success')
     @ns.doc(
-        params={
-            'server': 'Which server to collect data from when in multi-agent mode',
-            'name': 'Client name',
-        },
         responses={
             400: 'Missing parameter',
             403: 'Insufficient permissions',
@@ -327,10 +313,6 @@ class ServerRestore(Resource):
             self.abort(500, str(e))
 
     @ns.doc(
-        params={
-            'server': 'Which server to collect data from when in multi-agent mode',
-            'name': 'Client name',
-        },
         responses={
             200: 'Success',
             400: 'Missing parameter',
@@ -366,13 +348,38 @@ class ServerRestore(Resource):
         except BUIserverException as e:
             self.abort(500, str(e))
 
+
+@ns.route('/server-restore/<name>/<int:backup>',
+          '/<server>/server-restore/<name>/<int:backup>',
+          methods=['PUT'],
+          endpoint='server_restore')
+@ns.doc(
+    params={
+        'server': 'Which server to collect data from when in multi-agent mode',
+        'name': 'Client name',
+        'backup': 'Backup number',
+    },
+)
+class DoServerRestore(Resource):
+    """The :class:`burpui.api.restore.DoServerRestore` resource allows you to
+    schedule a server-initiated restoration.
+
+    The following parameters are supported:
+    - ``list-sc``: list of files/directories to restore
+    - ``strip-sc``: number of elements to strip in the path
+    - ``prefix-sc``: prefix to the restore path
+    - ``force-sc``: whether to overwrite existing files
+    - ``restoreto-sc``: restore files on an other client
+    """
+    parser = ns.parser()
+    parser.add_argument('list-sc', required=True, help='List of files/directories to restore', nullable=False)
+    parser.add_argument('strip-sc', type=int, help='Number of elements to strip in the path', default=0, nullable=True)
+    parser.add_argument('prefix-sc', help='Prefix to the restore path', nullable=True)
+    parser.add_argument('force-sc', type=boolean, help='Whether to overwrite existing files', default=False, nullable=True)
+    parser.add_argument('restoreto-sc', help='Restore files on an other client', nullable=True)
+
     @ns.expect(parser)
     @ns.doc(
-        params={
-            'server': 'Which server to collect data from when in multi-agent mode',
-            'name': 'Client name',
-            'backup': 'Backup number',
-        },
         responses={
             201: 'Success',
             400: 'Missing parameter',

@@ -24,6 +24,12 @@ ns = api.namespace('backup', 'Backup methods')
           '/<server>/do-server-backup/<name>',
           methods=['PUT'],
           endpoint='server_backup')
+@ns.doc(
+    params={
+        'server': 'Which server to collect data from when in multi-agent mode',
+        'name': 'Client name',
+    },
+)
 class ServerBackup(Resource):
     """The :class:`burpui.api.backup.ServerBackup` resource allows you to
     prepare a server-initiated backup.
@@ -31,10 +37,6 @@ class ServerBackup(Resource):
     This resource is part of the :mod:`burpui.api.backup` module.
     """
     @ns.doc(
-        params={
-            'server': 'Which server to collect data from when in multi-agent mode',
-            'name': 'Client name',
-        },
         responses={
             200: 'Success',
             400: 'Missing parameter',
@@ -71,10 +73,6 @@ class ServerBackup(Resource):
             self.abort(500, str(e))
 
     @ns.doc(
-        params={
-            'server': 'Which server to collect data from when in multi-agent mode',
-            'name': 'Client name',
-        },
         responses={
             200: 'Success',
             400: 'Missing parameter',
@@ -111,10 +109,6 @@ class ServerBackup(Resource):
             self.abort(500, str(e))
 
     @ns.doc(
-        params={
-            'server': 'Which server to collect data from when in multi-agent mode',
-            'name': 'Client name',
-        },
         responses={
             201: 'Success',
             400: 'Missing parameter',

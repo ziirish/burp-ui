@@ -20,6 +20,11 @@ ns = api.namespace('admin', 'Admin methods')
 @ns.route('/auth/users',
           '/auth/users/<name>',
           endpoint='auth_users')
+@ns.doc(
+    params={
+        'name': 'Username',
+    }
+)
 class AuthUsers(Resource):
     """The :class:`burpui.api.admin.AuthUsers` resource allows you to
     retrieve a list of users and to add/update/delete them if your

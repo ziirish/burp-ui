@@ -22,6 +22,12 @@ ns = api.namespace('clients', 'Clients methods')
           '/running/<client>',
           '/<server>/running/<client>',
           endpoint='running_clients')
+@ns.doc(
+    params={
+        'server': 'Which server to collect data from when in multi-agent mode',
+        'client': 'Client name',
+    },
+)
 class RunningClients(Resource):
     """The :class:`burpui.api.clients.RunningClients` resource allows you to
     retrieve a list of clients that are currently running a backup.
@@ -35,12 +41,6 @@ class RunningClients(Resource):
     parser.add_argument('serverName', help='Which server to collect data from when in multi-agent mode')
 
     @ns.expect(parser)
-    @ns.doc(
-        params={
-            'server': 'Which server to collect data from when in multi-agent mode',
-            'client': 'Client name',
-        },
-    )
     def get(self, client=None, server=None):
         """Returns a list of clients currently running a backup
 
@@ -97,6 +97,11 @@ class RunningClients(Resource):
 @ns.route('/backup-running',
           '/<server>/backup-running',
           endpoint='running_backup')
+@ns.doc(
+    params={
+        'server': 'Which server to collect data from when in multi-agent mode',
+    }
+)
 class RunningBackup(Resource):
     """The :class:`burpui.api.clients.RunningBackup` resource allows you to
     access the status of the server in order to know if there is a running
@@ -109,11 +114,6 @@ class RunningBackup(Resource):
     })
 
     @ns.marshal_with(running_fields, code=200, description='Success')
-    @ns.doc(
-        params={
-            'server': 'Which server to collect data from when in multi-agent mode',
-        }
-    )
     def get(self, server=None):
         """Tells if a backup is running right now
 
@@ -161,6 +161,11 @@ class RunningBackup(Resource):
 @ns.route('/report',
           '/<server>/report',
           endpoint='clients_report')
+@ns.doc(
+    params={
+        'server': 'Which server to collect data from when in multi-agent mode',
+    },
+)
 class ClientsReport(Resource):
     """The :class:`burpui.api.clients.ClientsReport` resource allows you to
     access general reports about your clients.
@@ -194,9 +199,6 @@ class ClientsReport(Resource):
     @ns.marshal_with(report_fields, code=200, description='Success')
     @ns.expect(parser)
     @ns.doc(
-        params={
-            'server': 'Which server to collect data from when in multi-agent mode',
-        },
         responses={
             403: 'Insufficient permissions',
             500: 'Internal failure',
@@ -274,6 +276,11 @@ class ClientsReport(Resource):
 @ns.route('/stats',
           '/<server>/stats',
           endpoint='clients_stats')
+@ns.doc(
+    params={
+        'server': 'Which server to collect data from when in multi-agent mode',
+    },
+)
 class ClientsStats(Resource):
     """The :class:`burpui.api.clients.ClientsStats` resource allows you to
     access general statistics about your clients.
@@ -297,9 +304,6 @@ class ClientsStats(Resource):
     @ns.marshal_list_with(client_fields, code=200, description='Success')
     @ns.expect(parser)
     @ns.doc(
-        params={
-            'server': 'Which server to collect data from when in multi-agent mode',
-        },
         responses={
             403: 'Insufficient permissions',
             500: 'Internal failure',
@@ -361,6 +365,11 @@ class ClientsStats(Resource):
 @ns.route('/all',
           '/<server>/all',
           endpoint='clients_all')
+@ns.doc(
+    params={
+        'server': 'Which server to collect data from when in multi-agent mode',
+    },
+)
 class AllClients(Resource):
     """The :class:`burpui.api.clients.AllClients` resource allows you to
     retrieve a list of all clients with their associated server (if any).
@@ -379,9 +388,6 @@ class AllClients(Resource):
     @ns.marshal_list_with(client_fields, code=200, description='Success')
     @ns.expect(parser)
     @ns.doc(
-        params={
-            'server': 'Which server to collect data from when in multi-agent mode',
-        },
         responses={
             200: 'Success',
             403: 'Insufficient permissions',

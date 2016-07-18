@@ -24,6 +24,14 @@ ns = api.namespace('client', 'Client methods')
 @ns.route('/browse/<name>/<int:backup>',
           '/<server>/browse/<name>/<int:backup>',
           endpoint='client_tree')
+@ns.doc(
+    params={
+        'server': 'Which server to collect data from when in' +
+                  ' multi-agent mode',
+        'name': 'Client name',
+        'backup': 'Backup number',
+    },
+)
 class ClientTree(Resource):
     """The :class:`burpui.api.client.ClientTree` resource allows you to
     retrieve a list of files in a given backup.
@@ -144,12 +152,6 @@ class ClientTree(Resource):
     @ns.marshal_list_with(node_fields, code=200, description='Success')
     @ns.expect(parser)
     @ns.doc(
-        params={
-            'server': 'Which server to collect data from when in' +
-                      ' multi-agent mode',
-            'name': 'Client name',
-            'backup': 'Backup number',
-        },
         responses={
             '403': 'Insufficient permissions',
             '500': 'Internal failure',
@@ -329,6 +331,14 @@ class ClientTree(Resource):
           '/report/<name>/<int:backup>',
           '/<server>/report/<name>/<int:backup>',
           endpoint='client_report')
+@ns.doc(
+    params={
+        'server': 'Which server to collect data from when in multi-agent' +
+                  ' mode',
+        'name': 'Client name',
+        'backup': 'Backup number',
+    },
+)
 class ClientReport(Resource):
     """The :class:`burpui.api.client.ClientStats` resource allows you to
     retrieve a report on a given backup for a given client.
@@ -448,12 +458,6 @@ class ClientReport(Resource):
     @ns.marshal_with(report_fields, code=200, description='Success')
     @ns.expect(parser)
     @ns.doc(
-        params={
-            'server': 'Which server to collect data from when in multi-agent' +
-                      ' mode',
-            'name': 'Client name',
-            'backup': 'Backup number',
-        },
         responses={
             '403': 'Insufficient permissions',
             '500': 'Internal failure',
@@ -648,6 +652,13 @@ class ClientReport(Resource):
 @ns.route('/stats/<name>',
           '/<server>/stats/<name>',
           endpoint='client_stats')
+@ns.doc(
+    params={
+        'server': 'Which server to collect data from when in multi-agent' +
+                  ' mode',
+        'name': 'Client name',
+    },
+)
 class ClientStats(Resource):
     """The :class:`burpui.api.client.ClientReport` resource allows you to
     retrieve a list of backups for a given client.
@@ -685,11 +696,6 @@ class ClientStats(Resource):
     @ns.marshal_list_with(client_fields, code=200, description='Success')
     @ns.expect(parser)
     @ns.doc(
-        params={
-            'server': 'Which server to collect data from when in multi-agent' +
-                      ' mode',
-            'name': 'Client name',
-        },
         responses={
             '403': 'Insufficient permissions',
             '500': 'Internal failure',
