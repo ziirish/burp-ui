@@ -375,21 +375,11 @@ class NClient(BUIbackend):
         res = self.connected
         return res
 
-    def close(self, force=True):
-        """Disconnect from the agent"""
-        if self.connected and force:
-            self.sock.sendall(struct.pack('!Q', 2))
-            self.sock.sendall(b'RE')
-            self.sock.shutdown(socket.SHUT_RDWR)
-            self.sock.close()
-            self.connected = False
-
     def do_command(self, data=None, restarted=False):
         """Send a command to the remote agent"""
         self.conn()
         res = '[]'
         err = None
-        toclose = False
         if not data or not self.connected:
             return res
         try:
@@ -425,21 +415,20 @@ class NClient(BUIbackend):
                 self.connected = False
                 self.logger.error('!!! {} !!!\nPlease check your SSL configuration on both sides!'.format(str(e)))
             else:
-                toclose = True
                 self.logger.error('!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
         except socket.timeout as e:
             if self.app.gunicorn and not restarted:
                 self.connected = False
                 return self.do_command(data, True)
-            toclose = True
             self.logger.error('!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
         except Exception as e:
             if data['func'] == 'restore_files':
                 err = str(e)
-            toclose = True
             self.logger.error('!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
         finally:
-            self.close(toclose)
+            if self.connected:
+                self.sock.close()
+            self.connected = False
 
         if data['func'] == 'restore_files':
             if err:
