@@ -39,9 +39,21 @@ if db:
             'task': 'burpui.api.async.cleanup_restore',
             'schedule': crontab(minute='12'),  # run every hour
         },
+        'ping-backend-hourly': {
+            'task': 'burpui.api.async.ping_backend',
+            'schedule': crontab(minute='*/2'),  # run every hour
+        },
     }
 
 LOCK_EXPIRE = 60 * 30  # Lock expires in 30 minutes
+
+
+@celery.task
+def ping_backend():
+    with app.app_context():
+        logger.debug('PING')
+        if app.standalone:
+            logger.debug(app_cli.status())
 
 
 @celery.task
