@@ -25,7 +25,7 @@ pip install Flask-Migrate
 pip install celery
 
 # Create burp-ui User
-useradd -r -d /var/lib/burpui -c 'Burp-UI daemon user' -u 5337 burpui
+useradd -r -m -d /var/lib/burpui -c 'Burp-UI daemon user' -u 5337 burpui
 
 mkdir -p /var/log/gunicorn
 chown -R burpui: /var/log/gunicorn
