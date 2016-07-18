@@ -10,6 +10,9 @@ appStart () {
   echo "Starting crond..."
   supervisorctl start cron >/dev/null
 
+  echo "Starting celery worker..."
+  supervisorctp start bui-celery >/dev/null
+
   echo "Starting gunicorn..."
   /etc/init.d/gunicorn restart >/dev/null
 
@@ -21,6 +24,8 @@ appStop() {
   echo ""
   echo "Stopping gunicorn..."
   /etc/init.d/gunicorn stop >/dev/null
+  echo "Stopping celery worker..."
+  supervisorctl stop bui-celery >/dev/null
   echo "Stopping crond..."
   supervisorctl stop cron >/dev/null
   echo "Stopping supervisord..."

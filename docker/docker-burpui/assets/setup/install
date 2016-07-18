@@ -21,6 +21,8 @@ pip install ujson
 pip install gevent
 pip install redis
 pip install Flask-Session
+pip install Flask-Migrate
+pip install celery
 
 # Create burp-ui User
 useradd -r -d /var/lib/burpui -c 'Burp-UI daemon user' -u 5337 burpui
@@ -67,6 +69,19 @@ stdout_logfile=/var/log/supervisor/%(program_name)s.log
 stderr_logfile=/var/log/supervisor/%(program_name)s.log
 EOF
 
+# configure celery worker
+cat > /etc/supervisor/conf.d/bui-celery.conf <<EOF
+[program:bui-celery]
+priority=20
+directory=/tmp
+command=/usr/local/bin/bui-celery --beat
+user=burpui
+autostart=false
+autorestart=true
+stdout_logfile=/var/log/supervisor/%(program_name)s.log
+stderr_logfile=/var/log/supervisor/%(program_name)s.log
+EOF
+
 cp ${CONFIG_DIR}/gunicorn.d/burp-ui /etc/gunicorn.d/burp-ui
 
 mkdir -p /etc/burp
@@ -77,6 +92,9 @@ perl -i -pe "s#\@RANDOM\@#$rand#" /etc/burp/burpui.cfg
 # patch demo with piwik
 REP=$(cat ${CONFIG_DIR}/patch/piwik.patch)
 perl -i -pe "s#^.*\@DEMO\@.*\$#$REP#" /usr/local/lib/python2.7/dist-packages/burpui/templates/layout.html
+
+# setup database
+su -l burpui -c "/usr/local/bin/bui-manage db upgrade"
 
 # cleanup
 rm -rf /var/lib/apt/lists/*
