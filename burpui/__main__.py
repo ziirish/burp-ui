@@ -10,12 +10,13 @@ jQuery/Bootstrap
 
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 """
-import sys
 import os
+import sys
 from argparse import ArgumentParser, REMAINDER
 
+ROOT = os.path.dirname(os.path.realpath(__file__))
 # Try to load modules from our current env first
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
+sys.path.insert(0, os.path.join(ROOT, '..'))
 
 
 def parse_args(mode=True, name=None):
@@ -121,6 +122,13 @@ def celery():
         conf = lookup_file()
     check_config(conf)
 
+    # make conf path absolute
+    if not conf.startswith('/'):
+        curr = os.getcwd()
+        conf = os.path.join(curr, conf)
+
+    os.chdir(ROOT)
+
     env = os.environ
     env['BUI_CONFIG'] = conf
 
@@ -158,8 +166,6 @@ def manage():
     else:
         migrations = lookup_file('migrations', directory=True)
 
-    root = os.path.join(os.path.dirname(os.path.realpath(__file__)))
-
     env = os.environ
     env['BUI_CONFIG'] = conf
     if migrations:
@@ -167,7 +173,7 @@ def manage():
 
     args = [
         sys.executable,
-        os.path.join(root, 'manage.py'),
+        os.path.join(ROOT, 'manage.py'),
     ]
     args += unknown
     args += [x for x in options.remaining if x != '--']
