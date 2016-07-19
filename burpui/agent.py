@@ -8,6 +8,8 @@ import json
 import logging
 import traceback
 
+from gevent.coros import RLock
+from gevent.pool import Pool
 from gevent.server import StreamServer
 from logging.handlers import RotatingFileHandler
 from .exceptions import BUIserverException
@@ -24,6 +26,8 @@ G_SSLKEY = u''
 G_PASSWORD = u'password'
 
 DISCLOSURE = 5
+
+lock = RLock()
 
 
 class BurpHandler(BUIbackend):
@@ -128,10 +132,11 @@ class BUIAgent(BUIbackend, BUIlogging):
         self.password = self.conf.safe_get('password')
 
         self.cli = BurpHandler(self.vers, self.logger, self.conf)
+        pool = Pool(10000)
         if not self.ssl:
-            self.server = StreamServer((self.bind, self.port), self.handle)
+            self.server = StreamServer((self.bind, self.port), self.handle, spawn=pool)
         else:
-            self.server = StreamServer((self.bind, self.port), self.handle, keyfile=self.sslkey, certfile=self.sslcert)
+            self.server = StreamServer((self.bind, self.port), self.handle, keyfile=self.sslkey, certfile=self.sslcert, spawn=pool)
 
     def run(self):
         try:
@@ -141,129 +146,130 @@ class BUIAgent(BUIbackend, BUIlogging):
 
     def handle(self, request, address):
         """self.request is the client connection"""
-        try:
-            self.request = request
-            err = None
-            res = ''
-            lengthbuf = self.request.recv(8)
-            length, = struct.unpack('!Q', lengthbuf)
-            data = self.recvall(length)
-            self._logger('info', 'recv: {}'.format(data))
-            txt = data.decode('UTF-8')
-            if txt == 'RE':
-                return
-            j = json.loads(txt)
-            if j['password'] != self.password:
-                self._logger('warning', '-----> Wrong Password <-----')
-                self.request.sendall(b'KO')
-                return
+        with lock:
             try:
-                if j['func'] == 'proxy_parser':
-                    parser = self.cli.get_parser()
-                    if j['args']:
-                        res = json.dumps(getattr(parser, j['method'])(**j['args']))
-                    else:
-                        res = json.dumps(getattr(parser, j['method'])())
-                elif j['func'] == 'restore_files':
-                    res, err = getattr(self.cli, j['func'])(**j['args'])
-                    if err:
-                        self.request.sendall(b'ER')
-                        self.request.sendall(struct.pack('!Q', len(err)))
-                        self.request.sendall(err.encode('UTF-8'))
-                        self._logger('error', 'Restoration failed')
-                        return
-                elif j['func'] == 'get_file':
-                    path = j['path']
-                    path = os.path.normpath(path)
-                    err = None
-                    if not path.startswith('/'):
-                        err = 'The path must be absolute! ({})'.format(path)
-                    if not path.startswith(self.cli.tmpdir):
-                        err = 'You are not allowed to access this path: ' \
-                              '({})'.format(path)
-                    if err:
-                        self.request.sendall(b'ER')
-                        self.request.sendall(struct.pack('!Q', len(err)))
-                        self.request.sendall(err.encode('UTF-8'))
-                        self._logger('error', err)
-                        return
-                    size = os.path.getsize(path)
-                    self.request.sendall(b'OK')
-                    self.request.sendall(struct.pack('!Q', size))
-                    with open(path, 'rb') as f:
-                        buf = f.read(1024)
-                        while buf:
-                            self._logger('info', 'sending {} Bytes'.format(len(buf)))
-                            self.request.sendall(buf)
+                self.request = request
+                err = None
+                res = ''
+                lengthbuf = self.request.recv(8)
+                length, = struct.unpack('!Q', lengthbuf)
+                data = self.recvall(length)
+                self._logger('info', 'recv: {}'.format(data))
+                txt = data.decode('UTF-8')
+                if txt == 'RE':
+                    return
+                j = json.loads(txt)
+                if j['password'] != self.password:
+                    self._logger('warning', '-----> Wrong Password <-----')
+                    self.request.sendall(b'KO')
+                    return
+                try:
+                    if j['func'] == 'proxy_parser':
+                        parser = self.cli.get_parser()
+                        if j['args']:
+                            res = json.dumps(getattr(parser, j['method'])(**j['args']))
+                        else:
+                            res = json.dumps(getattr(parser, j['method'])())
+                    elif j['func'] == 'restore_files':
+                        res, err = getattr(self.cli, j['func'])(**j['args'])
+                        if err:
+                            self.request.sendall(b'ER')
+                            self.request.sendall(struct.pack('!Q', len(err)))
+                            self.request.sendall(err.encode('UTF-8'))
+                            self._logger('error', 'Restoration failed')
+                            return
+                    elif j['func'] == 'get_file':
+                        path = j['path']
+                        path = os.path.normpath(path)
+                        err = None
+                        if not path.startswith('/'):
+                            err = 'The path must be absolute! ({})'.format(path)
+                        if not path.startswith(self.cli.tmpdir):
+                            err = 'You are not allowed to access this path: ' \
+                                  '({})'.format(path)
+                        if err:
+                            self.request.sendall(b'ER')
+                            self.request.sendall(struct.pack('!Q', len(err)))
+                            self.request.sendall(err.encode('UTF-8'))
+                            self._logger('error', err)
+                            return
+                        size = os.path.getsize(path)
+                        self.request.sendall(b'OK')
+                        self.request.sendall(struct.pack('!Q', size))
+                        with open(path, 'rb') as f:
                             buf = f.read(1024)
-                    os.unlink(path)
-                    lengthbuf = self.request.recv(8)
-                    length, = struct.unpack('!Q', lengthbuf)
-                    data = self.recvall(length)
-                    txt = data.decode('UTF-8')
-                    if txt == 'RE':
-                        return
-                elif j['func'] == 'del_file':
-                    path = j['path']
-                    path = os.path.normpath(path)
-                    err = None
-                    if not path.startswith('/'):
-                        err = 'The path must be absolute! ({})'.format(path)
-                    if not path.startswith(self.cli.tmpdir):
-                        err = 'You are not allowed to access this path: ' \
-                              '({})'.format(path)
-                    if err:
-                        self.request.sendall(b'ER')
-                        self.request.sendall(struct.pack('!Q', len(err)))
-                        self.request.sendall(err.encode('UTF-8'))
-                        self._logger('error', err)
-                        return
-                    res = json.dumps(False)
-                    if os.path.isfile(path):
+                            while buf:
+                                self._logger('info', 'sending {} Bytes'.format(len(buf)))
+                                self.request.sendall(buf)
+                                buf = f.read(1024)
                         os.unlink(path)
-                        res = json.dumps(True)
-                else:
-                    if j['args']:
-                        if 'pickled' in j and j['pickled']:
-                            # de-serialize arguments if needed
-                            import hmac
-                            import hashlib
-                            from base64 import b64decode
-                            pickles = j['args']
-                            key = u'{}{}'.format(self.password, j['func'])
-                            key = key.encode(encoding='utf-8')
-                            bytes_pickles = pickles.encode(encoding='utf-8')
-                            digest = hmac.new(key, bytes_pickles, hashlib.sha1).hexdigest()
-                            if digest != j['digest']:
-                                raise BUIserverException('Integrity check failed')
-                            j['args'] = pickle.loads(b64decode(pickles))
-                        res = json.dumps(getattr(self.cli, j['func'])(**j['args']))
+                        lengthbuf = self.request.recv(8)
+                        length, = struct.unpack('!Q', lengthbuf)
+                        data = self.recvall(length)
+                        txt = data.decode('UTF-8')
+                        if txt == 'RE':
+                            return
+                    elif j['func'] == 'del_file':
+                        path = j['path']
+                        path = os.path.normpath(path)
+                        err = None
+                        if not path.startswith('/'):
+                            err = 'The path must be absolute! ({})'.format(path)
+                        if not path.startswith(self.cli.tmpdir):
+                            err = 'You are not allowed to access this path: ' \
+                                  '({})'.format(path)
+                        if err:
+                            self.request.sendall(b'ER')
+                            self.request.sendall(struct.pack('!Q', len(err)))
+                            self.request.sendall(err.encode('UTF-8'))
+                            self._logger('error', err)
+                            return
+                        res = json.dumps(False)
+                        if os.path.isfile(path):
+                            os.unlink(path)
+                            res = json.dumps(True)
                     else:
-                        res = json.dumps(getattr(self.cli, j['func'])())
-                self._logger('info', 'result: {}'.format(res))
-                self.request.sendall(b'OK')
-            # should not happen
-            except Exception as e:
-                raise BUIserverException(str(e))
-            except BUIserverException as e:
-                self.request.sendall(b'ER')
-                res = str(e)
-                self._logger('error', 'Forwarding Exception: {}'.format(res))
+                        if j['args']:
+                            if 'pickled' in j and j['pickled']:
+                                # de-serialize arguments if needed
+                                import hmac
+                                import hashlib
+                                from base64 import b64decode
+                                pickles = j['args']
+                                key = u'{}{}'.format(self.password, j['func'])
+                                key = key.encode(encoding='utf-8')
+                                bytes_pickles = pickles.encode(encoding='utf-8')
+                                digest = hmac.new(key, bytes_pickles, hashlib.sha1).hexdigest()
+                                if digest != j['digest']:
+                                    raise BUIserverException('Integrity check failed')
+                                j['args'] = pickle.loads(b64decode(pickles))
+                            res = json.dumps(getattr(self.cli, j['func'])(**j['args']))
+                        else:
+                            res = json.dumps(getattr(self.cli, j['func'])())
+                    self._logger('info', 'result: {}'.format(res))
+                    self.request.sendall(b'OK')
+                # should not happen
+                except Exception as e:
+                    raise BUIserverException(str(e))
+                except BUIserverException as e:
+                    self.request.sendall(b'ER')
+                    res = str(e)
+                    self._logger('error', 'Forwarding Exception: {}'.format(res))
+                    self.request.sendall(struct.pack('!Q', len(res)))
+                    self.request.sendall(res.encode('UTF-8'))
+                    return
                 self.request.sendall(struct.pack('!Q', len(res)))
                 self.request.sendall(res.encode('UTF-8'))
-                return
-            self.request.sendall(struct.pack('!Q', len(res)))
-            self.request.sendall(res.encode('UTF-8'))
-        except AttributeError as e:
-            self._logger('warning', '{}\nWrong method => {}'.format(traceback.format_exc(), str(e)))
-            self.request.sendall(b'KO')
-        except Exception as e:
-            self._logger('error', '!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
-        finally:
-            try:
-                self.request.close()
+            except AttributeError as e:
+                self._logger('warning', '{}\nWrong method => {}'.format(traceback.format_exc(), str(e)))
+                self.request.sendall(b'KO')
             except Exception as e:
                 self._logger('error', '!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
+            finally:
+                try:
+                    self.request.close()
+                except Exception as e:
+                    self._logger('error', '!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
 
     def recvall(self, length=1024):
         buf = b''

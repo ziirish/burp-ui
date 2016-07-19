@@ -98,6 +98,7 @@ chown burpui: /tmp/burp.conf
 
 cat ${CONFIG_DIR}/burp/CA.cnf >/etc/burp/CA.cnf
 
+sed -i "s/^max_status_children.*$/max_status_children = 10000/" /etc/burp/burp-server.conf
 echo "restore_client = agent" >>/etc/burp/burp-server.conf
 echo "monitor_browse_cache = 1" >>/etc/burp/burp-server.conf
 

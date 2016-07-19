@@ -100,6 +100,7 @@ EOF
 cat ${CONFIG_DIR}/burp/burp.conf >/tmp/burp.conf
 chown burpui: /tmp/burp.conf
 
+sed -i "s/^max_status_children.*$/max_status_children = 10000/" /etc/burp/burp-server.conf
 echo "restore_client = agent" >>/etc/burp/burp-server.conf
 
 cp ${CONFIG_DIR}/burp-ui/buiagent.cfg /etc/burp/buiagent.cfg

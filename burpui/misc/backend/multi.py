@@ -15,6 +15,18 @@ from ...exceptions import BUIserverException
 from ..._compat import pickle
 from ...utils import implement
 
+try:
+    from gevent.coros import RLock
+    lock = RLock()
+except ImportError:
+    class DummyLock():
+        def __enter__(self):
+            pass
+
+        def __exit__(self, type, value, traceback):
+            pass
+
+    lock = DummyLock()
 
 INTERFACE_METHODS = BUIbackend.__abstractmethods__
 PARSER_INTERFACE_METHODS = BUIparser.__abstractmethods__
@@ -377,80 +389,81 @@ class NClient(BUIbackend):
 
     def do_command(self, data=None, restarted=False):
         """Send a command to the remote agent"""
-        res = '[]'
-        err = None
-        if not data:
-            raise BUIserverException('Missing data')
-        try:
-            data['password'] = self.password
-            # manage long running operations
-            if data['func'] in ['restore_files', 'get_file', 'del_file']:
-                self.connected = False
-                self.conn(notimeout=True)
-            else:
-                self.conn()
-            if not self.connected:
-                raise BUIserverException('Failed to connect to agent')
-            raw = json.dumps(data)
-            length = len(raw)
-            self.sock.sendall(struct.pack('!Q', length))
-            self.sock.sendall(raw.encode('UTF-8'))
-            self.logger.debug("Sending: {}".format(raw))
-            tmp = self.sock.recv(2).decode('UTF-8')
-            self.logger.debug("recv: '{}'".format(tmp))
-            if 'ER' == tmp:
+        with lock:
+            res = '[]'
+            err = None
+            if not data:
+                raise BUIserverException('Missing data')
+            try:
+                data['password'] = self.password
+                # manage long running operations
+                if data['func'] in ['restore_files', 'get_file', 'del_file']:
+                    self.connected = False
+                    self.conn(notimeout=True)
+                else:
+                    self.conn()
+                if not self.connected:
+                    raise BUIserverException('Failed to connect to agent')
+                raw = json.dumps(data)
+                length = len(raw)
+                self.sock.sendall(struct.pack('!Q', length))
+                self.sock.sendall(raw.encode('UTF-8'))
+                self.logger.debug("Sending: {}".format(raw))
+                tmp = self.sock.recv(2).decode('UTF-8')
+                self.logger.debug("recv: '{}'".format(tmp))
+                if 'ER' == tmp:
+                    lengthbuf = self.sock.recv(8)
+                    length, = struct.unpack('!Q', lengthbuf)
+                    err = self.recvall(length).decode('UTF-8')
+                    raise BUIserverException(err)
+                if 'OK' != tmp:
+                    self.logger.debug('Ooops, unsuccessful!')
+                    return res
+                self.logger.debug("Data sent successfully")
+                if data['func'] == 'get_file':
+                    self.connected = False
+                    return self.sock
                 lengthbuf = self.sock.recv(8)
                 length, = struct.unpack('!Q', lengthbuf)
-                err = self.recvall(length).decode('UTF-8')
-                raise BUIserverException(err)
-            if 'OK' != tmp:
-                self.logger.debug('Ooops, unsuccessful!')
-                return res
-            self.logger.debug("Data sent successfully")
-            if data['func'] == 'get_file':
-                self.connected = False
-                return self.sock
-            lengthbuf = self.sock.recv(8)
-            length, = struct.unpack('!Q', lengthbuf)
-            res = self.recvall(length).decode('UTF-8')
-        except IOError as e:
-            if not restarted and e.errno == errno.EPIPE:
-                self.connected = False
-                self.logger.warning('Broken pipe, restarting the request')
-                return self.do_command(data, True)
-            elif e.errno == errno.ECONNRESET:
-                self.connected = False
-                self.logger.error('!!! {} !!!\nPlease check your SSL configuration on both sides!'.format(str(e)))
-            else:
-                self.logger.error('!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
-            raise e
-        except socket.timeout as e:
-            if self.app.gunicorn and not restarted:
-                self.connected = False
-                self.logger.warning('Socket timed-out, restarting the request')
-                return self.do_command(data, True)
-            self.logger.error('!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
-            raise e
-        # catch all
-        except Exception as e:
-            self.logger.error('!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
-            if data['func'] == 'restore_files':
-                err = str(e)
-            elif isinstance(e, BUIserverException):
+                res = self.recvall(length).decode('UTF-8')
+            except IOError as e:
+                if not restarted and e.errno == errno.EPIPE:
+                    self.connected = False
+                    self.logger.warning('Broken pipe, restarting the request')
+                    return self.do_command(data, True)
+                elif e.errno == errno.ECONNRESET:
+                    self.connected = False
+                    self.logger.error('!!! {} !!!\nPlease check your SSL configuration on both sides!'.format(str(e)))
+                else:
+                    self.logger.error('!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
                 raise e
-            else:
-                raise BUIserverException(str(e))
-        finally:
-            if self.connected:
-                self.sock.close()
-            self.connected = False
+            except socket.timeout as e:
+                if self.app.gunicorn and not restarted:
+                    self.connected = False
+                    self.logger.warning('Socket timed-out, restarting the request')
+                    return self.do_command(data, True)
+                self.logger.error('!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
+                raise e
+            # catch all
+            except Exception as e:
+                self.logger.error('!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
+                if data['func'] == 'restore_files':
+                    err = str(e)
+                elif isinstance(e, BUIserverException):
+                    raise e
+                else:
+                    raise BUIserverException(str(e))
+            finally:
+                if self.connected:
+                    self.sock.close()
+                self.connected = False
 
-        if data['func'] == 'restore_files':
-            if err:
-                res = None
-            return res, err
+            if data['func'] == 'restore_files':
+                if err:
+                    res = None
+                return res, err
 
-        return res
+            return res
 
     def recvall(self, length=1024):
         """Read the answer of the agent"""
