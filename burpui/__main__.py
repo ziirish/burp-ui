@@ -86,10 +86,12 @@ def server(options=None):
 
 
 def agent(options=None):
+    from gevent import monkey
     from burpui.agent import BUIAgent as Agent
     from burpui.utils import lookup_file
     from burpui._compat import patch_json
 
+    monkey.patch_all()
     patch_json()
 
     if not options:
