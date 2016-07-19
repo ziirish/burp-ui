@@ -324,6 +324,7 @@ class Gsocket():
             received += len(newbuf)
         return buf
 
+
 class NClient(BUIbackend):
     """The :class:`burpui.misc.backend.multi.NClient` class provides a
     consistent backend to interact with ``agents``.
