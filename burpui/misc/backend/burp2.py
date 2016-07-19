@@ -19,7 +19,7 @@ from six import iteritems, viewkeys
 
 from .burp1 import Burp as Burp1
 from ..parser.burp2 import Parser
-from ...utils import human_readable as _hr
+from ...utils import human_readable as _hr, utc_to_local
 from ...exceptions import BUIserverException
 
 if sys.version_info < (3, 3):
@@ -569,6 +569,10 @@ class Burp(Burp1):
                         backup[name][key] = 0
         if 'start' in backup and 'end' in backup:
             backup['duration'] = backup['end'] - backup['start']
+            # convert utc timestamp to local
+            # example: 1468850307 -> 1468857507
+            backup['start'] = utc_to_local(backup['start'])
+            backup['end'] = utc_to_local(backup['end'])
 
         # Needed for graphs
         if 'received' not in backup:

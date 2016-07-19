@@ -13,6 +13,8 @@ import arrow
 from flask_restplus import fields
 from tzlocal import get_localzone
 
+TZ = str(get_localzone())
+
 
 class DateTime(fields.DateTime):
     """Custom DateTime parser on top of :mod:`arrow` to provide lossless dates"""
@@ -21,7 +23,7 @@ class DateTime(fields.DateTime):
         if value is None:
             return None
         a = arrow.get(value)
-        return fields.DateTime.parse(self, a.to(str(get_localzone())).datetime)
+        return fields.DateTime.parse(self, a.to(TZ).datetime)
 
     def format(self, value):
         """Format the value"""
@@ -35,6 +37,25 @@ class DateTime(fields.DateTime):
             raise fields.MarshallingError(e)
         except arrow.parser.ParserError as e:
             return value
+
+
+class DateTimeHuman(fields.Raw):
+    """Custom parser to display human readable times (like '1 hour ago')"""
+    def parse(self, value):
+        """Parse the value"""
+        if value is None:
+            return None
+        try:
+            return arrow.get(value).to(TZ)
+        except arrow.parser.ParserError:
+            return None
+
+    def format(self, value):
+        """Format the value"""
+        new_value = self.parse(value)
+        if new_value:
+            return new_value.humanize()
+        return value
 
 
 class BackupNumber(fields.String):

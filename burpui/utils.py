@@ -11,6 +11,7 @@ import os
 import re
 import math
 import string
+import arrow
 import sys
 import codecs
 import datetime
@@ -22,6 +23,7 @@ import logging
 import configobj
 import validate
 
+from tzlocal import get_localzone
 from inspect import currentframe, getouterframes
 from ._compat import PY3
 from . import __version__, __release__
@@ -246,6 +248,12 @@ def lookup_file(name=None, guess=True, directory=False, check=True):
                     return tmp
                 elif os.path.isfile(tmp):
                     return tmp
+
+
+def utc_to_local(timestamp):
+    utc = arrow.get(datetime.datetime.fromtimestamp(timestamp))
+    local = utc.to(str(get_localzone()))
+    return local.timestamp
 
 
 def implement(func):

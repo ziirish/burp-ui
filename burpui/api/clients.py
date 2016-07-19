@@ -294,6 +294,7 @@ class ClientsStats(Resource):
     parser.add_argument('serverName', help='Which server to collect data from when in multi-agent mode')
     client_fields = ns.model('ClientsStatsSingle', {
         'last': fields.DateTime(required=True, dt_format='iso8601', description='Date of last backup'),
+        'human': fields.DateTimeHuman(required=True, attribute='last', description='Human readable date of the last backup'),
         'name': fields.String(required=True, description='Client name'),
         'state': fields.String(required=True, description='Current state of the client (idle, backup, etc.)'),
         'phase': fields.String(description='Phase of the current running backup'),
