@@ -8,7 +8,7 @@ import json
 import logging
 import traceback
 
-from gevent.coros import RLock
+from gevent.lock import RLock
 from gevent.pool import Pool
 from gevent.server import StreamServer
 from logging.handlers import RotatingFileHandler
