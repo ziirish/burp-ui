@@ -380,7 +380,7 @@ class NClient(BUIbackend):
         res = '[]'
         err = None
         if not data:
-            return res
+            raise BUIserverException('Missing data')
         try:
             data['password'] = self.password
             # manage long running operations
@@ -390,7 +390,7 @@ class NClient(BUIbackend):
             else:
                 self.conn()
             if not self.connected:
-                return res
+                raise BUIserverException('Failed to connect to agent')
             raw = json.dumps(data)
             length = len(raw)
             self.sock.sendall(struct.pack('!Q', length))
@@ -413,26 +413,33 @@ class NClient(BUIbackend):
             lengthbuf = self.sock.recv(8)
             length, = struct.unpack('!Q', lengthbuf)
             res = self.recvall(length).decode('UTF-8')
-        except BUIserverException as e:
-            raise e
         except IOError as e:
             if not restarted and e.errno == errno.EPIPE:
                 self.connected = False
+                self.logger.warning('Broken pipe, restarting the request')
                 return self.do_command(data, True)
             elif e.errno == errno.ECONNRESET:
                 self.connected = False
                 self.logger.error('!!! {} !!!\nPlease check your SSL configuration on both sides!'.format(str(e)))
             else:
                 self.logger.error('!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
+            raise e
         except socket.timeout as e:
             if self.app.gunicorn and not restarted:
                 self.connected = False
+                self.logger.warning('Socket timed-out, restarting the request')
                 return self.do_command(data, True)
             self.logger.error('!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
+            raise e
+        # catch all
         except Exception as e:
+            self.logger.error('!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
             if data['func'] == 'restore_files':
                 err = str(e)
-            self.logger.error('!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
+            elif isinstance(e, BUIserverException):
+                raise e
+            else:
+                raise BUIserverException(str(e))
         finally:
             if self.connected:
                 self.sock.close()
