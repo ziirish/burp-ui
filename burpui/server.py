@@ -13,7 +13,7 @@ import logging
 import traceback
 
 from .misc.auth.handler import UserAuthHandler
-from .utils import BUIConfig
+from .config import config
 
 from datetime import timedelta
 from flask import Flask
@@ -120,8 +120,13 @@ class BUIServer(Flask):
             raise IOError('No configuration file found')
 
         # Raise exception if errors are encountered during parsing
-        self.conf = BUIConfig(conf, True, self.defaults)
+        self.conf = config
+        self.conf.parse(conf, True, self.defaults)
         self.conf.default_section('Global')
+
+        # switch the flask config with our magic config object
+        self.conf.update(self.config)
+        self.config = self.conf
 
         self.port = self.config['BUI_PORT'] = self.conf.safe_get(
             'port',

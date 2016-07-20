@@ -174,7 +174,7 @@ class Burp(BUIbackend):
         :type server: :class:`burpui.server.BUIServer`
 
         :param conf: Configuration
-        :type conf: :class:`burpui.utils.BUIConfig`
+        :type conf: :class:`burpui.config.BUIConfig`
         """
         self.app = server
         self.acl_handler = server.acl_handler
@@ -390,7 +390,7 @@ class NClient(BUIbackend):
         try:
             with Gsocket(self.host, self.port, self.ssl, self.timeout):
                 res = True
-        except Exception:
+        except socket.error:
             pass
         return res
 

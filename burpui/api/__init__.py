@@ -19,6 +19,7 @@ from importlib import import_module
 from functools import wraps
 
 from ..exceptions import BUIserverException
+from ..config import config
 
 EXEMPT_METHODS = set(['OPTIONS'])
 
@@ -56,13 +57,9 @@ def api_login_required(func):
 
 class Api(ApiPlus):
     """Wrapper class around :class:`flask_restplus.Api`"""
-    db = None
-    gapp = None
-    cache = None
     logger = logging.getLogger('burp-ui')
+    cache = None
     loaded = False
-    celery = None
-    app_cli = None
     release = None
     __doc__ = None
     __url__ = None
@@ -80,7 +77,7 @@ class Api(ApiPlus):
                         ext == '.py' and
                         name not in ['__init__', '.', '..']):
                     mod = '.' + name
-                    if name not in self.CELERY_REQUIRED or self.celery:
+                    if name not in self.CELERY_REQUIRED or config['WITH_CELERY']:
                         self.logger.debug('Loading API module: {}'.format(mod))
                         import_module(mod, __name__)
                     else:

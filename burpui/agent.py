@@ -1,4 +1,12 @@
 # -*- coding: utf8 -*-
+"""
+.. module:: burpui.agent
+    :platform: Unix
+    :synopsis: Burp-UI agent module.
+
+.. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
+
+"""
 import os
 import struct
 import re
@@ -12,10 +20,12 @@ from gevent.lock import RLock
 from gevent.pool import Pool
 from gevent.server import StreamServer
 from logging.handlers import RotatingFileHandler
+
 from .exceptions import BUIserverException
 from .misc.backend.interface import BUIbackend
 from ._compat import pickle
-from .utils import BUIlogging, BUIConfig
+from .utils import BUIlogging
+from .config import config
 
 G_PORT = 10000
 G_BIND = u'::'
@@ -121,7 +131,8 @@ class BUIAgent(BUIbackend, BUIlogging):
             raise IOError('No configuration file found')
 
         # Raise exception if errors are encountered during parsing
-        self.conf = BUIConfig(conf, True, self.defaults)
+        self.conf = config
+        self.conf.parse(conf, True, self.defaults)
         self.conf.default_section('Global')
         self.port = self.conf.safe_get('port', 'integer')
         self.bind = self.conf.safe_get('bind')

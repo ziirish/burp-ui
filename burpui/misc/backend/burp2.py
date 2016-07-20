@@ -52,7 +52,7 @@ class Burp(Burp1):
     :type server: :class:`burpui.server.BUIServer`
 
     :param conf: Configuration to use
-    :type conf: :class:`burpui.utils.BUIConfig`
+    :type conf: :class:`burpui.config.BUIConfig`
     """
 
     def __init__(self, server=None, conf=None):
@@ -62,7 +62,7 @@ class Burp(Burp1):
         :type server: :class:`burpui.server.BUIServer`
 
         :param conf: Configuration to use
-        :type conf: :class:`burpui.utils.BUIConfig`
+        :type conf: :class:`burpui.config.BUIConfig`
         """
         self.proc = None
         self.app = server

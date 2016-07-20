@@ -109,7 +109,7 @@ class Burp(BUIbackend):
         :type server: :class:`burpui.server.BUIServer`
 
         :param conf: Configuration to use
-        :type conf: :class:`burpui.utils.BUIConfig`
+        :type conf: :class:`burpui.config.BUIConfig`
 
         :param dummy: Does not instanciate the object (used for development
                       purpose)
