@@ -4,6 +4,8 @@ import os
 from .interface import BUIhandler, BUIuser
 from importlib import import_module
 from flask import session
+from six import iteritems
+from collections import OrderedDict
 
 
 class UserAuthHandler(BUIhandler):
@@ -12,7 +14,7 @@ class UserAuthHandler(BUIhandler):
         """See :func:`burpui.misc.auth.interface.BUIhandler.__init__`"""
         self.app = app
         self.users = {}
-        self.backends = []
+        backends = []
         if self.app.auth:
             me, _ = os.path.splitext(os.path.basename(__file__))
             back = self.app.auth
@@ -24,12 +26,15 @@ class UserAuthHandler(BUIhandler):
                     (modpath, _) = __name__.rsplit('.', 1)
                     mod = import_module('.' + au, modpath)
                     obj = mod.UserHandler(self.app)
-                    self.backends.append(obj)
+                    backends.append(obj)
                 except:
                     pass
-        self.backends.sort(key=lambda x: x.priority, reverse=True)
-        if not self.backends:
+        backends.sort(key=lambda x: x.priority, reverse=True)
+        if not backends:
             raise ImportError('No backend found for \'{}\''.format(self.app.auth))
+        self.backends = OrderedDict()
+        for obj in backends:
+            self.backends[obj.name] = obj
 
     def user(self, name=None):
         """See :func:`burpui.misc.auth.interface.BUIhandler.user`"""
@@ -49,7 +54,7 @@ class UserHandler(BUIuser):
         self.name = name
         self.real = None
 
-        for back in self.backends:
+        for name, back in iteritems(self.backends):
             u = back.user(self.name)
             res = u.get_id()
             if res:
@@ -61,7 +66,7 @@ class UserHandler(BUIuser):
         """See :func:`burpui.misc.auth.interface.BUIuser.login`"""
         if not self.real:
             self.authenticated = False
-            for back in self.backends:
+            for name, back in iteritems(self.backends):
                 u = back.user(self.name)
                 res = u.get_id()
                 if u.login(passwd):

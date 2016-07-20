@@ -75,7 +75,7 @@ class AuthUsers(Resource):
         if not handler or len(handler.backends) == 0:
             self.abort(404, "No authentication backend found")
         ret = []
-        for backend in handler.backends:
+        for name, backend in iteritems(handler.backends):
             loader = backend.loader
             try:
                 users = getattr(loader, 'users')
@@ -121,17 +121,11 @@ class AuthUsers(Resource):
         except AttributeError:
             handler = None
 
-        if not handler or len(handler.backends) == 0:
+        if not handler or len(handler.backends) == 0 or \
+                args['backend'] not in handler.backends:
             self.abort(404, "No authentication backend found")
 
-        backend = None
-        for back in handler.backends:
-            if back.name == args['backend']:
-                backend = back
-                break
-
-        if not backend:
-            self.abort(404, "No authentication backend found")
+        backend = handler.backends[args['backend']]
 
         if backend.add_user is False:
             self.abort(
@@ -170,17 +164,11 @@ class AuthUsers(Resource):
         except AttributeError:
             handler = None
 
-        if not handler or len(handler.backends) == 0:
+        if not handler or len(handler.backends) == 0 or \
+                args['backend'] not in handler.backends:
             self.abort(404, "No authentication backend found")
 
-        backend = None
-        for back in handler.backends:
-            if back.name == args['backend']:
-                backend = back
-                break
-
-        if not backend:
-            self.abort(404, "No authentication backend found")
+        backend = handler.backends[args['backend']]
 
         if backend.del_user is False:
             self.abort(
@@ -218,17 +206,11 @@ class AuthUsers(Resource):
         except AttributeError:
             handler = None
 
-        if not handler or len(handler.backends) == 0:
+        if not handler or len(handler.backends) == 0 or \
+                args['backend'] not in handler.backends:
             self.abort(404, "No authentication backend found")
 
-        backend = None
-        for back in handler.backends:
-            if back.name == args['backend']:
-                backend = back
-                break
-
-        if not backend:
-            self.abort(404, "No authentication backend found")
+        backend = handler.backends[args['backend']]
 
         if backend.change_password is False:
             self.abort(
@@ -286,9 +268,10 @@ class AuthBackends(Resource):
         if not handler or len(handler.backends) == 0:
             self.abort(404, "No authentication backend found")
         ret = []
-        for backend in handler.backends:
+        print type(handler.backends)
+        for name, backend in iteritems(handler.backends):
             ret.append({
-                'name': backend.name,
+                'name': name,
                 'add': backend.add_user is not False,
                 'del': backend.del_user is not False,
                 'mod': backend.change_password is not False,
