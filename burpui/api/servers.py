@@ -66,23 +66,29 @@ class ServersStats(Resource):
             check = True
             restrict = bui.acl.servers(self.username)
 
-        try:
-            for serv in bui.cli.servers:
-                if check and serv in restrict:
-                    r.append({
-                        'name': serv,
-                        'clients': len(bui.acl.clients(self.username, serv)),
-                        'alive': bui.cli.servers[serv].ping()
-                    })
-                elif not check:
-                    r.append({
-                        'name': serv,
-                        'clients': len(bui.cli.servers[serv].get_all_clients(serv)),
-                        'alive': bui.cli.servers[serv].ping()
-                    })
+        for serv in bui.cli.servers:
+            try:
+                alive = bui.cli.servers[serv].ping()
+            except BUIserverException:
+                alive = False
 
-        except BUIserverException as e:
-            self.abort(500, str(e))
+            if check and serv in restrict:
+                r.append({
+                    'name': serv,
+                    'clients': len(bui.acl.clients(self.username, serv)),
+                    'alive': alive
+                })
+            elif not check:
+                try:
+                    clients = bui.cli.servers[serv].get_all_clients(serv)
+                except BUIserverException:
+                    clients = []
+
+                r.append({
+                    'name': serv,
+                    'clients': len(clients),
+                    'alive': alive
+                })
 
         return r
 
