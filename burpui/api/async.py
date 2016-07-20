@@ -13,6 +13,8 @@ import struct
 
 from . import api
 from .custom import Resource
+from ..ext.async import celery
+from ..config import config
 
 from six import iteritems
 from zlib import adler32
@@ -24,12 +26,13 @@ from werkzeug.datastructures import Headers
 from celery.schedules import crontab
 from celery.utils.log import get_task_logger
 
+if config.get('WITH_SQL'):
+    from ..ext.sql import db
+else:
+    db = None
+
 ns = api.namespace('async', 'Asynchronous methods')
 cache = api.cache
-celery = api.celery
-app_cli = api.app_cli
-db = api.db
-app = api.gapp
 logger = get_task_logger(__name__)
 ME = __name__
 
@@ -61,120 +64,116 @@ LOCK_EXPIRE = 60 * 30  # Lock expires in 30 minutes
 
 @celery.task
 def ping_backend():
-    with app.app_context():
-        if app.standalone:
-            logger.debug(app_cli.status())
-        else:
-            for server, backend in iteritems(app_cli.servers):
-                logger.debug(app_cli.status(agent=server))
+    if bui.standalone:
+        logger.debug(bui.cli.status())
+    else:
+        for server, backend in iteritems(bui.cli.servers):
+            logger.debug(bui.cli.status(agent=server))
 
 
 @celery.task
 def cleanup_restore():
-    with app.app_context():
-        tasks = Task.query.filter_by(task='perform_restore').all()
-        for rec in tasks:
-            if rec.expire and datetime.utcnow() > rec.expire:
-                logger.info('Task expired: {}'.format(rec))
-                task = perform_restore.AsyncResult(rec.uuid)
-                try:
-                    if task.state != 'SUCCESS':
-                        logger.warn(
-                            'Task is not done yet or did not end '
-                            'successfully: {}'.format(task.state)
-                        )
-                        task.revoke(terminate=True)
-                        continue
-                    server = task.result.get('server')
-                    path = task.result.get('path')
-                    if path:
-                        if server:
-                            if not app_cli.del_file(path, agent=server):
-                                logger.warn("'{}' already removed".format(path))
-                        else:
-                            if os.path.isfile(path):
-                                os.unlink(path)
-                finally:
-                    db.session.delete(rec)
-                    db.session.commit()
-                    task.revoke()
+    tasks = Task.query.filter_by(task='perform_restore').all()
+    for rec in tasks:
+        if rec.expire and datetime.utcnow() > rec.expire:
+            logger.info('Task expired: {}'.format(rec))
+            task = perform_restore.AsyncResult(rec.uuid)
+            try:
+                if task.state != 'SUCCESS':
+                    logger.warn(
+                        'Task is not done yet or did not end '
+                        'successfully: {}'.format(task.state)
+                    )
+                    task.revoke(terminate=True)
+                    continue
+                server = task.result.get('server')
+                path = task.result.get('path')
+                if path:
+                    if server:
+                        if not bui.cli.del_file(path, agent=server):
+                            logger.warn("'{}' already removed".format(path))
+                    else:
+                        if os.path.isfile(path):
+                            os.unlink(path)
+            finally:
+                db.session.delete(rec)
+                db.session.commit()
+                task.revoke()
 
 
 @celery.task(bind=True)
 def perform_restore(self, client, backup,
                     files, strip, fmt, passwd, server=None, user=None,
                     expire=timedelta(minutes=60)):
-    with app.app_context():
-        def acquire_lock(name):
-            return cache.cache.add(name, 'true', LOCK_EXPIRE)
+    def acquire_lock(name):
+        return cache.cache.add(name, 'true', LOCK_EXPIRE)
 
-        def release_lock(name):
-            return cache.cache.delete(name)
+    def release_lock(name):
+        return cache.cache.delete(name)
 
-        ret = None
-        lock_name = '{}-{}'.format(self.name, server)
+    ret = None
+    lock_name = '{}-{}'.format(self.name, server)
 
-        if not acquire_lock(lock_name):
-            logger.warn(
-                'A task is already running. Wait for it: {}'.format(lock_name)
-            )
-            # The lock should be released after LOCK_EXPLIRE max
-            while not acquire_lock(lock_name):
-                sleep(10)
+    if not acquire_lock(lock_name):
+        logger.warn(
+            'A task is already running. Wait for it: {}'.format(lock_name)
+        )
+        # The lock should be released after LOCK_EXPLIRE max
+        while not acquire_lock(lock_name):
+            sleep(10)
 
-        try:
-            if server:
-                filename = 'restoration_%d_%s_on_%s_at_%s.%s' % (
-                    backup,
-                    client,
-                    server,
-                    strftime("%Y-%m-%d_%H_%M_%S", gmtime()),
-                    fmt)
-            else:
-                filename = 'restoration_%d_%s_at_%s.%s' % (
-                    backup,
-                    client,
-                    strftime("%Y-%m-%d_%H_%M_%S", gmtime()),
-                    fmt)
-
-            self.update_state(state='STARTED', meta={'step': 'doing'})
-            archive, err = app_cli.restore_files(
-                client,
+    try:
+        if server:
+            filename = 'restoration_%d_%s_on_%s_at_%s.%s' % (
                 backup,
-                files,
-                strip,
-                fmt,
-                passwd,
-                server
-            )
-            if not archive:
-                if err:
-                    self.update_state(state='FAILURE', meta={'error': err})
-                else:
-                    self.update_state(
-                        state='FAILURE',
-                        meta={'error': 'Something went wrong while restoring'}
-                    )
-                logger.error('FAILURE: {}'.format(err))
+                client,
+                server,
+                strftime("%Y-%m-%d_%H_%M_%S", gmtime()),
+                fmt)
+        else:
+            filename = 'restoration_%d_%s_at_%s.%s' % (
+                backup,
+                client,
+                strftime("%Y-%m-%d_%H_%M_%S", gmtime()),
+                fmt)
+
+        self.update_state(state='STARTED', meta={'step': 'doing'})
+        archive, err = bui.cli.restore_files(
+            client,
+            backup,
+            files,
+            strip,
+            fmt,
+            passwd,
+            server
+        )
+        if not archive:
+            if err:
+                self.update_state(state='FAILURE', meta={'error': err})
             else:
-                ret = {
-                    'filename': filename,
-                    'path': archive,
-                    'user': user,
-                    'server': server
-                }
-                logger.debug(ret)
+                self.update_state(
+                    state='FAILURE',
+                    meta={'error': 'Something went wrong while restoring'}
+                )
+            logger.error('FAILURE: {}'.format(err))
+        else:
+            ret = {
+                'filename': filename,
+                'path': archive,
+                'user': user,
+                'server': server
+            }
+            logger.debug(ret)
 
-        finally:
-            release_lock(lock_name)
+    finally:
+        release_lock(lock_name)
 
-        if db:
-            curr = Task.query.filter_by(uuid=self.request.id).first()
-            if curr:
-                print curr, curr.expire
-                curr.expire = datetime.utcnow() + expire
-                db.session.commit()
-        return ret
+    if db:
+        curr = Task.query.filter_by(uuid=self.request.id).first()
+        if curr:
+            curr.expire = datetime.utcnow() + expire
+            db.session.commit()
+    return ret
 
 
 @ns.route('/status/<task_id>', endpoint='async_restore_status')

@@ -1,9 +1,15 @@
 # -*- coding: utf8 -*-
+"""
+.. module:: burpui.models
+    :platform: Unix
+    :synopsis: Burp-UI DB models module.
+
+.. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
+
+"""
 import datetime
 
-from flask_sqlalchemy import SQLAlchemy
-
-db = SQLAlchemy()
+from .ext.sql import db
 
 
 class Task(db.Model):

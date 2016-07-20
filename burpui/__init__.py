@@ -66,7 +66,7 @@ def create_db(myapp):
         return myapp.db
 
     if myapp.config['WITH_SQL']:
-        from .models import db
+        from .ext.sql import db
         db.init_app(myapp)
         myapp.db = db
         return db
@@ -85,13 +85,28 @@ def create_celery(myapp, warn=True):
         return myapp.celery
 
     if myapp.config['WITH_CELERY']:
-        from celery import Celery
+        from .ext.async import celery
         host, port = get_redis_server(myapp)
         redis_url = 'redis://{}:{}/2'.format(host, port)
-        myapp.config['CELERY_BROKER_URL'] = redis_url
+        myapp.config['CELERY_BROKER_URL'] = myapp.config['BROKER_URL'] = \
+            redis_url
         myapp.config['CELERY_RESULT_BACKEND'] = redis_url
-        celery = Celery(myapp.name, broker=myapp.config['CELERY_BROKER_URL'])
         celery.conf.update(myapp.config)
+
+        if not hasattr(celery, 'flask_app'):
+            celery.flask_app = myapp
+
+        TaskBase = celery.Task
+
+        class ContextTask(TaskBase):
+            abstract = True
+
+            def __call__(self, *args, **kwargs):
+                with myapp.app_context():
+                    return TaskBase.__call__(self, *args, **kwargs)
+
+        celery.Task = ContextTask
+
         myapp.celery = celery
         return celery
 
@@ -216,12 +231,6 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
 
     app.config['REMEMBER_COOKIE_HTTPONLY'] = True
 
-    app.jinja_env.globals.update(
-        isinstance=isinstance,
-        list=list,
-        version_id='{}-{}'.format(__version__, __release__)
-    )
-
     if debug and not gunicorn:  # pragma: no cover
         app.config['DEBUG'] = True and not unittest
         app.config['TESTING'] = True and not unittest
@@ -240,6 +249,13 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
     if debug:
         app.config.setdefault('TEMPLATES_AUTO_RELOAD', True)
         app.config['TEMPLATES_AUTO_RELOAD'] = True
+
+    app.jinja_env.globals.update(
+        isinstance=isinstance,
+        list=list,
+        version_id='{}-{}'.format(__version__, __release__),
+        config=app.config
+    )
 
     # manage application secret key
     if app.secret_key and (app.secret_key.lower() == 'none' or
@@ -301,10 +317,6 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
     api.release = __release__
     api.__url__ = __url__
     api.__doc__ = __doc__
-    api.db = app.db
-    api.gapp = app
-    api.celery = app.celery
-    api.app_cli = app.cli
     api.cache = app.cache
     api.load_all()
     app.register_blueprint(apibp)
