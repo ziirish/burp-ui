@@ -268,7 +268,6 @@ class AuthBackends(Resource):
         if not handler or len(handler.backends) == 0:
             self.abort(404, "No authentication backend found")
         ret = []
-        print type(handler.backends)
         for name, backend in iteritems(handler.backends):
             ret.append({
                 'name': name,
