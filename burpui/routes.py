@@ -1,7 +1,16 @@
 # -*- coding: utf8 -*-
+"""
+.. module:: burpui.routes
+    :platform: Unix
+    :synopsis: Burp-UI routes module.
+
+.. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
+
+"""
 import math
 
-from flask import request, render_template, redirect, url_for, abort, flash, Blueprint as FlaskBlueprint, session, current_app as bui
+from flask import request, render_template, redirect, url_for, abort, \
+    flash, Blueprint as FlaskBlueprint, session, current_app as bui
 from flask_login import login_user, login_required, logout_user, current_user
 
 from ._compat import quote
@@ -68,7 +77,15 @@ def calendar(server=None, client=None):
         servers = False
         cli = bool(client)
         clients = not cli
-    return render_template('calendar.html', calendar=True, server=server, cname=client, client=cli, servers=servers, clients=clients)
+    return render_template(
+        'calendar.html',
+        calendar=True,
+        server=server,
+        cname=client,
+        client=cli,
+        servers=servers,
+        clients=clients
+    )
 
 
 @view.route('/settings')
@@ -88,7 +105,13 @@ def settings(server=None, conf=None):
         except:
             pass
     server = server or request.args.get('serverName')
-    return render_template('settings.html', settings=True, server=server, conf=conf, ng_controller='ConfigCtrl')
+    return render_template(
+        'settings.html',
+        settings=True,
+        server=server,
+        conf=conf,
+        ng_controller='ConfigCtrl'
+    )
 
 
 @view.route('/client/client-settings')
@@ -106,12 +129,26 @@ def cli_settings(server=None, client=None, conf=None):
         try:
             conf = quote(request.args.get('conf'), safe='')
             if conf:
-                return redirect(url_for('.cli_settings', server=server, client=client, conf=conf))
+                return redirect(
+                    url_for(
+                        '.cli_settings',
+                        server=server,
+                        client=client,
+                        conf=conf
+                    )
+                )
         except:
             pass
     client = client or request.args.get('client')
     server = server or request.args.get('serverName')
-    return render_template('settings.html', settings=True, client=client, server=server, conf=conf, ng_controller='ConfigCtrl')
+    return render_template(
+        'settings.html',
+        settings=True,
+        client=client,
+        server=server,
+        conf=conf,
+        ng_controller='ConfigCtrl'
+    )
 
 
 @view.route('/live-monitor')
@@ -135,7 +172,13 @@ def live_monitor(server=None, name=None):
             flash('Sorry, there are no running backups', 'warning')
             return redirect(url_for('.home'))
 
-    return render_template('live-monitor.html', live=True, cname=name, server=server, ng_controller='LiveCtrl')
+    return render_template(
+        'live-monitor.html',
+        live=True,
+        cname=name,
+        server=server,
+        ng_controller='LiveCtrl'
+    )
 
 
 @view.route('/edit-server-initiated-restore/<name>', methods=['GET'])
@@ -145,12 +188,24 @@ def edit_server_initiated_restore(server=None, name=None):
     data = bui.cli.is_server_restore(name, server)
     to = None
     if not data or not data['found']:
-        flash('Sorry, there are no restore file found for this client', 'warning')
+        flash(
+            'Sorry, there are no restore file found for this client',
+            'warning'
+        )
         return redirect(url_for('.home'))
     if data.get('orig_client'):
         to = name
         name = data['orig_client']
-    return redirect(url_for('.client_browse', server=server, name=name, backup=data['backup'], edit=1, to=to))
+    return redirect(
+        url_for(
+            '.client_browse',
+            server=server,
+            name=name,
+            backup=data['backup'],
+            edit=1,
+            to=to
+        )
+    )
 
 
 @view.route('/client-browse/<name>', methods=['GET'])
@@ -160,7 +215,8 @@ def edit_server_initiated_restore(server=None, name=None):
 @view.route('/client-browse/<name>/<int:backup>/<int:encrypted>')
 @view.route('/<server>/client-browse/<name>/<int:backup>/<int:encrypted>')
 @login_required
-def client_browse(server=None, name=None, backup=None, encrypted=None, edit=None):
+def client_browse(server=None, name=None, backup=None, encrypted=None,
+                  edit=None):
     """Browse a specific backup of a specific client"""
     if request.args.get('encrypted') == '1':
         encrypted = 1
@@ -168,15 +224,37 @@ def client_browse(server=None, name=None, backup=None, encrypted=None, edit=None
         to = request.args.get('to') or name
         edit = bui.cli.is_server_restore(to, server)
         if not edit or not edit['found']:
-            flash('Sorry, there are no restore file found for this client', 'warning')
+            flash(
+                'Sorry, there are no restore file found for this client',
+                'warning'
+            )
             edit = None
         else:
             edit['roots'] = [x['key'] for x in edit['list']]
     server = server or request.args.get('serverName')
     bkp = request.args.get('backup')
     if bkp and not backup:
-        return redirect(url_for('.client_browse', name=name, backup=bkp, encrypted=encrypted, server=server))
-    return render_template('client-browse.html', tree=True, backup=True, overview=True, cname=name, nbackup=backup, encrypted=encrypted, server=server, edit=edit, ng_controller='BrowseCtrl')
+        return redirect(
+            url_for(
+                '.client_browse',
+                name=name,
+                backup=bkp,
+                encrypted=encrypted,
+                server=server
+            )
+        )
+    return render_template(
+        'client-browse.html',
+        tree=True,
+        backup=True,
+        overview=True,
+        cname=name,
+        nbackup=backup,
+        encrypted=encrypted,
+        server=server,
+        edit=edit,
+        ng_controller='BrowseCtrl'
+    )
 
 
 @view.route('/client-report/<name>')
@@ -190,8 +268,21 @@ def client_report(server=None, name=None):
     except BUIserverException:
         l = []
     if len(l) == 1:
-        return redirect(url_for('.backup_report', name=name, backup=l[0]['number'], server=server))
-    return render_template('client-report.html', client=True, report=True, cname=name, server=server)
+        return redirect(
+            url_for(
+                '.backup_report',
+                name=name,
+                backup=l[0]['number'],
+                server=server
+            )
+        )
+    return render_template(
+        'client-report.html',
+        client=True,
+        report=True,
+        cname=name,
+        server=server
+    )
 
 
 @view.route('/clients-report')
@@ -200,7 +291,12 @@ def client_report(server=None, name=None):
 def clients_report(server=None):
     """Global report"""
     server = server or request.args.get('serverName')
-    return render_template('clients-report.html', clients=True, report=True, server=server)
+    return render_template(
+        'clients-report.html',
+        clients=True,
+        report=True,
+        server=server
+    )
 
 
 @view.route('/backup-report/<name>', methods=['GET'])
@@ -212,7 +308,15 @@ def backup_report(server=None, name=None, backup=None):
     """Backup specific report"""
     backup = backup or request.args.get('backup')
     server = server or request.args.get('serverName')
-    return render_template('backup-report.html', client=True, backup=True, report=True, cname=name, nbackup=backup, server=server)
+    return render_template(
+        'backup-report.html',
+        client=True,
+        backup=True,
+        report=True,
+        cname=name,
+        nbackup=backup,
+        server=server
+    )
 
 
 @view.route('/client', methods=['GET'])
@@ -226,7 +330,13 @@ def client(server=None, name=None):
     server = server or request.args.get('serverName')
     if bui.cli.is_backup_running(c, agent=server):
         return redirect(url_for('.live_monitor', name=c, server=server))
-    return render_template('client.html', client=True, overview=True, cname=c, server=server)
+    return render_template(
+        'client.html',
+        client=True,
+        overview=True,
+        cname=c,
+        server=server
+    )
 
 
 @view.route('/clients', methods=['GET'])
@@ -234,7 +344,12 @@ def client(server=None, name=None):
 @login_required
 def clients(server=None):
     server = server or request.args.get('serverName')
-    return render_template('clients.html', clients=True, overview=True, server=server)
+    return render_template(
+        'clients.html',
+        clients=True,
+        overview=True,
+        server=server
+    )
 
 
 @view.route('/servers', methods=['GET'])
@@ -276,7 +391,13 @@ def logout():
 @view.route('/about')
 def about():
     """about view"""
-    return render_template('about.html', about=True, login=(not current_user.is_authenticated), doc=view.__doc__, url=view.__url__)
+    return render_template(
+        'about.html',
+        about=True,
+        login=(not current_user.is_authenticated),
+        doc=view.__doc__,
+        url=view.__url__
+    )
 
 
 @view.route('/')
