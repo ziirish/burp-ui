@@ -259,14 +259,14 @@ class BUIServer(Flask):
                 'boolean_or_string',
                 section='Production'
         )
-        self.config['WITH_SQL'] = (isinstance(self.database, bool) and
-                                   bool(self.database) or
-                                   (not isinstance(self.database, bool) and
-                                    self.database.lower() != 'none'))
-        self.config['WITH_CELERY'] = (isinstance(self.use_celery, bool) and
-                                      bool(self.use_celery) or
-                                      (not isinstance(self.use_celery, bool) and
-                                       self.use_celery.lower() != 'none'))
+        if isinstance(self.database, bool):
+            self.config['WITH_SQL'] = self.database
+        else:
+            self.config['WITH_SQL'] = self.database.lower() != 'none'
+        if isinstance(self.use_celery, bool):
+            self.config['WITH_CLERY'] = self.use_celery
+        else:
+            self.config['WITH_CELERY'] = self.use_celery.lower() != 'none'
 
         # Experimental options
         self.noserverrestore = self.conf.safe_get(
