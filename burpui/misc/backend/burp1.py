@@ -36,7 +36,7 @@ G_TMPDIR = u'/tmp/bui'
 G_ZIP64 = False
 G_INCLUDES = [u'/etc/burp']
 G_ENFORCE = False
-G_REVOKE = False
+G_REVOKE = True
 
 
 class Burp(BUIbackend):
@@ -127,7 +127,6 @@ class Burp(BUIbackend):
         self.stripbin = G_STRIPBIN
         self.burpconfcli = G_BURPCONFCLI
         self.burpconfsrv = G_BURPCONFSRV
-        self.tmpdir = G_TMPDIR
         self.includes = G_INCLUDES
         self.revoke = G_REVOKE
         self.enforce = G_ENFORCE
@@ -151,6 +150,7 @@ class Burp(BUIbackend):
                 'enforce': G_ENFORCE,
             },
         }
+        tmpdir = G_TMPDIR
         if conf:
             conf.update_defaults(self.defaults)
             conf.default_section('Burp1')
@@ -194,16 +194,6 @@ class Burp(BUIbackend):
                 section='Security'
             )
 
-            if tmpdir and os.path.exists(tmpdir) and not os.path.isdir(tmpdir):
-                self.logger.warning("'%s' is not a directory", tmpdir)
-                if tmpdir == G_TMPDIR:
-                    raise IOError("Cannot use '{}' as tmpdir".format(tmpdir))
-                tmpdir = G_TMPDIR
-                if os.path.exists(tmpdir) and not os.path.isdir(tmpdir):
-                    raise IOError("Cannot use '{}' as tmpdir".format(tmpdir))
-            if tmpdir and not os.path.exists(tmpdir):
-                os.makedirs(tmpdir)
-
             if confcli and not os.path.isfile(confcli):
                 self.logger.warning("The file '%s' does not exist", confcli)
                 confcli = None
@@ -218,7 +208,18 @@ class Burp(BUIbackend):
 
             self.burpconfcli = confcli
             self.burpconfsrv = confsrv
-            self.tmpdir = tmpdir
+
+        if tmpdir and os.path.exists(tmpdir) and not os.path.isdir(tmpdir):
+            self.logger.warning("'%s' is not a directory", tmpdir)
+            if tmpdir == G_TMPDIR:
+                raise IOError("Cannot use '{}' as tmpdir".format(tmpdir))
+            tmpdir = G_TMPDIR
+            if os.path.exists(tmpdir) and not os.path.isdir(tmpdir):
+                raise IOError("Cannot use '{}' as tmpdir".format(tmpdir))
+        if tmpdir and not os.path.exists(tmpdir):
+            os.makedirs(tmpdir)
+
+        self.tmpdir = tmpdir
 
         self.parser = Parser(self)
 
@@ -925,7 +926,7 @@ class Burp(BUIbackend):
         flist = json.loads(files)
         if password:
             tmphandler, tmpfile = tempfile.mkstemp()
-        tmpdir = tempfile.mkdtemp(prefix=self.tmpdir)
+        tmpdir = tempfile.mkdtemp(dir=self.tmpdir)
         if 'restore' not in flist:
             return None, 'Wrong call'
         if os.path.isdir(tmpdir):

@@ -36,7 +36,7 @@ G_TIMEOUT = 15
 G_ZIP64 = False
 G_INCLUDES = [u'/etc/burp']
 G_ENFORCE = False
-G_REVOKE = False
+G_REVOKE = True
 
 
 # Some functions are the same as in Burp1 backend
@@ -95,6 +95,7 @@ class Burp(Burp1):
                 'enforce': G_ENFORCE,
             },
         }
+        tmpdir = G_TMPDIR
         self.running = []
         version = ''
         if conf:
@@ -150,24 +151,6 @@ class Burp(Burp1):
                 section='Security'
             )
 
-            if (tmpdir and os.path.exists(tmpdir) and
-                    not os.path.isdir(tmpdir)):
-                self.logger.warning(
-                    "'%s' is not a directory",
-                    tmpdir
-                )
-                if tmpdir == G_TMPDIR:
-                    raise IOError(
-                        "Cannot use '{}' as tmpdir".format(tmpdir)
-                    )
-                tmpdir = G_TMPDIR
-                if os.path.exists(tmpdir) and not os.path.isdir(tmpdir):
-                    raise IOError(
-                        "Cannot use '{}' as tmpdir".format(tmpdir)
-                    )
-            if tmpdir and not os.path.exists(tmpdir):
-                os.makedirs(tmpdir)
-
             if confcli and not os.path.isfile(confcli):
                 self.logger.warning(
                     "The file '%s' does not exist",
@@ -188,9 +171,28 @@ class Burp(Burp1):
                     'This backend *CAN NOT* work without a burp binary'
                 )
 
-            self.tmpdir = tmpdir
             self.burpconfcli = confcli
             self.burpconfsrv = confsrv
+
+        if (tmpdir and os.path.exists(tmpdir) and
+                not os.path.isdir(tmpdir)):
+            self.logger.warning(
+                "'%s' is not a directory",
+                tmpdir
+            )
+            if tmpdir == G_TMPDIR:
+                raise IOError(
+                    "Cannot use '{}' as tmpdir".format(tmpdir)
+                )
+            tmpdir = G_TMPDIR
+            if os.path.exists(tmpdir) and not os.path.isdir(tmpdir):
+                raise IOError(
+                    "Cannot use '{}' as tmpdir".format(tmpdir)
+                )
+        if tmpdir and not os.path.exists(tmpdir):
+            os.makedirs(tmpdir)
+
+        self.tmpdir = tmpdir
 
         # check the burp version because this backend only supports clients
         # newer than BURP_MINIMAL_VERSION
