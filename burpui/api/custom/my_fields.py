@@ -9,6 +9,7 @@
 
 """
 import arrow
+import datetime
 
 from flask_restplus import fields
 from tzlocal import get_localzone
@@ -22,13 +23,20 @@ class DateTime(fields.DateTime):
         """Parse the value"""
         if value is None:
             return None
-        a = arrow.get(value)
-        return fields.DateTime.parse(self, a.to(TZ).datetime)
+        try:
+            value = float(value)
+        except ValueError:
+            raise arrow.parser.ParserError("'{}' is not a float".format(value))
+        a = arrow.get(datetime.datetime.utcfromtimestamp(value))
+        a = a.replace(tzinfo=TZ)
+        return fields.DateTime.parse(self, a.datetime)
 
     def format(self, value):
         """Format the value"""
         try:
             new_value = self.parse(value)
+            if not new_value:
+                return value
             if self.dt_format == 'iso8601':
                 return new_value.isoformat(' ')
             else:
@@ -46,7 +54,7 @@ class DateTimeHuman(fields.Raw):
         if value is None:
             return None
         try:
-            return arrow.get(value).to(TZ)
+            return arrow.get(value)
         except arrow.parser.ParserError:
             return None
 
