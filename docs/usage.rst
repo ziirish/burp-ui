@@ -131,10 +131,29 @@ follow:
     [Production]
     # storage backend for session and cache
     # may be either 'default' or 'redis'
-    storage: default
+    storage = default
+    # session database to use
+    # may also be a backend url like: redis://localhost:6379/0
+    # if set to 'redis', the backend url defaults to:
+    # redis://<redis_host>:<redis_port>/0
+    # where <redis_host> is the host part, and <redis_port> is the port part of
+    # the below "redis" setting
+    session = default
+    # cache database to use
+    # may also be a backend url like: redis://localhost:6379/0
+    # if set to 'redis', the backend url defaults to:
+    # redis://<redis_host>:<redis_port>/1
+    # where <redis_host> is the host part, and <redis_port> is the port part of
+    # the below "redis" setting
+    cache = default
     # redis server to connect to
-    redis: localhost:6379
+    redis = localhost:6379
     # whether to use celery or not
+    # may also be a broker url like: redis://localhost:6379/0
+    # if set to "true", the broker url defaults to:
+    # redis://<redis_host>:<redis_port>/2
+    # where <redis_host> is the host part, and <redis_port> is the port part of
+    # the above "redis" setting
     celery = false
     # database url to store some persistent data
     # example: sqlite:////var/lib/burpui/store.db
@@ -187,7 +206,7 @@ application:
     # whether to use a secure cookie for https or not. If set to false, cookies
     # won't have the 'secure' flag.
     # This setting is only useful when HTTPS is detected
-    scookie: false
+    scookie: true
     # application secret to secure cookies. If you don't set anything, the default
     # value is 'random' which will generate a new secret after every restart of your
     # application. You can also set it to 'none' although this is not recommended.

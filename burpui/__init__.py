@@ -9,8 +9,8 @@ jQuery/Bootstrap
 
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 """
-
 import os
+import re
 import sys
 import logging
 import warnings
@@ -19,6 +19,8 @@ from logging import Formatter
 if sys.version_info < (3, 0):
     reload(sys)
     sys.setdefaultencoding('utf-8')
+else:
+    basestring = str
 
 __title__ = 'burp-ui'
 __author__ = 'Benjamin SANS (Ziirish)'
@@ -39,6 +41,24 @@ except:  # pragma: no cover
     __release__ = 'unknown'
 
 warnings.simplefilter('always', RuntimeWarning)
+
+
+def parse_db_setting(string):
+    parts = re.search(
+        '(?:(?P<backend>\w+)(?:\+(?P<driver>\w+))?://)?'
+        '(?:(?P<user>\w+)?(?::?(?P<pass>.+))?@)?'
+        '(?P<host>\w+):?(?P<port>\d+)?(?:/(?P<db>\w+))?',
+        string
+    )
+    if not parts:
+        raise ValueError('Unable to parse the db: "{}"'.format(string))
+    back = parts.group('backend') or ''
+    user = parts.group('user')
+    pwd = parts.group('pass')
+    host = parts.group('host') or ''
+    port = parts.group('port') or ''
+    db = parts.group('db') or ''
+    return (back, user, pwd, host, port, db)
 
 
 def get_redis_server(myapp):
@@ -86,8 +106,30 @@ def create_celery(myapp, warn=True):
 
     if myapp.config['WITH_CELERY']:
         from .ext.async import celery
-        host, port = get_redis_server(myapp)
-        redis_url = 'redis://{}:{}/2'.format(host, port)
+        host, oport = get_redis_server(myapp)
+        odb = 2
+        pwd = ''
+        if isinstance(myapp.use_celery, basestring):
+            try:
+                (_, _, pwd, host, port, db) = parse_db_setting(myapp.use_celery)
+                if not port:
+                    port = oport
+                if not db:
+                    db = odb
+                else:
+                    try:
+                        db = int(db)
+                    except ValueError:
+                        db = odb
+            except ValueError:
+                pass
+        else:
+            db = odb
+            port = oport
+        if pwd:
+            redis_url = 'redis://:{}@{}:{}/{}'.format(pwd, host, port, db)
+        else:
+            redis_url = 'redis://{}:{}/{}'.format(host, port, db)
         myapp.config['CELERY_BROKER_URL'] = myapp.config['BROKER_URL'] = \
             redis_url
         myapp.config['CELERY_RESULT_BACKEND'] = redis_url
@@ -276,31 +318,72 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
 
         app.wsgi_app = ProxyFix(app.wsgi_app)
 
-    if app.storage and app.storage.lower() == 'redis':
-        host, port = get_redis_server(app)
-        logger.debug('Using redis {}:{}'.format(host, port))
+    if app.storage and app.storage.lower() != 'default':
         try:
-            from redis import Redis
-            from flask_session import Session
-            red = Redis(host=host, port=port)
-            app.config['SESSION_TYPE'] = 'redis'
-            app.config['SESSION_REDIS'] = red
-            app.config['SESSION_USE_SIGNER'] = app.secret_key is not None
-            app.config['SESSION_PERMANENT'] = False
-            ses = Session()
-            ses.init_app(app)
-            app.cache.init_app(
-                app,
-                config={
-                    'CACHE_TYPE': 'redis',
-                    'CACHE_REDIS_HOST': host,
-                    'CACHE_REDIS_PORT': port,
-                    'CACHE_REDIS_DB': 1
-                }
-            )
-            # clear cache at startup in case we removed or added servers
-            with app.app_context():
-                app.cache.clear()
+            # Session setup
+            if not app.session_db or app.session_db.lower() != 'none':
+                from redis import Redis
+                from flask_session import Session
+                host, port = get_redis_server(app)
+                db = 0
+                pwd = None
+                if app.session_db and app.session_db.lower() != 'default':
+                    try:
+                        (_, _, pwd, host, port, db) = \
+                            parse_db_setting(app.session_db)
+                    except ValueError as exp:
+                        logger.warning(str(exp))
+                try:
+                    db = int(db)
+                except ValueError:
+                    db = 0
+                logger.debug('Using redis://guest:****@{}:{}/{}'.format(
+                    host,
+                    port,
+                    db)
+                )
+                red = Redis(host=host, port=port, db=db, password=pwd)
+                app.config['SESSION_TYPE'] = 'redis'
+                app.config['SESSION_REDIS'] = red
+                app.config['SESSION_USE_SIGNER'] = app.secret_key is not None
+                app.config['SESSION_PERMANENT'] = False
+                ses = Session()
+                ses.init_app(app)
+            # Cache setup
+            if not app.cache_db or app.cache_db.lower() != 'none':
+                host, port = get_redis_server(app)
+                db = 1
+                pwd = None
+                if app.cache_db and app.cache_db.lower() != 'default':
+                    try:
+                        (_, _, pwd, host, port, db) = \
+                            parse_db_setting(app.cache_db)
+                    except ValueError as exp:
+                        logger.warning(str(exp))
+                try:
+                    db = int(db)
+                except ValueError:
+                    db = 1
+                logger.debug('Using redis://guest:****@{}:{}/{}'.format(
+                    host,
+                    port,
+                    db)
+                )
+                app.cache.init_app(
+                    app,
+                    config={
+                        'CACHE_TYPE': 'redis',
+                        'CACHE_REDIS_HOST': host,
+                        'CACHE_REDIS_PORT': port,
+                        'CACHE_REDIS_PASSWORD': pwd,
+                        'CACHE_REDIS_DB': db
+                    }
+                )
+                # clear cache at startup in case we removed or added servers
+                with app.app_context():
+                    app.cache.clear()
+            else:
+                app.cache.init_app(app)
         except Exception as e:
             logger.warning('Unable to initialize redis: {}'.format(str(e)))
             app.cache.init_app(app)
@@ -343,6 +426,7 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
 
     @app.before_request
     def setup_request():
+        # make sure to store secure cookie if required
         if app.scookie:
             from flask import request
             criteria = [

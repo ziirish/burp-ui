@@ -32,9 +32,11 @@ G_VERSION = 1
 G_AUTH = [u'basic']
 G_ACL = u'none'
 G_STORAGE = u''
+G_CACHE = u''
+G_SESSION = u''
 G_REDIS = u''
 G_CELERY = False
-G_SCOOKIE = False
+G_SCOOKIE = True
 G_APPSECRET = u'random'
 G_COOKIETIME = 14
 G_DATABASE = u''
@@ -75,6 +77,8 @@ class BUIServer(Flask):
         },
         'Production': {
             'storage': G_STORAGE,
+            'session': G_SESSION,
+            'cache': G_CACHE,
             'redis': G_REDIS,
             'celery': G_CELERY,
             'database': G_DATABASE,
@@ -232,24 +236,35 @@ class BUIServer(Flask):
             'storage',
             section='Production'
         )
+        self.cache_db = self.config['BUI_CACHE_DB'] = self.conf.safe_get(
+            'cache',
+            section='Production'
+        )
+        self.session_db = self.config['BUI_SESSION_DB'] = self.conf.safe_get(
+            'session',
+            section='Production'
+        )
         self.redis = self.config['BUI_REDIS'] = self.conf.safe_get(
             'redis',
             section='Production'
         )
-        self.with_celery = self.config['WITH_CELERY'] = self.conf.safe_get(
+        self.use_celery = self.config['BUI_CELERY'] = self.conf.safe_get(
             'celery',
-            'boolean',
+            'boolean_or_string',
             section='Production'
         )
         self.database = self.config['SQLALCHEMY_DATABASE_URI'] = \
             self.conf.safe_get(
                 'database',
+                'boolean_or_string',
                 section='Production'
         )
-        if self.database and self.database.lower() != 'none':
-            self.config['WITH_SQL'] = True
-        else:
-            self.config['WITH_SQL'] = False
+        self.config['WITH_SQL'] = (isinstance(self.database, bool) and
+                                   bool(self.database) and
+                                   self.database.lower() != 'none')
+        self.config['WITH_CELERY'] = (isinstance(self.use_celery, bool) and
+                                      bool(self.use_celery) or
+                                      self.use_celery.lower() != 'none')
 
         # Experimental options
         self.noserverrestore = self.conf.safe_get(
@@ -291,9 +306,11 @@ class BUIServer(Flask):
         self.logger.info('liverefresh: {}'.format(self.config['LIVEREFRESH']))
         self.logger.info('auth: {}'.format(self.auth))
         self.logger.info('acl: {}'.format(self.acl_engine))
-        self.logger.info('with celery: {}'.format(self.with_celery))
+        self.logger.info('celery: {}'.format(self.use_celery))
         self.logger.info('redis: {}'.format(self.redis))
         self.logger.info('database: {}'.format(self.database))
+        self.logger.info('with SQL: {}'.format(self.config['WITH_SQL']))
+        self.logger.info('with Celery: {}'.format(self.config['WITH_CELERY']))
 
         if self.standalone:
             module = 'burpui.misc.backend.burp{0}'.format(self.vers)

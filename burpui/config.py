@@ -101,10 +101,19 @@ class BUIConfig(dict):
     @staticmethod
     def string_lower_list(value):
         if not value:
-            raise validate.VdtMissingValue('Option not found')
+            raise validate.VdtMissingValue('No value for this option')
         if not isinstance(value, list):
             return [str(value).lower()]
         return [str(x).lower() for x in value]
+
+    def boolean_or_string(self, value):
+        if not value:
+            raise validate.VdtMissingValue('No value for this option')
+        try:
+            caster = self.validator.functions.get('boolean')
+            return caster(value)
+        except validate.VdtTypeError:
+            return value
 
     def changed(self, id):
         """Check if the conf has changed"""
