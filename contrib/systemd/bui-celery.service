@@ -1,0 +1,7 @@
+[Unit]
+Description=Burp-UI celery service
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/bui-celery --beat -s /var/lib/burpui/celerybeat-schedule
+User=burpui
