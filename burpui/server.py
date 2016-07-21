@@ -264,7 +264,7 @@ class BUIServer(Flask):
         else:
             self.config['WITH_SQL'] = self.database.lower() != 'none'
         if isinstance(self.use_celery, bool):
-            self.config['WITH_CLERY'] = self.use_celery
+            self.config['WITH_CELERY'] = self.use_celery
         else:
             self.config['WITH_CELERY'] = self.use_celery.lower() != 'none'
 
