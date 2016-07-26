@@ -47,42 +47,46 @@ manager, migrate, app = create_manager()
 
 
 @manager.command
-def create_user(name, backend='BASIC', password=None):
+def create_user(name, backend='BASIC', password=None, ask=False):
     print('[*] Adding \'{}\' user...'.format(name))
     try:
         handler = getattr(app, 'uhandler')
     except AttributeError:
         handler = None
 
-    if not handler or len(handler.backends) == 0:
-        print('No authentication backend found')
+    if not handler or len(handler.backends) == 0 or \
+            backend not in handler.backends:
+        print('[!] No authentication backend found')
         sys.exit(1)
 
-    back = None
-    for bck in handler.backends:
-        if bck.name == backend:
-            back = bck
-
-    if not back:
-        print('No authentication backend found')
-        sys.exit(1)
+    back = handler.backends[backend]
 
     if back.add_user is False:
-        print("The '{}' backend does not support user creation".format(backend))
+        print("[!] The '{}' backend does not support user "
+              "creation".format(backend))
         sys.exit(2)
 
     if not password:
-        import random
+        if ask:
+            import getpass
+            password = getpass.getpass()
+            confirm = getpass.getpass('Confirm: ')
+            if password != confirm:
+                print("[!] Passwords missmatch")
+                sys.exit(3)
+        else:
+            import random
 
-        alphabet = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        pw_length = 8
-        mypw = ""
+            alphabet = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRST" \
+                       "UVWXYZ"
+            pw_length = 8
+            mypw = ""
 
-        for i in range(pw_length):
-            next_index = random.randrange(len(alphabet))
-            mypw += alphabet[next_index]
-        password = mypw
-        print('[+] Generated password: {}'.format(password))
+            for i in range(pw_length):
+                next_index = random.randrange(len(alphabet))
+                mypw += alphabet[next_index]
+            password = mypw
+            print('[+] Generated password: {}'.format(password))
 
     success, _, _ = back.add_user(name, password)
     print('[+] Success: {}'.format(success))

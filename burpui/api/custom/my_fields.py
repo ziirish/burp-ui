@@ -38,7 +38,7 @@ class DateTime(fields.DateTime):
             if not new_value:
                 return value
             if self.dt_format == 'iso8601':
-                return new_value.isoformat(' ')
+                return new_value.isoformat()
             else:
                 return fields.DateTime.format(self, value)
         except (AttributeError, ValueError) as e:

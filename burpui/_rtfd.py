@@ -10,6 +10,6 @@
 
 # THIS IS ONLY USED FOR DOC GENERATION
 
-from . import init
+from . import create_app
 
-app = init(conf='/dev/null', gunicorn=False)
+app = create_app(conf='/dev/null', gunicorn=False)

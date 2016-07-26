@@ -8,8 +8,10 @@ include test-requirements.txt
 include share/burpui/etc/burpui.sample.cfg
 include share/burpui/etc/buiagent.sample.cfg
 include contrib/debian/init.sh
+include contrib/debian/bui-celery.init
 include contrib/centos/init.sh
 include contrib/gunicorn.d/burp-ui
+include contrib/gunicorn/burpui_config.py
 include bower.json
 include .bowerrc
 graft burpui

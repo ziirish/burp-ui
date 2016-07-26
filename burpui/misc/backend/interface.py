@@ -11,7 +11,6 @@ import logging
 
 from abc import ABCMeta, abstractmethod
 
-from ..._compat import ConfigParser
 from six import with_metaclass
 
 
@@ -46,37 +45,6 @@ class BUIbackend(with_metaclass(ABCMeta, object)):
     """
     Utilities functions
     """
-
-    def _safe_config_get(self, callback, key, sect='Burp1', cast=None):
-        """
-        :func:`burpui.misc.backend.interface.BUIbackend._safe_config_get` is a
-        wrapper to handle Exceptions thrown by :mod:`ConfigParser`.
-
-        :param callback: Function to wrap
-        :type callback: callable
-
-        :param key: Key to retrieve
-        :type key: str
-
-        :param sect: Section of the config file to read
-        :type sect: str
-
-        :param cast: Cast the returned value if provided
-        :type case: callable
-
-        :returns: The value returned by the `callback`
-        """
-        try:
-            return callback(sect, key)
-        except ConfigParser.NoOptionError as e:
-            self.logger.error(str(e))
-        except ConfigParser.NoSectionError as e:
-            self.logger.warning(str(e))
-            if key in self.defaults:
-                if cast:
-                    return cast(self.defaults[key])
-                return self.defaults[key]
-        return None
 
     @abstractmethod
     def status(self, query='\n', agent=None):

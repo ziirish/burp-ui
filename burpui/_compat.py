@@ -10,11 +10,6 @@
 import sys
 
 try:
-    import ConfigParser  # noqa
-except ImportError:
-    import configparser as ConfigParser  # noqa
-
-try:
     import cPickle as pickle  # noqa
 except ImportError:
     import pickle  # noqa

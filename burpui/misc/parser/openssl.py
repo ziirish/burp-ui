@@ -11,9 +11,14 @@ import codecs
 import logging
 import subprocess
 
+from ..._compat import PY3
+
 from hashlib import md5
 from six import iteritems
 from OpenSSL import crypto
+
+if PY3:
+    long = int
 
 
 class OSSLAuth(object):

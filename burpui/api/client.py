@@ -402,7 +402,8 @@ class ClientReport(Resource):
             required=True,
             description='Is the backup encrypted'
         ),
-        'end': fields.Integer(
+        'end': fields.DateTime(
+            dt_format='iso8601',
             required=True,
             description='Timestamp of the end date of the backup'
         ),
@@ -436,7 +437,8 @@ class ClientReport(Resource):
         ),
         'softlink': fields.Nested(report_tpl_fields, required=True),
         'special': fields.Nested(report_tpl_fields, required=True),
-        'start': fields.Integer(
+        'start': fields.DateTime(
+            dt_format='iso8601',
             required=True,
             description='Timestamp of the beginning of the backup'
         ),

@@ -224,8 +224,9 @@ setup(
         (confdir, [os.path.join(confdir, 'burpui.sample.cfg')]),
         (confdir, [os.path.join(confdir, 'buiagent.sample.cfg')]),
         (os.path.join(contrib, 'centos'), ['contrib/centos/init.sh']),
-        (os.path.join(contrib, 'debian'), ['contrib/debian/init.sh']),
+        (os.path.join(contrib, 'debian'), ['contrib/debian/init.sh', 'contrib/debian/bui-celery.init']),
         (os.path.join(contrib, 'gunicorn.d'), ['contrib/gunicorn.d/burp-ui']),
+        (os.path.join(contrib, 'gunicorn'), ['contrib/gunicorn/burpui_config.py']),
     ] + migrations,
     install_requires=requires,
     extras_require={

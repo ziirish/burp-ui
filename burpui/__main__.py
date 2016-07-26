@@ -12,6 +12,7 @@ jQuery/Bootstrap
 """
 import os
 import sys
+
 from argparse import ArgumentParser, REMAINDER
 
 ROOT = os.path.dirname(os.path.realpath(__file__))
