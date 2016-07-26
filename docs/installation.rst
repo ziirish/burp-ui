@@ -101,20 +101,27 @@ Options
 
 ::
 
-   usage: burp-ui [-h] [-v] [-d] [-V] [-c <CONFIG>] [-l <FILE>]
-                  [-m <agent|server>]
+    usage: burp-ui [-h] [-v] [-d] [-V] [-c <CONFIG>] [-l <FILE>]
+                   [-i <MIGRATIONSDIR>] [-m <agent|server|celery|manage>]
+                   ...
 
-   optional arguments:
-     -h, --help            show this help message and exit
-     -v, --verbose         increase output verbosity (e.g., -vv is more than -v)
-     -d, --debug           enable debug mode
-     -V, --version         print version and exit
-     -c <CONFIG>, --config <CONFIG>
-                           configuration file
-     -l <FILE>, --logfile <FILE>
-                           output logs in defined file
-     -m <agent|server>, --mode <agent|server>
-                           application mode (server or agent)
+    positional arguments:
+      remaining
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      -v, --verbose         increase output verbosity (e.g., -vv is more verbose
+                            than -v)
+      -d, --debug           enable debug mode
+      -V, --version         print version and exit
+      -c <CONFIG>, --config <CONFIG>
+                            configuration file
+      -l <FILE>, --logfile <FILE>
+                            output logs in defined file
+      -i <MIGRATIONSDIR>, --migrations <MIGRATIONSDIR>
+                            migrations directory
+      -m <agent|server|celery|manage>, --mode <agent|server|celery|manage>
+                            application mode
 
 
 .. _Flask: http://flask.pocoo.org/

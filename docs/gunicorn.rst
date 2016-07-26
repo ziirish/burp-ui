@@ -22,8 +22,8 @@ You will then be able to launch `Burp-UI`_ this way:
 
 
 When using ``gunicorn``, the command line options are not available. Instead,
-run the `Burp-UI`_ ``init`` method directly. Here are the parameters you can
-play with:
+run the `Burp-UI`_ ``create_app`` method directly. Here are the parameters you
+can play with:
 
 - conf: Path to the `Burp-UI`_ configuration file
 - verbose: Verbosity level between 0 and 4
@@ -140,7 +140,7 @@ Then you need to fix some permissions:
 
 Finally you can restart your ``burp-server``.
 
-.. note:: The above commands are meant for *default* setup, you may need to
+.. note:: The above commands are meant for *default* setup. You may need to
           adapt the paths.
 
 Reverse-Proxy
