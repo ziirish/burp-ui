@@ -211,7 +211,7 @@ class AsyncRestoreStatus(Resource):
                 err = task.result.get('error')
             else:
                 err = str(task.result)
-            self.abort(500, task.result.get('error'))
+            self.abort(500, err)
         if task.state == 'SUCCESS':
             if not task.result:
                 self.abort(500, 'The task did not return anything')
