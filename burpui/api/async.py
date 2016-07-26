@@ -207,6 +207,10 @@ class AsyncRestoreStatus(Resource):
                     db.session.delete(rec)
                     db.session.commit()
             task.revoke()
+            if isinstance(task.result, dict):
+                err = task.result.get('error')
+            else:
+                err = str(task.result)
             self.abort(500, task.result.get('error'))
         if task.state == 'SUCCESS':
             if not task.result:
