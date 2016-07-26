@@ -151,6 +151,10 @@ width:100%;
   color: #fff;
 }
 
+.tt-suggestion {
+  word-wrap: break-word;
+}
+
 .tt-suggestion p {
   margin: 0;
 }
