@@ -12,6 +12,7 @@ import arrow
 import datetime
 
 from flask_restplus import fields
+from flask import escape
 from tzlocal import get_localzone
 
 TZ = str(get_localzone())
@@ -74,3 +75,10 @@ class BackupNumber(fields.String):
             return fields.String.format(self, '{0:07d}'.format(int(value)))
         except ValueError as e:
             raise fields.MarshallingError(e)
+
+
+class SafeString(fields.String):
+    """Custom SafeString field to encode HTML entities"""
+    def format(self, value):
+        """Format the value"""
+        return fields.String.format(self, escape(value))

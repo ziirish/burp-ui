@@ -92,7 +92,7 @@ class ClientTree(Resource):
             required=True,
             description='Node name'
         ),
-        'title': fields.String(
+        'title': fields.SafeString(
             required=True,
             description='Node name (alias)',
             attribute='name'

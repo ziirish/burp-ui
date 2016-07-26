@@ -381,9 +381,9 @@ class Burp(Burp1):
     def status(self, query='c:\n', agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.status`"""
         try:
-            self.logger.info("query: '{}'".format(query.rstrip()))
-            if not query.endswith('\n'):
-                query = '{0}\n'.format(query)
+            query = query.rstrip().encode('unicode_escape').decode('utf-8')
+            self.logger.info("query: '{}'".format(query))
+            query = '{0}\n'.format(query)
             if not self._proc_is_alive():
                 self._spawn_burp()
 

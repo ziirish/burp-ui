@@ -17,7 +17,6 @@ import shutil
 import subprocess
 import tempfile
 
-from pipes import quote
 from six import iteritems, viewkeys
 
 from .interface import BUIbackend
@@ -25,6 +24,11 @@ from ..parser.burp1 import Parser
 from ...utils import human_readable as _hr, BUIcompress
 from ...exceptions import BUIserverException
 from ..._compat import unquote, PY3
+
+if PY3:
+    from shlex import quote
+else:
+    from pipes import quote
 
 G_BURPPORT = 4972
 G_BURPHOST = u'::1'
@@ -944,11 +948,11 @@ class Burp(BUIbackend):
         if password:
             if not self.burpconfcli:
                 return None, 'No client configuration file specified'
-            tmpdesc = os.fdopen(tmphandler, 'w+')
+            tmpdesc = os.fdopen(tmphandler, 'wb+')
             with open(self.burpconfcli) as fileobj:
                 shutil.copyfileobj(fileobj, tmpdesc)
 
-            tmpdesc.write('encryption_password = {}\n'.format(password))
+            tmpdesc.write('encryption_password = {}\n'.format(password.encode('unicode_escape').decode('utf-8')))
             tmpdesc.close()
             cmd.append('-c')
             cmd.append(tmpfile)

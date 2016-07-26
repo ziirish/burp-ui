@@ -26,7 +26,7 @@ class PrefsUI(Resource):
     This resource is part of the :mod:`burpui.api.prefs` module.
     """
     parser = ns.parser()
-    parser.add_argument('pageLength', required=False, help='Number of element per page', location='values')
+    parser.add_argument('pageLength', type=int, required=False, help='Number of element per page', location='values')
 
     @ns.doc(
         responses={
