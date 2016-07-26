@@ -38,7 +38,7 @@ class AuthUsers(Resource):
         'backend': fields.String(required=True, description='Backend name'),
     })
     parser_add = ns.parser()
-    parser_add.add_argument('name', required=True, help='Username', location='values')
+    parser_add.add_argument('username', required=True, help='Username', location='values')
     parser_add.add_argument('password', required=True, help='Password', location='values')
     parser_add.add_argument('backend', required=True, help='Backend', location='values')
 
@@ -135,7 +135,7 @@ class AuthUsers(Resource):
             )
 
         success, message, code = backend.add_user(
-            args['name'],
+            args['username'],
             args['password']
         )
         status = 201 if success else 200
@@ -198,7 +198,7 @@ class AuthUsers(Resource):
         """Change user password"""
         args = self.parser_mod.parse_args()
         # Manage ACL
-        if name != self.username or not bui.acl or not self.is_admin:
+        if name != self.username and bui.acl and not self.is_admin:
             self.abort(403, "Not allowed to modify this user")
 
         try:
