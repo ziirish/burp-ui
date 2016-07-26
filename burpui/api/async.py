@@ -86,6 +86,9 @@ def cleanup_restore():
                     )
                     task.revoke(terminate=True)
                     continue
+                if not task.result:
+                    logger.warn('The task did not return anything')
+                    continue
                 server = task.result.get('server')
                 path = task.result.get('path')
                 if path:
@@ -206,6 +209,8 @@ class AsyncRestoreStatus(Resource):
             task.revoke()
             self.abort(500, task.result.get('error'))
         if task.state == 'SUCCESS':
+            if not task.result:
+                self.abort(500, 'The task did not return anything')
             server = task.result.get('server')
             return {
                 'state': task.state,
