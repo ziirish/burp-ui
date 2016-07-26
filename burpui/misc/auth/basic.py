@@ -221,7 +221,14 @@ class BasicLoader(BUIloader):
             message = "user '{}' does not exist".format(user)
             self.logger.error(message)
             return False, message, NOTIF_ERROR
-        if check_password_hash(self.users[user], passwd):
+        current = self.users[user]
+        if current['salted']:
+            func = check_password_hash
+        else:
+            def func(x, y):
+                return x == y
+        curr = current['pwd']
+        if func(curr, passwd):
             message = 'password is the same'
             self.logger.warning(message)
             return False, message, NOTIF_WARN
