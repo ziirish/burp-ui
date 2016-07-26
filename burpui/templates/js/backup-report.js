@@ -70,6 +70,7 @@ var _client = function() {
 				}
 			});
 		});
+		_redraw();
 	})
 	.fail(myFail)
 	.fail(function() {
@@ -77,7 +78,6 @@ var _client = function() {
 			$(this).parent().hide();
 		});
 	});
-	_redraw();
 };
 
 var _redraw = function() {

@@ -66,6 +66,7 @@ var _servers = function() {
 					break;
 			}
 		});
+		_redraw();
 	})
 	.fail(myFail)
 	.fail(function () {
@@ -73,7 +74,6 @@ var _servers = function() {
 			$(this).parent().hide();
 		});
 	});
-	_redraw();
 };
 
 var _redraw = function() {

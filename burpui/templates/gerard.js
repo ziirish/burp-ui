@@ -3,12 +3,12 @@ var NOTIF_WARNING = 1;
 var NOTIF_ERROR   = 2;
 var NOTIF_INFO    = 3;
 
-var _async_ajax = function(b) {
+var _ajax_setup = function(b) {
 	$.ajaxSetup({
 		headers: { 'X-From-UI': true },
-		async: b,
 	});
 };
+_ajax_setup();
 
 var pad = function(num, size) {
 	var s = "0000000" + num;
@@ -269,7 +269,6 @@ $('#input-client').typeahead({
 	{% endif -%}
 {% endif -%}
 
-_async_ajax(false);
 
 {% if servers and overview -%}
 {% include "js/servers.js" %}

@@ -9,14 +9,14 @@ var _client = function() {
 	if (!initialized) {
 		$.each(_charts, function(i, j) {
 			tmp = nv.models.stackedAreaChart()
-							.x(function(d) { return d[0] })
+							.x(function(d) { return d3.time.format.iso.parse(d[0]) })
 							.y(function(d) { return d[1] })
 							.useInteractiveGuideline(true)
 							.color(d3.scale.category20c().range())
 							.margin({bottom: 115, left: 100})
 							;
 
-			tmp.xAxis.showMaxMin(true).tickFormat(function(d) { return d3.time.format('%x %X')(new Date(d)) }).rotateLabels(-45);
+			tmp.xAxis.showMaxMin(true).tickFormat(function(d) { console.log(d); return d3.time.format('%x %X')(new Date(d)) }).rotateLabels(-45);
 
 			tmp.yAxis.tickFormat(d3.format('f'));
 
@@ -124,14 +124,14 @@ var _client = function() {
 				$.each(d, function(a, j) {
 					if (j[c] !== undefined) {
 						val = parseFloat(j[c][l]);
-						values.push([ parseInt(j.end)*1000, val ]);
+						values.push([ j.end, val ]);
 						push = true;
 					} else {
-						values.push([ parseInt(j.end)*1000, 0 ]);
+						values.push([ j.end, 0 ]);
 					}
 					if (stats) {
-						size.push([ parseInt(j.end)*1000, j.received ]);
-						duration.push([ parseInt(j.end)*1000, j.duration ]);
+						size.push([ j.end, j.received ]);
+						duration.push([ j.end, j.duration ]);
 					}
 				});
 				if (stats) {
@@ -157,6 +157,7 @@ var _client = function() {
 				}
 			});
 		});
+		_redraw();
 	})
 	.fail(myFail)
 	.fail(function() {
@@ -164,7 +165,6 @@ var _client = function() {
 			$(this).parent().hide();
 		});
 	});
-	_redraw();
 };
 
 var _redraw = function() {

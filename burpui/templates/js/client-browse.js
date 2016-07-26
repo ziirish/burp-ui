@@ -55,19 +55,17 @@ $( document ).ready(function() {
 			}
 		},
 		source: function() { 
-			r = [];
 			{% if edit and edit.found -%}
 			url = '{{ url_for("api.client_tree", name=cname, backup=nbackup, server=server, root=edit.roots, recursive=True, selected=True) }}';
 			{% else -%}
 			url = '{{ url_for("api.client_tree", name=cname, backup=nbackup, server=server) }}';
 			{% endif -%}
-			$.getJSON(url, function(data) {
-				r = data;
+			return $.getJSON(url, function(data) {
+				$("#waiting-container").hide();
+				$("#tree-container").show();
+				return data;
 			})
 			.fail(myFail);
-			$("#waiting-container").hide();
-			$("#tree-container").show();
-			return r;
 		},
 		lazyLoad: function(event, data) {
 			fixNeeded = true;
