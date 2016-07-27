@@ -98,7 +98,7 @@ class Burp(Burp1):
         tmpdir = G_TMPDIR
         self.running = []
         version = ''
-        if conf:
+        if conf is not None:
             conf.update_defaults(self.defaults)
             conf.default_section('Burp2')
             self.burpbin = self._get_binary_path(
