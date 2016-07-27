@@ -155,7 +155,7 @@ class Burp(BUIbackend):
             },
         }
         tmpdir = G_TMPDIR
-        if conf:
+        if conf is not None:
             conf.update_defaults(self.defaults)
             conf.default_section('Burp1')
             self.port = conf.safe_get('bport', 'integer')
@@ -348,12 +348,10 @@ class Burp(BUIbackend):
         """See :func:`burpui.misc.backend.interface.BUIbackend.status`"""
         result = []
         try:
-            self.logger.info("query: '{}'".format(query.rstrip()))
+            query = query.rstrip().encode('unicode_escape').decode('utf-8')
+            self.logger.info("query: '{}'".format(query))
             qry = b''
-            if not query.endswith('\n'):  # pragma: no cover
-                qry += '{0}\n'.format(query).encode('utf-8')
-            else:
-                qry += query.encode('utf-8')
+            qry += '{0}\n'.format(query).encode('utf-8')
             sock = socket.socket(self.family, socket.SOCK_STREAM)
             sock.connect((self.host, self.port))
             sock.send(qry)
@@ -374,7 +372,7 @@ class Burp(BUIbackend):
             self.logger.debug('=> {}'.format(result))
             return result
         except socket.error:
-            self.logger.error('Cannot contact burp server at %s:%s', self.host, self.port)
+            self.logger.error('Cannot contact burp server at {0}:{1}'.format(self.host, self.port))
             raise BUIserverException('Cannot contact burp server at {0}:{1}'.format(self.host, self.port))
 
     def get_backup_logs(self, number, client, forward=False, agent=None):
@@ -984,6 +982,9 @@ class Burp(BUIbackend):
         # so we can assume the restoration was successful anyway
         if status not in [0, 2]:
             return None, out
+
+        if not os.path.isdir(tmpdir):
+            return None, 'Nothing to restore'
 
         zip_dir = tmpdir.rstrip(os.sep)
         zip_file = zip_dir + '.zip'
