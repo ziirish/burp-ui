@@ -15,6 +15,7 @@ from . import api
 from .custom import Resource
 from ..ext.async import celery
 from ..config import config
+from ..exceptions import BUIserverException
 
 from six import iteritems
 from zlib import adler32
@@ -108,8 +109,15 @@ def cleanup_restore():
 def perform_restore(self, client, backup,
                     files, strip, fmt, passwd, server=None, user=None,
                     expire=timedelta(minutes=60)):
+    old_lock = None
+
     def acquire_lock(name):
-        return cache.cache.add(name, 'true', LOCK_EXPIRE)
+        lock = cache.cache.get(name)
+        if lock:
+            acquire_lock.lock = lock
+            return False
+        return cache.cache.add(name, self.request.id, LOCK_EXPIRE)
+    acquire_lock.lock = None
 
     def release_lock(name):
         return cache.cache.delete(name)
@@ -119,11 +127,19 @@ def perform_restore(self, client, backup,
 
     if not acquire_lock(lock_name):
         logger.warn(
-            'A task is already running. Wait for it: {}'.format(lock_name)
+            'A task is already running. Wait for it: {}/{}'.format(
+                lock_name,
+                acquire_lock.lock
+            )
         )
+        old_lock = acquire_lock.lock
         # The lock should be released after LOCK_EXPLIRE max
         while not acquire_lock(lock_name):
             sleep(10)
+
+        # TODO: maybe we should check the status of "old_lock" to make sure the
+        # lock has not expired
+        logger.debug('lock released by: {}'.format(old_lock))
 
     try:
         if server:
@@ -154,9 +170,10 @@ def perform_restore(self, client, backup,
             if err:
                 self.update_state(state='FAILURE', meta={'error': err})
             else:
+                err = 'Something went wrong while restoring'
                 self.update_state(
                     state='FAILURE',
-                    meta={'error': 'Something went wrong while restoring'}
+                    meta={'error': err}
                 )
             logger.error('FAILURE: {}'.format(err))
         else:
@@ -176,6 +193,11 @@ def perform_restore(self, client, backup,
         if curr:
             curr.expire = datetime.utcnow() + expire
             db.session.commit()
+
+    if err:
+        # make the task crash
+        raise BUIserverException(err)
+
     return ret
 
 
@@ -207,10 +229,7 @@ class AsyncRestoreStatus(Resource):
                     db.session.delete(rec)
                     db.session.commit()
             task.revoke()
-            if isinstance(task.result, dict):
-                err = task.result.get('error')
-            else:
-                err = str(task.result)
+            err = str(task.result)
             self.abort(500, err)
         if task.state == 'SUCCESS':
             if not task.result:
