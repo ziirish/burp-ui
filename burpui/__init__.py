@@ -193,6 +193,7 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
     from .server import BUIServer as BurpUI
     from .routes import view
     from .api import api, apibp
+    from .ext.cache import cache
 
     logger = logging.getLogger('burp-ui')
 
@@ -369,7 +370,7 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
                     port,
                     db)
                 )
-                app.cache.init_app(
+                cache.init_app(
                     app,
                     config={
                         'CACHE_TYPE': 'redis',
@@ -381,14 +382,14 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
                 )
                 # clear cache at startup in case we removed or added servers
                 with app.app_context():
-                    app.cache.clear()
+                    cache.clear()
             else:
-                app.cache.init_app(app)
+                cache.init_app(app)
         except Exception as e:
             logger.warning('Unable to initialize redis: {}'.format(str(e)))
-            app.cache.init_app(app)
+            cache.init_app(app)
     else:
-        app.cache.init_app(app)
+        cache.init_app(app)
 
     # Create celery app if enabled
     create_celery(app, warn=False)
@@ -400,7 +401,6 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
     api.release = __release__
     api.__url__ = __url__
     api.__doc__ = __doc__
-    api.cache = app.cache
     api.load_all()
     app.register_blueprint(apibp)
 

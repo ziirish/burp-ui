@@ -17,7 +17,6 @@ from .config import config
 
 from datetime import timedelta
 from flask import Flask
-from flask_cache import Cache
 
 
 G_PORT = 5000
@@ -51,7 +50,6 @@ class BUIServer(Flask):
     gunicorn = False
     db = None
     celery = None
-    cache = Cache(config={'CACHE_TYPE': 'null', 'CACHE_NO_NULL_WARNING': True})
 
     defaults = {
         'Global': {

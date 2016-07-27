@@ -20,6 +20,7 @@ from functools import wraps
 
 from ..exceptions import BUIserverException
 from ..config import config
+from ..ext.cache import cache
 
 EXEMPT_METHODS = set(['OPTIONS'])
 
@@ -58,7 +59,8 @@ def api_login_required(func):
 class Api(ApiPlus):
     """Wrapper class around :class:`flask_restplus.Api`"""
     logger = logging.getLogger('burp-ui')
-    cache = None
+    # TODO: should use global object instead of reference
+    cache = cache
     loaded = False
     release = None
     __doc__ = None
