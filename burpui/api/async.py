@@ -14,6 +14,7 @@ import struct
 from . import api
 from .custom import Resource
 from ..ext.async import celery
+from ..ext.cache import cache
 from ..config import config
 from ..exceptions import BUIserverException
 
@@ -33,7 +34,6 @@ else:
     db = None
 
 ns = api.namespace('async', 'Asynchronous methods')
-cache = api.cache
 logger = get_task_logger(__name__)
 ME = __name__
 
