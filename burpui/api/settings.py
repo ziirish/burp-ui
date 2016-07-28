@@ -37,6 +37,7 @@ class ServerSettings(Resource):
     This resource is part of the :mod:`burpui.api.settings` module.
     """
 
+    @api.acl_admin_required(message='Sorry, you don\'t have rights to access the setting panel')
     @ns.doc(
         responses={
             200: 'Success',
@@ -46,13 +47,10 @@ class ServerSettings(Resource):
     )
     def post(self, conf=None, server=None):
         """Saves the server configuration"""
-        # Only the admin can edit the configuration
-        if bui.acl and not self.is_admin:
-            self.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
-
         noti = bui.cli.store_conf_srv(request.form, conf, server)
         return {'notif': noti}, 200
 
+    @api.acl_admin_required(message='Sorry, you don\'t have rights to access the setting panel')
     @ns.doc(
         responses={
             200: 'Success',
@@ -191,10 +189,6 @@ class ServerSettings(Resource):
 
         :returns: The *JSON* described above.
         """
-        # Only the admin can edit the configuration
-        if bui.acl and not self.is_admin:
-            self.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
-
         try:
             conf = unquote(conf)
         except:
@@ -221,6 +215,7 @@ class ServerSettings(Resource):
 )
 class ClientsList(Resource):
 
+    @api.acl_admin_required(message='Sorry, you don\'t have rights to access the setting panel')
     @ns.doc(
         responses={
             200: 'Success',
@@ -230,10 +225,6 @@ class ClientsList(Resource):
     )
     def get(self, server=None):
         """Returns a list of clients"""
-        # Only the admin can edit the configuration
-        if bui.acl and not self.is_admin:
-            self.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
-
         res = bui.cli.clients_list(server)
         return jsonify(result=res)
 
@@ -251,6 +242,7 @@ class NewClientSettings(Resource):
     parser = ns.parser()
     parser.add_argument('newclient', required=True, help="No 'newclient' provided")
 
+    @api.acl_admin_required(message='Sorry, you don\'t have rights to access the setting panel')
     @ns.expect(parser)
     @ns.doc(
         responses={
@@ -262,10 +254,6 @@ class NewClientSettings(Resource):
     )
     def put(self, server=None):
         """Creates a new client"""
-        # Only the admin can edit the configuration
-        if bui.acl and not self.is_admin:
-            self.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
-
         newclient = self.parser.parse_args()['newclient']
         if not newclient:
             self.abort(400, 'No client name provided')
@@ -305,6 +293,7 @@ class ClientSettings(Resource):
     parser_delete.add_argument('revoke', type=boolean, help='Whether to revoke the certificate or not', default=False, nullable=True)
     parser_delete.add_argument('delcert', type=boolean, help='Whether to delete the certificate or not', default=False, nullable=True)
 
+    @api.acl_admin_required(message='Sorry, you don\'t have rights to access the setting panel')
     @ns.doc(
         responses={
             200: 'Success',
@@ -314,13 +303,10 @@ class ClientSettings(Resource):
     )
     def post(self, server=None, client=None, conf=None):
         """Saves a given client configuration"""
-        # Only the admin can edit the configuration
-        if bui.acl and not self.is_admin:
-            self.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
-
         noti = bui.cli.store_conf_cli(request.form, client, conf, server)
         return {'notif': noti}
 
+    @api.acl_admin_required(message='Sorry, you don\'t have rights to access the setting panel')
     @ns.doc(
         responses={
             200: 'Success',
@@ -330,10 +316,6 @@ class ClientSettings(Resource):
     )
     def get(self, server=None, client=None, conf=None):
         """Reads a given client configuration"""
-        # Only the admin can edit the configuration
-        if bui.acl and not self.is_admin:
-            self.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
-
         try:
             conf = unquote(conf)
         except:
@@ -351,6 +333,7 @@ class ClientSettings(Resource):
             'defaults': bui.cli.get_parser_attr('defaults', server)
         }
 
+    @api.acl_admin_required(message='Sorry, you don\'t have rights to access the setting panel')
     @ns.expect(parser_delete)
     @ns.doc(
         responses={
@@ -361,10 +344,6 @@ class ClientSettings(Resource):
     )
     def delete(self, server=None, client=None, conf=None):
         """Deletes a given client"""
-        # Only the admin can edit the configuration
-        if bui.acl and not self.is_admin:
-            self.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
-
         args = self.parser_delete.parse_args()
         delcert = args.get('delcert', False)
         revoke = args.get('revoke', False)
@@ -391,6 +370,7 @@ class PathExpander(Resource):
     parser.add_argument('path', required=True, help="No 'path' provided")
     parser.add_argument('source', required=False, help="Which file is it included in")
 
+    @api.acl_admin_required(message='Sorry, you don\'t have rights to access the setting panel')
     @ns.doc(
         responses={
             200: 'Success',
@@ -404,10 +384,6 @@ class PathExpander(Resource):
         For instance if it's given a glob expression it will returns a list of
         files matching the expression.
         """
-        # Only the admin can edit the configuration
-        if bui.acl and not self.is_admin:
-            self.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
-
         args = self.parser.parse_args()
         path = args['path']
         source = args['source']
@@ -431,6 +407,7 @@ class PathExpander(Resource):
 )
 class SettingOptions(Resource):
 
+    @api.acl_admin_required(message='Sorry, you don\'t have rights to access the setting panel')
     @ns.doc(
         responses={
             200: 'Success',
@@ -440,9 +417,6 @@ class SettingOptions(Resource):
     )
     def get(self, server=None):
         """Returns various setting options"""
-        if bui.acl and not self.is_admin:
-            self.abort(403, 'Sorry, you don\'t have rights to access the setting panel')
-
         return {
             'is_revocation_enabled': bui.cli.revocation_enabled(server),
             'server_can_restore': not bui.noserverrestore or bui.cli.get_parser(agent=server).param('server_can_restore', 'client_conf'),

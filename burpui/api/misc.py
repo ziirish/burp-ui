@@ -10,6 +10,7 @@
 from . import api, cache_key
 from .custom import fields, Resource
 from ..exceptions import BUIserverException
+from ..ext.cache import cache
 
 from six import iteritems
 from flask import flash, url_for, current_app
@@ -320,7 +321,7 @@ class About(Resource):
         'burp': fields.Nested(burp_fields, as_list=True, description='Burp version'),
     })
 
-    @api.cache.cached(timeout=3600, key_prefix=cache_key)
+    @cache.cached(timeout=3600, key_prefix=cache_key)
     @ns.marshal_with(about_fields, code=200, description='Success')
     @ns.expect(parser)
     def get(self, server=None):
@@ -422,7 +423,7 @@ class History(Resource):
         'name': fields.String(description='Feed name'),
     })
 
-    @api.cache.cached(timeout=1800, key_prefix=cache_key)
+    @cache.cached(timeout=1800, key_prefix=cache_key)
     @ns.marshal_list_with(history_fields, code=200, description='Success')
     @ns.expect(parser)
     @ns.doc(

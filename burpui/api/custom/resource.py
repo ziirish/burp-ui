@@ -28,7 +28,10 @@ class Resource(ResourcePlus):
     def __init__(self, api=None, *args, **kwargs):
         """Constructor"""
         self.username = current_user.get_id()
-        self.is_admin = bui.acl and bui.acl.is_admin(self.username)
+        # if there is no ACL, assume everybody is admin
+        self.is_admin = True
+        if bui.acl:
+            self.is_admin = bui.acl.is_admin(self.username)
         self.cache = api.cache
         ResourcePlus.__init__(self, api, *args, **kwargs)
 

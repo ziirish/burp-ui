@@ -43,12 +43,13 @@ class AuthUsers(Resource):
     parser_add.add_argument('backend', required=True, help='Backend', location='values')
 
     parser_mod = ns.parser()
-    parser_mod.add_argument('password', required=True, help='Password', location='values')
-    parser_mod.add_argument('backend', required=True, help='Backend', location='values')
+    parser_mod.add_argument('password', required=True, help='Password', location=('values', 'json'))
+    parser_mod.add_argument('backend', required=True, help='Backend', location=('values', 'json'))
 
     parser_del = ns.parser()
     parser_del.add_argument('backend', required=True, help='Backend', location='values')
 
+    @api.acl_admin_required(message="Not allowed to view users list")
     @ns.marshal_list_with(user_fields, code=200, description='Success')
     @ns.doc(
         responses={
@@ -63,10 +64,6 @@ class AuthUsers(Resource):
 
         :returns: Users
         """
-        # Manage ACL
-        if not bui.acl or not self.is_admin:
-            self.abort(403, "Not allowed to view users list")
-
         try:
             handler = getattr(bui, 'uhandler')
         except AttributeError:
@@ -98,6 +95,7 @@ class AuthUsers(Resource):
                         })
         return ret
 
+    @api.acl_admin_required(message="Not allowed to create users")
     @ns.expect(parser_add)
     @ns.doc(
         responses={
@@ -112,9 +110,6 @@ class AuthUsers(Resource):
     def put(self):
         """Create a new user"""
         args = self.parser_add.parse_args()
-        # Manage ACL
-        if not bui.acl or not self.is_admin:
-            self.abort(403, "Not allowed to create users")
 
         try:
             handler = getattr(bui, 'uhandler')
@@ -141,6 +136,7 @@ class AuthUsers(Resource):
         status = 201 if success else 200
         return [[code, message]], status
 
+    @api.acl_admin_required(message="Not allowed to delete this user")
     @ns.expect(parser_del)
     @ns.doc(
         responses={
@@ -155,9 +151,6 @@ class AuthUsers(Resource):
     def delete(self, name):
         """Delete a user"""
         args = self.parser_del.parse_args()
-        # Manage ACL
-        if not bui.acl or not self.is_admin:
-            self.abort(403, "Not allowed to delete this user")
 
         try:
             handler = getattr(bui, 'uhandler')
@@ -183,6 +176,7 @@ class AuthUsers(Resource):
         status = 201 if success else 200
         return [[code, message]], status
 
+    @api.acl_own_or_admin(key='name', message="Not allowed to modify this user")
     @ns.expect(parser_mod)
     @ns.doc(
         responses={
@@ -197,9 +191,6 @@ class AuthUsers(Resource):
     def post(self, name):
         """Change user password"""
         args = self.parser_mod.parse_args()
-        # Manage ACL
-        if name != self.username and bui.acl and not self.is_admin:
-            self.abort(403, "Not allowed to modify this user")
 
         try:
             handler = getattr(bui, 'uhandler')
@@ -242,6 +233,7 @@ class AuthBackends(Resource):
         'del': fields.Boolean(required=False, default=False, description='Support user deletion'),
     })
 
+    @api.acl_admin_required(message="Not allowed to view backends list")
     @ns.marshal_list_with(backend_fields, code=200, description='Success')
     @ns.doc(
         responses={
@@ -256,10 +248,6 @@ class AuthBackends(Resource):
 
         :returns: Backends
         """
-        # Manage ACL
-        if not bui.acl or not self.is_admin:
-            self.abort(403, "Not allowed to view users list")
-
         try:
             handler = getattr(bui, 'uhandler')
         except AttributeError:

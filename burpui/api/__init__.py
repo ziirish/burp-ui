@@ -85,6 +85,28 @@ class Api(ApiPlus):
                     else:
                         self.logger.warning('Skipping API module: {}'.format(mod))
 
+    def acl_admin_required(self, message='Access denied', code=403):
+        def decorator(func):
+            @wraps(func)
+            def decorated(resource, *args, **kwargs):
+                if not resource.is_admin:
+                    resource.abort(code, message)
+                return func(resource, *args, **kwargs)
+            return decorated
+        return decorator
+
+    def acl_own_or_admin(self, key='name', message='Access denied', code=403):
+        def decorator(func):
+            @wraps(func)
+            def decorated(resource, *args, **kwargs):
+                if key not in kwargs:
+                    resource.abort(500, "key '{}' not found".format(key))
+                if kwargs[key] != resource.username and not resource.is_admin:
+                    resource.abort(code, message)
+                return func(resource, *args, **kwargs)
+            return decorated
+        return decorator
+
 
 apibp = Blueprint('api', __name__, url_prefix='/api')
 api = Api(apibp, title='Burp-UI API', description='Burp-UI API to interact with burp', doc='/doc', decorators=[api_login_required])
