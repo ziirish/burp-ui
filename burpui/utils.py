@@ -191,6 +191,16 @@ class BUIcompress():
             self.arch.add(path, arcname=arcname, recursive=False)
 
 
+def sanitize_string(string):
+    """Return a 'safe' version of the string (ie. remove malicious chars like
+    '\n')
+
+    :param string: String to escape
+    :type string: str
+    """
+    return string.encode('unicode_escape').decode('utf-8')
+
+
 def lookup_file(name=None, guess=True, directory=False, check=True):
     if name and isinstance(name, basestring):
         if os.path.isfile(name) or name == '/dev/null':

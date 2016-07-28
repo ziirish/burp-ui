@@ -21,7 +21,7 @@ from six import iteritems, viewkeys
 
 from .interface import BUIbackend
 from ..parser.burp1 import Parser
-from ...utils import human_readable as _hr, BUIcompress
+from ...utils import human_readable as _hr, BUIcompress, sanitize_string
 from ...exceptions import BUIserverException
 from ..._compat import unquote, PY3
 
@@ -348,7 +348,7 @@ class Burp(BUIbackend):
         """See :func:`burpui.misc.backend.interface.BUIbackend.status`"""
         result = []
         try:
-            query = query.rstrip().encode('unicode_escape').decode('utf-8')
+            query = sanitize_string(query.rstrip())
             self.logger.info("query: '{}'".format(query))
             qry = b''
             qry += '{0}\n'.format(query).encode('utf-8')
@@ -950,7 +950,7 @@ class Burp(BUIbackend):
             with open(self.burpconfcli) as fileobj:
                 shutil.copyfileobj(fileobj, tmpdesc)
 
-            tmpdesc.write('encryption_password = {}\n'.format(password.encode('unicode_escape').decode('utf-8')))
+            tmpdesc.write('encryption_password = {}\n'.format(sanitize_string(password)))
             tmpdesc.close()
             cmd.append('-c')
             cmd.append(tmpfile)

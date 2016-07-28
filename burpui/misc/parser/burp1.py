@@ -19,7 +19,7 @@ from .doc import Doc
 from .utils import Config, File
 from .openssl import OSSLConf, OSSLAuth
 from ...exceptions import BUIserverException
-from ...utils import NOTIF_ERROR, NOTIF_OK, NOTIF_WARN
+from ...utils import NOTIF_ERROR, NOTIF_OK, NOTIF_WARN, sanitize_string
 
 
 class Parser(Doc):
@@ -371,14 +371,15 @@ class Parser(Doc):
             conf[key] = (val == 1)
             fil.write('{} = {}\n'.format(key, val))
         elif key == '.':
-            conf[key] = data
-            fil.write('. {}\n'.format(data))
+            val = sanitize_string(data)
+            conf[key] = val
+            fil.write('. {}\n'.format(val))
         elif key in self.multi_srv or key in self.multi_cli:
             conf[key] = data.getlist(key)
-            for val in data.getlist(key):
+            for val in [sanitize_string(x) for x in data.getlist(key)]:
                 fil.write('{} = {}\n'.format(key, val))
         else:
-            val = data.get(key)
+            val = sanitize_string(data.get(key))
             # special key
             if key == 'clientconfdir' and mode == 'srv' and \
                     val != self.clientconfdir:

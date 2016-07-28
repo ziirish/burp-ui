@@ -19,7 +19,7 @@ from six import iteritems, viewkeys
 
 from .burp1 import Burp as Burp1
 from ..parser.burp2 import Parser
-from ...utils import human_readable as _hr, utc_to_local
+from ...utils import human_readable as _hr, utc_to_local, sanitize_string
 from ...exceptions import BUIserverException
 
 if sys.version_info < (3, 3):
@@ -381,7 +381,7 @@ class Burp(Burp1):
     def status(self, query='c:\n', agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.status`"""
         try:
-            query = query.rstrip().encode('unicode_escape').decode('utf-8')
+            query = sanitize_string(query.rstrip())
             self.logger.info("query: '{}'".format(query))
             query = '{0}\n'.format(query)
             if not self._proc_is_alive():
