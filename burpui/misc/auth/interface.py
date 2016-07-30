@@ -60,6 +60,7 @@ class BUIuser(with_metaclass(ABCMeta, UserMixin)):
     """The :class:`burpui.misc.auth.interface.BUIuser` class extends the
     :class:`flask_login:flask_login.UserMixin` class.
     """
+    backend = None
 
     @abstractmethod
     def login(self, passwd=None):

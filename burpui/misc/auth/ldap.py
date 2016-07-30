@@ -226,6 +226,7 @@ class LdapUser(BUIuser):
         self.authenticated = False
         self.ldap = ldap
         self.name = name
+        self.backend = self.ldap.name
 
         found = self.ldap.fetch(name)
 

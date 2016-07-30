@@ -99,6 +99,7 @@ class LocalUser(BUIuser):
         self.local = local
         self.name = name
         self.id = None
+        self.backend = self.local.name
 
         res = self.local.fetch(self.name)
 

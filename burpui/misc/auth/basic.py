@@ -274,6 +274,7 @@ class BasicUser(BUIuser):
         self.basic = basic
         self.name = name
         self.id = None
+        self.backend = self.basic.name
 
         res = self.basic.fetch(self.name)
 
