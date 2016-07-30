@@ -37,6 +37,8 @@ ns = api.namespace('async', 'Asynchronous methods')
 logger = get_task_logger(__name__)
 ME = __name__
 
+LOCK_EXPIRE = 60 * 30  # Lock expires in 30 minutes
+
 BEAT_SCHEDULE = {
     'ping-backend-hourly': {
         'task': '{}.ping_backend'.format(ME),
@@ -59,8 +61,6 @@ if 'CELERYBEAT_SCHEDULE' in celery.conf and \
     celery.conf['CELERYBEAT_SCHEDULE'].update(BEAT_SCHEDULE)
 else:
     celery.conf['CELERYBEAT_SCHEDULE'] = BEAT_SCHEDULE
-
-LOCK_EXPIRE = 60 * 30  # Lock expires in 30 minutes
 
 
 @celery.task
@@ -137,8 +137,8 @@ def perform_restore(self, client, backup,
         while not acquire_lock(lock_name):
             sleep(10)
 
-        # TODO: maybe we should check the status of "old_lock" to make sure the
-        # lock has not expired
+        # TODO: maybe we should check the status of task referenced by"old_lock"
+        # to make sure the lock did not expire and the task is actually over
         logger.debug('lock released by: {}'.format(old_lock))
 
     try:
