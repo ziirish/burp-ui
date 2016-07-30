@@ -24,8 +24,8 @@ class Task(db.Model):
         self.task = task
         self.uuid = uuid
         self.user = user
-        if expire:
+        if expire is not None:
             self.expire = datetime.datetime.utcnow() + expire
 
     def __repr__(self):
-        return '<Task {}({})>'.format(self.task, self.uuid)
+        return '<Task {} ({})>'.format(self.task, self.uuid)
