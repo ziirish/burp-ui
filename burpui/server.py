@@ -48,8 +48,6 @@ class BUIServer(Flask):
     The :class:`burpui.server.BUIServer` class provides the ``Burp-UI`` server.
     """
     gunicorn = False
-    db = None
-    celery = None
 
     defaults = {
         'Global': {

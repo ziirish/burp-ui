@@ -81,14 +81,9 @@ def create_db(myapp):
     :param myapp: Application context
     :type myapp: :class:`burpui.server.BUIServer`
     """
-    # singleton
-    if myapp.db:
-        return myapp.db
-
     if myapp.config['WITH_SQL']:
         from .ext.sql import db
         db.init_app(myapp)
-        myapp.db = db
         return db
 
     return None
@@ -100,10 +95,6 @@ def create_celery(myapp, warn=True):
     :param myapp: Application context
     :type myapp: :class:`burpui.server.BUIServer`
     """
-    # singleton
-    if myapp.celery:
-        return myapp.celery
-
     if myapp.config['WITH_CELERY']:
         from .ext.async import celery
         host, oport = get_redis_server(myapp)
@@ -149,7 +140,6 @@ def create_celery(myapp, warn=True):
 
         celery.Task = ContextTask
 
-        myapp.celery = celery
         return celery
 
     if warn:
