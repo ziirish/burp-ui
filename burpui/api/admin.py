@@ -13,8 +13,34 @@ from .custom import fields, Resource
 
 from six import iteritems
 from flask import current_app as bui
+from flask_login import current_user
 
 ns = api.namespace('admin', 'Admin methods')
+
+user_fields = ns.model('Users', {
+    'id': fields.String(required=True, description='User id'),
+    'name': fields.String(required=True, description='User name'),
+    'backend': fields.String(required=True, description='Backend name'),
+})
+
+
+@ns.route('/me', endpoint='admin_me')
+class AdminMe(Resource):
+    """The :class:`burpui.api.admin.AdminMe` resource allows you to
+    retrieve informations about your currently logged in user.
+
+    This resource is part of the :mod:`burpui.api.admin` module.
+    """
+
+    @ns.marshal_with(user_fields)
+    def get(self):
+        """Returns the current user informations
+
+        **GET** method provided by the webservice.
+
+        :returns: Users
+        """
+        return getattr(current_user, 'real', current_user)
 
 
 @ns.route('/auth/users',
@@ -32,11 +58,6 @@ class AuthUsers(Resource):
 
     This resource is part of the :mod:`burpui.api.admin` module.
     """
-    user_fields = ns.model('Users', {
-        'id': fields.String(required=True, description='User id'),
-        'name': fields.String(required=True, description='User name'),
-        'backend': fields.String(required=True, description='Backend name'),
-    })
     parser_add = ns.parser()
     parser_add.add_argument('username', required=True, help='Username', location='values')
     parser_add.add_argument('password', required=True, help='Password', location='values')
