@@ -11,6 +11,20 @@ except ImportError:
     raise ImportError('Unable to load \'ldap3\' module')
 
 
+def get_ssl_version(version):
+    SSL_SUPPORTED = ['SSLv2', 'SSLv3', 'SSLv23', 'TLSv1', 'TLSv1_1', 'TLSv1_2']
+    if version and version in SSL_SUPPORTED:
+        try:
+            return getattr(ssl, 'PROTOCOL_{}'.format(version))
+        except AttributeError:
+            idx = SSL_SUPPORTED.index(version) + 1
+            if idx == len(SSL_SUPPORTED):
+                return None
+            return get_ssl_version(SSL_SUPPORTED[idx])
+    else:
+        return None
+
+
 class LdapLoader(BUIloader):
     """The :class:`burpui.misc.auth.ldap.LdapLoader` handles searching for and
     binding as a :class:`burpui.misc.auth.ldap.LdapUser` user.
@@ -73,10 +87,9 @@ class LdapLoader(BUIloader):
             self.validate = getattr(ssl, 'CERT_{}'.format(self.validate.upper()))
         else:
             self.validate = None
-        if self.version and self.version in ['SSLv2', 'SSLv3', 'SSLv23', 'TLSv1', 'TLSv1_1']:
-            self.version = getattr(ssl, 'PROTOCOL_{}'.format(self.version))
-        else:
-            self.version = None
+        self.version = get_ssl_version(self.version)
+        if not self.version:
+            self.logger.warning('No SSL version chosen')
         self.tls = None
         self.ssl = False
         self.auto_bind = AUTO_BIND_NONE
