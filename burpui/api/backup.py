@@ -8,11 +8,13 @@
 
 """
 from . import api
+from ..server import BUIServer  # noqa
 from .custom import Resource
 from ..exceptions import BUIserverException
 
-from flask import current_app as bui
+from flask import current_app
 
+bui = current_app  # type: BUIServer
 ns = api.namespace('backup', 'Backup methods')
 
 

@@ -11,16 +11,19 @@ import select
 import struct
 
 from . import api
+from ..server import BUIServer  # noqa
 from .custom import fields, Resource
 from .custom.inputs import boolean
 from ..exceptions import BUIserverException
 
 from zlib import adler32
 from time import gmtime, strftime, time
-from flask import Response, send_file, make_response, after_this_request, current_app as bui
+from flask import Response, send_file, make_response, after_this_request, \
+    current_app
 from werkzeug.datastructures import Headers
 from werkzeug.exceptions import HTTPException
 
+bui = current_app  # type: BUIServer
 ns = api.namespace('restore', 'Restore methods')
 
 

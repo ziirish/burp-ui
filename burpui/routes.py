@@ -10,9 +10,10 @@
 import math
 
 from flask import request, render_template, redirect, url_for, abort, \
-    flash, Blueprint as FlaskBlueprint, session, current_app as bui
+    flash, Blueprint as FlaskBlueprint, session, current_app
 from flask_login import login_user, login_required, logout_user, current_user
 
+from .server import BUIServer  # noqa
 from ._compat import quote
 from .forms import LoginForm
 from .exceptions import BUIserverException
@@ -23,6 +24,7 @@ class Blueprint(FlaskBlueprint):
     __url__ = None
     __doc__ = None
 
+bui = current_app  # type: BUIServer
 view = Blueprint('view', 'burpui', template_folder='templates')
 
 

@@ -12,16 +12,18 @@ import os
 import sys
 import logging
 
-from flask import Blueprint, Response, request, current_app as bui
+from flask import Blueprint, Response, request, current_app
 from flask_restplus import Api as ApiPlus
 from flask_login import current_user
 from importlib import import_module
 from functools import wraps
 
+from ..server import BUIServer  # noqa
 from ..exceptions import BUIserverException
 from ..config import config
 from ..ext.cache import cache
 
+bui = current_app  # type: BUIServer
 EXEMPT_METHODS = set(['OPTIONS'])
 
 

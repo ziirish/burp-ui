@@ -8,6 +8,7 @@
 
 """
 from . import api, cache_key
+from ..server import BUIServer  # noqa
 from .custom import fields, Resource
 from ..exceptions import BUIserverException
 from ..ext.cache import cache
@@ -18,8 +19,8 @@ from flask import flash, url_for, current_app
 import random
 import re
 
+bui = current_app  # type: BUIServer
 ns = api.namespace('misc', 'Misc methods')
-bui = current_app  # type: burpui.server.BUIServer
 
 counters_fields = ns.model('Counters', {
     'phase': fields.Integer(description='Backup phase'),

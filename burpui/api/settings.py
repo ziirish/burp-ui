@@ -8,14 +8,16 @@
 
 """
 from . import api
+from ..server import BUIServer  # noqa
 from .custom import Resource
 from .custom.inputs import boolean
 from .._compat import unquote
 from ..utils import NOTIF_INFO
 
-from flask import jsonify, request, url_for, current_app as bui
+from flask import jsonify, request, url_for, current_app
 from werkzeug.datastructures import ImmutableMultiDict
 
+bui = current_app  # type: BUIServer
 ns = api.namespace('settings', 'Settings methods')
 
 

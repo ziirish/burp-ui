@@ -8,12 +8,14 @@
 
 """
 from . import api, cache_key
+from ..server import BUIServer  # noqa
 from .custom import fields, Resource
 from ..exceptions import BUIserverException
 
 from six import iteritems
-from flask import current_app as bui
+from flask import current_app
 
+bui = current_app  # type: BUIServer
 ns = api.namespace('clients', 'Clients methods')
 
 

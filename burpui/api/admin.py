@@ -8,13 +8,15 @@
 
 """
 from . import api
+from ..server import BUIServer  # noqa
 from .custom import fields, Resource
 #  from ..exceptions import BUIserverException
 
 from six import iteritems
-from flask import current_app as bui
+from flask import current_app
 from flask_login import current_user
 
+bui = current_app  # type: BUIServer
 ns = api.namespace('admin', 'Admin methods')
 
 user_fields = ns.model('Users', {

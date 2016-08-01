@@ -10,14 +10,16 @@
 import os
 
 from . import api, cache_key
+from ..server import BUIServer  # noqa
 from .custom import fields, Resource
 from .custom.inputs import boolean
 from ..exceptions import BUIserverException
 from ..utils import NOTIF_ERROR
 
 from flask_restplus.marshalling import marshal
-from flask import current_app as bui
+from flask import current_app
 
+bui = current_app  # type: BUIServer
 ns = api.namespace('client', 'Client methods')
 
 

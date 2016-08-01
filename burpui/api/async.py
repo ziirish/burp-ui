@@ -12,6 +12,7 @@ import select
 import struct
 
 from . import api
+from ..server import BUIServer  # noqa
 from .custom import Resource
 from ..ext.async import celery
 from ..ext.cache import cache
@@ -20,8 +21,7 @@ from ..exceptions import BUIserverException
 
 from six import iteritems
 from zlib import adler32
-from flask import url_for, Response, current_app as bui, after_this_request, \
-    send_file
+from flask import url_for, Response, current_app, after_this_request, send_file
 from time import gmtime, strftime, time, sleep
 from datetime import timedelta, datetime
 from werkzeug.datastructures import Headers
@@ -33,6 +33,7 @@ if config.get('WITH_SQL'):
 else:
     db = None
 
+bui = current_app  # type: BUIServer
 ns = api.namespace('async', 'Asynchronous methods')
 logger = get_task_logger(__name__)
 ME = __name__
