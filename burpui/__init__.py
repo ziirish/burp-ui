@@ -83,6 +83,7 @@ def create_db(myapp):
     """
     if myapp.config['WITH_SQL']:
         from .ext.sql import db
+        myapp.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
         db.init_app(myapp)
         return db
 
