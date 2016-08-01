@@ -21,7 +21,10 @@ Documentation
    introduction
    requirements
    installation
+   upgrading
    usage
+   manage
+   celery
    gunicorn
    buiagent
    contributing

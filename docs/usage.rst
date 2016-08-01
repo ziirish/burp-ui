@@ -156,6 +156,8 @@ follow:
     # the above "redis" setting
     celery = false
     # database url to store some persistent data
+    # none or a connect string supported by SQLAlchemy:
+    # http://docs.sqlalchemy.org/en/latest/core/engines.html#database-urls
     # example: sqlite:////var/lib/burpui/store.db
     database = none
 

@@ -13,7 +13,8 @@ How to start using Burp-UI?
 ---------------------------
 
 You may find all the basic informations to get started with `Burp-UI`_ in the
-`README`_ file.
+`README`_ file. You can also read the `step-by-step <step-by-step.html>`_ page
+to get started.
 
 How to configure my *firewall*?
 -------------------------------
@@ -43,7 +44,7 @@ It means `Burp-UI`_ runs the following command:
 
 It then generates an archive based on the restored files.
 
-Because of this workflow, and especially the use of the *-C* flag you need to
+Because of this workflow, and especially the use of the ``-C`` flag you need to
 tell your burp-server the client used by `Burp-UI`_ can perform a restoration
 for a different client.
 You can refer to the `restoration <installation.html#restoration>`__ section of
@@ -89,6 +90,12 @@ Are there any known issues?
 
 There is a `known issue <introduction.html#known-issues>`__ section in this
 documentation.
+
+Burp-UI does not work anymore since I upgraded it, what can I do?
+-----------------------------------------------------------------
+
+Make sure you read the `upgrading <upgrading.html>`_ page in case some breaking
+changes occurred.
 
 How can I contribute?
 ---------------------
