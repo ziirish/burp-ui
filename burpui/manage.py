@@ -23,23 +23,21 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..
 def create_manager():
     from burpui import create_app
 
-    config = os.getenv('BUI_CONFIG')
-    app = create_app(config)
-    db = app.db
+    conf = os.getenv('BUI_CONFIG')
+    app = create_app(conf)
+    manager = Manager(app)
 
-    if db:
+    if app.config['WITH_SQL']:
+        from burpui.ext.sql import db
         mig_dir = os.getenv('BUI_MIGRATIONS')
         if mig_dir:
             migrate = Migrate(app, db, mig_dir)
         else:
             migrate = Migrate(app, db)
+
+        manager.add_command('db', MigrateCommand)
     else:
         migrate = None
-
-    manager = Manager(app)
-
-    if db:
-        manager.add_command('db', MigrateCommand)
 
     return manager, migrate, app
 

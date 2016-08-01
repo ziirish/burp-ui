@@ -15,6 +15,7 @@ from flask.exthook import ExtDeprecationWarning
 
 class Cache(CacheOrig):
     def init_app(self, app, config=None):
+        # suppress warnings since upstream did not fix it yet
         with warnings.catch_warnings():
             warnings.simplefilter('ignore', ExtDeprecationWarning)
             super(Cache, self).init_app(app, config)
