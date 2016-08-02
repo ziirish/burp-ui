@@ -18,6 +18,7 @@ from flask_login import current_user
 from importlib import import_module
 from functools import wraps
 
+from .custom.namespace import Namespace
 from ..server import BUIServer  # noqa
 from ..exceptions import BUIserverException
 from ..config import config
@@ -108,6 +109,15 @@ class Api(ApiPlus):
                 return func(resource, *args, **kwargs)
             return decorated
         return decorator
+
+    def namespace(self, *args, **kwargs):
+        """A namespace factory
+
+        :returns Namespace: a new namespace instance
+        """
+        ns = Namespace(*args, **kwargs)
+        self.add_namespace(ns)
+        return ns
 
 
 apibp = Blueprint('api', __name__, url_prefix='/api')

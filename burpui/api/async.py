@@ -12,8 +12,9 @@ import select
 import struct
 
 from . import api
+from .clients import RunningBackup
 from ..server import BUIServer  # noqa
-from .custom import Resource
+from .custom import Resource, fields
 from ..ext.async import celery
 from ..ext.cache import cache
 from ..config import config
@@ -21,7 +22,8 @@ from ..exceptions import BUIserverException
 
 from six import iteritems
 from zlib import adler32
-from flask import url_for, Response, current_app, after_this_request, send_file
+from flask import url_for, Response, current_app, after_this_request, \
+    send_file, redirect
 from time import gmtime, strftime, time, sleep
 from datetime import timedelta, datetime
 from werkzeug.datastructures import Headers
@@ -45,6 +47,10 @@ BEAT_SCHEDULE = {
         'task': '{}.ping_backend'.format(ME),
         'schedule': crontab(minute='15'),  # run every hour
     },
+    'backup-running-minutely': {
+        'task': '{}.backup_running'.format(ME),
+        'schedule': crontab(),  # run every minute
+    },
 }
 
 if db:
@@ -64,6 +70,40 @@ else:
     celery.conf['CELERYBEAT_SCHEDULE'] = BEAT_SCHEDULE
 
 
+def acquire_lock(name, value='nyan', timeout=LOCK_EXPIRE):
+    lock = cache.cache.get(name)
+    if lock:
+        acquire_lock.lock = lock
+        return False
+    return cache.cache.add(name, value, timeout)
+acquire_lock.lock = None
+
+
+def release_lock(name):
+    return cache.cache.delete(name)
+
+
+def wait_for(lock_name, value, wait=10, timeout=LOCK_EXPIRE):
+    old_lock = None
+    if not acquire_lock(lock_name, value, timeout):
+        logger.warn(
+            'A task is already running. Wait for it: {}/{}'.format(
+                lock_name,
+                acquire_lock.lock
+            )
+        )
+        old_lock = acquire_lock.lock
+        # The lock should be released after LOCK_EXPLIRE max
+        while not acquire_lock(lock_name, value, timeout):
+            sleep(wait)
+
+        # TODO: maybe we should check the status of task referenced by"old_lock"
+        # to make sure the lock did not expire and the task is actually over
+        logger.debug('lock released by: {}'.format(old_lock))
+
+    return old_lock
+
+
 @celery.task
 def ping_backend():
     if bui.standalone:
@@ -71,6 +111,22 @@ def ping_backend():
     else:
         for server, backend in iteritems(bui.cli.servers):
             logger.debug(bui.cli.status(agent=server))
+
+
+@celery.task(bind=True)
+def backup_running(self):
+    # run once at the time, if one task was already running, we just discard
+    # the new attempt
+    if not acquire_lock(self.name):
+        return None
+    try:
+        cache.cache.set(
+            'backup_running_result',
+            bui.cli.is_one_backup_running(),
+            120
+        )
+    finally:
+        release_lock(self.name)
 
 
 @celery.task
@@ -110,37 +166,11 @@ def cleanup_restore():
 def perform_restore(self, client, backup,
                     files, strip, fmt, passwd, server=None, user=None,
                     expire=timedelta(minutes=60)):
-    old_lock = None
-
-    def acquire_lock(name):
-        lock = cache.cache.get(name)
-        if lock:
-            acquire_lock.lock = lock
-            return False
-        return cache.cache.add(name, self.request.id, LOCK_EXPIRE)
-    acquire_lock.lock = None
-
-    def release_lock(name):
-        return cache.cache.delete(name)
-
     ret = None
     lock_name = '{}-{}'.format(self.name, server)
 
-    if not acquire_lock(lock_name):
-        logger.warn(
-            'A task is already running. Wait for it: {}/{}'.format(
-                lock_name,
-                acquire_lock.lock
-            )
-        )
-        old_lock = acquire_lock.lock
-        # The lock should be released after LOCK_EXPLIRE max
-        while not acquire_lock(lock_name):
-            sleep(10)
-
-        # TODO: maybe we should check the status of task referenced by"old_lock"
-        # to make sure the lock did not expire and the task is actually over
-        logger.debug('lock released by: {}'.format(old_lock))
+    # TODO: maybe do something with old_lock someday
+    wait_for(lock_name, self.request.id)
 
     try:
         if server:
@@ -492,3 +522,59 @@ class AsyncRestore(Resource):
             db.session.add(db_task)
             db.session.commit()
         return {'id': task.id, 'name': 'perform_restore'}, 202
+
+
+@ns.route('/backup-running',
+          '/<server>/backup-running',
+          endpoint='async_running_backup')
+@ns.doc(
+    params={
+        'server': 'Which server to collect data from when in multi-agent mode',
+    }
+)
+class AsyncRunningBackup(RunningBackup):
+    """The :class:`burpui.api.restore.AsyncRestore` resource allows you to
+    access the status of the server in order to know if there is a running
+    backup currently.
+
+    This resource is backed by a periodic task. If the periodic task fail or is
+    not running, we redirect to the "synchronous" API call.
+
+    This resource is part of the :mod:`burpui.api.async` module.
+    """
+
+    @ns.marshal_with(
+        RunningBackup.running_fields,
+        code=200,
+        description='Success',
+        strict=False
+    )
+    def get(self, server=None):
+        """Tells if a backup is running right now
+
+        **GET** method provided by the webservice.
+
+        The *JSON* returned is:
+        ::
+
+            {
+                "running": false
+            }
+
+
+        The output is filtered by the :mod:`burpui.misc.acl` module so that you
+        only see stats about the clients you are authorized to.
+
+        :param server: Which server to collect data from when in multi-agent
+                       mode
+        :type server: str
+
+        :returns: The *JSON* described above.
+        """
+        res = cache.cache.get('backup_running_result')
+        if res is None:
+            # redirect to synchronous API call
+            # FIXME: Since we subclass the original code, we don't need the
+            # redirect anymore if the redirection is problematic
+            return redirect(url_for('api.running_backup', server=server))
+        return {'running': self._is_one_backup_running(res, server)}

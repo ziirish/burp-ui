@@ -19,6 +19,8 @@ bui = current_app  # type: BUIServer
 ns = api.namespace('clients', 'Clients methods')
 
 
+# Seem to not be used anymore
+# TODO: we can probably remove this someday
 @ns.route('/running',
           '/<server>/running',
           '/running/<client>',
@@ -137,27 +139,36 @@ class RunningBackup(Resource):
 
         :returns: The *JSON* described above.
         """
-        j = bui.cli.is_one_backup_running(server)
+        return {
+            'running': self._is_one_backup_running(
+                bui.cli.is_one_backup_running(server),
+                server
+            )
+        }
+
+    def _is_one_backup_running(self, res, server):
+        """Check if a backup is running"""
         # Manage ACL
         if bui.acl and not self.is_admin:
-            if isinstance(j, dict):
+            if isinstance(res, dict):
                 new = {}
                 for serv in bui.acl.servers(self.username):
                     allowed = bui.acl.clients(self.username, serv)
-                    new[serv] = [x for x in j[serv] if x in allowed]
-                j = new
+                    new[serv] = [x for x in res[serv] if x in allowed]
+                res = new
             else:
                 allowed = bui.acl.clients(self.username, server)
-                j = [x for x in j if x in allowed]
-        r = False
-        if isinstance(j, dict):
-            for (k, v) in iteritems(j):
-                if r:
+                res = [x for x in res if x in allowed]
+        running = False
+        if isinstance(res, dict):
+            for (_, run) in iteritems(res):
+                running = running or (len(run) > 0)
+                if running:
                     break
-                r = r or (len(v) > 0)
         else:
-            r = len(j) > 0
-        return {'running': r}
+            running = len(res) > 0
+
+        return running
 
 
 @ns.route('/report',

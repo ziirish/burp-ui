@@ -3,7 +3,7 @@ var NOTIF_WARNING = 1;
 var NOTIF_ERROR   = 2;
 var NOTIF_INFO    = 3;
 
-var _ajax_setup = function(b) {
+var _ajax_setup = function() {
 	$.ajaxSetup({
 		headers: { 'X-From-UI': true },
 	});
@@ -168,12 +168,17 @@ var myFail = function(xhr, stat, err) {
 	notif(NOTIF_ERROR, msg);
 };
 
+{% if config.WITH_CELERY -%}
+{% set api_running_backup = "api.async_running_backup" %}
+{% else -%}
+{% set api_running_backup = "api.running_backup" %}
+{% endif -%}
 {% if not login -%}
 var _check_running = function() {
 	{% if server -%}
-	url = '{{ url_for("api.running_backup", server=server) }}';
+	url = '{{ url_for(api_running_backup, server=server) }}';
 	{% else -%}
-	url = '{{ url_for("api.running_backup") }}';
+	url = '{{ url_for(api_running_backup) }}';
 	{% endif -%}
 	$.getJSON(url, function(data) {
 		if (data.running) {
@@ -324,7 +329,7 @@ $('#input-client').typeahead({
 var _fit_menu = function() {
 	size = $(window).width();
 	target = $('li.detail');
-	if (size < 800) {
+	if (size <= 768) {
 		target.off( "mouseenter mouseleave" );
 		target.find('.dtl').show();
 	} else {
