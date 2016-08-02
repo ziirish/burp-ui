@@ -14,7 +14,7 @@ import struct
 from . import api
 from .clients import RunningBackup
 from ..server import BUIServer  # noqa
-from .custom import Resource, fields
+from .custom import Resource
 from ..ext.async import celery
 from ..ext.cache import cache
 from ..config import config

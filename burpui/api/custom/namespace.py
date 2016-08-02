@@ -55,7 +55,7 @@ class Namespace(NamespacePlus):
                 'responses': {
                     code: (description, [fields]) if as_list else (description, fields)
                 },
-                '__mask__': kwargs.get('mask', True), # Mask values can't be determined outside app context
+                '__mask__': kwargs.get('mask', True),  # Mask values can't be determined outside app context
             }
             func.__apidoc__ = merge(getattr(func, '__apidoc__', {}), doc)
             kwargs['strict'] = strict
