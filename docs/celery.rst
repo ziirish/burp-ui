@@ -1,8 +1,8 @@
 Celery
 ======
 
-Since *v0.3.0*, `Burp-UI`_ support asynchronous operations thanks to `Celery`_.
-In order to use `Celery`_, you need to enable it in the configuration (see
+Since *v0.3.0*, `Burp-UI`_ supports asynchronous operations thanks to `Celery`_.
+In order to use this feature, you need to enable it in the configuration (see
 `Production <usage.html#production>`__ section)
 
 You will also need some extra requirements:
@@ -14,7 +14,7 @@ You will also need some extra requirements:
 
 `Celery`_ needs a *Broker* to communicate between the workers and your
 application. I chose `Redis`_ so you will need a working `Redis`_ server
-(Basically you just need to run ``apt-get install redis-server`` on debian based
+(Basically you just need to run ``apt-get install redis-server`` on Debian based
 distributions)
 
 Runner
@@ -38,7 +38,7 @@ this:
 
 .. note:: A systemd service example file is shiped in the *contrib* directory
 
-.. note:: The ``--beat`` option is recommended since some operation need to be
+.. note:: The ``--beat`` option is recommended since some operations need to be
           executed periodically
 
 .. note:: The usage of a database is recommended to keep a track of executed

@@ -41,7 +41,7 @@ location of the *migrations* scripts like this:
     bui-manage -c path/to/burpui.cfg -i path/to/migrations -- db upgrade
 
 
-.. note:: Double-dash (--) are important because ``bui-manage`` is a wrapper
+.. note:: Double-dash (``--``) are important because ``bui-manage`` is a wrapper
           script
 
 Users

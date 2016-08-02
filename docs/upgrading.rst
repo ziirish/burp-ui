@@ -11,18 +11,20 @@ v0.3.0
 ------
 
 - **New** - ``bui-manage`` tool: This tool is used to setup database (see
-  `Manage <manage.html>`_)
+  `Manage <manage.html>`_).
 - **New** - ``bui-celery`` tool: This tool is used to run a celery runner (see
-  `Celery <celery.html>`_)
+  `Celery <celery.html>`_).
 - **Breaking** -  Configuration file format changed. Colons (:) must be replaced
   by equals (=). Besides, some settings containing spaces should be surrounded
-  by quotes
+  by quotes. *Note*: The conversion is mostly automatic, but you should keep an
+  eye on it though.
 - **New** - Basic authentication backend now support hashed passwords (*Note*:
   plain text passwords are now deprecated and the support will be dropped in
   v0.4.0). You can create new users with the ``bui-manage`` tool, passwords
-  generated through this tool are hashed.
+  generated through this tool are hashed. *Note*: Starting with v0.4.0, plain
+  text passwords will be automatically hashed.
 - **New** - Local authentication backend allows you to login using local
-  accounts through pam
+  accounts through pam.
 
 
 .. _Burp-UI: https://git.ziirish.me/ziirish/burp-ui
