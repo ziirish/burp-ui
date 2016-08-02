@@ -41,8 +41,8 @@ this:
 .. note:: The ``--beat`` option is recommended since some operations need to be
           executed periodically
 
-.. note:: The usage of a database is recommended to keep a track of executed
-          tasks
+.. note:: The usage of a `database <manage.html#database>`_ is recommended to
+          keep a track of executed tasks
 
 
 .. _Burp-UI: https://git.ziirish.me/ziirish/burp-ui
