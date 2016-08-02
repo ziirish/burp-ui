@@ -47,7 +47,7 @@ def parse_db_setting(string):
     parts = re.search(
         '(?:(?P<backend>\w+)(?:\+(?P<driver>\w+))?://)?'
         '(?:(?P<user>\w+)(?::?(?P<pass>.+))?@)?'
-        '(?P<host>\w+):?(?P<port>\d+)?(?:/(?P<db>\w+))?',
+        '(?P<host>[\w_.-]+):?(?P<port>\d+)?(?:/(?P<db>\w+))?',
         string
     )
     if not parts:
