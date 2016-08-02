@@ -46,15 +46,15 @@ warnings.simplefilter('always', RuntimeWarning)
 def parse_db_setting(string):
     parts = re.search(
         '(?:(?P<backend>\w+)(?:\+(?P<driver>\w+))?://)?'
-        '(?:(?P<user>\w+)?(?::?(?P<pass>.+))?@)?'
+        '(?:(?P<user>\w+)(?::?(?P<pass>.+))?@)?'
         '(?P<host>\w+):?(?P<port>\d+)?(?:/(?P<db>\w+))?',
         string
     )
     if not parts:
         raise ValueError('Unable to parse the db: "{}"'.format(string))
     back = parts.group('backend') or ''
-    user = parts.group('user')
-    pwd = parts.group('pass')
+    user = parts.group('user') or None
+    pwd = parts.group('pass') or None
     host = parts.group('host') or ''
     port = parts.group('port') or ''
     db = parts.group('db') or ''
@@ -62,17 +62,19 @@ def parse_db_setting(string):
 
 
 def get_redis_server(myapp):
+    host = 'localhost'
+    port = 6379
     if myapp.redis and myapp.redis.lower() != 'none':
-        parts = myapp.redis.split(':')
-        host = parts[0]
         try:
-            port = int(parts[1])
-        except (ValueError, IndexError):
-            port = 6379
-    else:
-        host = 'localhost'
-        port = 6379
-    return host, port
+            back, user, pwd, host, port, db = parse_db_setting(myapp.redis)
+            host = host or 'localhost'
+            try:
+                port = int(port)
+            except (ValueError, IndexError):
+                port = 6379
+        except ValueError:
+            pass
+    return host, port, pwd
 
 
 def create_db(myapp):
@@ -98,9 +100,8 @@ def create_celery(myapp, warn=True):
     """
     if myapp.config['WITH_CELERY']:
         from .ext.async import celery
-        host, oport = get_redis_server(myapp)
+        host, oport, pwd = get_redis_server(myapp)
         odb = 2
-        pwd = ''
         if isinstance(myapp.use_celery, basestring):
             try:
                 (_, _, pwd, host, port, db) = parse_db_setting(myapp.use_celery)
@@ -316,9 +317,8 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
             if not app.session_db or app.session_db.lower() != 'none':
                 from redis import Redis
                 from flask_session import Session
-                host, port = get_redis_server(app)
+                host, port, pwd = get_redis_server(app)
                 db = 0
-                pwd = None
                 if app.session_db and app.session_db.lower() != 'default':
                     try:
                         (_, _, pwd, host, port, db) = \
@@ -343,9 +343,8 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
                 ses.init_app(app)
             # Cache setup
             if not app.cache_db or app.cache_db.lower() != 'none':
-                host, port = get_redis_server(app)
+                host, port, pwd = get_redis_server(app)
                 db = 1
-                pwd = None
                 if app.cache_db and app.cache_db.lower() != 'default':
                     try:
                         (_, _, pwd, host, port, db) = \
