@@ -104,7 +104,7 @@ app.config(function(uiSelectConfig) {
 	uiSelectConfig.theme = 'bootstrap';
 });
 
-app.controller('ConfigCtrl', function($scope, $http) {
+app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', function($scope, $http, $scrollspy) {
 	$scope.bools = [];
 	$scope.strings = [];
 	$scope.clients = [];
@@ -119,6 +119,7 @@ app.controller('ConfigCtrl', function($scope, $http) {
 	$scope.revokeEnabled = false;
 	$scope.inc_invalid = {};
 	$scope.old = {};
+	$scope.spy = {};
 	$scope.new = {
 			'bools': undefined,
 			'integers': undefined,
@@ -155,6 +156,7 @@ app.controller('ConfigCtrl', function($scope, $http) {
 			$scope.includes = data.results.includes;
 			$scope.includes_ori = angular.copy($scope.includes);
 			$scope.includes_ext = data.results.includes_ext;
+			$scope.refreshScrollspy();
 			$('#waiting-container').hide();
 			$('#settings-panel').show();
 		}, function(response) {
@@ -231,6 +233,24 @@ app.controller('ConfigCtrl', function($scope, $http) {
 			});
 		}
 	};
+	$scope.refreshScrollspy = function() {
+		angular.forEach($('.bui-scrollspy > li'), function(e) {
+			var ae = angular.element(e);
+			var target = e.dataset.target;
+			var options = {
+				scope: $scope,
+				target: target
+			};
+			if (target in $scope.spy) {
+				var oldSpy = $scope.spy[target];
+				oldSpy.untrackElement(options.target, ae);
+		    oldSpy.destroy();
+			}
+			var scrollspy = $scrollspy(options);
+			scrollspy.trackElement(options.target, ae);
+			$scope.spy[target] = scrollspy;
+		});
+	};
 	$scope.remove = function(key, index) {
 		if (!$scope.old[key]) {
 			$scope.old[key] = {};
@@ -274,6 +294,7 @@ app.controller('ConfigCtrl', function($scope, $http) {
 		$scope.add.multis = false;
 		$scope.new.multis = false;
 		$scope.changed = true;
+		$scope.refreshScrollspy();
 	};
 	$scope.removeIncludes = function(index) {
 		if (!$scope.old.includes) {
@@ -414,7 +435,7 @@ app.controller('ConfigCtrl', function($scope, $http) {
 		el.next('div').next('div').show();
 		el.removeClass('col-lg-9').addClass('col-lg-2');
 	};
-});
+}]);
 
 // Add a smooth scrolling to anchor
 $(document).ready(function() {
