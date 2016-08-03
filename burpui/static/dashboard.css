@@ -7,6 +7,9 @@ body {
   padding-top: 50px;
 }
 
+.form-control {
+  border: 1px solid #cccccc;
+}
 
 /*
  * Global add-ons

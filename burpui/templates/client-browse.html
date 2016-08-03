@@ -90,10 +90,10 @@
                 </div>
               </div>
             </form>
-            <form id="form-server-initiated" class="form-inline col-md-6 text-right" method="POST" role="form" action"{{ url_for('api.server_restore', name=cname, backup=nbackup, server=server) }}" ng-show="sc_restore.enabled">
+            <form id="form-server-initiated" class="form-inline col-md-6 text-right" method="POST" role="form" action"{{ url_for('api.server_restore', name=cname, backup=nbackup, server=server) }}">
               <input type="hidden" name="list-sc">
               <div id="server-initiated-form" style="display:none;">
-                <div class="btn-group dropup">
+                <div class="btn-group dropup" ng-show="sc_restore.enabled">
                   <button type="submit" class="btn btn-info" id="perform-server-initiated"><span class="glyphicon glyphicon-cloud-upload"></span>&nbsp;Server initiated restore</button>
                   <button class="btn btn-info dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
                   <ul class="dropdown-menu dropdown-menu-right browse">
@@ -112,7 +112,7 @@
                   </ul>
                 </div>
                 {% if edit -%}
-                <button type="button" id="btn-cancel-restore" class="btn btn-danger"><span class="glyphicon glyphicon-trash"></span>&nbsp;Cancel restore</button>
+                <button type="button" id="btn-cancel-restore" class="btn btn-danger" ng-show="sc_restore.enabled"><span class="glyphicon glyphicon-trash"></span>&nbsp;Cancel restore</button>
                 {% endif -%}
                 <button type="button" id="btn-clear" class="btn btn-info"><span class="glyphicon glyphicon-trash"></span>&nbsp;Clear selection</button>
               </div>
