@@ -189,7 +189,7 @@ class Parser(Doc):
             conf = self.server_conf.clone()
             parse = cli['value'] or cli['name']
             data, path, cached = self._readfile(parse, client=True)
-            if not cached:
+            if not cached or cli['name'] not in self._clients_conf:
                 parsed = self._parse_lines(data, path, 'cli')
                 conf.add_file(parsed, path)
                 conf.set_default(path)
@@ -363,7 +363,7 @@ class Parser(Doc):
         if not self.clientconfdir:
             return []
 
-        if self.clients and not force:
+        if self.clients and not force and not self._clientconfdir_changed():
             return self.clients
 
         res = []
