@@ -5,6 +5,7 @@
     :synopsis: Burp-UI configuration file parser for Burp1.
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 """
+# TODO: have a look at https://github.com/tsileo/dirtools to manage dir changes
 import re
 import os
 import json
@@ -44,6 +45,7 @@ class Parser(Doc):
         self._client_conf = {}
         self._clients_conf = {}
         self.clientconfdir = None
+        self.clientconfdir_mtime = None
         self.workingdir = None
         self.root = None
         self.md5 = {}
@@ -208,8 +210,22 @@ class Parser(Doc):
         self._load_conf_clients(name, path)
         return self.clients_conf[name]
 
+    def _clientconfdir_changed(self):
+        """Detect changes in clientconfdir"""
+        if not self.clientconfdir:
+            return False
+        mtime = os.path.getmtime(self.clientconfdir)
+        changed = mtime != self.clientconfdir_mtime
+        if changed:
+            self.clientconfdir_mtime = mtime
+            return True
+        return False
+
     def _get_client(self, name, path):
         """Return client conf and refresh it if necessary"""
+        if self._clientconfdir_changed():
+            self._clients_conf = {}
+            self._load_conf_clients()
         if name not in self._clients_conf:
             return self._new_client_conf(name, path)
         if self._clients_conf[name].changed:
@@ -361,6 +377,7 @@ class Parser(Doc):
                 })
 
         self.clients = res
+        self.clientconfdir_mtime = os.path.getmtime(self.clientconfdir)
         return res
 
     def _write_key(self, fil, key, data, conf, mode=None):
