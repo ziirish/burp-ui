@@ -14,10 +14,17 @@ Current
 - Add: `remember some user settings <https://git.ziirish.me/ziirish/burp-ui/issues/133>`_
 - Add: `client certificate revocation <https://git.ziirish.me/ziirish/burp-ui/issues/131>`_
 - Add: new `local authentication backend <https://git.ziirish.me/ziirish/burp-ui/issues/130>`_
+- Add: new `filters on history API call <https://git.ziirish.me/ziirish/burp-ui/issues/140>`_
 - Add: implement backend `keepalive <https://git.ziirish.me/ziirish/burp-ui/issues/98>`_
+- Add: allow to *disable* `server-initiated restoration <https://git.ziirish.me/ziirish/burp-ui/issues/136>`_
 - Fix: disable Basic-Auth login from UI to prevent some bugs with sessions
 - Fix: issue `#134 <https://git.ziirish.me/ziirish/burp-ui/issues/134>`_
 - Fix: issue `#135 <https://git.ziirish.me/ziirish/burp-ui/issues/135>`_
+- Fix: issue `#137 <https://git.ziirish.me/ziirish/burp-ui/issues/137>`_
+- Fix: issue `#138 <https://git.ziirish.me/ziirish/burp-ui/issues/138>`_
+- Fix: issue `#145 <https://git.ziirish.me/ziirish/burp-ui/issues/145>`_
+- Fix: issue `#148 <https://git.ziirish.me/ziirish/burp-ui/issues/148>`_
+- Improvement: new asynchronous `backup-running API call <https://git.ziirish.me/ziirish/burp-ui/issues/139>`_
 - Security: restrict files that can be sent by the agent
 - `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/v0.2.1...master>`__
 
