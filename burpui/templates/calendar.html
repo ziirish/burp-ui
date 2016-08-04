@@ -15,7 +15,7 @@
           <br />
           <h1 class="page-header">Calendar{% if cname %} of {{ cname }}{% if server %} on {{ server }}{% endif %}{% elif server %} of {{ server }}{% endif %}</h1>
           <div class="row placeholders" ng-controller="CalendarCtrl">
-            <div ui-calendar="uiConfig.calendar" ng-model="eventSources"></div>
+            <div ui-calendar="uiConfig.calendar" ng-model="eventSources" calendar="backups" id="bui-calendar"></div>
           </div>
         </div>
 {% endblock %}

@@ -332,7 +332,47 @@ class BUIbackend(with_metaclass(ABCMeta, object)):
                 }
             ]
         """
+        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
+    @abstractmethod
+    def get_client_filtered(self, name=None, limit=-1, page=None, start=None, end=None, agent=None):
+        """The :func:`burpui.misc.backend.interface.BUIbackend.get_client_filtered`
+        function returns a list of dict representing the backups of a given
+        client filtered by the given criteria.
+
+        :param name: Client name
+        :type name: str
+
+        :param limit: Number of element to return, -1 for not limit
+        :type limit: int
+
+        :param page: What page to retrieve
+        :type page: int
+
+        :param start: Return elements after this date
+        :type start: int
+
+        :param end: Return elements until this date
+        :type end: int
+
+        :param agent: What server to ask (only in multi-agent mode)
+        :type agent: str
+
+        :returns: A list of backups
+
+        Example::
+
+            [
+                {
+                    "date": "2015-01-25 13:32:00",
+                    "deletable": true,
+                    "encrypted": true,
+                    "number": "1",
+                    "received": 889818873,
+                    "size": 35612321050,
+                }
+            ]
+        """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
     @abstractmethod

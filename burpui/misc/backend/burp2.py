@@ -772,6 +772,10 @@ class Burp(Burp1):
 
     def get_client(self, name=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_client`"""
+        return self.get_client_filtered(name)
+
+    def get_client_filtered(self, name=None, limit=-1, page=None, start=None, end=None, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.get_client_filtered`"""
         ret = []
         if not name:
             return ret
@@ -783,7 +787,11 @@ class Burp(Burp1):
         except KeyError:
             self.logger.warning('Client not found')
             return ret
-        for backup in backups:
+        for cpt, backup in enumerate(backups):
+            # skip the first elements if we are in a page
+            if page and page > 1 and limit > 0:
+                if cpt < (page - 1) * limit:
+                    continue
             back = {}
             # skip running backups since data will be inconsistent
             if 'flags' in backup and 'working' in backup['flags']:
@@ -794,6 +802,12 @@ class Burp(Burp1):
             else:
                 back['deletable'] = False
             back['date'] = backup['timestamp']
+            # skip backups before "start"
+            if start and backup['timestamp'] < start:
+                continue
+            # don't need to go further if backups after "end"
+            if end and backup['timestamp'] > end:
+                break
             log = self.get_backup_logs(backup['number'], name)
             try:
                 back['encrypted'] = log['encrypted']
@@ -812,6 +826,12 @@ class Burp(Burp1):
             except Exception:
                 self.logger.warning('Unable to parse logs')
                 pass
+            # stop after "limit" elements
+            if page and page > 1 and limit > 0:
+                if cpt >= page * limit:
+                    break
+            elif limit > 0 and cpt >= limit:
+                break
 
         # Here we need to reverse the array so the backups are sorted by date
         # ASC

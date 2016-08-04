@@ -806,6 +806,10 @@ class Burp(BUIbackend):
 
     def get_client(self, name=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_client`"""
+        return self.get_client_filtered(name)
+
+    def get_client_filtered(self, name=None, limit=-1, page=None, start=None, end=None, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.get_client_filtered`"""
         res = []
         if not name:
             return res
@@ -820,18 +824,35 @@ class Burp(BUIbackend):
             if match.group(3) == "0" or match.group(2) not in ['i', 'c', 'C']:
                 continue
             backups = match.group(3).split('\t')
-            for backup in backups:
+            for cpt, backup in enumerate(backups):
+                # skip the first elements if we are in a page
+                if page and page > 1 and limit > 0:
+                    if cpt < (page - 1) * limit:
+                        continue
                 bkp = {}
                 spl = backup.split()
+                backup_date = int(spl[2])
                 bkp['number'] = spl[0]
                 bkp['deletable'] = (spl[1] == '1')
-                bkp['date'] = int(spl[2])
+                bkp['date'] = backup_date
+                # skip backups before "start"
+                if start and backup_date < start:
+                    continue
+                # don't need to go further if backups after "end"
+                if end and backup_date > end:
+                    break
                 log = self.get_backup_logs(spl[0], name)
                 bkp['encrypted'] = log['encrypted']
                 bkp['received'] = log['received']
                 bkp['size'] = log['totsize']
                 bkp['end'] = log['end']
                 res.append(bkp)
+                # stop after "limit" elements
+                if page and page > 1 and limit > 0:
+                    if cpt >= page * limit:
+                        break
+                if limit > 0 and cpt >= limit:
+                    break
         # Here we need to reverse the array so the backups are sorted by date ASC
         res.reverse()
         return res

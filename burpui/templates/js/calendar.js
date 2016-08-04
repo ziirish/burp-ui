@@ -21,14 +21,11 @@ var app = angular.module('MainApp', ['ngSanitize', 'ui.calendar', 'ui.bootstrap'
 
 app.controller('CalendarCtrl', function($scope, $http, $compile, uiCalendarConfig) {
 	$scope.eventSources = [];
-
-	$http.get('{{ url_for("api.history", client=cname, server=server) }}', { headers: { 'X-From-UI': true } })
-		.success(function(data, status, headers, config) {
-			$scope.eventSources.splice(0);
-			angular.forEach(data, function(source) {
-				$scope.eventSources.push(source);
-			});
-		});
+	/*
+	$scope.eventSources = [{
+		url: feed_url
+	}];
+	*/
 
 	$scope.eventRender = function( event, element, view ) {
 		element.attr({
@@ -48,7 +45,21 @@ app.controller('CalendarCtrl', function($scope, $http, $compile, uiCalendarConfi
 				center: 'title',
 				right: 'today prev,next'
 			},
-			eventRender: $scope.eventRender
+			eventRender: $scope.eventRender,
+			viewRender: function(view, element) {
+				$scope.fetchEvents(view.start.format(), view.end.format());
+			}
 		}
+	};
+
+	$scope.fetchEvents = function(start, end) {
+		var feed_url = '{{ url_for("api.history", client=cname, server=server) }}?start='+start+'&end='+end;
+		$http.get(feed_url, { headers: { 'X-From-UI': true } })
+			.success(function(data, status, headers, config) {
+				$scope.eventSources.splice(0);
+				angular.forEach(data, function(source) {
+					$scope.eventSources.push(source);
+				});
+			});
 	};
 });

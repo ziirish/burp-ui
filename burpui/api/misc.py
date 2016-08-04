@@ -14,7 +14,7 @@ from ..exceptions import BUIserverException
 from ..ext.cache import cache
 
 from six import iteritems
-from flask import flash, url_for, current_app
+from flask import flash, url_for, current_app, session
 
 import random
 import re
@@ -409,6 +409,9 @@ class History(Resource):
     parser = ns.parser()
     parser.add_argument('serverName', help='Which server to collect data from when in multi-agent mode')
     parser.add_argument('clientName', help='Which client to collect data from')
+    parser.add_argument('start', help='Return events after this date')
+    parser.add_argument('end', help='Return events before this date')
+
     event_fields = ns.model('Event', {
         'title': fields.String(required=True, description='Event name'),
         'start': fields.DateTime(dt_format='iso8601', description='Start time of the event', attribute='date'),
@@ -471,10 +474,21 @@ class History(Resource):
 
         :returns: The *JSON* described above
         """
+        import arrow
         ret = []
         args = self.parser.parse_args()
         client = client or args['clientName']
         server = server or args['serverName']
+        moments = {
+            'start': None,
+            'end': None
+        }
+        for moment in moments.keys():
+            if moment in args:
+                try:
+                    moments[moment] = arrow.get(args[moment]).timestamp
+                except arrow.parser.ParserError:
+                    pass
 
         if (server and bui.acl and not self.is_admin and
                 server not in bui.acl.servers(self.username)):
@@ -489,7 +503,7 @@ class History(Resource):
             feed = {
                 'color': color,
                 'textColor': text,
-                'events': self.gen_events(client, server),
+                'events': self.gen_events(client, moments, server),
             }
             name = client
             if server:
@@ -504,7 +518,7 @@ class History(Resource):
             for cl in clients:
                 (color, text) = self.gen_colors(cl['name'], server)
                 feed = {
-                    'events': self.gen_events(cl['name'], server),
+                    'events': self.gen_events(cl['name'], moments, server),
                     'textColor': text,
                     'color': color,
                     'name': '{} on {}'.format(cl['name'], server),
@@ -520,7 +534,7 @@ class History(Resource):
             for cl in clients_list:
                 (color, text) = self.gen_colors(cl)
                 feed = {
-                    'events': self.gen_events(cl),
+                    'events': self.gen_events(cl, moments),
                     'textColor': text,
                     'color': color,
                     'name': cl,
@@ -541,7 +555,7 @@ class History(Resource):
                 for cl in clients:
                     (color, text) = self.gen_colors(cl, serv)
                     feed = {
-                        'events': self.gen_events(cl, serv),
+                        'events': self.gen_events(cl, moments, serv),
                         'textColor': text,
                         'color': color,
                         'name': '{} on {}'.format(cl, serv),
@@ -552,6 +566,9 @@ class History(Resource):
 
     def gen_colors(self, client=None, agent=None):
         """Generates color for an events feed"""
+        cache = self._get_color_session(client, agent)
+        if cache:
+            return (cache['color'], cache['text'])
         labels = bui.cli.get_client_labels(client, agent)
         HTML_COLOR = r'((?P<hex>#(?P<red_hex>[0-9a-f]{1,2})(?P<green_hex>[0-9a-f]{1,2})(?P<blue_hex>[0-9a-f]{1,2}))|(?P<rgb>rgb\s*\(\s*(?P<red>2[0-5]{2}|2[0-4]\d|[0-1]?\d\d?)\s*,\s*(?P<green>2[0-5]{2}|2[0-4]\d|[0-1]?\d\d?)\s*,\s*(?P<blue>2[0-5]{2}|2[0-4]\d|[0-1]?\d\d?)\s*\))|(?P<plain>[\w-]+$))'
         color_found = False
@@ -609,6 +626,7 @@ class History(Resource):
 
         text = text or self._get_text_color(red, green, blue)
         color = color or '#{:02X}{:02X}{:02X}'.format(red, green, blue)
+        self._set_color_session(color, text, client, agent)
         return (color, text)
 
     def _get_text_color(self, red=0, green=0, blue=0):
@@ -616,9 +634,48 @@ class History(Resource):
         yiq = ((red * 299) + (green * 587) + (blue * 114)) / 1000
         return 'black' if yiq >= 128 else 'white'
 
-    def gen_events(self, client, server=None):
+    def _get_color_session(self, client, agent=None):
+        """Since we can *paginate* the rendering, we need to store the already
+        generated colors
+
+        This method allows to retrieve already generated colors if any
+        """
+        sess = session._get_current_object()
+        if 'colors' in sess:
+            colors = sess['colors']
+            if agent and agent in colors:
+                return colors[agent].get(client)
+            elif not agent:
+                return colors.get(client)
+        return None
+
+    def _set_color_session(self, color, text, client, agent=None):
+        """Since we can *paginate* the rendering, we need to store the already
+        generated colors
+
+        This method allows to store already generated colors in the session
+        """
+        sess = session._get_current_object()
+        dic = {}
+        if agent:
+            dic[agent] = {}
+            dic[agent][client] = {
+                'color': color,
+                'text': text
+            }
+        else:
+            dic[client] = {
+                'color': color,
+                'text': text
+            }
+        if 'colors' in sess:
+            sess['colors'].update(dic)
+        else:
+            sess['colors'] = dic
+
+    def gen_events(self, client, moments, server=None):
         """Creates events for a given client"""
-        events = bui.cli.get_client(client, agent=server)
+        events = bui.cli.get_client_filtered(client, start=moments['start'], end=moments['end'], agent=server)
         for ev in events:
             ev['title'] = 'Client: {0}, Backup n°{1:07d}'.format(client, int(ev['number']))
             if server:
