@@ -474,6 +474,23 @@ class History(Resource):
 
         :returns: The *JSON* described above
         """
+        self._check_acl(client, server)
+        return self._get_backup_history(client, server)
+
+    def _check_acl(self, client=None, server=None):
+        args = self.parser.parse_args()
+        client = client or args['clientName']
+        server = server or args['serverName']
+
+        if (server and bui.acl and not self.is_admin and
+                server not in bui.acl.servers(self.username)):
+            self.abort(403, "You are not allowed to view this server infos")
+
+        if (client and bui.acl and not self.is_admin and not
+                bui.acl.is_client_allowed(self.username, client, server)):
+            self.abort(403, "You are not allowed to view this client infos")
+
+    def _get_backup_history(self, client=None, server=None, data=None):
         import arrow
         ret = []
         args = self.parser.parse_args()
@@ -486,24 +503,17 @@ class History(Resource):
         for moment in moments.keys():
             if moment in args:
                 try:
-                    moments[moment] = arrow.get(args[moment]).timestamp
+                    if moment in args and args[moment] is not None:
+                        moments[moment] = arrow.get(args[moment]).timestamp
                 except arrow.parser.ParserError:
                     pass
-
-        if (server and bui.acl and not self.is_admin and
-                server not in bui.acl.servers(self.username)):
-            self.abort(403, "You are not allowed to view this server infos")
-
-        if (client and bui.acl and not self.is_admin and not
-                bui.acl.is_client_allowed(self.username, client, server)):
-            self.abort(403, "You are not allowed to view this client infos")
 
         if client:
             (color, text) = self.gen_colors(client, server)
             feed = {
                 'color': color,
                 'textColor': text,
-                'events': self.gen_events(client, moments, server),
+                'events': self.gen_events(client, moments, server, data),
             }
             name = client
             if server:
@@ -512,13 +522,17 @@ class History(Resource):
             ret.append(feed)
             return ret
         elif server:
-            clients = bui.cli.get_all_clients(agent=server)
+            if data and server in data:
+                clients = [{'name': x for x in data[server].keys()}]
+            else:
+                clients = bui.cli.get_all_clients(agent=server)
+            # manage ACL
             if bui.acl and not self.is_admin:
                 clients = [x for x in clients if x['name'] in bui.acl.clients(self.username, server)]
             for cl in clients:
                 (color, text) = self.gen_colors(cl['name'], server)
                 feed = {
-                    'events': self.gen_events(cl['name'], moments, server),
+                    'events': self.gen_events(cl['name'], moments, server, data),
                     'textColor': text,
                     'color': color,
                     'name': '{} on {}'.format(cl['name'], server),
@@ -529,12 +543,14 @@ class History(Resource):
         if bui.standalone:
             if bui.acl and not self.is_admin:
                 clients_list = bui.acl.clients(self.username)
+            elif data:
+                clients_list = data.keys()
             else:
                 clients_list = [x['name'] for x in bui.cli.get_all_clients()]
             for cl in clients_list:
                 (color, text) = self.gen_colors(cl)
                 feed = {
-                    'events': self.gen_events(cl, moments),
+                    'events': self.gen_events(cl, moments, data=data),
                     'textColor': text,
                     'color': color,
                     'name': cl,
@@ -551,11 +567,14 @@ class History(Resource):
                     grants[serv] = 'all'
             for (serv, clients) in iteritems(grants):
                 if not isinstance(clients, list):
-                    clients = [x['name'] for x in bui.cli.get_all_clients(agent=serv)]
+                    if data and serv in data:
+                        clients = data[serv].keys()
+                    else:
+                        clients = [x['name'] for x in bui.cli.get_all_clients(agent=serv)]
                 for cl in clients:
                     (color, text) = self.gen_colors(cl, serv)
                     feed = {
-                        'events': self.gen_events(cl, moments, serv),
+                        'events': self.gen_events(cl, moments, serv, data),
                         'textColor': text,
                         'color': color,
                         'name': '{} on {}'.format(cl, serv),
@@ -673,14 +692,34 @@ class History(Resource):
         else:
             sess['colors'] = dic
 
-    def gen_events(self, client, moments, server=None):
+    def gen_events(self, client, moments, server=None, data=None):
         """Creates events for a given client"""
-        events = bui.cli.get_client_filtered(client, start=moments['start'], end=moments['end'], agent=server)
+        events = []
+        filtered = False
+        if data:
+            if bui.standalone:
+                events = data.get(client)
+            else:
+                events = data.get(server, {}).get(client)
+        if not events:
+            events = bui.cli.get_client_filtered(client, start=moments['start'], end=moments['end'], agent=server)
+            filtered = True
+        ret = []
+        self.logger.debug(events)
         for ev in events:
+            if data and not filtered:
+                # events are sorted by date DESC
+                if moments['start'] and ev['date'] < moments['start']:
+                    self.logger.debug('{} < {}'.format(ev['date'], moments['start']))
+                    continue
+                if moments['end'] and ev['date'] > moments['end']:
+                    self.logger.debug('{} > {}'.format(ev['date'], moments['end']))
+                    continue
             ev['title'] = 'Client: {0}, Backup n°{1:07d}'.format(client, int(ev['number']))
             if server:
                 ev['title'] += ', Server: {0}'.format(server)
             ev['name'] = client
             ev['url'] = url_for('view.backup_report', name=client, server=server, backup=int(ev['number']))
+            ret.append(ev)
 
-        return events
+        return ret

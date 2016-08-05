@@ -21,11 +21,6 @@ var app = angular.module('MainApp', ['ngSanitize', 'ui.calendar', 'ui.bootstrap'
 
 app.controller('CalendarCtrl', function($scope, $http, $compile, uiCalendarConfig) {
 	$scope.eventSources = [];
-	/*
-	$scope.eventSources = [{
-		url: feed_url
-	}];
-	*/
 
 	$scope.eventRender = function( event, element, view ) {
 		element.attr({
@@ -53,7 +48,11 @@ app.controller('CalendarCtrl', function($scope, $http, $compile, uiCalendarConfi
 	};
 
 	$scope.fetchEvents = function(start, end) {
+		{% if config.WITH_CELERY -%}
+		var feed_url = '{{ url_for("api.async_history", client=cname, server=server) }}?start='+start+'&end='+end;
+		{% else -%}
 		var feed_url = '{{ url_for("api.history", client=cname, server=server) }}?start='+start+'&end='+end;
+		{% endif -%}
 		$http.get(feed_url, { headers: { 'X-From-UI': true } })
 			.success(function(data, status, headers, config) {
 				$scope.eventSources.splice(0);
