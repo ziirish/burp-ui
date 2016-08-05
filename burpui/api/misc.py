@@ -704,16 +704,14 @@ class History(Resource):
         if not events:
             events = bui.cli.get_client_filtered(client, start=moments['start'], end=moments['end'], agent=server)
             filtered = True
+
         ret = []
-        self.logger.debug(events)
         for ev in events:
             if data and not filtered:
                 # events are sorted by date DESC
                 if moments['start'] and ev['date'] < moments['start']:
-                    self.logger.debug('{} < {}'.format(ev['date'], moments['start']))
                     continue
                 if moments['end'] and ev['date'] > moments['end']:
-                    self.logger.debug('{} > {}'.format(ev['date'], moments['end']))
                     continue
             ev['title'] = 'Client: {0}, Backup n°{1:07d}'.format(client, int(ev['number']))
             if server:
