@@ -144,7 +144,7 @@ def celery():
     args += unknown
     args += [x for x in options.remaining if x != '--']
 
-    os.execvpe('celery', args, env)
+    os.execvpe(args[0], args, env)
 
 
 def manage():
@@ -181,7 +181,7 @@ def manage():
     args += unknown
     args += [x for x in options.remaining if x != '--']
 
-    os.execvpe(sys.executable, args, env)
+    os.execvpe(args[0], args, env)
 
 
 def check_config(conf):
