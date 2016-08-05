@@ -21,7 +21,8 @@ from six import iteritems, viewkeys
 
 from .interface import BUIbackend
 from ..parser.burp1 import Parser
-from ...utils import human_readable as _hr, BUIcompress, sanitize_string
+from ...utils import human_readable as _hr, BUIcompress, sanitize_string, \
+    utc_to_local
 from ...exceptions import BUIserverException
 from ..._compat import unquote, PY3
 
@@ -801,6 +802,7 @@ class Burp(BUIbackend):
             else:
                 spl = infos.split('\t')
                 cli['last'] = int(spl[len(spl) - 2])
+            cli['last'] = utc_to_local(cli['last'])
             res.append(cli)
         return res
 
@@ -834,7 +836,7 @@ class Burp(BUIbackend):
                 backup_date = int(spl[2])
                 bkp['number'] = spl[0]
                 bkp['deletable'] = (spl[1] == '1')
-                bkp['date'] = backup_date
+                bkp['date'] = utc_to_local(backup_date)
                 # skip backups before "start"
                 if start and backup_date < start:
                     continue
@@ -845,7 +847,7 @@ class Burp(BUIbackend):
                 bkp['encrypted'] = log['encrypted']
                 bkp['received'] = log['received']
                 bkp['size'] = log['totsize']
-                bkp['end'] = log['end']
+                bkp['end'] = utc_to_local(log['end'])
                 res.append(bkp)
                 # stop after "limit" elements
                 if page and page > 1 and limit > 0:
@@ -853,7 +855,7 @@ class Burp(BUIbackend):
                         break
                 if limit > 0 and cpt >= limit:
                     break
-        # Here we need to reverse the array so the backups are sorted by date ASC
+        # Here we need to reverse the array so the backups are sorted by num ASC
         res.reverse()
         return res
 

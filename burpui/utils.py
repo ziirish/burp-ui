@@ -254,9 +254,12 @@ def lookup_file(name=None, guess=True, directory=False, check=True):
 
 
 def utc_to_local(timestamp):
-    utc = arrow.get(datetime.datetime.fromtimestamp(timestamp))
-    local = utc.to(str(get_localzone()))
-    return local.timestamp
+    try:
+        utc = arrow.get(datetime.datetime.fromtimestamp(timestamp))
+        local = utc.to(str(get_localzone()))
+        return local.timestamp
+    except (TypeError, arrow.parser.ParserError):
+        return timestamp
 
 
 def implement(func):
@@ -291,7 +294,7 @@ def basic_login_from_request(request, app):
             return None
         auth = request.authorization
         if auth:
-            app.logger.debug('Found user: {}'.format(auth.username))
+            app.logger.debug('Found Basic user: {}'.format(auth.username))
             user = app.uhandler.user(auth.username)
             if user.active and user.login(auth.password):
                 from flask_login import login_user

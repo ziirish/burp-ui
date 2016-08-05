@@ -833,7 +833,7 @@ class Burp(Burp1):
             elif limit > 0 and cpt >= limit:
                 break
 
-        # Here we need to reverse the array so the backups are sorted by date
+        # Here we need to reverse the array so the backups are sorted by num
         # ASC
         ret.reverse()
         return ret
