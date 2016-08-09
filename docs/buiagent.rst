@@ -156,8 +156,6 @@ Service
 To run bui-agent as service. 
 
 
----
-
 
 .. _Burp: http://burp.grke.org/
 .. _Burp-UI: https://git.ziirish.me/ziirish/burp-ui
