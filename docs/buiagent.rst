@@ -150,6 +150,14 @@ This example uses three servers. You then only need to point your browser to
 http://front:5000/ for instance, and the `Burp-UI`_ instance (front) will
 *proxify* the requests to the two agents for you.
 
+Service
+=======
+
+To run bui-agent as service. 
+
+
+---
+
 
 .. _Burp: http://burp.grke.org/
 .. _Burp-UI: https://git.ziirish.me/ziirish/burp-ui
