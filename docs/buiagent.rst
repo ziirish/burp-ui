@@ -124,7 +124,7 @@ Each option is commented, but here is a more detailed documentation:
   `Burp-UI versions <usage.html#versions>`__ for more details)
 - *password*: The shared secret between the `Burp-UI`_ server and `bui-agent`_.
 
-As with `Burp-UI`_, you need a specific section depending on the *version*
+*IMPORTANT*: As with `Burp-UI`_, you need a specific section depending on the *version*
 value. Please refer to the `Burp-UI versions <usage.html#versions>`__ section
 for more details.
 
@@ -149,6 +149,14 @@ Here is a full usage example:
 This example uses three servers. You then only need to point your browser to
 http://front:5000/ for instance, and the `Burp-UI`_ instance (front) will
 *proxify* the requests to the two agents for you.
+
+Service
+=======
+
+To run burp-ui agent as service.
+
+
+---
 
 
 .. _Burp: http://burp.grke.org/
