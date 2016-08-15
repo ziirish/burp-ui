@@ -523,7 +523,7 @@ class History(Resource):
             return ret
         elif server:
             if data and server in data:
-                clients = [{'name': x for x in data[server].keys()}]
+                clients = [{'name': x} for x in data[server].keys()]
             else:
                 clients = bui.cli.get_all_clients(agent=server)
             # manage ACL
@@ -677,7 +677,10 @@ class History(Resource):
         sess = session._get_current_object()
         dic = {}
         if agent:
-            dic[agent] = {}
+            if 'colors' in sess and agent in sess['colors']:
+                dic[agent] = sess['colors'][agent]
+            else:
+                dic[agent] = {}
             dic[agent][client] = {
                 'color': color,
                 'text': text
