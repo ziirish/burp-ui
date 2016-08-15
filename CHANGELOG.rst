@@ -1,8 +1,8 @@
 Changelog
 =========
 
-Current
--------
+0.3.0 (08/15/2016)
+------------------
 
 - **BREAKING**: New configuration file format to allow further improvements (The conversion is automatic, but LDAP settings might need some attention)
 - **BREAKING**: Passwords are now *salted* for the *BASIC* authentication backend (The conversion is automatic too)
@@ -26,7 +26,7 @@ Current
 - Fix: issue `#148 <https://git.ziirish.me/ziirish/burp-ui/issues/148>`_
 - Improvement: new asynchronous `backup-running API call <https://git.ziirish.me/ziirish/burp-ui/issues/139>`_
 - Security: restrict files that can be sent by the agent
-- `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/v0.2.1...master>`__
+- `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/v0.2.1...v0.3.0>`__
 
 0.2.1 (05/17/2016)
 ------------------
