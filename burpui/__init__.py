@@ -384,8 +384,13 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
     # Create celery app if enabled
     create_celery(app, warn=False)
     if app.config['WITH_CELERY']:
-        from .api.async import force_scheduling_now
-        force_scheduling_now()
+        # may fail in case redis is not running (this can happen while running
+        # the bui-manage script)
+        try:
+            from .api.async import force_scheduling_now
+            force_scheduling_now()
+        except:
+            pass
     # Create SQLAlchemy if enabled
     create_db(app)
 
