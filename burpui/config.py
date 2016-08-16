@@ -106,6 +106,14 @@ class BUIConfig(dict):
             return [str(value).lower()]
         return [str(x).lower() for x in value]
 
+    @staticmethod
+    def force_string(value):
+        if not value:
+            raise validate.VdtMissingValue('No value for this option')
+        if not isinstance(value, list):
+            return value
+        return ','.join(value)
+
     def boolean_or_string(self, value):
         if not value:
             raise validate.VdtMissingValue('No value for this option')

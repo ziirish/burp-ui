@@ -81,7 +81,7 @@ class LdapLoader(BUIloader):
         except:
             pass
         for (opt, key) in viewitems(mapping):
-            setattr(self, opt, conf.safe_get(key, 'string', section=self.section))
+            setattr(self, opt, conf.safe_get(key, 'force_string', section=self.section))
 
         if self.validate and self.validate.lower() in ['none', 'optional', 'required']:
             self.validate = getattr(ssl, 'CERT_{}'.format(self.validate.upper()))
