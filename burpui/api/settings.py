@@ -274,6 +274,9 @@ class NewClientSettings(Resource):
             noti.append([NOTIF_INFO, '<a href="{}">Click here</a> to edit \'{}\' configuration'.format(url_for('view.cli_settings', client=newclient), newclient)])
         # clear the cache when we add a new client
         api.cache.clear()
+        if bui.config['WITH_CELERY']:
+            from .async import force_scheduling_now
+            force_scheduling_now()
         return {'notif': noti}, 201
 
 
@@ -352,6 +355,9 @@ class ClientSettings(Resource):
 
         # clear the cache when we remove a client
         api.cache.clear()
+        if bui.config['WITH_CELERY']:
+            from .async import force_scheduling_now
+            force_scheduling_now()
         return bui.cli.delete_client(client, delcert=delcert, revoke=revoke, agent=server), 200
 
 

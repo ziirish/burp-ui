@@ -52,9 +52,9 @@ BEAT_SCHEDULE = {
         'task': '{}.backup_running'.format(ME),
         'schedule': crontab(),  # run every minute
     },
-    'get-all-backups-bi-hourly': {
+    'get-all-backups-twenty-minutely': {
         'task': '{}.get_all_backups'.format(ME),
-        'schedule': crontab(minute='23,53'),  # every 30 minutes
+        'schedule': crontab(minute='*/20'),  # every 20 minutes
     },
 }
 
@@ -256,6 +256,12 @@ def perform_restore(self, client, backup,
         raise BUIserverException(err)
 
     return ret
+
+
+def force_scheduling_now():
+    """Force scheduling some tasks now"""
+    get_all_backups.delay()
+    backup_running.delay()
 
 
 @ns.route('/status/<task_id>', endpoint='async_restore_status')
