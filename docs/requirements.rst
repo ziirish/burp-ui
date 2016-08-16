@@ -47,7 +47,7 @@ install them using the following command:
 
 ::
 
-    pip install "burpui[local_authentication]"
+    pip install "burp-ui[local_authentication]"
 
 
 SSL

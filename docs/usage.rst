@@ -36,39 +36,39 @@ The `burpui.cfg`_ configuration file contains a ``[Global]`` section as follow:
 
     [Global]
     # On which port is the application listening
-    port: 5000
+    port = 5000
     # On which address is the application listening
     # '::' is the default for all IPv6
     # set it to '0.0.0.0' if you want to listen on all IPv4 addresses
-    bind: ::
+    bind = ::
     # enable SSL
-    ssl: false
+    ssl = false
     # ssl cert
-    sslcert: /etc/burp/ssl_cert-server.pem
+    sslcert = /etc/burp/ssl_cert-server.pem
     # ssl key
-    sslkey: /etc/burp/ssl_cert-server.key
+    sslkey = /etc/burp/ssl_cert-server.key
     # burp server version 1 or 2
-    version: 1
+    version = 1
     # Handle multiple bui-servers or not
     # If set to 'false', you will need to declare at least one 'Agent' section (see
     # bellow)
-    standalone: true
+    standalone = true
     # authentication plugin (mandatory)
     # list the misc/auth directory to see the available backends
-    # to disable authentication you can set "auth: none"
-    # you can also chain multiple backends. Example: "auth: ldap,basic"
+    # to disable authentication you can set "auth = none"
+    # you can also chain multiple backends. Example: "auth = ldap,basic"
     # the order will be respected unless you manually set a higher backend priority
-    auth: basic
+    auth = basic
     # acl plugin
     # list misc/acl directory to see the available backends
     # default is no ACL
-    acl: basic
+    acl = basic
     # You can change the prefix if you are behind a reverse-proxy under a custom
     # root path. For example: /burpui
     # You can also configure your reverse-proxy to announce the prefix through the
     # 'X-Script-Name' header. In this case, the bellow prefix will be ignored in
     # favour of the one announced by your reverse-proxy
-    prefix: none
+    prefix = none
 
 
 Each option is commented, but here is a more detailed documentation:
@@ -110,9 +110,9 @@ parameters:
 
     [UI]
     # refresh interval of the pages in seconds
-    refresh: 180
+    refresh = 180
     # refresh interval of the live-monitoring page in seconds
-    liverefresh: 5
+    liverefresh = 5
 
 
 Each option is commented, but here is a more detailed documentation:
@@ -176,7 +176,7 @@ tested:
     # enable zip64 feature. Python doc says:
     # « ZIP64 extensions are disabled by default because the default zip and unzip
     # commands on Unix (the InfoZIP utilities) don’t support these extensions. »
-    zip64: false
+    zip64 = false
 
 
 These options are also available in the `bui-agent`_ configuration file.
@@ -197,22 +197,22 @@ application:
     # can lead to accessing sensible files. Defaults to '/etc/burp'.
     # Note: you can have several paths separated by comas.
     # Example: /etc/burp,/etc/burp.d
-    includes: /etc/burp
+    includes = /etc/burp
     # if files already included in config do not respect the above restriction, we
     # prune them
-    enforce: false
+    enforce = false
     # enable certificates revocation
-    revoke: false
+    revoke = false
     # remember_cookie duration in days
-    cookietime: 14
+    cookietime = 14
     # whether to use a secure cookie for https or not. If set to false, cookies
     # won't have the 'secure' flag.
     # This setting is only useful when HTTPS is detected
-    scookie: true
+    scookie = true
     # application secret to secure cookies. If you don't set anything, the default
     # value is 'random' which will generate a new secret after every restart of your
     # application. You can also set it to 'none' although this is not recommended.
-    appsecret: random
+    appsecret = random
 
 
 Some of these options are also available in the `bui-agent`_ configuration file.
@@ -239,7 +239,7 @@ file to *true*:
 ::
 
     [Global]
-    standalone: true
+    standalone = true
 
 
 That's all you need to do for this mode to work.
@@ -259,7 +259,7 @@ To enable this mode, you need to set the *standalone* parameter of the
 ::
 
     [Global]
-    standalone: false
+    standalone = false
 
 
 Once this mode is enabled, you have to create **one** ``[Agent]`` section
@@ -271,23 +271,23 @@ Once this mode is enabled, you have to create **one** ``[Agent]`` section
     # bui-agent
     [Agent:agent1]
     # bui-agent address
-    host: 192.168.1.1
+    host = 192.168.1.1
     # bui-agent port
-    port: 10000
+    port = 10000
     # bui-agent password
-    password: azerty
+    password = azerty
     # enable SSL
-    ssl: true
+    ssl = true
 
     [Agent:agent2]
     # bui-agent address
-    host: 192.168.2.1
+    host = 192.168.2.1
     # bui-agent port
-    port: 10000
+    port = 10000
     # bui-agent password
-    password: ytreza
+    password = ytreza
     # enable SSL
-    ssl: true
+    ssl = true
 
 
 .. note:: The sections must be called ``[Agent:<label>]`` (case sensitive)
@@ -324,7 +324,7 @@ the ``[Global]`` section of your `burpui.cfg`_ file:
 ::
 
     [Global]
-    version: 1
+    version = 1
 
 
 Now you can add *burp-1* backend specific options:
@@ -334,19 +334,19 @@ Now you can add *burp-1* backend specific options:
     # burp1 backend specific options
     [Burp1]
     # burp status address (can only be '127.0.0.1' or '::1')
-    bhost: ::1
+    bhost = ::1
     # burp status port
-    bport: 4972
+    bport = 4972
     # burp binary
-    burpbin: /usr/sbin/burp
+    burpbin = /usr/sbin/burp
     # vss_strip binary
-    stripbin: /usr/sbin/vss_strip
+    stripbin = /usr/sbin/vss_strip
     # burp client configuration file used for the restoration (Default: None)
-    bconfcli: /etc/burp/burp.conf
+    bconfcli = /etc/burp/burp.conf
     # burp server configuration file used for the setting page
-    bconfsrv: /etc/burp/burp-server.conf
+    bconfsrv = /etc/burp/burp-server.conf
     # temporary directory to use for restoration
-    tmpdir: /tmp
+    tmpdir = /tmp
 
 
 Each option is commented, but here is a more detailed documentation:
@@ -379,7 +379,7 @@ the ``[Global]`` section of your `burpui.cfg`_ file:
 ::
 
     [Global]
-    version: 2
+    version = 2
 
 
 Now you can add *burp-2* backend specific options:
@@ -389,17 +389,17 @@ Now you can add *burp-2* backend specific options:
     # burp2 backend specific options
     [Burp2]
     # burp binary
-    burpbin: /usr/sbin/burp
+    burpbin = /usr/sbin/burp
     # vss_strip binary
-    stripbin: /usr/sbin/vss_strip
+    stripbin = /usr/sbin/vss_strip
     # burp client configuration file used for the restoration (Default: None)
-    bconfcli: /etc/burp/burp.conf
+    bconfcli = /etc/burp/burp.conf
     # burp server configuration file used for the setting page
-    bconfsrv: /etc/burp/burp-server.conf
+    bconfsrv = /etc/burp/burp-server.conf
     # temporary directory to use for restoration
-    tmpdir: /tmp
+    tmpdir = /tmp
     # how many time to wait for the monitor to answer (in seconds)
-    timeout: 5
+    timeout = 5
 
 
 Each option is commented, but here is a more detailed documentation:
@@ -430,7 +430,7 @@ To disable the *authentication* backend, set the *auth* option of the
 ::
 
     [Global]
-    auth: none
+    auth = none
 
 
 You can use multiple backends, they will be sorted by priority or in the order
@@ -443,7 +443,7 @@ Example:
 ::
 
     [Global]
-    auth: basic,ldap
+    auth = basic,ldap
 
 
 LDAP
@@ -457,7 +457,7 @@ to *ldap*:
 ::
 
     [Global]
-    auth: ldap
+    auth = ldap
 
 
 Now you can add *ldap* specific options:
@@ -469,44 +469,45 @@ Now you can add *ldap* specific options:
     # Backend priority. Higher is first
     priority = 1
     # LDAP host
-    host: 127.0.0.1
+    host = 127.0.0.1
     # LDAP port
-    port: 389
+    port = 389
     # Encryption type to LDAP server (none, ssl or tls)
     # - try tls if unsure, otherwise ssl on port 636
-    encryption: tls
+    encryption = tls
     # specifies if the server certificate must be validated, values can be:
     #  - none (certificates are ignored)
     #  - optional (not required, but validated if provided)
     #  - required (required and validated)
-    validate: none
+    validate = none
     # SSL or TLS version to use, can be one of the following:
     #  - SSLv2
     #  - SSLv3
     #  - SSLv23
     #  - TLSv1
     #  - TLSv1_1 (Available only with openssl version 1.0.1+, requires python 2.7.9 or higher)
-    version: TLSv1
+    version = TLSv1
     # the file containing the certificates of the certification authorities
-    cafile: none
+    cafile = none
     # Attribute to use when searching the LDAP repository
-    #searchattr: sAMAccountName
-    searchattr: uid
+    #searchattr = sAMAccountName
+    searchattr = uid
     # LDAP filter to find users in the LDAP repository
     #  - {0} will be replaced by the search attribute
     #  - {1} will be replaced by the login name
-    filter: (&({0}={1})(burpui=1))
-    #filter: (&({0}={1})(|(userAccountControl=512)(userAccountControl=66048)))
+    filter = (&({0}={1})(burpui=1))
+    #filter = (&({0}={1})(|(userAccountControl=512)(userAccountControl=66048)))
     # LDAP base
-    base: ou=users,dc=example,dc=com
+    base = "ou=users,dc=example,dc=com"
     # Binddn to list existing users
-    binddn: cn=admin,dc=example,dc=com
+    binddn = "cn=admin,dc=example,dc=com"
     # Bindpw to list existing users
-    bindpw: Sup3rS3cr3tPa$$w0rd
+    bindpw = Sup3rS3cr3tPa$$w0rd
 
 
 .. note:: The *host* options accepts URI style (ex: ldap://127.0.0.1:389)
 
+.. warning:: The quotes (") around *base* and *binddn* are **MENDATORY**
 
 Basic
 ^^^^^
@@ -518,7 +519,7 @@ the *auth* option of the ``[Global]`` section of your `burpui.cfg`_ file to
 ::
 
     [Global]
-    auth: basic
+    auth = basic
 
 
 Now you can add *basic* specific options:
@@ -534,8 +535,8 @@ Now you can add *basic* specific options:
     # Allow both plain and hashed passwords
     # WARNING: This will defaults to false in v0.4.0
     mixed = true
-    admin: pbkdf2:sha1:1000$12345678$password
-    user1: pbkdf2:sha1:1000$87654321$otherpassword
+    admin = pbkdf2:sha1:1000$12345678$password
+    user1 = pbkdf2:sha1:1000$87654321$otherpassword
 
 
 .. note::
@@ -543,7 +544,8 @@ Now you can add *basic* specific options:
     as the password
 
 .. warning::
-    Since v0.3.0, passwords must be hashed
+    Since v0.3.0, passwords must be hashed (see `manage <manage.html#users>`_ to
+    know how to create new users with hashed passwords)
 
 Local
 ^^^^^
@@ -555,7 +557,7 @@ the *auth* option of the ``[Global]`` section of your `burpui.cfg`_ file to
 ::
 
     [Global]
-    auth: local
+    auth = local
 
 
 Now you can add *local* specific options:
@@ -567,10 +569,10 @@ Now you can add *local* specific options:
     # allow PAM to work
     [LOCAL]
     # Backend priority. Higher is first
-    priority: 3
+    priority = 3
     # List of local users allowed to login. If you don't set this setting, every
     # local user will be able to login
-    users: user1,user2
+    users = user1,user2
 
 
 ACL
@@ -588,7 +590,7 @@ of your `burpui.cfg`_ file to *none*:
 ::
 
     [Global]
-    acl: none
+    acl = none
 
 
 Basic ACL
@@ -601,7 +603,7 @@ The *basic* acl backend can be enabled by setting the *acl* option of the
 ::
 
     [Global]
-    acl: basic
+    acl = basic
 
 
 Now you can add *basic acl* specific options:
@@ -613,18 +615,18 @@ Now you can add *basic acl* specific options:
     # access to all clients whereas other users will only see the client that have
     # the same name
     [BASIC:ACL]
-    admin: user1,user2
+    admin = user1,user2
     # Please note the double-quotes and single-quotes on the following lines are
     # mandatory!
     # You can also overwrite the default behavior by specifying which clients a
     # user can access
-    user3: '["client4", "client5"]'
+    user3 = '["client4", "client5"]'
     # In case you are not in a standalone mode, you can also specify which clients
     # a user can access on a specific Agent
-    user4: '{"agent1": ["client6", "client7"], "agent2": ["client8"]}'
+    user4 = '{"agent1": ["client6", "client7"], "agent2": ["client8"]}'
 
 
-.. warning:: The double-quotes and single-quotes are **mendatory**
+.. warning:: The double-quotes and single-quotes are **MENDATORY**
 
 
 .. _Burp: http://burp.grke.org/

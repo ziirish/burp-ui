@@ -96,21 +96,21 @@ section as below:
 
     [Global]
     # On which port is the application listening
-    port: 10000
+    port = 10000
     # On which address is the application listening
     # '::' is the default for all IPv6
     # set it to '0.0.0.0' if you want to listen on all IPv4 addresses
-    bind: ::
+    bind = ::
     # enable SSL
-    ssl: true
+    ssl = true
     # ssl cert
-    sslcert: /etc/burp/ssl_cert-server.pem
+    sslcert = /etc/burp/ssl_cert-server.pem
     # ssl key
-    sslkey: /etc/burp/ssl_cert-server.key
-    # burp server version (currently only burp 1.x is implemented)
-    version: 1
+    sslkey = /etc/burp/ssl_cert-server.key
+    # burp server version 1 or 2
+    version = 1
     # agent password
-    password: password
+    password = password
 
 
 Each option is commented, but here is a more detailed documentation:
@@ -128,6 +128,26 @@ As with `Burp-UI`_, you need a specific section depending on the *version*
 value. Please refer to the `Burp-UI versions <usage.html#versions>`__ section
 for more details.
 
+Daemon
+------
+
+I have no plan to implement daemon features, but there are a lot of tools
+available to help you achieve such a behavior.
+
+For instance, you can create a systemd service file containing:
+
+::
+
+    [Unit]
+    Description=Burp-UI agent service
+    After=network.target
+
+    [Service]
+    ExecStart=/usr/local/bin/bui-agent
+    User=burpui
+
+
+You can also have a look at how the demo works (it uses supervisor)
 
 Example
 -------

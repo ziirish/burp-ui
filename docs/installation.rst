@@ -47,6 +47,10 @@ following command:
    pip install --upgrade burp-ui
 
 
+.. note::
+    If you encounter any issue after upgrading to the latest stable release,
+    make sure you read the `upgrading <upgrading.html>`__ page.
+
 Debian Wheezy
 -------------
 

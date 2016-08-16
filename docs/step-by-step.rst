@@ -268,7 +268,7 @@ server:
 
 ::
 
-    sed -i "s/^version: .*/version: 2/" /etc/burp/burpui.cfg
+    sed -i "s/^version = .*/version = 2/" /etc/burp/burpui.cfg
 
 
 That's it, the other default parameter should be able to handle such a setup.

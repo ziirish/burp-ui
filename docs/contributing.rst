@@ -22,8 +22,8 @@ like to sponsor a feature. Details on my `website <https://ziirish.info/>`__.
 Issues / Bugs
 -------------
 
-If you find issues using ``Burp-UI`` please report on the `bug tracker
-<https://git.ziirish.me/ziirish/burp-ui/issues>`__.
+If you find any issue while using ``Burp-UI`` please report it on the `bug
+tracker <https://git.ziirish.me/ziirish/burp-ui/issues>`__.
 All issues should contain the used command line to reproduce the problem, the
 debug output and both versions of burp and ``Burp-UI`` you are using.
 
@@ -55,8 +55,8 @@ Troubleshooting
 ---------------
 
 In case you encounter troubles with ``Burp-UI``, you should run it with the
-``-d`` flag and paste the relevant output within your bug-report.
-Please also give the version of ``burp`` AND ``Burp-UI``.
+``-vvvv`` flag and paste the relevant output within your bug-report.
+Please also give the version of ``burp`` **AND** ``Burp-UI``.
 Since v0.0.6 you can use the ``-V`` or ``--version`` flag in order to get your
 version number.
 
