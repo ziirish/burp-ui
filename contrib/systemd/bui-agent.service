@@ -1,0 +1,7 @@
+[Unit]
+Description=Burp-UI agent service
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/bui-agent
+User=burpui
