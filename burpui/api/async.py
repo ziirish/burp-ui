@@ -781,7 +781,7 @@ class AsyncClientsReport(ClientsReport):
     running in multi-agent mode.
     """
 
-    #@api.cache.cached(timeout=1800, key_prefix=cache_key)
+    @api.cache.cached(timeout=1800, key_prefix=cache_key)
     @ns.marshal_with(
         ClientsReport.report_fields,
         code=200,
