@@ -1,12 +1,12 @@
 Badges
 ======
 
-.. image:: https://git.ziirish.me/ci/projects/1/status.png?ref=stable
-    :target: https://git.ziirish.me/ci/projects/1?ref=stable
+.. image:: https://git.ziirish.me/ci/projects/1/status.png?ref=master
+    :target: https://git.ziirish.me/ci/projects/1?ref=master
     :alt: Build Status
 
-.. image:: https://readthedocs.org/projects/burp-ui/badge/?version=stable
-    :target: https://readthedocs.org/projects/burp-ui/?badge=stable
+.. image:: https://readthedocs.org/projects/burp-ui/badge/?version=latest
+    :target: https://readthedocs.org/projects/burp-ui/?badge=latest
     :alt: Documentation Status
 
 Introduction
@@ -59,13 +59,13 @@ Documentation
 
 The documentation is hosted on `readthedocs <https://readthedocs.org>`_ at the
 following address: `burp-ui.readthedocs.io
-<https://burp-ui.readthedocs.io/en/stable/>`_
+<https://burp-ui.readthedocs.io/en/latest/>`_
 
 
 FAQ
 ===
 
-A `FAQ <https://burp-ui.readthedocs.io/en/stable/faq.html>`_ is available with
+A `FAQ <https://burp-ui.readthedocs.io/en/latest/faq.html>`_ is available with
 the documentation.
 
 
@@ -73,7 +73,7 @@ Community
 =========
 
 Please refer to the `Contributing
-<https://burp-ui.readthedocs.io/en/stable/contributing.html>`_ page.
+<https://burp-ui.readthedocs.io/en/latest/contributing.html>`_ page.
 
 
 Notes
@@ -83,7 +83,7 @@ Feel free to report any issues on my `gitlab
 <https://git.ziirish.me/ziirish/burp-ui/issues>`_.
 I have closed the *github tracker* to have a unique tracker system.
 Also please, read the `Contributing
-<https://burp-ui.readthedocs.io/en/stable/contributing.html>`_
+<https://burp-ui.readthedocs.io/en/latest/contributing.html>`_
 page before reporting any issue to make sure we have all the informations to
 help you.
 
@@ -127,6 +127,6 @@ would not exist without `Burp`_.
 
 
 .. _Flask: http://flask.pocoo.org/
-.. _License: https://git.ziirish.me/ziirish/burp-ui/blob/stable/LICENSE
+.. _License: https://git.ziirish.me/ziirish/burp-ui/blob/master/LICENSE
 .. _Burp: http://burp.grke.org/
-.. _burpui.cfg: https://git.ziirish.me/ziirish/burp-ui/blob/stable/share/burpui/etc/burpui.sample.cfg
+.. _burpui.cfg: https://git.ziirish.me/ziirish/burp-ui/blob/master/share/burpui/etc/burpui.sample.cfg
