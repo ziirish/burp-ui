@@ -23,6 +23,10 @@ if PY3:
 
 class Resource(ResourcePlus):
     """Subclass default Resource to manage ACL"""
+    # by default, we require valid login for all routes. This can be disabled
+    # per resource
+    login_required = True
+
     logger = logging.getLogger('burp-ui')
 
     def __init__(self, api=None, *args, **kwargs):

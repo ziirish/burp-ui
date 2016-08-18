@@ -307,7 +307,9 @@ class About(Resource):
     An optional ``GET`` parameter called ``serverName`` is supported when running
     in multi-agent mode.
     """
-    api.LOGIN_NOT_REQUIRED.append('about')
+    # Login not required on this view
+    login_required = False
+
     parser = ns.parser()
     parser.add_argument('serverName', help='Which server to collect data from when in multi-agent mode')
     burp_fields = ns.model('Burp', {

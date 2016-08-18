@@ -41,12 +41,12 @@ def api_login_required(func):
         """decorator"""
         if request.method in EXEMPT_METHODS:
             return func(*args, **kwargs)
-        try:
-            name = func.func_name
-        except:  # pragma: no cover
-            name = func.__name__
+        # 'func' is a Flask.view.MethodView so we have access to some special
+        # params
+        cls = func.view_class
+        login_required = getattr(cls, 'login_required', True)
         if (bui.auth != 'none' and
-                name not in api.LOGIN_NOT_REQUIRED and
+                login_required and
                 not bui.config.get('LOGIN_DISABLED', False)):
             if not current_user.is_authenticated:
                 if request.headers.get('X-From-UI', False):
@@ -68,7 +68,6 @@ class Api(ApiPlus):
     release = None
     __doc__ = None
     __url__ = None
-    LOGIN_NOT_REQUIRED = []
     CELERY_REQUIRED = ['async']
 
     def load_all(self):
