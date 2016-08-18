@@ -12,7 +12,7 @@ import select
 import struct
 
 from . import api, cache_key
-from .clients import RunningBackup
+from .clients import RunningBackup, ClientsReport
 from .misc import History
 from ..server import BUIServer  # noqa
 from .custom import Resource
@@ -52,8 +52,12 @@ BEAT_SCHEDULE = {
         'task': '{}.backup_running'.format(ME),
         'schedule': crontab(),  # run every minute
     },
-    'get-all-backups-twenty-minutely': {
+    'get-all-backups-every-twenty-minutes': {
         'task': '{}.get_all_backups'.format(ME),
+        'schedule': crontab(minute='*/20'),  # every 20 minutes
+    },
+    'get-all-clients-reports-every-twenty-minutes': {
+        'task': '{}.get_all_clients_reports'.format(ME),
         'schedule': crontab(minute='*/20'),  # every 20 minutes
     },
 }
@@ -76,6 +80,7 @@ else:
 
 
 def acquire_lock(name, value='nyan', timeout=LOCK_EXPIRE):
+    """Utility function to acquire a lock before processing the request"""
     lock = cache.cache.get(name)
     if lock:
         acquire_lock.lock = lock
@@ -85,10 +90,12 @@ acquire_lock.lock = None
 
 
 def release_lock(name):
+    """Utility function to release a lock"""
     return cache.cache.delete(name)
 
 
 def wait_for(lock_name, value, wait=10, timeout=LOCK_EXPIRE):
+    """Utility function to wait until the given lock has been released"""
     old_lock = None
     if not acquire_lock(lock_name, value, timeout):
         logger.warn(
@@ -151,6 +158,24 @@ def get_all_backups(self):
                 for cli in bui.cli.get_all_clients(agent=serv):
                     backups[serv][cli['name']] = bui.cli.get_client(cli['name'], agent=serv)
         cache.cache.set('all_backups', backups, 3600)
+    finally:
+        release_lock(self.name)
+
+
+@celery.task(bind=True)
+def get_all_clients_reports(self):
+    # run once at the time, if one task was already running, we just discard
+    # the new attempt
+    if not acquire_lock(self.name):
+        return None
+    try:
+        reports = {}
+        if bui.standalone:
+            reports = bui.cli.get_clients_report(bui.cli.get_all_clients())
+        else:
+            for serv in bui.cli.servers:
+                reports[serv] = bui.cli.get_clients_report(bui.cli.get_all_clients(agent=serv), serv)
+        cache.cache.set('all_clients_reports', reports, 3600)
     finally:
         release_lock(self.name)
 
@@ -224,14 +249,9 @@ def perform_restore(self, client, backup,
             server
         )
         if not archive:
-            if err:
-                self.update_state(state='FAILURE', meta={'error': err})
-            else:
+            if not err:
                 err = 'Something went wrong while restoring'
-                self.update_state(
-                    state='FAILURE',
-                    meta={'error': err}
-                )
+            self.update_state(state='FAILURE', meta={'error': err})
             logger.error('FAILURE: {}'.format(err))
         else:
             ret = {
@@ -262,6 +282,7 @@ def force_scheduling_now():
     """Force scheduling some tasks now"""
     get_all_backups.delay()
     backup_running.delay()
+    get_all_clients_reports.delay()
 
 
 @ns.route('/status/<task_id>', endpoint='async_restore_status')
@@ -729,6 +750,106 @@ class AsyncHistory(History):
             # redirect to synchronous API call
             # FIXME: Since we subclass the original code, we don't need the
             # redirect anymore if the redirection is problematic
-            return redirect(url_for('api.history', client=client, server=server, start=args['start'], end=args['end']))
+            return redirect(
+                url_for(
+                    'api.history',
+                    client=client,
+                    server=server,
+                    start=args['start'],
+                    end=args['end']
+                )
+            )
 
         return self._get_backup_history(client, server, res)
+
+
+@ns.route('/report',
+          '/<server>/report',
+          endpoint='async_clients_report')
+@ns.doc(
+    params={
+        'server': 'Which server to collect data from when in multi-agent mode',
+    },
+)
+class AsyncClientsReport(ClientsReport):
+    """The :class:`burpui.api.async.AsyncClientsReport` resource allows you to
+    access general reports about your clients.
+
+    This resource is part of the :mod:`burpui.api.clients` module.
+
+    An optional ``GET`` parameter called ``serverName`` is supported when
+    running in multi-agent mode.
+    """
+
+    #@api.cache.cached(timeout=1800, key_prefix=cache_key)
+    @ns.marshal_with(
+        ClientsReport.report_fields,
+        code=200,
+        description='Success',
+        strict=False
+    )
+    @ns.expect(ClientsReport.parser)
+    @ns.doc(
+        responses={
+            403: 'Insufficient permissions',
+            500: 'Internal failure',
+        },
+    )
+    def get(self, server=None):
+        """Returns a global report about all the clients of a given server
+
+        **GET** method provided by the webservice.
+
+        The *JSON* returned is:
+        ::
+
+            {
+              "backups": [
+                {
+                  "name": "client1",
+                  "number": 15
+                },
+                {
+                  "name": "client2",
+                  "number": 1
+                }
+              ],
+              "clients": [
+                {
+                  "name": "client1",
+                  "stats": {
+                    "total": 296377,
+                    "totsize": 57055793698,
+                    "windows": "unknown"
+                  }
+                },
+                {
+                  "name": "client2",
+                  "stats": {
+                    "total": 3117,
+                    "totsize": 5345361,
+                    "windows": "true"
+                  }
+                }
+              ]
+            }
+
+
+        The output is filtered by the :mod:`burpui.misc.acl` module so that you
+        only see stats about the clients you are authorized to.
+
+        :param server: Which server to collect data from when in multi-agent
+                       mode
+        :type server: str
+
+        :returns: The *JSON* described above
+        """
+        server = server or self.parser.parse_args()['serverName']
+        self._check_acl(server)
+        res = cache.cache.get('all_clients_reports')
+        if res is None:
+            # redirect to synchronous API call
+            # FIXME: Since we subclass the original code, we don't need the
+            # redirect anymore if the redirection is problematic
+            return redirect(url_for('api.clients_report', server=server))
+        return self._get_clients_reports(res, server)

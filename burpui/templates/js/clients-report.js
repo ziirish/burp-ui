@@ -24,7 +24,11 @@ var _clients = function() {
 			_charts_obj.push({ 'key': 'chart_'+j, 'obj': tmp, 'data': [] });
 		});
 	}
+	{% if config.WITH_CELERY -%}
+	url = '{{ url_for("api.async_clients_report", server=server) }}';
+	{% else -%}
 	url = '{{ url_for("api.clients_report", server=server) }}';
+	{% endif -%}
 	$.getJSON(url, function(d) {
 		rep = [];
 		size = [];

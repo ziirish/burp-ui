@@ -190,6 +190,15 @@ class ClientsReport(Resource):
     """
     parser = ns.parser()
     parser.add_argument('serverName', help='Which server to collect data from when in multi-agent mode')
+    parser.add_argument('limit', type=int, default=8, help='Number of elements to return')
+    parser.add_argument('aggregation', help='What aggregation to operate', default='number', choices=('number', 'files', 'size'))
+
+    translation = {
+        'number': 'number',
+        'files': 'total',
+        'size': 'totsize',
+    }
+
     stats_fields = ns.model('ClientsStats', {
         'total': fields.Integer(required=True, description='Number of files', default=0),
         'totsize': fields.Integer(required=True, description='Total size occupied by all the backups of this client', default=0),
@@ -267,23 +276,102 @@ class ClientsReport(Resource):
         """
 
         server = server or self.parser.parse_args()['serverName']
-        j = {}
+        self._check_acl(server)
+        return self._get_clients_reports(server=server)
+
+    def _check_acl(self, server):
         # Manage ACL
         if (not bui.standalone and bui.acl and
                 (not self.is_admin and
                  server not in
                  bui.acl.servers(self.username))):
             self.abort(403, 'Sorry, you don\'t have any rights on this server')
-        clients = []
-        if bui.acl and not self.is_admin:
-            clients = [{'name': x} for x in bui.acl.clients(self.username, server)]
+
+    def _get_clients_reports(self, res=None, server=None):
+        args = self.parser.parse_args()
+        limit = args['limit']
+        aggregation = self.translation.get(args['aggregation'], 'number')
+        ret = self._parse_clients_reports(res, server)
+        backups = backups_orig = ret.get('backups', [])
+        clients = clients_orig = ret.get('clients', [])
+        aggregate = False
+        if limit > 1:
+            limit -= 1
+            aggregate = True
+        # limit the number of elements to return so the graphs stay readable
+        if len(backups) > limit and limit > 0:
+            if aggregation == 'number':
+                backups = (
+                    sorted(backups, key=lambda x: x.get('number'), reverse=True)
+                )[:limit]
+            else:
+                clients = (
+                    sorted(clients, key=lambda x: x.get('stats', {}).get(aggregation), reverse=True)
+                )[:limit]
         else:
-            try:
-                clients = bui.cli.get_all_clients(agent=server)
-            except BUIserverException as e:
-                self.abort(500, str(e))
-        j = bui.cli.get_clients_report(clients, server)
-        return j
+            aggregate = False
+        if aggregation == 'number':
+            clients_name = [x.get('name') for x in backups]
+            ret['backups'] = backups
+            ret['clients'] = [
+                x for x in clients_orig
+                if x.get('name') in clients_name
+            ]
+        else:
+            clients_name = [x.get('name') for x in clients]
+            ret['clients'] = clients
+            ret['backups'] = [
+                x for x in backups_orig
+                if x.get('name') in clients_name
+            ]
+        if aggregate:
+            backups = {'name': 'others', 'number': 0}
+            for client in backups_orig:
+                if client.get('name') not in clients_name:
+                    backups['number'] += client.get('number', 0)
+
+            complement = {
+                'name': 'others',
+                'stats': {
+                    'total': 0,
+                    'totsize': 0,
+                    'windows': None
+                }
+            }
+            for client in clients_orig:
+                if client.get('name') not in clients_name:
+                    complement['stats']['total'] += client.get('stats', {}).get('total', 0)
+                    complement['stats']['totsize'] += client.get('stats', {}).get('totsize', 0)
+                    os = client.get('stats', {}).get('windows', 'unknown')
+                    if not complement['stats']['windows']:
+                        complement['stats']['windows'] = os
+                    elif os != complement['stats']['windows']:
+                        complement['stats']['windows'] = 'unknown'
+
+            ret['clients'].append(complement)
+            ret['backups'].append(backups)
+
+        return ret
+
+    def _parse_clients_reports(self, res=None, server=None):
+        if not res:
+            clients = []
+            if bui.acl and not self.is_admin:
+                clients = [{'name': x} for x in bui.acl.clients(self.username, server)]
+            else:
+                try:
+                    clients = bui.cli.get_all_clients(agent=server)
+                except BUIserverException as e:
+                    self.abort(500, str(e))
+            return bui.cli.get_clients_report(clients, server)
+        if bui.standalone:
+            ret = res
+        else:
+            ret = res.get(server, {})
+        if bui.acl and not self.is_admin:
+            ret['backups'] = [x for x in ret.get('backups', []) if bui.acl.is_client_allowed(self.username, x.get('name'), server)]
+            ret['clients'] = [x for x in ret.get('clients', []) if bui.acl.is_client_allowed(self.username, x.get('name'), server)]
+        return ret
 
 
 @ns.route('/stats',
