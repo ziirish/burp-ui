@@ -17,6 +17,15 @@ removed since it is not supported anymore by the CPython core team.
 Unit tests are ran against python 2.7 and python 3.4. If you encounter
 compilation errors with one of these version, feel free to report them.
 
+Libraries
+---------
+
+Some libraries are required to be able to compile some requirements:
+
+::
+
+    apt-get install libffi-dev python-dev
+
 Debian Wheezy
 -------------
 

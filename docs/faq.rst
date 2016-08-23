@@ -6,8 +6,8 @@ Is there a demo somewhere?
 
 Yes, you can play with `Burp-UI`_ at `demo.ziirish.me`_. Credentials are:
 
-- admin / admin to play with `Burp-UI`_ as an administrator
-- demo / demo to play with `Burp-UI`_ as a regular user
+- *admin* / *admin* to play with `Burp-UI`_ as an administrator
+- *demo* / *demo* to play with `Burp-UI`_ as a regular user
 
 How to start using Burp-UI?
 ---------------------------
@@ -22,7 +22,9 @@ How to configure my *firewall*?
 When running `Burp-UI`_ in standalone `mode <usage.html#versions>`__, the
 embedded webserver listens on port **5000** on all interfaces.
 
-The `Burp-UI`_ agents listens on port **10000** by default.
+The `Burp-UI`_ agents listen on port **10000** by default.
+
+Of course those are configurable.
 
 What are the default credentials?
 ---------------------------------
@@ -30,8 +32,8 @@ What are the default credentials?
 The default login / password is *admin* / *admin* with the
 `basic <usage.html#basic>`__ authentication backend.
 
-How does the online restoration feature works?
-----------------------------------------------
+How does the online restoration feature work?
+---------------------------------------------
 
 The online restoration feature works the same way as if you were running the
 burp client yourself.

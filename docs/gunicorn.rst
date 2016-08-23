@@ -60,7 +60,7 @@ If you are using this sample configuration file, make sure to create the
     # copy the gunicorn sample configuration
     cp /usr/local/share/burpui/contrib/gunicorn.d/burp-ui /etc/gunicorn.d/
     # create the burpui user
-    useradd -r -d /var/lib/burpui -c 'Burp-UI daemon user' burpui
+    useradd -m -r -d /var/lib/burpui -c 'Burp-UI daemon user' burpui
     mkdir /etc/burp
     # copy the burp-ui sample configuration file
     cp /usr/local/share/burpui/etc/burpui.sample.cfg /etc/burp/burpui.cfg
