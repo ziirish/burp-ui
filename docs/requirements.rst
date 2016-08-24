@@ -24,7 +24,7 @@ Some libraries are required to be able to compile some requirements:
 
 ::
 
-    apt-get install libffi-dev python-dev
+    apt-get install libffi-dev libssl-dev python-dev
 
 Debian Wheezy
 -------------
@@ -63,14 +63,7 @@ SSL
 ---
 
 If you would like to use SSL, you will need the ``python-openssl`` package.
-On Debian:
-
-::
-
-    aptitude install python-openssl
-
-
-Alternatively, you can install the python package using the following command:
+You can install the python package using the following command:
 
 ::
 
@@ -82,10 +75,10 @@ Burp1
 
 The `burp1 backend <usage.html#burp1>`__ supports burp versions from 1.3.48 to
 1.4.40.
-With these versions of burp, the status port is only listening on the machine
-loopback (ie. ``localhost`` or ``127.0.0.1``). It means you *MUST* run
-`Burp-UI`_ on the same host that is running your burp server in order to be able
-to access burp's statistics.
+With these versions of burp, the status port is only listening on the local
+machine loopback interface (ie. ``localhost`` or ``127.0.0.1``). It means you
+*MUST* run `Burp-UI`_ on the same host that is running your burp server in order
+to be able to access burp's statistics.
 Alternatively, you can use a `bui-agent <buiagent.html>`__.
 
 
