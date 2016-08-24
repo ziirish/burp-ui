@@ -2,8 +2,12 @@ Badges
 ======
 
 .. image:: https://git.ziirish.me/ci/projects/1/status.png?ref=master
-    :target: https://git.ziirish.me/ci/projects/1?ref=master
+    :target: https://git.ziirish.me/ziirish/burp-ui/pipelines
     :alt: Build Status
+
+.. image:: https://git.ziirish.me/ziirish/burp-ui/badges/master/coverage.svg
+    :target: https://git.ziirish.me/ziirish/burp-ui/pipelines
+    :alt: Test coverage
 
 .. image:: https://readthedocs.org/projects/burp-ui/badge/?version=latest
     :target: https://readthedocs.org/projects/burp-ui/?badge=latest
