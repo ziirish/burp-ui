@@ -12,12 +12,14 @@ import math
 from flask import request, render_template, redirect, url_for, abort, \
     flash, Blueprint as FlaskBlueprint, session, current_app
 from flask_login import login_user, login_required, logout_user, current_user
+from flask_babel import gettext
 
 from .server import BUIServer  # noqa
 from ._compat import quote
 from .forms import LoginForm
 from .exceptions import BUIserverException
 from .utils import human_readable as _hr
+from .ext.i18n import LANGUAGES, get_locale
 
 
 class Blueprint(FlaskBlueprint):
@@ -164,14 +166,14 @@ def live_monitor(server=None, name=None):
     bui.cli.is_one_backup_running()
     if bui.standalone:
         if not bui.cli.running:
-            flash('Sorry, there are no running backups', 'warning')
+            flash(gettext('Sorry, there are no running backups'), 'warning')
             return redirect(url_for('.home'))
     else:
         run = False
         for a in bui.cli.servers:
             run = run or (a in bui.cli.running and bui.cli.running[a])
         if not run:
-            flash('Sorry, there are no running backups', 'warning')
+            flash(gettext('Sorry, there are no running backups'), 'warning')
             return redirect(url_for('.home'))
 
     return render_template(
@@ -191,7 +193,9 @@ def edit_server_initiated_restore(server=None, name=None):
     to = None
     if not data or not data['found']:
         flash(
-            'Sorry, there are no restore file found for this client',
+            gettext(
+                'Sorry, there are no restore file found for this client'
+            ),
             'warning'
         )
         return redirect(url_for('.home'))
@@ -227,8 +231,11 @@ def client_browse(server=None, name=None, backup=None, encrypted=None,
         edit = bui.cli.is_server_restore(to, server)
         if not edit or not edit['found']:
             flash(
-                'Sorry, there are no restore file found for this client',
+                gettext(
+                    'Sorry, there are no restore file found for this client'
+                ),
                 'warning'
+
             )
             edit = None
         else:
@@ -369,14 +376,16 @@ def servers_report():
 @view.route('/login', methods=['POST', 'GET'])
 def login():
     form = LoginForm(request.form)
+
     if form.validate_on_submit():
         user = bui.uhandler.user(form.username.data)
+        user.language = form.language.data
         if user.is_active and user.login(form.password.data):
             login_user(user, remember=form.remember.data)
-            flash('Logged in successfully', 'success')
+            flash(gettext('Logged in successfully'), 'success')
             return redirect(request.args.get("next") or url_for('.home'))
         else:
-            flash('Wrong username or password', 'danger')
+            flash(gettext('Wrong username or password'), 'danger')
     return render_template('login.html', form=form, login=True)
 
 
@@ -386,6 +395,8 @@ def logout():
     sess = session._get_current_object()
     if 'authenticated' in sess:
         sess.pop('authenticated')
+    if 'language' in sess:
+        sess.pop('language')
     logout_user()
     return redirect(url_for('.home'))
 

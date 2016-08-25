@@ -179,6 +179,7 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
 
     :returns: A :class:`burpui.server.BUIServer` object
     """
+    from flask import g
     from flask_login import LoginManager
     from flask_bower import Bower
     from .utils import basic_login_from_request, ReverseProxied, lookup_file
@@ -186,6 +187,7 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
     from .routes import view
     from .api import api, apibp
     from .ext.cache import cache
+    from .ext.i18n import babel, get_locale
 
     logger = logging.getLogger('burp-ui')
 
@@ -261,6 +263,9 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
     app.gunicorn = gunicorn
 
     app.config['CFG'] = None
+
+    # Some config
+
     # FIXME: strange behavior when bundling errors
     # app.config['BUNDLE_ERRORS'] = True
 
@@ -391,6 +396,10 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
             force_scheduling_now()
         except:
             pass
+
+    # Initialize i18n
+    babel.init_app(app)
+
     # Create SQLAlchemy if enabled
     create_db(app)
 
@@ -446,6 +455,10 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
         """User loader from request callback"""
         if app.auth != 'none':
             return basic_login_from_request(request, app)
+
+    @app.before_request
+    def before_request():
+        g.locale = get_locale()
 
     return app
 

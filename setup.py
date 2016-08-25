@@ -71,6 +71,7 @@ class BuildStatic(Command):
     def run(self):
         os.chdir(ROOT)
         log.info("getting revision number")
+        call('./bui-manage compile_translation'.split())
         try:
             branch = check_output('sed s@^.*/@@g .git/HEAD'.split()).rstrip()
             ver = open(os.path.join('burpui', 'VERSION')).read().rstrip()
@@ -122,6 +123,7 @@ class BuildStatic(Command):
             'burpui/static/vendor/angular-strap/dist/angular-strap.tpl.min.js',
             'burpui/static/vendor/angular-onbeforeunload/build/angular-onbeforeunload.js',
             'burpui/static/vendor/moment/min/moment.min.js',
+            'burpui/static/vendor/moment/locale/fr.js',
             'burpui/static/vendor/angular-ui-calendar/src/calendar.js',
             'burpui/static/vendor/fullcalendar/dist/fullcalendar.min.css',
             'burpui/static/vendor/fullcalendar/dist/fullcalendar.print.css',

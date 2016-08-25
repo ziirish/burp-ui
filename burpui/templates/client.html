@@ -5,12 +5,12 @@
           {% include "small_topbar.html" %}
           <ul class="breadcrumb" style="margin-bottom: 5px;">
             {% if server -%}
-            <li><a href="{{ url_for('view.home') }}">Home</a></li>
+            <li><a href="{{ url_for('view.home') }}">{{ _('Home') }}</a></li>
             <li><a href="{{ url_for('view.clients', server=server) }}">{{ server }} clients</a></li>
-            <li class="active">{{ cname }} overview</li>
+            <li class="active">{{ cname }} {{ _('overview') }}</li>
             {% else -%}
-            <li><a href="{{ url_for('view.home') }}">Home</a></li>
-            <li class="active">{{ cname }} overview</li>
+            <li><a href="{{ url_for('view.home') }}">{{ _('Home') }}</a></li>
+            <li class="active">{{ cname }} {{ _('overview') }}</li>
             {% endif -%}
           </ul>
           <br />
@@ -18,22 +18,22 @@
 
           <h2 class="sub-header">Backups</h2>
           <p>
-            Toggle column: <a class="toggle-vis" data-column="0" href="#">Number</a> -
+          Toggle column: <a class="toggle-vis" data-column="0" href="#">{{ _('Number') }}</a> -
             <a class="toggle-vis" data-column="1" href="#">Date</a> -
-            <a class="toggle-vis" data-column="2" href="#">Bytes received</a> -
-            <a class="toggle-vis" data-column="3" href="#">Estimated size</a> -
-            <a class="toggle-vis" data-column="4" href="#">Deletable</a> -
+            <a class="toggle-vis" data-column="2" href="#">{{ _('Bytes received') }}</a> -
+            <a class="toggle-vis" data-column="3" href="#">{{ _('Estimated size') }}</a> -
+            <a class="toggle-vis" data-column="4" href="#">{{ _('Deletable') }}</a> -
             <a class="toggle-vis" data-column="5" href="#">Status</a>
           </p>
           <div class="table-responsive">
             <table class="table table-striped table-hover nowrap" id="table-client" width="100%">
               <thead>
                 <tr>
-                  <th>Number</th>
+                  <th>{{ _('Number') }}</th>
                   <th class="desktop">Date</th>
-                  <th class="desktop">Bytes received</th>
-                  <th class="desktop">Estimated size</th>
-                  <th class="desktop">Deletable</th>
+                  <th class="desktop">{{ _('Bytes received') }}</th>
+                  <th class="desktop">{{ _('Estimated size') }}</th>
+                  <th class="desktop">{{ _('Deletable') }}</th>
                   <th class="desktop">Status</th>
                 </tr>
               </thead>
@@ -41,24 +41,24 @@
               </tbody>
             </table>
             <div class="alert alert-dismissable alert-danger" id="client-alert" style="display: none;">
-              <span class="glyphicon glyphicon-exclamation-sign"></span> <strong>Sorry!</strong> There are no backups for this client.
+              <span class="glyphicon glyphicon-exclamation-sign"></span> <strong>{{ _('Sorry!') }}</strong> {{ _('There are no backups for this client.') }}
             </div>
           </div>
           <br />
           <div id="left" class="form-inline col-md-6">
             <div class="edit-restore" style="display: none;">
-              <a href="{{ url_for('view.edit_server_initiated_restore', name=cname, server=server) }}" id="btn-edit-restore" class="btn btn-info"><span class="glyphicon glyphicon-pencil"></span>&nbsp;Edit restore</a>
+              <a href="{{ url_for('view.edit_server_initiated_restore', name=cname, server=server) }}" id="btn-edit-restore" class="btn btn-info"><span class="glyphicon glyphicon-pencil"></span>&nbsp;{{ _('Edit restore') }}</a>
             </div>
             <div class="scheduled-backup">
-              <button type="button" id="btn-schedule-backup" class="btn btn-info"><span class="glyphicon glyphicon-time"></span>&nbsp;Schedule backup</button>
+              <button type="button" id="btn-schedule-backup" class="btn btn-info"><span class="glyphicon glyphicon-time"></span>&nbsp;{{ _('Schedule backup') }}</button>
             </div>
           </div>
           <div id="right" class="form-inline col-md-6 text-right">
             <div class="edit-restore" style="display: none;">
-              <button type="button" id="btn-cancel-restore" class="btn btn-danger"><span class="glyphicon glyphicon-trash"></span>&nbsp;Cancel restore</button>
+              <button type="button" id="btn-cancel-restore" class="btn btn-danger"><span class="glyphicon glyphicon-trash"></span>&nbsp;{{ _('Cancel restore') }}</button>
             </div>
             <div class="cancel-backup" style="display: none;">
-              <button type="button" id="btn-cancel-backup" class="btn btn-danger"><span class="glyphicon glyphicon-trash"></span>&nbsp;Cancel backup</button>
+              <button type="button" id="btn-cancel-backup" class="btn btn-danger"><span class="glyphicon glyphicon-trash"></span>&nbsp;{{ _('Cancel backup') }}</button>
             </div>
           </div>
         </div>

@@ -49,6 +49,7 @@ class UserHandler(BUIuser):
         sess = session._get_current_object()
         self.active = False
         self.authenticated = sess.get('authenticated', False)
+        self.language = sess.get('language', None)
         self.backends = backends
         self.back = None
         self.name = name
@@ -83,6 +84,7 @@ class UserHandler(BUIuser):
             self.authenticated = self.real.login(passwd)
         sess = session._get_current_object()
         sess['authenticated'] = self.authenticated
+        sess['language'] = self.language
         return self.authenticated
 
     def get_id(self):
