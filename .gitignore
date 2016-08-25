@@ -1,5 +1,6 @@
 *.pyc
 *.swp
+*.mo
 burpui-dev.cfg*
 burpui/RELEASE
 devel.sh

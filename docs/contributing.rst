@@ -19,6 +19,105 @@ You can financially support the project if you find it useful or if you would
 like to sponsor a feature. Details on my `website <https://ziirish.info/>`__.
 
 
+Translating
+-----------
+
+Translations are very welcome!
+If you are willing to help, you will need some tools:
+
+::
+
+    pip install Flask-Babel
+
+
+Then you need to fork the project retrieve the sources:
+
+::
+
+    git clone https://git.ziirish.me/<your_login>/burp-ui.git
+    cd burp-ui
+
+
+You can have the list of available languages by running:
+
+::
+
+    ls burpui/translations
+
+
+New language
+^^^^^^^^^^^^
+
+If your language is not listed, you can create a new translation running the
+following command:
+
+::
+
+    ./bui-manage init_translation <country_code> # where <country_code> can be "de", "ru", etc.
+
+
+Update translation
+^^^^^^^^^^^^^^^^^^
+
+If you want to update an existing (and/or un-complete) translation, you probably
+want to have a look at the *templates* files.
+
+An un-translated file will contain things like:
+
+::
+
+    <h1>Some title</h1>
+
+
+The string *Some title* won't be translated as is.
+You need to update the template like this:
+
+::
+
+    <h1>{{ _('Some title') }}</h1>
+
+
+Then you can update the translation files with the following command:
+
+::
+
+    ./bui-manage update_translation
+
+
+Translation
+^^^^^^^^^^^
+
+Now you can proceed the translation in the file
+*burpui/translations/<country_code>/LC_MESSAGES/messages.po*.
+
+It looks like:
+
+::
+
+    #: burpui/forms.py:18 burpui/templates/login.html:8
+    msgid "Username"
+    msgstr ""
+
+
+You just have to put the translations in the *msgstr* line like:
+
+::
+
+    #: burpui/forms.py:18 burpui/templates/login.html:8
+    msgid "Username"
+    msgstr "Utilisateur"
+
+
+Once it's done, you can push the sources and create a Merge Request on GitLab:
+
+::
+
+    git checkout -b translation-<country_code>
+    git add burpui/translations/<country_code>/LC_MESSAGES/messages.po
+    git commit -m "<country_code> translation"
+    git push -u origin translation-<country_code>
+
+
 Issues / Bugs
 -------------
 

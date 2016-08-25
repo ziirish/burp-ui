@@ -1,0 +1,178 @@
+# French translations for Burp-UI.
+# Copyright (C) 2016 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# Ziirish <hi+burpui@ziirish.me>, 2016.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2016-08-25 17:17+0200\n"
+"PO-Revision-Date: 2016-08-25 15:19+0200\n"
+"Last-Translator: Ziirish <hi+burpui@ziirish.me>\n"
+"Language: fr\n"
+"Language-Team: fr <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n > 1)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.3.4\n"
+
+#: burpui/forms.py:18 burpui/templates/login.html:8
+msgid "Username"
+msgstr "Utilisateur"
+
+#: burpui/forms.py:19 burpui/templates/login.html:9
+msgid "Password"
+msgstr "Mot de passe"
+
+#: burpui/forms.py:20
+msgid "Language"
+msgstr "Langue"
+
+#: burpui/forms.py:21
+msgid "Remember me"
+msgstr "Rester connecté"
+
+#: burpui/routes.py:169 burpui/routes.py:176
+msgid "Sorry, there are no running backups"
+msgstr "Désolé, il n'y a pas de backups"
+
+#: burpui/routes.py:196 burpui/routes.py:234
+msgid "Sorry, there are no restore file found for this client"
+msgstr "Désolé, il n'y a pas restoration prévue pour ce client"
+
+#: burpui/routes.py:385
+msgid "Logged in successfully"
+msgstr "Connecté avec succès"
+
+#: burpui/routes.py:388
+msgid "Wrong username or password"
+msgstr "Mauvais nom d'utilisateur ou mot de passe"
+
+#: burpui/templates/client.html:8 burpui/templates/client.html:12
+#: burpui/templates/clients.html:8 burpui/templates/clients.html:11
+#: burpui/templates/servers.html:7
+msgid "Home"
+msgstr "Accueil"
+
+#: burpui/templates/client.html:10 burpui/templates/client.html:13
+msgid "overview"
+msgstr "aperçu"
+
+#: burpui/templates/client.html:21 burpui/templates/client.html:32
+msgid "Number"
+msgstr "Numéro"
+
+#: burpui/templates/client.html:23 burpui/templates/client.html:34
+msgid "Bytes received"
+msgstr "Octets reçus"
+
+#: burpui/templates/client.html:24 burpui/templates/client.html:35
+msgid "Estimated size"
+msgstr "Taille (estimation)"
+
+#: burpui/templates/client.html:25 burpui/templates/client.html:36
+msgid "Deletable"
+msgstr "Supprimable"
+
+#: burpui/templates/client.html:44
+msgid "Sorry!"
+msgstr "Désolé!"
+
+#: burpui/templates/client.html:44
+msgid "There are no backups for this client."
+msgstr "Il n'y a pas de sauvegardes pour ce client."
+
+#: burpui/templates/client.html:50
+msgid "Edit restore"
+msgstr "Éditer restauration"
+
+#: burpui/templates/client.html:53
+msgid "Schedule backup"
+msgstr "Planifier sauvegarde"
+
+#: burpui/templates/client.html:58
+msgid "Cancel restore"
+msgstr "Annuler restauration"
+
+#: burpui/templates/client.html:61
+msgid "Cancel backup"
+msgstr "Annuler sauvegarde"
+
+#: burpui/templates/clients.html:22 burpui/templates/servers.html:16
+msgid "Name"
+msgstr "Nom"
+
+#: burpui/templates/clients.html:23
+msgid "State"
+msgstr "État"
+
+#: burpui/templates/clients.html:24
+msgid "Last Backup"
+msgstr "Dernière sauvegarde"
+
+#: burpui/templates/login.html:7
+msgid "Login"
+msgstr "Se connecter"
+
+#: burpui/templates/servers.html:10 burpui/templates/topbar.html:23
+msgid "Servers"
+msgstr "Serveurs"
+
+#: burpui/templates/sidebar.html:14 burpui/templates/sidebar.html:16
+#: burpui/templates/sidebar.html:18 burpui/templates/sidebar.html:20
+#: burpui/templates/sidebar.html:22
+msgid "Overview"
+msgstr "Aperçu"
+
+#: burpui/templates/sidebar.html:27 burpui/templates/sidebar.html:29
+#: burpui/templates/sidebar.html:31 burpui/templates/sidebar.html:33
+#: burpui/templates/sidebar.html:35
+msgid "Reports"
+msgstr "Rapports"
+
+#: burpui/templates/sidebar.html:39
+msgid "Calendar"
+msgstr "Calendrier"
+
+#: burpui/templates/sideconfig.html:3
+msgid "Configuration navigation"
+msgstr "Navigation"
+
+#: burpui/templates/sideconfig.html:11
+msgid "Client to configure"
+msgstr "Client à configurer"
+
+#: burpui/templates/sideconfig.html:31
+msgid "Create new client"
+msgstr "Créer un nouveau client"
+
+#: burpui/templates/topbar.html:5
+msgid "Toggle navigation"
+msgstr "Afficher menu"
+
+#: burpui/templates/topbar.html:16
+msgid "About"
+msgstr "À propos"
+
+#: burpui/templates/topbar.html:43
+msgid "Settings"
+msgstr "Paramètres"
+
+#: burpui/templates/topbar.html:49
+msgid "Live monitor"
+msgstr "Moniteur temps réél"
+
+#: burpui/templates/topbar.html:55
+msgid "Logout"
+msgstr "Se déconnecter"
+
+#: burpui/templates/topbar.html:61
+msgid "Refresh"
+msgstr "Rafraîchir"
+
+#: burpui/templates/topbar.html:68
+msgid "Search client..."
+msgstr "Rechercher client..."
+

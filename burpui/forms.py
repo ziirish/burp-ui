@@ -7,12 +7,15 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
+from .ext.i18n import LANGUAGES, get_locale
 
 from flask_wtf import Form
-from wtforms import TextField, PasswordField, BooleanField, validators
+from flask_babel import gettext
+from wtforms import TextField, PasswordField, BooleanField, SelectField, validators
 
 
 class LoginForm(Form):
-    username = TextField('Username', [validators.Length(min=2, max=25)])
-    password = PasswordField('Password', [validators.Required()])
-    remember = BooleanField('Remember me', [validators.Optional()])
+    username = TextField(gettext('Username'), [validators.Length(min=2, max=25)])
+    password = PasswordField(gettext('Password'), [validators.Required()])
+    language = SelectField(gettext('Language'), choices=LANGUAGES.items(), default=get_locale)
+    remember = BooleanField(gettext('Remember me'), [validators.Optional()])

@@ -48,11 +48,21 @@ ROOT_PWD=`pwd`
 BURP_DIR=$(mktemp -d)
 cd $BURP_DIR
 
-git clone $BURP
-cd burp
-git checkout tags/${BURP_VERSION}
-./configure --disable-ipv6
-make
+cat >/etc/apt/sources.list.d/ziirish.list<<EOF
+deb http://ziirish.info/debian/ zi-stable main
+EOF
+
+cat >>/etc/apt/preferences<<EOF
+Explanation: Ziirish's packages should be preferred
+Package: *
+Pin: release o=Ziirish, c=main
+Pin-Priority: 900
+EOF
+
+wget http://ziirish.info/debian/debian.gpg -O- | apt-key add -
+
+apt-get update
+apt-get install -y -t zi-stable burp
 
 cd $ROOT_PWD
 WORKING_DIR=$(mktemp -d)
@@ -64,8 +74,8 @@ sed -i "s|@WORKING_DIR@|${WORKING_DIR}|" $WORKING_DIR/config/CA/CA.cnf
 
 echo "launching background burp-server"
 LOGFILE=$(mktemp)
-$BURP_DIR/burp/src/burp -F -c $WORKING_DIR/config/burp.conf -g >$LOGFILE 2>&1
-($BURP_DIR/burp/src/burp -F -c $WORKING_DIR/config/burp.conf >>$LOGFILE 2>&1) &
+burp -F -c $WORKING_DIR/config/burp.conf -g >$LOGFILE 2>&1
+(burp -F -c $WORKING_DIR/config/burp.conf >>$LOGFILE 2>&1) &
 BURP_PID=$!
 
 #echo "downloading and compiling burp v${BURP2_VERSION}"

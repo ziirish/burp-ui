@@ -11,7 +11,6 @@
 {% macro render_field(field, label_visible=true) -%}
 
     <div class="form-group {% if field.errors %}has-error{% endif %} {{ kwargs.pop('class_', '') }}">
-     {#        {% if (field.id != 'csrf_token' or field.type != 'HiddenField' or field.type !='CSRFTokenField') and label_visible %} #}
         {% if (field.id != 'csrf_token' or field.type != 'HiddenField') %}
             <label for="{{ field.id }}" class="control-label">{{ field.label }}</label>
         {% endif %}
@@ -88,6 +87,8 @@
                     {{ render_checkbox_field(f) }}
                 {% elif f.type == 'RadioField' %}
                     {{ render_radio_field(f) }}
+                {% elif f.type == 'SelectField' %}
+                    {{ render_select_field(f) }}
                 {% else %}
                     {{ render_field(f) }}
                 {% endif %}

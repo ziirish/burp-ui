@@ -56,6 +56,12 @@
     <!-- Typeadhead + Bloodhound Javascript
     ================================================== -->
     <script src="{{ url_for('bower.static', filename='typeahead.js/dist/typeahead.bundle.min.js') }}"></script>
+    <!-- MomentJS
+    ================================================== -->
+    <script src="{{ url_for('bower.static', filename='moment/min/moment.min.js') }}"></script>
+    {% if g.locale and g.locale != 'en' -%}
+    <script src="{{ url_for('bower.static', filename='moment/locale/{}.js'.format(g.locale)) }}"></script>
+    {% endif -%}
     {% if report -%}
     <!-- d3 + nvd3 Javascript
     ================================================== -->
@@ -101,7 +107,6 @@
     ================================================== -->
     <script src="{{ url_for('bower.static', filename='angular-bootstrap/ui-bootstrap.min.js') }}"></script>
     <script src="{{ url_for('bower.static', filename='angular-bootstrap/ui-bootstrap-tpls.min.js') }}"></script>
-    <script src="{{ url_for('bower.static', filename='moment/min/moment.min.js') }}"></script>
     <script src="{{ url_for('bower.static', filename='angular-ui-calendar/src/calendar.js') }}"></script>
     <script src="{{ url_for('bower.static', filename='fullcalendar/dist/fullcalendar.min.js') }}"></script>
     <script src="{{ url_for('bower.static', filename='fullcalendar/dist/gcal.js') }}"></script>
