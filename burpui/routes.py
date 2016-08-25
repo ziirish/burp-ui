@@ -19,7 +19,6 @@ from ._compat import quote
 from .forms import LoginForm
 from .exceptions import BUIserverException
 from .utils import human_readable as _hr
-from .ext.i18n import LANGUAGES, get_locale
 
 
 class Blueprint(FlaskBlueprint):

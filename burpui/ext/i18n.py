@@ -20,6 +20,7 @@ LANGUAGES = {
 }
 config['LANGUAGES'] = LANGUAGES
 
+
 @babel.localeselector
 def get_locale():
     locale = None

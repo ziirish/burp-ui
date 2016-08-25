@@ -59,7 +59,7 @@
     <!-- MomentJS
     ================================================== -->
     <script src="{{ url_for('bower.static', filename='moment/min/moment.min.js') }}"></script>
-    {% if g.locale != 'en' -%}
+    {% if g.locale and g.locale != 'en' -%}
     <script src="{{ url_for('bower.static', filename='moment/locale/{}.js'.format(g.locale)) }}"></script>
     {% endif -%}
     {% if report -%}
