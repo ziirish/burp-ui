@@ -247,7 +247,8 @@ class BurpuiLoginTestCase(TestCase):
     def login(self, username, password):
         return self.client.post(url_for('view.login'), data=dict(
             username=username,
-            password=password
+            password=password,
+            language='en'
         ), follow_redirects=True)
 
     def create_app(self):
@@ -288,7 +289,8 @@ class BurpuiACLTestCase(TestCase):
     def login(self, username, password):
         return self.client.post(url_for('view.login'), data=dict(
             username=username,
-            password=password
+            password=password,
+            language='en'
         ), follow_redirects=True)
 
     def logout(self):
