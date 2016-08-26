@@ -1,0 +1,13 @@
+Source: burp-ui
+Section: python
+Priority: extra
+Maintainer: Ziirish <hi+burpui@ziirish.me>
+Build-Depends: debhelper (>= 9), python, dh-virtualenv (>= 0.7), libffi-dev, libssl-dev, python-dev
+Standards-Version: 3.9.5
+
+Package: burp-ui
+Architecture: any
+Pre-Depends: dpkg (>= 1.16.1), python2.7, ${misc:Pre-Depends}
+Depends: ${python:Depends}, ${misc:Depends}
+Description: Burp-UI dashboard for your Burp server
+ Burp-UI provides an easy to use web-ui for Burp.
