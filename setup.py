@@ -237,7 +237,7 @@ setup(
         'local_authentication': ['pam'],
         'extra': ['ujson'],
         'gunicorn': ['gevent'],
-        'gunicorn-extra': ['redis', 'Flask-Session'],
+        'gunicorn-extra': ['redis', 'Flask-Session==0.3.0'],
         'agent': ['gevent'],
         'test': test_requires,
         'dev': dev_requires,
