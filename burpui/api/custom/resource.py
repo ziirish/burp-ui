@@ -31,7 +31,7 @@ class Resource(ResourcePlus):
 
     def __init__(self, api=None, *args, **kwargs):
         """Constructor"""
-        self.username = current_user.get_id()
+        self.username = getattr(current_user, 'name', None)
         # if there is no ACL, assume everybody is admin
         self.is_admin = True
         if bui.acl:

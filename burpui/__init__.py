@@ -16,10 +16,10 @@ import logging
 import warnings
 from logging import Formatter
 
-if sys.version_info < (3, 0):
+if sys.version_info < (3, 0):  # pragma: no cover
     reload(sys)
     sys.setdefaultencoding('utf-8')
-else:
+else:  # pragma: no cover
     basestring = str
 
 __title__ = 'burp-ui'
@@ -184,6 +184,7 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
     from flask_bower import Bower
     from .utils import basic_login_from_request, ReverseProxied, lookup_file
     from .server import BUIServer as BurpUI
+    from .sessions import session_manager
     from .routes import view
     from .api import api, apibp
     from .ext.cache import cache
@@ -346,6 +347,7 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
                 app.config['SESSION_PERMANENT'] = False
                 ses = Session()
                 ses.init_app(app)
+                session_manager.backend = red
             # Cache setup
             if not app.cache_db or app.cache_db.lower() != 'none':
                 host, port, pwd = get_redis_server(app)
@@ -423,6 +425,10 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
     app.login_manager.session_protection = 'strong'
     app.login_manager.init_app(app)
 
+    # Initialize Session Manager
+    session_manager.init_app(app)
+
+    # Initialize Bower ext
     app.config.setdefault(
         'BOWER_COMPONENTS_ROOT',
         os.path.join('static', 'vendor')
@@ -433,6 +439,7 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
 
     @app.before_request
     def setup_request():
+        g.locale = get_locale()
         # make sure to store secure cookie if required
         if app.scookie:
             from flask import request
@@ -456,9 +463,11 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
         if app.auth != 'none':
             return basic_login_from_request(request, app)
 
-    @app.before_request
-    def before_request():
-        g.locale = get_locale()
+    @app.after_request
+    def after_request(response):
+        if getattr(g, 'basic_session', False):
+            session_manager.invalidate_current_session()
+        return response
 
     return app
 

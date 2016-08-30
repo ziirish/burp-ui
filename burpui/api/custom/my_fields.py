@@ -26,10 +26,11 @@ class DateTime(fields.DateTime):
             return None
         try:
             value = float(value)
-        except ValueError:
-            raise arrow.parser.ParserError("'{}' is not a float".format(value))
-        a = arrow.get(datetime.datetime.utcfromtimestamp(value))
-        a = a.replace(tzinfo=TZ)
+            a = arrow.get(datetime.datetime.utcfromtimestamp(value))
+            a = a.replace(tzinfo=TZ)
+        except (ValueError, TypeError):
+            a = arrow.get(value)
+            a = a.to(TZ)
         return fields.DateTime.parse(self, a.datetime)
 
     def format(self, value):

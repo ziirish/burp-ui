@@ -61,6 +61,7 @@ class BUIuser(with_metaclass(ABCMeta, UserMixin)):
     :class:`flask_login:flask_login.UserMixin` class.
     """
     backend = None
+    admin = True
 
     @abstractmethod
     def login(self, passwd=None):
@@ -87,3 +88,12 @@ class BUIuser(with_metaclass(ABCMeta, UserMixin)):
         :returns: True if a user is authenticated, otherwise False
         """
         return self.authenticated
+
+    @property
+    def is_admin(self):
+        """
+        If no ACL engine is loaded, every logged-in user will be granted admin
+        rights
+        :returns: True if the user is admin, otherwise False
+        """
+        return self.admin

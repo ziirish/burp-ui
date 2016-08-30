@@ -1,6 +1,7 @@
 # -*- coding: utf8 -*-
 import os
 
+from ...sessions import session_manager
 from .interface import BUIhandler, BUIuser
 from importlib import import_module
 from flask import session
@@ -38,29 +39,39 @@ class UserAuthHandler(BUIhandler):
 
     def user(self, name=None):
         """See :func:`burpui.misc.auth.interface.BUIhandler.user`"""
-        if name not in self.users:
-            self.users[name] = UserHandler(self.backends, name)
-        return self.users[name]
+        key = session_manager.get_session_id() or name
+        if session_manager.session_managed():
+            session_manager.session_expired()
+        if key not in self.users:
+            self.users[key] = UserHandler(self.app, self.backends, name, key)
+        return self.users[key]
 
 
 class UserHandler(BUIuser):
     """See :class:`burpui.misc.auth.interface.BUIuser`"""
-    def __init__(self, backends=None, name=None):
-        sess = session._get_current_object()
+    def __init__(self, app, backends=None, name=None, id=None):
+        """
+        :param app: Application context
+        :type app: :class:`burpui.server.BUIServer`
+        """
+        self.id = id
+        self.app = app
         self.active = False
-        self.authenticated = sess.get('authenticated', False)
-        self.language = sess.get('language', None)
+        self.authenticated = session.get('authenticated', False)
+        self.language = session.get('language', None)
         self.backends = backends
         self.back = None
-        self.name = name
+        self.name = session_manager.get_session_username() or name
         self.real = None
 
         for name, back in iteritems(self.backends):
             u = back.user(self.name)
             res = u.get_id()
             if res:
-                self.id = res
                 self.active = True
+                self.name = res
+                if self.app.acl:
+                    self.admin = self.app.acl.is_admin(self.name)
                 break
 
     def login(self, passwd=None):
@@ -72,23 +83,19 @@ class UserHandler(BUIuser):
                 res = u.get_id()
                 if u.login(passwd):
                     self.authenticated = True
-                    self.id = res
                     self.real = u
                     self.back = back
+                    self.name = res
+                    if self.app.acl:
+                        self.admin = self.app.acl.is_admin(self.name)
                     break
         elif self.real:  # pragma: no cover
             if self.back and getattr(self.back, 'changed', False):
                 self.real = None
                 self.back = None
+                self.admin = not self.app.acl
                 return self.login(passwd)
             self.authenticated = self.real.login(passwd)
-        sess = session._get_current_object()
-        sess['authenticated'] = self.authenticated
-        sess['language'] = self.language
+        session['authenticated'] = self.authenticated
+        session['language'] = self.language
         return self.authenticated
-
-    def get_id(self):
-        try:
-            return unicode(self.id)
-        except NameError:
-            return str(self.id)

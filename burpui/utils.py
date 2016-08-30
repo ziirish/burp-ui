@@ -298,7 +298,19 @@ def basic_login_from_request(request, app):
             user = app.uhandler.user(auth.username)
             if user.active and user.login(auth.password):
                 from flask_login import login_user
+                from flask import g
+                from .sessions import session_manager
                 login_user(user)
+                if request.headers.get('X-Reuse-Session', False):
+                    session_manager.store_session(
+                        auth.username,
+                        request.remote_addr,
+                        request.headers.get('User-Agent'),
+                        remember=False,
+                        api=True
+                    )
+                else:
+                    g.basic_session = True
                 app.logger.debug('Successfully logged in')
                 return user
             app.logger.warning('Failed to log-in')

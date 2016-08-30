@@ -38,6 +38,7 @@ G_CELERY = False
 G_SCOOKIE = True
 G_APPSECRET = u'random'
 G_COOKIETIME = 14
+G_SESSIONTIME = 5
 G_DATABASE = u''
 G_PREFIX = u''
 G_NO_SERVER_RESTORE = False
@@ -70,6 +71,7 @@ class BUIServer(Flask):
             'scookie': G_SCOOKIE,
             'appsecret': G_APPSECRET,
             'cookietime': G_COOKIETIME,
+            'sessiontime': G_SESSIONTIME,
         },
         'Production': {
             'storage': G_STORAGE,
@@ -284,11 +286,17 @@ class BUIServer(Flask):
             section='Security'
         )
         days = self.conf.safe_get('cookietime', 'integer', section='Security') \
-            or 0
+            or G_COOKIETIME
         self.config['REMEMBER_COOKIE_DURATION'] = \
             self.config['PERMANENT_SESSION_LIFETIME'] = timedelta(
                 days=days
         )
+        days = self.conf.safe_get(
+            'sessiontime',
+            'integer',
+            section='Security'
+        ) or G_SESSIONTIME
+        self.config['SESSION_INACTIVE'] = timedelta(days=days)
 
         self.logger.info('burp version: {}'.format(self.vers))
         self.logger.info('listen port: {}'.format(self.port))
@@ -301,6 +309,9 @@ class BUIServer(Flask):
         self.logger.info('secure cookie: {}'.format(self.scookie))
         self.logger.info(
             'cookietime: {}'.format(self.config['REMEMBER_COOKIE_DURATION'])
+        )
+        self.logger.info(
+            'session inactive: {}'.format(self.config['SESSION_INACTIVE'])
         )
         self.logger.info('refresh: {}'.format(self.config['REFRESH']))
         self.logger.info('liverefresh: {}'.format(self.config['LIVEREFRESH']))

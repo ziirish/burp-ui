@@ -9,6 +9,7 @@
 """
 from . import api
 from ..server import BUIServer  # noqa
+from ..sessions import session_manager
 from .custom import fields, Resource
 #  from ..exceptions import BUIserverException
 
@@ -23,6 +24,15 @@ user_fields = ns.model('Users', {
     'id': fields.String(required=True, description='User id'),
     'name': fields.String(required=True, description='User name'),
     'backend': fields.String(required=True, description='Backend name'),
+})
+session_fields = ns.model('Sessions', {
+    'uuid': fields.String(description='Session id'),
+    'ip': fields.String(description='IP address'),
+    'ua': fields.String(description='User-Agent'),
+    'permanent': fields.Boolean(description='Remember cookie'),
+    'api': fields.Boolean(description='API login'),
+    'expire': fields.DateTime(description='Expiration date'),
+    'timestamp': fields.DateTime(description='Last seen')
 })
 
 
@@ -288,3 +298,63 @@ class AuthBackends(Resource):
             })
 
         return ret
+
+
+@ns.route('/me/session',
+          '/me/session/<id>',
+          endpoint='user_sessions')
+@ns.doc(
+    params={
+        'id': 'Session id',
+    }
+)
+class MySessions(Resource):
+    """The :class:`burpui.api.admin.MySessions` resource allows you to
+    retrieve a list of sessions and invalidate them for the current user.
+
+    This resource is part of the :mod:`burpui.api.admin` module.
+    """
+
+    @ns.marshal_list_with(session_fields, code=200, description='Success')
+    @ns.doc(
+        responses={
+            403: 'Insufficient permissions',
+            404: 'User not found',
+        },
+    )
+    def get(self, id=None):
+        """Returns a list of sessions
+
+        **GET** method provided by the webservice.
+
+        :returns: Sessions
+        """
+        if id:
+            return session_manager.get_session_by_id(id)
+        user = getattr(current_user, 'name', None)
+        if not user:
+            self.abort(404, 'User not found')
+        return session_manager.get_user_sessions(user)
+
+    @ns.marshal_with(session_fields, code=201, description='Success')
+    @ns.doc(
+        responses={
+            403: 'Insufficient permissions',
+            404: 'User or session not found',
+            400: 'Wrong request'
+        }
+    )
+    def delete(self, id=None):
+        if not id:
+            self.abort(400, 'Missing id')
+        user = getattr(current_user, 'name', None)
+        if not user:
+            self.abort(404, 'User not found')
+        store = session_manager.get_session_by_id(id)
+        if not store:
+            self.abort('Session not found')
+        if store.user != user:
+            self.abort(403, 'Insufficient permissions')
+        if session_manager.invalidate_session_by_id(store.uuid):
+            session_manager.delete_session_by_id(store.uuid)
+        return store, 201
