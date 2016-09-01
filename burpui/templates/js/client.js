@@ -27,8 +27,10 @@
  * ]
  * The JSON is then parsed into a table
  */
+{% import 'macros.html' as macros %}
 
 var _client_table = $('#table-client').dataTable( {
+	{{ macros.translate_datatable() }}
 	{% if session.pageLength -%}
 	pageLength: {{ session.pageLength }},
 	{% endif -%}

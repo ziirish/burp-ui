@@ -437,16 +437,5 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', function($scope, 
 	};
 }]);
 
-// Add a smooth scrolling to anchor
-$(document).ready(function() {
-	$('a[href^="#"]').click(function() {
-		var target = $(this.hash);
-		if (target.length == 0) target = $('a[name="' + this.hash.substr(1) + '"]');
-		if (target.length == 0) target = $('html');
-		$('html, body').animate({ scrollTop: target.offset().top }, 500);
-		return false;
-	});
-	$(".dropdown-menu label, .dropdown-menu input, .dropdown-menu li").click(function(e) {
-		e.stopPropagation();
-	});
-});
+{% import 'macros.html' as macros %}
+{{ macros.smooth_scrolling() }}
