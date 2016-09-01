@@ -1,3 +1,10 @@
 Flask-Testing
 nose
 coverage
+# extensions requirements
+redis
+Flask-Session
+Celery
+redis
+Flask-SQLAlchemy
+Flask-Migrate

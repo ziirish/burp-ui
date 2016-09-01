@@ -6,6 +6,7 @@ burpui/RELEASE
 devel.sh
 *.egg*
 .coverage
+.coveragerc
 dist
 _build
 .tags
