@@ -32,15 +32,24 @@ class SessionManager(object):
         self.prefix = self.app.config.get('SESSION_KEY_PREFIX', 'session:')
 
     def session_expired(self):
-        """Check if a session is expired"""
+        """Check if the current session has expired"""
+        if self.session_managed():
+            return self.session_expired_by_id(self.get_session_id())
+        return False
+
+    def session_expired_by_id(self, id):
+        """Check if a session has expired"""
         if self.session_managed():
             from .ext.sql import db
             from .models import Session
-            store = Session.query.filter_by(uuid=session.sid).first()
+            store = Session.query.filter_by(uuid=id).first()
             inactive = self.app.config['SESSION_INACTIVE']
             if (store and (inactive and inactive.days > 0) and
                     (store.timestamp + inactive < datetime.datetime.utcnow())):
-                session['authenticated'] = False
+                if id == self.get_session_id():
+                    self.invalidate_current_session()
+                else:
+                    self.invalidate_session_by_id(id)
                 db.session.delete(store)
                 db.session.commit()
                 return True
@@ -60,7 +69,7 @@ class SessionManager(object):
             from .ext.sql import db
             from .models import Session
             store = Session(
-                session.sid,
+                self.get_session_id(),
                 user,
                 ip,
                 ua,
@@ -86,7 +95,7 @@ class SessionManager(object):
         """Return the username stored in the session"""
         if self.session_managed():
             from .models import Session
-            store = Session.query.filter_by(uuid=session.sid).first()
+            store = Session.query.filter_by(uuid=self.get_session_id()).first()
             if store:
                 return store.user
         return None
@@ -94,26 +103,44 @@ class SessionManager(object):
     def get_session_id(self):
         """Return the current session id"""
         if self.app.storage and self.app.storage.lower() != 'default':
-            return session.sid
+            return getattr(session, 'sid', None)
         return None
+
+    def get_expired_sessions(self):
+        """Return all expired sessions"""
+        if self.session_managed():
+            from .models import Session
+            inactive = self.app.config['SESSION_INACTIVE']
+            if inactive and inactive.days > 0:
+                limit = datetime.datetime.utcnow() - inactive
+                return Session.query.filter(
+                    Session.timestamp <= limit
+                ).all()
+        return []
 
     def get_user_sessions(self, user):
         """Return all sessions of a given user"""
         if self.session_managed():
             from .models import Session
             sessions = Session.query.filter_by(user=user).all()
+            curr = self.get_session_id()
             for sess in sessions:
+                if sess.uuid == curr:
+                    sess.current = True
                 if not sess.expire:
                     sess.expire = self.get_session_ttl(sess.uuid)
             return sessions
-        return None
+        return []
 
     def get_session_by_id(self, id):
         """Return a session by id"""
         if self.session_managed():
             from .models import Session
             sess = Session.query.filter_by(uuid=id).first()
+            curr = self.get_session_id()
             if sess and not sess.expire:
+                if sess.uuid == curr:
+                    sess.current = True
                 sess.expire = self.get_session_ttl(sess.uuid)
             return sess
         return None
@@ -148,7 +175,8 @@ class SessionManager(object):
                 if 'authenticated' in sess:
                     sess.pop('authenticated')
                 ttl = self.backend.ttl(key)
-                self.backend.setex(key, sess, ttl)
+                val = self.app.session_interface.serializer.dumps(dict(sess))
+                self.backend.setex(key, val, ttl)
             # make sure to remove the current user cache
             if self.app.auth != 'none':
                 handler = self.app.uhandler

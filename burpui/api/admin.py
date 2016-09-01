@@ -32,7 +32,8 @@ session_fields = ns.model('Sessions', {
     'permanent': fields.Boolean(description='Remember cookie'),
     'api': fields.Boolean(description='API login'),
     'expire': fields.DateTime(description='Expiration date'),
-    'timestamp': fields.DateTime(description='Last seen')
+    'timestamp': fields.DateTime(description='Last seen'),
+    'current': fields.Boolean(description='Is current session', default=False)
 })
 
 
@@ -345,6 +346,10 @@ class MySessions(Resource):
         }
     )
     def delete(self, id=None):
+        """Delete a given session
+
+        Note: ``id`` is mandatory
+        """
         if not id:
             self.abort(400, 'Missing id')
         user = getattr(current_user, 'name', None)
