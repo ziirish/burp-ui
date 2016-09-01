@@ -353,8 +353,10 @@ class BurpuiTestInit(TestCase):
     def create_app(self):
         conf1 = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test7-1.cfg')
         conf2 = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test7-2.cfg')
+        conf4 = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test7-4.cfg')
         BUIinit(conf1, False, None, False, unittest=True)
         BUIinit(conf2, False, None, False, unittest=True)
+        BUIinit(conf4, False, None, False, unittest=True)
         bui = BUIinit(None, False, None, False, unittest=True)
         bui.config['TESTING'] = True
         bui.config['LIVESERVER_PORT'] = 5001
