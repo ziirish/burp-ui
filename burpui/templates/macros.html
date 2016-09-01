@@ -97,3 +97,28 @@
         <button type="submit" class="{{ btn_class }}">{{ action_text }} </button>
     </form>
 {%- endmacro %}
+
+{% macro smooth_scrolling() -%}
+// Add a smooth scrolling to anchor
+$(document).ready(function() {
+	$('a[href^="#"]').click(function() {
+		var target = $(this.hash);
+		if (target.length == 0) target = $('a[name="' + this.hash.substr(1) + '"]');
+		if (target.length == 0) target = $('html');
+		$('html, body').animate({ scrollTop: target.offset().top }, 500);
+		return false;
+	});
+	$(".dropdown-menu label, .dropdown-menu input, .dropdown-menu li").click(function(e) {
+		e.stopPropagation();
+	});
+});
+{%- endmacro %}
+
+{# Loads the datatable translation if needed #}
+{% macro translate_datatable() -%}
+  {% if g.locale and g.locale != 'en' -%}
+  language: {
+    url: '{{ url_for("static", filename="extra/i18n/datatable-{}.json".format(g.locale)) }}'
+  },
+  {% endif -%}
+{%- endmacro %}

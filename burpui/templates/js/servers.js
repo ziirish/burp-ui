@@ -8,7 +8,9 @@
  * _servers: function that retrieve up-to-date informations from the burp server
  *  The JSON is then parsed into a table
  */
+{% import 'macros.html' as macros %}
 var _servers_table = $('#table-servers').dataTable( {
+	{{ macros.translate_datatable() }}
 	responsive: true,
 	ajax: {
 		url: '{{ url_for("api.servers_stats") }}',
