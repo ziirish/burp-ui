@@ -322,7 +322,7 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
             # Session setup
             if not app.session_db or app.session_db.lower() != 'none':
                 from redis import Redis
-                from flask_session import Session
+                from .ext.session import sess
                 host, port, pwd = get_redis_server(app)
                 db = 0
                 if app.session_db and app.session_db.lower() != 'default':
@@ -345,8 +345,7 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
                 app.config['SESSION_REDIS'] = red
                 app.config['SESSION_USE_SIGNER'] = app.secret_key is not None
                 app.config['SESSION_PERMANENT'] = False
-                ses = Session()
-                ses.init_app(app)
+                sess.init_app(app)
                 session_manager.backend = red
             # Cache setup
             if not app.cache_db or app.cache_db.lower() != 'none':

@@ -11,9 +11,9 @@ import datetime
 
 from flask import session
 
-try:  # noqa
+try:
     from redis import Redis  # noqa
-except ImportError:  # noqa
+except ImportError:  # pragma: no cover
     pass
 
 
@@ -92,10 +92,14 @@ class SessionManager(object):
             db.session.commit()
 
     def get_session_username(self):
+        """Return the username stored in the current session"""
+        return self.get_session_username_by_id(self.get_session_id())
+
+    def get_session_username_by_id(self, id):
         """Return the username stored in the session"""
         if self.session_managed():
             from .models import Session
-            store = Session.query.filter_by(uuid=self.get_session_id()).first()
+            store = Session.query.filter_by(uuid=id).first()
             if store:
                 return store.user
         return None
@@ -157,13 +161,18 @@ class SessionManager(object):
         """Ivalidate current session"""
         if 'authenticated' in session:
             session.pop('authenticated')
-        return self.invalidate_session_by_id(getattr(session, 'sid', None))
+        return self.invalidate_session_by_id(
+            getattr(session, 'sid', None),
+            False
+        )
 
-    def invalidate_session_by_id(self, id):
+    def invalidate_session_by_id(self, id, recurse=True):
         """Invalidate a given session"""
         if self.session_managed() and self.backend:
             if not id:
                 return True
+            if id == self.get_session_id() and recurse:
+                return self.invalidate_current_session()
             key = self.prefix + id
             if not hasattr(self.app.session_interface, 'serializer'):
                 return False
@@ -176,12 +185,15 @@ class SessionManager(object):
                     sess.pop('authenticated')
                 ttl = self.backend.ttl(key)
                 val = self.app.session_interface.serializer.dumps(dict(sess))
-                self.backend.setex(key, val, ttl)
+                self.backend.setex(name=key, value=val, time=ttl)
             # make sure to remove the current user cache
             if self.app.auth != 'none':
                 handler = self.app.uhandler
                 users = getattr(handler, 'users', {})
-                if id in users:
+                user = self.get_session_username_by_id(id)
+                if user and user in users:
+                    users.pop(user)
+                elif id in users:
                     users.pop(id)
         return True
 

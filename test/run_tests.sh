@@ -43,6 +43,11 @@ echo "test requirements"
 #echo "installing bower"
 #npm install -g bower
 
+mkdir -p /home
+cd ..
+cp -r burp-ui /home
+cd /home/burp-ui
+
 echo "downloading and compiling burp v${BURP_VERSION}"
 ROOT_PWD=`pwd`
 BURP_DIR=$(mktemp -d)

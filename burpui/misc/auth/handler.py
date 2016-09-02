@@ -44,7 +44,10 @@ class UserAuthHandler(BUIhandler):
             session_manager.session_expired()
         if key not in self.users:
             self.users[key] = UserHandler(self.app, self.backends, name, key)
-        return self.users[key]
+        ret = self.users[key]
+        ret.refresh_session()
+        self.users[key] = ret
+        return ret
 
 
 class UserHandler(BUIuser):
@@ -73,6 +76,10 @@ class UserHandler(BUIuser):
                 if self.app.acl:
                     self.admin = self.app.acl.is_admin(self.name)
                 break
+
+    def refresh_session(self):
+        self.authenticated = session.get('authenticated', False)
+        self.language = session.get('language', None)
 
     def login(self, passwd=None):
         """See :func:`burpui.misc.auth.interface.BUIuser.login`"""
