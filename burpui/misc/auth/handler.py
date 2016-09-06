@@ -37,13 +37,17 @@ class UserAuthHandler(BUIhandler):
         for obj in backends:
             self.backends[obj.name] = obj
 
-    def user(self, name=None):
+    def user(self, name=None, refresh=False):
         """See :func:`burpui.misc.auth.interface.BUIhandler.user`"""
         key = session_manager.get_session_id() or name
+        if refresh and key in self.users:
+            del self.users[key]
         if session_manager.session_managed():
             session_manager.session_expired()
         if key not in self.users:
-            self.users[key] = UserHandler(self.app, self.backends, name, key)
+            ret = UserHandler(self.app, self.backends, name, key)
+            self.users[key] = ret
+            return ret
         ret = self.users[key]
         ret.refresh_session()
         self.users[key] = ret
@@ -64,7 +68,8 @@ class UserHandler(BUIuser):
         self.language = session.get('language', None)
         self.backends = backends
         self.back = None
-        self.name = session_manager.get_session_username() or name
+        self.name = session_manager.get_session_username() or \
+            session.get('login') or name
         self.real = None
 
         for name, back in iteritems(self.backends):
@@ -105,4 +110,5 @@ class UserHandler(BUIuser):
             self.authenticated = self.real.login(passwd)
         session['authenticated'] = self.authenticated
         session['language'] = self.language
+        session['login'] = self.name
         return self.authenticated

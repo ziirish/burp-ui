@@ -146,7 +146,7 @@ $(document).ready(function() {
 			type: 'DELETE'
 		}).done(function(data) {
 			notifAll(data);
-			if (data[0] == 0) {
+			if (data[0] == NOTIF_SUCCESS) {
 				$('.edit-restore').hide();
 				$('.scheduled-backup').show();
 			}
@@ -160,7 +160,7 @@ $(document).ready(function() {
 			type: 'DELETE'
 		}).done(function(data) {
 			notifAll(data);
-			if (data[0] == 0) {
+			if (data[0] == NOTIF_SUCCESS) {
 				$('.cancel-backup').hide();
 				$('.scheduled-backup').show();
 			}
@@ -174,7 +174,7 @@ $(document).ready(function() {
 			type: 'PUT'
 		}).done(function(data) {
 			notifAll(data);
-			if (data[0] == 0) {
+			if (data[0] == NOTIF_SUCCESS) {
 				$('.cancel-backup').show();
 				$('.scheduled-backup').hide();
 			}

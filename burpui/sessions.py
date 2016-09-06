@@ -9,7 +9,7 @@
 """
 import datetime
 
-from flask import session
+from flask import session, request
 
 try:
     from redis import Redis  # noqa
@@ -54,8 +54,7 @@ class SessionManager(object):
                 db.session.commit()
                 return True
             elif store:
-                store.refresh()
-                db.session.commit()
+                store.refresh(request.remote_addr)
         return False
 
     def session_managed(self):
@@ -132,7 +131,11 @@ class SessionManager(object):
                 if sess.uuid == curr:
                     sess.current = True
                 if not sess.expire:
-                    sess.expire = self.get_session_ttl(sess.uuid)
+                    inactive = self.app.config['SESSION_INACTIVE']
+                    if inactive and inactive.days > 0:
+                        sess.expire = sess.timestamp + inactive
+                    else:
+                        sess.expire = self.get_session_ttl(sess.uuid)
             return sessions
         return []
 
@@ -145,7 +148,12 @@ class SessionManager(object):
             if sess and not sess.expire:
                 if sess.uuid == curr:
                     sess.current = True
-                sess.expire = self.get_session_ttl(sess.uuid)
+                if not sess.expire:
+                    inactive = self.app.config['SESSION_INACTIVE']
+                    if inactive and inactive.days > 0:
+                        sess.expire = sess.timestamp + inactive
+                    else:
+                        sess.expire = self.get_session_ttl(sess.uuid)
             return sess
         return None
 
@@ -161,10 +169,9 @@ class SessionManager(object):
         """Ivalidate current session"""
         if 'authenticated' in session:
             session.pop('authenticated')
-        return self.invalidate_session_by_id(
-            getattr(session, 'sid', None),
-            False
-        )
+        id = getattr(session, 'sid', None)
+        session.clear()
+        return self.invalidate_session_by_id(id, False)
 
     def invalidate_session_by_id(self, id, recurse=True):
         """Invalidate a given session"""

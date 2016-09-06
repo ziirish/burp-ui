@@ -46,7 +46,8 @@ class human_readable(long):
     def __format__(self, fmt):  # pragma: no cover
         # is it an empty format or not a special format for the size class
         if fmt == "" or fmt[-2:].lower() not in ["em", "sm", "cm"]:
-            if fmt[-1].lower() in ['b', 'c', 'd', 'o', 'x', 'n', 'e', 'f', 'g', '%']:
+            if fmt[-1].lower() in \
+                    ['b', 'c', 'd', 'o', 'x', 'n', 'e', 'f', 'g', '%']:
                 # Numeric format.
                 return long(self).__format__(fmt)
             else:
@@ -86,7 +87,8 @@ if PY3:  # pragma: no cover
     class BUIlogger(logging.Logger):
         padding = 0
         """Logger class for more convenience"""
-        def makeRecord(self, name, level, fn, lno, msg, args, exc_info, func=None, extra=None, sinfo=None):
+        def makeRecord(self, name, level, fn, lno, msg,
+                       args, exc_info, func=None, extra=None, sinfo=None):
             """
             Try to guess where was call the function
             """
@@ -106,13 +108,26 @@ if PY3:  # pragma: no cover
                     break
                 cpt += 1
             cpt += self.padding
-            (frame, filename, line_number, function_name, lines, index) = caller[cpt]
-            return super(BUIlogger, self).makeRecord(name, level, filename, line_number, msg, args, exc_info, func=function_name, extra=extra, sinfo=sinfo)
+            (frame, filename, line_number, function_name, lines, index) = \
+                caller[cpt]
+            return super(BUIlogger, self).makeRecord(
+                name,
+                level,
+                filename,
+                line_number,
+                msg,
+                args,
+                exc_info,
+                func=function_name,
+                extra=extra,
+                sinfo=sinfo
+            )
 else:
     class BUIlogger(logging.Logger):
         padding = 0
         """Logger class for more convenience"""
-        def makeRecord(self, name, level, fn, lno, msg, args, exc_info, func=None, extra=None):
+        def makeRecord(self, name, level, fn, lno, msg,
+                       args, exc_info, func=None, extra=None):
             """Try to guess where was call the function"""
             cf = currentframe()
             caller = getouterframes(cf)
@@ -130,8 +145,19 @@ else:
                     break
                 cpt += 1
             cpt += self.padding
-            (frame, filename, line_number, function_name, lines, index) = caller[cpt]
-            return super(BUIlogger, self).makeRecord(name, level, filename, line_number, msg, args, exc_info, func=function_name, extra=extra)
+            (frame, filename, line_number, function_name, lines, index) = \
+                caller[cpt]
+            return super(BUIlogger, self).makeRecord(
+                name,
+                level,
+                filename,
+                line_number,
+                msg,
+                args,
+                exc_info,
+                func=function_name,
+                extra=extra
+            )
 
 
 class BUIlogging(object):
@@ -141,11 +167,15 @@ class BUIlogging(object):
     """Provides a generic logging method for all modules"""
     def _logger(self, level, msg, *args):
         """generic logging method so that the logging is backend-independent"""
-        if self.logger and self.logger.getEffectiveLevel() <= logging.getLevelName(level.upper()):
+        if (self.logger and
+                self.logger.getEffectiveLevel() <= logging.getLevelName(
+                    level.upper()
+                )):
             sav = None
             if not self.monkey:
                 self.monkey = BUIlogger(__name__)
-            # bui-agent overrides the _logger function so we add a padding offset
+            # bui-agent overrides the _logger function so we add a padding
+            # offset
             self.monkey.padding = self.padding
             # dynamically monkey-patch the makeRecord function
             sav = self.logger.makeRecord
@@ -155,7 +185,9 @@ class BUIlogging(object):
 
 
 class BUIcompress():
-    """Provides a context to generate any kind of archive supported by burp-ui"""
+    """Provides a context to generate any kind of archive supported by
+    burp-ui
+    """
     def __init__(self, name, archive, zip64=False):  # pragma: no cover
         self.name = name
         self.archive = archive
@@ -164,7 +196,12 @@ class BUIcompress():
     def __enter__(self):
         self.arch = None
         if self.archive == 'zip':
-            self.arch = zipfile.ZipFile(self.name, mode='w', compression=zipfile.ZIP_DEFLATED, allowZip64=self.zip64)
+            self.arch = zipfile.ZipFile(
+                self.name,
+                mode='w',
+                compression=zipfile.ZIP_DEFLATED,
+                allowZip64=self.zip64
+            )
         elif self.archive == 'tar.gz':
             self.arch = tarfile.open(self.name, 'w:gz')
         elif self.archive == 'tar.bz2':
@@ -294,11 +331,16 @@ def basic_login_from_request(request, app):
             return None
         auth = request.authorization
         if auth:
+            from flask import session, g
             app.logger.debug('Found Basic user: {}'.format(auth.username))
-            user = app.uhandler.user(auth.username)
+            refresh = False
+            if 'login' in session and session['login'] != auth.username:
+                refresh = True
+                session.clear()
+                session['login'] = auth.username
+            user = app.uhandler.user(auth.username, refresh)
             if user.active and user.login(auth.password):
                 from flask_login import login_user
-                from flask import g
                 from .sessions import session_manager
                 login_user(user)
                 if request.headers.get('X-Reuse-Session', False):

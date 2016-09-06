@@ -57,11 +57,14 @@ class Session(db.Model):
             self.expire = datetime.datetime.utcnow() + \
                 app.permanent_session_lifetime
 
-    def refresh(self):
+    def refresh(self, ip=None):
         self.timestamp = datetime.datetime.utcnow()
+        if ip:
+            self.ip = ip
         if self.permanent:
             self.expire = datetime.datetime.utcnow() + \
                 app.permanent_session_lifetime
+        db.session.commit()
 
     def __repr__(self):
         return '<Session {} ({}, {}, {})>'.format(

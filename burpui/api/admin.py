@@ -10,6 +10,7 @@
 from . import api
 from ..server import BUIServer  # noqa
 from ..sessions import session_manager
+from ..utils import NOTIF_OK
 from .custom import fields, Resource
 #  from ..exceptions import BUIserverException
 
@@ -337,9 +338,9 @@ class MySessions(Resource):
             self.abort(404, 'User not found')
         return session_manager.get_user_sessions(user)
 
-    @ns.marshal_with(session_fields, code=201, description='Success')
     @ns.doc(
         responses={
+            201: 'Success',
             403: 'Insufficient permissions',
             404: 'User or session not found',
             400: 'Wrong request'
@@ -362,4 +363,4 @@ class MySessions(Resource):
             self.abort(403, 'Insufficient permissions')
         if session_manager.invalidate_session_by_id(store.uuid):
             session_manager.delete_session_by_id(store.uuid)
-        return store, 201
+        return [NOTIF_OK, 'Session {} successfully revoked'.format(id)], 201

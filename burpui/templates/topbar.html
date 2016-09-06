@@ -37,7 +37,7 @@
               </a>
             </li>
 		          {% endif -%}
-			        {% if config.STANDALONE or server -%}
+			        {% if config.STANDALONE or server or me -%}
             <li class="detail {% if settings %}active{% endif %}">
               <a href="{{ url_for('view.settings', server=server) }}">
                 <span class="glyphicon glyphicon-wrench"></span><span class="dtl">&nbsp;{{ _('Settings') }}</span>

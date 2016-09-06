@@ -393,7 +393,13 @@ def login():
     form = LoginForm(request.form)
 
     if form.validate_on_submit():
-        user = bui.uhandler.user(form.username.data)
+        refresh = False
+        # prevent session to be reused by another user
+        if 'login' in session and session['login'] != form.username.data:
+            refresh = True
+            session.clear()
+            session['login'] = form.username.data
+        user = bui.uhandler.user(form.username.data, refresh)
         user.language = form.language.data
         if user.is_active and user.login(form.password.data):
             login_user(user, remember=form.remember.data)
@@ -422,6 +428,7 @@ def logout():
         session.pop('language')
     session_manager.delete_session()
     logout_user()
+    session.clear()
     return redirect(url_for('.home'))
 
 
