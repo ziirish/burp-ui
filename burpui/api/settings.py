@@ -415,7 +415,6 @@ class PathExpander(Resource):
 )
 class SettingOptions(Resource):
 
-    @api.acl_admin_required(message='Sorry, you don\'t have rights to access the setting panel')
     @ns.doc(
         responses={
             200: 'Success',

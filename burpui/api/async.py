@@ -20,7 +20,6 @@ from ..sessions import session_manager
 from ..ext.async import celery
 from ..ext.cache import cache
 from ..config import config
-from ..exceptions import BUIserverException
 
 from six import iteritems
 from zlib import adler32
@@ -290,7 +289,7 @@ def perform_restore(self, client, backup,
 
     if err:
         # make the task crash
-        raise BUIserverException(err)
+        raise Exception(err)
 
     return ret
 
@@ -331,7 +330,7 @@ class AsyncRestoreStatus(Resource):
                     db.session.commit()
             task.revoke()
             err = str(task.result)
-            self.abort(500, err)
+            self.abort(502, err)
         if task.state == 'SUCCESS':
             if not task.result:
                 self.abort(500, 'The task did not return anything')
