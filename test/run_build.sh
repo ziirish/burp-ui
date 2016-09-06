@@ -17,8 +17,16 @@ echo "building dist"
 $PYTHON setup.py bdist_egg
 
 echo "publishing build"
-cp -vf dist/burp-ui*.tar.gz /pub/burp-ui.dev.tar.gz 2>/dev/null
-cp -vf dist/burp_ui*.egg /pub/burp_ui-dev-py${VERSION}.egg 2>/dev/null
-cp -vf dist/burp_ui*.whl /pub/burp_ui-dev-py2.py3-none-any.whl 2>/dev/null
+tgz=$(ls dist/burp-ui*.tar.gz | sed "s|dist/||")
+egg=$(ls dist/burp_ui*.egg | sed "s|dist/||")
+whl=$(ls dist/burp_ui*.whl | sed "s|dist/||")
+cp -vf dist/burp-ui*.tar.gz /pub/ 2>/dev/null
+cp -vf dist/burp_ui*.egg /pub/ 2>/dev/null
+cp -vf dist/burp_ui*.whl /pub/ 2>/dev/null
+
+cd /pub
+ln -sf $tgz burp-ui.dev.tar.gz
+ln -sf $egg burp_ui-dev-py${VERSION}.egg
+ln -sf $whl burp_ui-dev-py2.py3-none-any.whl
 
 exit 0
