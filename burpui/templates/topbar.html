@@ -18,7 +18,7 @@
             </li>
             {% if not login -%}
 							{% if not config.STANDALONE -%}
-            <li class="detail {% if not server and not about %}active{% endif %}">
+            <li class="detail {% if not server and not about and not me and not admin %}active{% endif %}">
               <a href="{{ url_for('view.home') }}">
                 <span class="glyphicon glyphicon-hdd"></span><span class="dtl">&nbsp;{{ _('Servers') }}</span>
               </a>
@@ -37,7 +37,7 @@
               </a>
             </li>
 		          {% endif -%}
-			        {% if config.STANDALONE or server -%}
+			        {% if config.STANDALONE or server or me -%}
             <li class="detail {% if settings %}active{% endif %}">
               <a href="{{ url_for('view.settings', server=server) }}">
                 <span class="glyphicon glyphicon-wrench"></span><span class="dtl">&nbsp;{{ _('Settings') }}</span>
@@ -50,9 +50,21 @@
               </a>
             </li>
 					    {% if current_user and current_user.is_authenticated -%}
+                {% if current_user.is_admin -%}
+            <li class="detail {% if admin %}active{% endif %}">
+              <a href="{{ url_for('view.admin') }}">
+                <span class="glyphicon glyphicon-cog"></span><span class="dtl">&nbsp;{{ _('Administration') }}</span>
+              </a>
+            </li>
+                {% endif -%}
+            <li class="detail {% if me %}active{% endif %}">
+              <a href="{{ url_for('view.me') }}">
+                <span class="glyphicon glyphicon-user"></span><span class="dtl">&nbsp;{{ _('User settings') }}</span>
+              </a>
+            </li>
             <li class="detail">
               <a href="{{ url_for('view.logout') }}">
-                <span class="glyphicon glyphicon-log-out"></span><span class="dtl">&nbsp;{{ _('Logout') }}<small>({{ current_user.get_id() }})</small></span>
+                <span class="glyphicon glyphicon-log-out"></span><span class="dtl">&nbsp;{{ _('Logout') }}<small>({{ current_user.name }})</small></span>
               </a>
             </li>
 						  {% endif -%}

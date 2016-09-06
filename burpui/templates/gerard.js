@@ -326,6 +326,10 @@ $('#input-client').typeahead({
 {% include "js/client-browse.js" %}
 {% endif -%}
 
+{% if me -%}
+{% include "js/user.js" %}
+{% endif -%}
+
 var _fit_menu = function() {
 	size = $(window).width();
 	target = $('li.detail');
@@ -380,18 +384,24 @@ $(function() {
 		{% if servers -%}
 		_servers();
 		{% endif -%}
+		{% if me -%}
+		_sessions();
+		{% endif -%}
 	});
 
 	/***
 	 * add a listener to the '.clickable' element dynamically added in the document (see _client and _clients function)
 	 */
 	$( document ).on('click', '.clickable', function() {
-		if ($(this).find('td').length > 1) {
+		if (!$(this).closest('table').hasClass('collapsed')) {
 			window.location = $(this).find('a').attr('href');
 		}
 	});
 	$( document ).on('click', 'td.child', function() {
-		window.location = $(this).parent().prev().find('a').attr('href');
+		$before = $(this).parent().prev();
+		if ($before.hasClass('clickable')) {
+			window.location = $before.find('a').attr('href');
+		}
 	});
 
 	/***
@@ -408,6 +418,9 @@ $(function() {
 	{% endif -%}
 	{% if servers -%}
 	_servers();
+	{% endif -%}
+	{% if me -%}
+	_sessions();
 	{% endif -%}
 
 	{% if not report and not login -%}

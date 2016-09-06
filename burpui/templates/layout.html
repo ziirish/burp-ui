@@ -15,7 +15,8 @@
     {% if report -%}
     <link href="{{ url_for('bower.static', filename='nvd3/build/nv.d3.min.css') }}" rel="stylesheet">
     {% else -%}
-    <link href="{{ url_for('bower.static', filename='datatables/media/css/dataTables.bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('bower.static', filename='datatables.net-bs/css/dataTables.bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('bower.static', filename='datatables.net-responsive-bs/css/responsive.bootstrap.min.css') }}" rel="stylesheet">
     {% endif -%}
     {% if tree -%}
     <link href="{{ url_for('bower.static', filename='jquery.fancytree/dist/skin-bootstrap/ui.fancytree.min.css') }}" rel="stylesheet">
@@ -27,6 +28,9 @@
     {% if calendar -%}
     <link href="{{ url_for('bower.static', filename='fullcalendar/dist/fullcalendar.min.css') }}" rel="stylesheet">
     <link href="{{ url_for('bower.static', filename='fullcalendar/dist/fullcalendar.print.css') }}" media="print" rel="stylesheet">
+    {% endif -%}
+    {% if me -%}
+    <link href="{{ url_for('bower.static', filename='components-font-awesome/css/font-awesome.min.css') }}" rel="stylesheet">
     {% endif -%}
 
     <!-- Custom styles for this template -->
@@ -70,9 +74,10 @@
     {% elif not calendar -%}
     <!-- DataTables
     ================================================== -->
-    <script src="{{ url_for('bower.static', filename='datatables/media/js/jquery.dataTables.min.js') }}"></script>
-    <script src="{{ url_for('bower.static', filename='datatables/media/js/dataTables.bootstrap.min.js') }}"></script>
-    <script src="{{ url_for('bower.static', filename='datatables-responsive/js/dataTables.responsive.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='datatables.net/js/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='datatables.net-bs/js/dataTables.bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='datatables.net-responsive/js/dataTables.responsive.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='datatables.net-responsive-bs/js/responsive.bootstrap.js') }}"></script>
     {% endif -%}
     {% if about or live or calendar or settings or ng_controller -%}
     <!-- configuration angular views

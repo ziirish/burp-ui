@@ -388,15 +388,17 @@ class NClient(BUIbackend):
         """Check if we are connected to the agent"""
         res = False
         try:
-            with Gsocket(self.host, self.port, self.ssl, self.timeout):
+            with Gsocket(self.host, self.port, self.ssl, self.timeout) as (sock, gsock):
+                sock.sendall(struct.pack('!Q', 2))
+                sock.sendall(b'RE')
                 res = True
         except socket.error:
             pass
         return res
 
     def setup(self, sock, gsock, data):
-        length = len(data)
-        sock.sendall(struct.pack('!Q', length))
+        length = struct.pack('!Q', len(data))
+        sock.sendall(length)
         sock.sendall(data.encode('UTF-8'))
         self.logger.debug("Sending: {}".format(data))
         tmp = sock.recv(2).decode('UTF-8')

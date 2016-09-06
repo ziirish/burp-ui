@@ -1,8 +1,9 @@
-Flask-Testing
+Flask-Testing==0.5.0
 nose
 coverage
+mock
+mockredispy
 # extensions requirements
-redis
 Flask-Session
 Celery
 redis

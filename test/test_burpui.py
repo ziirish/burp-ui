@@ -5,6 +5,7 @@ import os
 import json
 import unittest
 import tempfile
+import mockredis
 
 if sys.version_info >= (3, 0):
     from urllib.request import urlopen
@@ -12,11 +13,21 @@ else:
     from urllib2 import urlopen
 
 from flask_testing import LiveServerTestCase, TestCase
+from mock import patch
 from flask import url_for, session
 
 sys.path.append('{0}/..'.format(os.path.join(os.path.dirname(os.path.realpath(__file__)))))
 
 from burpui import init as BUIinit
+
+
+class MyMockRedis(mockredis.MockRedis):
+    def setex(self, name, time, value):
+        return super(MyMockRedis, self).set(name, value, ex=time)
+
+
+def mock_redis_client(**kwargs):
+    return MyMockRedis()
 
 
 class BurpuiLiveTestCase(LiveServerTestCase):
@@ -370,6 +381,75 @@ class BurpuiTestInit(TestCase):
         self.assertRaises(IOError, BUIinit, 'thisfileisnotlikelytoexist', False, self.tmpFile, False, unittest=True)
         conf3 = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test7-3.cfg')
         self.assertRaises(ImportError, BUIinit, conf3, False, None, False, unittest=True)
+
+
+class BurpuiRedisTestCase(TestCase):
+
+    def setUp(self):
+        print ('\nBegin Test 7\n')
+
+    def tearDown(self):
+        print ('\nTest 7 Finished!\n')
+
+    def login(self, username, password):
+        return self.client.post(url_for('view.login'), data=dict(
+            username=username,
+            password=password,
+            language='en',
+            remember=False
+        ), follow_redirects=True)
+
+    def logout(self):
+        return self.client.get(url_for('view.logout'), follow_redirects=True)
+
+    @patch('redis.StrictRedis', mockredis.mock_strict_redis_client)
+    @patch('redis.Redis', mock_redis_client)
+    def create_app(self):
+        conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test8.cfg')
+        bui = BUIinit(conf, False, None, False, unittest=True)
+        bui.config['TESTING'] = True
+        bui.config['LIVESERVER_PORT'] = 5001
+        bui.config['WTF_CSRF_ENABLED'] = False
+        bui.config['LOGIN_DISABLED'] = False
+        bui.cli.port = 9999
+        with bui.app_context():
+            from burpui.ext.sql import db
+            from burpui.models import Session, Task
+            db.create_all()
+            db.session.commit()
+        return bui
+
+    def test_login_and_revoke_session(self):
+        from burpui.sessions import session_manager
+        with self.client:
+            # create a second session
+            rv = self.login('admin', 'admin')
+            response = self.client.get(url_for('api.admin_me'))
+            self.assertEqual(response.json, {'id': 'admin', 'name': 'admin', 'backend': 'BASIC'})
+            sess = self.client.get(url_for('api.user_sessions'))
+            self.assertGreater(len(sess.json), 0)
+            self.assertIn('uuid', sess.json[0])
+            delete = self.client.delete(url_for('api.user_sessions', id=sess.json[0]['uuid']))
+            self.assertStatus(delete, 201)
+        with self.client:
+            response = self.client.get(url_for('api.admin_me'))
+            self.assert401(response)
+
+    def test_current_session(self):
+#        with self.app.test_client() as c:
+#            with c.session_transaction() as sess:
+#                sess['authenticated'] = True
+
+        from burpui.sessions import session_manager
+        from burpui.ext.sql import db
+        from burpui.models import Session
+        from datetime import datetime
+        session_manager.store_session('toto')
+        self.assertFalse(session_manager.session_expired())
+        sess = Session.query.filter_by(uuid=session_manager.get_session_id()).first()
+        sess.timestamp = datetime.utcfromtimestamp(0)
+        db.session.commit()
+        self.assertTrue(session_manager.session_expired())
 
 
 #class BurpuiAPILoginTestCase(TestCase):

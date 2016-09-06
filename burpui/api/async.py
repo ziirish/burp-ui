@@ -12,14 +12,14 @@ import select
 import struct
 
 from . import api, cache_key
-from .clients import RunningBackup, ClientsReport
 from .misc import History
-from ..server import BUIServer  # noqa
 from .custom import Resource
+from .clients import RunningBackup, ClientsReport
+from ..server import BUIServer  # noqa
+from ..sessions import session_manager
 from ..ext.async import celery
 from ..ext.cache import cache
 from ..config import config
-from ..exceptions import BUIserverException
 
 from six import iteritems
 from zlib import adler32
@@ -59,6 +59,10 @@ BEAT_SCHEDULE = {
     'get-all-clients-reports-every-twenty-minutes': {
         'task': '{}.get_all_clients_reports'.format(ME),
         'schedule': crontab(minute='*/20'),  # every 20 minutes
+    },
+    'cleanup-expired-sessions-daily': {
+        'task': '{}.cleanup_expired_sessions'.format(ME),
+        'schedule': crontab(hour='1'),  # every day at 1
     },
 }
 
@@ -119,10 +123,12 @@ def wait_for(lock_name, value, wait=10, timeout=LOCK_EXPIRE):
 @celery.task
 def ping_backend():
     if bui.standalone:
-        logger.debug(bui.cli.status())
+        bui.cli.status()
     else:
-        for server, backend in iteritems(bui.cli.servers):
-            logger.debug(bui.cli.status(agent=server))
+        map(
+            lambda (serv, back): bui.cli.status(agent=serv),
+            iteritems(bui.cli.servers)
+        )
 
 
 @celery.task(bind=True)
@@ -178,6 +184,16 @@ def get_all_clients_reports(self):
         cache.cache.set('all_clients_reports', reports, 3600)
     finally:
         release_lock(self.name)
+
+
+@celery.task
+def cleanup_expired_sessions():
+    def expires(sess):
+        ret = session_manager.invalidate_session_by_id(sess.uuid)
+        if ret:
+            session_manager.delete_session_by_id(sess.uuid)
+        return ret
+    map(expires, session_manager.get_expired_sessions())
 
 
 @celery.task
@@ -273,7 +289,7 @@ def perform_restore(self, client, backup,
 
     if err:
         # make the task crash
-        raise BUIserverException(err)
+        raise Exception(err)
 
     return ret
 
@@ -314,7 +330,7 @@ class AsyncRestoreStatus(Resource):
                     db.session.commit()
             task.revoke()
             err = str(task.result)
-            self.abort(500, err)
+            self.abort(502, err)
         if task.state == 'SUCCESS':
             if not task.result:
                 self.abort(500, 'The task did not return anything')

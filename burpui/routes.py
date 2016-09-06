@@ -12,9 +12,10 @@ import math
 from flask import request, render_template, redirect, url_for, abort, \
     flash, Blueprint as FlaskBlueprint, session, current_app
 from flask_login import login_user, login_required, logout_user, current_user
-from flask_babel import gettext
+from flask_babel import gettext, force_locale
 
 from .server import BUIServer  # noqa
+from .sessions import session_manager
 from ._compat import quote
 from .forms import LoginForm
 from .exceptions import BUIserverException
@@ -98,7 +99,7 @@ def calendar(server=None, client=None):
 @login_required
 def settings(server=None, conf=None):
     # Only the admin can edit the configuration
-    if bui.acl and not bui.acl.is_admin(current_user.get_id()):
+    if bui.acl and not bui.acl.is_admin(getattr(current_user, 'name', None)):
         abort(403)
     if not conf:
         try:
@@ -117,6 +118,21 @@ def settings(server=None, conf=None):
     )
 
 
+@view.route('/admin')
+@login_required
+def admin():
+    # Only the admin can access this page
+    if bui.acl and not bui.acl.is_admin(getattr(current_user, 'name', None)):
+        abort(403)
+    return render_template('admin.html', admin=True, ng_controller='AdminCtrl')
+
+
+@view.route('/me')
+@login_required
+def me():
+    return render_template('user.html', me=True, ng_controller='UserCtrl')
+
+
 @view.route('/client/client-settings')
 @view.route('/<client>/client-settings')
 @view.route('/<client>/client-settings/<path:conf>')
@@ -126,7 +142,7 @@ def settings(server=None, conf=None):
 @login_required
 def cli_settings(server=None, client=None, conf=None):
     # Only the admin can edit the configuration
-    if bui.acl and not bui.acl.is_admin(current_user.get_id()):
+    if bui.acl and not bui.acl.is_admin(getattr(current_user, 'name', None)):
         abort(403)
     if not conf:
         try:
@@ -377,26 +393,42 @@ def login():
     form = LoginForm(request.form)
 
     if form.validate_on_submit():
-        user = bui.uhandler.user(form.username.data)
+        refresh = False
+        # prevent session to be reused by another user
+        if 'login' in session and session['login'] != form.username.data:
+            refresh = True
+            session.clear()
+            session['login'] = form.username.data
+        user = bui.uhandler.user(form.username.data, refresh)
         user.language = form.language.data
         if user.is_active and user.login(form.password.data):
             login_user(user, remember=form.remember.data)
-            flash(gettext('Logged in successfully'), 'success')
+            # at the time the context is loaded, the locale is not set
+            with force_locale(user.language):
+                flash(gettext('Logged in successfully'), 'success')
+            session_manager.store_session(
+                form.username.data,
+                request.remote_addr,
+                request.headers.get('User-Agent'),
+                form.remember.data
+            )
             return redirect(request.args.get("next") or url_for('.home'))
         else:
-            flash(gettext('Wrong username or password'), 'danger')
+            with force_locale(user.language):
+                flash(gettext('Wrong username or password'), 'danger')
     return render_template('login.html', form=form, login=True)
 
 
 @view.route('/logout')
 @login_required
 def logout():
-    sess = session._get_current_object()
-    if 'authenticated' in sess:
-        sess.pop('authenticated')
-    if 'language' in sess:
-        sess.pop('language')
+    if 'authenticated' in session:
+        session.pop('authenticated')
+    if 'language' in session:
+        session.pop('language')
+    session_manager.delete_session()
     logout_user()
+    session.clear()
     return redirect(url_for('.home'))
 
 

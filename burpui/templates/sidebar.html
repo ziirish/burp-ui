@@ -7,6 +7,10 @@
         <div class="col-sm-3 col-md-2 sidebar">
           {% if settings -%}
           {% include "sideconfig.html" %}
+          {% elif me -%}
+          {% include "sideuser.html" %}
+          {% elif admin -%}
+          {% include "sideadmin.html" %}
           {% else -%}
           <ul class="nav nav-sidebar">
             <li {% if overview %}class="active"{% endif %}>

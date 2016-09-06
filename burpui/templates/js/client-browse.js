@@ -210,7 +210,23 @@ $( document ).ready(function() {
 				})
 				.fail(function(xhr, stat, err) {
 					$preparingFileModal.modal('hide');
-					myFail(xhr, stat, err);
+					if (xhr.status != 502) {
+						myFail(xhr, stat, err);
+					}
+					if ('responseJSON' in xhr && 'message' in xhr.responseJSON) {
+						resp = xhr.responseJSON.message;
+					} else if ('responseText' in xhr) {
+						resp = xhr.responseText;
+					} else {
+						return false;
+					}
+					if (resp == 'encrypted') {
+						msg = 'The backup seems encrypted, please provide the encryption key in the \'Download options\' form.';
+					} else {
+						msg = resp;
+					}
+					$("#error-response").empty().html(msg);
+					$("#error-modal").modal('toggle');
 				});
 		};
 		$.post($(this).prop('action'), $(this).serialize())
