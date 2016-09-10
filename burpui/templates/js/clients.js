@@ -8,16 +8,20 @@
  * First we map some burp status with some style
  */
 var __status = {
-	'client crashed': 'danger',
-	'server crashed': 'danger',
-	'running': 'info',
+	"{{ _('client crashed') }}": 'danger',
+	"{{ _('server crashed') }}": 'danger',
+	"{{ _('running') }}": 'info',
 };
+/***
+ * Unused strings just for translation:
+ * - {{ _('idle') }}
+ */
 
 /***
  * Show the row as warning if there are no backups
  */
 var __date = {
-	'never': 'warning',
+	"{{ _('never') }}": 'warning',
 };
 
 /***
@@ -43,11 +47,11 @@ var __date = {
  */
 {% import 'macros.html' as macros %}
 
+{{ macros.timestamp_filter() }}
+
 var _clients_table = $('#table-clients').dataTable( {
 	{{ macros.translate_datatable() }}
-	{% if session.pageLength -%}
-	pageLength: {{ session.pageLength }},
-	{% endif -%}
+	{{ macros.get_page_length() }}
 	responsive: true,
 	ajax: {
 		url: '{{ url_for("api.clients_stats", server=server) }}',
@@ -69,18 +73,30 @@ var _clients_table = $('#table-clients').dataTable( {
 		row.className += ' clickable';
 	},
 	columns: [
-		{ data: null, render: function ( data, type, row ) {
+		{
+			data: null,
+			render: function ( data, type, row ) {
 				return '<a href="{{ url_for("view.client", server=server) }}?name='+data.name+'" style="color: inherit; text-decoration: inherit;">'+data.name+'</a>';
 			}
 		},
-		{ data: null, render: function ( data, type, row ) {
+		{
+			data: null,
+			render: function ( data, type, row ) {
 				if ('phase' in data && data.phase) {
 					return data.state+' - '+data.phase+' ('+data.percent+'%)';
 				}
 				return data.state;
 			}
 		},
-		{ data: 'last' }
+		{ 
+			data: null,
+			type: 'timestamp',
+			render: function (data, type, row ) {
+				if (!(data.last in __status || data.last in __date))
+					return '<span data-toggle="tooltip" title="'+data.last+'">'+moment(data.last, moment.ISO_8601).format('llll')+'</span>';
+				return data.last
+			}
+		}
 	]
 });
 var first = true;
@@ -93,6 +109,8 @@ var _clients = function() {
 	}
 };
 
-$('#table-clients').on('length.dt', function(e, settings, len) {
-	$.post( '{{ url_for("api.prefs_ui") }}', {pageLength: len} );
+{{ macros.page_length('#table-clients') }}
+
+_clients_table.on('draw.dt', function() {
+	$('[data-toggle="tooltip"]').tooltip();
 });

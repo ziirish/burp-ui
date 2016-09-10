@@ -46,14 +46,14 @@ manager, migrate, app = create_manager()
 
 @manager.command
 def init_translation(language):
-    os.system('pybabel extract -F babel.cfg -k lazy_gettext -o messages.pot burpui')
+    os.system('pybabel extract -F babel.cfg -k __ -k lazy_gettext -o messages.pot burpui')
     os.system('pybabel init -i messages.pot -d burpui/translations -l {}'.format(language))
     os.unlink('messages.pot')
 
 
 @manager.command
 def update_translation():
-    os.system('pybabel extract -F babel.cfg -k lazy_gettext -o messages.pot burpui')
+    os.system('pybabel extract -F babel.cfg -k __ -k lazy_gettext -o messages.pot burpui')
     os.system('pybabel update -i messages.pot -d burpui/translations')
     os.unlink('messages.pot')
 

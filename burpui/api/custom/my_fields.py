@@ -12,6 +12,7 @@ import arrow
 import datetime
 
 from flask_restplus import fields
+from flask_babel import gettext as _
 from flask import escape
 from tzlocal import get_localzone
 
@@ -46,7 +47,7 @@ class DateTime(fields.DateTime):
         except (AttributeError, ValueError) as e:
             raise fields.MarshallingError(e)
         except arrow.parser.ParserError as e:
-            return value
+            return _(str(value))
 
 
 class DateTimeHuman(fields.Raw):
@@ -65,7 +66,7 @@ class DateTimeHuman(fields.Raw):
         new_value = self.parse(value)
         if new_value:
             return new_value.humanize()
-        return value
+        return _(str(value))
 
 
 class BackupNumber(fields.String):
@@ -83,3 +84,10 @@ class SafeString(fields.String):
     def format(self, value):
         """Format the value"""
         return fields.String.format(self, escape(value))
+
+
+class LocalizedString(fields.String):
+    """Custom LocalizedString to return localized strings"""
+    def format(self, value):
+        """Format the value"""
+        return fields.String.format(self, _(value))
