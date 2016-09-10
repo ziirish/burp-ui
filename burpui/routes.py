@@ -12,7 +12,7 @@ import math
 from flask import request, render_template, redirect, url_for, abort, \
     flash, Blueprint as FlaskBlueprint, session, current_app
 from flask_login import login_user, login_required, logout_user, current_user
-from flask_babel import gettext, force_locale
+from flask_babel import gettext as _, force_locale
 
 from .server import BUIServer  # noqa
 from .sessions import session_manager
@@ -181,14 +181,14 @@ def live_monitor(server=None, name=None):
     bui.cli.is_one_backup_running()
     if bui.standalone:
         if not bui.cli.running:
-            flash(gettext('Sorry, there are no running backups'), 'warning')
+            flash(_('Sorry, there are no running backups'), 'warning')
             return redirect(url_for('.home'))
     else:
         run = False
         for a in bui.cli.servers:
             run = run or (a in bui.cli.running and bui.cli.running[a])
         if not run:
-            flash(gettext('Sorry, there are no running backups'), 'warning')
+            flash(_('Sorry, there are no running backups'), 'warning')
             return redirect(url_for('.home'))
 
     return render_template(
@@ -208,7 +208,7 @@ def edit_server_initiated_restore(server=None, name=None):
     to = None
     if not data or not data['found']:
         flash(
-            gettext(
+            _(
                 'Sorry, there are no restore file found for this client'
             ),
             'warning'
@@ -246,7 +246,7 @@ def client_browse(server=None, name=None, backup=None, encrypted=None,
         edit = bui.cli.is_server_restore(to, server)
         if not edit or not edit['found']:
             flash(
-                gettext(
+                _(
                     'Sorry, there are no restore file found for this client'
                 ),
                 'warning'
@@ -405,7 +405,7 @@ def login():
             login_user(user, remember=form.remember.data)
             # at the time the context is loaded, the locale is not set
             with force_locale(user.language):
-                flash(gettext('Logged in successfully'), 'success')
+                flash(_('Logged in successfully'), 'success')
             session_manager.store_session(
                 form.username.data,
                 request.remote_addr,
@@ -415,7 +415,7 @@ def login():
             return redirect(request.args.get("next") or url_for('.home'))
         else:
             with force_locale(user.language):
-                flash(gettext('Wrong username or password'), 'danger')
+                flash(_('Wrong username or password'), 'danger')
     return render_template('login.html', form=form, login=True)
 
 

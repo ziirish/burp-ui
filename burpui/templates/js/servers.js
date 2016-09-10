@@ -11,6 +11,7 @@
 {% import 'macros.html' as macros %}
 var _servers_table = $('#table-servers').dataTable( {
 	{{ macros.translate_datatable() }}
+	{{ macros.get_page_length() }}
 	responsive: true,
 	ajax: {
 		url: '{{ url_for("api.servers_stats") }}',
@@ -55,3 +56,5 @@ var _servers = function() {
 		_servers_table.api().ajax.reload( null, false );
 	}
 };
+
+{{ macros.page_length('#table-servers') }}

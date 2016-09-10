@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-08-25 17:17+0200\n"
+"POT-Creation-Date: 2016-09-09 15:45+0200\n"
 "PO-Revision-Date: 2016-08-25 15:19+0200\n"
 "Last-Translator: Ziirish <hi+burpui@ziirish.me>\n"
 "Language: fr\n"
@@ -17,6 +17,14 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.3.4\n"
+
+#: burpui/__init__.py:429
+msgid "Please log in to access this page."
+msgstr "Veuillez vous authentifier pour accéder à cette page."
+
+#: burpui/__init__.py:430
+msgid "Please reauthenticate to access this page."
+msgstr "Veuillez vous ré-authentifier pour accéder à cette page."
 
 #: burpui/forms.py:18 burpui/templates/login.html:8
 msgid "Username"
@@ -34,27 +42,167 @@ msgstr "Langue"
 msgid "Remember me"
 msgstr "Rester connecté"
 
-#: burpui/routes.py:169 burpui/routes.py:176
+#: burpui/routes.py:184 burpui/routes.py:191
 msgid "Sorry, there are no running backups"
 msgstr "Désolé, il n'y a pas de backups"
 
-#: burpui/routes.py:196 burpui/routes.py:234
+#: burpui/routes.py:211 burpui/routes.py:249
 msgid "Sorry, there are no restore file found for this client"
 msgstr "Désolé, il n'y a pas restoration prévue pour ce client"
 
-#: burpui/routes.py:385
+#: burpui/routes.py:408
 msgid "Logged in successfully"
 msgstr "Connecté avec succès"
 
-#: burpui/routes.py:388
+#: burpui/routes.py:418
 msgid "Wrong username or password"
 msgstr "Mauvais nom d'utilisateur ou mot de passe"
 
-#: burpui/templates/client.html:8 burpui/templates/client.html:12
-#: burpui/templates/clients.html:8 burpui/templates/clients.html:11
-#: burpui/templates/servers.html:7
+#: burpui/templates/about.html:7
+msgid "is brought to you by"
+msgstr "est développé par"
+
+#: burpui/templates/about.html:9
+msgid "You can find the documentation at"
+msgstr "Vous trouverez la documentation à l'adresse"
+
+#: burpui/templates/about.html:21
+msgid "Browse the "
+msgstr "Parcourir l'"
+
+#: burpui/templates/admin.html:7 burpui/templates/topbar.html:56
+msgid "Administration"
+msgstr "Administration"
+
+#: burpui/templates/client-browse.html:8 burpui/templates/client.html:8
+#: burpui/templates/client.html:12 burpui/templates/clients.html:8
+#: burpui/templates/clients.html:11 burpui/templates/servers.html:7
 msgid "Home"
 msgstr "Accueil"
+
+#: burpui/templates/client-browse.html:9
+#, python-format
+msgid "%(server)s clients"
+msgstr "Clients de %(server)s"
+
+#: burpui/templates/client-browse.html:10
+#: burpui/templates/client-browse.html:14
+#, python-format
+msgid "%(client)s overview"
+msgstr "Aperçu de %(client)s"
+
+#: burpui/templates/client-browse.html:11
+#: burpui/templates/client-browse.html:15
+#, python-format
+msgid "Backup n°%(number)s overview"
+msgstr "Sauvegarde n°%(number)s"
+
+#: burpui/templates/client-browse.html:19
+#, python-format
+msgid "Backup n°%(number)s of %(client)s"
+msgstr "Sauvegarde n°%(number)s de %(client)s"
+
+#: burpui/templates/client-browse.html:24
+msgid "filter..."
+msgstr "filtrer..."
+
+#: burpui/templates/client-browse.html:31
+msgid "Hide unmatched nodes"
+msgstr "N'afficher que les éléments correspondants"
+
+#: burpui/templates/client-browse.html:32
+msgid "Leaves only"
+msgstr "Recherche de fichiers uniquement"
+
+#: burpui/templates/client-browse.html:33
+msgid "Use regex"
+msgstr "Utiliser des expressions régulières"
+
+#: burpui/templates/client-browse.html:44
+msgid "Loading, Please wait..."
+msgstr "Chargement, veuillez patienter..."
+
+#: burpui/templates/client-browse.html:54
+msgid "Size"
+msgstr "Taille"
+
+#: burpui/templates/client-browse.html:77
+msgid ""
+"This backup is encrypted, please provide the encryption password in order"
+" to perform an online restoration."
+msgstr ""
+"Cette sauvegarde est chiffrée, veuillez fournir le mot de passe afin de "
+"procéder à son déchiffrement."
+
+#: burpui/templates/client-browse.html:83
+msgid "Download selected files"
+msgstr "Télécharger les fichiers sélectionnés"
+
+#: burpui/templates/client-browse.html:86
+#: burpui/templates/client-browse.html:100
+msgid "Number of leading path components to strip"
+msgstr "Nombre d'éléments du préfix à masquer "
+
+#: burpui/templates/client-browse.html:87
+msgid "Archive format"
+msgstr "Format de l'archive "
+
+#: burpui/templates/client-browse.html:88
+msgid "Encryption password"
+msgstr "Mot de passe de déchiffrement "
+
+#: burpui/templates/client-browse.html:88
+msgid "password"
+msgstr "mot de passe"
+
+#: burpui/templates/client-browse.html:97
+msgid "Server initiated restore"
+msgstr "Réstauration depuis le serveur"
+
+#: burpui/templates/client-browse.html:101
+msgid "Prefix to the restore path"
+msgstr "Chemin de la réstauration "
+
+#: burpui/templates/client-browse.html:101
+msgid "prefix"
+msgstr "chemin"
+
+#: burpui/templates/client-browse.html:103
+msgid "Restore files on an other client"
+msgstr "Réstaurer sur un autre client "
+
+#: burpui/templates/client-browse.html:111
+msgid "Whether to overwrite existing files"
+msgstr "Écraser les fichiers existants "
+
+#: burpui/templates/client-browse.html:115 burpui/templates/client.html:58
+msgid "Cancel restore"
+msgstr "Annuler restauration"
+
+#: burpui/templates/client-browse.html:117
+msgid "Clear selection"
+msgstr "Vider la sélection"
+
+#: burpui/templates/client-browse.html:127
+msgid "Processing request"
+msgstr "Traitement en cours"
+
+#: burpui/templates/client-browse.html:130
+msgid "Please wait while restoration is processing..."
+msgstr "Veuillez patienter pendant la restauration..."
+
+#: burpui/templates/client-browse.html:137
+#: burpui/templates/client-browse.html:156
+msgid "Close"
+msgstr "Fermer"
+
+#: burpui/templates/client-browse.html:147
+msgid "Restoration error"
+msgstr "Erreur de restauration"
+
+#: burpui/templates/client-browse.html:151
+msgid "An error occurred while processing the restoration."
+msgstr "Une erreur s'est produite lors de la restauration."
 
 #: burpui/templates/client.html:10 burpui/templates/client.html:13
 msgid "overview"
@@ -92,10 +240,6 @@ msgstr "Éditer restauration"
 msgid "Schedule backup"
 msgstr "Planifier sauvegarde"
 
-#: burpui/templates/client.html:58
-msgid "Cancel restore"
-msgstr "Annuler restauration"
-
 #: burpui/templates/client.html:61
 msgid "Cancel backup"
 msgstr "Annuler sauvegarde"
@@ -120,19 +264,36 @@ msgstr "Se connecter"
 msgid "Servers"
 msgstr "Serveurs"
 
-#: burpui/templates/sidebar.html:14 burpui/templates/sidebar.html:16
+#: burpui/templates/sideadmin.html:3
+msgid "Administration navigation"
+msgstr "Navigation"
+
+#: burpui/templates/sideadmin.html:5
+msgid "Users"
+msgstr "Utilisateurs"
+
+#: burpui/templates/sideadmin.html:6 burpui/templates/topbar.html:43
+msgid "Settings"
+msgstr "Paramètres"
+
+#: burpui/templates/sideadmin.html:7 burpui/templates/sideuser.html:7
+#: burpui/templates/user.html:35
+msgid "ACL"
+msgstr "Contrôles d'accès"
+
 #: burpui/templates/sidebar.html:18 burpui/templates/sidebar.html:20
-#: burpui/templates/sidebar.html:22
+#: burpui/templates/sidebar.html:22 burpui/templates/sidebar.html:24
+#: burpui/templates/sidebar.html:26
 msgid "Overview"
 msgstr "Aperçu"
 
-#: burpui/templates/sidebar.html:27 burpui/templates/sidebar.html:29
 #: burpui/templates/sidebar.html:31 burpui/templates/sidebar.html:33
-#: burpui/templates/sidebar.html:35
+#: burpui/templates/sidebar.html:35 burpui/templates/sidebar.html:37
+#: burpui/templates/sidebar.html:39
 msgid "Reports"
 msgstr "Rapports"
 
-#: burpui/templates/sidebar.html:39
+#: burpui/templates/sidebar.html:43
 msgid "Calendar"
 msgstr "Calendrier"
 
@@ -148,6 +309,18 @@ msgstr "Client à configurer"
 msgid "Create new client"
 msgstr "Créer un nouveau client"
 
+#: burpui/templates/sideuser.html:3
+msgid "User settings navigation"
+msgstr "Navigation"
+
+#: burpui/templates/sideuser.html:5 burpui/templates/user.html:11
+msgid "Sessions"
+msgstr "Sessions"
+
+#: burpui/templates/sideuser.html:6 burpui/templates/user.html:31
+msgid "Preferences"
+msgstr "Préférences"
+
 #: burpui/templates/topbar.html:5
 msgid "Toggle navigation"
 msgstr "Afficher menu"
@@ -156,23 +329,95 @@ msgstr "Afficher menu"
 msgid "About"
 msgstr "À propos"
 
-#: burpui/templates/topbar.html:43
-msgid "Settings"
-msgstr "Paramètres"
-
 #: burpui/templates/topbar.html:49
 msgid "Live monitor"
 msgstr "Moniteur temps réél"
 
-#: burpui/templates/topbar.html:55
+#: burpui/templates/topbar.html:62 burpui/templates/user.html:7
+msgid "User settings"
+msgstr "Paramètres utilisateur"
+
+#: burpui/templates/topbar.html:67
 msgid "Logout"
 msgstr "Se déconnecter"
 
-#: burpui/templates/topbar.html:61
+#: burpui/templates/topbar.html:73
 msgid "Refresh"
 msgstr "Rafraîchir"
 
-#: burpui/templates/topbar.html:68
+#: burpui/templates/topbar.html:80
 msgid "Search client..."
 msgstr "Rechercher client..."
+
+#: burpui/templates/user.html:17
+msgid "Last seen"
+msgstr "Dernière visite"
+
+#: burpui/templates/user.html:18
+msgid "User-Agent"
+msgstr "Navigateur"
+
+#: burpui/templates/user.html:19
+msgid "API Login"
+msgstr "Connexion via l'API"
+
+#: burpui/templates/user.html:20
+msgid "Current session"
+msgstr "Session actuelle"
+
+#: burpui/templates/user.html:21
+msgid "Expire"
+msgstr "Éxpire"
+
+#: burpui/templates/user.html:22
+msgid "Revoke"
+msgstr "Révoquer"
+
+#: burpui/templates/user.html:48
+msgid "You are about to revoke a session, are you sure?"
+msgstr "Vous êtes sur le point de révoquer une session, êtes vous sûr ?"
+
+#: burpui/templates/user.html:52
+msgid "Warning!"
+msgstr "Attention!"
+
+#: burpui/templates/user.html:52
+msgid "You are about to revoke your <strong>current</strong> session."
+msgstr "Vous allez supprimer votre session <strong>actuelle</strong>."
+
+#: burpui/templates/user.html:56
+msgid "Cancel"
+msgstr "Annuler"
+
+#: burpui/templates/user.html:57
+msgid "Confirm"
+msgstr "Confirmer"
+
+#: burpui/templates/js/client.js:89
+msgid "Encrypted backup"
+msgstr "Sauvegarde chiffrée"
+
+#: burpui/templates/js/client.js:89
+msgid "Unencrypted backup"
+msgstr "Sauvegarde non chiffrée"
+
+#: burpui/templates/js/clients.js:11
+msgid "client crashed"
+msgstr "erreur client"
+
+#: burpui/templates/js/clients.js:12
+msgid "server crashed"
+msgstr "erreur serveur"
+
+#: burpui/templates/js/clients.js:13
+msgid "running"
+msgstr "en cours"
+
+#: burpui/templates/js/clients.js:17
+msgid "idle"
+msgstr "en attente"
+
+#: burpui/templates/js/clients.js:24
+msgid "never"
+msgstr "jamais"
 

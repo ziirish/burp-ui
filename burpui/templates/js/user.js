@@ -37,25 +37,11 @@ app.controller('UserCtrl', function($scope, $http) {
  */
 {% import 'macros.html' as macros %}
 
-// extends DataTables sorting
-jQuery.extend( jQuery.fn.dataTableExt.oSort, {
-	"timestamp-pre": function ( a ) {
-		$obj = $(a);
-		return moment($obj.attr('title')).valueOf();
-	},
-	"timestamp-asc": function ( a, b ) {
-		return ((a < b) ? -1 : ((a > b) ? 1 : 0));
-	},
-	"timestamp-desc": function ( a, b ) {
-		return ((a < b) ? 1 : ((a > b) ? -1 : 0));
-	}
-} );
+{{ macros.timestamp_filter() }}
 
 var _sessions_table = $('#table-sessions').dataTable( {
 	{{ macros.translate_datatable() }}
-	{% if session.pageLength -%}
-	pageLength: {{ session.pageLength }},
-	{% endif -%}
+	{{ macros.get_page_length() }}
 	responsive: true,
 	ajax: {
 		url: '{{ url_for("api.user_sessions") }}',
@@ -78,7 +64,7 @@ var _sessions_table = $('#table-sessions').dataTable( {
 			data: null,
 			type: 'timestamp',
 			render: function( data, type, row ) {
-				return '<span data-toggle="tooltip" title="'+data.timestamp+'">'+moment(data.timestamp).fromNow()+'</span>';
+				return '<span data-toggle="tooltip" title="'+data.timestamp+'">'+moment(data.timestamp, moment.ISO_8601).fromNow()+'</span>';
 			}
 		},
 		{ 
@@ -128,7 +114,7 @@ var _sessions_table = $('#table-sessions').dataTable( {
 			data: null,
 			type: 'timestamp',
 			render: function( data, type, row ) {
-				return '<span data-toggle="tooltip" title="'+data.expire+'">'+moment(data.expire).fromNow()+'</span>';
+				return '<span data-toggle="tooltip" title="'+data.expire+'">'+moment(data.expire, moment.ISO_8601).fromNow()+'</span>';
 			}
 		},
 		{
@@ -167,6 +153,7 @@ _sessions_table.on('draw.dt', _events_callback);
 _sessions_table.on('responsive-display.dt', function ( e, datatable, row, showHide, update ) {
 	_events_callback();
 });
+{{ macros.page_length('#table-sessions') }}
 
 $('#perform-revoke').on('click', function(e) {
 	$me = $(this);

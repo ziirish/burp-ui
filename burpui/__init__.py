@@ -182,10 +182,11 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
     from flask import g
     from flask_login import LoginManager
     from flask_bower import Bower
+    from flask_babel import gettext
     from .utils import basic_login_from_request, ReverseProxied, lookup_file
     from .server import BUIServer as BurpUI
     from .sessions import session_manager
-    from .routes import view
+    from .routes import view, mypad
     from .api import api, apibp
     from .ext.cache import cache
     from .ext.i18n import babel, get_locale
@@ -294,6 +295,7 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
     app.jinja_env.globals.update(
         isinstance=isinstance,
         list=list,
+        mypad=mypad,
         version_id='{}-{}'.format(__version__, __release__),
         config=app.config
     )
@@ -422,6 +424,15 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
     app.login_manager.login_view = 'view.login'
     app.login_manager.login_message_category = 'info'
     app.login_manager.session_protection = 'strong'
+    # This is just to have the strings in the .po files
+    app.login_manager.login_message = gettext(
+        'Please log in to access this page.'
+    )
+    app.login_manager.needs_refresh_message = gettext(
+        'Please reauthenticate to access this page.'
+    )
+    # This will be called at runtime and will then translate the strings
+    app.login_manager.localize_callback = gettext
     app.login_manager.init_app(app)
 
     # Initialize Session Manager

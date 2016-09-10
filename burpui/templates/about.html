@@ -4,10 +4,9 @@
 					<br />
 					<h1 class="page-header">About</h1>
 					<p>
-						<a href="{{ url }}">Burp-UI</a> is
-						brought to you by <a href="https://ziirish.info/">Ziirish</a>.
+          <a href="{{ url }}">Burp-UI</a> {{ _('is brought to you by') }} <a href="https://ziirish.info/">Ziirish</a>.
 						<br />
-						You can find the documentation at <a href="{{ doc }}">{{ doc }}</a>.
+            {{ _('You can find the documentation at') }} <a href="{{ doc }}">{{ doc }}</a>&nbsp;<i class="fa fa-book" aria-hidden="true"></i>
 					</p>
 					{# From here, the jinja syntax is escaped because we use the angularjs syntax #}
 					{% raw %}
@@ -18,8 +17,8 @@
 						<strong>{{ ::b.name }}</strong><span ng-if="b.client"> - client: <em>{{ ::b.client }}</em></span><span ng-if="b.server"> - server: <em>{{ ::b.server }}</em></span>
 					</p>
 					<p>
-					API <a ng-href="{{ api }}">documentation</a>
-					</p>
 					{% endraw %}
+          {{ _('Browse the ') }}<a ng-href="{{ '{{' }} api {{ '}}' }}">API</a>&nbsp;<i class="fa fa-flask" aria-hidden="true"></i>
+					</p>
 				</div>
 {% endblock %}

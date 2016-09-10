@@ -29,11 +29,11 @@
  */
 {% import 'macros.html' as macros %}
 
+{{ macros.timestamp_filter() }}
+
 var _client_table = $('#table-client').dataTable( {
 	{{ macros.translate_datatable() }}
-	{% if session.pageLength -%}
-	pageLength: {{ session.pageLength }},
-	{% endif -%}
+	{{ macros.get_page_length() }}
 	responsive: true,
 	ajax: {
 		url: '{{ url_for("api.client_stats", name=cname, server=server) }}',
@@ -60,25 +60,41 @@ var _client_table = $('#table-client').dataTable( {
 		row.className += ' clickable';
 	},
 	columns: [
-		{ data: null, render: function ( data, type, row ) {
+		{
+			data: null,
+			render: function ( data, type, row ) {
 				return '<a href="{{ url_for("view.client_browse", name=cname, server=server) }}?backup='+data.number+(data.encrypted?'&encrypted=1':'')+'" style="color: inherit; text-decoration: inherit;">'+pad(data.number, 7)+'</a>';
 			}
 		},
-		{ data: 'date' },
-		{ data: null, render: function ( data, type, row ) {
+		{
+			data: null,
+			type: 'timestamp',
+			render: function ( data, type, row ) {
+				return '<span data-toggle="tooltip" title="'+data.date+'">'+moment(data.date, moment.ISO_8601).format('llll')+'</span>';
+			}
+		},
+		{
+			data: null,
+			render: function ( data, type, row ) {
 				return _bytes_human_readable(data.received, false);
 			}
 		},
-		{ data: null, render: function ( data, type, row ) {
+		{
+			data: null,
+			render: function ( data, type, row ) {
 				return _bytes_human_readable(data.size, false);
 			}
 		},
-		{ data: null, render: function ( data, type, row ) {
+		{
+			data: null,
+			render: function ( data, type, row ) {
 				return '<span class="glyphicon glyphicon-'+(data.deletable?'ok':'remove')+'"></span>';
 			}
 		},
-		{ data: null, render: function ( data, type, row ) {
-				return '<span class="glyphicon glyphicon-'+(data.encrypted?'lock':'globe')+'"></span>&nbsp;'+(data.encrypted?'Encrypted':'Unencrypted')+' backup';
+		{
+			data: null,
+			render: function ( data, type, row ) {
+				return '<span class="glyphicon glyphicon-'+(data.encrypted?'lock':'globe')+'"></span>&nbsp;'+(data.encrypted?"{{ _('Encrypted backup') }}":"{{ _('Unencrypted backup') }}");
 			}
 		}
 	]
@@ -117,9 +133,7 @@ var _client = function() {
 	}).fail(myFail);
 };
 
-$('#table-client').on('length.dt', function(e, settings, len) {
-	$.post( '{{ url_for("api.prefs_ui") }}', {pageLength: len} );
-});
+{{ macros.page_length('#table-client') }}
 
 $(document).ready(function() {
 	$('a.toggle-vis').on('click', function(e) {
@@ -180,4 +194,8 @@ $(document).ready(function() {
 			}
 		}).fail(myFail);
 	});
+});
+
+_client_table.on('draw.dt', function() {
+	$('[data-toggle="tooltip"]').tooltip();
 });
