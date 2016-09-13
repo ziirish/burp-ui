@@ -148,10 +148,10 @@ class BasicLoader(BUIloader):
             conffile = self.conf.options.filename
             # last = ''
             ori = []
-            with codecs.open(conffile, 'r', 'utf-8') as config:
+            with codecs.open(conffile, 'r', 'utf-8', errors='ignore') as config:
                 ori = [x.rstrip('\n') for x in config.readlines()]
             if ori:
-                with codecs.open(conffile, 'w', 'utf-8') as config:
+                with codecs.open(conffile, 'w', 'utf-8', errors='ignore') as config:
                     found = False
                     for line in ori:
                         if re.match(r'^\s*#+\s*\[{}\]'.format(self.section),

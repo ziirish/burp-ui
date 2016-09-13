@@ -306,7 +306,7 @@ class Parser(Doc):
 
         self.logger.debug('reading file: {}'.format(path))
         try:
-            with codecs.open(path, 'r', 'utf-8') as fil:
+            with codecs.open(path, 'r', 'utf-8', errors='ignore') as fil:
                 ret = [x.rstrip('\n') for x in fil.readlines()]
         except IOError:
             return ret, path, False
@@ -705,7 +705,7 @@ class Parser(Doc):
 
         orig = []
         try:
-            with codecs.open(mconf, 'r', 'utf-8') as fil:
+            with codecs.open(mconf, 'r', 'utf-8', errors='ignore') as fil:
                 orig = [x.rstrip('\n') for x in fil.readlines()]
         except:
             pass
@@ -718,7 +718,7 @@ class Parser(Doc):
         written = []
 
         try:
-            with codecs.open(mconf, 'w', 'utf-8') as fil:
+            with codecs.open(mconf, 'w', 'utf-8', errors='ignore') as fil:
                 # f.write('# Auto-generated configuration using Burp-UI\n')
                 for line in orig:
                     if (self._line_removed(line, viewkeys(data)) and
@@ -795,7 +795,7 @@ class Parser(Doc):
 
         try:
             ret = {}
-            with codecs.open(path, 'r', 'utf-8') as restore:
+            with codecs.open(path, 'r', 'utf-8', errors='ignore') as restore:
                 for line in restore.readlines():
                     line = line.rstrip()
                     (key, val) = re.split(r' *= *', line)
@@ -864,7 +864,7 @@ class Parser(Doc):
                 client = restoreto
 
             path = self._get_server_restore_path(client)
-            with codecs.open(path, 'w', 'utf-8') as fil:
+            with codecs.open(path, 'w', 'utf-8', errors='ignore') as fil:
                 fil.write('backup = {}\n'.format(backup))
                 fil.write('regex = {}\n'.format(full_reg.rstrip('|')))
                 if strip and strip > 0:  # 0 is False, but we are sure now
