@@ -120,7 +120,7 @@ class Parser(Burp1):
                           " on the client (see client configuration options"
                           " for details). The default is 1. When set to 0, the"
                           " fqdn provided by the client while authenticating"
-                          " will be stripped ('test‐client.example.com'"
+                          " will be stripped ('testclient.example.com'"
                           " becomes 'testclient')."),
         u'cname_lowercase': __(u"Whether to force lowercase cname when"
                                " looking-up in clientconfdir. This also"
