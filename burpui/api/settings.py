@@ -326,17 +326,17 @@ class ClientSettings(Resource):
         except:
             pass
         r = bui.cli.read_conf_cli(client, conf, server)
-        return {
-            'results': r,
-            'boolean': bui.cli.get_parser_attr('boolean_cli', server),
-            'string': bui.cli.get_parser_attr('string_cli', server),
-            'integer': bui.cli.get_parser_attr('integer_cli', server),
-            'multi': bui.cli.get_parser_attr('multi_cli', server),
-            'server_doc': bui.cli.get_parser_attr('doc', server),
-            'suggest': bui.cli.get_parser_attr('values', server),
-            'placeholders': bui.cli.get_parser_attr('placeholders', server),
-            'defaults': bui.cli.get_parser_attr('defaults', server)
-        }
+        return jsonify(
+            results=r,
+            boolean=bui.cli.get_parser_attr('boolean_cli', server),
+            string=bui.cli.get_parser_attr('string_cli', server),
+            integer=bui.cli.get_parser_attr('integer_cli', server),
+            multi=bui.cli.get_parser_attr('multi_cli', server),
+            server_doc=bui.cli.get_parser_attr('doc', server),
+            suggest=bui.cli.get_parser_attr('values', server),
+            placeholders=bui.cli.get_parser_attr('placeholders', server),
+            defaults=bui.cli.get_parser_attr('defaults', server)
+        )
 
     @api.acl_admin_required(message='Sorry, you don\'t have rights to access the setting panel')
     @ns.expect(parser_delete)
