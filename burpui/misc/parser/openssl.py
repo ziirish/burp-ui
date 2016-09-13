@@ -180,7 +180,7 @@ class OSSLConf(object):
         """Read the file if possible"""
         ret = []
         try:
-            with codecs.open(self.conffile, 'r', 'utf-8') as fil:
+            with codecs.open(self.conffile, 'r', 'utf-8', errors='ignore') as fil:
                 ret = [x.rstrip('\n') for x in fil.readlines()]
         except IOError:
             pass

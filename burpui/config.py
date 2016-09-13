@@ -164,8 +164,8 @@ class BUIConfig(dict):
             return False
 
         try:
-            with codecs.open(sav, 'r', 'utf-8') as ori:
-                with codecs.open(config, 'w', 'utf-8') as new:
+            with codecs.open(sav, 'r', 'utf-8', errors='ignore') as ori:
+                with codecs.open(config, 'w', 'utf-8', errors='ignore') as new:
                     # We add some headers
                     new.write('# Auto-generated file from a previous version\n')
                     new.write('# @version@ - {}\n'.format(__version__))
