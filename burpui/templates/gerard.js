@@ -126,10 +126,10 @@ var errorsHandler = function(json) {
 		} catch(err) {
 			message = Array();
 			if (typeof(json.message) == 'string') {
-				message.push([2, json.message]);
+				message.push([NOTIF_ERROR, json.message]);
 			} else {
 				for (field in json.message) {
-					message.push([2, field+': '+json.message[field]]);
+					message.push([NOTIF_ERROR, field+': '+json.message[field]]);
 				}
 			}
 		}

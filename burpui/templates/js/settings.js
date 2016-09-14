@@ -351,26 +351,31 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', function($scope, 
 		api = '{{ url_for("api.path_expander", server=server, source=conf) }}';
 		{% endif -%}
 		$scope.inc_invalid = {};
-		$.ajax({
-			url: api,
-			type: 'GET',
-			data: {'path': path},
-			headers: { 'X-From-UI': true },
-		})
-		.fail(myFail)
-		.done(function(data) {
-			/* The server answered correctly but some errors may have occurred server
-			 * side so we display them */
-			if (data.notif) {
-				notifAll(data.notif)
-				$scope.inc_invalid[index] = true;
-			} else if (data.result) {
-				$scope.paths[index] = [];
-				$.each(data.result, function(i, p) {
-					$scope.paths[index].push(p);
-				});
+		$http.get(
+				api,
+				{
+					headers: { 'X-From-UI': true },
+					params: { 'path': path },
+				}
+		).then(
+			function(response) {
+				data = response.data;
+				/* The server answered correctly but some errors may have occurred server
+				 * side so we display them */
+				if (data.notif) {
+					notifAll(data.notif)
+					$scope.inc_invalid[index] = true;
+				} else if (data.result) {
+					$scope.paths[index] = [];
+					$.each(data.result, function(i, p) {
+						$scope.paths[index].push(p);
+					});
+				}
+			},
+			function(response) {
+				errorsHandler(response.data);
 			}
-		});
+		);
 	};
 	$scope.getClientsList = function() {
 		api = '{{ url_for("api.clients_list", server=server) }}';
