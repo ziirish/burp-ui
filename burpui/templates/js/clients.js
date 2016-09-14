@@ -11,17 +11,15 @@ var __status = {
 	"{{ _('client crashed') }}": 'danger',
 	"{{ _('server crashed') }}": 'danger',
 	"{{ _('running') }}": 'info',
+	"{{ _('idle') }}": undefined,  // hack to manage translation
 };
-/***
- * Unused strings just for translation:
- * - {{ _('idle') }}
- */
 
 /***
  * Show the row as warning if there are no backups
  */
 var __date = {
 	"{{ _('never') }}": 'warning',
+	"{{ _('now') }}": undefined,  // hack to manage translation
 };
 
 /***
