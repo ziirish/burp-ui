@@ -1,28 +1,34 @@
+          {% if not cname -%}
+          {% set cname = None %}
+          {% endif -%}
+          {% if not server -%}
+          {% set server = None %}
+          {% endif -%}
           {% if not settings and not me -%}
           <div class="btn-group btn-group-justified  hidden-md hidden-lg">
             {% if backup -%}
             <a class="btn btn-default {% if overview %}active{% endif %}" href="{{ url_for('view.client_browse', name=cname, server=server, backup=nbackup) }}"><span class="glyphicon glyphicon-th"></span>&nbsp;Overview</a>
             {% elif client -%}
-            <a class="btn btn-default {% if overview %}active{% endif %}" href="{{ url_for('view.client', name=cname, server=server) }}"><span class="glyphicon glyphicon-th"></span>&nbsp;Overview</a>
+            <a class="btn btn-default {% if overview %}active{% endif %}" href="{{ url_for('view.client', name=cname, server=server) }}"><span class="glyphicon glyphicon-th"></span>&nbsp;{{ _('Overview') }}</a>
             {% elif clients -%}
-            <a class="btn btn-default {% if overview %}active{% endif %}" href="{{ url_for('view.clients', server=server) }}"><span class="glyphicon glyphicon-th"></span>&nbsp;Overview</a>
+            <a class="btn btn-default {% if overview %}active{% endif %}" href="{{ url_for('view.clients', server=server) }}"><span class="glyphicon glyphicon-th"></span>&nbsp;{{ _('Overview') }}</a>
             {% elif servers -%}
-            <a class="btn btn-default {% if overview %}active{% endif %}" href="{{ url_for('view.servers') }}"><span class="glyphicon glyphicon-th"></span>&nbsp;Overview</a>
+            <a class="btn btn-default {% if overview %}active{% endif %}" href="{{ url_for('view.servers') }}"><span class="glyphicon glyphicon-th"></span>&nbsp;{{ _('Overview') }}</a>
             {% else -%}
-            <a class="btn btn-default {% if overview %}active{% endif %}" href="#"><span class="glyphicon glyphicon-th"></span>&nbsp;Overview</a>
+            <a class="btn btn-default {% if overview %}active{% endif %}" href="#"><span class="glyphicon glyphicon-th"></span>&nbsp;{{ _('Overview') }}</a>
             {% endif -%}
             {% if client and not backup -%}
-            <a class="btn btn-default {% if report %}active{% endif %}" href="{{ url_for('view.client_report', name=cname, server=server) }}"><span class="glyphicon glyphicon-stats"></span>&nbsp;Reports</a>
+            <a class="btn btn-default {% if report %}active{% endif %}" href="{{ url_for('view.client_report', name=cname, server=server) }}"><span class="glyphicon glyphicon-stats"></span>&nbsp;{{ _('Reports') }}</a>
             {% elif clients -%}
-            <a class="btn btn-default {% if report %}active{% endif %}" href="{{ url_for('view.clients_report', server=server) }}"><span class="glyphicon glyphicon-stats"></span>&nbsp;Reports</a>
+            <a class="btn btn-default {% if report %}active{% endif %}" href="{{ url_for('view.clients_report', server=server) }}"><span class="glyphicon glyphicon-stats"></span>&nbsp;{{ _('Reports') }}</a>
             {% elif servers -%}
-            <a class="btn btn-default {% if report %}active{% endif %}" href="{{ url_for('view.servers_report') }}"><span class="glyphicon glyphicon-stats"></span>&nbsp;Reports</a>
+            <a class="btn btn-default {% if report %}active{% endif %}" href="{{ url_for('view.servers_report') }}"><span class="glyphicon glyphicon-stats"></span>&nbsp;{{ _('Reports') }}</a>
             {% elif backup -%}
-            <a class="btn btn-default {% if report %}active{% endif %}" href="{{ url_for('view.backup_report', name=cname, backup=nbackup, server=server) }}"><span class="glyphicon glyphicon-stats"></span>&nbsp;Reports</a>
+            <a class="btn btn-default {% if report %}active{% endif %}" href="{{ url_for('view.backup_report', name=cname, backup=nbackup, server=server) }}"><span class="glyphicon glyphicon-stats"></span>&nbsp;{{ _('Reports') }}</a>
             {% else -%}
-            <a class="btn btn-default {% if report %}active{% endif %}" href="#"><span class="glyphicon glyphicon-stats"></span>&nbsp;Reports</a>
+            <a class="btn btn-default {% if report %}active{% endif %}" href="#"><span class="glyphicon glyphicon-stats"></span>&nbsp;{{ _('Reports') }}</a>
             {% endif -%}
-            <a class="btn btn-default {% if calendar %}active{% endif %}" href="{{ url_for('view.calendar', client=cname, server=server) }}"><span class="glyphicon glyphicon-calendar"></span>&nbsp;Calendar</a>
+            <a class="btn btn-default {% if calendar %}active{% endif %}" href="{{ url_for('view.calendar', client=cname, server=server) }}"><span class="glyphicon glyphicon-calendar"></span>&nbsp;{{ _('Calendar') }}</a>
           </div>
           <br />
           {% endif -%}
