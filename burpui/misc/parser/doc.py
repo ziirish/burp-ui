@@ -396,14 +396,14 @@ class Doc(BUIparser):
         u'split_vss',
         u'ssl_peer_cn',
         u'strip_vss',
-        u'syslog'
+        u'syslog',
         u'timer_arg',
         u'timer_script',
         u'timestamp_format',
         u'version_warn',
         u'vss_drives',
         u'working_dir_recovery_method',
-        u'server_can_restore'
+        u'server_can_restore',
     ]
     string_cli = list(set(string_srv) & set(fields_cli))
     string_cli += [u'ssl_peer_cn', u'password']
