@@ -17,6 +17,7 @@ echo "building dist"
 $PYTHON setup.py bdist_egg
 
 echo "publishing build"
+rm burp-ui.dev.tar.gz burp_ui-dev-py${VERSION}.egg burp_ui-dev-py2.py3-none-any.whl 2>/dev/null
 tgz=$(ls dist/burp-ui*.tar.gz | sed "s|dist/||")
 egg=$(ls dist/burp_ui*.egg | sed "s|dist/||")
 whl=$(ls dist/burp_ui*.whl | sed "s|dist/||")

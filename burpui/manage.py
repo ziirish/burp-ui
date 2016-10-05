@@ -14,7 +14,6 @@ import os
 import sys
 
 from flask_script import Manager
-from flask_migrate import Migrate, MigrateCommand
 
 # Try to load modules from our current env first
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
@@ -29,6 +28,7 @@ def create_manager():
 
     if app.config['WITH_SQL']:
         from burpui.ext.sql import db
+        from flask_migrate import Migrate, MigrateCommand
         mig_dir = os.getenv('BUI_MIGRATIONS')
         if mig_dir:
             migrate = Migrate(app, db, mig_dir)
@@ -94,8 +94,8 @@ def create_user(name, backend='BASIC', password=None, ask=False):
         else:
             import random
 
-            alphabet = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRST" \
-                       "UVWXYZ"
+            alphabet = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLM" \
+                       "NOPQRSTUVWXYZ"
             pw_length = 8
             mypw = ""
 
