@@ -21,7 +21,7 @@
     {% if tree -%}
     <link href="{{ url_for('bower.static', filename='jquery.fancytree/dist/skin-bootstrap/ui.fancytree.min.css') }}" rel="stylesheet">
     {% endif -%}
-    {% if settings -%}
+    {% if settings or me -%}
     <link href="{{ url_for('bower.static', filename='bootstrap-switch/dist/css/bootstrap3/bootstrap-switch.min.css') }}" rel="stylesheet">
     <link href="{{ url_for('bower.static', filename='ui-select/dist/select.min.css') }}" rel="stylesheet">
     {% endif -%}
@@ -96,7 +96,7 @@
     ================================================== -->
     <script src="{{ url_for('bower.static', filename='jquery-file-download/src/Scripts/jquery.fileDownload.js') }}"></script>
     {% endif -%}
-    {% if settings -%}
+    {% if settings or me -%}
     <!-- configuration panel Javascript
     ================================================== -->
     <script src="{{ url_for('bower.static', filename='lodash/dist/lodash.min.js') }}"></script>
