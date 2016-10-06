@@ -2,10 +2,85 @@
  * The User page is managed with AngularJS for some parts.
  * Following is the AngularJS Application and Controller.
  */
-var app = angular.module('MainApp', ['ngSanitize']);
+var app = angular.module('MainApp', ['ngSanitize', 'frapontillo.bootstrap-switch', 'mgcrea.ngStrap']);
 
-app.controller('UserCtrl', function($scope, $http) {
-	$scope.version = '';
+app.directive('compareTo', function() {
+	return {
+		require: "ngModel",
+		scope: {
+			otherModelValue: "=compareTo"
+		},
+		link: function(scope, element, attributes, ngModel) {
+			ngModel.$validators.compareTo = function(modelValue) {
+				return modelValue == scope.otherModelValue;
+			};
+
+			scope.$watch("otherModelValue", function() {
+				ngModel.$validate();
+			});
+		}
+	};
+});
+
+app.controller('UserCtrl', function($timeout, $scope, $http, $scrollspy) {
+	$scope.spy = {};
+	$scope.user = {
+		oldPassword: '',
+		newPassword: '',
+		confPassword: ''
+	};
+
+	$scope.submitChangePass = function(e) {
+		e.preventDefault();
+		var form = $(e.target);
+		submit = form.find('button[type="submit"]');
+		sav = submit.text();
+		submit.text('Saving...');
+		submit.attr('disabled', true);
+		/* submit the data */
+		$.ajax({
+			url: form.attr('action'),
+			type: 'POST',
+			data: {
+				'password': $scope.user.newPassword,
+				'old_password': $scope.user.oldPassword,
+				'backend': "{{ current_user.back.name }}"
+			},
+			headers: { 'X-From-UI': true },
+		})
+		.fail(myFail)
+		.done(function(data) {
+			notifAll(data);
+		})
+		.always(function() {
+			/* reset the submit button state */
+			submit.text(sav);
+			submit.attr('disabled', false);
+		});
+	};
+
+	$scope.refreshScrollspy = function() {
+		angular.forEach($('.bui-scrollspy > li'), function(e) {
+			var ae = angular.element(e);
+			var target = e.dataset.target;
+			var options = {
+				scope: $scope,
+				target: target
+			};
+			if (target in $scope.spy) {
+				var oldSpy = $scope.spy[target];
+				oldSpy.untrackElement(options.target, ae);
+		    oldSpy.destroy();
+			}
+			var scrollspy = $scrollspy(options);
+			scrollspy.trackElement(options.target, ae);
+			$scope.spy[target] = scrollspy;
+		});
+	};
+
+	$timeout(function() {
+		$scope.refreshScrollspy();
+	});
 	/*
 	$scope.api = '';
 	$scope.burp = Array();

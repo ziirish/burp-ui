@@ -80,6 +80,7 @@ class AuthUsers(Resource):
     parser_mod = ns.parser()
     parser_mod.add_argument('password', required=True, help='Password', location=('values', 'json'))
     parser_mod.add_argument('backend', required=True, help='Backend', location=('values', 'json'))
+    parser_mod.add_argument('old_password', required=False, help='Old password', location=('values', 'json'))
 
     parser_del = ns.parser()
     parser_del.add_argument('backend', required=True, help='Backend', location='values')
@@ -227,6 +228,9 @@ class AuthUsers(Resource):
         """Change user password"""
         args = self.parser_mod.parse_args()
 
+        if not self.is_admin and not args['old_password']:
+            self.abort(400, "Old password required")
+
         try:
             handler = getattr(bui, 'uhandler')
         except AttributeError:
@@ -247,7 +251,8 @@ class AuthUsers(Resource):
 
         success, message, code = backend.change_password(
             name,
-            args['password']
+            args['password'],
+            args.get('old_password')
         )
         status = 201 if success else 200
         return [[code, message]], status

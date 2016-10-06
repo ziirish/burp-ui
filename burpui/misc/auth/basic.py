@@ -213,7 +213,7 @@ class BasicLoader(BUIloader):
         message = "user '{}' successfully removed".format(user)
         return True, message, NOTIF_OK
 
-    def change_password(self, user, passwd):
+    def change_password(self, user, passwd, old_passwd=None):
         """Change a user password"""
         self._setup_users()
         self.load_users(True)
@@ -228,6 +228,10 @@ class BasicLoader(BUIloader):
             def func(x, y):
                 return x == y
         curr = current['pwd']
+        if old_passwd and not func(curr, old_passwd):
+            message = "unable to authenticate user '{}'".format(user)
+            self.logger.error(message)
+            return False, message, NOTIF_ERROR
         if func(curr, passwd):
             message = 'password is the same'
             self.logger.warning(message)

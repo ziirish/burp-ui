@@ -29,6 +29,38 @@
           </div>
           <div id="user-panel-prefs" class="form-container">
             <legend id="prefs">{{ _('Preferences') }}</legend>
+            <form class="form-horizontal well" name="changePassword" ng-submit="submitChangePass($event)" method="POST" action="{{ url_for('api.auth_users', name=current_user.name) }}">
+              <fieldset>
+                <legend>{{ _('Password') }}</legend>
+                <div class="form-group" ng-class="{'has-error': changePassword.oldPass.$invalid  && changePassword.oldPass.$dirty}">
+                  <label for="oldPassword" class="col-lg-2 control-label">{{ _('Current password') }}</label>
+                  <div class="col-lg-3">
+                    <input class="form-control input-sm" name="oldPass" id="oldPassword" placeholder="{{ _('Current password') }}" type="password" ng-required="true" ng-model="user.oldPassword">
+                  </div>
+                  <span ng-show="changePassword.oldPass.$invalid  && changePassword.oldPass.$dirty" class="help-inline text-danger" ng-cloak>Required</span>
+                </div>
+                <div class="form-group" ng-class="{'has-error': changePassword.newPass.$invalid && changePassword.newPass.$dirty}">
+                  <label for="inputPassword" class="col-lg-2 control-label">{{ _('New password') }}</label>
+                  <div class="col-lg-3">
+                    <input class="form-control input-sm" name="newPass" id="inputPassword" placeholder="{{ _('New password') }}" type="password" ng-required="true" ng-model="user.newPassword">
+                  </div>
+                  <span ng-show="changePassword.newPass.$invalid  && changePassword.newPass.$dirty" class="help-inline text-danger" ng-cloak>Required</span>
+                </div>
+                <div class="form-group" ng-class="{'has-warning': changePassword.confPass.$invalid  && changePassword.confPass.$dirty}">
+                  <label for="confirmPassword" class="col-lg-2 control-label">{{ _('Confirm password') }}</label>
+                  <div class="col-lg-3">
+                    <input class="form-control input-sm" name="confPass" id="confirmPassword" placeholder="{{ _('New password (confirm)') }}" type="password" ng-required="true" ng-model="user.confPassword" compare-to="user.newPassword">
+                  </div>
+                  <span ng-show="changePassword.confPass.$invalid  && changePassword.confPass.$dirty" class="help-inline text-warning" ng-cloak>Passwords mismatch</span>
+                </div>
+                <div class="form-group">
+                  <div class="col-lg-10 col-lg-offset-2">
+                    <button type="reset" class="btn btn-default">{{ _('Cancel') }}</button>
+                    <button type="submit" class="btn btn-primary" ng-disabled="changePassword.$invalid && changePassword.$dirty">{{ _('Submit') }}</button>
+                  </div>
+                </div>
+              </fieldset>
+            </form>
             <div></div>
           </div>
           <div id="user-panel-acl" class="form-container">

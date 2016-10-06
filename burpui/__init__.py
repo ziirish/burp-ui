@@ -291,6 +291,7 @@ def init(conf=None, verbose=0, logfile=None, gunicorn=True, unittest=False, debu
     if debug:
         app.config.setdefault('TEMPLATES_AUTO_RELOAD', True)
         app.config['TEMPLATES_AUTO_RELOAD'] = True
+        app.config['DEBUG'] = True
 
     app.jinja_env.globals.update(
         isinstance=isinstance,
