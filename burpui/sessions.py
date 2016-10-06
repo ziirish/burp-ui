@@ -178,8 +178,13 @@ class SessionManager(object):
         if self.session_managed() and self.backend:
             if not id:
                 return True
-            if id == self.get_session_id() and recurse:
-                return self.invalidate_current_session()
+            try:
+                if id == self.get_session_id() and recurse:
+                    return self.invalidate_current_session()
+            except RuntimeError:
+                # in case we are invoked through celery we will never
+                # work on the current session
+                pass
             key = self.prefix + id
             if not hasattr(self.app.session_interface, 'serializer'):
                 return False
