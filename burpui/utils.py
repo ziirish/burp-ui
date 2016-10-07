@@ -10,7 +10,6 @@
 import os
 import math
 import string
-import arrow
 import sys
 import datetime
 import zipfile
@@ -291,6 +290,7 @@ def lookup_file(name=None, guess=True, directory=False, check=True):
 
 
 def utc_to_local(timestamp):
+    import arrow
     try:
         utc = arrow.get(datetime.datetime.fromtimestamp(timestamp))
         local = utc.to(str(get_localzone()))
