@@ -22,6 +22,7 @@ Documentation
    requirements
    installation
    upgrading
+   architecture
    usage
    manage
    celery
