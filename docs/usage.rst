@@ -532,9 +532,6 @@ Now you can add *basic* specific options:
     [BASIC]
     # Backend priority. Higher is first
     priority = 2
-    # Allow both plain and hashed passwords
-    # WARNING: This will defaults to false in v0.4.0
-    mixed = true
     admin = pbkdf2:sha1:1000$12345678$password
     user1 = pbkdf2:sha1:1000$87654321$otherpassword
 

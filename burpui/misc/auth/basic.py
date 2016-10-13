@@ -55,12 +55,11 @@ class BasicLoader(BUIloader):
             #             self.conf.options.comments[self.section][-1]):
             #         salted = True
             # allow mixed logins (plain and hashed)
-            # TODO: defaults to False for 0.4.0
             mixed = self.conf.safe_get(
                 'mixed',
                 cast='boolean',
                 section=self.section,
-                defaults=True
+                defaults=False
             )
             self.users = {}
             for opt in self.conf.options.get(self.section).keys():
