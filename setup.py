@@ -75,10 +75,9 @@ class BuildStatic(Command):
         try:
             branch = check_output('sed s@^.*/@@g .git/HEAD'.split()).rstrip()
             ver = open(os.path.join('burpui', 'VERSION')).read().rstrip()
+            rev = 'stable'
             if branch and 'dev' in ver:
                 rev = branch
-            else:
-                rev = 'stable'
             try:
                 with open('burpui/RELEASE', 'w') as f:
                     f.write(rev)
@@ -131,6 +130,7 @@ class BuildStatic(Command):
             'burpui/static/vendor/fullcalendar/dist/fullcalendar.print.css',
             'burpui/static/vendor/fullcalendar/dist/fullcalendar.min.js',
             'burpui/static/vendor/fullcalendar/dist/gcal.js',
+            'burpui/static/vendor/fullcalendar/dist/lang/fr.js',
             'burpui/static/vendor/angular-bootstrap/ui-bootstrap.min.js',
             'burpui/static/vendor/angular-bootstrap/ui-bootstrap-tpls.min.js',
             'burpui/static/vendor/components-font-awesome/css/font-awesome.min.css',
@@ -145,8 +145,8 @@ class BuildStatic(Command):
         for dirname, subdirs, files in os.walk('burpui/static/vendor'):
             for filename in files:
                 path = os.path.join(dirname, filename)
-                # _, ext = os.path.splitext(path)
-                if os.path.isfile(path) and path not in keep:  # and ext != '.map':
+                _, ext = os.path.splitext(path)
+                if os.path.isfile(path) and (path not in keep or filename not in ['bower.json', 'package.json']) and not (rev != 'stable' and ext == '.map'):
                     os.unlink(path)
                 elif os.path.isdir(path):
                     dirlist.append(path)

@@ -340,6 +340,5 @@ td {
 }
 
 .tooltip {
-  position: fixed;
   word-wrap: break-word;
 }

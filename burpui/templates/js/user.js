@@ -139,7 +139,7 @@ var _sessions_table = $('#table-sessions').dataTable( {
 			data: null,
 			type: 'timestamp',
 			render: function( data, type, row ) {
-				return '<span data-toggle="tooltip" title="'+data.timestamp+'">'+moment(data.timestamp, moment.ISO_8601).fromNow()+'</span>';
+				return '<span data-toggle="tooltip" title="'+data.timestamp+'">'+moment(data.timestamp, moment.ISO_8601).subtract(3, 'seconds').fromNow()+'</span>';
 			}
 		},
 		{ 
