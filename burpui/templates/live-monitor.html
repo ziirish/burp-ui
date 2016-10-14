@@ -10,7 +10,7 @@
             {% raw %}
             <div class="col-lg-12" ng-repeat="client in clients">
               <br />
-							<h1 class="page-header">{{ ::client.client }}<span ng-if="client.agent"> on {{ ::client.agent }}</h1>
+              <h1 class="page-header">{{ ::client.client }}<span ng-if="client.agent"> on {{ ::client.agent }}</h1>
               <h4>{{ client.counters.percent | number:0 }}%</h4>
               <div class="progress progress-striped active">
                 <div class="progress-bar progress-bar-success" style="width: {{ client.counters.percent }}%"></div>
@@ -34,9 +34,9 @@
                       <span class="badge">{{ client.counters.timeleft | time_human }}</span>
                       Time left
                     </li>
-										<li class="list-group-item" ng-if="client.counters.warning && client.counters.warning > 0">
+                    <li class="list-group-item" ng-if="client.counters.warning && client.counters.warning > 0">
                       <span class="badge">{{ client.counters.warning }}</span>
-											Warning<span ng-if="client.counters.warning > 1">s</span>
+                      Warning<span ng-if="client.counters.warning > 1">s</span>
                     </li>
                   </ul>
                 </div>
@@ -46,7 +46,11 @@
                       <span class="badge">{{ client.counters.bytes_in | bytes_human }}</span>
                       Bytes received
                     </li>
-										<li class="list-group-item" ng-if="client.counters.speed && client.counters.speed > 0">
+                    <li class="list-group-item" ng-if="client.counters.bytes">
+                      <span class="badge">{{ client.counters.bytes | bytes_human }}</span>
+                      Bytes received
+                    </li>
+                    <li class="list-group-item" ng-if="client.counters.speed && client.counters.speed > 0">
                       <span class="badge">{{ client.counters.speed | bytes_human }}/s</span>
                       Speed
                     </li>

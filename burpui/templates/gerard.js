@@ -333,18 +333,18 @@ $('#input-client').typeahead({
 var _fit_menu = function() {
 	size = $(window).width();
 	target = $('li.detail');
+	target.off( "mouseenter mouseleave" );
 	if (size <= 768) {
-		target.off( "mouseenter mouseleave" );
 		target.find('.dtl').show();
 	} else {
 		target.hover(
 			// mouse in
 			function() {
-				$(this).find('.dtl').stop( true, true ).animate({width: 'toggle'}, 100);
+				$(this).find('.dtl').stop().animate({width: 'toggle'}, 100);
 			},
 			// mouse out
 			function() {
-				$(this).find('.dtl').stop( true, true ).animate({width: 'toggle'}, 100);
+				$(this).find('.dtl').stop().animate({width: 'toggle'}, 100);
 			}
 		);
 		target.find('.dtl').hide();

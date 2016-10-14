@@ -26,6 +26,7 @@ app.controller('CalendarCtrl', function($scope, $http, $compile, uiCalendarConfi
 		element.attr({
 			'tooltip-placement': 'bottom',
 			'uib-tooltip': event.title+' Duration: '+_time_human_readable((new Date(event.end) - new Date(event.start))/1000),
+			'tooltip-append-to-body': true,
 		});
 		$compile(element)($scope);
 	};
@@ -35,8 +36,9 @@ app.controller('CalendarCtrl', function($scope, $http, $compile, uiCalendarConfi
 			editable: false,
 			eventLimit: true,
 			firstDay: 1,
+			locale: '{{ g.locale }}',
 			header:{
-				left: 'month agendaWeek agendaDay',
+				left: 'month,listWeek',
 				center: 'title',
 				right: 'today prev,next'
 			},
