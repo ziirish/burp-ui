@@ -16,7 +16,6 @@ import zipfile
 import tarfile
 import logging
 
-from tzlocal import get_localzone
 from inspect import currentframe, getouterframes
 from ._compat import PY3
 
@@ -290,12 +289,13 @@ def lookup_file(name=None, guess=True, directory=False, check=True):
 
 
 def utc_to_local(timestamp):
-    import arrow
     try:
+        import arrow
+        from tzlocal import get_localzone
         utc = arrow.get(datetime.datetime.fromtimestamp(timestamp))
         local = utc.to(str(get_localzone()))
         return local.timestamp
-    except (TypeError, arrow.parser.ParserError):
+    except (TypeError, arrow.parser.ParserError, ImportError):
         return timestamp
 
 
