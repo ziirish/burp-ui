@@ -146,7 +146,7 @@ class BuildStatic(Command):
             for filename in files:
                 path = os.path.join(dirname, filename)
                 _, ext = os.path.splitext(path)
-                if os.path.isfile(path) and (path not in keep or filename not in ['bower.json', 'package.json']):
+                if os.path.isfile(path) and path not in keep and filename not in ['bower.json', 'package.json']:
                     if (rev == 'stable' and ext == '.map') or ext != '.map':
                         os.unlink(path)
                 elif os.path.isdir(path):
