@@ -12,6 +12,8 @@ echo "test requirements"
     exit 1
 }
 
+pip install Flask-Script==2.0.5
+
 echo "building dist"
 [ "$(sed 's/\([[:digit:]]*\)\..*$/\1/' <<<$VERSION)" -eq 2 ] && $PYTHON setup.py sdist bdist_wheel
 $PYTHON setup.py bdist_egg
