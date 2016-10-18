@@ -163,8 +163,13 @@ var _sessions_table = $('#table-sessions').dataTable( {
 				// Optionally add OS version
 				if (data.ua.lastIndexOf('Android') > 0) {
 					ret += '&nbsp;<i class="fa fa-android" aria-hidden="true"></i>';
-				} else if (data.ua.lastIndexOf('iPhone') > 0 || data.ua.lastIndexOf('Macintosh') > 0) {
+				} else if (data.ua.lastIndexOf('iPhone') > 0 || data.ua.lastIndexOf('iPad') > 0 || data.ua.lastIndexOf('Macintosh') > 0) {
 					ret += '&nbsp;<i class="fa fa-apple" aria-hidden="true"></i>';
+					if (data.ua.lastIndexOf('iPhone') > 0) {
+						ret += '&nbsp;<i class="fa fa-mobile" aria-hidden="true"></i>';
+					} else if (data.ua.lastIndexOf('iPad') > 0) {
+						ret += 'anbsp;<i class="fa fa-tablet" aria-hidden="true"></i>';
+					}
 				} else if (data.ua.lastIndexOf('Linux') > 0) {
 					ret += '&nbsp;<i class="fa fa-linux" aria-hidden="true"></i>';
 				} else if (data.ua.lastIndexOf('Windows') > 0) {
