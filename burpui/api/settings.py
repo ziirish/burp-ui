@@ -12,7 +12,7 @@ from ..server import BUIServer  # noqa
 from .custom import Resource
 from .custom.inputs import boolean
 from .._compat import unquote
-from ..utils import NOTIF_INFO, NOTIF_WARN
+from ..utils import NOTIF_INFO
 
 from six import iteritems
 from flask_babel import gettext as _
