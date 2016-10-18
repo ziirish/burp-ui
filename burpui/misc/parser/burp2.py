@@ -7,7 +7,10 @@
 """
 from .burp1 import Parser as Burp1
 
-from flask_babel import lazy_gettext as __
+
+def __(string):
+    """dummy function to fake the translation"""
+    return string
 
 
 # inherit Burp1 parser so we can just override available options

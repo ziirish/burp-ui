@@ -141,6 +141,7 @@ class BUIAgent(BUIbackend, BUIlogging):
         self.sslcert = self.conf.safe_get('sslcert')
         self.sslkey = self.conf.safe_get('sslkey')
         self.password = self.conf.safe_get('password')
+        self.conf.setdefault('BUI_AGENT', True)
 
         self.cli = BurpHandler(self.vers, self.logger, self.conf)
         pool = Pool(10000)

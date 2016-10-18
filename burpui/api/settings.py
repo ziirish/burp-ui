@@ -12,8 +12,10 @@ from ..server import BUIServer  # noqa
 from .custom import Resource
 from .custom.inputs import boolean
 from .._compat import unquote
-from ..utils import NOTIF_INFO
+from ..utils import NOTIF_INFO, NOTIF_WARN
 
+from six import iteritems
+from flask_babel import gettext as _
 from flask import jsonify, request, url_for, current_app
 from werkzeug.datastructures import ImmutableMultiDict
 
@@ -39,6 +41,7 @@ class ServerSettings(Resource):
     This resource is part of the :mod:`burpui.api.settings` module.
     """
 
+    @api.disabled_on_demo()
     @api.acl_admin_required(message='Sorry, you don\'t have rights to access the setting panel')
     @ns.doc(
         responses={
@@ -196,14 +199,21 @@ class ServerSettings(Resource):
         except:
             pass
         r = bui.cli.read_conf_srv(conf, server)
+        # Translate the doc and placeholder API side
+        doc = bui.cli.get_parser_attr('doc', server)
+        for key, val in iteritems(doc):
+            doc[key] = _(val)
+        placeholders = bui.cli.get_parser_attr('placeholders', server)
+        for key, val in iteritems(placeholders):
+            placeholders[key] = _(val)
         return jsonify(results=r,
                        boolean=bui.cli.get_parser_attr('boolean_srv', server),
                        string=bui.cli.get_parser_attr('string_srv', server),
                        integer=bui.cli.get_parser_attr('integer_srv', server),
                        multi=bui.cli.get_parser_attr('multi_srv', server),
-                       server_doc=bui.cli.get_parser_attr('doc', server),
+                       server_doc=doc,
                        suggest=bui.cli.get_parser_attr('values', server),
-                       placeholders=bui.cli.get_parser_attr('placeholders', server),
+                       placeholders=placeholders,
                        defaults=bui.cli.get_parser_attr('defaults', server))
 
 
@@ -244,6 +254,7 @@ class NewClientSettings(Resource):
     parser = ns.parser()
     parser.add_argument('newclient', required=True, help="No 'newclient' provided")
 
+    @api.disabled_on_demo()
     @api.acl_admin_required(message='Sorry, you don\'t have rights to access the setting panel')
     @ns.expect(parser)
     @ns.doc(
@@ -298,6 +309,7 @@ class ClientSettings(Resource):
     parser_delete.add_argument('revoke', type=boolean, help='Whether to revoke the certificate or not', default=False, nullable=True)
     parser_delete.add_argument('delcert', type=boolean, help='Whether to delete the certificate or not', default=False, nullable=True)
 
+    @api.disabled_on_demo()
     @api.acl_admin_required(message='Sorry, you don\'t have rights to access the setting panel')
     @ns.doc(
         responses={
@@ -338,6 +350,7 @@ class ClientSettings(Resource):
             defaults=bui.cli.get_parser_attr('defaults', server)
         )
 
+    @api.disabled_on_demo()
     @api.acl_admin_required(message='Sorry, you don\'t have rights to access the setting panel')
     @ns.expect(parser_delete)
     @ns.doc(

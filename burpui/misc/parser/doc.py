@@ -6,7 +6,11 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 """
 from .interface import BUIparser
-from flask_babel import lazy_gettext as __
+
+
+def __(string):
+    """dummy function to fake the translation"""
+    return string
 
 
 class Doc(BUIparser):

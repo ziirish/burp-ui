@@ -40,7 +40,7 @@ class ProxyCall(object):
         self.network = network
 
     def __call__(self, *args, **kwargs):
-        """This is were the proxy call (and the magic) occurs"""
+        """This is where the proxy call (and the magic) occurs"""
         # retrieve the original function prototype
         proto = getattr(BUIbackend, self.method)
         args_name = list(proto.__code__.co_varnames)
@@ -94,7 +94,7 @@ class ProxyParserCall(object):
         self.method = method
 
     def __call__(self, *args, **kwargs):
-        """This is were the proxy call (and the magic) occurs"""
+        """This is where the proxy call (and the magic) occurs"""
         # retrieve the original function prototype
         proto = getattr(BUIparser, self.method)
         args_name = list(proto.__code__.co_varnames)

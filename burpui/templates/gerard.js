@@ -358,7 +358,9 @@ $(function() {
 	 */
 	$('#bui-notifications > div').each(function() {
 		var e = $(this);
-		anim(e);
+		if (!e.data('permanent')) {
+			anim(e);
+		}
 	});
 
 	/***

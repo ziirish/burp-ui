@@ -7,6 +7,7 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
+import re
 import datetime
 
 from flask import session, request
@@ -54,7 +55,8 @@ class SessionManager(object):
                 db.session.commit()
                 return True
             elif store:
-                store.refresh(request.remote_addr)
+                ip = self.anonym_ip(request.remote_addr)
+                store.refresh(ip)
         return False
 
     def session_managed(self):
@@ -62,11 +64,27 @@ class SessionManager(object):
         return self.app.storage and self.app.storage.lower() != 'default' and \
             self.app.config['WITH_SQL']
 
+    def anonym_ip(self, ip):
+        """anonymize ip address while running the demo"""
+        # Do nothing if not in demo mode
+        if self.app.config['BUI_DEMO']:
+            if re.match('^\d+\.\d+\.\d+\.\d+$', ip):
+                spl = ip.split('.')
+                ip = '{}.x.x.x'.format(spl[0])
+            else:
+                spl = ip.split(':')
+                for mem in spl:
+                    if mem:
+                        ip = '::{}:x:x'.format(mem)
+                        break
+        return ip
+
     def store_session(self, user, ip=None, ua=None, remember=False, api=False):
         """Store the session in db"""
         if self.session_managed():
             from .ext.sql import db
             from .models import Session
+            ip = self.anonym_ip(ip)
             store = Session(
                 self.get_session_id(),
                 user,

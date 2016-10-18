@@ -109,6 +109,16 @@ class Api(ApiPlus):
             return decorated
         return decorator
 
+    def disabled_on_demo(self):
+        def decorator(func):
+            @wraps(func)
+            def decorated(resource, *args, **kwargs):
+                if config['BUI_DEMO']:
+                    resource.abort(405, 'Sorry, this feature is not available on the demo')
+                return func(resource, *args, **kwargs)
+            return decorated
+        return decorator
+
     def namespace(self, *args, **kwargs):
         """A namespace factory
 
