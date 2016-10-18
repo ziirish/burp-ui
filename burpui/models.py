@@ -46,7 +46,8 @@ class Session(db.Model):
     permanent = db.Column(db.Boolean)
     api = db.Column(db.Boolean)
 
-    def __init__(self, uuid, user, ip=None, ua=None, permanent=False, api=False):
+    def __init__(self, uuid, user, ip=None, ua=None,
+                 permanent=False, api=False):
         self.uuid = uuid
         self.user = user
         self.ip = ip

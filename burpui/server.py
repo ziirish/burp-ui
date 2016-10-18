@@ -36,6 +36,7 @@ G_SESSION = u''
 G_REDIS = u''
 G_CELERY = False
 G_SCOOKIE = True
+G_DEMO = False
 G_APPSECRET = u'random'
 G_COOKIETIME = 14
 G_SESSIONTIME = 5
@@ -62,6 +63,7 @@ class BUIServer(Flask):
             'auth': G_AUTH,
             'acl': G_ACL,
             'prefix': G_PREFIX,
+            'demo': G_DEMO,
         },
         'UI': {
             'refresh': G_REFRESH,
@@ -133,6 +135,10 @@ class BUIServer(Flask):
         self.port = self.config['BUI_PORT'] = self.conf.safe_get(
             'port',
             'integer'
+        )
+        self.demo = self.config['BUI_DEMO'] = self.conf.safe_get(
+            'demo',
+            'boolean'
         )
         self.bind = self.config['BUI_BIND'] = self.conf.safe_get('bind')
         self.vers = self.config['BUI_VERS'] = self.conf.safe_get(
@@ -322,6 +328,7 @@ class BUIServer(Flask):
         self.logger.info('database: {}'.format(self.database))
         self.logger.info('with SQL: {}'.format(self.config['WITH_SQL']))
         self.logger.info('with Celery: {}'.format(self.config['WITH_CELERY']))
+        self.logger.info('demo: {}'.format(self.config['BUI_DEMO']))
 
         if self.standalone:
             module = 'burpui.misc.backend.burp{0}'.format(self.vers)

@@ -11,6 +11,15 @@
                   {% endfor -%}
                 {% endif -%}
               {% endwith -%}
+              {% if config.BUI_DEMO and login -%}
+              <div class="alert alert-dismissable alert-info" data-permanent="true">
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                <p>
+                <strong>Hello!</strong> Welcome to Burp-UI's demo.
+                You can login with either <em>admin</em> / <em>admin</em> or with <em>demo</em> / <em>demo</em>.
+                </p>
+              </div>
+              {% endif -%}
             </div>
           </div>
         </div>
