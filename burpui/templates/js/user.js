@@ -226,6 +226,7 @@ _events_callback = function() {
 		}
 		$('#session-details').empty().html(unescape($me.data('misc')));
 		$('#perform-revoke').data('id', $me.data('id'));
+		$('#perform-revoke').data('current', $me.data('current'));
 		$('#confirmation-modal').modal('toggle');
 	});
 };
@@ -237,6 +238,10 @@ _sessions_table.on('responsive-display.dt', function ( e, datatable, row, showHi
 
 $('#perform-revoke').on('click', function(e) {
 	$me = $(this);
+	if ($me.data('current')) {
+		window.location = '{{ url_for("view.logout") }}';
+		return;
+	}
 	$.ajax({
 		url: '{{ url_for("api.user_sessions") }}/'+$me.data('id'),
 		headers: { 'X-From-UI': true },

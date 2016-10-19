@@ -131,6 +131,7 @@ class AuthUsers(Resource):
                         })
         return ret
 
+    @api.disabled_on_demo()
     @api.acl_admin_required(message="Not allowed to create users")
     @ns.expect(parser_add)
     @ns.doc(
@@ -172,6 +173,7 @@ class AuthUsers(Resource):
         status = 201 if success else 200
         return [[code, message]], status
 
+    @api.disabled_on_demo()
     @api.acl_admin_required(message="Not allowed to delete this user")
     @ns.expect(parser_del)
     @ns.doc(
@@ -212,6 +214,7 @@ class AuthUsers(Resource):
         status = 201 if success else 200
         return [[code, message]], status
 
+    @api.disabled_on_demo()
     @api.acl_own_or_admin(key='name', message="Not allowed to modify this user")
     @ns.expect(parser_mod)
     @ns.doc(
@@ -343,6 +346,7 @@ class MySessions(Resource):
             self.abort(404, 'User not found')
         return session_manager.get_user_sessions(user)
 
+    @api.disabled_on_demo()
     @ns.doc(
         responses={
             201: 'Success',
