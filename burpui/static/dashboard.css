@@ -11,6 +11,10 @@ body {
   border: 1px solid #cccccc;
 }
 
+.form-control.ui-select-toggle {
+  border: 1px solid #222;
+}
+
 /*
  * Global add-ons
  */
@@ -76,6 +80,11 @@ body {
 }
 .main .page-header {
   margin-top: 0;
+}
+
+.alert {
+  margin-left: 4px;
+  padding: 5px;
 }
 
 
