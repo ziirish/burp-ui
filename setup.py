@@ -72,10 +72,10 @@ class BuildStatic(Command):
         os.chdir(ROOT)
         log.info("getting revision number")
         call('{} ./burpui -m manage compile_translation'.format(sys.executable).split())
+        rev = 'stable'
         try:
             branch = check_output('sed s@^.*/@@g .git/HEAD'.split()).rstrip()
             ver = open(os.path.join('burpui', 'VERSION')).read().rstrip()
-            rev = 'stable'
             if branch and 'dev' in ver:
                 rev = branch
             try:
