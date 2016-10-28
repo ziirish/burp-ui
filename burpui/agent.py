@@ -95,6 +95,7 @@ class BUIAgent(BUIbackend, BUIlogging):
     def __init__(self, conf=None, level=0, logfile=None, debug=False):
         self.debug = debug
         self.padding = 1
+        level = level or 0
         if level > logging.NOTSET:
             logging.addLevelName(DISCLOSURE, 'DISCLOSURE')
             levels = [
