@@ -247,26 +247,24 @@ class BUIAgent(BUIbackend, BUIlogging):
                                 import hmac
                                 import hashlib
                                 from base64 import b64decode
-                                pickles = j['args']
+                                pickles = j['args'].encode(encoding='utf-8')
                                 key = u'{}{}'.format(self.password, j['func'])
                                 key = key.encode(encoding='utf-8')
-                                bytes_pickles = pickles.encode(encoding='utf-8')
+                                bytes_pickles = pickles
                                 digest = hmac.new(key, bytes_pickles, hashlib.sha1).hexdigest()
                                 if digest != j['digest']:
-                                    raise BUIserverException('Integrity check failed')
+                                    raise BUIserverException('Integrity check failed: {} != {}'.format(digest, j['digest']))
                                 j['args'] = pickle.loads(b64decode(pickles))
                             res = json.dumps(getattr(self.cli, j['func'])(**j['args']))
                         else:
                             res = json.dumps(getattr(self.cli, j['func'])())
                     self._logger('info', 'result: {}'.format(res))
                     self.request.sendall(b'OK')
-                # should not happen
-                except Exception as e:
-                    raise BUIserverException(str(e))
-                except BUIserverException as e:
+                except (BUIserverException, Exception) as e:
                     self.request.sendall(b'ER')
                     res = str(e)
-                    self._logger('error', 'Forwarding Exception: {}'.format(res))
+                    self._logger('error', traceback.format_exc())
+                    self._logger('warning', 'Forwarding Exception: {}'.format(res))
                     self.request.sendall(struct.pack('!Q', len(res)))
                     self.request.sendall(res.encode('UTF-8'))
                     return
