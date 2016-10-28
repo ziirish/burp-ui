@@ -495,10 +495,10 @@ class NClient(BUIbackend):
             raise BUIserverException(msg)
         key = '{}{}'.format(self.password, 'store_conf_cli')
         key = key.encode(encoding='utf-8')
-        pickles = pickle.dumps({'data': data, 'conf': conf, 'client': client}, -1)
+        pickles = b64encode(pickle.dumps({'data': data, 'conf': conf, 'client': client}, 2))
         bytes_pickles = pickles.encode(encoding='utf-8')
         digest = hmac.new(key, bytes_pickles, hashlib.sha1).hexdigest()
-        data = {'func': 'store_conf_cli', 'args': b64encode(pickles), 'pickled': True, 'digest': digest}
+        data = {'func': 'store_conf_cli', 'args': pickles, 'pickled': True, 'digest': digest}
         return json.loads(self.do_command(data))
 
     @implement
@@ -515,7 +515,7 @@ class NClient(BUIbackend):
             raise BUIserverException(msg)
         key = u'{}{}'.format(self.password, 'store_conf_srv')
         key = key.encode(encoding='utf-8')
-        pickles = b64encode(pickle.dumps({'data': data, 'conf': conf}, -1))
+        pickles = b64encode(pickle.dumps({'data': data, 'conf': conf}, 2))
         bytes_pickles = pickles.encode(encoding='utf-8')
         digest = hmac.new(key, bytes_pickles, hashlib.sha1).hexdigest()
         data = {'func': 'store_conf_srv', 'args': pickles, 'pickled': True, 'digest': digest}
