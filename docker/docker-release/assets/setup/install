@@ -13,7 +13,7 @@ cd
 
 apt-get remove -y python-cffi
 apt-get update
-apt-get install -y libssl-dev burp-server burp-client
+apt-get install -y libssl-dev burp-client
 
 # Install burp-ui
 pip install --upgrade pip
@@ -28,7 +28,7 @@ pip install redis
 pip install Flask-Session
 
 # Create burp-ui User
-useradd -r -d /var/lib/burpui -c 'Burp-UI daemon user' -u 5337 burpui
+useradd -r -m -d /var/lib/burpui -c 'Burp-UI daemon user' -u 5337 burpui
 
 mkdir -p /var/log/gunicorn
 chown -R burpui: /var/log/gunicorn
@@ -72,24 +72,12 @@ stdout_logfile=/var/log/supervisor/%(program_name)s.log
 stderr_logfile=/var/log/supervisor/%(program_name)s.log
 EOF
 
-# configure supervisord to start redis
-cat >/etc/supervisor/conf.d/redis.conf <<EOF
-[program:redis]
-directory=/tmp
-command=/usr/bin/redis-server /etc/redis/redis.conf
-user=root
-autostart=false
-autorestart=true
-stdout_logfile=/var/log/supervisor/%(program_name)s.log
-stderr_logfile=/var/log/supervisor/%(program_name)s.log
-EOF
-
-# configure supervisord to start burp
-cat > /etc/supervisor/conf.d/burp.conf <<EOF
-[program:burp]
+# configure celery worker                                                       
+cat > /etc/supervisor/conf.d/bui-celery.conf <<EOF
+[program:bui-celery]
 priority=20
 directory=/tmp
-command=/usr/sbin/burp -F -c /etc/burp/burp-server.conf
+command=/usr/local/bin/bui-celery --beat -s /var/lib/burpui/celerybeat-schedule
 user=burpui
 autostart=false
 autorestart=true
@@ -99,7 +87,7 @@ EOF
 
 cp ${CONFIG_DIR}/gunicorn.d/burp-ui /etc/gunicorn.d/burp-ui
 
-mkdir -p /etc/burp
+mkdir -p /etc/burp/clientconfdir
 cp ${CONFIG_DIR}/burp-ui/burpui.cfg /etc/burp/burpui.cfg
 
 cat ${CONFIG_DIR}/burp/burp.conf >/etc/burp/burp.conf
@@ -107,11 +95,10 @@ cat ${CONFIG_DIR}/burp/burp-server.conf >/etc/burp/burp-server.conf
 rm -rf /etc/burp/clientconfdir/*
 echo "password = abcdefgh" >/etc/burp/clientconfdir/agent
 
-# configure redis
-sed -i "s/^daemonize yes/daemonize no/" /etc/redis/redis.conf
-sed -i "s|^dir /var/lib/redis|dir /srv/redis|" /etc/redis/redis.conf
-
 chown -R burpui: /etc/burp
 
 # cleanup
+apt-get clean
+apt-get autoclean
+apt-get -y autoremove
 rm -rf /var/lib/apt/lists/*

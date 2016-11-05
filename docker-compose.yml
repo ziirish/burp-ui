@@ -1,0 +1,14 @@
+redis:
+  restart: always
+  image: redis
+
+burpui:
+  restart: always
+  image: registry.ziirish.me/ziirish/burp-ui:latest
+  links:
+    - redis
+  ports:
+    - 127.0.0.1:5000:5000
+  volumes:
+    - /etc/burp:/etc/burp
+    - /var/spool/burp:/var/spool/burp

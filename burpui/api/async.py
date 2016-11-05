@@ -125,8 +125,12 @@ def ping_backend():
     if bui.standalone:
         bui.cli.status()
     else:
+        def __status(server):
+            (serv, back) = server
+            return bui.cli.status(agent=serv)
+
         map(
-            lambda (serv, back): bui.cli.status(agent=serv),
+            __status,
             iteritems(bui.cli.servers)
         )
 
