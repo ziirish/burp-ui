@@ -16,11 +16,91 @@ from .custom.inputs import boolean
 from ..exceptions import BUIserverException
 from ..utils import NOTIF_ERROR
 
+from six import iteritems
 from flask_restplus.marshalling import marshal
 from flask import current_app
 
 bui = current_app  # type: BUIServer
 ns = api.namespace('client', 'Client methods')
+
+node_fields = ns.model('ClientTree', {
+    'date': fields.DateTime(
+        required=True,
+        dt_format='iso8601',
+        description='Human representation of the backup date'
+    ),
+    'gid': fields.Integer(
+        required=True,
+        description='gid owner of the node'
+    ),
+    'inodes': fields.Integer(
+        required=True,
+        description='Inodes of the node'
+    ),
+    'mode': fields.String(
+        required=True,
+        description='Human readable mode. Example: "drwxr-xr-x"'
+    ),
+    'name': fields.String(
+        required=True,
+        description='Node name'
+    ),
+    'title': fields.SafeString(
+        required=True,
+        description='Node name (alias)',
+        attribute='name'
+    ),
+    'fullname': fields.String(
+        required=True,
+        description='Full name of the Node'
+    ),
+    'key': fields.String(
+        required=True,
+        description='Full name of the Node (alias)',
+        attribute='fullname'
+    ),
+    'parent': fields.String(
+        required=True,
+        description='Parent node name'
+    ),
+    'size': fields.String(
+        required=True,
+        description='Human readable size. Example: "12.0KiB"'
+    ),
+    'type': fields.String(
+        required=True,
+        description='Node type. Example: "d"'
+    ),
+    'uid': fields.Integer(
+        required=True,
+        description='uid owner of the node'
+    ),
+    'selected': fields.Boolean(
+        required=False,
+        description='Is path selected',
+        default=False
+    ),
+    'lazy': fields.Boolean(
+        required=False,
+        description='Do the children have been loaded during this' +
+                    ' request or not',
+        default=True
+    ),
+    'folder': fields.Boolean(
+        required=True,
+        description='Is it a folder'
+    ),
+    'expanded': fields.Boolean(
+        required=False,
+        description='Should we expand the node',
+        default=False
+    ),
+    # Cannot use nested on own
+    'children': fields.Raw(
+        required=False,
+        description='List of children'
+    ),
+})
 
 
 @ns.route('/browse/<name>/<int:backup>',
@@ -72,83 +152,6 @@ class ClientTree(Resource):
         required=False,
         default=False
     )
-    node_fields = ns.model('ClientTree', {
-        'date': fields.DateTime(
-            required=True,
-            dt_format='iso8601',
-            description='Human representation of the backup date'
-        ),
-        'gid': fields.Integer(
-            required=True,
-            description='gid owner of the node'
-        ),
-        'inodes': fields.Integer(
-            required=True,
-            description='Inodes of the node'
-        ),
-        'mode': fields.String(
-            required=True,
-            description='Human readable mode. Example: "drwxr-xr-x"'
-        ),
-        'name': fields.String(
-            required=True,
-            description='Node name'
-        ),
-        'title': fields.SafeString(
-            required=True,
-            description='Node name (alias)',
-            attribute='name'
-        ),
-        'fullname': fields.String(
-            required=True,
-            description='Full name of the Node'
-        ),
-        'key': fields.String(
-            required=True,
-            description='Full name of the Node (alias)',
-            attribute='fullname'
-        ),
-        'parent': fields.String(
-            required=True,
-            description='Parent node name'
-        ),
-        'size': fields.String(
-            required=True,
-            description='Human readable size. Example: "12.0KiB"'
-        ),
-        'type': fields.String(
-            required=True,
-            description='Node type. Example: "d"'
-        ),
-        'uid': fields.Integer(
-            required=True,
-            description='uid owner of the node'
-        ),
-        'selected': fields.Boolean(
-            required=False,
-            description='Is path selected',
-            default=False
-        ),
-        'lazy': fields.Boolean(
-            required=False,
-            description='Do the children have been loaded during this' +
-                        ' request or not',
-            default=True
-        ),
-        'folder': fields.Boolean(
-            required=True,
-            description='Is it a folder'
-        ),
-        'expanded': fields.Boolean(
-            required=False,
-            description='Should we expand the node',
-            default=False
-        ),
-        'children': fields.Raw(
-            required=False,
-            description='List of children'
-        ),
-    })
 
     @api.cache.cached(timeout=3600, key_prefix=cache_key)
     @ns.marshal_list_with(node_fields, code=200, description='Success')
@@ -296,9 +299,9 @@ class ClientTree(Resource):
                 roots = []
                 for entry in json:
                     # /!\ after marshalling, 'fullname' will be 'key'
-                    tree[entry['fullname']] = marshal(entry, self.node_fields)
+                    tree[entry['fullname']] = marshal(entry, node_fields)
 
-                for key, entry in tree.iteritems():
+                for key, entry in iteritems(tree):
                     parent = entry['parent']
                     if not entry['children']:
                         entry['children'] = None
@@ -323,6 +326,163 @@ class ClientTree(Resource):
                     if not entry['folder']:
                         entry['lazy'] = False
 
+        except BUIserverException as e:
+            self.abort(500, str(e))
+        return json
+
+
+@ns.route('/browseall/<name>/<int:backup>',
+          '/<server>/browseall/<name>/<int:backup>',
+          endpoint='client_tree_all')
+@ns.doc(
+    params={
+        'server': 'Which server to collect data from when in' +
+                  ' multi-agent mode',
+        'name': 'Client name',
+        'backup': 'Backup number',
+    },
+)
+class ClientTreeAll(Resource):
+    """The :class:`burpui.api.client.ClientTreeAll` resource allows you to
+    retrieve a list of all the files in a given backup.
+
+    This resource is part of the :mod:`burpui.api.client` module.
+
+    An optional ``GET`` parameter called ``serverName`` is supported when
+    running in multi-agent mode.
+    """
+    parser = ns.parser()
+    parser.add_argument(
+        'serverName',
+        help='Which server to collect data from when in multi-agent mode'
+    )
+
+    @api.cache.cached(timeout=3600, key_prefix=cache_key)
+    @ns.marshal_list_with(node_fields, code=200, description='Success')
+    @ns.expect(parser)
+    @ns.doc(
+        responses={
+            '403': 'Insufficient permissions',
+            '405': 'Method not allowed',
+            '500': 'Internal failure',
+        },
+    )
+    def get(self, server=None, name=None, backup=None):
+        """Returns a list of all 'nodes' of a given backup
+
+        **GET** method provided by the webservice.
+
+        The *JSON* returned is:
+        ::
+
+            [
+              {
+                "date": "2015-05-21 14:54:49",
+                "gid": "0",
+                "inodes": "173",
+                "selected": false,
+                "expanded": false,
+                "children": [],
+                "mode": "drwxr-xr-x",
+                "name": "/",
+                "key": "/",
+                "title": "/",
+                "fullname": "/",
+                "parent": "",
+                "size": "12.0KiB",
+                "type": "d",
+                "uid": "0"
+              }
+            ]
+
+
+        The output is filtered by the :mod:`burpui.misc.acl` module so that you
+        only see stats about the clients you are authorized to.
+
+        :param server: Which server to collect data from when in multi-agent
+                       mode
+        :type server: str
+
+        :param name: The client we are working on
+        :type name: str
+
+        :param backup: The backup we are working on
+        :type backup: int
+
+        :returns: The *JSON* described above.
+        """
+        args = self.parser.parse_args()
+        server = server or args['serverName']
+
+        if not bui.cli.get_attr('batch_list_supported', False, server):
+            self.abort(
+                405,
+                'Sorry, the requested backend does not support this method'
+            )
+
+        if (bui.acl and
+                (not self.is_admin and not
+                 bui.acl.is_client_allowed(self.username,
+                                           name,
+                                           server))):
+            self.abort(403, 'Sorry, you are not allowed to view this client')
+
+        try:
+            json = bui.cli.get_tree(name, backup, '*', agent=server)
+            tree = {}
+            rjson = []
+            roots = []
+
+            def __expand_json(js):
+                res = {}
+                for entry in js:
+                    # /!\ after marshalling, 'fullname' will be 'key'
+                    res[entry['fullname']] = marshal(entry, node_fields)
+                return res
+
+            tree = __expand_json(json)
+
+            # TODO: we can probably improve this at some point
+            redo = True
+            while redo:
+                redo = False
+                for key, entry in iteritems(tree):
+                    parent = entry['parent']
+                    if not entry['children']:
+                        entry['children'] = None
+                    if parent:
+                        if parent not in tree:
+                            parent2 = parent
+                            last = False
+                            while parent not in tree and not last:
+                                if not parent2:
+                                    last = True
+                                json = bui.cli.get_tree(name, backup, parent2, agent=server)
+                                if parent2 == '/':
+                                    parent2 = ''
+                                else:
+                                    parent2 = os.path.dirname(parent2)
+                                tree2 = __expand_json(json)
+                                tree.update(tree2)
+                            roots = []
+                            redo = True
+                            break
+                        node = tree[parent]
+                        if not node['children']:
+                            node['children'] = []
+                        elif entry in node['children']:
+                            continue
+                        node['children'].append(entry)
+                        if node['folder']:
+                            node['lazy'] = False
+                            node['expanded'] = False
+                    else:
+                        roots.append(entry['key'])
+
+            for fullname in roots:
+                rjson.append(tree[fullname])
+
+            json = rjson
         except BUIserverException as e:
             self.abort(500, str(e))
         return json

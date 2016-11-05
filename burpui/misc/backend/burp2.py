@@ -26,6 +26,7 @@ if sys.version_info < (3, 3):
     TimeoutError = OSError
 
 BURP_MINIMAL_VERSION = 'burp-2.0.18'
+BURP_LIST_BATCH = '2.0.48'
 
 G_BURPBIN = u'/usr/sbin/burp'
 G_STRIPBIN = u'/usr/sbin/vss_strip'
@@ -68,6 +69,7 @@ class Burp(Burp1):
         self.app = server
         self.client_version = None
         self.server_version = None
+        self.batch_list_supported = False
         self.zip64 = G_ZIP64
         self.timeout = G_TIMEOUT
         self.burpbin = G_BURPBIN
@@ -301,6 +303,8 @@ class Burp(Burp1):
                 )
                 if ret:
                     self.server_version = ret.group(1)
+                    if self.server_version >= BURP_LIST_BATCH:
+                        self.batch_list_supported = True
         return 'logline' in jso
 
     @staticmethod
@@ -847,7 +851,7 @@ class Burp(Burp1):
         else:
             try:
                 top = root.decode('utf-8', 'replace')
-            except UnicodeDecodeError:
+            except (UnicodeDecodeError, AttributeError):
                 top = root
 
         query = self.status('c:{0}:b:{1}:p:{2}\n'.format(name, backup, top))
@@ -859,10 +863,15 @@ class Burp(Burp1):
             return ret
         for entry in backup['browse']['entries']:
             data = {}
+            base = None
+            dirn = None
+            if top == '*':
+                base = os.path.basename(entry['name'])
+                dirn = os.path.dirname(entry['name'])
             if entry['name'] == '.':
                 continue
             else:
-                data['name'] = entry['name']
+                data['name'] = base or entry['name']
             data['mode'] = self._human_st_mode(entry['mode'])
             if re.match('^(d|l)', data['mode']):
                 data['type'] = 'd'
@@ -873,10 +882,11 @@ class Burp(Burp1):
             data['inodes'] = entry['nlink']
             data['uid'] = entry['uid']
             data['gid'] = entry['gid']
-            data['parent'] = top
+            data['parent'] = dirn or top
             data['size'] = '{0:.1eM}'.format(_hr(entry['size']))
             data['date'] = entry['mtime']
-            data['fullname'] = os.path.join(top, entry['name'])
+            data['fullname'] = os.path.join(top, entry['name']) if top != '*' \
+                else entry['name']
             data['level'] = level
             data['children'] = []
             ret.append(data)

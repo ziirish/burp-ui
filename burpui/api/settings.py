@@ -440,4 +440,5 @@ class SettingOptions(Resource):
         return {
             'is_revocation_enabled': bui.cli.revocation_enabled(server),
             'server_can_restore': not bui.noserverrestore or bui.cli.get_parser(agent=server).param('server_can_restore', 'client_conf'),
+            'batch_list_supported': bui.cli.get_attr('batch_list_supported', False, server),
         }

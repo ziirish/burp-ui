@@ -843,6 +843,13 @@ class BUIbackend(with_metaclass(ABCMeta, object)):
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
     @abstractmethod
+    def get_attr(self, name, default=None, agent=None):
+        """The :func:`burpui.misc.backend.interface.BUIbackend.get_attr`
+        function returns the given attribute or default.
+        """
+        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+
+    @abstractmethod
     def get_parser(self, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.get_parser`
         function returns the parser of the current backend.
