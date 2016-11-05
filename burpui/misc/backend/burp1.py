@@ -18,7 +18,6 @@ import subprocess
 import tempfile
 
 from six import iteritems, viewkeys
-from itertools import imap
 
 from .interface import BUIbackend
 from ..parser.burp1 import Parser
@@ -31,6 +30,7 @@ if PY3:
     from shlex import quote
 else:
     from pipes import quote
+    from itertools import imap as map
 
 G_BURPPORT = 4972
 G_BURPHOST = u'::1'
@@ -701,7 +701,7 @@ class Burp(BUIbackend):
                     # self.logger.debug('{0}: {1}'.format(self.counters[c], v))
                     if val and count > 0 and count < 15:
                         try:
-                            vals = list(imap(int, val.split('/')))
+                            vals = list(map(int, val.split('/')))
                             if vals[0] > 0 or vals[1] > 0 or vals[2] or vals[3] > 0:
                                 res[self.counters[count]] = vals
                         except (ValueError, IndexError):
