@@ -626,6 +626,18 @@ Now you can add *basic acl* specific options:
 .. warning:: The double-quotes and single-quotes are **MENDATORY**
 
 
+By default, if a user is named ``admin`` it will be granted the admin role.
+Here are the default grants:
+
+
+1. admin => you can do anything
+2. non admin => you can only see the client that matches your username
+3. custom => you can manually assign username to clients using the syntax
+   ``username = client1,client2`` or
+   ``username = '{"agent1": ["client1-1"], "agent2": ["client2-3", "client2-4"]}'``
+   (if you are running a multi-agent setup)
+
+
 .. _Burp: http://burp.grke.org/
 .. _Gunicorn: http://gunicorn.org/
 .. _Burp-UI: https://git.ziirish.me/ziirish/burp-ui
