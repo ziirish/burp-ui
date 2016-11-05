@@ -30,6 +30,7 @@ if PY3:
     from shlex import quote
 else:
     from pipes import quote
+    from itertools import imap as map
 
 G_BURPPORT = 4972
 G_BURPHOST = u'::1'
@@ -700,7 +701,7 @@ class Burp(BUIbackend):
                     # self.logger.debug('{0}: {1}'.format(self.counters[c], v))
                     if val and count > 0 and count < 15:
                         try:
-                            vals = map(int, val.split('/'))
+                            vals = list(map(int, val.split('/')))
                             if vals[0] > 0 or vals[1] > 0 or vals[2] or vals[3] > 0:
                                 res[self.counters[count]] = vals
                         except (ValueError, IndexError):
@@ -1122,6 +1123,13 @@ class Burp(BUIbackend):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_client_labels`"""
         # Not supported with Burp 1.x.x so we just return an empty list
         return []
+
+    def get_attr(self, name, default=None, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.get_attr`"""
+        try:
+            return getattr(self, name, default)
+        except AttributeError:
+            return default
 
     def get_parser(self, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_parser`"""
