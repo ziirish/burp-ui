@@ -29,7 +29,7 @@
     <link href="{{ url_for('bower.static', filename='fullcalendar/dist/fullcalendar.min.css') }}" rel="stylesheet">
     <link href="{{ url_for('bower.static', filename='fullcalendar/dist/fullcalendar.print.css') }}" media="print" rel="stylesheet">
     {% endif -%}
-    {% if me or about -%}
+    {% if me or about or tree -%}
     <link href="{{ url_for('bower.static', filename='components-font-awesome/css/font-awesome.min.css') }}" rel="stylesheet">
     {% endif -%}
 

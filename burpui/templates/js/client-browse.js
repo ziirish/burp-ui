@@ -30,6 +30,14 @@
 $( document ).ready(function() {
 	var fixNeeded = false;
 
+	var treeCollapsed = function() {
+		var btn = $("#btn-expand-collapse-tree");
+		btn.data('collapsed', true);
+		btn.html('<i class="fa fa-expand" aria-hidden="true"></i>&nbsp;{{ _("Expand tree") }}</button>');
+	};
+
+	$('[data-toggle="tooltip"]').tooltip();
+
 	$("#tree").fancytree({
 		checkbox: true,
 		selectMode: 3,
@@ -105,6 +113,18 @@ $( document ).ready(function() {
 		},
 		select: function(event, data) {
 			toggleRestorationForms(data.tree);
+		},
+		collapse: function(event, data) {
+			if (!data.node.data.parent) {
+				treeCollapsed();
+			}
+		},
+		expand: function(event, data) {
+			var btn = $("#btn-expand-collapse-tree");
+			if (btn.data('collapsed')) {
+				btn.data('collapsed', false);
+				btn.html('<i class="fa fa-compress" aria-hidden="true"></i>&nbsp;{{ _("Colapse tree") }}');
+			}
 		}
 	});
 
@@ -137,7 +157,7 @@ $( document ).ready(function() {
 		leavesOnly = $("#leavesOnly").is(":checked"),
 		match = $(this).val();
 
-		if(e && e.which === $.ui.keyCode.ESCAPE || $.trim(match) === ""){
+		if(e && e.which === $.ui.keyCode.ESCAPE || $.trim(match) === "") {
 			$("#btnResetSearch").click();
 			return;
 		}
@@ -158,6 +178,7 @@ $( document ).ready(function() {
 		$("input[name=search-tree]").val("");
 		$("span#matches").text("");
 		tree.clearFilter();
+		$("#btnResetSearch").attr("disabled", true);
 	}).attr("disabled", true);
 
 	$("input#hideMode").change(function(e){
@@ -279,6 +300,31 @@ $( document ).ready(function() {
 
 		return false;
 	});
+
+	$("#btn-load-all-tree").on('click', function() {
+		var btn = $("#btn-expand-collapse-tree");
+		var url = "{{ url_for('api.client_tree_all', name=cname, backup=nbackup, server=server) }}";
+		$.get(url)
+			.fail(myFail)
+			.done(function(data) {
+				tree.reload(data);
+			});
+	});
+	$("#btn-expand-collapse-tree").on('click', function() {
+		var btn = $("#btn-expand-collapse-tree");
+		var collapsed = btn.data('collapsed');
+		tree.getRootNode().visit(function(node) {
+			if (collapsed) {
+				if (node.lazy && !node.children && node.title != "/") {
+					return 'skip';
+				}
+			}
+			node.setExpanded(collapsed);
+		});
+		if (!collapsed) {
+			treeCollapsed();
+		}
+	});
 	$("#btn-clear").on('click', function() {
 		tree.visit(function(node){
 			node.setSelected(false);
@@ -326,7 +372,9 @@ $( document ).ready(function() {
 var app = angular.module('MainApp', ['ngSanitize']);
 
 app.controller('BrowseCtrl', function($scope, $http) {
+	// var tree = $("#tree").fancytree("getTree");
 	$scope.sc_restore = {};
+	$scope.load_all = false;
 	{% if edit and edit.orig_client -%}
 	$scope.sc_restore.to = '{{ edit.to }}';
 	{% endif -%}
@@ -339,6 +387,7 @@ app.controller('BrowseCtrl', function($scope, $http) {
 	$http.get('{{ url_for("api.setting_options", server=server) }}', { headers: { 'X-From-UI': true } })
 		.then(function(response) {
 			$scope.sc_restore.enabled = response.data.server_can_restore;
+			$scope.load_all = response.data.batch_list_supported;
 		}, function(response) {
 			notifAll(response.data);
 		});

@@ -17,8 +17,8 @@
           </ul>
           <br />
           <h1 class="page-header">{{ _('Backup n°%(number)s of %(client)s', number=mypad(nbackup), client=cname) }}</h1>
-          <div class="row">
-            <form class="form-inline" role="form" action="#" onsubmit="return false;">
+          <div class="row form-horizontal">
+            <form class="form-inline col-md-6" role="form" action="#" onsubmit="return false;">
               <div class="form-group">
                 <div class="input-group">
                   <input type="text" class="form-control" placeholder="{{ _('filter...') }}" name="search-tree" autocomplete="off">
@@ -34,10 +34,14 @@
                     </ul>
                   </div>
                 </div>
+                <span id="btnResetSearch" class="btn btn-default"><i class="fa fa-eraser" aria-hidden="true"></i></span>
               </div>
-              <span id="btnResetSearch" class="btn btn-default">×</span>
               <span class="help-block" id="matches"></span>
             </form>
+            <div class="form-inline col-md-6 text-right">
+              <button class="btn btn-default pull-right" id="btn-expand-collapse-tree" data-collapsed="true" data-toggle="tooltip" data-placement="top" title="{{ _('This will only expand already loaded nodes to avoid flooding the server with the lazy-loading requests') }}"><i class="fa fa-expand" aria-hidden="true"></i>&nbsp;{{ _('Expand tree') }}</button>
+              <button class="btn btn-default pull-right" ng-show="load_all" id="btn-load-all-tree" data-toggle="tooltip" data-placement="top" title="{{ _('This may take some time depending the number of files in your backup') }}" ng-cloak><i class="fa fa-database" aria-hidden="true"></i>&nbsp;{{ _('Load all nodes') }}</button>
+            </div>
           </div>
           <br />
           <div id="waiting-container" class="row">
@@ -93,7 +97,7 @@
             <form id="form-server-initiated" class="form-inline col-md-6 text-right" method="POST" role="form" action"{{ url_for('api.server_restore', name=cname, backup=nbackup, server=server) }}">
               <input type="hidden" name="list-sc">
               <div id="server-initiated-form" style="display:none;">
-                <div class="btn-group dropup" ng-show="sc_restore.enabled">
+                <div class="btn-group dropup pull-right" ng-show="sc_restore.enabled">
                   <button type="submit" class="btn btn-info" id="perform-server-initiated"><span class="glyphicon glyphicon-cloud-upload"></span>&nbsp;{{ _('Server initiated restore') }}</button>
                   <button class="btn btn-info dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
                   <ul class="dropdown-menu dropdown-menu-right browse">
@@ -101,20 +105,20 @@
                     <li><label for="prefix-sc">{{ _('Prefix to the restore path') }}:&nbsp;</label><input type="text" id="prefix-sc" name="prefix-sc" placeholder="{{ _('prefix') }}" autocomplete="off" value="{% if edit and edit.restoreprefix %}{{ edit.restoreprefix }}{% endif %}"></li>
                     <li>
                       <label for="restoreto-sc">{{ _('Restore files on an other client') }}:&nbsp;</label>
-                      {% raw %}
                       <select name="restoreto-sc" id="restoreto-sc" ng-model="sc_restore.to">
                         <option value="" disabled selected>{{ _('none') }}</option>
+                        {% raw %}
                         <option ng-repeat="client in sc_restore.clients" value="{{client.name}}">{{client.name}}</option>
+                        {% endraw %}
                       </select>
-                      {% endraw %}
                     </li>
                     <li><label for="force-sc">{{ _('Whether to overwrite existing files') }}:&nbsp;</label><input type="checkbox" id="force-sc" name="force-sc" {% if edit and edit.overwrite %}checked{% endif %}></li>
                   </ul>
                 </div>
                 {% if edit -%}
-                <button type="button" id="btn-cancel-restore" class="btn btn-danger" ng-show="sc_restore.enabled"><span class="glyphicon glyphicon-trash"></span>&nbsp;{{ _('Cancel restore') }}</button>
+                <button type="button" id="btn-cancel-restore" class="btn btn-danger pull-right" ng-show="sc_restore.enabled"><span class="glyphicon glyphicon-trash"></span>&nbsp;{{ _('Cancel restore') }}</button>
                 {% endif -%}
-                <button type="button" id="btn-clear" class="btn btn-info"><span class="glyphicon glyphicon-trash"></span>&nbsp;{{ _('Clear selection') }}</button>
+                <button type="button" id="btn-clear" class="btn btn-info pull-right"><span class="glyphicon glyphicon-trash"></span>&nbsp;{{ _('Clear selection') }}</button>
               </div>
             </form>
           </div>
