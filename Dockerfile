@@ -2,7 +2,7 @@ FROM debian:jessie
 MAINTAINER hi+burpui@ziirish.me
 
 RUN apt-get update \
- && DEBIAN_FRONTEND=noninteractive apt-get install -y supervisor logrotate locales wget curl python2.7-dev git python-virtualenv gunicorn python-pip cron libffi-dev redis-server \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y supervisor logrotate locales wget python2.7-dev git gunicorn python-pip cron libffi-dev \
  && update-locale LANG=C.UTF-8 LC_MESSAGES=POSIX \
  && locale-gen en_US.UTF-8 \
  && dpkg-reconfigure -f noninteractive locales \
@@ -21,8 +21,9 @@ RUN chmod 755 /app/setup/install
 RUN /app/setup/install
 
 EXPOSE 5000/tcp
-EXPOSE 4971/tcp
-EXPOSE 4972/tcp
+
+VOLUME ["/var/spool/burp"]
+VOLUME ["/etc/burp"]
 
 ENTRYPOINT ["/app/init"]
 CMD ["app:start"]

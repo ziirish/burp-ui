@@ -111,7 +111,7 @@ class BUIConfig(dict):
         if not value:
             raise validate.VdtMissingValue('No value for this option')
         if not isinstance(value, list):
-            return value
+            return str(value)
         return ','.join(value)
 
     def boolean_or_string(self, value):
