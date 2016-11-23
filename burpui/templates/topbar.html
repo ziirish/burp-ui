@@ -51,11 +51,13 @@
             </li>
               {% if current_user and current_user.is_authenticated -%}
                 {% if current_user.is_admin -%}
+            <!--
             <li class="detail {% if admin %}active{% endif %}">
               <a href="{{ url_for('view.admin') }}">
                 <span class="glyphicon glyphicon-cog"></span><span class="dtl">&nbsp;{{ _('Administration') }}</span>
               </a>
             </li>
+            -->
                 {% endif -%}
             <li class="detail {% if me %}active{% endif %}">
               <a href="{{ url_for('view.me') }}">

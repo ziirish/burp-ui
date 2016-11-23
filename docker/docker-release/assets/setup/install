@@ -9,6 +9,15 @@ BURPUI="https://burpui.ziirish.me/builds/burp-ui.dev.tar.gz"
 echo "deb http://ziirish.info/repos/debian/jessie zi-latest main" >/etc/apt/sources.list.d/ziirish.list
 wget https://ziirish.info/repos/debian.gpg -O- | apt-key add -
 
+# initial cleanup
+cd /burp-ui
+for x in $(cat .gitignore)
+do
+  find . -iname "$x" | xargs rm -rf
+done
+rm -rf .git
+rm -rf .gitignore
+
 cd
 
 apt-get remove -y python-cffi
@@ -26,6 +35,9 @@ pip install ujson
 pip install gevent
 pip install redis
 pip install Flask-Session
+pip install Flask-SQLAlchemy
+pip install Flask-Migrate
+pip install celery
 
 # Create burp-ui User
 useradd -r -m -d /var/lib/burpui -c 'Burp-UI daemon user' -u 5337 burpui
@@ -87,6 +99,7 @@ EOF
 
 cp ${CONFIG_DIR}/gunicorn.d/burp-ui /etc/gunicorn.d/burp-ui
 
+# this is used in case nothing is monted on /etc/burp
 mkdir -p /etc/burp/clientconfdir
 cp ${CONFIG_DIR}/burp-ui/burpui.cfg /etc/burp/burpui.cfg
 

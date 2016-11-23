@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-10-17 18:02+0200\n"
+"POT-Creation-Date: 2016-11-16 15:56+0100\n"
 "PO-Revision-Date: 2016-08-25 15:19+0200\n"
 "Last-Translator: Ziirish <hi+burpui@ziirish.me>\n"
 "Language: fr\n"
@@ -18,11 +18,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.3.4\n"
 
-#: burpui/__init__.py:429
+#: burpui/app.py:427
 msgid "Please log in to access this page."
 msgstr "Veuillez vous authentifier pour accéder à cette page."
 
-#: burpui/__init__.py:432
+#: burpui/app.py:430
 msgid "Please reauthenticate to access this page."
 msgstr "Veuillez vous ré-authentifier pour accéder à cette page."
 
@@ -59,31 +59,31 @@ msgstr "Connecté avec succès"
 msgid "Wrong username or password"
 msgstr "Mauvais nom d'utilisateur ou mot de passe"
 
-#: burpui/misc/parser/burp2.py:52
+#: burpui/misc/parser/burp2.py:55
 msgid "max secs"
 msgstr "maximun secondes"
 
-#: burpui/misc/parser/burp2.py:53 burpui/misc/parser/doc.py:126
-#: burpui/misc/parser/doc.py:127 burpui/misc/parser/doc.py:128
-#: burpui/misc/parser/doc.py:136 burpui/misc/parser/doc.py:137
-#: burpui/misc/parser/doc.py:140 burpui/misc/parser/doc.py:144
-#: burpui/misc/parser/doc.py:149 burpui/misc/parser/doc.py:156
-#: burpui/misc/parser/doc.py:160 burpui/misc/parser/doc.py:161
-#: burpui/misc/parser/doc.py:171 burpui/misc/parser/doc.py:174
-#: burpui/misc/parser/doc.py:178 burpui/misc/parser/doc.py:183
-#: burpui/misc/parser/doc.py:184 burpui/misc/parser/doc.py:188
-#: burpui/misc/parser/doc.py:193 burpui/misc/parser/doc.py:196
-#: burpui/misc/parser/doc.py:197 burpui/misc/parser/doc.py:199
-#: burpui/misc/parser/doc.py:201 burpui/misc/parser/doc.py:203
-#: burpui/misc/parser/doc.py:205 burpui/misc/parser/doc.py:213
+#: burpui/misc/parser/burp2.py:56 burpui/misc/parser/doc.py:127
+#: burpui/misc/parser/doc.py:128 burpui/misc/parser/doc.py:129
+#: burpui/misc/parser/doc.py:137 burpui/misc/parser/doc.py:138
+#: burpui/misc/parser/doc.py:141 burpui/misc/parser/doc.py:145
+#: burpui/misc/parser/doc.py:150 burpui/misc/parser/doc.py:157
+#: burpui/misc/parser/doc.py:161 burpui/misc/parser/doc.py:162
+#: burpui/misc/parser/doc.py:172 burpui/misc/parser/doc.py:175
+#: burpui/misc/parser/doc.py:179 burpui/misc/parser/doc.py:184
+#: burpui/misc/parser/doc.py:185 burpui/misc/parser/doc.py:189
+#: burpui/misc/parser/doc.py:194 burpui/misc/parser/doc.py:197
+#: burpui/misc/parser/doc.py:198 burpui/misc/parser/doc.py:200
+#: burpui/misc/parser/doc.py:202 burpui/misc/parser/doc.py:204
+#: burpui/misc/parser/doc.py:206 burpui/misc/parser/doc.py:214
 msgid "path"
 msgstr "chemin"
 
-#: burpui/misc/parser/burp2.py:54
+#: burpui/misc/parser/burp2.py:57
 msgid "some informations"
 msgstr "des informations"
 
-#: burpui/misc/parser/burp2.py:76
+#: burpui/misc/parser/burp2.py:79
 msgid ""
 "If acl support is compiled into burp, this allows you to decide whether "
 "or not to backup acls at runtime. The default is '1'."
@@ -92,7 +92,7 @@ msgstr ""
 "décider si il faut sauvegarder les ACLs ou non. La valeur par défaut est "
 "1."
 
-#: burpui/misc/parser/burp2.py:79
+#: burpui/misc/parser/burp2.py:82
 msgid ""
 "If xattr support is compiled into burp, this allows you to decide whether"
 " or not to backup xattrs at runtime. The default is '1'."
@@ -101,7 +101,7 @@ msgstr ""
 "décider si il faut sauvegarder les XATTRs ou non. La valeur par défaut "
 "est 1."
 
-#: burpui/misc/parser/burp2.py:82
+#: burpui/misc/parser/burp2.py:85
 msgid ""
 "When running a timed backup, sleep for a random number of seconds "
 "(between 0 and the number given) before contacting the server. "
@@ -112,7 +112,7 @@ msgstr ""
 "On peut également forcer ce paramètre avec l'option '-q' sur la ligne de "
 "commande."
 
-#: burpui/misc/parser/burp2.py:86
+#: burpui/misc/parser/burp2.py:89
 msgid ""
 "This can be overridden by the clientconfdir configuration files in "
 "clientconfdir on the server. When the server needs to delete old backups,"
@@ -133,7 +133,7 @@ msgstr ""
 "réalisée via une tâche cron par exemple. Faites attention à spécifier un "
 "chemin sur le même système de fichier que le pool de sauvegarde."
 
-#: burpui/misc/parser/burp2.py:98
+#: burpui/misc/parser/burp2.py:101
 msgid ""
 "You can have multiple labels, and they can be overridden in the client "
 "configuration files in clientconfdir on the server. They will appear as "
@@ -147,26 +147,26 @@ msgstr ""
 " dans la sortie JSON du moniteur. Le but est de pouvoir transmettre des "
 "données arbitraires aux clients via le moniteur d'état."
 
-#: burpui/misc/parser/burp2.py:105
+#: burpui/misc/parser/burp2.py:108
 msgid ""
 "To prevent the server from being able to override your local "
 "include/exclude list, set this to 0. The default is 1."
 msgstr ""
 
-#: burpui/misc/parser/burp2.py:109
+#: burpui/misc/parser/burp2.py:112
 msgid ""
 "Set this to 0 if you do not want include_glob settings to be evaluated "
 "after the pre script is run. The default is 1."
 msgstr ""
 
-#: burpui/misc/parser/burp2.py:113
+#: burpui/misc/parser/burp2.py:116
 msgid ""
 "Set this to 0 if you want to disable all clients. The default is 1. This "
 "option can be overridden per-client in the client configuration files in "
 "clientconfdir on the server."
 msgstr ""
 
-#: burpui/misc/parser/burp2.py:117
+#: burpui/misc/parser/burp2.py:120
 msgid ""
 "Whether to keep fqdn cname (like 'testclient.example.com') when looking-"
 "up in clientconfdir. This also affects the fqdn lookup on the client (see"
@@ -175,7 +175,7 @@ msgid ""
 " ('testclient.example.com' becomes 'testclient')."
 msgstr ""
 
-#: burpui/misc/parser/burp2.py:125
+#: burpui/misc/parser/burp2.py:128
 msgid ""
 "Whether to force lowercase cname when looking-up in clientconfdir. This "
 "also affects the fqdn lookup on the client (see client configuration "
@@ -183,86 +183,86 @@ msgid ""
 "by the client while authenticating will be lowercased."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:124
+#: burpui/misc/parser/doc.py:125
 msgid "path or glob"
 msgstr "chemin ou glob"
 
-#: burpui/misc/parser/doc.py:129 burpui/misc/parser/doc.py:130
+#: burpui/misc/parser/doc.py:130 burpui/misc/parser/doc.py:131
 msgid "name"
 msgstr "nom"
 
-#: burpui/misc/parser/doc.py:142 burpui/misc/parser/doc.py:170
-#: burpui/misc/parser/doc.py:172 burpui/misc/parser/doc.py:190
-#: burpui/misc/parser/doc.py:194 burpui/misc/parser/doc.py:206
-#: burpui/misc/parser/doc.py:212
+#: burpui/misc/parser/doc.py:143 burpui/misc/parser/doc.py:171
+#: burpui/misc/parser/doc.py:173 burpui/misc/parser/doc.py:191
+#: burpui/misc/parser/doc.py:195 burpui/misc/parser/doc.py:207
+#: burpui/misc/parser/doc.py:213
 msgid "string"
 msgstr "chaîne de caractères"
 
-#: burpui/misc/parser/doc.py:145 burpui/misc/parser/doc.py:146
-#: burpui/misc/parser/doc.py:154
+#: burpui/misc/parser/doc.py:146 burpui/misc/parser/doc.py:147
+#: burpui/misc/parser/doc.py:155
 msgid "extension"
 msgstr "extension"
 
-#: burpui/misc/parser/doc.py:147
+#: burpui/misc/parser/doc.py:148
 msgid "fstype"
 msgstr "système de fichier"
 
-#: burpui/misc/parser/doc.py:148 burpui/misc/parser/doc.py:155
+#: burpui/misc/parser/doc.py:149 burpui/misc/parser/doc.py:156
 msgid "regular expression"
 msgstr "expression régulière"
 
-#: burpui/misc/parser/doc.py:151
+#: burpui/misc/parser/doc.py:152
 msgid "groupname"
 msgstr "nom du groupe"
 
-#: burpui/misc/parser/doc.py:157
+#: burpui/misc/parser/doc.py:158
 msgid "glob"
 msgstr "glob"
 
-#: burpui/misc/parser/doc.py:158 burpui/misc/parser/doc.py:162
-#: burpui/misc/parser/doc.py:164 burpui/misc/parser/doc.py:165
-#: burpui/misc/parser/doc.py:166
+#: burpui/misc/parser/doc.py:159 burpui/misc/parser/doc.py:163
+#: burpui/misc/parser/doc.py:165 burpui/misc/parser/doc.py:166
+#: burpui/misc/parser/doc.py:167
 msgid "number"
 msgstr "nombre"
 
-#: burpui/misc/parser/doc.py:169
+#: burpui/misc/parser/doc.py:170
 msgid "file name"
 msgstr "nom du fichier"
 
-#: burpui/misc/parser/doc.py:176 burpui/misc/parser/doc.py:200
-#: burpui/misc/parser/doc.py:204 burpui/templates/client-browse.html:88
+#: burpui/misc/parser/doc.py:177 burpui/misc/parser/doc.py:201
+#: burpui/misc/parser/doc.py:205 burpui/templates/client-browse.html:92
 msgid "password"
 msgstr "mot de passe"
 
-#: burpui/misc/parser/doc.py:179 burpui/misc/parser/doc.py:207
+#: burpui/misc/parser/doc.py:180 burpui/misc/parser/doc.py:208
 msgid "port number"
 msgstr "numéro du port"
 
-#: burpui/misc/parser/doc.py:185
+#: burpui/misc/parser/doc.py:186
 msgid "client"
 msgstr "client"
 
-#: burpui/misc/parser/doc.py:202
+#: burpui/misc/parser/doc.py:203
 msgid "cipher list"
 msgstr "list de cipher"
 
-#: burpui/misc/parser/doc.py:214
+#: burpui/misc/parser/doc.py:215
 msgid "strftime format"
 msgstr "format strftime"
 
-#: burpui/misc/parser/doc.py:215
+#: burpui/misc/parser/doc.py:216
 msgid "umask"
 msgstr "umask"
 
-#: burpui/misc/parser/doc.py:216
+#: burpui/misc/parser/doc.py:217
 msgid "username"
 msgstr "nom d'utilisateur"
 
-#: burpui/misc/parser/doc.py:218
+#: burpui/misc/parser/doc.py:219
 msgid "list of drive letters"
 msgstr "liste des lettres des disques durs"
 
-#: burpui/misc/parser/doc.py:417
+#: burpui/misc/parser/doc.py:418
 msgid ""
 "Read additional configuration files. On Windows, the glob is "
 "unimplemented - you will need to specify an actual file."
@@ -271,7 +271,7 @@ msgstr ""
 "n'est pas implémenté - vous devez spécifier le chemin complet (relatif ou"
 " absolu)."
 
-#: burpui/misc/parser/doc.py:420
+#: burpui/misc/parser/doc.py:421
 msgid ""
 "Defines the main TCP address that the server listens on. The default is "
 "either '::' or '0.0.0.0', dependent upon compile time options."
@@ -279,7 +279,7 @@ msgstr ""
 "Défini l'adresse d'écoute du serveur. Par défaut: '::' ou '0.0.0.0' en "
 "fonction des options de compilation."
 
-#: burpui/misc/parser/doc.py:423
+#: burpui/misc/parser/doc.py:424
 msgid ""
 "This allows you to control whether the client uses O_NOATIME when opening"
 " files and directories. The default is 0, which enables O_NOATIME. This "
@@ -300,7 +300,7 @@ msgstr ""
 "de mettre atime=1. Avec atime=1, l'attribut <i>access time</i> sera mis à"
 " jours dès qu'un fichier estsauvegardé."
 
-#: burpui/misc/parser/doc.py:434
+#: burpui/misc/parser/doc.py:435
 msgid ""
 "Path to autoupgrade directory from which upgrades are downloaded. The "
 "option can be left unset in order not to autoupgrade clients. Please see "
@@ -308,11 +308,11 @@ msgid ""
 "option."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:440
+#: burpui/misc/parser/doc.py:441
 msgid "Path to the burp_ca script when using the ca_conf option."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:442
+#: burpui/misc/parser/doc.py:443
 msgid ""
 "Path to certificate authority configuration file. The CA configuration "
 "file will usually be /etc/burp/CA.cnf. The CA directory indicated by "
@@ -323,64 +323,64 @@ msgid ""
 "options, please see docs/burp_ca.txt."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:452
+#: burpui/misc/parser/doc.py:453
 msgid ""
 "Name of the CA that the server will generate when using the ca_conf "
 "option."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:454
+#: burpui/misc/parser/doc.py:455
 msgid ""
 "The name that the server will put into its own SSL certficates when using"
 " the ca_conf option."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:457
+#: burpui/misc/parser/doc.py:458
 msgid ""
 "Turn this off to prevent clients from deleting backups with the '-a D' "
 "option. The default is that clients can delete backups. Restore clients "
 "can override this setting."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:462
+#: burpui/misc/parser/doc.py:463
 msgid ""
 "Turn this off to prevent clients from forcing backups with the '-a b' "
 "option. Timed backups will still work. The default is that clients can "
 "force backups."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:467
+#: burpui/misc/parser/doc.py:468
 msgid ""
 "Turn this off to prevent clients from listing backups with the '-a l' "
 "option. The default is that clients can list backups. Restore clients can"
 " override this setting."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:471
+#: burpui/misc/parser/doc.py:472
 msgid ""
 "Turn this off to prevent clients from initiating restores with the '-a r'"
 " option. The default is that clients can initiate restores. Restore "
 "clients can override this setting."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:476
+#: burpui/misc/parser/doc.py:477
 msgid ""
 "Turn this off to prevent clients from initiating a verify job with the "
 "'-a v' option. The default is that clients can initiate a verify job. "
 "Restore clients can override this setting."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:481
+#: burpui/misc/parser/doc.py:482
 msgid ""
 "Path to the directory in which to keep per-client lock files. By default,"
 " this is set to the path given by the 'directory' option."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:484
+#: burpui/misc/parser/doc.py:485
 msgid "Path to the directory that contains client configuration files."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:486
+#: burpui/misc/parser/doc.py:487
 msgid ""
 "Choose the level of gzip compression for files stored in backups. Setting"
 " 0 or gzip0 turns compression off. The default is gzip9. This option can "
@@ -388,19 +388,19 @@ msgid ""
 "server."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:492
+#: burpui/misc/parser/doc.py:493
 msgid "Allow backups to cross all filesystem mountpoints."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:494
+#: burpui/misc/parser/doc.py:495
 msgid "Allow backups to cross a particular filesystem mountpoint."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:496
+#: burpui/misc/parser/doc.py:497
 msgid "Whether to daemonise. The default is 1."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:497
+#: burpui/misc/parser/doc.py:498
 msgid ""
 "Enables you to group clients together for file deduplication purposes. "
 "For example, you might want to set 'dedup_group=xp' for each Windows XP "
@@ -408,32 +408,32 @@ msgid ""
 " the option '-g xp'."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:502
+#: burpui/misc/parser/doc.py:503
 msgid ""
 "When turned on (which is the default) and the client is on version 1.3.6 "
 "or greater, the structure of the storage directory will mimic that of the"
 " original filesystem on the client."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:507
+#: burpui/misc/parser/doc.py:508
 msgid "Path to the directory in which to store backups."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:508
+#: burpui/misc/parser/doc.py:509
 msgid ""
 "Extensions to exclude from compression. Case insensitive. You can have "
 "multiple exclude compression lines. For example, set 'gz' to exclude "
 "gzipped files from compression."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:512
+#: burpui/misc/parser/doc.py:513
 msgid ""
 "Extensions to exclude from the backup. Case insensitive. You can have "
 "multiple exclude extension lines. For example, set 'vdi' to exclude "
 "VirtualBox disk images."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:516
+#: burpui/misc/parser/doc.py:517
 msgid ""
 "File systems to exclude from the backup. Case insensitive. You can have "
 "multiple exclude file system lines. For example, set 'tmpfs' to exclude "
@@ -442,34 +442,34 @@ msgid ""
 "example, 'exclude_fs = 0x01021994' will also exclude tmpfs."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:524
+#: burpui/misc/parser/doc.py:525
 msgid "Exclude paths that match the regular expression."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:526
+#: burpui/misc/parser/doc.py:527
 msgid ""
 "Path to exclude from the backup. You can have multiple exclude lines. Use"
 " forward slashes '/', not backslashes '\\' as path delimiters."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:529
+#: burpui/misc/parser/doc.py:530
 msgid "Whether to fork children. The default is 1."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:530
+#: burpui/misc/parser/doc.py:531
 msgid ""
 "Run as a particular group. This can be overridden by the client "
 "configuration files in clientconfdir on the server."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:533
+#: burpui/misc/parser/doc.py:534
 msgid ""
 "Do not back up the client if the estimated size of all files is greater "
 "than the specified size. Example: 'hard_quota = 100Gb'. Set to 0 (the "
 "default) to have no limit."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:537
+#: burpui/misc/parser/doc.py:538
 msgid ""
 "On the server, defines whether to keep hardlinked files in the backups, "
 "or whether to generate reverse deltas and delete the original files. Can "
@@ -479,7 +479,7 @@ msgid ""
 "a backup is reduced."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:547
+#: burpui/misc/parser/doc.py:548
 msgid ""
 "Extensions to include in the backup. Case insensitive. Nothing else will "
 "be included in the backup. You can have multiple include extension lines."
@@ -487,17 +487,17 @@ msgid ""
 "specify an 'include' line so that burp knows where to start looking."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:554
+#: burpui/misc/parser/doc.py:555
 msgid "Not implemented."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:555
+#: burpui/misc/parser/doc.py:556
 msgid ""
 "Path to include in the backup. You can have multiple include lines. Use "
 "forward slashes '/', not backslashes '\\' as path delimiters."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:558
+#: burpui/misc/parser/doc.py:559
 msgid ""
 "Include paths that match the glob expression.For example, "
 "'/home/*/Documents' will include '/home/user1/Documents' and "
@@ -506,7 +506,7 @@ msgid ""
 "contain only one '*'."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:565
+#: burpui/misc/parser/doc.py:566
 msgid ""
 "Number of backups to keep. This can be overridden by the client "
 "configuration files in clientconfdir on the server. Specify multiple "
@@ -523,7 +523,7 @@ msgid ""
 "together. That is, a backup every minute for 100 years."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:582
+#: burpui/misc/parser/doc.py:583
 msgid ""
 "When set to 0, delta differencing will not take place. That is, when a "
 "file changes, the server will request the whole new file. The default is "
@@ -531,13 +531,13 @@ msgid ""
 "clientconfdir on the server."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:587
+#: burpui/misc/parser/doc.py:588
 msgid ""
 "Path to the lockfile that ensures that two server processes cannot run "
 "simultaneously."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:589
+#: burpui/misc/parser/doc.py:590
 msgid ""
 "If a path is given, the server will move directories to be deleted into "
 "the directory specified by the path, but will not actually delete them. "
@@ -549,83 +549,83 @@ msgid ""
 "the client configuration files in clientconfdir on the server."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:602
+#: burpui/misc/parser/doc.py:603
 msgid ""
 "Defines the number of child processes to fork (the number of clients that"
 " can simultaneously connect. The default is 5."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:605
+#: burpui/misc/parser/doc.py:606
 msgid ""
 "Do not back up files that are greater than the specified size. Example: "
 "'max_file_size = 10Mb'. Set to 0 (the default) to have no limit."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:609
+#: burpui/misc/parser/doc.py:610
 msgid ""
 "On the server, the number of times that a single file can be hardlinked. "
 "The bedup program also obeys this setting. The default is 10000."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:612
+#: burpui/misc/parser/doc.py:613
 msgid ""
 "Defines the number of status child processes to fork (the number of "
 "status clients that can simultaneously connect. The default is 5."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:616
+#: burpui/misc/parser/doc.py:617
 msgid ""
 "Defines the number of subdirectories in the data storage areas. The "
 "maximum number of subdirectories that ext3 allows is 32000. If you do not"
 " set this option, it defaults to 30000."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:621
+#: burpui/misc/parser/doc.py:622
 msgid ""
 "Do not back up files that are less than the specified size. Example: "
 "'min_file_size = 10Mb'. Set to 0 (the default) to have no limit."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:625
+#: burpui/misc/parser/doc.py:626
 msgid "Required to run in server mode."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:626
+#: burpui/misc/parser/doc.py:627
 msgid ""
 "Whether or not the server should cache the directory tree when a monitor "
 "client is browsing. <br/>Advantage: browsing is faster. "
 "</br>Disadvantage: more memory is used."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:631
+#: burpui/misc/parser/doc.py:632
 msgid ""
 "Set the network timeout in seconds. If no data is sent or received over a"
 " period of this length, burp will give up. The default is 7200 seconds (2"
 " hours)."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:635
+#: burpui/misc/parser/doc.py:636
 msgid ""
 "If this file system entry exists, the directory containing it will not be"
 " backed up."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:637
+#: burpui/misc/parser/doc.py:638
 msgid "The same as notify_success_arg, but for backups that failed."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:639
+#: burpui/misc/parser/doc.py:640
 msgid "The same as notify_success_script, but for backups that failed."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:641
+#: burpui/misc/parser/doc.py:642
 msgid ""
 "A user-definable argument to the notify success script. You can have many"
 " of these. The notify_success_arg options can be overridden by the client"
 " configuration files in clientconfdir on the server."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:646
+#: burpui/misc/parser/doc.py:647
 msgid ""
 "Path to the script to run when a backup succeeds. User arguments are "
 "appended after the first five reserved arguments. An example notify "
@@ -633,18 +633,18 @@ msgid ""
 " the client configuration files in clientconfdir on the server."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:654
+#: burpui/misc/parser/doc.py:655
 msgid ""
 "Set to 1 to send success notifications when there were warnings. If this "
 "and notify_success_changes_only are not turned on, success notifications "
 "are always sent."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:660
+#: burpui/misc/parser/doc.py:661
 msgid "Defines the password to send to the server."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:661
+#: burpui/misc/parser/doc.py:662
 msgid ""
 "Allows you to turn client password checking on or off. The default is on."
 " SSL certificates will still be checked if you turn passwords off. This "
@@ -652,7 +652,7 @@ msgid ""
 "clientconfdir on the server."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:667
+#: burpui/misc/parser/doc.py:668
 msgid ""
 "When this is on, which is the default, a warning will be issued when the "
 "client sends a path that is too long to replicate in the storage area "
@@ -662,15 +662,15 @@ msgid ""
 "clientconfdir on the server."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:676
+#: burpui/misc/parser/doc.py:677
 msgid "Synonym for lockfile."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:677
+#: burpui/misc/parser/doc.py:678
 msgid "Defines the main TCP port that the server listens on."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:678
+#: burpui/misc/parser/doc.py:679
 msgid ""
 "Choose which style of backups and restores to use. 0 (the default) "
 "automatically decides based on the server version and which protocol is "
@@ -681,37 +681,37 @@ msgid ""
 "server also chooses a forced setting."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:687
+#: burpui/misc/parser/doc.py:688
 msgid ""
 "Set the network send rate limit, in Mb/s. If this option is not given, "
 "burp will send data as fast as it can."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:690
+#: burpui/misc/parser/doc.py:691
 msgid ""
 "Open all block devices for reading and back up the contents as if they "
 "were regular files."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:693
+#: burpui/misc/parser/doc.py:694
 msgid ""
 "Open all fifos for reading and back up the contents as if they were "
 "regular files."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:695
+#: burpui/misc/parser/doc.py:696
 msgid ""
 "Do not back up the given block device itself, but open it for reading and"
 " back up the contents as if it were a regular file."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:698
+#: burpui/misc/parser/doc.py:699
 msgid ""
 "Do not back up the given fifo itself, but open it for reading and back up"
 " the contents as if it were a regular file."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:701
+#: burpui/misc/parser/doc.py:702
 msgid ""
 "A client that is permitted to list, verify, restore and delete files "
 "belonging to any other client. You may specify multiple restore_clients. "
@@ -722,7 +722,7 @@ msgid ""
 "This will be addressed in a future version of burp."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:713
+#: burpui/misc/parser/doc.py:714
 msgid ""
 "Turn this on to enable 'resume partial' code. Requires "
 "'working_dir_recovery_method=resume'. When resuming an interrupted "
@@ -732,20 +732,20 @@ msgid ""
 "forever, so this feature now defaults to being turned off."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:722
+#: burpui/misc/parser/doc.py:723
 msgid ""
 "When enabled, this causes problems in the phase1 scan (such as an "
 "'include' being missing) to be treated as fatal errors. The default is "
 "off."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:727
+#: burpui/misc/parser/doc.py:728
 msgid ""
 "Goes with server_script and overrides server_script_pre_arg and "
 "server_script_post_arg."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:730
+#: burpui/misc/parser/doc.py:731
 msgid ""
 "Turn on to send a notification emails when the server pre and post "
 "scripts return non-zero. The output of the script will be included it the"
@@ -753,27 +753,27 @@ msgid ""
 "set."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:736
+#: burpui/misc/parser/doc.py:737
 msgid ""
 "A user-definable argument to the server post script. You can have many of"
 " these."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:739
+#: burpui/misc/parser/doc.py:740
 msgid ""
 "Turn on to send a notification email when the server post script returns "
 "non-zero. The output of the script will be included in the email. The "
 "default is off. Requires the notify_failure options to be set."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:746
+#: burpui/misc/parser/doc.py:747
 msgid ""
 "If this is set to 1, server_script_post will always be run. The default "
 "is 0, which means that if the task asked for by the client fails, "
 "server_script_post will not be run."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:753
+#: burpui/misc/parser/doc.py:754
 msgid ""
 "Path to a script to run on the server before the client disconnects. The "
 "arguments to it are 'post', '(client command)', 'reserved3' to "
@@ -782,13 +782,13 @@ msgid ""
 "configuration files in clientconfdir on the server."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:762
+#: burpui/misc/parser/doc.py:763
 msgid ""
 "A user-definable argument to the server pre script. You can have many of "
 "these."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:765
+#: burpui/misc/parser/doc.py:766
 msgid ""
 "Turn on to send a notification email when the server pre script returns "
 "non-zero. The output of the script will be included in the email. The "
@@ -798,7 +798,7 @@ msgid ""
 "set."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:776
+#: burpui/misc/parser/doc.py:777
 msgid ""
 "Path to a script to run on the server after each successfully "
 "authenticated connection but before any work is carried out. The "
@@ -809,7 +809,7 @@ msgid ""
 "configuration files in clientconfdir on the server."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:788
+#: burpui/misc/parser/doc.py:789
 msgid ""
 "You can use this to save space in your config file when you want to run "
 "the same server script twice. It overrides server_script_pre and "
@@ -817,14 +817,14 @@ msgid ""
 "by the client configuration files in clientconfdir on the server."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:795
+#: burpui/misc/parser/doc.py:796
 msgid ""
 "A warning will be issued when the estimated size of all files is greater "
 "than the specified size and smaller than hard_quota. Example: 'soft_quota"
 " = 95Gb'. Set to 0 (the default) to have no warning."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:800
+#: burpui/misc/parser/doc.py:801
 msgid ""
 "When backing up Windows computers with burp protocol 1, this option "
 "allows you to save the VSS header data separate from the file data. The "
@@ -832,7 +832,7 @@ msgid ""
 "to the file data."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:805
+#: burpui/misc/parser/doc.py:806
 msgid ""
 "The path to the SSL CA certificate. This file will probably be the same "
 "on both the server and the client. The file should contain just the "
@@ -841,22 +841,22 @@ msgid ""
 "href='http://burp.grke.org/docs/burp_ca.html'> docs/burp_ca.txt</a>."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:812
+#: burpui/misc/parser/doc.py:813
 msgid "Synonym for ssl_key_password."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:813
+#: burpui/misc/parser/doc.py:814
 msgid ""
 "The path to the server SSL certificate. It works for me when the file "
 "contains the concatenation of the certificate and private key in PEM "
 "format."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:816
+#: burpui/misc/parser/doc.py:817
 msgid "Allowed SSL ciphers. See openssl ciphers for details."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:818
+#: burpui/misc/parser/doc.py:819
 msgid ""
 "Choose the level of zlib compression over SSL. Setting 0 or zlib0 "
 "turnsSSL compression off. Setting non-zero gives zlib5 compression (it is"
@@ -864,36 +864,36 @@ msgid ""
 "is 5. 'gzip' is a synonym of 'zlib'.is a synonym of 'zlib'."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:825
+#: burpui/misc/parser/doc.py:826
 msgid ""
 "Path to Diffie-Hellman parameter file. To generate one with openssl, use "
 "a command like this: openssl dhparam -out dhfile.pem -5 1024"
 msgstr ""
 
-#: burpui/misc/parser/doc.py:828
+#: burpui/misc/parser/doc.py:829
 msgid "The SSL key password."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:829
+#: burpui/misc/parser/doc.py:830
 msgid "The path to the server SSL private key in PEM format."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:831
+#: burpui/misc/parser/doc.py:832
 msgid ""
 "Defines the main TCP address that the server listens on for status "
 "requests. The default is either '::1' or '127.0.0.1', dependent upon "
 "compile time options."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:835
+#: burpui/misc/parser/doc.py:836
 msgid "Defines the TCP port that the server listens on for status requests."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:837
+#: burpui/misc/parser/doc.py:838
 msgid "Log to stdout. Defaults to on."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:838
+#: burpui/misc/parser/doc.py:839
 msgid ""
 "When backing up Windows computers with burp protocol 1, this option "
 "allows you to prevent the VSS header data being backed up. The default is"
@@ -901,18 +901,18 @@ msgid ""
 "need to give the client the '-x' command line option."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:844
+#: burpui/misc/parser/doc.py:845
 msgid "Log to syslog. Defaults to off."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:845
+#: burpui/misc/parser/doc.py:846
 msgid ""
 "A user-definable argument to the timer script.You can have many of these."
 " The timer_arg options can be overridden by the client configuration "
 "files in clientconfdir on the server."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:849
+#: burpui/misc/parser/doc.py:850
 msgid ""
 "Path to the script to run when a client connects with the timed backup "
 "option. If the script exits with code 0, a backup will run. The first two"
@@ -923,7 +923,7 @@ msgid ""
 "in clientconfdir on the server."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:859
+#: burpui/misc/parser/doc.py:860
 #, python-format
 msgid ""
 "This allows you to tweak the format of the timestamps of individual "
@@ -931,17 +931,17 @@ msgid ""
 "option is unset, burp uses \"%Y-%m-%d %H:%M:%S\"."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:864
+#: burpui/misc/parser/doc.py:865
 msgid "Set the file creation umask. Default is 0022."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:865
+#: burpui/misc/parser/doc.py:866
 msgid ""
 "Run as a particular user. This can be overridden by the client "
 "configuration files in clientconfdir on the server."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:868
+#: burpui/misc/parser/doc.py:869
 msgid ""
 "When this is on, which is the default, a warning will be issued when the "
 "client version does not match the server version. This option can be "
@@ -949,7 +949,7 @@ msgid ""
 "server."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:873
+#: burpui/misc/parser/doc.py:874
 msgid ""
 "When backing up Windows computers, this option allows you to specify "
 "which drives have VSS snapshots taken of them. If you omit this option, "
@@ -957,7 +957,7 @@ msgid ""
 "want no drives to have snapshots taken of them, you can specify '0'."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:879
+#: burpui/misc/parser/doc.py:880
 msgid ""
 "This option tells the server what to do when it finds the working "
 "directory of an interrupted backup (perhaps somebody pulled the plug on "
@@ -1031,15 +1031,38 @@ msgstr "Recherche de fichiers uniquement"
 msgid "Use regex"
 msgstr "Utiliser des expressions régulières"
 
-#: burpui/templates/client-browse.html:44
+#: burpui/templates/client-browse.html:42
+msgid ""
+"This will only expand already loaded nodes to avoid flooding the server "
+"with the lazy-loading requests"
+msgstr ""
+"Cette opération va seulement déplier les nœuds déjà chargés pour éviter "
+"de surcharger le serveur avec de trop nombreuses requêtes"
+
+#: burpui/templates/client-browse.html:42
+#: burpui/templates/js/client-browse.js:36
+msgid "Expand tree"
+msgstr "Déplier l'arborescence"
+
+#: burpui/templates/client-browse.html:43
+msgid "This may take some time depending the number of files in your backup"
+msgstr ""
+"Cette opération peut prendre du temps en fonction du nombre de fichiers "
+"présents dans votre sauvegarde"
+
+#: burpui/templates/client-browse.html:43
+msgid "Load all nodes"
+msgstr "Pré-charger tous les nœuds"
+
+#: burpui/templates/client-browse.html:48
 msgid "Loading, Please wait..."
 msgstr "Chargement, veuillez patienter..."
 
-#: burpui/templates/client-browse.html:54
+#: burpui/templates/client-browse.html:58
 msgid "Size"
 msgstr "Taille"
 
-#: burpui/templates/client-browse.html:77
+#: burpui/templates/client-browse.html:81
 msgid ""
 "This backup is encrypted, please provide the encryption password in order"
 " to perform an online restoration."
@@ -1047,69 +1070,73 @@ msgstr ""
 "Cette sauvegarde est chiffrée, veuillez fournir le mot de passe afin de "
 "procéder à son déchiffrement."
 
-#: burpui/templates/client-browse.html:83
+#: burpui/templates/client-browse.html:87
 msgid "Download selected files"
 msgstr "Télécharger les fichiers sélectionnés"
 
-#: burpui/templates/client-browse.html:86
-#: burpui/templates/client-browse.html:100
+#: burpui/templates/client-browse.html:90
+#: burpui/templates/client-browse.html:104
 msgid "Number of leading path components to strip"
 msgstr "Nombre d'éléments du préfix à masquer "
 
-#: burpui/templates/client-browse.html:87
+#: burpui/templates/client-browse.html:91
 msgid "Archive format"
 msgstr "Format de l'archive "
 
-#: burpui/templates/client-browse.html:88
+#: burpui/templates/client-browse.html:92
 msgid "Encryption password"
 msgstr "Mot de passe de déchiffrement "
 
-#: burpui/templates/client-browse.html:97
+#: burpui/templates/client-browse.html:101
 msgid "Server initiated restore"
 msgstr "Réstauration depuis le serveur"
 
-#: burpui/templates/client-browse.html:101
+#: burpui/templates/client-browse.html:105
 msgid "Prefix to the restore path"
 msgstr "Chemin de la réstauration "
 
-#: burpui/templates/client-browse.html:101
+#: burpui/templates/client-browse.html:105
 msgid "prefix"
 msgstr "chemin"
 
-#: burpui/templates/client-browse.html:103
+#: burpui/templates/client-browse.html:107
 msgid "Restore files on an other client"
 msgstr "Réstaurer sur un autre client "
 
-#: burpui/templates/client-browse.html:111
+#: burpui/templates/client-browse.html:109
+msgid "none"
+msgstr "néan"
+
+#: burpui/templates/client-browse.html:115
 msgid "Whether to overwrite existing files"
 msgstr "Écraser les fichiers existants "
 
-#: burpui/templates/client-browse.html:115 burpui/templates/client.html:58
+#: burpui/templates/client-browse.html:119 burpui/templates/client.html:58
 msgid "Cancel restore"
 msgstr "Annuler restauration"
 
-#: burpui/templates/client-browse.html:117
+#: burpui/templates/client-browse.html:121
 msgid "Clear selection"
 msgstr "Vider la sélection"
 
-#: burpui/templates/client-browse.html:127
+#: burpui/templates/client-browse.html:131
 msgid "Processing request"
 msgstr "Traitement en cours"
 
-#: burpui/templates/client-browse.html:130
+#: burpui/templates/client-browse.html:134
 msgid "Please wait while restoration is processing..."
 msgstr "Veuillez patienter pendant la restauration..."
 
-#: burpui/templates/client-browse.html:137
-#: burpui/templates/client-browse.html:156
+#: burpui/templates/client-browse.html:141
+#: burpui/templates/client-browse.html:160
 msgid "Close"
 msgstr "Fermer"
 
-#: burpui/templates/client-browse.html:147
+#: burpui/templates/client-browse.html:151
 msgid "Restoration error"
 msgstr "Erreur de restauration"
 
-#: burpui/templates/client-browse.html:151
+#: burpui/templates/client-browse.html:155
 msgid "An error occurred while processing the restoration."
 msgstr "Une erreur s'est produite lors de la restauration."
 
@@ -1169,6 +1196,19 @@ msgstr "Dernière sauvegarde"
 msgid "Login"
 msgstr "Se connecter"
 
+#: burpui/templates/notifications.html:18
+msgid ""
+"\n"
+"                <strong>Hello!</strong> Welcome to Burp-UI's demo.\n"
+"                You can login with either <em>admin</em> / <em>admin</em>"
+" or with <em>demo</em> / <em>demo</em>.\n"
+"                "
+msgstr ""
+"\n"
+"                <strong>Bonjour !</strong> Bienvenue sur la demo de Burp-UI.\n"
+"                Vous pouvez vous connecter avec les comptes <em>admin</em> / "
+"<em>admin</em> ou <em>demo</em> / <em>demo</em>.\n"
+
 #: burpui/templates/servers.html:10 burpui/templates/topbar.html:23
 msgid "Servers"
 msgstr "Serveurs"
@@ -1185,8 +1225,8 @@ msgstr "Utilisateurs"
 msgid "Settings"
 msgstr "Paramètres"
 
-#: burpui/templates/sideadmin.html:7 burpui/templates/sideuser.html:7
-#: burpui/templates/user.html:67
+#: burpui/templates/sideadmin.html:7 burpui/templates/sideuser.html:8
+#: burpui/templates/user.html:68
 msgid "ACL"
 msgstr "Contrôles d'accès"
 
@@ -1288,43 +1328,47 @@ msgstr "Révoquer"
 
 #: burpui/templates/user.html:36 burpui/templates/user.html:38
 msgid "Current password"
-msgstr ""
+msgstr "Mot de passe actuel"
 
 #: burpui/templates/user.html:43 burpui/templates/user.html:45
 msgid "New password"
-msgstr ""
+msgstr "Nouveau mot de passe"
 
 #: burpui/templates/user.html:50
 msgid "Confirm password"
-msgstr ""
+msgstr "Confirmer le mot de passe"
 
 #: burpui/templates/user.html:52
 msgid "New password (confirm)"
-msgstr ""
+msgstr "Nouveau mot de passe (confirmation)"
 
-#: burpui/templates/user.html:58 burpui/templates/user.html:88
+#: burpui/templates/user.html:58 burpui/templates/user.html:90
 msgid "Cancel"
 msgstr "Annuler"
 
 #: burpui/templates/user.html:59
 msgid "Submit"
-msgstr ""
+msgstr "Envoyer"
 
-#: burpui/templates/user.html:80
+#: burpui/templates/user.html:82
 msgid "You are about to revoke a session, are you sure?"
 msgstr "Vous êtes sur le point de révoquer une session, êtes vous sûr ?"
 
-#: burpui/templates/user.html:84
+#: burpui/templates/user.html:86
 msgid "Warning!"
 msgstr "Attention!"
 
-#: burpui/templates/user.html:84
+#: burpui/templates/user.html:86
 msgid "You are about to revoke your <strong>current</strong> session."
 msgstr "Vous allez supprimer votre session <strong>actuelle</strong>."
 
-#: burpui/templates/user.html:89
+#: burpui/templates/user.html:91
 msgid "Confirm"
 msgstr "Confirmer"
+
+#: burpui/templates/js/client-browse.js:126
+msgid "Colapse tree"
+msgstr "Réduire l'arborescence"
 
 #: burpui/templates/js/client.js:97
 msgid "Encrypted backup"
@@ -1357,3 +1401,4 @@ msgstr "jamais"
 #: burpui/templates/js/clients.js:22
 msgid "now"
 msgstr "maintenant"
+

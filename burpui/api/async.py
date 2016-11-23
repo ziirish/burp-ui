@@ -15,6 +15,7 @@ from . import api, cache_key
 from .misc import History
 from .custom import Resource
 from .clients import RunningBackup, ClientsReport
+from ..exceptions import BUIserverException
 from ..server import BUIServer  # noqa
 from ..sessions import session_manager
 from ..ext.async import celery
@@ -90,6 +91,8 @@ def acquire_lock(name, value='nyan', timeout=LOCK_EXPIRE):
         acquire_lock.lock = lock
         return False
     return cache.cache.add(name, value, timeout)
+
+
 acquire_lock.lock = None
 
 
@@ -123,15 +126,18 @@ def wait_for(lock_name, value, wait=10, timeout=LOCK_EXPIRE):
 @celery.task
 def ping_backend():
     if bui.standalone:
-        bui.cli.status()
+        bui.client.status()
     else:
         def __status(server):
             (serv, back) = server
-            return bui.cli.status(agent=serv)
+            try:
+                return bui.client.status(agent=serv)
+            except BUIserverException:
+                return False
 
         map(
             __status,
-            iteritems(bui.cli.servers)
+            iteritems(bui.client.servers)
         )
 
 
@@ -144,7 +150,7 @@ def backup_running(self):
     try:
         cache.cache.set(
             'backup_running_result',
-            bui.cli.is_one_backup_running(),
+            bui.client.is_one_backup_running(),
             120
         )
     finally:
@@ -160,13 +166,13 @@ def get_all_backups(self):
     try:
         backups = {}
         if bui.standalone:
-            for cli in bui.cli.get_all_clients():
-                backups[cli['name']] = bui.cli.get_client(cli['name'])
+            for cli in bui.client.get_all_clients():
+                backups[cli['name']] = bui.client.get_client(cli['name'])
         else:
-            for serv in bui.cli.servers:
+            for serv in bui.client.servers:
                 backups[serv] = {}
-                for cli in bui.cli.get_all_clients(agent=serv):
-                    backups[serv][cli['name']] = bui.cli.get_client(cli['name'], agent=serv)
+                for cli in bui.client.get_all_clients(agent=serv):
+                    backups[serv][cli['name']] = bui.client.get_client(cli['name'], agent=serv)
         cache.cache.set('all_backups', backups, 3600)
     finally:
         release_lock(self.name)
@@ -181,10 +187,10 @@ def get_all_clients_reports(self):
     try:
         reports = {}
         if bui.standalone:
-            reports = bui.cli.get_clients_report(bui.cli.get_all_clients())
+            reports = bui.client.get_clients_report(bui.client.get_all_clients())
         else:
-            for serv in bui.cli.servers:
-                reports[serv] = bui.cli.get_clients_report(bui.cli.get_all_clients(agent=serv), serv)
+            for serv in bui.client.servers:
+                reports[serv] = bui.client.get_clients_report(bui.client.get_all_clients(agent=serv), serv)
         cache.cache.set('all_clients_reports', reports, 3600)
     finally:
         release_lock(self.name)
@@ -222,7 +228,7 @@ def cleanup_restore():
                 path = task.result.get('path')
                 if path:
                     if server:
-                        if not bui.cli.del_file(path, agent=server):
+                        if not bui.client.del_file(path, agent=server):
                             logger.warn("'{}' already removed".format(path))
                     else:
                         if os.path.isfile(path):
@@ -259,7 +265,7 @@ def perform_restore(self, client, backup,
                 fmt)
 
         self.update_state(state='STARTED', meta={'step': 'doing'})
-        archive, err = bui.cli.restore_files(
+        archive, err = bui.client.restore_files(
             client,
             backup,
             files,
@@ -426,13 +432,13 @@ class AsyncGetFile(Resource):
                              mimetype='application/zip')
             resp.set_cookie('fileDownload', 'true')
         except Exception as e:
-            bui.cli.logger.error(str(e))
+            bui.client.logger.error(str(e))
             self.abort(500, str(e))
 
         return resp
 
     def stream_file(self, path, filename, server):
-        socket = bui.cli.get_file(path, server)
+        socket = bui.client.get_file(path, server)
         if not socket:
             self.abort(500)
         lengthbuf = socket.recv(8)

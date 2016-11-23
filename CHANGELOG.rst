@@ -1,6 +1,19 @@
 Changelog
 =========
 
+0.4.0 (11/23/2016)
+------------------
+
+- **BREAKING**: The database schema evolved. In order to apply these modifications, you **MUST** run the ``bui-manage db upgrade`` command after upgrading
+- **BREAKING**: Plain text passwords are deprecated since v0.3.0 and are now disabled by default
+- **BREAKING**: The default *version* setting has been set to ``2`` instead of ``1``
+- Add: new `bui-manage setup_burp <https://git.ziirish.me/ziirish/burp-ui/merge_requests/40#note_1767>`_ command
+- Add: new `docker image <https://git.ziirish.me/ziirish/burp-ui/merge_requests/40#note_1763>`_
+- Add: manage `user sessions <https://git.ziirish.me/ziirish/burp-ui/merge_requests/6>`_
+- Add: `French translation <https://git.ziirish.me/ziirish/burp-ui/merge_requests/4>`_
+- Various bugfix
+- `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/v0.3.0...v0.4.0>`__
+
 0.3.0 (08/15/2016)
 ------------------
 

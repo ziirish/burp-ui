@@ -113,7 +113,7 @@ class Restore(Resource):
                 strftime("%Y-%m-%d_%H_%M_%S", gmtime()),
                 f)
 
-        archive, err = bui.cli.restore_files(name, backup, l, s, f, p, server)
+        archive, err = bui.client.restore_files(name, backup, l, s, f, p, server)
         if not archive:
             if err:
                 return make_response(err, 500)
@@ -144,19 +144,19 @@ class Restore(Resource):
                                  mimetype='application/zip')
                 resp.set_cookie('fileDownload', 'true')
             except Exception as e:
-                bui.cli.logger.error(str(e))
+                bui.client.logger.error(str(e))
                 self.abort(500, str(e))
         else:
             # Multi-agent mode
             try:
-                socket = bui.cli.get_file(archive, server)
+                socket = bui.client.get_file(archive, server)
                 if not socket:
                     self.abort(500)
 
                 lengthbuf = socket.recv(8)
                 length, = struct.unpack('!Q', lengthbuf)
 
-                bui.cli.logger.debug('Need to get {} Bytes : {}'.format(length, socket))
+                bui.client.logger.debug('Need to get {} Bytes : {}'.format(length, socket))
 
                 def stream_file(sock, l):
                     """The restoration took place on another server so we need
@@ -200,7 +200,7 @@ class Restore(Resource):
             except HTTPException as e:
                 raise e
             except Exception as e:
-                bui.cli.logger.error(str(e))
+                bui.client.logger.error(str(e))
                 self.abort(500, str(e))
         return resp
 
@@ -304,7 +304,7 @@ class ServerRestore(Resource):
                  self.is_admin)):
             self.abort(403, 'You are not allowed to edit a restoration for this client')
         try:
-            return bui.cli.is_server_restore(name, server)
+            return bui.client.is_server_restore(name, server)
         except BUIserverException as e:
             self.abort(500, str(e))
 
@@ -340,7 +340,7 @@ class ServerRestore(Resource):
                  self.is_admin)):
             self.abort(403, 'You are not allowed to cancel a restoration for this client')
         try:
-            return bui.cli.cancel_server_restore(name, server)
+            return bui.client.cancel_server_restore(name, server)
         except BUIserverException as e:
             self.abort(500, str(e))
 
@@ -425,7 +425,7 @@ class DoServerRestore(Resource):
                 'You are not allowed to perform a restoration for this client'
             )
         try:
-            json = bui.cli.server_restore(
+            json = bui.client.server_restore(
                 name,
                 backup,
                 files_list,

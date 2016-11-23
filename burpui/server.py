@@ -27,7 +27,7 @@ G_SSL = False
 G_STANDALONE = True
 G_SSLCERT = u''
 G_SSLKEY = u''
-G_VERSION = 1
+G_VERSION = 2
 G_AUTH = [u'basic']
 G_ACL = u'none'
 G_STORAGE = u''
@@ -108,13 +108,16 @@ class BUIServer(Flask):
     def logger(self):
         return self.builogger
 
-    def setup(self, conf=None):
+    def setup(self, conf=None, unittest=False):
         """The :func:`burpui.server.BUIServer.setup` functions is used to setup
         the whole server by parsing the configuration file and loading the
         different backends.
 
         :param conf: Path to a configuration file
         :type conf: str
+
+        :param unittest: Wether we are unittesting or not
+        :type unittest: bool
         """
         self.sslcontext = None
         if not conf:
@@ -141,10 +144,10 @@ class BUIServer(Flask):
             'boolean'
         )
         self.bind = self.config['BUI_BIND'] = self.conf.safe_get('bind')
-        self.vers = self.config['BUI_VERS'] = self.conf.safe_get(
-            'version',
-            'integer'
-        )
+        self.vers = self.config['BUI_VERS'] = 1 if unittest else \
+            self.conf.safe_get(
+                'version',
+                'integer')
         self.ssl = self.config['BUI_SSL'] = self.conf.safe_get(
             'ssl',
             'boolean'
@@ -337,14 +340,14 @@ class BUIServer(Flask):
 
         # This is used for development purpose only
         from .misc.backend.burp1 import Burp as BurpGeneric
-        self.cli = BurpGeneric(dummy=True)
+        self.client = BurpGeneric(dummy=True)
         try:
             # Try to load submodules from our current environment
             # first
             sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
             mod = __import__(module, fromlist=['Burp'])
             Client = mod.Burp
-            self.cli = Client(self, conf=self.conf)
+            self.client = Client(self, conf=self.conf)
         except Exception as e:
             self.logger.critical(traceback.format_exc())
             self.logger.critical(

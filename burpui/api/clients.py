@@ -76,14 +76,14 @@ class RunningClients(Resource):
                                                   server)):
                     r = []
                     return r
-            if bui.cli.is_backup_running(client, server):
+            if bui.client.is_backup_running(client, server):
                 r = [client]
                 return r
             else:
                 r = []
                 return r
 
-        r = bui.cli.is_one_backup_running(server)
+        r = bui.client.is_one_backup_running(server)
         # Manage ACL
         if bui.acl and not self.is_admin:
             if isinstance(r, dict):
@@ -141,7 +141,7 @@ class RunningBackup(Resource):
         """
         return {
             'running': self._is_one_backup_running(
-                bui.cli.is_one_backup_running(server),
+                bui.client.is_one_backup_running(server),
                 server
             )
         }
@@ -360,10 +360,10 @@ class ClientsReport(Resource):
                 clients = [{'name': x} for x in bui.acl.clients(self.username, server)]
             else:
                 try:
-                    clients = bui.cli.get_all_clients(agent=server)
+                    clients = bui.client.get_all_clients(agent=server)
                 except BUIserverException as e:
                     self.abort(500, str(e))
-            return bui.cli.get_clients_report(clients, server)
+            return bui.client.get_clients_report(clients, server)
         if bui.standalone:
             ret = res
         else:
@@ -456,7 +456,7 @@ class ClientsStats(Resource):
                      server not in
                      bui.acl.servers(self.username))):
                 self.abort(403, 'Sorry, you don\'t have any rights on this server')
-            j = bui.cli.get_all_clients(agent=server)
+            j = bui.client.get_all_clients(agent=server)
             if bui.acl and not self.is_admin:
                 j = [x for x in j if x['name'] in bui.acl.clients(self.username, server)]
         except BUIserverException as e:
@@ -537,7 +537,7 @@ class AllClients(Resource):
             self.abort(403, "You are not allowed to view this server infos")
 
         if server:
-            clients = bui.cli.get_all_clients(agent=server)
+            clients = bui.client.get_all_clients(agent=server)
             if bui.acl and not self.is_admin:
                 ret = [{'name': x, 'agent': server} for x in bui.acl.clients(self.username, server)]
             else:
@@ -548,18 +548,18 @@ class AllClients(Resource):
             if bui.acl and not self.is_admin:
                 ret = [{'name': x} for x in bui.acl.clients(self.username)]
             else:
-                ret = [{'name': x['name']} for x in bui.cli.get_all_clients()]
+                ret = [{'name': x['name']} for x in bui.client.get_all_clients()]
         else:
             grants = {}
             if bui.acl and not self.is_admin:
                 for serv in bui.acl.servers(self.username):
                     grants[serv] = bui.acl.clients(self.username, serv)
             else:
-                for serv in bui.cli.servers:
+                for serv in bui.client.servers:
                     grants[serv] = 'all'
             for (serv, clients) in iteritems(grants):
                 if not isinstance(clients, list):
-                    clients = [x['name'] for x in bui.cli.get_all_clients(agent=serv)]
+                    clients = [x['name'] for x in bui.client.get_all_clients(agent=serv)]
                 ret += [{'name': x, 'agent': serv} for x in clients]
 
         return ret

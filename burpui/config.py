@@ -17,7 +17,7 @@ import logging
 import configobj
 import validate
 
-from . import __version__, __release__
+from .app import __version__, __release__
 
 
 class BUIConfig(dict):
@@ -123,17 +123,48 @@ class BUIConfig(dict):
         except validate.VdtTypeError:
             return value
 
+    def lookup_section(self, section, source=None):
+        """Lookup for a given section. If the section is not found in the conf,
+        we try to search it in the comments to uncomment it.
+        If it is missing from the conf and the comments, we append it in the
+        conf.
+        """
+        ret = True
+        if section not in self.options:
+            # look for the section in the comments
+            conffile = self.options.filename
+            source = source or conffile
+            ori = []
+            with codecs.open(source, 'r', 'utf-8', errors='ignore') as config:
+                ori = [x.rstrip('\n') for x in config.readlines()]
+            if ori:
+                with codecs.open(conffile, 'w', 'utf-8', errors='ignore') as config:
+                    found = False
+                    for line in ori:
+                        if re.match(r'^\s*(#|;)+\s*\[{}\]'.format(section),
+                                    line):
+
+                            config.write('[{}]\n'.format(section))
+                            found = True
+                        else:
+                            config.write('{}\n'.format(line))
+
+                    if not found:
+                        config.write('[{}]\n'.format(section))
+                ret = False
+        return ret
+
     def changed(self, id):
         """Check if the conf has changed"""
         if (datetime.datetime.now() - self.last) > self.delta:
             self._refresh()
         return id != self.mtime
 
-    def _refresh(self):
+    def _refresh(self, force=False):
         """Refresh conf"""
         self.last = datetime.datetime.now()
         mtime = os.path.getmtime(self.conffile)
-        if mtime != self.mtime:
+        if mtime != self.mtime or force:
             self.logger.debug('Configuration changed')
             self.mtime = mtime
             self.conf.reload()

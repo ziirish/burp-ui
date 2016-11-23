@@ -4,7 +4,7 @@ redis:
 
 burpui:
   restart: always
-  image: registry.ziirish.me/ziirish/burp-ui:latest
+  image: registry.ziirish.me/ziirish/burp-ui:0.4.0
   links:
     - redis
   ports:
@@ -12,3 +12,11 @@ burpui:
   volumes:
     - /etc/burp:/etc/burp
     - /var/spool/burp:/var/spool/burp
+  environment:
+    - BURPUI_CONFIG=/etc/burp/burpui.cfg
+    - BURPUI_CLIENT_NAME=bui
+    - BURP_CLIENT_CONFIG=/tmp/burp.conf
+    - BURP_SERVER_CONFIG=/etc/burp/burp-server.conf
+    - DATABASE_URL=sqlite:////var/lib/burpui/store.db
+    - REDIS_SERVER=redis:6379
+    - BURP_SERVER_ADDR=auto
