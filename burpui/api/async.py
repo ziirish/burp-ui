@@ -91,6 +91,8 @@ def acquire_lock(name, value='nyan', timeout=LOCK_EXPIRE):
         acquire_lock.lock = lock
         return False
     return cache.cache.add(name, value, timeout)
+
+
 acquire_lock.lock = None
 
 

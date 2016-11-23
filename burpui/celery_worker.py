@@ -23,6 +23,7 @@ def init_app(conf):
     app = create_app(conf)
     return app, celery
 
+
 config = os.getenv('BUI_CONFIG')
 app, celery = init_app(config)
 app.app_context().push()

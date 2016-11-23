@@ -20,4 +20,5 @@ class Cache(CacheOrig):
             warnings.simplefilter('ignore', ExtDeprecationWarning)
             super(Cache, self).init_app(app, config)
 
+
 cache = Cache(config={'CACHE_TYPE': 'null', 'CACHE_NO_NULL_WARNING': True})

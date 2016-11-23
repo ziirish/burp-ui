@@ -227,4 +227,5 @@ class SessionManager(object):
                     users.pop(id)
         return True
 
+
 session_manager = SessionManager()

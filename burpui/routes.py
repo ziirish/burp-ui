@@ -26,6 +26,7 @@ class Blueprint(FlaskBlueprint):
     __url__ = None
     __doc__ = None
 
+
 bui = current_app  # type: BUIServer
 view = Blueprint('view', 'burpui', template_folder='templates')
 
@@ -59,6 +60,7 @@ def time_human(d):
 @view.app_template_filter()
 def bytes_human(b):
     return '{0:.1eM}'.format(_hr(b))
+
 
 """
 And here is the main site
