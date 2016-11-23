@@ -96,7 +96,7 @@ class Parser(Doc):
         """Check whether a given line is a file inclusion or not"""
         if not line:
             return False
-        return line.startswith('.')
+        return line.startswith('.') or re.match(r'^#+\s*\.', line) is not None
 
     @staticmethod
     def _include_get_file(line):
@@ -113,9 +113,9 @@ class Parser(Doc):
             return ''
         if '=' not in line:
             return line
-        (key, _) = re.split(r'\s+|=', line, 1)
+        (key, _) = re.split(r'\s*=\s*', line, 1)
         if not ignore_comments:
-            key = key.strip('#')
+            key = key.strip('# ')
         return key.strip()
 
     @staticmethod
@@ -263,7 +263,7 @@ class Parser(Doc):
                     conf.add_file(tmp, path)
                     self._parse_conf_recursive(conf, tmp, client)
 
-    def _readfile(self, path=None, client=False):
+    def _readfile(self, path=None, client=False, insecure=False):
         """Read a given file. If the file has already been parsed, then return
         it from cache
 
@@ -291,7 +291,7 @@ class Parser(Doc):
         ret = []
         if not path:
             return ret, path, False
-        if not self._is_secure_path(path):
+        if not self._is_secure_path(path) and not insecure:
             return ret, path, False
         if (path != self.conf or path != self.confcli) and \
                 not path.startswith('/'):
@@ -383,7 +383,8 @@ class Parser(Doc):
     def _write_key(self, fil, key, data, conf, mode=None):
         if key in self.boolean_srv or key in self.boolean_cli:
             val = 0
-            if data.get(key) == 'true':
+            obj = data.get(key)
+            if obj == 'true' or (isinstance(obj, bool) and obj):
                 val = 1
             conf[key] = (val == 1)
             fil.write('{} = {}\n'.format(key, val))
@@ -396,7 +397,7 @@ class Parser(Doc):
             for val in [sanitize_string(x) for x in data.getlist(key)]:
                 fil.write('{} = {}\n'.format(key, val))
         else:
-            val = sanitize_string(data.get(key))
+            val = sanitize_string(str(data.get(key)))
             # special key
             if key == 'clientconfdir' and mode == 'srv' and \
                     val != self.clientconfdir:
@@ -634,7 +635,8 @@ class Parser(Doc):
         self._refresh_cache()  # refresh client list
         return ret
 
-    def store_conf(self, data, conf=None, client=None, mode='srv'):
+    def store_conf(self, data, conf=None, client=None, mode='srv',
+                   insecure=False, source=None):
         """See :func:`burpui.misc.parser.interface.BUIparser.store_conf`"""
         mconf = None
         if not conf:
@@ -646,7 +648,7 @@ class Parser(Doc):
         if not mconf:
             return [[NOTIF_WARN, 'Sorry, no configuration file defined']]
 
-        if not self._is_secure_path(mconf):
+        if not self._is_secure_path(mconf) and not insecure:
             return [
                 [
                     NOTIF_ERROR,
@@ -656,7 +658,7 @@ class Parser(Doc):
             ]
 
         dirname = os.path.dirname(mconf)
-        if not os.path.exists(dirname):
+        if dirname and not os.path.exists(dirname):
             try:
                 os.makedirs(dirname)
             except OSError as exp:
@@ -676,10 +678,17 @@ class Parser(Doc):
             except IOError as exp:
                 return [[NOTIF_ERROR, str(exp)]]
 
-        if client:
-            conffile = self._get_client(client, mconf).get_file(mconf)
+        if source:
+            conffile = Config()
+            stuff, path, _ = self._readfile(source, insecure=True)
+            parsed = self._parse_lines(stuff, path, 'srv')
+            conffile.add_file(parsed, source)
+            conffile.set_default(source)
         else:
-            conffile = self.server_conf.get_file(mconf)
+            if client:
+                conffile = self._get_client(client, mconf).get_file(mconf)
+            else:
+                conffile = self.server_conf.get_file(mconf)
 
         errs = []
         for key in data.keys():
@@ -700,12 +709,15 @@ class Parser(Doc):
                         key,
                         typ
                     ])
-        if errs:
+        if errs and not insecure:
             return errs
 
         orig = []
         try:
-            with codecs.open(mconf, 'r', 'utf-8', errors='ignore') as fil:
+            orig_file = mconf
+            if source:
+                orig_file = source
+            with codecs.open(orig_file, 'r', 'utf-8', errors='ignore') as fil:
                 orig = [x.rstrip('\n') for x in fil.readlines()]
         except:
             pass
@@ -721,12 +733,14 @@ class Parser(Doc):
             with codecs.open(mconf, 'w', 'utf-8', errors='ignore') as fil:
                 # f.write('# Auto-generated configuration using Burp-UI\n')
                 for line in orig:
-                    if (self._line_removed(line, viewkeys(data)) and
+                    if (self._line_removed(line, data.keys()) and
                             not self._line_is_comment(line) and
                             not self._line_is_file_include(line)):
                         # The line was removed, we comment it
                         fil.write('#{}\n'.format(line))
-                        del conffile[self._get_line_key(line)]
+                        tmp_key = self._get_line_key(line)
+                        if tmp_key in conffile:
+                            del conffile[tmp_key]
                     elif self._line_is_file_include(line):
                         # The line is a file inclusion, we check if the line
                         # was already present
@@ -737,9 +751,14 @@ class Parser(Doc):
                             self._write_key(fil, '.', inc, conf=conffile)
                             already_file.append(inc)
                         else:
-                            fil.write('#{}\n'.format(line))
-                            del conffile[ori]
-                    elif self._get_line_key(line, False) in viewkeys(data):
+                            lead = ''
+                            if not self._line_is_comment(line):
+                                lead = '#'
+                            fil.write('{}{}\n'.format(lead, line))
+
+                            if ori in conffile:
+                                del conffile[ori]
+                    elif self._get_line_key(line, False) in data.keys():
                         # The line is still present or has been un-commented,
                         # rewrite it with eventual changes
                         key = self._get_line_key(line, False)
@@ -769,9 +788,10 @@ class Parser(Doc):
                             mode=mode
                         )
                 # Write the rest of file inclusions
-                for inc in data.getlist('includes'):
-                    if inc not in already_file:
-                        self._write_key(fil, '.', inc, conf=conffile)
+                if 'includes' in data:
+                    for inc in data.getlist('includes'):
+                        if inc not in already_file:
+                            self._write_key(fil, '.', inc, conf=conffile)
         except Exception as exp:
             return [[NOTIF_ERROR, str(exp)]]
 

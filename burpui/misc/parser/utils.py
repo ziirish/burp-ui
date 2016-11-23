@@ -89,12 +89,33 @@ class OptionBool(Option):
     """
     type = 'boolean'
 
-    def parse(self):
-        """Parse the option value"""
+    def __init__(self, name, value=None):
+        self.name = name
+        self.value = self._format_value(value)
+        self._dirty = True
+
+    def update(self, value):
+        """Change the option value"""
+        self._dirty = True
+        self.value = self._format_value(value)
+
+    def _format_value(self, value):
+        if self._parse(value):
+            return 1
+        return 0
+
+    @staticmethod
+    def _parse(value):
         try:
-            return int(self.value) == 1
+            if value is True:
+                return True
+            return int(value) == 1
         except ValueError:
             return False
+
+    def parse(self):
+        """Parse the option value"""
+        return self._parse(self.value)
 
 
 class OptionMulti(Option):
@@ -575,6 +596,15 @@ class Config(File):
 
     def get(self, key, default=None):
         return self._get(key, default)
+
+    def getlist(self, key):
+        obj = self._get(key, raw=True)
+        if not obj:
+            return []
+        if isinstance(obj, OptionMulti):
+            return obj.parse()
+        else:
+            return [obj.parse()]
 
     def __getitem__(self, key):
         self._refresh()
