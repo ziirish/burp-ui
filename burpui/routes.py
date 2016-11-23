@@ -178,15 +178,15 @@ def cli_settings(server=None, client=None, conf=None):
 def live_monitor(server=None, name=None):
     """Live status monitor view"""
     server = server or request.args.get('serverName')
-    bui.cli.is_one_backup_running()
+    bui.client.is_one_backup_running()
     if bui.standalone:
-        if not bui.cli.running:
+        if not bui.client.running:
             flash(_('Sorry, there are no running backups'), 'warning')
             return redirect(url_for('.home'))
     else:
         run = False
-        for a in bui.cli.servers:
-            run = run or (a in bui.cli.running and bui.cli.running[a])
+        for a in bui.client.servers:
+            run = run or (a in bui.client.running and bui.client.running[a])
         if not run:
             flash(_('Sorry, there are no running backups'), 'warning')
             return redirect(url_for('.home'))
@@ -204,7 +204,7 @@ def live_monitor(server=None, name=None):
 @view.route('/<server>/edit-server-initiated-restore/<name>', methods=['GET'])
 @login_required
 def edit_server_initiated_restore(server=None, name=None):
-    data = bui.cli.is_server_restore(name, server)
+    data = bui.client.is_server_restore(name, server)
     to = None
     if not data or not data['found']:
         flash(
@@ -243,7 +243,7 @@ def client_browse(server=None, name=None, backup=None, encrypted=None,
         encrypted = 1
     if request.args.get('edit') == '1':
         to = request.args.get('to') or name
-        edit = bui.cli.is_server_restore(to, server)
+        edit = bui.client.is_server_restore(to, server)
         if not edit or not edit['found']:
             flash(
                 _(
@@ -288,7 +288,7 @@ def client_report(server=None, name=None):
     """Specific client report"""
     server = server or request.args.get('serverName')
     try:
-        l = bui.cli.get_client(name, agent=server)
+        l = bui.client.get_client(name, agent=server)
     except BUIserverException:
         l = []
     if len(l) == 1:
@@ -352,7 +352,7 @@ def client(server=None, name=None):
     """Specific client overview"""
     c = name or request.args.get('name')
     server = server or request.args.get('serverName')
-    if bui.cli.is_backup_running(c, agent=server):
+    if bui.client.is_backup_running(c, agent=server):
         return redirect(url_for('.live_monitor', name=c, server=server))
     return render_template(
         'client.html',

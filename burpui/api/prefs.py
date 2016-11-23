@@ -7,12 +7,12 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
+from six import viewkeys
+from flask import session
+
 from . import api
 from .custom import Resource
 #  from ..exceptions import BUIserverException
-
-from six import viewkeys
-from flask import session
 
 ns = api.namespace('preferences', 'Preferences methods')
 
@@ -44,7 +44,7 @@ class PrefsUI(Resource):
         """
         args = self.parser.parse_args()
         ret = {}
-        sess = session._get_current_object()
+        sess = session
         for key in viewkeys(args):
             ret[key] = sess.get(key)
         return ret
@@ -62,7 +62,7 @@ class PrefsUI(Resource):
     def put(self):
         """Create prefs"""
         args = self.parser.parse_args()
-        sess = session._get_current_object()
+        sess = session
         ret = {}
         for key in viewkeys(args):
             temp = args.get(key)
@@ -85,7 +85,7 @@ class PrefsUI(Resource):
     def delete(self):
         """Delete prefs"""
         args = self.parser.parse_args()
-        sess = session._get_current_object()
+        sess = session
         ret = {}
         for key in viewkeys(args):
             temp = args.get(key)
@@ -108,7 +108,7 @@ class PrefsUI(Resource):
     def post(self):
         """Change prefs"""
         args = self.parser.parse_args()
-        sess = session._get_current_object()
+        sess = session
         ret = {}
         for key in viewkeys(args):
             temp = args.get(key)

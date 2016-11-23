@@ -1,6 +1,5 @@
 # -*- coding: utf8 -*-
 import re
-import codecs
 
 from .interface import BUIhandler, BUIuser, BUIloader
 from ...utils import NOTIF_ERROR, NOTIF_OK, NOTIF_WARN
@@ -85,6 +84,8 @@ class BasicLoader(BUIloader):
                             salt = False
                         else:
                             # mixed not allowed so we convert plain passwords
+                            # TODO: in further versions we should not convert
+                            # the passwords anymore but we should skip the user
                             pwd = generate_password_hash(pwd)
                             self.conf.options[self.section][opt] = pwd
                             changed = True
@@ -142,42 +143,8 @@ class BasicLoader(BUIloader):
 
     def _setup_users(self):
         """Setup user management"""
-        if self.section not in self.conf.options:
-            # look for the section in the comments
-            conffile = self.conf.options.filename
-            # last = ''
-            ori = []
-            with codecs.open(conffile, 'r', 'utf-8', errors='ignore') as config:
-                ori = [x.rstrip('\n') for x in config.readlines()]
-            if ori:
-                with codecs.open(conffile, 'w', 'utf-8', errors='ignore') as config:
-                    found = False
-                    for line in ori:
-                        if re.match(r'^\s*#+\s*\[{}\]'.format(self.section),
-                                    line):
-                            # Not useful for now
-                            # TODO: clean this?
-                            # if not last or \
-                            #         not re.match(r'^\s*#+\s*@salted@', last):
-                            #     config.write(
-                            #         '# Please DO NOT touch the following line\n'
-                            #     )
-                            #     config.write('# @salted@\n')
-
-                            config.write('[{}]\n'.format(self.section))
-                            found = True
-                        else:
-                            config.write('{}\n'.format(line))
-                            # last = line
-
-                    if not found:
-                        # config.write(
-                        #     '# Please DO NOT touch the following line\n'
-                        # )
-                        # config.write('# @salted@\n')
-                        config.write('[{}]\n'.format(self.section))
-
-            self.conf.options.reload()
+        if not self.conf.lookup_section(self.section):
+            self.conf._refresh()
 
     def add_user(self, user, passwd):
         """Add a user"""

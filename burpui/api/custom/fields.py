@@ -8,5 +8,5 @@
 
 
 """
-from flask_restplus.fields import *  # noqa
+from flask_restplus.fields import *  # noqa # pylint: disable=locally-disabled, wildcard-import, unused-wildcard-import
 from .my_fields import DateTime, DateTimeHuman, BackupNumber, SafeString, LocalizedString  # noqa
