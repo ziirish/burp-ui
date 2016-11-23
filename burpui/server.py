@@ -27,7 +27,7 @@ G_SSL = False
 G_STANDALONE = True
 G_SSLCERT = u''
 G_SSLKEY = u''
-G_VERSION = 1
+G_VERSION = 2
 G_AUTH = [u'basic']
 G_ACL = u'none'
 G_STORAGE = u''
@@ -337,14 +337,14 @@ class BUIServer(Flask):
 
         # This is used for development purpose only
         from .misc.backend.burp1 import Burp as BurpGeneric
-        self.cli = BurpGeneric(dummy=True)
+        self.client = BurpGeneric(dummy=True)
         try:
             # Try to load submodules from our current environment
             # first
             sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
             mod = __import__(module, fromlist=['Burp'])
             Client = mod.Burp
-            self.cli = Client(self, conf=self.conf)
+            self.client = Client(self, conf=self.conf)
         except Exception as e:
             self.logger.critical(traceback.format_exc())
             self.logger.critical(
