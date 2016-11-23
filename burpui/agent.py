@@ -30,7 +30,7 @@ from .config import config
 G_PORT = 10000
 G_BIND = u'::'
 G_SSL = False
-G_VERSION = 1
+G_VERSION = 2
 G_SSLCERT = u''
 G_SSLKEY = u''
 G_PASSWORD = u'password'
@@ -48,7 +48,7 @@ class BurpHandler(BUIbackend):
     foreign = BUIbackend.__abstractmethods__
     BUIbackend.__abstractmethods__ = frozenset()
 
-    def __init__(self, vers=1, logger=None, conf=None):
+    def __init__(self, vers=2, logger=None, conf=None):
         self.vers = vers
         self.logger = logger
 
@@ -144,7 +144,7 @@ class BUIAgent(BUIbackend, BUIlogging):
         self.password = self.conf.safe_get('password')
         self.conf.setdefault('BUI_AGENT', True)
 
-        self.cli = BurpHandler(self.vers, self.logger, self.conf)
+        self.client = BurpHandler(self.vers, self.logger, self.conf)
         pool = Pool(10000)
         if not self.ssl:
             self.server = StreamServer((self.bind, self.port), self.handle, spawn=pool)
@@ -178,13 +178,13 @@ class BUIAgent(BUIbackend, BUIlogging):
                     return
                 try:
                     if j['func'] == 'proxy_parser':
-                        parser = self.cli.get_parser()
+                        parser = self.client.get_parser()
                         if j['args']:
                             res = json.dumps(getattr(parser, j['method'])(**j['args']))
                         else:
                             res = json.dumps(getattr(parser, j['method'])())
                     elif j['func'] == 'restore_files':
-                        res, err = getattr(self.cli, j['func'])(**j['args'])
+                        res, err = getattr(self.client, j['func'])(**j['args'])
                         if err:
                             self.request.sendall(b'ER')
                             self.request.sendall(struct.pack('!Q', len(err)))
@@ -197,7 +197,7 @@ class BUIAgent(BUIbackend, BUIlogging):
                         err = None
                         if not path.startswith('/'):
                             err = 'The path must be absolute! ({})'.format(path)
-                        if not path.startswith(self.cli.tmpdir):
+                        if not path.startswith(self.client.tmpdir):
                             err = 'You are not allowed to access this path: ' \
                                   '({})'.format(path)
                         if err:
@@ -228,7 +228,7 @@ class BUIAgent(BUIbackend, BUIlogging):
                         err = None
                         if not path.startswith('/'):
                             err = 'The path must be absolute! ({})'.format(path)
-                        if not path.startswith(self.cli.tmpdir):
+                        if not path.startswith(self.client.tmpdir):
                             err = 'You are not allowed to access this path: ' \
                                   '({})'.format(path)
                         if err:
@@ -256,9 +256,9 @@ class BUIAgent(BUIbackend, BUIlogging):
                                 if digest != j['digest']:
                                     raise BUIserverException('Integrity check failed: {} != {}'.format(digest, j['digest']))
                                 j['args'] = pickle.loads(b64decode(pickles))
-                            res = json.dumps(getattr(self.cli, j['func'])(**j['args']))
+                            res = json.dumps(getattr(self.client, j['func'])(**j['args']))
                         else:
-                            res = json.dumps(getattr(self.cli, j['func'])())
+                            res = json.dumps(getattr(self.client, j['func'])())
                     self._logger('info', 'result: {}'.format(res))
                     self.request.sendall(b'OK')
                 except (BUIserverException, Exception) as e:
