@@ -27,6 +27,7 @@ Documentation
    manage
    celery
    gunicorn
+   docker
    buiagent
    contributing
    changelog
