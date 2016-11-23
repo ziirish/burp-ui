@@ -8,8 +8,8 @@
 
 
 """
-import arrow
 import datetime
+import arrow
 
 from flask_restplus import fields
 from flask_babel import gettext as _

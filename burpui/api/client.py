@@ -232,7 +232,7 @@ class ClientTree(Resource):
                     path = ''
                     # fetch the root first if not already loaded
                     if not root_loaded:
-                        part = bui.cli.get_tree(
+                        part = bui.client.get_tree(
                             name,
                             backup,
                             level=0,
@@ -259,7 +259,7 @@ class ClientTree(Resource):
                             path = '/'
                         if path in paths_loaded:
                             continue
-                        temp = bui.cli.get_tree(
+                        temp = bui.client.get_tree(
                             name,
                             backup,
                             path,
@@ -269,7 +269,7 @@ class ClientTree(Resource):
                         paths_loaded.append(path)
                         part += temp
                 else:
-                    part = bui.cli.get_tree(
+                    part = bui.client.get_tree(
                         name,
                         backup,
                         root,
@@ -287,7 +287,7 @@ class ClientTree(Resource):
                         entry['selected'] = True
 
             if not root_list:
-                json = bui.cli.get_tree(name, backup, agent=server)
+                json = bui.client.get_tree(name, backup, agent=server)
                 if args['selected']:
                     for entry in json:
                         if not entry['parent']:
@@ -414,7 +414,7 @@ class ClientTreeAll(Resource):
         args = self.parser.parse_args()
         server = server or args['serverName']
 
-        if not bui.cli.get_attr('batch_list_supported', False, server):
+        if not bui.client.get_attr('batch_list_supported', False, server):
             self.abort(
                 405,
                 'Sorry, the requested backend does not support this method'
@@ -428,7 +428,7 @@ class ClientTreeAll(Resource):
             self.abort(403, 'Sorry, you are not allowed to view this client')
 
         try:
-            json = bui.cli.get_tree(name, backup, '*', agent=server)
+            json = bui.client.get_tree(name, backup, '*', agent=server)
             tree = {}
             rjson = []
             roots = []
@@ -457,7 +457,12 @@ class ClientTreeAll(Resource):
                             while parent not in tree and not last:
                                 if not parent2:
                                     last = True
-                                json = bui.cli.get_tree(name, backup, parent2, agent=server)
+                                json = bui.client.get_tree(
+                                    name,
+                                    backup,
+                                    parent2,
+                                    agent=server
+                                )
                                 if parent2 == '/':
                                     parent2 = ''
                                 else:
@@ -786,19 +791,19 @@ class ClientReport(Resource):
             self.abort(403, 'You don\'t have rights to view this client report')
         if backup:
             try:
-                j = bui.cli.get_backup_logs(backup, name, agent=server)
+                j = bui.client.get_backup_logs(backup, name, agent=server)
             except BUIserverException as e:
                 self.abort(500, str(e))
         else:
             try:
-                cl = bui.cli.get_client(name, agent=server)
+                cl = bui.client.get_client(name, agent=server)
             except BUIserverException as e:
                 self.abort(500, str(e))
             err = []
             for c in cl:
                 try:
                     j.append(
-                        bui.cli.get_backup_logs(
+                        bui.client.get_backup_logs(
                             c['number'],
                             name,
                             agent=server
@@ -904,7 +909,7 @@ class ClientStats(Resource):
                                                   name,
                                                   server))):
                 self.abort(403, 'Sorry, you cannot access this client')
-            j = bui.cli.get_client(name, agent=server)
+            j = bui.client.get_client(name, agent=server)
         except BUIserverException as e:
             self.abort(500, str(e))
         return j

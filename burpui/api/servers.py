@@ -68,9 +68,9 @@ class ServersStats(Resource):
             check = True
             restrict = bui.acl.servers(self.username)
 
-        for serv in bui.cli.servers:
+        for serv in bui.client.servers:
             try:
-                alive = bui.cli.servers[serv].ping()
+                alive = bui.client.servers[serv].ping()
             except BUIserverException:
                 alive = False
 
@@ -82,7 +82,7 @@ class ServersStats(Resource):
                 })
             elif not check:
                 try:
-                    clients = bui.cli.servers[serv].get_all_clients(serv)
+                    clients = bui.client.servers[serv].get_all_clients(serv)
                 except BUIserverException:
                     clients = []
 
@@ -174,7 +174,7 @@ class ServersReport(Resource):
         backups = []
         servers = []
         try:
-            for serv in bui.cli.servers:
+            for serv in bui.client.servers:
                 out = {
                     'name': serv,
                     'stats': {
@@ -192,9 +192,9 @@ class ServersReport(Resource):
                 if bui.acl and not self.is_admin:
                     clients = [{'name': x} for x in bui.acl.clients(self.username, serv)]
                 else:
-                    clients = bui.cli.get_all_clients(agent=serv)
+                    clients = bui.client.get_all_clients(agent=serv)
 
-                j = bui.cli.get_clients_report(clients, serv)
+                j = bui.client.get_clients_report(clients, serv)
                 if 'clients' not in j or 'backups' not in j:
                     continue
                 for stats in j['clients']:

@@ -70,7 +70,7 @@ class ServerBackup(Resource):
                  self.is_admin)):
             self.abort(403, 'You are not allowed to access this client')
         try:
-            return {'is_server_backup': bui.cli.is_server_backup(name, server)}
+            return {'is_server_backup': bui.client.is_server_backup(name, server)}
         except BUIserverException as e:
             self.abort(500, str(e))
 
@@ -106,7 +106,7 @@ class ServerBackup(Resource):
                  self.is_admin)):
             self.abort(403, 'You are not allowed to cancel a backup for this client')
         try:
-            return bui.cli.cancel_server_backup(name, server)
+            return bui.client.cancel_server_backup(name, server)
         except BUIserverException as e:
             self.abort(500, str(e))
 
@@ -147,7 +147,7 @@ class ServerBackup(Resource):
                 'You are not allowed to schedule a backup for this client'
             )
         try:
-            json = bui.cli.server_backup(name, server)
+            json = bui.client.server_backup(name, server)
             return json, 201
         except BUIserverException as e:
             self.abort(500, str(e))

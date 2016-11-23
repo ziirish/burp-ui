@@ -8,5 +8,5 @@
 
 
 """
-from flask_restplus.inputs import *  # noqa
+from flask_restplus.inputs import *  # noqa # pylint: disable=locally-disabled, wildcard-import, unused-wildcard-import
 from .my_inputs import boolean  # noqa
