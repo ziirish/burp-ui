@@ -185,8 +185,8 @@ def readme():
 with open(os.path.join(ROOT, 'burpui', '__init__.py')) as f:
     data = f.read()
 
-    from burpui import __author__, __author_email__, __description__, __url__, \
-                       __title__
+    from burpui.app import __author__, __author_email__, __description__, \
+                       __url__, __title__
     name = __title__
     author = __author__
     author_email = __author_email__
@@ -253,7 +253,7 @@ setup(
         'dev': dev_requires,
         'debian_wheezy': ['functools32'],
         'celery': ['Celery', 'redis'],
-        'sql': ['Flask-SQLAlchemy', 'Flask-Migrate'],
+        'sql': ['Flask-SQLAlchemy', 'Flask-Migrate==2.0.1'],
     },
     tests_require=test_requires,
     classifiers=[

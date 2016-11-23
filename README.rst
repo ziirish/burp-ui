@@ -85,7 +85,9 @@ Notes
 
 Feel free to report any issues on my `gitlab
 <https://git.ziirish.me/ziirish/burp-ui/issues>`_.
+
 I have closed the *github tracker* to have a unique tracker system.
+
 Also please, read the `Contributing
 <https://burp-ui.readthedocs.io/en/latest/contributing.html>`_
 page before reporting any issue to make sure we have all the informations to
@@ -124,7 +126,7 @@ Thanks
 Thank you all for your feedbacks and bug reports. Those are making the project
 moving forward.
 
-Thank you to the `Flask`_'s developers and community.
+Thank you to the `Flask`_ developers and community.
 
 Special Thanks to Graham Keeling for its great piece of software! This project
 would not exist without `Burp`_.
