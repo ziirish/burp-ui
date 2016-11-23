@@ -6,6 +6,6 @@ CONFIG = {
         '--worker-class=gevent',
         '--access-logfile=/var/log/gunicorn/burp-ui_access.log',
         '--error-logfile=/var/log/gunicorn/burp-ui_error.log',
-        'burpui:init(logfile="/var/log/gunicorn/burp-ui_info.log")',
+        'burpui:create_app("@BURPUI_CONFIG@",logfile="/var/log/gunicorn/burp-ui_info.log")',
     ),
 }
