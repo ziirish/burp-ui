@@ -284,7 +284,7 @@ def create_app(conf=None, verbose=0, logfile=None, gunicorn=True,
 
     logger.info('Using configuration: {}'.format(app.config['CFG']))
 
-    app.setup(app.config['CFG'])
+    app.setup(app.config['CFG'], unittest)
 
     if debug:
         app.config.setdefault('TEMPLATES_AUTO_RELOAD', True)
@@ -479,5 +479,6 @@ def create_app(conf=None, verbose=0, logfile=None, gunicorn=True,
         return response
 
     return app
+
 
 init = create_app

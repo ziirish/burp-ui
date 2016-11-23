@@ -108,13 +108,16 @@ class BUIServer(Flask):
     def logger(self):
         return self.builogger
 
-    def setup(self, conf=None):
+    def setup(self, conf=None, unittest=False):
         """The :func:`burpui.server.BUIServer.setup` functions is used to setup
         the whole server by parsing the configuration file and loading the
         different backends.
 
         :param conf: Path to a configuration file
         :type conf: str
+
+        :param unittest: Wether we are unittesting or not
+        :type unittest: bool
         """
         self.sslcontext = None
         if not conf:
@@ -141,10 +144,10 @@ class BUIServer(Flask):
             'boolean'
         )
         self.bind = self.config['BUI_BIND'] = self.conf.safe_get('bind')
-        self.vers = self.config['BUI_VERS'] = self.conf.safe_get(
-            'version',
-            'integer'
-        )
+        self.vers = self.config['BUI_VERS'] = 1 if unittest else \
+            self.conf.safe_get(
+                'version',
+                'integer')
         self.ssl = self.config['BUI_SSL'] = self.conf.safe_get(
             'ssl',
             'boolean'

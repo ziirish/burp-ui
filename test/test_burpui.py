@@ -35,7 +35,7 @@ class BurpuiLiveTestCase(LiveServerTestCase):
     def create_app(self):
         conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../share/burpui/etc/burpui.sample.cfg')
         bui = BUIinit(debug=12, gunicorn=False, unittest=True)
-        bui.setup(conf)
+        bui.setup(conf, True)
         bui.config['DEBUG'] = False
         bui.config['TESTING'] = True
         bui.config['LOGIN_DISABLED'] = True
@@ -106,7 +106,7 @@ class BurpuiAPITestCase(TestCase):
     def create_app(self):
         conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test2.cfg')
         bui = BUIinit(gunicorn=False, unittest=True)
-        bui.setup(conf)
+        bui.setup(conf, True)
         bui.config['TESTING'] = True
         bui.config['LOGIN_DISABLED'] = True
         bui.config['CFG'] = conf
@@ -230,7 +230,7 @@ class BurpuiRoutesTestCase(TestCase):
     def create_app(self):
         conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test4.cfg')
         bui = BUIinit(conf, gunicorn=False, unittest=True)
-        bui.setup(conf)
+        bui.setup(conf, True)
         bui.config['TESTING'] = True
         bui.config['LOGIN_DISABLED'] = True
         bui.config['LIVESERVER_PORT'] = 5001
@@ -471,7 +471,7 @@ class BurpuiRedisTestCase(TestCase):
 #        app.config['TESTING'] = True
 #        app.config['LOGIN_DISABLED'] = True
 #        app.config['CFG'] = conf
-#        bui.setup(conf)
+#        bui.setup(conf, True)
 #        return app
 #
 #    def test_server_config_parsing(self):
