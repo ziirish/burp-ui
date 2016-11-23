@@ -12,4 +12,6 @@
 
 from . import create_app
 
-app = create_app(conf='/dev/null', gunicorn=False)
+# This is a lie we are not really unittesting, but we want to avoid the v2
+# errors
+app = create_app(conf='/dev/null', gunicorn=False, unittest=True)
