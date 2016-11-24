@@ -73,18 +73,19 @@ class BuildStatic(Command):
         log.info("getting revision number")
         call('{} ./burpui -m manage compile_translation'.format(sys.executable).split())
         rev = 'stable'
-        try:
-            branch = check_output('sed s@^.*/@@g .git/HEAD'.split()).rstrip()
-            ver = open(os.path.join('burpui', 'VERSION')).read().rstrip()
-            if branch and 'dev' in ver:
-                rev = branch
+        if os.path.exists('.git/HEAD'):
             try:
-                with open('burpui/RELEASE', 'w') as f:
-                    f.write(rev)
+                branch = check_output('sed s@^.*/@@g .git/HEAD'.split()).rstrip()
+                ver = open(os.path.join('burpui', 'VERSION')).read().rstrip()
+                if branch and 'dev' in ver:
+                    rev = branch
+                try:
+                    with open('burpui/RELEASE', 'w') as f:
+                        f.write(rev)
+                except:
+                    pass
             except:
                 pass
-        except:
-            pass
         # Not sure bower was a great idea...
         keep = [
             'burpui/static/vendor/bootswatch/slate/bootstrap.min.css',
@@ -275,6 +276,6 @@ setup(
         'install': CustomInstall,
         'bdist_egg': BdistWithBuildStatic,
         'egg_info': EggWithBuildStatic,
-        'test': PyTest,
+#        'test': PyTest,
     }
 )

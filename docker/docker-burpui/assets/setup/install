@@ -95,6 +95,8 @@ perl -i -pe "s#^.*\@DEMO\@.*\$#$REP#" /usr/local/lib/python2.7/dist-packages/bur
 
 # setup database
 su -l burpui -c "/usr/local/bin/bui-manage db upgrade"
+# compile translations
+su -l burpui -c "/usr/local/bin/bui-manage compile_translation"
 
 # cleanup
 rm -rf /var/lib/apt/lists/*

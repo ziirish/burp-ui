@@ -11,6 +11,17 @@ Changelog
 - Add: new `docker image <https://git.ziirish.me/ziirish/burp-ui/merge_requests/40#note_1763>`_
 - Add: manage `user sessions <https://git.ziirish.me/ziirish/burp-ui/merge_requests/6>`_
 - Add: `French translation <https://git.ziirish.me/ziirish/burp-ui/merge_requests/4>`_
+- Fix: issue `#151 <https://git.ziirish.me/ziirish/burp-ui/issues/151>`_
+- Fix: issue `#154 <https://git.ziirish.me/ziirish/burp-ui/issues/154>`_
+- Fix: issue `#158 <https://git.ziirish.me/ziirish/burp-ui/issues/158>`_
+- Fix: issue `#163 <https://git.ziirish.me/ziirish/burp-ui/issues/163>`_
+- Fix: issue `#164 <https://git.ziirish.me/ziirish/burp-ui/issues/164>`_
+- Fix: issue `#166 <https://git.ziirish.me/ziirish/burp-ui/issues/166>`_
+- Fix: issue `#169 <https://git.ziirish.me/ziirish/burp-ui/issues/169>`_
+- Fix: issue `#171 <https://git.ziirish.me/ziirish/burp-ui/issues/171>`_
+- Fix: issue `#172 <https://git.ziirish.me/ziirish/burp-ui/issues/172>`_
+- Fix: issue `#173 <https://git.ziirish.me/ziirish/burp-ui/issues/173>`_
+- Fix: issue `#174 <https://git.ziirish.me/ziirish/burp-ui/issues/174>`_
 - Various bugfix
 - `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/v0.3.0...v0.4.0>`__
 

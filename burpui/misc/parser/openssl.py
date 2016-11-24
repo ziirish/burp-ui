@@ -180,8 +180,9 @@ class OSSLConf(object):
         """Read the file if possible"""
         ret = []
         try:
-            with codecs.open(self.conffile, 'r', 'utf-8', errors='ignore') as fil:
-                ret = [x.rstrip('\n') for x in fil.readlines()]
+            if self.conffile:
+                with codecs.open(self.conffile, 'r', 'utf-8', errors='ignore') as fil:
+                    ret = [x.rstrip('\n') for x in fil.readlines()]
         except IOError:
             pass
         return ret
@@ -272,9 +273,11 @@ class OSSLConf(object):
         """Compute the md5sum of the configuration file to detect changes"""
         hash_md5 = md5()
         try:
-            with open(path, "rb") as bfile:
-                for chunk in iter(lambda: bfile.read(4096), b""):
-                    hash_md5.update(chunk)
-            return hash_md5.hexdigest()
+            if path:
+                with open(path, "rb") as bfile:
+                    for chunk in iter(lambda: bfile.read(4096), b""):
+                        hash_md5.update(chunk)
+                return hash_md5.hexdigest()
         except IOError:
-            return None
+            pass
+        return None
