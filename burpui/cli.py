@@ -286,16 +286,6 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database, dry):
         getattr(app.client, 'burpconfsrv')
     dest_bconfcli = bconfcli
 
-    if not os.path.exists(bconfsrv):
-        click.echo(
-            click.style(
-                'Unable to locate burp-server configuration, aborting!',
-                fg='red'
-            ),
-            err=True
-        )
-        sys.exit(1)
-
     if not os.path.exists(bconfcli):
         clitpl = """
 mode = client
@@ -367,13 +357,25 @@ exclude_comp=gz
                 pass
 
             if dest_bconfcli != bconfcli:
+                # the file did not exist
                 os.unlink(dest_bconfcli)
+                before = []
 
             diff = difflib.unified_diff(before, after, fromfile=bconfcli, tofile='{}.new'.format(bconfcli))
             out = ''
             for line in diff:
                 out += _color_diff(line)
             click.echo_via_pager(out)
+
+    if not os.path.exists(bconfsrv):
+        click.echo(
+            click.style(
+                'Unable to locate burp-server configuration, aborting!',
+                fg='red'
+            ),
+            err=True
+        )
+        sys.exit(1)
 
     confsrv = Config()
     data, path, _ = parser._readfile(bconfsrv, insecure=True)
@@ -408,6 +410,19 @@ exclude_comp=gz
             confsrv['restore_client'].append(client)
 
     confsrv['monitor_browse_cache'] = True
+
+    ca_client_dir = confsrv.get('ca_csr_dir')
+    if ca_client_dir and not os.path.exists(ca_client_dir):
+        try:
+            os.makedirs(ca_client_dir)
+        except IOError as exp:
+            click.echo(
+                click.style(
+                    'Unable to create "{}" dir: {}'.format(ca_client_dir, exp),
+                    fg='yellow'
+                ),
+                err=True
+            )
 
     if confsrv.dirty:
         if dry:

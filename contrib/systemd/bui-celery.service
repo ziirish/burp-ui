@@ -5,3 +5,6 @@ After=network.target
 [Service]
 ExecStart=/usr/local/bin/bui-celery --beat -s /var/lib/burpui/celerybeat-schedule
 User=burpui
+
+[Install]
+WantedBy=multi-user.target
