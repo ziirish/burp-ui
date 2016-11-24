@@ -108,6 +108,8 @@ cat ${CONFIG_DIR}/burp/burp-server.conf >/etc/burp/burp-server.conf
 rm -rf /etc/burp/clientconfdir/*
 echo "password = abcdefgh" >/etc/burp/clientconfdir/agent
 
+su -l burpui -c "/usr/local/bin/bui-manage compile_translation"
+
 chown -R burpui: /etc/burp
 
 # cleanup
