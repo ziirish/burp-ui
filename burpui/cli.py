@@ -284,6 +284,7 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database, dry):
         getattr(app.client, 'burpconfcli')
     bconfsrv = bconfsrv or app.conf.options['Burp2'].get('bconfsrv') or \
         getattr(app.client, 'burpconfsrv')
+    dest_bconfcli = bconfcli
 
     if not os.path.exists(bconfsrv):
         click.echo(
@@ -295,8 +296,6 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database, dry):
         )
         sys.exit(1)
 
-    bconfcli = app.conf.options['Burp2']['bconfcli']
-    dest_bconfcli = bconfcli
     if not os.path.exists(bconfcli):
         clitpl = """
 mode = client
