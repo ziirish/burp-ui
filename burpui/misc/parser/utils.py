@@ -7,12 +7,18 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 """
 import os
+import re
+import codecs
+import shutil
 import datetime
 
 from copy import copy
+from hashlib import md5
 from collections import OrderedDict
 from glob import glob
 from six import iteritems, viewkeys
+
+from ...utils import NOTIF_ERROR, NOTIF_OK, NOTIF_WARN, sanitize_string
 
 
 class Option(object):
@@ -223,8 +229,7 @@ class File(dict):
     :param parser: Parser object
     :type parser: :class:`burpui.misc.parser.doc.Doc`
     """
-    delta = datetime.timedelta(seconds=30)
-    last = datetime.datetime.now() - delta
+    oldmd5 = None
     mtime = 0
 
     def __init__(self, parser, name=None, mode='srv'):
@@ -238,7 +243,12 @@ class File(dict):
         :param mode: Configuration type
         :type mode: str
         """
+        # _dirty is used to know if the object changed
         self._dirty = False
+        # _changed is used to know if the file changed since last read
+        self._changed = True
+        # cache the content of the file
+        self._raw = []
         self.parser = parser
         self.mode = mode
         self.name = name
@@ -250,31 +260,24 @@ class File(dict):
             'multi': OrderedDict(),
             'string': OrderedDict(),
         }
-        try:
-            if self.name:
-                self.mtime = os.path.getmtime(self.name)
-        except os.error:
-            # try to get mtime
-            pass
+        self.parse()
 
     @property
     def changed(self):
-        now = datetime.datetime.now()
-        if (now - self.last) > self.delta:
-            self.last = now
-            try:
-                if self.name:
-                    mtime = os.path.getmtime(self.name)
-                else:
-                    return True
-            except os.error:
+        try:
+            if self.name:
+                mtime = os.path.getmtime(self.name)
+            else:
+                self._changed = True
                 return True
-            oldmtime = self.mtime
-            self.mtime = mtime
-            return mtime != oldmtime
-        if self.mtime == 0:
+        except os.error:
+            self._changed = True
             return True
-        return False
+        if mtime != self.mtime:
+            self._changed = self.md5 != self.oldmd5
+            return self._changed
+        self._changed = mtime != self.mtime
+        return self._changed
 
     def clone(self):
         cpy = File(self.parser, name=self.name, mode=self.mode)
@@ -292,6 +295,7 @@ class File(dict):
 
     def set_name(self, name):
         self.name = name
+        self.parse()
 
     def flatten(self, typ, listed=True, parse=True):
         self._refresh_types()
@@ -306,14 +310,15 @@ class File(dict):
                 for key, val in iteritems(self.types[typ])
             ]
         ret = OrderedDict()
-        for key, val in iteritems(self.types[typ]):
-            ret[key] = val.parse() if parse else val
+        if typ in self.types:
+            for key, val in iteritems(self.types[typ]):
+                ret[key] = val.parse() if parse else val
         return ret
 
     @property
     def dirty(self):
-        self._dirty = self._dirty or \
-            any([x._dirty for _, x in iteritems(self.options)])
+        if not self._dirty:
+            self._dirty = any([x._dirty for _, x in iteritems(self.options)])
         return self._dirty
 
     @property
@@ -381,6 +386,18 @@ class File(dict):
 
         return OptionStr(key, value)
 
+    @property
+    def md5(self):
+        """Compute the md5sum of the file"""
+        hash_md5 = md5()
+        try:
+            with open(self.name, "rb") as bfile:
+                for chunk in iter(lambda: bfile.read(4096), b""):
+                    hash_md5.update(chunk)
+            return hash_md5.hexdigest()
+        except IOError:
+            return None
+
     def get(self, key, default=None):
         try:
             return self.options[key]
@@ -439,6 +456,8 @@ class File(dict):
 
     def clear(self):
         self._dirty = True
+        for key in self.types.keys():
+            self.types[key].clear()
         return self.options.clear()
 
     def copy(self):
@@ -476,6 +495,240 @@ class File(dict):
     def __unicode__(self):
         return unicode(self.__repr__())
 
+    @property
+    def raw(self):
+        if self._raw and not self._changed and not self.changed:
+            return self._raw
+        if not self.name:
+            return self._raw
+        try:
+            with codecs.open(self.name, 'r', 'utf-8', errors='ignore') as fil:
+                self._raw = [x.rstrip('\n') for x in fil.readlines()]
+        except IOError:
+            return self._raw
+
+        self._changed = False
+        self.mtime = os.path.getmtime(self.name)
+        self.oldmd5 = self.md5
+        return self._raw
+
+    def _write_key(self, fil, key, data):
+        self._changed = True
+
+        if key in self.parser.boolean_srv or key in self.parser.boolean_cli:
+            val = 0
+            obj = data.get(key)
+            if obj == 'true' or (isinstance(obj, bool) and obj):
+                val = 1
+            fil.write('{} = {}\n'.format(key, val))
+        elif key == '.':
+            val = sanitize_string(data)
+            fil.write('. {}\n'.format(val))
+        elif key in self.parser.multi_srv or key in self.parser.multi_cli:
+            for val in [sanitize_string(x) for x in data.getlist(key)]:
+                fil.write('{} = {}\n'.format(key, val))
+        else:
+            val = sanitize_string(str(data.get(key)))
+            fil.write('{} = {}\n'.format(key, val))
+
+    def parse(self):
+        """Parse the current config"""
+        if not self._changed and not self.changed:
+            return
+
+        self.clear()
+        for line in self.raw:
+            if re.match(r'^\s*#', line):
+                continue
+            res = re.search(r'\s*([^=\s]+)\s*=?\s*(.*)$', line)
+            if res:
+                key = res.group(1)
+                val = res.group(2)
+                if key == u'compression':
+                    val = val.replace('zlib', 'gzip')
+                elif key == u'ssl_compression':
+                    val = val.replace('gzip', 'zlib')
+                self[key] = val
+
+        self._dirty = False
+
+    def store_data(self, data, insecure=False):
+        """Store the config"""
+        if not self.name:
+            return [[NOTIF_ERROR, 'No file defined!']]
+
+        dirname = os.path.dirname(self.name)
+        filename = os.path.basename(self.name)
+        if dirname and not os.path.exists(dirname):
+            try:
+                os.makedirs(dirname)
+            except OSError as exp:
+                return [[NOTIF_WARN, str(exp)]]
+
+        ref = os.path.join(dirname, '.{}.bui.init.back~'.format(filename))
+        bak = os.path.join(dirname, '.{}.back~'.format(filename))
+
+        if not os.path.isfile(ref) and os.path.isfile(self.name):
+            try:
+                shutil.copy(self.name, ref)
+            except IOError as exp:
+                return [[NOTIF_ERROR, str(exp)]]
+        elif os.path.isfile(self.name):
+            try:
+                shutil.copy(self.name, bak)
+            except IOError as exp:
+                return [[NOTIF_ERROR, str(exp)]]
+
+        errs = []
+
+        for key in data.keys():
+            if key in self.parser.files:
+                dat = data.get(key)
+                if not os.path.isfile(dat):
+                    typ = 'strings'
+                    if key in getattr(self.parser, 'multi_{}'.format(self.mode)):
+                        typ = 'multis'
+                    elif key in getattr(self.parser, 'boolean_{}'.format(self.mode)):
+                        typ = 'bools'
+                    elif key in getattr(self, 'integer_{}'.format(mode)):
+                        typ = 'integers'
+                    # highlight the wrong parameters
+                    errs.append([
+                        NOTIF_ERROR,
+                        "Sorry, the file '{}' does not exist".format(dat),
+                        key,
+                        typ
+                    ])
+
+        if errs and not insecure:
+            return errs
+
+        orig = self.raw
+        oldkeys = [self._get_line_key(x) for x in orig]
+        newkeys = list(set(viewkeys(data)) - set(oldkeys))
+
+        already_multi = []
+        already_file = []
+        written = []
+        skip = []
+
+        # def lookup_option(key, val):
+        #    """returns a list of tuples (idx, line)"""
+        #    reg = r'^#*\s*{}\s*=?\s*{}$'.format(key, val)
+        #    ret = []
+        #    for idx, line in enumerate(orig):
+        #        if re.match(reg, line):
+        #            ret.append((idx, line))
+        #    return ret
+
+        try:
+            with codecs.open(self.name, 'w', 'utf-8', errors='ignore') as fil:
+                # f.write('# Auto-generated configuration using Burp-UI\n')
+                for idx, line in enumerate(orig):
+                    if idx in skip:
+                        continue
+                    if (self._line_removed(line, data.keys()) and
+                            not self._line_is_comment(line) and
+                            not self._line_is_file_include(line)):
+                        # The line was removed, we comment it
+                        fil.write('#{}\n'.format(line))
+                    elif self._line_is_file_include(line):
+                        # The line is a file inclusion, we check if the line
+                        # was already present
+                        ori = self._include_get_file(line)
+                        if ori in data.getlist('includes_ori'):
+                            idx = data.getlist('includes_ori').index(ori)
+                            inc = data.getlist('includes')[idx]
+                            self._write_key(fil, '.', inc)
+                            already_file.append(inc)
+                        else:
+                            lead = ''
+                            if not self._line_is_comment(line):
+                                lead = '#'
+                            fil.write('{}{}\n'.format(lead, line))
+
+                    elif self._get_line_key(line, False) in data.keys():
+                        # The line is still present or has been un-commented,
+                        # rewrite it with eventual changes
+                        key = self._get_line_key(line, False)
+                        if key not in already_multi:
+                            self._write_key(
+                                fil,
+                                key,
+                                data,
+                            )
+                        if key in getattr(self.parser, 'multi_{}'.format(self.mode)):
+                            already_multi.append(key)
+                        written.append(key)
+                    else:
+                        lead = ''
+                        if self._get_line_key(line, False) in written:
+                            lead = '#'
+                        fil.write('{}{}\n'.format(lead, line))
+                # Write the new keys
+                for key in newkeys:
+                    if (key not in written and
+                            key not in ['includes', 'includes_ori']):
+                        self._write_key(
+                            fil,
+                            key,
+                            data,
+                        )
+                # Write the rest of file inclusions
+                if 'includes' in data:
+                    for inc in data.getlist('includes'):
+                        if inc not in already_file:
+                            self._write_key(fil, '.', inc)
+        except Exception as exp:
+            return [[NOTIF_ERROR, str(exp)]]
+
+        self.parse()
+
+        return [[NOTIF_OK, 'Configuration successfully saved.']]
+
+    @staticmethod
+    def _line_is_comment(line):
+        """Check whether a given line is a comment or not"""
+        if not line:
+            return False
+        return line.startswith('#')
+
+    @staticmethod
+    def _line_is_file_include(line):
+        """Check whether a given line is a file inclusion or not"""
+        if not line:
+            return False
+        return line.startswith('.') or re.match(r'^#+\s*\.', line) is not None
+
+    @staticmethod
+    def _include_get_file(line):
+        """Return the path of the included file(s)"""
+        if not line:
+            return None
+        _, fil = re.split(r'\s+', line, 1)
+        return fil
+
+    @staticmethod
+    def _get_line_key(line, ignore_comments=True):
+        """Return the key of a given line"""
+        if not line:
+            return ''
+        if '=' not in line:
+            return line
+        (key, _) = re.split(r'\s*=\s*', line, 1)
+        if not ignore_comments:
+            key = key.strip('# ')
+        return key.strip()
+
+    @staticmethod
+    def _line_removed(line, keys):
+        """Check whether a given line has been removed in the updated version"""
+        if not line:
+            return False
+        (key, _) = re.split(r'\s+|=', line, 1)
+        key = key.strip()
+        return key not in keys
+
 
 class Config(File):
     """Object representing a configuration
@@ -485,8 +738,10 @@ class Config(File):
     :param parser: Parser object
     :type parser: :class:`burpui.misc.parser.doc.Doc`
     """
+    # we need an OrderedDict since the order of the configuration matters
+    files = OrderedDict()
 
-    def __init__(self, path=None, parsed=None, parser=None, mode='srv'):
+    def __init__(self, path=None, parser=None, mode='srv'):
         """
         :param parser: Parser object
         :type parser: :class:`burpui.misc.parser.doc.Doc`
@@ -495,17 +750,11 @@ class Config(File):
         :type mode: str
         """
         super(Config, self).__init__(parser, mode)
-        # we need an OrderedDict since the order of the configuration matters
-        self.files = OrderedDict()
         self.default = path
         self.name = path
         self._dirty = True
         if path:
-            if not parsed:
-                self.files[path] = File(parser, path, mode=mode)
-            else:
-                self.files[path] = parsed
-            self.files.get(path).set_name(path)
+            self.files[path] = File(parser, path, mode=mode)
 
     @property
     def changed(self):
@@ -514,13 +763,32 @@ class Config(File):
                 return True
         return False
 
+    def parse(self, force=False):
+        if not self.changed and not force:
+            return
+
+        orig = iteritems(self.files)
+        for root, conf in orig:
+            for key, val in iteritems(conf.flatten('include', False)):
+                for path in val:
+                    if not os.path.isabs(path):
+                        path = os.path.join(os.path.dirname(root), path)
+                    self.add_file(path)
+            conf.parse()
+        # recursively parse the conf
+        if orig != iteritems(self.files):
+            self.parse(True)
+
+    def store_data(self, conf, data, insecure=False):
+        return self.get_file(conf).store_data(data, insecure)
+
     def clone(self):
         default = self.get_default(True).clone()
-        cpy = Config(self.name, default, self.parser, self.mode)
+        cpy = Config(self.name, self.parser, self.mode)
         for path, parsed in iteritems(self.files):
             if path == self.name:
                 continue
-            cpy.add_file(parsed.clone(), path)
+            cpy.add_file(path)
         return cpy
 
     def set_default(self, path):
@@ -542,15 +810,15 @@ class Config(File):
             raise ValueError('No default configuration found')
         return File(self.parser, mode=self.mode)
 
-    def add_file(self, parsed=None, path=None):
+    def add_file(self, path=None):
         idx = path or self.default
-        self.files[idx] = parsed or File(self.parser, mode=self.mode)
-        self.files[idx].set_name(idx)
+        self.files[idx] = File(self.parser, idx, mode=self.mode)
         self._dirty = True
         return self.files[idx]
 
     def get_file(self, path):
         ret = self.files.get(path, File(self.parser, mode=self.mode))
+        ret.parse()
         return ret
 
     def del_file(self, path):
