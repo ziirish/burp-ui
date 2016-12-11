@@ -346,7 +346,7 @@ class Burp(BUIbackend):
                 self.logger.error('Cannot guess burp server address')
         return False
 
-    def status(self, query='\n', agent=None):
+    def status(self, query='\n', timeout=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.status`"""
         result = []
         try:
