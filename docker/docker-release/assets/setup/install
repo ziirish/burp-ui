@@ -37,6 +37,7 @@ pip install redis
 pip install Flask-Session
 pip install Flask-SQLAlchemy
 pip install Flask-Migrate
+pip install sqlalchemy-utils
 pip install celery
 
 # Create burp-ui User
