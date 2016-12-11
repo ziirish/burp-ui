@@ -74,3 +74,9 @@ class Session(db.Model):
             self.ip,
             self.ua
         )
+
+
+def test_database():
+    # This is probably not optimal on huge databases
+    Task.query.first()
+    Session.query.first()

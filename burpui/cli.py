@@ -16,27 +16,28 @@ import subprocess
 
 from .app import create_app
 
-DEBUG = os.environ.get('BUI_DEBUG')
+DEBUG = os.environ.get('BUI_DEBUG') or os.environ.get('FLASK_DEBUG') or False
 if DEBUG and DEBUG.lower() in ['true', 'yes', '1']:
     DEBUG = True
-else:
-    DEBUG = False
 
-VERBOSE = os.environ.get('BUI_VERBOSE')
+VERBOSE = os.environ.get('BUI_VERBOSE') or 0
 if VERBOSE:
     try:
         VERBOSE = int(VERBOSE)
     except ValueError:
         VERBOSE = 0
-else:
-    VERBOSE = 0
+
+# UNITTEST is used to skip the burp-2 requirements for modes != server
+UNITTEST = CLI = os.environ.get('BUI_MODE') != 'server'
 
 app = create_app(
     conf=os.environ.get('BUI_CONFIG'),
     verbose=VERBOSE,
     logfile=os.environ.get('BUI_LOGFILE'),
     debug=DEBUG,
-    gunicorn=False
+    gunicorn=False,
+    unittest=UNITTEST,
+    cli=CLI
 )
 
 if app.config['WITH_SQL']:
@@ -224,54 +225,79 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database, dry):
     _edit_conf('bconfsrv', bconfsrv, 'burpconfsrv')
 
     if redis:
-        if ('redis' not in app.conf.options['Production'] or
-            'redis' in app.conf.options['Production'] and
-            app.conf.options['Production']['redis'] != redis) and \
-                app.redis != redis:
-            app.conf.options['Production']['redis'] = redis
+        try:
+            import redis  # noqa
+            import celery  # noqa
+            if ('redis' not in app.conf.options['Production'] or
+                'redis' in app.conf.options['Production'] and
+                app.conf.options['Production']['redis'] != redis) and \
+                    app.redis != redis:
+                app.conf.options['Production']['redis'] = redis
 
-        rhost, rport, _ = get_redis_server(app)
-        DEVNULL = open(os.devnull, 'wb')
-        ret = subprocess.call(['/bin/nc', '-z', '-w5', str(rhost), str(rport)], stdout=DEVNULL, stderr=subprocess.STDOUT)
+            rhost, rport, _ = get_redis_server(app)
+            DEVNULL = open(os.devnull, 'wb')
+            ret = subprocess.call(['/bin/nc', '-z', '-w5', str(rhost), str(rport)], stdout=DEVNULL, stderr=subprocess.STDOUT)
 
-        if ret == 0:
-            app.conf.options['Production']['celery'] = 'true'
+            if ret == 0:
+                app.conf.options['Production']['celery'] = 'true'
 
-            app.conf.options['Production']['storage'] = 'redis'
+                app.conf.options['Production']['storage'] = 'redis'
 
-            app.conf.options['Production']['cache'] = 'redis'
-        else:
+                app.conf.options['Production']['cache'] = 'redis'
+            else:
+                click.echo(
+                    click.style(
+                        'Unable to contact the redis server, disabling it',
+                        fg='yellow'
+                    )
+                )
+                app.conf.options['Production']['storage'] = 'default'
+                app.conf.options['Production']['cache'] = 'default'
+                if app.use_celery:
+                    app.conf.options['Production']['celery'] = 'false'
+
+            app.conf.options.write()
+            app.conf._refresh(True)
+        except ImportError:
             click.echo(
                 click.style(
-                    'Unable to contact the redis server, disabling it',
+                    'Unable to activate redis & celery. Did you ran the '
+                    '\'pip install burp-ui[celery]\' and '
+                    '\'pip install burp-ui[gunicorn-extra]\' commands first?',
                     fg='yellow'
                 )
             )
-            app.conf.options['Production']['storage'] = 'default'
-            app.conf.options['Production']['cache'] = 'default'
-            if app.use_celery:
-                app.conf.options['Production']['celery'] = 'false'
-
-        app.conf.options.write()
-        app.conf._refresh(True)
 
     if database:
-        if ('database' not in app.conf.options['Production'] or
-            'database' in app.conf.options['Production'] and
-            app.conf.options['Production']['database'] != database) and \
-                app.database != database:
-            app.conf.options['Production']['database'] = database
-            app.conf.options.write()
-            app.conf._refresh(True)
+        try:
+            from .ext.sql import db  # noqa
+            if ('database' not in app.conf.options['Production'] or
+                'database' in app.conf.options['Production'] and
+                app.conf.options['Production']['database'] != database) and \
+                    app.database != database:
+                app.conf.options['Production']['database'] = database
+                app.conf.options.write()
+                app.conf._refresh(True)
+        except ImportError:
+            click.echo(
+                click.style(
+                    'It looks like some dependencies are missing. Did you ran '
+                    'the \'pip install burp-ui[sql]\' command first?',
+                    fg='yellow'
+                )
+            )
 
     if dry:
         temp = app.conf.options.filename
         app.conf.options.filename = orig
         after = []
         try:
-            with open(temp) as fil:
-                after = fil.readlines()
-            os.unlink(temp)
+            if not os.path.exists(temp) or os.path.getsize(temp) == 0:
+                after = conf_orig
+            else:
+                with open(temp) as fil:
+                    after = fil.readlines()
+                os.unlink(temp)
         except:
             pass
         diff = difflib.unified_diff(conf_orig, after, fromfile=orig, tofile='{}.new'.format(orig))
@@ -450,7 +476,18 @@ exclude_comp=gz
                 out += _color_diff(line)
             click.echo_via_pager(out)
 
-    bconfagent = os.path.join(parser.clientconfdir, client)
+    if parser.clientconfdir:
+        bconfagent = os.path.join(parser.clientconfdir, client)
+    else:
+        click.echo(
+            click.style(
+                'Unable to find "clientconfdir" option, you will have to '
+                'setup the agent by your own',
+                fg='yellow'
+            )
+        )
+        bconfagent = os.devnull
+
     if not os.path.exists(bconfagent):
 
         agenttpl = """

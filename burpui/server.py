@@ -116,7 +116,8 @@ class BUIServer(Flask):
         :param conf: Path to a configuration file
         :type conf: str
 
-        :param unittest: Wether we are unittesting or not
+        :param unittest: Wether we are unittesting or not (used to avoid burp2
+                         strict requirements checks)
         :type unittest: bool
         """
         self.sslcontext = None
@@ -144,10 +145,10 @@ class BUIServer(Flask):
             'boolean'
         )
         self.bind = self.config['BUI_BIND'] = self.conf.safe_get('bind')
-        self.vers = self.config['BUI_VERS'] = 1 if unittest else \
-            self.conf.safe_get(
-                'version',
-                'integer')
+        version = self.conf.safe_get('version', 'integer')
+        if unittest and version != 1:
+            version = 1
+        self.vers = self.config['BUI_VERS'] = version
         self.ssl = self.config['BUI_SSL'] = self.conf.safe_get(
             'ssl',
             'boolean'
