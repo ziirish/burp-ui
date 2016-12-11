@@ -428,6 +428,13 @@ class ClientTreeAll(Resource):
             self.abort(403, 'Sorry, you are not allowed to view this client')
 
         try:
+            json = self._get_tree_all(name, backup, server)
+        except BUIserverException as e:
+            self.abort(500, str(e))
+        return json
+
+    @staticmethod
+    def _get_tree_all(name, backup, server):
             json = bui.client.get_tree(name, backup, '*', agent=server)
             tree = {}
             rjson = []
@@ -487,10 +494,7 @@ class ClientTreeAll(Resource):
             for fullname in roots:
                 rjson.append(tree[fullname])
 
-            json = rjson
-        except BUIserverException as e:
-            self.abort(500, str(e))
-        return json
+            return rjson
 
 
 @ns.route('/report/<name>',

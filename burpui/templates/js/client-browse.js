@@ -302,13 +302,43 @@ $( document ).ready(function() {
 	});
 
 	$("#btn-load-all-tree").on('click', function() {
-		var btn = $("#btn-expand-collapse-tree");
-		var url = "{{ url_for('api.client_tree_all', name=cname, backup=nbackup, server=server) }}";
-		$.get(url)
+		var btn = $("#btn-load-all-tree");
+		btn.prop('disabled', true);
+		btn.html('<i class="fa fa-spinner fa-pulse fa-fw"></i>&nbsp;{{ _("Loading") }}');
+		var load_all_tree = function(url) {
+			$.get(url)
+				.fail(myFail)
+				.done(function(data) {
+					tree.reload(data);
+					btn.html('<i class="fa fa-check-square-o" aria-hidden="true"></i>&nbsp;{{ _("Nodes loaded") }}');
+					$('#'+btn.attr('aria-describedby')).remove();
+					btn.blur();
+				});
+		};
+		{% if config.WITH_CELERY -%}
+		var url = "{{ url_for('api.async_client_tree_all', name=cname, backup=nbackup, server=server) }}";
+		var task_status = function(task_id) {
+			$.getJSON('{{ url_for("api.async_browse_status", task_id="") }}'+task_id)
+				.fail(myFail)
+				.done(function(data) {
+					if (data.state != 'SUCCESS') {
+						setTimeout(function() {
+							task_status(task_id);
+						}, 2000);
+					} else {
+						load_all_tree(data.location);
+					}
+				});
+		};
+		$.post(url)
 			.fail(myFail)
 			.done(function(data) {
-				tree.reload(data);
+				task_status(data.id);
 			});
+		{% else -%}
+		var url = "{{ url_for('api.client_tree_all', name=cname, backup=nbackup, server=server) }}";
+		load_all_tree(url);
+		{% endif -%}
 	});
 	$("#btn-expand-collapse-tree").on('click', function() {
 		var btn = $("#btn-expand-collapse-tree");
