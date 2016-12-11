@@ -11,8 +11,7 @@ You need to install ``gunicorn`` and ``gevent``:
 
 ::
 
-    pip install gevent
-    pip install gunicorn
+    pip install "burp-ui[gunicorn]"
 
 You will then be able to launch `Burp-UI`_ this way:
 
