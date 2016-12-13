@@ -99,7 +99,7 @@ named *bui*:
     ca_burp_ca = /usr/sbin/burp_ca
     ca_csr_dir = /etc/burp/CA-client
     # SSL certificate authority - same file on both server and client
-    ssl_cert_ca = /etc/burp/ssl_cert_ca.pem
+    ssl_cert_ca = /etc/burp/ssl_cert_ca-client.pem
     # Client SSL certificate
     ssl_cert = /etc/burp/ssl_cert-client.pem
     # Client SSL key
@@ -231,7 +231,7 @@ named *bui*:
     ca_burp_ca = /usr/sbin/burp_ca
     ca_csr_dir = /etc/burp/CA-client
     # SSL certificate authority - same file on both server and client
-    ssl_cert_ca = /etc/burp/ssl_cert_ca.pem
+    ssl_cert_ca = /etc/burp/ssl_cert_ca-client.pem
     # Client SSL certificate
     ssl_cert = /etc/burp/ssl_cert-client.pem
     # Client SSL key
