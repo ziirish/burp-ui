@@ -14,6 +14,7 @@ burpui:
     - /var/spool/burp:/var/spool/burp
   environment:
     - BURPUI_CONFIG=/etc/burp/burpui.cfg
+    - BURPUI_VERBOSE=0
     - BURPUI_CLIENT_NAME=bui
     - BURP_CLIENT_CONFIG=/tmp/burp.conf
     - BURP_SERVER_CONFIG=/etc/burp/burp-server.conf
