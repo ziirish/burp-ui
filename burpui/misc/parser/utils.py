@@ -867,7 +867,7 @@ class Config(File):
         orig = self.files
         for path, conf in iteritems(orig):
             if conf.parent and (conf.name not in self._includes or
-                    conf.name in removed):
+               conf.name in removed):
                 removed.append(path)
                 self.del_file(path)
 
