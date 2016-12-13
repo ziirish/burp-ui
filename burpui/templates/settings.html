@@ -206,6 +206,7 @@
                     <button type="button" class="btn btn-danger" ng-click="deleteClient()">Remove '{{ client }}'</button>
                     <button class="btn btn-danger dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
                     <ul class="dropdown-menu browse">
+                      <li><label for="keepconf">Do not remove the configuration:&nbsp;</label><input type="checkbox" id="keepconf" name="keepconf"></li>
                       <li><label for="delcert">Remove associated certificate:&nbsp;</label><input type="checkbox" id="delcert" name="delcert"></li>
                       <li><label for="revoke">Revoke associated certificate:&nbsp;</label><input type="checkbox" id="revoke" name="revoke" ng-disabled="!revokeEnabled"></li>
                   </div>

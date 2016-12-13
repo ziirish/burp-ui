@@ -250,7 +250,7 @@ class Parser(Doc):
             return False
         return self.openssl_auth.check_client_revoked(client)
 
-    def remove_client(self, client=None, delcert=False, revoke=False):
+    def remove_client(self, client=None, keepconf=False, delcert=False, revoke=False):
         """See :func:`burpui.misc.parser.interface.BUIparser.remove_client`"""
         res = []
         revoked = False
@@ -258,13 +258,16 @@ class Parser(Doc):
         if not client:
             return [[NOTIF_ERROR, "No client provided"]]
         try:
-            path = os.path.join(self.clientconfdir, client)
-            os.unlink(path)
-            res.append([NOTIF_OK, "'{}' successfully removed".format(client)])
-            removed = True
+            if not keepconf:
+                path = os.path.join(self.clientconfdir, client)
+                os.unlink(path)
+                res.append([NOTIF_OK, "'{}' successfully removed".format(client)])
+                removed = True
 
-            if client in self._clients_conf:
-                del self._clients_conf[client]
+                if client in self._clients_conf:
+                    del self._clients_conf[client]
+
+                self._refresh_cache()
 
         except OSError as exp:
             res.append([NOTIF_ERROR, str(exp)])
@@ -291,7 +294,6 @@ class Parser(Doc):
             if not revoked:
                 res.append([NOTIF_WARN, "The client certificate may still be used!"])
 
-        self._refresh_cache()
         return res
 
     def read_client_conf(self, client=None, conf=None):

@@ -308,6 +308,7 @@ class ClientSettings(Resource):
     parser_delete = ns.parser()
     parser_delete.add_argument('revoke', type=boolean, help='Whether to revoke the certificate or not', default=False, nullable=True)
     parser_delete.add_argument('delcert', type=boolean, help='Whether to delete the certificate or not', default=False, nullable=True)
+    parser_delete.add_argument('keepconf', type=boolean, help='Whether to keep the conf or not', default=False, nullable=True)
 
     @api.disabled_on_demo()
     @api.acl_admin_required(message='Sorry, you don\'t have rights to access the setting panel')
@@ -365,13 +366,15 @@ class ClientSettings(Resource):
         args = self.parser_delete.parse_args()
         delcert = args.get('delcert', False)
         revoke = args.get('revoke', False)
+        keepconf = args.get('keepconf', False)
 
-        # clear the cache when we remove a client
-        api.cache.clear()
-        if bui.config['WITH_CELERY']:
-            from .async import force_scheduling_now
-            force_scheduling_now()
-        return bui.client.delete_client(client, delcert=delcert, revoke=revoke, agent=server), 200
+        if not keepconf:
+            # clear the cache when we remove a client
+            api.cache.clear()
+            if bui.config['WITH_CELERY']:
+                from .async import force_scheduling_now
+                force_scheduling_now()
+        return bui.client.delete_client(client, keepconf=keepconf, delcert=delcert, revoke=revoke, agent=server), 200
 
 
 @ns.route('/path-expander',
