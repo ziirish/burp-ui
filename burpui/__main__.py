@@ -70,7 +70,6 @@ def main():
 
 
 def server(options=None, unknown=None):
-    from burpui import create_app
     from burpui.utils import lookup_file
 
     if unknown is None:
@@ -162,6 +161,7 @@ def celery():
 
     os.chdir(ROOT)
 
+    env['BUI_MODE'] = 'celery'
     env['BUI_CONFIG'] = conf
 
     args = [
@@ -202,6 +202,7 @@ def manage():
     else:
         migrations = lookup_file('migrations', directory=True)
 
+    env['BUI_MODE'] = 'manage'
     env['BUI_CONFIG'] = conf
     if migrations:
         env['BUI_MIGRATIONS'] = migrations

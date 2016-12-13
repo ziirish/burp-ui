@@ -28,7 +28,8 @@ if VERBOSE:
         VERBOSE = 0
 
 # UNITTEST is used to skip the burp-2 requirements for modes != server
-UNITTEST = CLI = os.environ.get('BUI_MODE') != 'server'
+UNITTEST = os.environ.get('BUI_MODE') not in ['server', 'manage', 'celery']
+CLI = os.environ.get('BUI_MODE') != 'server'
 
 app = create_app(
     conf=os.environ.get('BUI_CONFIG'),
@@ -304,7 +305,8 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database, dry):
         out = ''
         for line in diff:
             out += _color_diff(line)
-        click.echo_via_pager(out)
+        if out:
+            click.echo_via_pager(out)
 
     bconfcli = bconfcli or app.conf.options['Burp2'].get('bconfcli') or \
         getattr(app.client, 'burpconfcli')
@@ -330,7 +332,7 @@ server_can_restore = 0
 cross_all_filesystems=0
 ca_burp_ca = /usr/sbin/burp_ca
 ca_csr_dir = /etc/burp/CA-client
-ssl_cert_ca = /etc/burp/ssl_cert_ca.pem
+ssl_cert_ca = /etc/burp/ssl_cert_ca-client.pem
 ssl_cert = /etc/burp/ssl_cert-bui-client.pem
 ssl_key = /etc/burp/ssl_cert-bui-client.key
 ssl_key_password = password
@@ -350,11 +352,9 @@ exclude_comp=gz
 
     parser = app.client.get_parser()
 
-    confcli = Config()
-    data, path, _ = parser._readfile(dest_bconfcli, insecure=True)
-    parsed = parser._parse_lines(data, path, 'srv')
-    confcli.add_file(parsed, dest_bconfcli)
+    confcli = Config(dest_bconfcli, parser, 'srv')
     confcli.set_default(dest_bconfcli)
+    confcli.parse()
 
     if confcli.get('cname') != client:
         confcli['cname'] = client
@@ -366,7 +366,8 @@ exclude_comp=gz
             (_, dstfile) = tempfile.mkstemp()
         else:
             dstfile = bconfcli
-        parser.store_conf(confcli, dstfile, insecure=True, source=bconfcli)
+
+        confcli.store(dest=dstfile, insecure=True)
         if dry:
             before = []
             after = []
@@ -391,7 +392,8 @@ exclude_comp=gz
             out = ''
             for line in diff:
                 out += _color_diff(line)
-            click.echo_via_pager(out)
+            if out:
+                click.echo_via_pager(out)
 
     if not os.path.exists(bconfsrv):
         click.echo(
@@ -403,11 +405,9 @@ exclude_comp=gz
         )
         sys.exit(1)
 
-    confsrv = Config()
-    data, path, _ = parser._readfile(bconfsrv, insecure=True)
-    parsed = parser._parse_lines(data, path, 'srv')
-    confsrv.add_file(parsed, bconfsrv)
+    confsrv = Config(bconfsrv, parser, 'srv')
     confsrv.set_default(bconfsrv)
+    confsrv.parse()
 
     if host not in ['::1', '127.0.0.1']:
         bind = confsrv.get('status_address')
@@ -455,7 +455,8 @@ exclude_comp=gz
             (_, dstfile) = tempfile.mkstemp()
         else:
             dstfile = bconfsrv
-        parser.store_conf(confsrv, dstfile, insecure=True, source=bconfsrv)
+
+        confsrv.store(dest=dstfile, insecure=True)
         if dry:
             before = []
             after = []
@@ -474,10 +475,11 @@ exclude_comp=gz
             out = ''
             for line in diff:
                 out += _color_diff(line)
-            click.echo_via_pager(out)
+            if out:
+                click.echo_via_pager(out)
 
-    if parser.clientconfdir:
-        bconfagent = os.path.join(parser.clientconfdir, client)
+    if confsrv.get('clientconfdir'):
+        bconfagent = os.path.join(confsrv.get('clientconfdir'), client)
     else:
         click.echo(
             click.style(
@@ -500,18 +502,17 @@ password = abcdefgh
         else:
             before = []
             after = ['{}\n'.format(x) for x in agenttpl.splitlines()]
-            diff = difflib.unified_diff(before, after, fromfile='None', tofile=agenttpl)
+            diff = difflib.unified_diff(before, after, fromfile='None', tofile=bconfagent)
             out = ''
             for line in diff:
                 out += _color_diff(line)
-            click.echo_via_pager(out)
+            if out:
+                click.echo_via_pager(out)
 
     else:
-        confagent = Config()
-        data, path, _ = parser._readfile(bconfagent, insecure=True)
-        parsed = parser._parse_lines(data, path, 'cli')
-        confagent.add_file(parsed, bconfagent)
+        confagent = Config(bconfagent, parser, 'cli')
         confagent.set_default(bconfagent)
+        confagent.parse()
 
         if confagent.get('password') != confcli.get('password'):
             click.echo(

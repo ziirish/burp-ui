@@ -10,11 +10,11 @@ import os
 import re
 import codecs
 import shutil
-import datetime
 
 from copy import copy
 from hashlib import md5
 from collections import OrderedDict
+from werkzeug.datastructures import MultiDict
 from glob import glob
 from six import iteritems, viewkeys
 
@@ -229,7 +229,7 @@ class File(dict):
     :param parser: Parser object
     :type parser: :class:`burpui.misc.parser.doc.Doc`
     """
-    oldmd5 = None
+    md5 = None
     mtime = 0
 
     def __init__(self, parser, name=None, mode='srv'):
@@ -249,6 +249,8 @@ class File(dict):
         self._changed = True
         # cache the content of the file
         self._raw = []
+        self._raw_data = MultiDict()
+        self._data = MultiDict()
         self.parser = parser
         self.mode = mode
         self.name = name
@@ -260,7 +262,8 @@ class File(dict):
             'multi': OrderedDict(),
             'string': OrderedDict(),
         }
-        self.parse()
+        if self.name:
+            self.parse()
 
     @property
     def changed(self):
@@ -274,10 +277,33 @@ class File(dict):
             self._changed = True
             return True
         if mtime != self.mtime:
-            self._changed = self.md5 != self.oldmd5
+            self._changed = self._md5 != self.md5
             return self._changed
         self._changed = mtime != self.mtime
         return self._changed
+
+    def _ret_data(self, raw=True):
+        if raw:
+            ret = self._raw_data
+        else:
+            ret = self._data
+        if ret and not self.dirty:
+            return ret
+        ret.clear()
+        for key, val in iteritems(self.options):
+            if isinstance(val, OptionMulti) and not raw:
+                ret.setlist(key, val.parse())
+            else:
+                ret[key] = val if raw else val.parse()
+        return ret
+
+    @property
+    def raw_data(self):
+        return self._ret_data()
+
+    @property
+    def data(self):
+        return self._ret_data(False)
 
     def clone(self):
         cpy = File(self.parser, name=self.name, mode=self.mode)
@@ -299,8 +325,6 @@ class File(dict):
 
     def flatten(self, typ, listed=True, parse=True):
         self._refresh_types()
-        if parse:
-            self.clean()
         if listed:
             return [
                 {
@@ -387,7 +411,7 @@ class File(dict):
         return OptionStr(key, value)
 
     @property
-    def md5(self):
+    def _md5(self):
         """Compute the md5sum of the file"""
         hash_md5 = md5()
         try:
@@ -509,7 +533,7 @@ class File(dict):
 
         self._changed = False
         self.mtime = os.path.getmtime(self.name)
-        self.oldmd5 = self.md5
+        self.md5 = self._md5
         return self._raw
 
     def _write_key(self, fil, key, data):
@@ -531,9 +555,9 @@ class File(dict):
             val = sanitize_string(str(data.get(key)))
             fil.write('{} = {}\n'.format(key, val))
 
-    def parse(self):
+    def parse(self, force=False):
         """Parse the current config"""
-        if not self._changed and not self.changed:
+        if not self._changed and not self.changed and not force:
             return
 
         self.clear()
@@ -552,32 +576,34 @@ class File(dict):
 
         self._dirty = False
 
-    def store_data(self, data, insecure=False):
+    def _store(self, data, dest=None, insecure=False):
         """Store the config"""
-        if not self.name:
+        dest = dest or self.name
+        if not dest:
             return [[NOTIF_ERROR, 'No file defined!']]
 
-        dirname = os.path.dirname(self.name)
-        filename = os.path.basename(self.name)
+        dirname = os.path.dirname(dest)
+        filename = os.path.basename(dest)
         if dirname and not os.path.exists(dirname):
             try:
                 os.makedirs(dirname)
             except OSError as exp:
                 return [[NOTIF_WARN, str(exp)]]
 
-        ref = os.path.join(dirname, '.{}.bui.init.back~'.format(filename))
-        bak = os.path.join(dirname, '.{}.back~'.format(filename))
+        if not insecure:
+            ref = os.path.join(dirname, '.{}.bui.init.back~'.format(filename))
+            bak = os.path.join(dirname, '.{}.back~'.format(filename))
 
-        if not os.path.isfile(ref) and os.path.isfile(self.name):
-            try:
-                shutil.copy(self.name, ref)
-            except IOError as exp:
-                return [[NOTIF_ERROR, str(exp)]]
-        elif os.path.isfile(self.name):
-            try:
-                shutil.copy(self.name, bak)
-            except IOError as exp:
-                return [[NOTIF_ERROR, str(exp)]]
+            if not os.path.isfile(ref) and os.path.isfile(dest):
+                try:
+                    shutil.copy(dest, ref)
+                except IOError as exp:
+                    return [[NOTIF_ERROR, str(exp)]]
+            elif os.path.isfile(dest):
+                try:
+                    shutil.copy(dest, bak)
+                except IOError as exp:
+                    return [[NOTIF_ERROR, str(exp)]]
 
         errs = []
 
@@ -590,7 +616,7 @@ class File(dict):
                         typ = 'multis'
                     elif key in getattr(self.parser, 'boolean_{}'.format(self.mode)):
                         typ = 'bools'
-                    elif key in getattr(self, 'integer_{}'.format(mode)):
+                    elif key in getattr(self.parser, 'integer_{}'.format(self.mode)):
                         typ = 'integers'
                     # highlight the wrong parameters
                     errs.append([
@@ -612,17 +638,22 @@ class File(dict):
         written = []
         skip = []
 
-        # def lookup_option(key, val):
+        # def lookup_option(key, val, strict=True):
         #    """returns a list of tuples (idx, line)"""
-        #    reg = r'^#*\s*{}\s*=?\s*{}$'.format(key, val)
+        #    if strict:
+        #        reg = r'^\s*{}\s*=?\s*{}$'.format(key, val)
+        #    else:
+        #        reg = r'^\s*{}\s*=?'.format(key)
         #    ret = []
         #    for idx, line in enumerate(orig):
+        #        if idx in skip:
+        #            continue
         #        if re.match(reg, line):
-        #            ret.append((idx, line))
-        #    return ret
+        #            return idx, line
+        #    return -1, None
 
         try:
-            with codecs.open(self.name, 'w', 'utf-8', errors='ignore') as fil:
+            with codecs.open(dest, 'w', 'utf-8', errors='ignore') as fil:
                 # f.write('# Auto-generated configuration using Burp-UI\n')
                 for idx, line in enumerate(orig):
                     if idx in skip:
@@ -651,15 +682,19 @@ class File(dict):
                         # The line is still present or has been un-commented,
                         # rewrite it with eventual changes
                         key = self._get_line_key(line, False)
-                        if key not in already_multi:
-                            self._write_key(
-                                fil,
-                                key,
-                                data,
-                            )
-                        if key in getattr(self.parser, 'multi_{}'.format(self.mode)):
-                            already_multi.append(key)
-                        written.append(key)
+                        if key in written:
+                            fil.write('#{}\n'.format(line))
+                        else:
+                            if key not in already_multi:
+                                self._write_key(
+                                    fil,
+                                    key,
+                                    data,
+                                )
+                            if key in getattr(self.parser, 'multi_{}'.format(self.mode)):
+                                already_multi.append(key)
+                            else:
+                                written.append(key)
                     else:
                         lead = ''
                         if self._get_line_key(line, False) in written:
@@ -667,7 +702,7 @@ class File(dict):
                         fil.write('{}{}\n'.format(lead, line))
                 # Write the new keys
                 for key in newkeys:
-                    if (key not in written and
+                    if (key not in written and key not in already_multi and
                             key not in ['includes', 'includes_ori']):
                         self._write_key(
                             fil,
@@ -682,9 +717,18 @@ class File(dict):
         except Exception as exp:
             return [[NOTIF_ERROR, str(exp)]]
 
-        self.parse()
+        self.parse(True)
 
         return [[NOTIF_OK, 'Configuration successfully saved.']]
+
+    def store(self, dest=None, insecure=False):
+        """Store the current conf object"""
+        data = self.data
+        return self._store(data, dest, insecure)
+
+    def store_data(self, data, insecure=False):
+        """Store the conf given a object data"""
+        return self._store(data, insecure=insecure)
 
     @staticmethod
     def _line_is_comment(line):
@@ -738,8 +782,6 @@ class Config(File):
     :param parser: Parser object
     :type parser: :class:`burpui.misc.parser.doc.Doc`
     """
-    # we need an OrderedDict since the order of the configuration matters
-    files = OrderedDict()
 
     def __init__(self, path=None, parser=None, mode='srv'):
         """
@@ -749,12 +791,14 @@ class Config(File):
         :param mode: Configuration type
         :type mode: str
         """
-        super(Config, self).__init__(parser, mode)
+        # we need an OrderedDict since the order of the configuration matters
+        self.files = OrderedDict()
         self.default = path
         self.name = path
         self._dirty = True
         if path:
             self.files[path] = File(parser, path, mode=mode)
+        super(Config, self).__init__(parser, mode)
 
     @property
     def changed(self):
@@ -767,23 +811,31 @@ class Config(File):
         if not self.changed and not force:
             return
 
-        orig = iteritems(self.files)
-        for root, conf in orig:
+        orig = self.files
+        for root, conf in iteritems(orig):
+            conf.parse()
             for key, val in iteritems(conf.flatten('include', False)):
                 for path in val:
                     if not os.path.isabs(path):
                         path = os.path.join(os.path.dirname(root), path)
                     self.add_file(path)
-            conf.parse()
+
         # recursively parse the conf
-        if orig != iteritems(self.files):
+        if orig != self.files:
             self.parse(True)
+
+    def store(self, conf=None, dest=None, insecure=False):
+        ret = []
+        if conf and conf in self.files:
+            return self.files[conf].store(dest, insecure)
+        for name, conf in iteritems(self.files):
+            ret += conf.store(dest, insecure)
+        return ret
 
     def store_data(self, conf, data, insecure=False):
         return self.get_file(conf).store_data(data, insecure)
 
     def clone(self):
-        default = self.get_default(True).clone()
         cpy = Config(self.name, self.parser, self.mode)
         for path, parsed in iteritems(self.files):
             if path == self.name:
@@ -812,8 +864,9 @@ class Config(File):
 
     def add_file(self, path=None):
         idx = path or self.default
-        self.files[idx] = File(self.parser, idx, mode=self.mode)
-        self._dirty = True
+        if idx not in self.files:
+            self.files[idx] = File(self.parser, idx, mode=self.mode)
+            self._dirty = True
         return self.files[idx]
 
     def get_file(self, path):
@@ -834,14 +887,18 @@ class Config(File):
                      for _, x in iteritems(self.files)]):
 
             # cleanup "caches"
+            self.options.clear()
+            del self.options
             self.options = OrderedDict()
             for key in viewkeys(self.types):
+                del self.types[key]
                 self.types[key] = OrderedDict()
 
             # now update caches with new values
             for _, fil in iteritems(self.files):
                 self.options.update(fil.options)
-                fil.clean()
+                # FIXME: find a way to cache efficiently
+                # fil.clean()
 
             for key, val in iteritems(self.options):
                 self.types[val.type][key] = val

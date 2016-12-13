@@ -12,14 +12,13 @@ import json
 import codecs
 
 from glob import glob
-from hashlib import md5
-from six import iteritems, viewkeys
+from six import iteritems
 
 from .doc import Doc
-from .utils import Config, File
+from .utils import Config
 from .openssl import OSSLConf, OSSLAuth
 from ...exceptions import BUIserverException
-from ...utils import NOTIF_ERROR, NOTIF_OK, NOTIF_WARN, sanitize_string
+from ...utils import NOTIF_ERROR, NOTIF_OK, NOTIF_WARN
 
 
 class Parser(Doc):
@@ -152,6 +151,16 @@ class Parser(Doc):
         if self._clients_conf[name].changed:
             self._clients_conf[name].parse()
         return self._clients_conf[name]
+
+    def _get_config(self, path, mode='cli'):
+        """Return conf by it's path"""
+        if path in self._configs:
+            ret = self._configs[path]
+        else:
+            ret = Config(path, self, mode)
+        if ret.changed:
+            ret.parse()
+        return ret
 
     def _is_secure_path(self, path=None):
         """Check if the accessed path is allowed or not"""
@@ -302,15 +311,17 @@ class Parser(Doc):
             return res
 
         mconf = conf
-        if not conf:
+        if not mconf:
             if not self.clientconfdir:
                 return res
             mconf = os.path.join(self.clientconfdir, client)
+            config = self._get_client(client, mconf)
+        else:
+            config = self._get_config(mconf)
 
-        config = self._get_client(client, mconf)
         parsed = config.get_file(mconf)
-        if mconf in self.filescache and not parsed.changed:
-            return self.filescache[mconf]
+        if mconf in self.filescache and self.filescache[mconf]['md5'] == parsed.md5:
+            return self.filescache[mconf]['dict']
 
         res2 = {}
         res2[u'common'] = parsed.string
@@ -324,7 +335,10 @@ class Parser(Doc):
         res2[u'includes_ext'] = parsed.include
 
         res.update(res2)
-        self.filescache[mconf] = res
+        self.filescache[mconf] = {
+            'dict': res,
+            'md5': parsed.md5
+        }
         return res
 
     def read_server_conf(self, conf=None):
@@ -349,14 +363,15 @@ class Parser(Doc):
             return res
 
         parsed = self.server_conf.get_file(mconf)
-        if mconf in self.filescache and not parsed.changed:
-            return self.filescache[mconf]
+        if mconf in self.filescache and self.filescache[mconf]['md5'] == parsed.md5:
+            return self.filescache[mconf]['dict']
 
         clientconfdir = parsed.get('clientconfdir')
-        if clientconfdir != self.clientconfdir:
+        if clientconfdir and clientconfdir.parse() != self.clientconfdir:
             self.clientconfdir = clientconfdir.parse()
             self.clientconfdir_mtime = -1
             res['clients'] = self._list_clients()
+
         res2 = {}
         res2[u'common'] = parsed.string
         res2[u'boolean'] = parsed.boolean
@@ -369,7 +384,10 @@ class Parser(Doc):
         res2[u'includes_ext'] = parsed.include
 
         res.update(res2)
-        self.filescache[mconf] = res
+        self.filescache[mconf] = {
+            'dict': res,
+            'md5': parsed.md5
+        }
         return res
 
     def list_clients(self):
@@ -416,6 +434,7 @@ class Parser(Doc):
                 ]
             ]
 
+        check = False
         if source:
             conffile = Config()
             stuff, path, _ = self._readfile(source, insecure=True)
@@ -427,8 +446,17 @@ class Parser(Doc):
                 conffile = self._get_client(client, mconf).get_file(mconf)
             else:
                 conffile = self.server_conf.get_file(mconf)
+                check = True
 
-        return conffile.store_data(data, insecure)
+        ret = conffile.store_data(data, insecure)
+
+        if check:
+            clientconfdir = conffile.get('clientconfdir')
+            if clientconfdir and clientconfdir.parse() != self.clientconfdir:
+                self.clientconfdir = clientconfdir.parse()
+                self.clientconfdir_mtime = -1
+
+        return ret
 
     def cancel_restore(self, name=None):
         """See :func:`burpui.misc.parser.interface.BUIparser.cancel_restore`"""
@@ -590,4 +618,3 @@ class Parser(Doc):
         if client:
             return my_obj.get(client, {}).get(name, '')
         return my_obj.get(name, '')
-
