@@ -131,12 +131,7 @@ class BurpuiAPITestCase(TestCase):
                             u'multi': [],
                             u'includes': [],
                             u'includes_ext': [],
-                            u'clients': [
-                                {
-                                    u'name': u'testclient',
-                                    u'value': u'/etc/burp/clientconfdir/testclient'
-                                }
-                            ]
+                            u'clients': []
                         }
                     ),
                     (u'boolean', self.bui.client.get_parser_attr('boolean_srv')),
@@ -161,12 +156,7 @@ class BurpuiAPITestCase(TestCase):
                             u'multi': [],
                             u'includes': [],
                             u'includes_ext': [],
-                            u'clients': [
-                                {
-                                    u'name': u'testclient',
-                                    u'value': u'/etc/burp/clientconfdir/testclient'
-                                }
-                            ]
+                            u'clients': []
                         }
                     ),
                     (u'boolean', self.bui.client.get_parser_attr('boolean_cli')),
