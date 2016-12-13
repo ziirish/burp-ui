@@ -539,6 +539,7 @@ class File(dict):
     def _write_key(self, fil, key, data):
         self._changed = True
 
+        strict = 'regex' not in key
         if key in self.parser.boolean_srv or key in self.parser.boolean_cli:
             val = 0
             obj = data.get(key)
@@ -549,10 +550,10 @@ class File(dict):
             val = sanitize_string(data)
             fil.write('. {}\n'.format(val))
         elif key in self.parser.multi_srv or key in self.parser.multi_cli:
-            for val in [sanitize_string(x) for x in data.getlist(key)]:
+            for val in [sanitize_string(x, strict) for x in data.getlist(key)]:
                 fil.write('{} = {}\n'.format(key, val))
         else:
-            val = sanitize_string(str(data.get(key)))
+            val = sanitize_string(str(data.get(key)), strict)
             fil.write('{} = {}\n'.format(key, val))
 
     def parse(self, force=False):
