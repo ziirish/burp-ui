@@ -127,7 +127,7 @@ class BUIparser(with_metaclass(ABCMeta, object)):
 
     @abstractmethod
     def store_conf(self, data, conf=None, client=None, mode='srv',
-                   insecure=False, source=None):
+                   insecure=False):
         """:func:`burpui.misc.parser.interface.BUIparser.store_conf` is used to
         store the configuration from the web-ui into the actual configuration
         files.
@@ -148,9 +148,6 @@ class BUIparser(with_metaclass(ABCMeta, object)):
 
         :param insecure: Used for the CLI
         :type insecure: bool
-
-        :param source: Used for the CLI
-        :type source: str
 
         :returns: A list of notifications to return to the UI (success or
                   failure)

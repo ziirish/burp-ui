@@ -39,6 +39,10 @@ class Option(object):
         self.value = value
         self._dirty = True
 
+    @property
+    def dirty(self):
+        return self._dirty
+
     def update(self, value):
         """Change the option value"""
         self._dirty = True
@@ -181,10 +185,17 @@ class OptionInc(Option):
         self.mode = mode
         self.extended = []
         self._dirty = True
+        self._glob = False
+        self._glob_dir = None
+        self._glob_mtime = -1
         if root:
             self.root = os.path.dirname(root)
         else:
             self.root = None
+
+    @property
+    def dirty(self):
+        return self._dirty or self._glob_changed
 
     def _path_absolute(self, path):
         absolute = path
@@ -197,9 +208,16 @@ class OptionInc(Option):
                 absolute = os.path.join(self.parser.clientconfdir, path)
         return absolute
 
+    @property
+    def _glob_changed(self):
+        if not self._glob or not self._glob_dir:
+            return False
+        mtime = os.path.getmtime(self._glob_dir)
+        return mtime != self._glob_mtime
+
     def extend(self):
         """Helper function for the parsing"""
-        if not self._dirty and self.extended:
+        if not self._dirty and self.extended and not self._glob_changed:
             return self.extended
         paths = []
         root = self._path_absolute(self.value)
@@ -207,6 +225,13 @@ class OptionInc(Option):
             if self.parser._is_secure_path(path) and os.path.isfile(path) and \
                     not path.endswith('~') and not path.endswith('.back'):
                 paths.append(path)
+        # more than one match mean we have a glob, for sure
+        if len(paths) > 1 or (len(paths) == 1 and paths[0] != root):
+            self._glob = True
+            self._glob_dir = os.path.dirname(root)
+            self._glob_mtime = os.path.getmtime(self._glob_dir)
+        else:
+            self._glob = False
         self.clean()
         self.extended = paths
         return paths
@@ -232,7 +257,7 @@ class File(dict):
     md5 = None
     mtime = 0
 
-    def __init__(self, parser, name=None, mode='srv'):
+    def __init__(self, parser, name=None, mode='srv', parent=None):
         """
         :param parser: Parser object
         :type parser: :class:`burpui.misc.parser.doc.Doc`
@@ -254,6 +279,7 @@ class File(dict):
         self.parser = parser
         self.mode = mode
         self.name = name
+        self.parent = parent
         self.options = OrderedDict()
         self.types = {
             'boolean': OrderedDict(),
@@ -267,6 +293,10 @@ class File(dict):
 
     @property
     def changed(self):
+        for key, val in iteritems(self.types['include']):
+            if val.dirty:
+                self._changed = True
+                return self._changed
         try:
             if self.name:
                 mtime = os.path.getmtime(self.name)
@@ -342,7 +372,7 @@ class File(dict):
     @property
     def dirty(self):
         if not self._dirty:
-            self._dirty = any([x._dirty for _, x in iteritems(self.options)])
+            self._dirty = any([x.dirty for _, x in iteritems(self.options)])
         return self._dirty
 
     @property
@@ -794,12 +824,14 @@ class Config(File):
         """
         # we need an OrderedDict since the order of the configuration matters
         self.files = OrderedDict()
+        self._tree = []
         self.default = path
         self.name = path
+        self._includes = []
         self._dirty = True
         if path:
             self.files[path] = File(parser, path, mode=mode)
-        super(Config, self).__init__(parser, mode)
+        super(Config, self).__init__(parser, path, mode)
 
     @property
     def changed(self):
@@ -808,9 +840,7 @@ class Config(File):
                 return True
         return False
 
-    def parse(self, force=False):
-        if not self.changed and not force:
-            return
+    def _parse(self):
 
         orig = self.files
         for root, conf in iteritems(orig):
@@ -819,11 +849,70 @@ class Config(File):
                 for path in val:
                     if not os.path.isabs(path):
                         path = os.path.join(os.path.dirname(root), path)
-                    self.add_file(path)
+                    self.add_file(path, root)
+                    self._includes.append(path)
 
         # recursively parse the conf
         if orig != self.files:
-            self.parse(True)
+            self._parse()
+
+    def parse(self, force=False):
+        if not self.changed and not force:
+            return
+
+        del self._includes[:]
+        self._parse()
+
+        removed = []
+        orig = self.files
+        for path, conf in iteritems(orig):
+            if conf.parent and (conf.name not in self._includes or
+                    conf.name in removed):
+                removed.append(path)
+                self.del_file(path)
+
+    @property
+    def tree(self):
+        if not self.changed and not self.dirty and self._tree:
+            return self._tree
+
+        # make sure to refresh files list
+        self.parse(True)
+
+        def __new_node(name, parent=None):
+            dirname = os.path.dirname(name)
+            basename = os.path.basename(name)
+            return {
+                'name': basename,
+                'full': name,
+                'dir': dirname,
+                'parent': parent,
+                'children': []
+            }
+
+        self._tree[:]
+        dflt = self.get_default(True)
+        temp = {}
+
+        # retrieve the offset of the default conf
+        offset = 0
+        for idx, (path, _) in enumerate(iteritems(self.files)):
+            if path == dflt.name:
+                offset = idx
+                break
+
+        for idx, (top, conf) in enumerate(iteritems(self.files)):
+            if idx < offset:
+                continue
+            node = __new_node(conf.name)
+            for key, val in iteritems(conf.flatten('include', False)):
+                for path in val:
+                    if not os.path.isabs(path):
+                        path = os.path.join(os.path.dirname(top), path)
+                    node['children'].append(__new_node(path, node['full']))
+            temp[conf.name] = node
+        self._tree = [x for _, x in iteritems(temp)]
+        return self._tree
 
     def store(self, conf=None, dest=None, insecure=False):
         ret = []
@@ -863,10 +952,10 @@ class Config(File):
             raise ValueError('No default configuration found')
         return File(self.parser, mode=self.mode)
 
-    def add_file(self, path=None):
+    def add_file(self, path=None, parent=None):
         idx = path or self.default
         if idx not in self.files:
-            self.files[idx] = File(self.parser, idx, mode=self.mode)
+            self.files[idx] = File(self.parser, idx, self.mode, parent)
             self._dirty = True
         return self.files[idx]
 

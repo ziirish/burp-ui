@@ -415,7 +415,7 @@ class Parser(Doc):
         return ret
 
     def store_conf(self, data, conf=None, client=None, mode='srv',
-                   insecure=False, source=None):
+                   insecure=False):
         """See :func:`burpui.misc.parser.interface.BUIparser.store_conf`"""
         mconf = None
         if not conf:
@@ -437,18 +437,11 @@ class Parser(Doc):
             ]
 
         check = False
-        if source:
-            conffile = Config()
-            stuff, path, _ = self._readfile(source, insecure=True)
-            parsed = self._parse_lines(stuff, path, 'srv')
-            conffile.add_file(parsed, source)
-            conffile.set_default(source)
+        if client:
+            conffile = self._get_client(client, mconf).get_file(mconf)
         else:
-            if client:
-                conffile = self._get_client(client, mconf).get_file(mconf)
-            else:
-                conffile = self.server_conf.get_file(mconf)
-                check = True
+            conffile = self.server_conf.get_file(mconf)
+            check = True
 
         ret = conffile.store_data(data, insecure)
 
