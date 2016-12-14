@@ -14,6 +14,8 @@ provided. There are a few variables supported to setup your system:
 
  - **BURPUI_CONFIG** - Specify where the `Burp-UI`_ configuration file is
    located. It defaults to "/etc/burp/burpui.cfg".
+ - **BURPUI_VERBOSE** - Specify the log verbosity (between 0 and 4). It defaults
+   to 0.
  - **BURPUI_CLIENT_NAME** - Specify the name of the burp client that will be
    used by `Burp-UI`_. It defaults to "bui".
  - **BURP_CLIENT_CONFIG** - Specify the path of the burp client configuration

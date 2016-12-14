@@ -74,17 +74,58 @@ def get_redis_server(myapp):
     return host, port, pwd
 
 
-def create_db(myapp):
+def create_db(myapp, cli=False):
     """Create the SQLAlchemy instance if possible
 
     :param myapp: Application context
     :type myapp: :class:`burpui.server.BUIServer`
     """
     if myapp.config['WITH_SQL']:
-        from .ext.sql import db
-        myapp.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-        db.init_app(myapp)
-        return db
+        try:
+            from .ext.sql import db
+            from .models import test_database
+            from sqlalchemy.exc import OperationalError
+            from sqlalchemy_utils.functions import database_exists, \
+                create_database
+            myapp.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+            if not database_exists(myapp.config['SQLALCHEMY_DATABASE_URI']) and \
+                    not cli:
+                try:
+                    create_database(
+                        myapp.config['SQLALCHEMY_DATABASE_URI']
+                    )
+                    db.init_app(myapp)
+                    with myapp.app_context():
+                        db.create_all()
+                        db.session.commit()
+                    return db
+                except OperationalError as exp:
+                    myapp.logger.error(
+                        'An error occured, disabling SQL support: '
+                        '{}'.format(str(exp))
+                    )
+                    myapp.config['WITH_SQL'] = False
+                    return None
+            db.init_app(myapp)
+            if not cli:
+                with myapp.app_context():
+                    try:
+                        test_database()
+                    except OperationalError as exp:
+                        if 'no such table' in str(exp):
+                            myapp.logger.error(
+                                'Your database seem out of sync, you may want '
+                                'to run \'bui-manage db upgrade\'. Disabling '
+                                'SQL support for now.'
+                            )
+                            myapp.config['WITH_SQL'] = False
+                            return None
+            return db
+        except ImportError:
+            myapp.logger.warning(
+                'Unable to load requirements, SQL support disabled'
+            )
+            myapp.config['WITH_SQL'] = False
 
     return None
 
@@ -97,6 +138,7 @@ def create_celery(myapp, warn=True):
     """
     if myapp.config['WITH_CELERY']:
         from .ext.async import celery
+        from .exceptions import BUIserverException
         host, oport, pwd = get_redis_server(myapp)
         odb = 2
         if isinstance(myapp.use_celery, basestring):
@@ -135,7 +177,11 @@ def create_celery(myapp, warn=True):
 
             def __call__(self, *args, **kwargs):
                 with myapp.app_context():
-                    return TaskBase.__call__(self, *args, **kwargs)
+                    try:
+                        return TaskBase.__call__(self, *args, **kwargs)
+                    except BUIserverException:
+                        # ignore unhandled exceptions in the celery worker
+                        pass
 
         celery.Task = ContextTask
 
@@ -154,7 +200,7 @@ def create_celery(myapp, warn=True):
 
 
 def create_app(conf=None, verbose=0, logfile=None, gunicorn=True,
-               unittest=False, debug=False):
+               unittest=False, debug=False, cli=False):
     """Initialize the whole application.
 
     :param conf: Configuration file to use
@@ -174,6 +220,9 @@ def create_app(conf=None, verbose=0, logfile=None, gunicorn=True,
 
     :param debug: Enable debug mode
     :type debug: bool
+
+    :param cli: Are we running the CLI
+    :type cli: bool
 
     :returns: A :class:`burpui.server.BUIServer` object
     """
@@ -403,7 +452,7 @@ def create_app(conf=None, verbose=0, logfile=None, gunicorn=True,
     babel.init_app(app)
 
     # Create SQLAlchemy if enabled
-    create_db(app)
+    create_db(app, cli)
 
     # We initialize the API
     api.version = __version__

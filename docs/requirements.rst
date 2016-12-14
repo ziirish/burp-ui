@@ -70,6 +70,37 @@ You can install the python package using the following command:
     pip install "burp-ui[ssl]"
 
 
+Redis
+-----
+
+If you wish to use redis for Caching and/or managing uses sessions, you need
+additional dependencies:
+
+::
+
+    pip install "burp-ui[gunicorn-extra]"
+
+
+Celery
+------
+
+The celery worker also needs additional dependencies that you can install using:
+
+::
+
+    pip install "burp-ui[celery]"
+
+
+SQL
+---
+
+If you need persistent data, you will need additional dependencies as well:
+
+::
+
+    pip install "burp-ui[sql]"
+
+
 Burp1
 -----
 

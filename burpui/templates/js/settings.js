@@ -391,7 +391,7 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', function($scope, 
 		$.ajax({
 			url: api,
 			type: 'DELETE',
-			data: { delcert: $('#delcert').is(':checked'), revoke: $('#revoke').is(':checked') }
+			data: { delcert: $('#delcert').is(':checked'), revoke: $('#revoke').is(':checked'), keepconf: $('#keepconf').is(':checked') }
 		})
 		.fail(myFail)
 		.done(function(data) {

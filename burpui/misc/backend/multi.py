@@ -419,12 +419,16 @@ class NClient(BUIbackend):
         res = '[]'
         err = None
         notimeout = False
+        timeout = self.timeout
         if not data:
             raise BUIserverException('Missing data')
         data['password'] = self.password
         # manage long running operations
         if data['func'] in ['restore_files', 'get_file', 'del_file']:
             notimeout = True
+        if data['func'] == 'get_tree' and data['args'].get('root') == '*':
+            # arbitrary raise timeout
+            timeout = max(timeout, 120)
         try:
             # don't need a context manager here
             if data['func'] == 'get_file':
@@ -434,7 +438,7 @@ class NClient(BUIbackend):
                 if not self.setup(gsock.sock, gsock, raw):
                     return res
                 return gsock.sock
-            with Gsocket(self.host, self.port, self.ssl, self.timeout, notimeout) as (sock, gsock):
+            with Gsocket(self.host, self.port, self.ssl, timeout, notimeout) as (sock, gsock):
                 try:
                     raw = json.dumps(data)
                     if not self.setup(gsock.sock, gsock, raw):

@@ -11,8 +11,7 @@ You need to install ``gunicorn`` and ``gevent``:
 
 ::
 
-    pip install gevent
-    pip install gunicorn
+    pip install "burp-ui[gunicorn]"
 
 You will then be able to launch `Burp-UI`_ this way:
 
@@ -87,14 +86,14 @@ certificates accordingly:
     progress_counter = 1
     ca_burp_ca = /usr/sbin/burp_ca
     ca_csr_dir = /var/lib/burpui/CA-client
-    ssl_cert_ca = /var/lib/burpui/ssl_cert_ca.pem
+    ssl_cert_ca = /var/lib/burpui/ssl_cert_ca-client.pem
     ssl_cert = /var/lib/burpui/ssl_cert-client.pem
     ssl_key = /var/lib/burpui/ssl_cert-client.key
     ssl_peer_cn = burpserver
     EOF
     # generate the certificates
     burp_ca --name bui-agent1 --ca burpCA --key --request --sign --batch
-    cp /etc/burp/ssl_cert_ca.pem /var/lib/burpui/
+    cp /etc/burp/ssl_cert_ca.pem /var/lib/burpui/ssl_cert_ca-client.pem
     cp -a /etc/burp/CA/bui-agent1.crt /var/lib/burpui/ssl_cert-client.pem
     cp -a /etc/burp/CA/bui-agent1.key /var/lib/burpui/ssl_cert-client.key
     chown -R burpui: /var/lib/burpui/

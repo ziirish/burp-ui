@@ -75,6 +75,7 @@ sed -i "s|@WORKING_DIR@|${WORKING_DIR}|" $WORKING_DIR/config/CA/CA.cnf
 
 echo "launching background burp-server"
 LOGFILE=$(mktemp)
+LOGFILE2=$(mktemp)
 burp -F -c $WORKING_DIR/config/burp.conf -g >$LOGFILE 2>&1
 (burp -F -c $WORKING_DIR/config/burp.conf >>$LOGFILE 2>&1) &
 BURP_PID=$!
@@ -117,7 +118,7 @@ pip install --upgrade -r test-requirements.txt
 
 mkdir -p /etc/burp
 cp share/burpui/etc/burpui.sample.cfg /etc/burp/burpui.cfg
-nosetests --with-coverage --cover-package=burpui test/test_burpui.py
+nosetests --with-coverage --cover-package=burpui test/test_burpui.py 2>&1 >$LOGFILE2
 ret=$?
 rm /etc/burp/burpui.cfg
 
@@ -132,6 +133,8 @@ cat $LOGFILE
 #echo "Killing burp2-server"
 #kill $BURP2_PID || echo "Ooops KILL"
 #cat $LOGFILE2
+
+cat $LOGFILE2
 
 echo "removing temp files/dirs"
 rm -rf $LOGFILE $LOGFILE2 $BURP2_DIR $BURP_DIR $WORKING_DIR $WORKING_DIR2 || echo "Ooops RM"

@@ -127,7 +127,7 @@ class BUIparser(with_metaclass(ABCMeta, object)):
 
     @abstractmethod
     def store_conf(self, data, conf=None, client=None, mode='srv',
-                   insecure=False, source=None):
+                   insecure=False):
         """:func:`burpui.misc.parser.interface.BUIparser.store_conf` is used to
         store the configuration from the web-ui into the actual configuration
         files.
@@ -148,9 +148,6 @@ class BUIparser(with_metaclass(ABCMeta, object)):
 
         :param insecure: Used for the CLI
         :type insecure: bool
-
-        :param source: Used for the CLI
-        :type source: str
 
         :returns: A list of notifications to return to the UI (success or
                   failure)
@@ -210,12 +207,15 @@ class BUIparser(with_metaclass(ABCMeta, object)):
         )  # pragma: no cover
 
     @abstractmethod
-    def remove_client(self, client=None, delcert=False, revoke=False):
+    def remove_client(self, client=None, keepconf=False, delcert=False, revoke=False):
         """:func:`burpui.misc.parser.interface.BUIparser.remove_client` is used
         to delete a client from burp's configuration.
 
         :param client: The name of the client to remove
         :type client: str
+
+        :param keepconf: Whether to keep the conf (in order to just revoke/delete the cert)
+        :param keepconf: bool
 
         :param delcert: Whether to delete the associated certificate
         :type delcert: bool

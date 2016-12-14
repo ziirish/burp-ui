@@ -47,12 +47,15 @@ class BUIbackend(with_metaclass(ABCMeta, object)):
     """
 
     @abstractmethod
-    def status(self, query='\n', agent=None):
+    def status(self, query='\n', timeout=None, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.status` method is
         used to send queries to the Burp server
 
         :param query: Query to send to the server
         :type query: str
+
+        :param timeout: Query timeout in seconds
+        :type timeout: int
 
         :param agent: What server to ask (only in multi-agent mode)
         :type agent: str
@@ -642,12 +645,15 @@ class BUIbackend(with_metaclass(ABCMeta, object)):
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
     @abstractmethod
-    def delete_client(self, client=None, delcert=False, revoke=False, agent=None):
+    def delete_client(self, client=None, keepconf=False, delcert=False, revoke=False, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.delete_client`
         function is used to delete a client from burp's configuration.
 
         :param client: The name of the client to remove
         :type client: str
+
+        :param keepconf: Whether to keep the conf (in order to just revoke/delete the certs for instance)
+        :type keepconf: bool
 
         :param delcert: Whether to delete the associated certificate
         :type delcert: bool

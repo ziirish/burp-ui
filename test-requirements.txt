@@ -9,3 +9,4 @@ Celery
 redis
 Flask-SQLAlchemy
 Flask-Migrate
+sqlalchemy_utils

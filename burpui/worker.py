@@ -4,7 +4,7 @@
 Burp-UI is a web-ui for burp backup written in python with Flask and
 jQuery/Bootstrap
 
-.. module:: burpui.celery_worker
+.. module:: burpui.worker
     :platform: Unix
     :synopsis: Burp-UI celery worker module.
 

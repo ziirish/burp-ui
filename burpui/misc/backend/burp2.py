@@ -281,7 +281,7 @@ class Burp(Burp1):
             self._kill_burp()
             raise OSError('Unable to setup burp client')
         self.proc.stdin.write('j:pretty-print-off\n')
-        jso = self._read_proc_stdout()
+        jso = self._read_proc_stdout(self.timeout)
         if self._is_warning(jso):
             self.logger.info(jso['warning'])
 
@@ -355,7 +355,7 @@ class Burp(Burp1):
 
         return hur
 
-    def _read_proc_stdout(self):
+    def _read_proc_stdout(self, timeout):
         """reads the burp process stdout and returns a document or None"""
         doc = u''
         jso = None
@@ -363,7 +363,7 @@ class Burp(Burp1):
             try:
                 if not self._proc_is_alive():
                     raise Exception('process died while reading its output')
-                read, _, _ = select([self.proc.stdout], [], [], self.timeout)
+                read, _, _ = select([self.proc.stdout], [], [], timeout)
                 if self.proc.stdout not in read:
                     raise TimeoutError('Read operation timed out')
                 doc += self.proc.stdout.readline().rstrip('\n')
@@ -382,9 +382,10 @@ class Burp(Burp1):
                 break
         return jso
 
-    def status(self, query='c:\n', agent=None):
+    def status(self, query='c:\n', timeout=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.status`"""
         try:
+            timeout = timeout or self.timeout
             query = sanitize_string(query.rstrip())
             self.logger.info("query: '{}'".format(query))
             query = '{0}\n'.format(query)
@@ -395,7 +396,7 @@ class Burp(Burp1):
             if self.proc.stdin not in write:
                 raise TimeoutError('Write operation timed out')
             self.proc.stdin.write(query)
-            jso = self._read_proc_stdout()
+            jso = self._read_proc_stdout(timeout)
             if self._is_warning(jso):
                 self.logger.warning(jso['warning'])
                 self.logger.debug('Nothing interesting to return')
@@ -854,7 +855,16 @@ class Burp(Burp1):
             except (UnicodeDecodeError, AttributeError):
                 top = root
 
-        query = self.status('c:{0}:b:{1}:p:{2}\n'.format(name, backup, top))
+        # we know this operation may take a while so we arbitrary increase the
+        # read timeout
+        timeout = None
+        if top == '*':
+            timeout = max(self.timeout, 120)
+
+        query = self.status(
+            'c:{0}:b:{1}:p:{2}\n'.format(name, backup, top),
+            timeout
+        )
         if not query:
             return ret
         try:

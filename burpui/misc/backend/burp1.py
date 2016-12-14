@@ -346,7 +346,7 @@ class Burp(BUIbackend):
                 self.logger.error('Cannot guess burp server address')
         return False
 
-    def status(self, query='\n', agent=None):
+    def status(self, query='\n', timeout=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.status`"""
         result = []
         try:
@@ -1089,11 +1089,11 @@ class Burp(BUIbackend):
             return []
         return self.parser.path_expander(path, source, client)
 
-    def delete_client(self, client=None, delcert=False, revoke=False, agent=None):
+    def delete_client(self, client=None, keepconf=False, delcert=False, revoke=False, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.delete_client`"""
         if not client:
             return [[2, "No client provided"]]
-        return self.parser.remove_client(client, delcert, revoke)
+        return self.parser.remove_client(client, keepconf, delcert, revoke)
 
     def clients_list(self, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.clients_list`"""
