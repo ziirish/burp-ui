@@ -129,7 +129,7 @@ Options
 Developer options
 -----------------
 
-Since v0.4.0, `Burp-UI`_ uses the new Flask's *CLI* module. This change brings
+Since *v0.4.0*, `Burp-UI`_ uses the new Flask's *CLI* module. This change brings
 new options to help you debug your development environment:
 
 ::
@@ -168,7 +168,7 @@ Some options are redundant with `Burp-UI`_'s one.
 Example
 -------
 
-By default, the standalone server listens on *127.0.0.1* on port *5000*, if you
+By default, the embedded server listens on *127.0.0.1* on port *5000*, if you
 wish to change this, you would run something like:
 
 ::

@@ -4,7 +4,7 @@ redis:
 
 burpui:
   restart: always
-  image: registry.ziirish.me/ziirish/burp-ui:0.4.0
+  image: registry.ziirish.me/ziirish/burp-ui:0.4.1
   links:
     - redis
   ports:
