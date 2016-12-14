@@ -452,7 +452,10 @@ def create_app(conf=None, verbose=0, logfile=None, gunicorn=True,
     babel.init_app(app)
 
     # Create SQLAlchemy if enabled
-    create_db(app, cli)
+    mcli = cli
+    if unittest:
+        mcli = True
+    create_db(app, mcli)
 
     # We initialize the API
     api.version = __version__
