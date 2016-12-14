@@ -330,7 +330,7 @@ port = 4971
 status_port = 4972
 server = ::1
 password = abcdefgh
-cname = bui
+cname = {0}
 protocol = 1
 pidfile = /tmp/burp.client.pid
 syslog = 0
@@ -341,7 +341,7 @@ server_can_restore = 0
 cross_all_filesystems=0
 ca_burp_ca = /usr/sbin/burp_ca
 ca_csr_dir = /etc/burp/CA-client
-ssl_cert_ca = /etc/burp/ssl_cert_ca-client.pem
+ssl_cert_ca = /etc/burp/ssl_cert_ca-client-{0}.pem
 ssl_cert = /etc/burp/ssl_cert-bui-client.pem
 ssl_key = /etc/burp/ssl_cert-bui-client.key
 ssl_key_password = password
@@ -352,7 +352,7 @@ exclude_fs = tmpfs
 nobackup = .nobackup
 exclude_comp=bz2
 exclude_comp=gz
-"""
+""".format(client)
 
         if dry:
             (_, dest_bconfcli) = tempfile.mkstemp()

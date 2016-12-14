@@ -44,6 +44,15 @@ appStart () {
   perl -i -pe "s#\@BURPUI_CONFIG\@#$BURPUI_CONFIG#" /etc/gunicorn.d/burp-ui
   perl -i -pe "s#\@BURPUI_VERBOSE\@#$BURPUI_VERBOSE#" /etc/gunicorn.d/burp-ui
 
+  # pre-generate burp certs because of https://github.com/grke/burp/issues/512
+  TMPFILE=$(mktemp)
+  /usr/sbin/burp -c $BURP_CLIENT_CONFIG -a l 2>&1 >$TMPFILE
+  for file in $(grep "Could not find ssl" $TMPFILE | cut -d' ' -f8 | sed "s/:$//")
+  do
+    chgrp burpui $file
+    chmod g+rw $file
+  done
+
   echo "Starting crond..."
   supervisorctl start cron >/dev/null
 
