@@ -10,6 +10,14 @@ For a complete list of changes, you may refer to the
 v0.4.0
 ------
 
+- **Breaking** - Due to the use of the new Flask's embedded server, it is no
+  longer possible to serve the application over SSL (HTTPS) anymore from within
+  the Flask's server. You'll need to use a dedicated application server for this
+  purpose such as `gunicorn <gunicorn.html>`_ or a reverse-proxy.
+
+  Or you can use the ``python -m burpui -m legacy [--help]`` command that
+  **SHOULD** be backward compatible (but note that no further support will be
+  provided since it is not the Flask's default behavior anymore).
 - **Breaking** - The database schema evolved between v0.3.0 and v0.4.0. In order
   to apply these modifications, you **MUST** run the ``bui-manage db upgrade``
   command before restarting your `Burp-UI`_ application (if you are using
@@ -22,8 +30,7 @@ v0.4.0
   burp-ui configuration anymore with ``login = password`` but you should now use
   the `bui-manage <manage.html>`__ command instead.
 - **Breaking** - The default *version* setting has been set to ``2`` instead of
-  ``1`` since burp-2.0.52 should become the stable release by the end of the
-  year.
+  ``1`` since burp-2.0.52 is now the stable release.
 - **New** - The ``bui-manage`` tool can now help you setup both `Burp`_ and
   `Burp-UI`_.
 

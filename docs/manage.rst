@@ -178,6 +178,10 @@ writable.
     guarantee to be able to support it out of the docker context.
 
 
+.. note::
+    This script only supports Burp 2.0.x.
+
+
 The docker image uses this script like this:
 
 ::

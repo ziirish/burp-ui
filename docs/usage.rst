@@ -35,20 +35,8 @@ The `burpui.cfg`_ configuration file contains a ``[Global]`` section as follow:
 ::
 
     [Global]
-    # On which port is the application listening
-    port = 5000
-    # On which address is the application listening
-    # '::' is the default for all IPv6
-    # set it to '0.0.0.0' if you want to listen on all IPv4 addresses
-    bind = ::
-    # enable SSL
-    ssl = false
-    # ssl cert
-    sslcert = /etc/burp/ssl_cert-server.pem
-    # ssl key
-    sslkey = /etc/burp/ssl_cert-server.key
     # burp server version 1 or 2
-    version = 1
+    version = 2
     # Handle multiple bui-servers or not
     # If set to 'false', you will need to declare at least one 'Agent' section (see
     # bellow)
@@ -73,14 +61,6 @@ The `burpui.cfg`_ configuration file contains a ``[Global]`` section as follow:
 
 Each option is commented, but here is a more detailed documentation:
 
-- *port*: On which port is `Burp-UI`_ listening. This option is ignored when
-  using `Gunicorn`_.
-- *bind*: On which address is `Burp-UI`_ listening. This option is ignored when
-  using `Gunicorn`_.
-- *ssl*: Whether to enable SSL or not. This option is ignored when using
-  `Gunicorn`_.
-- *sslcert*: SSL certificate to use when SSL support is enabled.
-- *sslkey*: SSL key to use when SSL support is enabled.
 - *version*: What version of `Burp`_ this `Burp-UI`_ instance manages. Can
   either be *1* or *2*. This parameter determines which backend is loaded at
   runtime.
@@ -639,7 +619,6 @@ Here are the default grants:
 
 
 .. _Burp: http://burp.grke.org/
-.. _Gunicorn: http://gunicorn.org/
 .. _Burp-UI: https://git.ziirish.me/ziirish/burp-ui
 .. _burpui.cfg: https://git.ziirish.me/ziirish/burp-ui/blob/master/share/burpui/etc/burpui.sample.cfg
 .. _bui-agent: buiagent.html
