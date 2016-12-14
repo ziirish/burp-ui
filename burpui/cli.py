@@ -53,6 +53,12 @@ if app.config['WITH_SQL']:
 
 
 @app.cli.command()
+def legacy():
+    """Legacy server for backward compatibility"""
+    app.manual_run()
+
+
+@app.cli.command()
 @click.option('-b', '--backend', default='BASIC',
               help='User Backend (default is BASIC).')
 @click.option('-p', '--password', help='Password to assign to user.',
