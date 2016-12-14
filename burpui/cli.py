@@ -235,7 +235,8 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database, dry):
 
     if redis:
         try:
-            import redis  # noqa
+            # detect missing modules
+            import redis as redis_client  # noqa
             import celery  # noqa
             if ('redis' not in app.conf.options['Production'] or
                 'redis' in app.conf.options['Production'] and
