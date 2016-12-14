@@ -187,6 +187,8 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database, dry):
         )
         sys.exit(1)
 
+    app.load_modules()
+
     from .misc.parser.utils import Config
     from .app import get_redis_server
     import difflib

@@ -178,57 +178,6 @@ class BUIServer(Flask):
             'auth',
             'string_lower_list'
         )
-        if self.auth and 'none' not in self.auth and not cli:
-            try:
-                self.uhandler = UserAuthHandler(self)
-            except Exception as e:
-                self.logger.critical(
-                    'Import Exception, module \'{0}\': {1}'.format(
-                        self.auth,
-                        str(e)
-                    )
-                )
-                raise e
-            self.acl_engine = self.config['BUI_ACL'] = self.conf.safe_get(
-                'acl'
-            )
-        else:
-            self.config['LOGIN_DISABLED'] = True
-            # No login => no ACL
-            self.acl_engine = self.config['BUI_ACL'] = 'none'
-            self.auth = self.config['BUI_AUTH'] = 'none'
-
-        if self.acl_engine and self.acl_engine.lower() != 'none' and not cli:
-            try:
-                # Try to load submodules from our current environment
-                # first
-                sys.path.insert(
-                    0,
-                    os.path.dirname(os.path.abspath(__file__))
-                )
-                mod = __import__(
-                    'burpui.misc.acl.{0}'.format(
-                        self.acl_engine.lower()
-                    ),
-                    fromlist=['ACLloader']
-                )
-                ACLloader = mod.ACLloader
-                self.acl_handler = ACLloader(self)
-                # for development purpose only
-                from .misc.acl.interface import BUIacl
-                self.acl = BUIacl
-                self.acl = self.acl_handler.acl
-            except Exception as e:
-                self.logger.critical(
-                    'Import Exception, module \'{0}\': {1}'.format(
-                        self.acl_engine,
-                        str(e)
-                    )
-                )
-                raise e
-        else:
-            self.acl_handler = False
-            self.acl = False
 
         # UI options
         self.config['REFRESH'] = self.conf.safe_get(
@@ -329,7 +278,6 @@ class BUIServer(Flask):
         self.logger.info('refresh: {}'.format(self.config['REFRESH']))
         self.logger.info('liverefresh: {}'.format(self.config['LIVEREFRESH']))
         self.logger.info('auth: {}'.format(self.auth))
-        self.logger.info('acl: {}'.format(self.acl_engine))
         self.logger.info('celery: {}'.format(self.use_celery))
         self.logger.info('redis: {}'.format(self.redis))
         self.logger.info('database: {}'.format(self.database))
@@ -337,9 +285,65 @@ class BUIServer(Flask):
         self.logger.info('with Celery: {}'.format(self.config['WITH_CELERY']))
         self.logger.info('demo: {}'.format(self.config['BUI_DEMO']))
 
-        if cli:
-            self.init = True
-            return
+        self.init = True
+        if not cli:
+            self.load_modules()
+
+    def load_modules(self):
+        if self.auth and 'none' not in self.auth:
+            try:
+                self.uhandler = UserAuthHandler(self)
+            except Exception as e:
+                self.logger.critical(
+                    'Import Exception, module \'{0}\': {1}'.format(
+                        self.auth,
+                        str(e)
+                    )
+                )
+                raise e
+            self.acl_engine = self.config['BUI_ACL'] = self.conf.safe_get(
+                'acl'
+            )
+            self.config['LOGIN_DISABLED'] = False
+        else:
+            self.config['LOGIN_DISABLED'] = True
+            # No login => no ACL
+            self.acl_engine = self.config['BUI_ACL'] = 'none'
+            self.auth = self.config['BUI_AUTH'] = 'none'
+
+        if self.acl_engine and self.acl_engine.lower() != 'none':
+            try:
+                # Try to load submodules from our current environment
+                # first
+                sys.path.insert(
+                    0,
+                    os.path.dirname(os.path.abspath(__file__))
+                )
+                mod = __import__(
+                    'burpui.misc.acl.{0}'.format(
+                        self.acl_engine.lower()
+                    ),
+                    fromlist=['ACLloader']
+                )
+                ACLloader = mod.ACLloader
+                self.acl_handler = ACLloader(self)
+                # for development purpose only
+                from .misc.acl.interface import BUIacl
+                self.acl = BUIacl
+                self.acl = self.acl_handler.acl
+            except Exception as e:
+                self.logger.critical(
+                    'Import Exception, module \'{0}\': {1}'.format(
+                        self.acl_engine,
+                        str(e)
+                    )
+                )
+                raise e
+        else:
+            self.acl_handler = False
+            self.acl = False
+
+        self.logger.info('acl: {}'.format(self.acl_engine))
 
         if self.standalone:
             module = 'burpui.misc.backend.burp{0}'.format(self.vers)
@@ -365,8 +369,6 @@ class BUIServer(Flask):
                 )
             )
             sys.exit(2)
-
-        self.init = True
 
     def manual_run(self):
         """The :func:`burpui.server.BUIServer.manual_run` functions is used to
