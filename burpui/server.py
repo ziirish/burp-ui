@@ -108,7 +108,7 @@ class BUIServer(Flask):
     def logger(self):
         return self.builogger
 
-    def setup(self, conf=None, unittest=False):
+    def setup(self, conf=None, unittest=False, cli=False):
         """The :func:`burpui.server.BUIServer.setup` functions is used to setup
         the whole server by parsing the configuration file and loading the
         different backends.
@@ -116,9 +116,12 @@ class BUIServer(Flask):
         :param conf: Path to a configuration file
         :type conf: str
 
-        :param unittest: Wether we are unittesting or not (used to avoid burp2
+        :param unittest: Whether we are unittesting or not (used to avoid burp2
                          strict requirements checks)
         :type unittest: bool
+
+        :param cli: Whether we are in cli mode or not
+        :type cli: bool
         """
         self.sslcontext = None
         if not conf:
@@ -175,7 +178,7 @@ class BUIServer(Flask):
             'auth',
             'string_lower_list'
         )
-        if self.auth and 'none' not in self.auth:
+        if self.auth and 'none' not in self.auth and not cli:
             try:
                 self.uhandler = UserAuthHandler(self)
             except Exception as e:
@@ -195,7 +198,7 @@ class BUIServer(Flask):
             self.acl_engine = self.config['BUI_ACL'] = 'none'
             self.auth = self.config['BUI_AUTH'] = 'none'
 
-        if self.acl_engine and self.acl_engine.lower() != 'none':
+        if self.acl_engine and self.acl_engine.lower() != 'none' and not cli:
             try:
                 # Try to load submodules from our current environment
                 # first
@@ -333,6 +336,10 @@ class BUIServer(Flask):
         self.logger.info('with SQL: {}'.format(self.config['WITH_SQL']))
         self.logger.info('with Celery: {}'.format(self.config['WITH_CELERY']))
         self.logger.info('demo: {}'.format(self.config['BUI_DEMO']))
+
+        if cli:
+            self.init = True
+            return
 
         if self.standalone:
             module = 'burpui.misc.backend.burp{0}'.format(self.vers)
