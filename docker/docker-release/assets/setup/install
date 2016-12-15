@@ -6,6 +6,7 @@ SETUP_DIR="/app/setup"
 CONFIG_DIR="${SETUP_DIR}/config"
 BURPUI="https://burpui.ziirish.me/builds/burp-ui.dev.tar.gz"
 
+apt-get update
 DEBIAN_FRONTEND=noninteractive apt-get install -y wget python2.7-dev git python-pip libffi-dev
 
 echo "deb http://ziirish.info/repos/debian/jessie zi-latest main" >/etc/apt/sources.list.d/ziirish.list
@@ -23,7 +24,6 @@ git submodule update --init
 cd
 
 DEBIAN_FRONTEND=noninteractive apt-get remove -y python-cffi
-apt-get update
 DEBIAN_FRONTEND=noninteractive apt-get install -y libssl-dev burp-client
 
 # Install burp-ui
