@@ -406,7 +406,7 @@ class BurpuiRedisTestCase(TestCase):
     @patch('redis.Redis', mock_redis_client)
     def create_app(self):
         conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test8.cfg')
-        bui = BUIinit(conf, False, None, False, unittest=True, cli=True)
+        bui = BUIinit(conf, False, None, False, unittest=True)
         bui.config['TESTING'] = True
         bui.config['LIVESERVER_PORT'] = 5001
         bui.config['WTF_CSRF_ENABLED'] = False

@@ -34,6 +34,22 @@ can play with:
              don't change the settings the default value will be 'none' and your
              cookies won't be secured.
 
+
+Advanced usage
+--------------
+
+`Gunicorn`_ supports further settings (see its `documentation
+<http://docs.gunicorn.org/en/stable/>`_ for details).
+For instance, you would probably like to use the ``-c`` flag with the sample
+configuration file bundled with `Burp-UI`_ in *contrib/gunicorn/burpui_config.py*.
+
+Usage example:
+
+::
+
+    gunicorn -c burpui_config.py 'burpui:create_app(conf="/etc/burp/burpui.cfg",logfile="/var/log/gunicorn/burp-ui_info.log")'
+
+
 Daemon
 ------
 

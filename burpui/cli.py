@@ -28,8 +28,8 @@ if VERBOSE:
         VERBOSE = 0
 
 # UNITTEST is used to skip the burp-2 requirements for modes != server
-UNITTEST = os.environ.get('BUI_MODE') not in ['server', 'manage', 'celery']
-CLI = os.environ.get('BUI_MODE') != 'server'
+UNITTEST = os.environ.get('BUI_MODE') not in ['server', 'manage', 'celery', 'legacy']
+CLI = os.environ.get('BUI_MODE') not in ['server', 'legacy']
 
 app = create_app(
     conf=os.environ.get('BUI_CONFIG'),
@@ -53,6 +53,12 @@ if app.config['WITH_SQL']:
 
 
 @app.cli.command()
+def legacy():
+    """Legacy server for backward compatibility"""
+    app.manual_run()
+
+
+@app.cli.command()
 @click.option('-b', '--backend', default='BASIC',
               help='User Backend (default is BASIC).')
 @click.option('-p', '--password', help='Password to assign to user.',
@@ -66,6 +72,8 @@ if app.config['WITH_SQL']:
 @click.argument('name')
 def create_user(backend, password, ask, verbose, name):
     """Create a new user."""
+    app.load_modules(False)
+
     click.echo(click.style('[*] Adding \'{}\' user...'.format(name), fg='blue'))
     try:
         handler = getattr(app, 'uhandler')
@@ -181,6 +189,8 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database, dry):
         )
         sys.exit(1)
 
+    app.load_modules(False)
+
     from .misc.parser.utils import Config
     from .app import get_redis_server
     import difflib
@@ -227,7 +237,8 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database, dry):
 
     if redis:
         try:
-            import redis  # noqa
+            # detect missing modules
+            import redis as redis_client  # noqa
             import celery  # noqa
             if ('redis' not in app.conf.options['Production'] or
                 'redis' in app.conf.options['Production'] and
@@ -321,7 +332,7 @@ port = 4971
 status_port = 4972
 server = ::1
 password = abcdefgh
-cname = bui
+cname = {0}
 protocol = 1
 pidfile = /tmp/burp.client.pid
 syslog = 0
@@ -332,7 +343,7 @@ server_can_restore = 0
 cross_all_filesystems=0
 ca_burp_ca = /usr/sbin/burp_ca
 ca_csr_dir = /etc/burp/CA-client
-ssl_cert_ca = /etc/burp/ssl_cert_ca-client.pem
+ssl_cert_ca = /etc/burp/ssl_cert_ca-client-{0}.pem
 ssl_cert = /etc/burp/ssl_cert-bui-client.pem
 ssl_key = /etc/burp/ssl_cert-bui-client.key
 ssl_key_password = password
@@ -343,7 +354,7 @@ exclude_fs = tmpfs
 nobackup = .nobackup
 exclude_comp=bz2
 exclude_comp=gz
-"""
+""".format(client)
 
         if dry:
             (_, dest_bconfcli) = tempfile.mkstemp()

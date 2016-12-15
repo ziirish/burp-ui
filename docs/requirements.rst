@@ -59,17 +59,6 @@ install them using the following command:
     pip install "burp-ui[local_authentication]"
 
 
-SSL
----
-
-If you would like to use SSL, you will need the ``python-openssl`` package.
-You can install the python package using the following command:
-
-::
-
-    pip install "burp-ui[ssl]"
-
-
 Redis
 -----
 

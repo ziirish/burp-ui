@@ -76,7 +76,7 @@ class Parser(Doc):
 
     @property
     def clients_conf(self):
-        for client, conf in iteritems(self._client_conf):
+        for client, conf in iteritems(self._clients_conf):
             if conf.changed:
                 conf.parse(True)
         return self._clients_conf
@@ -85,9 +85,9 @@ class Parser(Doc):
         """Force cache refresh"""
         # empty all the caches
         if purge:
-            self._server_conf = {}
-            self._client_conf = {}
-            self._clients_conf = {}
+            self._server_conf.clear()
+            self._client_conf.clear()
+            self._clients_conf.clear()
         self._list_clients(True)
 
     def _load_conf_srv(self):

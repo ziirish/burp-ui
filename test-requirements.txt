@@ -3,7 +3,6 @@ nose
 coverage
 mock
 mockredispy
-# extensions requirements
 Flask-Session
 Celery
 redis
