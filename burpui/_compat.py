@@ -33,9 +33,10 @@ def patch_item(module, attr, newitem, newmodule=None):
     olditem = getattr(module, attr, NONE)
     if olditem is not NONE:
         saved.setdefault(module.__name__, {}).setdefault(attr, olditem)
-        if newmodule:
+        if newmodule and not getattr(newmodule, 'ori_' + attr, None):
             setattr(newmodule, 'ori_' + attr, olditem)
-    setattr(module, attr, newitem)
+    if not getattr(newmodule, 'ori_' + attr, None):
+        setattr(module, attr, newitem)
 
 
 def patch_module(name, items=None):

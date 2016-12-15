@@ -1,6 +1,19 @@
 Changelog
 =========
 
+0.4.1 (12/15/2016)
+------------------
+
+- **BREAKING**: Use the new Flask's embedded server by default means no more SSL (HTTPS) support without a dedicated application server
+- Fix: issue `#156 <https://git.ziirish.me/ziirish/burp-ui/issues/156>`_
+- Fix: issue `#157 <https://git.ziirish.me/ziirish/burp-ui/issues/157>`_
+- Fix: issue `#165 <https://git.ziirish.me/ziirish/burp-ui/issues/165>`_
+- Fix: issue `#176 <https://git.ziirish.me/ziirish/burp-ui/issues/176>`_
+- Fix: issue `#181 <https://git.ziirish.me/ziirish/burp-ui/issues/181>`_
+- Fix: issue `#182 <https://git.ziirish.me/ziirish/burp-ui/issues/182>`_
+- Various bugfix
+- `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/v0.4.0...v0.4.1>`__
+
 0.4.0 (11/23/2016)
 ------------------
 

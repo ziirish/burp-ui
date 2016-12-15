@@ -226,14 +226,20 @@ class BUIcompress():
             self.arch.add(path, arcname=arcname, recursive=False)
 
 
-def sanitize_string(string):
+def sanitize_string(string, strict=True):
     """Return a 'safe' version of the string (ie. remove malicious chars like
     '\n')
 
     :param string: String to escape
     :type string: str
     """
-    return string.encode('unicode_escape').decode('utf-8')
+    if strict:
+        return string.encode('unicode_escape').decode('utf-8')
+    else:
+        import re
+        ret = repr(string).replace('\\\\', '\\')
+        ret = re.sub(r"^u?'(.*)'$", r"\1", ret)
+        return ret.decode('utf-8')
 
 
 def lookup_file(name=None, guess=True, directory=False, check=True):

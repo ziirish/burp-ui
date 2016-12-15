@@ -3,9 +3,9 @@ nose
 coverage
 mock
 mockredispy
-# extensions requirements
 Flask-Session
 Celery
 redis
 Flask-SQLAlchemy
 Flask-Migrate
+sqlalchemy_utils

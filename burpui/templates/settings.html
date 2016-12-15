@@ -165,7 +165,7 @@
                 </div>
               </fieldset>
               <fieldset>
-                <legend id="includes_source">Includes</legend>
+                <legend id="includes_source">Source files</legend>
                 <div class="well">
                   <div class="form-group" ng-repeat="(i, val) in includes track by $index" ng-class="{'has-error': inc_invalid[$index] }">
                     <label for="include-{{ $index }}" class="col-lg-3 control-label">source</label>
@@ -176,7 +176,7 @@
                     <div class="col-lg-2 btn-toolbar">
                       <button type="button" class="btn btn-danger" ng-click="removeIncludes($index)"><span class="glyphicon glyphicon-minus"></span></button>
                       <div class="btn-group">
-                        <button class="btn btn-info" type="button" ng-disabled="!includes[i]"><span class="glyphicon glyphicon-pencil"></span></button>
+                        <button class="btn btn-info" type="button" ng-disabled="!includes[i]" data-toggle="dropdown" ng-click="expandPath($index)"><span class="glyphicon glyphicon-pencil"></span></button>
                         <button aria-expanded="false" aria-haspopup="true" data-toggle="dropdown" class="btn btn-info dropdown-toggle" type="button" ng-click="expandPath($index)" ng-disabled="!includes[i]">
                           <span class="caret"></span>
                         </button>
@@ -188,7 +188,7 @@
                     <div class="col-lg-5" ng-if="$first" ng-bind-html="::server_doc['.']"></div>
                   </div>
                   <div class="form-group">
-                    <label for="btn-add-include" class="col-lg-3 control-label">Add include</label>
+                    <label for="btn-add-include" class="col-lg-3 control-label">source</label>
                     <div class="col-lg-9">
                       <button type="button" class="btn btn-success btn-primary" ng-click="clickAddIncludes()"><span class="glyphicon glyphicon-plus"></span></button>
                     </div>
@@ -206,6 +206,7 @@
                     <button type="button" class="btn btn-danger" ng-click="deleteClient()">Remove '{{ client }}'</button>
                     <button class="btn btn-danger dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
                     <ul class="dropdown-menu browse">
+                      <li><label for="keepconf">Do not remove the configuration:&nbsp;</label><input type="checkbox" id="keepconf" name="keepconf"></li>
                       <li><label for="delcert">Remove associated certificate:&nbsp;</label><input type="checkbox" id="delcert" name="delcert"></li>
                       <li><label for="revoke">Revoke associated certificate:&nbsp;</label><input type="checkbox" id="revoke" name="revoke" ng-disabled="!revokeEnabled"></li>
                   </div>

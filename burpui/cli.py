@@ -16,27 +16,29 @@ import subprocess
 
 from .app import create_app
 
-DEBUG = os.environ.get('BUI_DEBUG')
+DEBUG = os.environ.get('BUI_DEBUG') or os.environ.get('FLASK_DEBUG') or False
 if DEBUG and DEBUG.lower() in ['true', 'yes', '1']:
     DEBUG = True
-else:
-    DEBUG = False
 
-VERBOSE = os.environ.get('BUI_VERBOSE')
+VERBOSE = os.environ.get('BUI_VERBOSE') or 0
 if VERBOSE:
     try:
         VERBOSE = int(VERBOSE)
     except ValueError:
         VERBOSE = 0
-else:
-    VERBOSE = 0
+
+# UNITTEST is used to skip the burp-2 requirements for modes != server
+UNITTEST = os.environ.get('BUI_MODE') not in ['server', 'manage', 'celery', 'legacy']
+CLI = os.environ.get('BUI_MODE') not in ['server', 'legacy']
 
 app = create_app(
     conf=os.environ.get('BUI_CONFIG'),
     verbose=VERBOSE,
     logfile=os.environ.get('BUI_LOGFILE'),
     debug=DEBUG,
-    gunicorn=False
+    gunicorn=False,
+    unittest=UNITTEST,
+    cli=CLI
 )
 
 if app.config['WITH_SQL']:
@@ -48,6 +50,12 @@ if app.config['WITH_SQL']:
         migrate = Migrate(app, db, mig_dir)
     else:
         migrate = Migrate(app, db)
+
+
+@app.cli.command()
+def legacy():
+    """Legacy server for backward compatibility"""
+    app.manual_run()
 
 
 @app.cli.command()
@@ -64,6 +72,8 @@ if app.config['WITH_SQL']:
 @click.argument('name')
 def create_user(backend, password, ask, verbose, name):
     """Create a new user."""
+    app.load_modules(False)
+
     click.echo(click.style('[*] Adding \'{}\' user...'.format(name), fg='blue'))
     try:
         handler = getattr(app, 'uhandler')
@@ -179,6 +189,8 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database, dry):
         )
         sys.exit(1)
 
+    app.load_modules(False)
+
     from .misc.parser.utils import Config
     from .app import get_redis_server
     import difflib
@@ -224,61 +236,88 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database, dry):
     _edit_conf('bconfsrv', bconfsrv, 'burpconfsrv')
 
     if redis:
-        if ('redis' not in app.conf.options['Production'] or
-            'redis' in app.conf.options['Production'] and
-            app.conf.options['Production']['redis'] != redis) and \
-                app.redis != redis:
-            app.conf.options['Production']['redis'] = redis
+        try:
+            # detect missing modules
+            import redis as redis_client  # noqa
+            import celery  # noqa
+            if ('redis' not in app.conf.options['Production'] or
+                'redis' in app.conf.options['Production'] and
+                app.conf.options['Production']['redis'] != redis) and \
+                    app.redis != redis:
+                app.conf.options['Production']['redis'] = redis
 
-        rhost, rport, _ = get_redis_server(app)
-        DEVNULL = open(os.devnull, 'wb')
-        ret = subprocess.call(['/bin/nc', '-z', '-w5', str(rhost), str(rport)], stdout=DEVNULL, stderr=subprocess.STDOUT)
+            rhost, rport, _ = get_redis_server(app)
+            DEVNULL = open(os.devnull, 'wb')
+            ret = subprocess.call(['/bin/nc', '-z', '-w5', str(rhost), str(rport)], stdout=DEVNULL, stderr=subprocess.STDOUT)
 
-        if ret == 0:
-            app.conf.options['Production']['celery'] = 'true'
+            if ret == 0:
+                app.conf.options['Production']['celery'] = 'true'
 
-            app.conf.options['Production']['storage'] = 'redis'
+                app.conf.options['Production']['storage'] = 'redis'
 
-            app.conf.options['Production']['cache'] = 'redis'
-        else:
+                app.conf.options['Production']['cache'] = 'redis'
+            else:
+                click.echo(
+                    click.style(
+                        'Unable to contact the redis server, disabling it',
+                        fg='yellow'
+                    )
+                )
+                app.conf.options['Production']['storage'] = 'default'
+                app.conf.options['Production']['cache'] = 'default'
+                if app.use_celery:
+                    app.conf.options['Production']['celery'] = 'false'
+
+            app.conf.options.write()
+            app.conf._refresh(True)
+        except ImportError:
             click.echo(
                 click.style(
-                    'Unable to contact the redis server, disabling it',
+                    'Unable to activate redis & celery. Did you ran the '
+                    '\'pip install burp-ui[celery]\' and '
+                    '\'pip install burp-ui[gunicorn-extra]\' commands first?',
                     fg='yellow'
                 )
             )
-            app.conf.options['Production']['storage'] = 'default'
-            app.conf.options['Production']['cache'] = 'default'
-            if app.use_celery:
-                app.conf.options['Production']['celery'] = 'false'
-
-        app.conf.options.write()
-        app.conf._refresh(True)
 
     if database:
-        if ('database' not in app.conf.options['Production'] or
-            'database' in app.conf.options['Production'] and
-            app.conf.options['Production']['database'] != database) and \
-                app.database != database:
-            app.conf.options['Production']['database'] = database
-            app.conf.options.write()
-            app.conf._refresh(True)
+        try:
+            from .ext.sql import db  # noqa
+            if ('database' not in app.conf.options['Production'] or
+                'database' in app.conf.options['Production'] and
+                app.conf.options['Production']['database'] != database) and \
+                    app.database != database:
+                app.conf.options['Production']['database'] = database
+                app.conf.options.write()
+                app.conf._refresh(True)
+        except ImportError:
+            click.echo(
+                click.style(
+                    'It looks like some dependencies are missing. Did you ran '
+                    'the \'pip install burp-ui[sql]\' command first?',
+                    fg='yellow'
+                )
+            )
 
     if dry:
         temp = app.conf.options.filename
         app.conf.options.filename = orig
         after = []
         try:
-            with open(temp) as fil:
-                after = fil.readlines()
-            os.unlink(temp)
+            if not os.path.exists(temp) or os.path.getsize(temp) == 0:
+                after = conf_orig
+            else:
+                with open(temp) as fil:
+                    after = fil.readlines()
+                os.unlink(temp)
         except:
             pass
         diff = difflib.unified_diff(conf_orig, after, fromfile=orig, tofile='{}.new'.format(orig))
         out = ''
         for line in diff:
             out += _color_diff(line)
-        click.echo_via_pager(out)
+        if out:
+            click.echo_via_pager(out)
 
     bconfcli = bconfcli or app.conf.options['Burp2'].get('bconfcli') or \
         getattr(app.client, 'burpconfcli')
@@ -293,7 +332,7 @@ port = 4971
 status_port = 4972
 server = ::1
 password = abcdefgh
-cname = bui
+cname = {0}
 protocol = 1
 pidfile = /tmp/burp.client.pid
 syslog = 0
@@ -304,7 +343,7 @@ server_can_restore = 0
 cross_all_filesystems=0
 ca_burp_ca = /usr/sbin/burp_ca
 ca_csr_dir = /etc/burp/CA-client
-ssl_cert_ca = /etc/burp/ssl_cert_ca.pem
+ssl_cert_ca = /etc/burp/ssl_cert_ca-client-{0}.pem
 ssl_cert = /etc/burp/ssl_cert-bui-client.pem
 ssl_key = /etc/burp/ssl_cert-bui-client.key
 ssl_key_password = password
@@ -315,7 +354,7 @@ exclude_fs = tmpfs
 nobackup = .nobackup
 exclude_comp=bz2
 exclude_comp=gz
-"""
+""".format(client)
 
         if dry:
             (_, dest_bconfcli) = tempfile.mkstemp()
@@ -324,11 +363,9 @@ exclude_comp=gz
 
     parser = app.client.get_parser()
 
-    confcli = Config()
-    data, path, _ = parser._readfile(dest_bconfcli, insecure=True)
-    parsed = parser._parse_lines(data, path, 'srv')
-    confcli.add_file(parsed, dest_bconfcli)
+    confcli = Config(dest_bconfcli, parser, 'srv')
     confcli.set_default(dest_bconfcli)
+    confcli.parse()
 
     if confcli.get('cname') != client:
         confcli['cname'] = client
@@ -340,7 +377,8 @@ exclude_comp=gz
             (_, dstfile) = tempfile.mkstemp()
         else:
             dstfile = bconfcli
-        parser.store_conf(confcli, dstfile, insecure=True, source=bconfcli)
+
+        confcli.store(dest=dstfile, insecure=True)
         if dry:
             before = []
             after = []
@@ -365,7 +403,8 @@ exclude_comp=gz
             out = ''
             for line in diff:
                 out += _color_diff(line)
-            click.echo_via_pager(out)
+            if out:
+                click.echo_via_pager(out)
 
     if not os.path.exists(bconfsrv):
         click.echo(
@@ -377,11 +416,9 @@ exclude_comp=gz
         )
         sys.exit(1)
 
-    confsrv = Config()
-    data, path, _ = parser._readfile(bconfsrv, insecure=True)
-    parsed = parser._parse_lines(data, path, 'srv')
-    confsrv.add_file(parsed, bconfsrv)
+    confsrv = Config(bconfsrv, parser, 'srv')
     confsrv.set_default(bconfsrv)
+    confsrv.parse()
 
     if host not in ['::1', '127.0.0.1']:
         bind = confsrv.get('status_address')
@@ -429,7 +466,8 @@ exclude_comp=gz
             (_, dstfile) = tempfile.mkstemp()
         else:
             dstfile = bconfsrv
-        parser.store_conf(confsrv, dstfile, insecure=True, source=bconfsrv)
+
+        confsrv.store(dest=dstfile, insecure=True)
         if dry:
             before = []
             after = []
@@ -448,9 +486,21 @@ exclude_comp=gz
             out = ''
             for line in diff:
                 out += _color_diff(line)
-            click.echo_via_pager(out)
+            if out:
+                click.echo_via_pager(out)
 
-    bconfagent = os.path.join(parser.clientconfdir, client)
+    if confsrv.get('clientconfdir'):
+        bconfagent = os.path.join(confsrv.get('clientconfdir'), client)
+    else:
+        click.echo(
+            click.style(
+                'Unable to find "clientconfdir" option, you will have to '
+                'setup the agent by your own',
+                fg='yellow'
+            )
+        )
+        bconfagent = os.devnull
+
     if not os.path.exists(bconfagent):
 
         agenttpl = """
@@ -463,18 +513,17 @@ password = abcdefgh
         else:
             before = []
             after = ['{}\n'.format(x) for x in agenttpl.splitlines()]
-            diff = difflib.unified_diff(before, after, fromfile='None', tofile=agenttpl)
+            diff = difflib.unified_diff(before, after, fromfile='None', tofile=bconfagent)
             out = ''
             for line in diff:
                 out += _color_diff(line)
-            click.echo_via_pager(out)
+            if out:
+                click.echo_via_pager(out)
 
     else:
-        confagent = Config()
-        data, path, _ = parser._readfile(bconfagent, insecure=True)
-        parsed = parser._parse_lines(data, path, 'cli')
-        confagent.add_file(parsed, bconfagent)
+        confagent = Config(bconfagent, parser, 'cli')
         confagent.set_default(bconfagent)
+        confagent.parse()
 
         if confagent.get('password') != confcli.get('password'):
             click.echo(

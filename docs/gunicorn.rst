@@ -11,8 +11,7 @@ You need to install ``gunicorn`` and ``gevent``:
 
 ::
 
-    pip install gevent
-    pip install gunicorn
+    pip install "burp-ui[gunicorn]"
 
 You will then be able to launch `Burp-UI`_ this way:
 
@@ -34,6 +33,22 @@ can play with:
              The default *magic* value 'random' cannot be used. If you
              don't change the settings the default value will be 'none' and your
              cookies won't be secured.
+
+
+Advanced usage
+--------------
+
+`Gunicorn`_ supports further settings (see its `documentation
+<http://docs.gunicorn.org/en/stable/>`_ for details).
+For instance, you would probably like to use the ``-c`` flag with the sample
+configuration file bundled with `Burp-UI`_ in *contrib/gunicorn/burpui_config.py*.
+
+Usage example:
+
+::
+
+    gunicorn -c burpui_config.py 'burpui:create_app(conf="/etc/burp/burpui.cfg",logfile="/var/log/gunicorn/burp-ui_info.log")'
+
 
 Daemon
 ------
@@ -87,14 +102,14 @@ certificates accordingly:
     progress_counter = 1
     ca_burp_ca = /usr/sbin/burp_ca
     ca_csr_dir = /var/lib/burpui/CA-client
-    ssl_cert_ca = /var/lib/burpui/ssl_cert_ca.pem
+    ssl_cert_ca = /var/lib/burpui/ssl_cert_ca-client.pem
     ssl_cert = /var/lib/burpui/ssl_cert-client.pem
     ssl_key = /var/lib/burpui/ssl_cert-client.key
     ssl_peer_cn = burpserver
     EOF
     # generate the certificates
     burp_ca --name bui-agent1 --ca burpCA --key --request --sign --batch
-    cp /etc/burp/ssl_cert_ca.pem /var/lib/burpui/
+    cp /etc/burp/ssl_cert_ca.pem /var/lib/burpui/ssl_cert_ca-client.pem
     cp -a /etc/burp/CA/bui-agent1.crt /var/lib/burpui/ssl_cert-client.pem
     cp -a /etc/burp/CA/bui-agent1.key /var/lib/burpui/ssl_cert-client.key
     chown -R burpui: /var/lib/burpui/

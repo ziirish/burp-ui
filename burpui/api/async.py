@@ -14,6 +14,7 @@ import struct
 from . import api, cache_key
 from .misc import History
 from .custom import Resource
+from .client import ClientTreeAll, node_fields
 from .clients import RunningBackup, ClientsReport
 from ..exceptions import BUIserverException
 from ..server import BUIServer  # noqa
@@ -208,35 +209,36 @@ def cleanup_expired_sessions():
 
 @celery.task
 def cleanup_restore():
-    tasks = Task.query.filter_by(task='perform_restore').all()
+    tasks = db.session.query(Task).filter(Task.task == 'perform_restore').filter(datetime.utcnow() > Task.expire).all()
+    # tasks = Task.query.filter_by(task='perform_restore').all()
     for rec in tasks:
-        if rec.expire and datetime.utcnow() > rec.expire:
-            logger.info('Task expired: {}'.format(rec))
-            task = perform_restore.AsyncResult(rec.uuid)
-            try:
-                if task.state != 'SUCCESS':
-                    logger.warn(
-                        'Task is not done yet or did not end '
-                        'successfully: {}'.format(task.state)
-                    )
-                    task.revoke(terminate=True)
-                    continue
-                if not task.result:
-                    logger.warn('The task did not return anything')
-                    continue
-                server = task.result.get('server')
-                path = task.result.get('path')
-                if path:
-                    if server:
-                        if not bui.client.del_file(path, agent=server):
-                            logger.warn("'{}' already removed".format(path))
-                    else:
-                        if os.path.isfile(path):
-                            os.unlink(path)
-            finally:
-                db.session.delete(rec)
-                db.session.commit()
-                task.revoke()
+        # if rec.expire and datetime.utcnow() > rec.expire:
+        logger.info('Task expired: {}'.format(rec))
+        task = perform_restore.AsyncResult(rec.uuid)
+        try:
+            if task.state != 'SUCCESS':
+                logger.warn(
+                    'Task is not done yet or did not end '
+                    'successfully: {}'.format(task.state)
+                )
+                task.revoke(terminate=True)
+                continue
+            if not task.result:
+                logger.warn('The task did not return anything')
+                continue
+            server = task.result.get('server')
+            path = task.result.get('path')
+            if path:
+                if server:
+                    if not bui.client.del_file(path, agent=server):
+                        logger.warn("'{}' already removed".format(path))
+                else:
+                    if os.path.isfile(path):
+                        os.unlink(path)
+        finally:
+            db.session.delete(rec)
+            db.session.commit()
+            task.revoke()
 
 
 @celery.task(bind=True)
@@ -302,6 +304,41 @@ def perform_restore(self, client, backup,
         raise Exception(err)
 
     return ret
+
+
+@celery.task(bind=True)
+def load_all_tree(self, client, backup, server=None, user=None):
+    key = 'load_all_tree-{}-{}-{}'.format(client, backup, server)
+    ret = cache.cache.get(key)
+    if ret:
+        return {
+            'client': client,
+            'backup': backup,
+            'server': server,
+            'user': user,
+            'tree': ret
+        }
+
+    lock_name = '{}-{}'.format(self.name, server)
+
+    # TODO: maybe do something with old_lock someday
+    wait_for(lock_name, self.request.id)
+
+    try:
+        ret = ClientTreeAll._get_tree_all(client, backup, server)
+    except BUIserverException as exp:
+        raise Exception(str(exp))
+    finally:
+        release_lock(lock_name)
+
+    cache.cache.set(key, ret, 3600)
+    return {
+        'client': client,
+        'backup': backup,
+        'server': server,
+        'user': user,
+        'tree': ret
+    }
 
 
 def force_scheduling_now():
@@ -879,3 +916,170 @@ class AsyncClientsReport(ClientsReport):
             # redirect anymore if the redirection is problematic
             return redirect(url_for('api.clients_report', server=server))
         return self._get_clients_reports(res, server)
+
+
+@ns.route('/browseall/<name>/<int:backup>',
+          '/<server>/browsall/<name>/<int:backup>',
+          endpoint='async_client_tree_all')
+@ns.doc(
+    params={
+        'server': 'Which server to collect data from when in' +
+                  ' multi-agent mode',
+        'name': 'Client name',
+        'backup': 'Backup number',
+    },
+)
+class AsyncClientTreeAll(Resource):
+    """The :class:`burpui.api.async.AsyncClientTreeAll` resource allows you to
+    retrieve a list of all the files in a given backup through the celery
+    worker.
+
+    This resource is part of the :mod:`burpui.api.client` module.
+
+    An optional ``GET`` parameter called ``serverName`` is supported when
+    running in multi-agent mode.
+    """
+    parser = ns.parser()
+    parser.add_argument(
+        'serverName',
+        help='Which server to collect data from when in multi-agent mode'
+    )
+
+    @ns.expect(parser)
+    @ns.doc(
+        responses={
+            202: 'Accepted',
+            405: 'Method not allowed',
+            403: 'Insufficient permissions',
+            500: 'Internal failure',
+        },
+    )
+    def post(self, server=None, name=None, backup=None):
+        """Launch the tasks that will gather all nodes of a given backup
+
+        **POST** method provided by the webservice.
+
+        This method returns a :mod:`flask.Response` object.
+
+        :param server: Which server to collect data from when in multi-agent
+                       mode
+        :type server: str
+
+        :param name: The client we are working on
+        :type name: str
+
+        :param backup: The backup we are working on
+        :type backup: int
+        """
+        args = self.parser.parse_args()
+        server = server or args.get('serverName')
+
+        if not bui.client.get_attr('batch_list_supported', False, server):
+            self.abort(
+                405,
+                'Sorry, the requested backend does not support this method'
+            )
+
+        # Manage ACL
+        if (bui.acl and
+                (not bui.acl.is_client_allowed(self.username,
+                                               name,
+                                               server) and not
+                 self.is_admin)):
+            self.abort(403, 'Sorry, you are not allowed to view this client')
+
+        task = load_all_tree.apply_async(
+            args=[
+                name,
+                backup,
+                server,
+                self.username
+            ]
+        )
+        return {'id': task.id, 'name': 'load_all_tree'}, 202
+
+
+@ns.route('/browse-status/<task_id>', endpoint='async_browse_status')
+@ns.doc(
+    params={
+        'task_id': 'The task ID to process',
+    }
+)
+class AsyncBrowseStatus(Resource):
+    """The :class:`burpui.api.async.AsyncBrowseStatus` resource allows you to
+    follow a browse task.
+
+    This resource is part of the :mod:`burpui.api.async` module.
+    """
+    @ns.doc(
+        responses={
+            200: 'Success',
+            500: 'Task failed',
+        },
+    )
+    def get(self, task_id):
+        """Returns the state of the given task"""
+        task = load_all_tree.AsyncResult(task_id)
+        if task.state == 'FAILURE':
+            task.revoke()
+            err = str(task.result)
+            self.abort(502, err)
+        if task.state == 'SUCCESS':
+            if not task.result:
+                self.abort(500, 'The task did not return anything')
+            server = task.result.get('server')
+            return {
+                'state': task.state,
+                'location': url_for(
+                    '.async_do_browse_all',
+                    task_id=task_id,
+                    server=server
+                )
+            }
+        return {'state': task.state}
+
+
+@ns.route('/get-browse/<task_id>',
+          '/<server>/get-browse/<task_id>',
+          endpoint='async_do_browse_all')
+@ns.doc(
+    params={
+        'task_id': 'The task ID to process',
+    }
+)
+class AsyncDoBrowseAll(Resource):
+    """The :class:`burpui.api.async.AsyncDoBrowseAll` resource allows you to
+    retrieve the tree generated by the given task.
+
+    This resource is part of the :mod:`burpui.api.async` module.
+    """
+
+    @ns.marshal_list_with(node_fields, code=200, description='Success')
+    @ns.doc(
+        responses={
+            400: 'Incomplete task',
+            403: 'Insufficient permissions',
+            500: 'Task failed',
+        },
+    )
+    def get(self, task_id, server=None):
+        """Returns the generated archive"""
+        task = load_all_tree.AsyncResult(task_id)
+        if task.state != 'SUCCESS':
+            if task.state == 'FAILURE':
+                self.abort(
+                    500,
+                    'Unsuccessful task: {}'.format(task.result.get('error'))
+                )
+            self.abort(400, 'Task not processed yet: {}'.format(task.state))
+
+        user = task.result.get('user')
+        dst_server = task.result.get('server')
+        resp = task.result.get('tree')
+
+        if self.username != user or (dst_server and dst_server != server):
+            self.abort(403, 'Unauthorized access')
+
+        task.revoke()
+
+        return resp

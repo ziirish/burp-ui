@@ -22,21 +22,22 @@ sys.path.insert(0, os.path.join(ROOT, '..'))
 
 def parse_args(mode=True, name=None):
     if not name:
-        name = 'burp-ui'
-    parser = ArgumentParser(prog=name)
+        mname = 'burp-ui'
+    parser = ArgumentParser(prog=mname)
     parser.add_argument('-v', '--verbose', dest='log', help='increase output verbosity (e.g., -vv is more verbose than -v)', action='count')
-    parser.add_argument('-d', '--debug', dest='debug', help='enable debug mode', action='store_true')  # alias for -v
+    parser.add_argument('-d', '--debug', dest='debug', help='enable debug mode', action='store_true')
     parser.add_argument('-V', '--version', dest='version', help='print version and exit', action='store_true')
     parser.add_argument('-c', '--config', dest='config', help='burp-ui configuration file', metavar='<CONFIG>')
     parser.add_argument('-l', '--logfile', dest='logfile', help='output logs in defined file', metavar='<FILE>')
     parser.add_argument('-i', '--migrations', dest='migrations', help='migrations directory', metavar='<MIGRATIONSDIR>')
     parser.add_argument('remaining', nargs=REMAINDER)
     if mode:
-        parser.add_argument('-m', '--mode', dest='mode', help='application mode', metavar='<agent|server|celery|manage>')
+        parser.add_argument('-m', '--mode', dest='mode', help='application mode', metavar='<agent|server|celery|manage|legacy>')
 
     options, unknown = parser.parse_known_args()
-    if mode and options.mode and options.mode not in ['celery', 'manage']:
+    if mode and options.mode and options.mode not in ['celery', 'manage', 'server']:
         options = parser.parse_args()
+        unknown = []
 
     if options.version:
         from burpui.app import __title__, __version__, __release__
@@ -46,44 +47,69 @@ def parse_args(mode=True, name=None):
         print(ver)
         sys.exit(0)
 
-    return options
+    return options, unknown
 
 
 def main():
     """
     Main function
     """
-    options = parse_args(mode=True)
+    options, unknown = parse_args(mode=True)
 
     if not options.mode or options.mode == 'server':
-        server(options)
+        server(options, unknown)
     elif options.mode == 'agent':
         agent(options)
     elif options.mode == 'celery':
         celery()
     elif options.mode == 'manage':
         manage()
+    elif options.mode == 'legacy':
+        legacy(options, unknown)
     else:
         print('Wrong mode!')
         sys.exit(1)
 
 
-def server(options=None):
-    from burpui import create_app
+def server(options=None, unknown=None):
     from burpui.utils import lookup_file
 
+    if unknown is None:
+        unknown = []
     if not options:
-        options = parse_args(mode=False)
+        options, unknown = parse_args(mode=False)
+    env = os.environ
 
     if options.config:
         conf = lookup_file(options.config, guess=False)
     else:
-        conf = lookup_file()
+        if 'BUI_CONFIG' in env:
+            conf = env['BUI_CONFIG']
+        else:
+            conf = lookup_file()
     check_config(conf)
 
-    server = create_app(conf, options.log, options.logfile, False, debug=options.debug)
+    if os.path.isdir('burpui'):
+        env['FLASK_APP'] = 'burpui/cli.py'
+    else:
+        env['FLASK_APP'] = 'burpui.cli'
+    env['BUI_CONFIG'] = conf
+    env['BUI_VERBOSE'] = str(options.log)
+    if options.logfile:
+        env['BUI_LOGFILE'] = options.logfile
+    if options.debug:
+        env['BUI_DEBUG'] = '1'
+        env['FLASK_DEBUG'] = '1'
+    env['BUI_MODE'] = 'server'
 
-    server.manual_run()
+    args = [
+        'flask',
+        'run'
+    ]
+    args += unknown
+    args += [x for x in options.remaining if x != '--']
+
+    os.execvpe(args[0], args, env)
 
 
 def agent(options=None):
@@ -96,7 +122,7 @@ def agent(options=None):
     patch_json()
 
     if not options:
-        options = parse_args(mode=False, name='bui-agent')
+        options, _ = parse_args(mode=False, name='bui-agent')
 
     conf = ['buiagent.cfg', 'buiagent.sample.cfg']
     if options.config:
@@ -114,7 +140,7 @@ def celery():
 
     parser = ArgumentParser('bui-celery')
     parser.add_argument('-c', '--config', dest='config', help='burp-ui configuration file', metavar='<CONFIG>')
-    parser.add_argument('-m', '--mode', dest='mode', help='application mode', metavar='<agent|server|worker|manage>')
+    parser.add_argument('-m', '--mode', dest='mode', help='application mode', metavar='<agent|server|worker|manage|legacy>')
     parser.add_argument('remaining', nargs=REMAINDER)
 
     options, unknown = parser.parse_known_args()
@@ -127,22 +153,24 @@ def celery():
             conf = env['BUI_CONFIG']
         else:
             conf = lookup_file()
-    check_config(conf)
 
     # make conf path absolute
     if not conf.startswith('/'):
         curr = os.getcwd()
         conf = os.path.join(curr, conf)
 
+    check_config(conf)
+
     os.chdir(ROOT)
 
+    env['BUI_MODE'] = 'celery'
     env['BUI_CONFIG'] = conf
 
     args = [
         'celery',
         'worker',
         '-A',
-        'celery_worker.celery'
+        'worker.celery'
     ]
     args += unknown
     args += [x for x in options.remaining if x != '--']
@@ -156,7 +184,7 @@ def manage():
     parser = ArgumentParser('bui-manage')
     parser.add_argument('-c', '--config', dest='config', help='burp-ui configuration file', metavar='<CONFIG>')
     parser.add_argument('-i', '--migrations', dest='migrations', help='migrations directory', metavar='<MIGRATIONSDIR>')
-    parser.add_argument('-m', '--mode', dest='mode', help='application mode', metavar='<agent|server|worker|manage>')
+    parser.add_argument('-m', '--mode', dest='mode', help='application mode', metavar='<agent|server|worker|manage|legacy>')
     parser.add_argument('remaining', nargs=REMAINDER)
 
     options, unknown = parser.parse_known_args()
@@ -176,6 +204,7 @@ def manage():
     else:
         migrations = lookup_file('migrations', directory=True)
 
+    env['BUI_MODE'] = 'manage'
     env['BUI_CONFIG'] = conf
     if migrations:
         env['BUI_MIGRATIONS'] = migrations
@@ -186,6 +215,47 @@ def manage():
 
     args = [
         'flask'
+    ]
+    args += unknown
+    args += [x for x in options.remaining if x != '--']
+
+    os.execvpe(args[0], args, env)
+
+
+def legacy(options=None, unknown=None):
+    from burpui.utils import lookup_file
+
+    if unknown is None:
+        unknown = []
+    if not options:
+        options, unknown = parse_args(mode=False, name='burpui-legacy')
+    env = os.environ
+
+    if options.config:
+        conf = lookup_file(options.config, guess=False)
+    else:
+        if 'BUI_CONFIG' in env:
+            conf = env['BUI_CONFIG']
+        else:
+            conf = lookup_file()
+    check_config(conf)
+
+    env['BUI_MODE'] = 'legacy'
+    env['BUI_CONFIG'] = conf
+    if os.path.isdir('burpui'):
+        env['FLASK_APP'] = 'burpui/cli.py'
+    else:
+        env['FLASK_APP'] = 'burpui.cli'
+    env['BUI_VERBOSE'] = str(options.log)
+    if options.logfile:
+        env['BUI_LOGFILE'] = options.logfile
+    if options.debug:
+        env['BUI_DEBUG'] = '1'
+        env['FLASK_DEBUG'] = '1'
+
+    args = [
+        'flask',
+        'legacy'
     ]
     args += unknown
     args += [x for x in options.remaining if x != '--']

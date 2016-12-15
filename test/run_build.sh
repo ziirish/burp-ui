@@ -14,15 +14,18 @@ echo "test requirements"
 
 pip install --upgrade pip
 pip install -r requirements.txt
+pip install wheel
 
 echo "building dist"
 [ "$(sed 's/\([[:digit:]]*\)\..*$/\1/' <<<$VERSION)" -eq 2 ] && $PYTHON setup.py sdist bdist_wheel
 $PYTHON setup.py bdist_egg
 
 echo "publishing build"
-tgz=$(ls dist/burp-ui*.tar.gz | sed "s|dist/||")
-egg=$(ls dist/burp_ui*.egg | sed "s|dist/||")
-whl=$(ls dist/burp_ui*.whl | sed "s|dist/||")
+cd dist
+tgz=$(ls -1rt dist/burp-ui*.tar.gz | tail -1)
+egg=$(ls -1rt dist/burp_ui*.egg | tail -1)
+whl=$(ls -1rt dist/burp_ui*.whl | tail -1)
+cd ..
 cp -vf dist/burp-ui*.tar.gz /pub/ 2>/dev/null
 cp -vf dist/burp_ui*.egg /pub/ 2>/dev/null
 cp -vf dist/burp_ui*.whl /pub/ 2>/dev/null

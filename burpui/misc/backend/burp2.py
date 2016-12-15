@@ -167,7 +167,7 @@ class Burp(Burp1):
                 )
                 confsrv = G_BURPCONFSRV
 
-            if not self.burpbin:
+            if not self.burpbin and self.app.strict:
                 # The burp binary is mandatory for this backend
                 raise Exception(
                     'This backend *CAN NOT* work without a burp binary'
@@ -182,12 +182,13 @@ class Burp(Burp1):
                 "'%s' is not a directory",
                 tmpdir
             )
-            if tmpdir == G_TMPDIR:
+            if tmpdir == G_TMPDIR and self.app.strict:
                 raise IOError(
                     "Cannot use '{}' as tmpdir".format(tmpdir)
                 )
             tmpdir = G_TMPDIR
-            if os.path.exists(tmpdir) and not os.path.isdir(tmpdir):
+            if os.path.exists(tmpdir) and not os.path.isdir(tmpdir) and \
+                    self.app.strict:
                 raise IOError(
                     "Cannot use '{}' as tmpdir".format(tmpdir)
                 )
@@ -204,15 +205,16 @@ class Burp(Burp1):
                 cmd,
                 universal_newlines=True
             ).rstrip()
-            if version < BURP_MINIMAL_VERSION:
+            if version < BURP_MINIMAL_VERSION and self.app.strict:
                 raise Exception(
                     'Your burp version ({}) does not fit the minimal'
                     ' requirements: {}'.format(version, BURP_MINIMAL_VERSION)
                 )
         except subprocess.CalledProcessError as exp:
-            raise Exception(
-                'Unable to determine your burp version: {}'.format(str(exp))
-            )
+            if self.app.strict:
+                raise Exception(
+                    'Unable to determine your burp version: {}'.format(str(exp))
+                )
 
         self.client_version = version.replace('burp-', '')
 
@@ -269,19 +271,18 @@ class Burp(Burp1):
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             shell=False,
-            universal_newlines=True,
             bufsize=0
         )
         # wait a little bit in case the process dies on a network error
         time.sleep(0.5)
         if not self._proc_is_alive():
-            raise Exception('Unable to spawn burp process')
+            raise OSError('Unable to spawn burp process')
         _, write, _ = select([], [self.proc.stdin], [], self.timeout)
         if self.proc.stdin not in write:
             self._kill_burp()
             raise OSError('Unable to setup burp client')
-        self.proc.stdin.write('j:pretty-print-off\n')
-        jso = self._read_proc_stdout()
+        self.proc.stdin.write('j:pretty-print-off\n'.encode('utf-8'))
+        jso = self._read_proc_stdout(self.timeout)
         if self._is_warning(jso):
             self.logger.info(jso['warning'])
 
@@ -355,7 +356,7 @@ class Burp(Burp1):
 
         return hur
 
-    def _read_proc_stdout(self):
+    def _read_proc_stdout(self, timeout):
         """reads the burp process stdout and returns a document or None"""
         doc = u''
         jso = None
@@ -363,10 +364,10 @@ class Burp(Burp1):
             try:
                 if not self._proc_is_alive():
                     raise Exception('process died while reading its output')
-                read, _, _ = select([self.proc.stdout], [], [], self.timeout)
+                read, _, _ = select([self.proc.stdout], [], [], timeout)
                 if self.proc.stdout not in read:
                     raise TimeoutError('Read operation timed out')
-                doc += self.proc.stdout.readline().rstrip('\n')
+                doc += self.proc.stdout.readline().decode('utf-8').rstrip('\n')
                 jso = self._is_valid_json(doc)
                 # if the string is a valid json and looks like a logline, we
                 # simply ignore it
@@ -382,9 +383,10 @@ class Burp(Burp1):
                 break
         return jso
 
-    def status(self, query='c:\n', agent=None):
+    def status(self, query='c:\n', timeout=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.status`"""
         try:
+            timeout = timeout or self.timeout
             query = sanitize_string(query.rstrip())
             self.logger.info("query: '{}'".format(query))
             query = '{0}\n'.format(query)
@@ -394,8 +396,8 @@ class Burp(Burp1):
             _, write, _ = select([], [self.proc.stdin], [], self.timeout)
             if self.proc.stdin not in write:
                 raise TimeoutError('Write operation timed out')
-            self.proc.stdin.write(query)
-            jso = self._read_proc_stdout()
+            self.proc.stdin.write(query.encode('utf-8'))
+            jso = self._read_proc_stdout(timeout)
             if self._is_warning(jso):
                 self.logger.warning(jso['warning'])
                 self.logger.debug('Nothing interesting to return')
@@ -411,7 +413,9 @@ class Burp(Burp1):
         except (OSError, Exception) as exp:
             msg = 'Cannot launch burp process: {}'.format(str(exp))
             self.logger.error(msg)
-            raise BUIserverException(msg)
+            if self.app.strict:
+                raise BUIserverException(msg)
+        return None
 
     def get_backup_logs(self, number, client, forward=False, agent=None):
         """See
@@ -854,7 +858,16 @@ class Burp(Burp1):
             except (UnicodeDecodeError, AttributeError):
                 top = root
 
-        query = self.status('c:{0}:b:{1}:p:{2}\n'.format(name, backup, top))
+        # we know this operation may take a while so we arbitrary increase the
+        # read timeout
+        timeout = None
+        if top == '*':
+            timeout = max(self.timeout, 120)
+
+        query = self.status(
+            'c:{0}:b:{1}:p:{2}\n'.format(name, backup, top),
+            timeout
+        )
         if not query:
             return ret
         try:

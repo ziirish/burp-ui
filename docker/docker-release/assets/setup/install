@@ -6,44 +6,38 @@ SETUP_DIR="/app/setup"
 CONFIG_DIR="${SETUP_DIR}/config"
 BURPUI="https://burpui.ziirish.me/builds/burp-ui.dev.tar.gz"
 
+apt-get update
+DEBIAN_FRONTEND=noninteractive apt-get install -y wget python2.7-dev git python-pip libffi-dev
+
 echo "deb http://ziirish.info/repos/debian/jessie zi-latest main" >/etc/apt/sources.list.d/ziirish.list
 wget https://ziirish.info/repos/debian.gpg -O- | apt-key add -
-
-# initial cleanup
-cd /burp-ui
-for x in $(cat .gitignore)
-do
-  find . -iname "$x" | xargs rm -rf
-done
-rm -rf .git
-rm -rf .gitignore
-
-cd
-
-apt-get remove -y python-cffi
 apt-get update
-apt-get install -y libssl-dev burp-client
+
+DEBIAN_FRONTEND=noninteractive apt-get remove -y python-cffi
+DEBIAN_FRONTEND=noninteractive apt-get install -y libssl-dev burp-client
 
 # Install burp-ui
 pip install --upgrade pip
 pip install "requests[security]"
 pip install --upgrade cffi
 cd /burp-ui
+git submodule update --init
 pip install -r requirements.txt
-python setup.py install
+python setup.py sdist
 pip install ujson
 pip install gevent
 pip install redis
 pip install Flask-Session
 pip install Flask-SQLAlchemy
 pip install Flask-Migrate
+pip install sqlalchemy-utils
 pip install celery
+pip install dist/*.tar.gz
 
-# Create burp-ui User
-useradd -r -m -d /var/lib/burpui -c 'Burp-UI daemon user' -u 5337 burpui
+cd
+rm -rf /burp-ui
 
 mkdir -p /var/log/gunicorn
-chown -R burpui: /var/log/gunicorn
 
 # configure supervisord log rotation
 cat > /etc/logrotate.d/supervisord <<EOF
@@ -108,9 +102,10 @@ cat ${CONFIG_DIR}/burp/burp-server.conf >/etc/burp/burp-server.conf
 rm -rf /etc/burp/clientconfdir/*
 echo "password = abcdefgh" >/etc/burp/clientconfdir/agent
 
-chown -R burpui: /etc/burp
+touch /etc/burp/this_is_a_decoy_file_to_know_if_we_can_chown
 
 # cleanup
+apt-get remove -y python2.7-dev git python-pip libffi-dev libssl-dev wget
 apt-get clean
 apt-get autoclean
 apt-get -y autoremove
