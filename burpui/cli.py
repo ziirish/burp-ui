@@ -41,15 +41,21 @@ app = create_app(
     cli=CLI
 )
 
-if app.config['WITH_SQL']:
+try:
+    from .app import create_db
     from .ext.sql import db
     from flask_migrate import Migrate
+
+    app.config['WITH_SQL'] = True
+    create_db(app, True)
 
     mig_dir = os.getenv('BUI_MIGRATIONS')
     if mig_dir:
         migrate = Migrate(app, db, mig_dir)
     else:
         migrate = Migrate(app, db)
+except ImportError:
+    pass
 
 
 @app.cli.command()
