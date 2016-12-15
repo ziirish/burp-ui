@@ -279,7 +279,7 @@ class Burp(Burp1):
         if self.proc.stdin not in write:
             self._kill_burp()
             raise OSError('Unable to setup burp client')
-        self.proc.stdin.write('j:pretty-print-off\n')
+        self.proc.stdin.write('j:pretty-print-off\n'.encode('utf-8'))
         jso = self._read_proc_stdout(self.timeout)
         if self._is_warning(jso):
             self.logger.info(jso['warning'])
@@ -394,7 +394,7 @@ class Burp(Burp1):
             _, write, _ = select([], [self.proc.stdin], [], self.timeout)
             if self.proc.stdin not in write:
                 raise TimeoutError('Write operation timed out')
-            self.proc.stdin.write(query)
+            self.proc.stdin.write(query.encode('utf-8'))
             jso = self._read_proc_stdout(timeout)
             if self._is_warning(jso):
                 self.logger.warning(jso['warning'])
@@ -409,6 +409,8 @@ class Burp(Burp1):
             self._kill_burp()
             raise BUIserverException(msg)
         except (OSError, Exception) as exp:
+            import traceback
+            traceback.print_exc()
             msg = 'Cannot launch burp process: {}'.format(str(exp))
             self.logger.error(msg)
             raise BUIserverException(msg)
