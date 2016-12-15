@@ -15,7 +15,6 @@ for x in $(cat .gitignore)
 do
   find . -iname "$x" | xargs rm -rf
 done
-rm -rf .git
 rm -rf .gitignore
 
 cd
@@ -30,7 +29,7 @@ pip install "requests[security]"
 pip install --upgrade cffi
 cd /burp-ui
 pip install -r requirements.txt
-python setup.py install
+python setup.py sdist
 pip install ujson
 pip install gevent
 pip install redis
@@ -39,6 +38,7 @@ pip install Flask-SQLAlchemy
 pip install Flask-Migrate
 pip install sqlalchemy-utils
 pip install celery
+pip install dist/*.tar.gz
 
 # Create burp-ui User
 useradd -r -m -d /var/lib/burpui -c 'Burp-UI daemon user' -u 5337 burpui
@@ -114,6 +114,7 @@ su -l burpui -c "/usr/local/bin/bui-manage compile_translation"
 chown -R burpui: /etc/burp
 
 # cleanup
+apt-get remove -y python2.7-dev
 apt-get clean
 apt-get autoclean
 apt-get -y autoremove
