@@ -6,6 +6,8 @@ SETUP_DIR="/app/setup"
 CONFIG_DIR="${SETUP_DIR}/config"
 BURPUI="https://burpui.ziirish.me/builds/burp-ui.dev.tar.gz"
 
+DEBIAN_FRONTEND=noninteractive apt-get install -y wget python2.7-dev git python-pip libffi-dev
+
 echo "deb http://ziirish.info/repos/debian/jessie zi-latest main" >/etc/apt/sources.list.d/ziirish.list
 wget https://ziirish.info/repos/debian.gpg -O- | apt-key add -
 
@@ -16,12 +18,13 @@ do
   find . -iname "$x" | xargs rm -rf
 done
 rm -rf .gitignore
+git submodule update --init
 
 cd
 
-apt-get remove -y python-cffi
+DEBIAN_FRONTEND=noninteractive apt-get remove -y python-cffi
 apt-get update
-apt-get install -y libssl-dev burp-client
+DEBIAN_FRONTEND=noninteractive apt-get install -y libssl-dev burp-client
 
 # Install burp-ui
 pip install --upgrade pip
@@ -114,7 +117,7 @@ su -l burpui -c "/usr/local/bin/bui-manage compile_translation"
 chown -R burpui: /etc/burp
 
 # cleanup
-apt-get remove -y python2.7-dev
+apt-get remove -y python2.7-dev git python-pip libffi-dev libssl-dev wget
 apt-get clean
 apt-get autoclean
 apt-get -y autoremove
