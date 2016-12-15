@@ -4,8 +4,6 @@ set -e
 trap appStop SIGINT SIGTERM
 
 appStart () {
-  # start supervisord
-  /usr/bin/supervisord -c /etc/supervisor/supervisord.conf
 
   BURPUI_CONFIG=${BURPUI_CONFIG:-/etc/burp/burpui.cfg}
   BURPUI_CLIENT_NAME=${BURPUI_CLIENT_NAME:-bui}
@@ -63,6 +61,10 @@ appStart () {
     chgrp burpui $file
     chmod g+rw $file
   done
+  rm $TMPFILE
+
+  # start supervisord
+  /usr/bin/supervisord -c /etc/supervisor/supervisord.conf
 
   echo "Starting crond..."
   supervisorctl start cron >/dev/null
