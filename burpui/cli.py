@@ -28,8 +28,8 @@ if VERBOSE:
         VERBOSE = 0
 
 # UNITTEST is used to skip the burp-2 requirements for modes != server
-UNITTEST = os.environ.get('BUI_MODE') not in ['server', 'manage', 'celery']
-CLI = os.environ.get('BUI_MODE') != 'server'
+UNITTEST = os.environ.get('BUI_MODE') not in ['server', 'manage', 'celery', 'legacy']
+CLI = os.environ.get('BUI_MODE') not in ['server', 'legacy']
 
 app = create_app(
     conf=os.environ.get('BUI_CONFIG'),
@@ -72,6 +72,8 @@ def legacy():
 @click.argument('name')
 def create_user(backend, password, ask, verbose, name):
     """Create a new user."""
+    app.load_modules()
+
     click.echo(click.style('[*] Adding \'{}\' user...'.format(name), fg='blue'))
     try:
         handler = getattr(app, 'uhandler')
