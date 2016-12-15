@@ -113,7 +113,7 @@ def create_db(myapp, cli=False):
                         test_database()
                     except OperationalError as exp:
                         if 'no such table' in str(exp):
-                            myapp.logger.error(
+                            myapp.logger.critical(
                                 'Your database seem out of sync, you may want '
                                 'to run \'bui-manage db upgrade\'. Disabling '
                                 'SQL support for now.'
@@ -122,8 +122,9 @@ def create_db(myapp, cli=False):
                             return None
             return db
         except ImportError:
-            myapp.logger.warning(
-                'Unable to load requirements, SQL support disabled'
+            myapp.logger.critical(
+                'Unable to load requirements, you may want to run \'pip '
+                'install "burp-ui[sql]"\'. Disabling SQL support for now.'
             )
             myapp.config['WITH_SQL'] = False
 
