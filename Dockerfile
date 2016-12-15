@@ -2,7 +2,7 @@ FROM debian:jessie
 MAINTAINER hi+burpui@ziirish.me
 
 RUN apt-get update \
- && DEBIAN_FRONTEND=noninteractive apt-get install -y supervisor logrotate locales gunicorn cron netcat \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y supervisor logrotate locales gunicorn cron netcat openssl \
  && update-locale LANG=C.UTF-8 LC_MESSAGES=POSIX \
  && locale-gen en_US.UTF-8 \
  && dpkg-reconfigure -f noninteractive locales \

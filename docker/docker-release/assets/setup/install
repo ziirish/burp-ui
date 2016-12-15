@@ -13,17 +13,6 @@ echo "deb http://ziirish.info/repos/debian/jessie zi-latest main" >/etc/apt/sour
 wget https://ziirish.info/repos/debian.gpg -O- | apt-key add -
 apt-get update
 
-# initial cleanup
-cd /burp-ui
-for x in $(cat .gitignore)
-do
-  find . -iname "$x" | xargs rm -rf
-done
-rm -rf .gitignore
-git submodule update --init
-
-cd
-
 DEBIAN_FRONTEND=noninteractive apt-get remove -y python-cffi
 DEBIAN_FRONTEND=noninteractive apt-get install -y libssl-dev burp-client
 
@@ -32,6 +21,7 @@ pip install --upgrade pip
 pip install "requests[security]"
 pip install --upgrade cffi
 cd /burp-ui
+git submodule update --init
 pip install -r requirements.txt
 python setup.py sdist
 pip install ujson
@@ -43,6 +33,9 @@ pip install Flask-Migrate
 pip install sqlalchemy-utils
 pip install celery
 pip install dist/*.tar.gz
+
+cd
+rm -rf /burp-ui
 
 # Create burp-ui User
 useradd -r -m -d /var/lib/burpui -c 'Burp-UI daemon user' -u 5337 burpui
