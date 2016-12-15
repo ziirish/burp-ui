@@ -26,7 +26,7 @@ appStart () {
   }
 
   # wait for redis to be up
-  sleep 12
+  sleep 3
 
   LOGFILE=$(mktemp)
   bui-manage -c $BURPUI_CONFIG setup_burp -b $BURP_CLIENT_CONFIG \
@@ -66,6 +66,9 @@ appStart () {
 
   echo "Starting gunicorn..."
   /etc/init.d/gunicorn restart >/dev/null
+
+  # wait a bit for the logs to be populated
+  sleep 2
 
   # watch the access logs
   tail -F /var/log/gunicorn/burp-ui_info.log
