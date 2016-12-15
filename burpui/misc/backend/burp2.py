@@ -269,7 +269,6 @@ class Burp(Burp1):
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             shell=False,
-            universal_newlines=True,
             bufsize=0
         )
         # wait a little bit in case the process dies on a network error
@@ -366,7 +365,7 @@ class Burp(Burp1):
                 read, _, _ = select([self.proc.stdout], [], [], timeout)
                 if self.proc.stdout not in read:
                     raise TimeoutError('Read operation timed out')
-                doc += self.proc.stdout.readline().rstrip('\n')
+                doc += self.proc.stdout.readline().decode('utf-8').rstrip('\n')
                 jso = self._is_valid_json(doc)
                 # if the string is a valid json and looks like a logline, we
                 # simply ignore it
