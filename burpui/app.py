@@ -370,12 +370,14 @@ def create_app(conf=None, verbose=0, logfile=None, gunicorn=True,
     if app.storage and app.storage.lower() != 'default':
         try:
             # Session setup
-            if not app.session_db or app.session_db.lower() != 'none':
+            if not app.session_db or \
+                    app.session_db.lower() not in ['none']:
                 from redis import Redis
                 from .ext.session import sess
                 host, port, pwd = get_redis_server(app)
                 db = 0
-                if app.session_db and app.session_db.lower() != 'default':
+                if app.session_db and \
+                        app.session_db.lower() not in ['redis', 'default']:
                     try:
                         (_, _, pwd, host, port, db) = \
                             parse_db_setting(app.session_db)
@@ -398,10 +400,12 @@ def create_app(conf=None, verbose=0, logfile=None, gunicorn=True,
                 sess.init_app(app)
                 session_manager.backend = red
             # Cache setup
-            if not app.cache_db or app.cache_db.lower() != 'none':
+            if not app.cache_db or \
+                    app.cache_db.lower() not in ['none']:
                 host, port, pwd = get_redis_server(app)
                 db = 1
-                if app.cache_db and app.cache_db.lower() != 'default':
+                if app.cache_db and \
+                        app.cache_db.lower() not in ['redis', 'default']:
                     try:
                         (_, _, pwd, host, port, db) = \
                             parse_db_setting(app.cache_db)
