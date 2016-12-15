@@ -24,7 +24,9 @@ Some libraries are required to be able to compile some requirements:
 
 ::
 
-    apt-get install libffi-dev libssl-dev python-dev
+    apt-get install libffi-dev libssl-dev python-dev python-pip
+    # this package conflicts with the pip requirements
+    apt-get remove python-cffi
 
 Debian Wheezy
 -------------

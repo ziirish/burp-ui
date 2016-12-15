@@ -4,15 +4,6 @@ Installation
 `Burp-UI`_ is written in Python with the `Flask`_ micro-framework.
 The easiest way to install `Burp-UI`_ is to use ``pip``.
 
-On Debian, you can install ``pip`` with the following command:
-
-::
-
-    aptitude install python-pip
-
-
-Once ``pip`` is installed, you can install ``Burp-UI`` this way:
-
 ::
 
     pip install burp-ui
@@ -32,7 +23,7 @@ virtualenv)
 
 Then you can run ``burp-ui``: ``burp-ui``
 
-By default, ``burp-ui`` listens on all interfaces (including IPv6) on port 5000.
+By default, ``burp-ui`` listens on localhost on port 5000.
 
 You can then point your browser to http://127.0.0.1:5000/
 
