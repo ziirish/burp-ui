@@ -22,9 +22,9 @@ $PYTHON setup.py bdist_egg
 
 echo "publishing build"
 cd dist
-tgz=$(ls -1rt dist/burp-ui*.tar.gz | tail -1)
-egg=$(ls -1rt dist/burp_ui*.egg | tail -1)
-whl=$(ls -1rt dist/burp_ui*.whl | tail -1)
+tgz=$(ls -1rt dist/burp-ui*.tar.gz | grep -v burp-ui.dev.tar.gz | tail -1)
+egg=$(ls -1rt dist/burp_ui*.egg | grep -v burp_ui-dev-py | tail -1)
+whl=$(ls -1rt dist/burp_ui*.whl | grep -v burp_ui-dev-py2.py3-none-any.whl | tail -1)
 cd ..
 cp -vf dist/burp-ui*.tar.gz /pub/ 2>/dev/null
 cp -vf dist/burp_ui*.egg /pub/ 2>/dev/null
