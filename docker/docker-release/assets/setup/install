@@ -37,11 +37,7 @@ pip install dist/*.tar.gz
 cd
 rm -rf /burp-ui
 
-# Create burp-ui User
-useradd -r -m -d /var/lib/burpui -c 'Burp-UI daemon user' -u 5337 burpui
-
 mkdir -p /var/log/gunicorn
-chown -R burpui: /var/log/gunicorn
 
 # configure supervisord log rotation
 cat > /etc/logrotate.d/supervisord <<EOF
@@ -106,9 +102,7 @@ cat ${CONFIG_DIR}/burp/burp-server.conf >/etc/burp/burp-server.conf
 rm -rf /etc/burp/clientconfdir/*
 echo "password = abcdefgh" >/etc/burp/clientconfdir/agent
 
-su -l burpui -c "/usr/local/bin/bui-manage compile_translation"
-
-chown -R burpui: /etc/burp
+touch /etc/burp/this_is_a_decoy_file_to_know_if_we_can_chown
 
 # cleanup
 apt-get remove -y python2.7-dev git python-pip libffi-dev libssl-dev wget

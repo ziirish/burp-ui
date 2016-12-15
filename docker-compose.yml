@@ -16,6 +16,8 @@ burpui:
     - BURPUI_CONFIG=/etc/burp/burpui.cfg
     - BURPUI_VERBOSE=0
     - BURPUI_CLIENT_NAME=bui
+    - BURPUI_UID=5337
+    - BURPUI_GID=5337
     - BURP_CLIENT_CONFIG=/tmp/burp.conf
     - BURP_SERVER_CONFIG=/etc/burp/burp-server.conf
     - DATABASE_URL=sqlite:////var/lib/burpui/store.db

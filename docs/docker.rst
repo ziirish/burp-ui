@@ -18,6 +18,10 @@ provided. There are a few variables supported to setup your system:
    to 0.
  - **BURPUI_CLIENT_NAME** - Specify the name of the burp client that will be
    used by `Burp-UI`_. It defaults to "bui".
+ - **BURPUI_UID** - uid of the *burpui* user you want to map in your host. It
+   defaults to 5337.
+ - **BURPUI_GID** - gid of the *burpui* group you want to map in your host. It
+   defaults to 5337.
  - **BURP_CLIENT_CONFIG** - Specify the path of the burp client configuration
    file to use for the `Burp-UI`_ client. It defaults to "/tmp/burp.conf". It
    means you won't have access to it outside of the container. It is intended
@@ -40,21 +44,26 @@ and */var/spool/burp* paths inside the container (this is automatic) so that
 Requirements
 ------------
 
+The docker image only works with a burp server version 2.0.x.
+
 `Burp-UI` will be launched with the user *burpui* inside the container. This
-user has the UID *5337* so you may want to create this same user in your host
-and make sure it has read **AND** write access to */etc/burp* and
-*/var/spool/burp*.
+user has the UID ``$BURPUI_UID`` and the GID ``$BURPUI_GID`` so you may want to
+create a user with the associated UID/GID in your host and make sure it has read
+**AND** write access to */etc/burp* and */var/spool/burp*.
+
+For instance:
 
 ::
 
+    groupadd -g 5337 burpui
     useradd -r -m -d /var/lib/burpui -c 'Burp-UI daemon user' -u 5337 burpui
 
 
 Usage
 -----
 
-All you have to do is to retrieve the *docker-compose.yml* file and launch
-docker.
+All you have to do is to retrieve the *docker-compose.yml* file, edit the
+variables if needed and launch the docker containers.
 For instance you could do:
 
 ::

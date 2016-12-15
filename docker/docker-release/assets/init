@@ -10,11 +10,22 @@ appStart () {
   BURPUI_CONFIG=${BURPUI_CONFIG:-/etc/burp/burpui.cfg}
   BURPUI_CLIENT_NAME=${BURPUI_CLIENT_NAME:-bui}
   BURPUI_VERBOSE=${BURPUI_VERBOSE:-0}
+  BURPUI_UID=${BURPUI_UID:-5337}
+  BURPUI_GID=${BURPUI_GID:-5337}
   BURP_CLIENT_CONFIG=${BURP_CLIENT_CONFIG:-/tmp/burp.conf}
   BURP_SERVER_CONFIG=${BURP_SERVER_CONFIG:-/etc/burp/burp-server.conf}
   BURP_SERVER_ADDR=${BURP_SERVER_ADDR:-auto}
   REDIS_SERVER=${REDIS_SERVER:-redis:6379}
   DATABASE_URL=${DATABASE_URL:-sqlite:////var/lib/burpui/store.db}
+
+  # Create burp-ui User
+  groupadd -g $BURPUI_GID burpui
+  useradd -r -m -d /var/lib/burpui -c 'Burp-UI daemon user' -u $BURPUI_UID -g $BURPUI_GID burpui
+  chown -R burpui: /var/log/gunicorn
+
+  [ -e /etc/burp/this_is_a_decoy_file_to_know_if_we_can_chown ] && {
+    chown -R burpui: /etc/burp
+  }
 
   [ "$BURP_SERVER_ADDR" == "auto" ] && {
     BURP_SERVER_ADDR=$(ip route sh | grep default | awk '{print $3;}')
