@@ -413,8 +413,11 @@ class BurpuiRedisTestCase(TestCase):
         bui.config['LOGIN_DISABLED'] = False
         bui.client.port = 9999
         with bui.app_context():
+            from burpui.app import create_db
             from burpui.ext.sql import db
             from burpui.models import Session, Task
+            bui.config['WITH_SQL'] = True
+            create_db(bui, True)
             db.create_all()
             db.session.commit()
         return bui
