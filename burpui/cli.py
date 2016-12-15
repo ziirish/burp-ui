@@ -72,7 +72,7 @@ def legacy():
 @click.argument('name')
 def create_user(backend, password, ask, verbose, name):
     """Create a new user."""
-    app.load_modules()
+    app.load_modules(False)
 
     click.echo(click.style('[*] Adding \'{}\' user...'.format(name), fg='blue'))
     try:
@@ -189,7 +189,7 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database, dry):
         )
         sys.exit(1)
 
-    app.load_modules()
+    app.load_modules(False)
 
     from .misc.parser.utils import Config
     from .app import get_redis_server

@@ -289,7 +289,7 @@ class BUIServer(Flask):
         if not cli:
             self.load_modules()
 
-    def load_modules(self):
+    def load_modules(self, strict=True):
         if self.auth and 'none' not in self.auth:
             try:
                 self.uhandler = UserAuthHandler(self)
@@ -353,6 +353,7 @@ class BUIServer(Flask):
         # This is used for development purpose only
         from .misc.backend.burp1 import Burp as BurpGeneric
         self.client = BurpGeneric(dummy=True)
+        self.strict = strict
         try:
             # Try to load submodules from our current environment
             # first
