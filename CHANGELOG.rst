@@ -6,6 +6,7 @@ Changelog
 
 - **BREAKING**: Use the new Flask's embedded server by default means no more SSL (HTTPS) support without a dedicated application server
 - Fix: issue `#156 <https://git.ziirish.me/ziirish/burp-ui/issues/156>`_
+- Fix: issue `#157 <https://git.ziirish.me/ziirish/burp-ui/issues/157>`_
 - Fix: issue `#165 <https://git.ziirish.me/ziirish/burp-ui/issues/165>`_
 - Fix: issue `#176 <https://git.ziirish.me/ziirish/burp-ui/issues/176>`_
 - Fix: issue `#181 <https://git.ziirish.me/ziirish/burp-ui/issues/181>`_
