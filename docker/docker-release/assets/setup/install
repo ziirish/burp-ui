@@ -11,6 +11,7 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y wget python2.7-dev git python-
 
 echo "deb http://ziirish.info/repos/debian/jessie zi-latest main" >/etc/apt/sources.list.d/ziirish.list
 wget https://ziirish.info/repos/debian.gpg -O- | apt-key add -
+apt-get update
 
 # initial cleanup
 cd /burp-ui
