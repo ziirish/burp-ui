@@ -21,6 +21,7 @@ sys.path.insert(0, os.path.join(ROOT, '..'))
 
 
 def parse_args(mode=True, name=None):
+    mname = name
     if not name:
         mname = 'burp-ui'
     parser = ArgumentParser(prog=mname)
