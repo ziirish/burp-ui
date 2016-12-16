@@ -52,7 +52,7 @@ try:
         app.config['WITH_SQL'] = app.database
     else:
         app.config['WITH_SQL'] = app.database and \
-            self.database.lower() != 'none'
+            app.database.lower() != 'none'
 
     if app.config['WITH_SQL']:
         create_db(app, True)
