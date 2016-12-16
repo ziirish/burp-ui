@@ -56,7 +56,7 @@ For instance:
 ::
 
     groupadd -g 5337 burpui
-    useradd -r -m -d /var/lib/burpui -c 'Burp-UI daemon user' -u 5337 burpui
+    useradd -r -m -d /var/lib/burpui -c 'Burp-UI daemon user' -u 5337 -g 5337 burpui
 
 
 Usage
