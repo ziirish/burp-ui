@@ -17,8 +17,8 @@ appStart () {
   DATABASE_URL=${DATABASE_URL:-sqlite:////var/lib/burpui/store.db}
 
   # Create burp-ui User
-  groupadd -g $BURPUI_GID burpui
-  useradd -r -m -d /var/lib/burpui -c 'Burp-UI daemon user' -u $BURPUI_UID -g $BURPUI_GID burpui
+  getent group | grep -q burpui || groupadd -g $BURPUI_GID burpui
+  getent passwd | grep -q burpui || useradd -r -m -d /var/lib/burpui -c 'Burp-UI daemon user' -u $BURPUI_UID -g $BURPUI_GID burpui
   chown -R burpui: /var/log/gunicorn
 
   [ -e /etc/burp/this_is_a_decoy_file_to_know_if_we_can_chown ] && {
@@ -50,18 +50,39 @@ appStart () {
     su -l burpui -c "/usr/local/bin/bui-manage -c $BURPUI_CONFIG db upgrade"
   }
 
-  perl -i -pe "s#\@BURPUI_CONFIG\@#$BURPUI_CONFIG#" /etc/gunicorn.d/burp-ui
+  # You can change log verbosity at runtime
+  [ -e /etc/gunicorn.d/burp-ui.example ] || cp -a /etc/gunicorn.d/burp-ui /etc/gunicorn.d/burp-ui.example
+  perl -pe "s#\@BURPUI_CONFIG\@#$BURPUI_CONFIG#" /etc/gunicorn.d/burp-ui.example >/etc/gunicorn.d/burp-ui
   perl -i -pe "s#\@BURPUI_VERBOSE\@#$BURPUI_VERBOSE#" /etc/gunicorn.d/burp-ui
 
-  # pre-generate burp certs because of https://github.com/grke/burp/issues/512
-  TMPFILE=$(mktemp)
-  /usr/sbin/burp -c $BURP_CLIENT_CONFIG -a l 2>&1 >$TMPFILE
-  for file in $(grep "Could not find ssl" $TMPFILE | cut -d' ' -f8 | sed "s/:$//")
-  do
-    chgrp burpui $file
-    chmod g+rw $file
-  done
-  rm $TMPFILE
+  ssl_cert_ca=$(grep -E "^\s*ssl_cert_ca\s*=" $BURP_CLIENT_CONFIG | cut -d= -f2 | sed -e "s/\s*//g")
+  ssl_cert=$(grep -E "^\s*ssl_cert\s*=" $BURP_CLIENT_CONFIG | cut -d= -f2 | sed -e "s/\s*//g")
+  ssl_key=$(grep -E "^\s*ssl_key\s*=" $BURP_CLIENT_CONFIG | cut -d= -f2 | sed -e "s/\s*//g")
+
+  [ -z "$ssl_cert_ca" ] && {
+    echo "Unable to locate ssl_cert_ca in $BURP_CLIENT_CONFIG"
+    exit 1
+  }
+  [ -z "$ssl_cert" ] && {
+    echo "Unable to locate ssl_cert in $BURP_CLIENT_CONFIG"
+    exit 1
+  }
+  [ -z "$ssl_key" ] && {
+    echo "Unable to locate ssl_key in $BURP_CLIENT_CONFIG"
+    exit 1
+  }
+
+  [ ! -e "$ssl_cert_ca" -a ! -e "$ssl_cert" -a ! -e "$ssl_key" ] && {
+    # pre-generate burp certs because of https://github.com/grke/burp/issues/512
+    TMPFILE=$(mktemp)
+    /usr/sbin/burp -c $BURP_CLIENT_CONFIG -a l 2>&1 >$TMPFILE
+    for file in $(grep "Could not find ssl" $TMPFILE | cut -d' ' -f8 | sed "s/:$//")
+    do
+      chgrp burpui $file
+      chmod g+rw $file
+    done
+    rm $TMPFILE
+  }
 
   # start supervisord
   /usr/bin/supervisord -c /etc/supervisor/supervisord.conf
