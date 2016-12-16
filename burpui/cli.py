@@ -47,14 +47,21 @@ try:
     from .ext.sql import db
     from flask_migrate import Migrate
 
-    app.config['WITH_SQL'] = True
-    create_db(app, True)
-
-    mig_dir = os.getenv('BUI_MIGRATIONS')
-    if mig_dir:
-        migrate = Migrate(app, db, mig_dir)
+    # This may have been reseted by create_app
+    if isinstance(app.database, bool):
+        app.config['WITH_SQL'] = app.database
     else:
-        migrate = Migrate(app, db)
+        app.config['WITH_SQL'] = app.database and \
+            self.database.lower() != 'none'
+
+    if app.config['WITH_SQL']:
+        create_db(app, True)
+
+        mig_dir = os.getenv('BUI_MIGRATIONS')
+        if mig_dir:
+            migrate = Migrate(app, db, mig_dir)
+        else:
+            migrate = Migrate(app, db)
 except ImportError:
     pass
 

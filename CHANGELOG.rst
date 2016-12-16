@@ -6,6 +6,7 @@ Changelog
 
 - Fix: bui-agent was broken
 - Fix: handle i18n exceptions
+- Fix: enable db migration only when needed
 
 0.4.1 (12/15/2016)
 ------------------
