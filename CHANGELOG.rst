@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.4.2 (12/16/2016)
+------------------
+
+- Fix: bui-agent was broken
+- Fix: handle i18n exceptions
+
 0.4.1 (12/15/2016)
 ------------------
 
