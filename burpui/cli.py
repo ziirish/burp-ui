@@ -16,6 +16,7 @@ import subprocess
 
 from .app import create_app
 
+ROOT = os.path.dirname(os.path.realpath(__file__))
 DEBUG = os.environ.get('BUI_DEBUG') or os.environ.get('FLASK_DEBUG') or False
 if DEBUG and DEBUG.lower() in ['true', 'yes', '1']:
     DEBUG = True
@@ -61,6 +62,13 @@ except ImportError:
 @app.cli.command()
 def legacy():
     """Legacy server for backward compatibility"""
+    click.echo(
+        click.style(
+            'If you want to pass options, you should run \'python -m burpui '
+            '-m legacy [...]\' instead',
+            fg='yellow'
+        )
+    )
     app.manual_run()
 
 
@@ -138,6 +146,14 @@ def create_user(backend, password, ask, verbose, name):
 @click.argument('language')
 def init_translation(language):
     """Initialize a new translation for the given language."""
+    try:
+        import babel  # noqa
+    except ImportError:
+        click.echo(
+            click.style('Missing i18n requirements, giving up', fg='yellow')
+        )
+        return
+    os.chdir(os.path.join(ROOT, '..'))
     os.system('pybabel extract -F babel.cfg -k __ -k lazy_gettext -o messages.pot burpui')
     os.system('pybabel init -i messages.pot -d burpui/translations -l {}'.format(language))
     os.unlink('messages.pot')
@@ -146,6 +162,14 @@ def init_translation(language):
 @app.cli.command()
 def update_translation():
     """Update translation files."""
+    try:
+        import babel  # noqa
+    except ImportError:
+        click.echo(
+            click.style('Missing i18n requirements, giving up', fg='yellow')
+        )
+        return
+    os.chdir(os.path.join(ROOT, '..'))
     os.system('pybabel extract -F babel.cfg -k __ -k lazy_gettext -o messages.pot burpui')
     os.system('pybabel update -i messages.pot -d burpui/translations')
     os.unlink('messages.pot')
@@ -154,6 +178,14 @@ def update_translation():
 @app.cli.command()
 def compile_translation():
     """Compile translations."""
+    try:
+        import babel  # noqa
+    except ImportError:
+        click.echo(
+            click.style('Missing i18n requirements, giving up', fg='yellow')
+        )
+        return
+    os.chdir(os.path.join(ROOT, '..'))
     os.system('pybabel compile -f -d burpui/translations')
 
 
