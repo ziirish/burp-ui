@@ -1,6 +1,14 @@
 Changelog
 =========
 
+0.4.2 (12/16/2016)
+------------------
+
+- Fix: bui-agent was broken
+- Fix: handle i18n exceptions
+- Fix: enable db migration only when needed
+- Fix: wrong escape in translation
+
 0.4.1 (12/15/2016)
 ------------------
 
