@@ -862,7 +862,7 @@ class Burp(Burp1):
         # read timeout
         timeout = None
         if top == '*':
-            timeout = max(self.timeout, 120)
+            timeout = max(self.timeout, 300)
 
         query = self.status(
             'c:{0}:b:{1}:p:{2}\n'.format(name, backup, top),
