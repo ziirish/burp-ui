@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-12-16 07:54+0100\n"
+"POT-Creation-Date: 2016-12-16 10:42+0100\n"
 "PO-Revision-Date: 2016-08-25 15:19+0200\n"
 "Last-Translator: Ziirish <hi+burpui@ziirish.me>\n"
 "Language: fr\n"
@@ -45,11 +45,11 @@ msgstr "Rester connecté"
 
 #: burpui/routes.py:186 burpui/routes.py:193
 msgid "Sorry, there are no running backups"
-msgstr "Désolé, il n'y a pas de backups"
+msgstr "Désolé, il n&#39;y a pas de backups"
 
 #: burpui/routes.py:213 burpui/routes.py:251
 msgid "Sorry, there are no restore file found for this client"
-msgstr "Désolé, il n'y a pas restoration prévue pour ce client"
+msgstr "Désolé, il n&#39;y a pas restoration prévue pour ce client"
 
 #: burpui/routes.py:410
 msgid "Logged in successfully"
@@ -57,7 +57,7 @@ msgstr "Connecté avec succès"
 
 #: burpui/routes.py:420
 msgid "Wrong username or password"
-msgstr "Mauvais nom d'utilisateur ou mot de passe"
+msgstr "Mauvais nom d&#39;utilisateur ou mot de passe"
 
 #: burpui/misc/parser/burp2.py:55
 msgid "max secs"
@@ -1044,7 +1044,7 @@ msgstr ""
 #: burpui/templates/client-browse.html:42
 #: burpui/templates/js/client-browse.js:36
 msgid "Expand tree"
-msgstr "Déplier l'arborescence"
+msgstr "Déplier l&#39;arborescence"
 
 #: burpui/templates/client-browse.html:43
 msgid "This may take some time depending the number of files in your backup"
@@ -1371,7 +1371,7 @@ msgstr "Confirmer"
 
 #: burpui/templates/js/client-browse.js:126
 msgid "Colapse tree"
-msgstr "Réduire l'arborescence"
+msgstr "Réduire l&#39;arborescence"
 
 #: burpui/templates/js/client-browse.js:307
 msgid "Loading"
