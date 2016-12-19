@@ -428,7 +428,7 @@ class NClient(BUIbackend):
             notimeout = True
         if data['func'] == 'get_tree' and data['args'].get('root') == '*':
             # arbitrary raise timeout
-            timeout = max(timeout, 120)
+            timeout = max(timeout, 300)
         try:
             # don't need a context manager here
             if data['func'] == 'get_file':
