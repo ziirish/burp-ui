@@ -213,7 +213,7 @@ setup(
     version=open(os.path.join(ROOT, 'burpui', 'VERSION')).read().rstrip(),
     description=description,
     long_description=readme(),
-    license=open(os.path.join(ROOT, 'LICENSE')).read(),
+    license=open(os.path.join(ROOT, 'LICENSE')).readline().rstrip(),
     author=author,
     author_email=author_email,
     url=url,
