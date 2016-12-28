@@ -71,6 +71,7 @@ class UserHandler(BUIuser):
         self.name = session_manager.get_session_username() or \
             session.get('login') or name
         self.real = None
+        self.admin = not self.app.acl
 
         for name, back in iteritems(self.backends):
             u = back.user(self.name)
@@ -78,6 +79,7 @@ class UserHandler(BUIuser):
             if res:
                 self.active = True
                 self.name = res
+                self.back = back
                 if self.app.acl:
                     self.admin = self.app.acl.is_admin(self.name)
                 break
