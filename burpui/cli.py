@@ -119,7 +119,7 @@ def create_user(backend, password, ask, verbose, name):
             password = getpass.getpass()
             confirm = getpass.getpass('Confirm: ')
             if password != confirm:
-                click.echo(click.style("[!] Passwords missmatch", fg='red'))
+                click.echo(click.style("[!] Passwords mismatch", fg='red'))
                 sys.exit(3)
         else:
             import random
@@ -484,6 +484,27 @@ exclude_comp=gz
                 )
             )
 
+    if 'max_status_children' not in confsrv:
+        confsrv['max_status_children'] = 15
+        click.echo(
+            click.style(
+                'We need to set the number of \'max_status_children\'. '
+                'Setting it to 15.',
+                fg='blue'
+            )
+        )
+    else:
+        max_status_children = confsrv.get('max_status_children')
+        if max_status_children < 15:
+            click.echo(
+                click.style(
+                    'We need to raise the number of \'max_status_children\'. '
+                    'Raising it to 15 instead of {}.'.format(max_status_children),
+                    fg='yellow'
+                )
+            )
+            confsrv['max_status_children'] = 15
+
     if 'restore_client' not in confsrv:
         confsrv['restore_client'] = client
     else:
@@ -574,7 +595,7 @@ password = abcdefgh
             click.echo(
                 click.style(
                     'It looks like the passwords in the {} and the {} files '
-                    'missmatch. Burp-UI will not work properly untill you fix '
+                    'mismatch. Burp-UI will not work properly until you fix '
                     'this'.format(bconfcli, bconfagent),
                     fg='yellow'
                 )
