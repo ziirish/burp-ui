@@ -102,6 +102,37 @@ gives you the instructions to fix it.
 .. note:: You'll have to restart your burp-server to bind to the new *status_address*
 
 
+If the error still occurs, you may need to investigate further.
+You can run these commands:
+
+::
+
+    # docker-compose ps
+    Name                    Command               State            Ports
+    -----------------------------------------------------------------------------------
+    burpui_burpui_1   /app/init app:start              Up      127.0.0.1:5000->5000/tcp
+    burpui_redis_1    docker-entrypoint.sh redis ...   Up      6379/tcp
+    # docker exec -it burpui_burpui_1 /bin/bash
+    root@59d883806fc7:/# su - burpui
+    $ /usr/sbin/burp -c /tmp/burp.conf -a m
+    { "logline": "Could not find ssl_cert_ca /etc/burp/ssl_cert_ca-client-bui.pem: No such file or directory" }
+    { "logline": "auth ok" }
+    { "logline": "Server version: 2.0.52" }
+    { "logline": "nocsr ok" }
+    { "logline": "SSL is using cipher: DHE-RSA-AES256-GCM-SHA384 TLSv1.2 Kx=DH       Au=RSA  Enc=AESGCM(256) Mac=AEAD
+    " }
+    { "logline": "Certificate doesn't verify." }
+    { "logline": "check cert failed" }
+
+
+In this case, we see a pem file is missing. You can usually fix this issue by
+running:
+
+::
+
+    # ln -s /etc/burp/ssl_cert_ca.pem /etc/burp/ssl_cert_ca-client-bui.pem
+
+
 .. _Burp-UI: https://git.ziirish.me/ziirish/burp-ui
 .. _docker: https://docs.docker.com/engine/installation/linux/ubuntulinux/
 .. _docker-compose: https://docs.docker.com/compose/install/

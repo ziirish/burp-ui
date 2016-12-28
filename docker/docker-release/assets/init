@@ -23,6 +23,7 @@ appStart () {
 
   [ -e /etc/burp/this_is_a_decoy_file_to_know_if_we_can_chown ] && {
     chown -R burpui: /etc/burp
+    rm /etc/burp/this_is_a_decoy_file_to_know_if_we_can_chown
   }
 
   [ "$BURP_SERVER_ADDR" == "auto" ] && {
@@ -30,7 +31,7 @@ appStart () {
   }
 
   [ -e "$BURPUI_CONFIG" ] || {
-    cp /burp-ui/share/burpui/etc/burpui.sample.cfg $BURPUI_CONFIG
+    cp /usr/local/share/burpui/etc/burpui.sample.cfg $BURPUI_CONFIG
     chown burpui: $BURPUI_CONFIG
   }
 
