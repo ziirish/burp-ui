@@ -371,7 +371,7 @@ Now you can add *burp-2* backend specific options:
     # burp binary
     burpbin = /usr/sbin/burp
     # vss_strip binary
-    stripbin = /usr/sbin/vss_strip
+    stripbin = /usr/bin/vss_strip
     # burp client configuration file used for the restoration (Default: None)
     bconfcli = /etc/burp/burp.conf
     # burp server configuration file used for the setting page
