@@ -29,7 +29,7 @@ BURP_MINIMAL_VERSION = 'burp-2.0.18'
 BURP_LIST_BATCH = '2.0.48'
 
 G_BURPBIN = u'/usr/sbin/burp'
-G_STRIPBIN = u'/usr/sbin/vss_strip'
+G_STRIPBIN = u'/usr/bin/vss_strip'
 G_BURPCONFCLI = u'/etc/burp/burp.conf'
 G_BURPCONFSRV = u'/etc/burp/burp-server.conf'
 G_TMPDIR = u'/tmp/bui'
@@ -233,9 +233,12 @@ class Burp(Burp1):
         self.logger.info('revoke: {}'.format(self.revoke))
         try:
             # make the connection
+            self._spawn_burp(True)
             self.status()
         except BUIserverException:
             pass
+        except OSError as exp:
+            self.logger.critical(str(exp))
 
     def __exit__(self, typ, value, traceback):
         """try not to leave child process server side"""
@@ -262,7 +265,7 @@ class Burp(Burp1):
             self.proc.communicate()
             self.proc.wait()
 
-    def _spawn_burp(self):
+    def _spawn_burp(self, verbose=False):
         """Launch the burp client process"""
         cmd = [self.burpbin, '-c', self.burpconfcli, '-a', 'm']
         self.proc = subprocess.Popen(
@@ -276,7 +279,12 @@ class Burp(Burp1):
         # wait a little bit in case the process dies on a network error
         time.sleep(0.5)
         if not self._proc_is_alive():
-            raise OSError('Unable to spawn burp process')
+            details = ''
+            if verbose:
+                details = ':\n'
+                out, _ = self.proc.communicate()
+                details += out
+            raise OSError('Unable to spawn burp process{}'.format(details))
         _, write, _ = select([], [self.proc.stdin], [], self.timeout)
         if self.proc.stdin not in write:
             self._kill_burp()

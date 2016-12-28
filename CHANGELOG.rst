@@ -1,6 +1,13 @@
 Changelog
 =========
 
+0.4.3 (12/28/2016)
+------------------
+
+- Fix: missing configuration in docker image
+- Fix: help troubleshooting some errors
+- Fix: missing vss_strip binary
+
 0.4.2 (12/16/2016)
 ------------------
 
