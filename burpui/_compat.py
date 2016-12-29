@@ -42,6 +42,7 @@ def to_unicode(input_bytes, encoding='utf-8'):
         input_bytes = input_bytes.decode('unicode-escape')
     return input_bytes
 
+
 # maps module name -> attribute name -> original item
 # e.g. "time" -> "sleep" -> built-in function sleep
 saved = {}
