@@ -9,12 +9,12 @@
 """
 from .ext.i18n import LANGUAGES, get_locale
 
-from flask_wtf import Form
+from flask_wtf import FlaskForm
 from flask_babel import lazy_gettext as __
 from wtforms import TextField, PasswordField, BooleanField, SelectField, validators
 
 
-class LoginForm(Form):
+class LoginForm(FlaskForm):
     username = TextField(__('Username'), [validators.Length(min=2, max=25)])
     password = PasswordField(__('Password'), [validators.Required()])
     language = SelectField(__('Language'), choices=LANGUAGES.items(), default=get_locale)

@@ -206,7 +206,12 @@ class Parser(Doc):
 
         conf = self.clients_conf.get(name)
         if not conf:
-            raise BUIserverException('Client \'{}\' not found'.format(name))
+            if not self.conf:
+                raise BUIserverException('No burp-server configuration found')
+            elif not self.clientconfdir:
+                raise BUIserverException('No \'clientconfdir\' found in configuration')
+            else:
+                raise BUIserverException('Client \'{}\' not found'.format(name))
 
         workingdir = conf.get('directory')
         if not workingdir:

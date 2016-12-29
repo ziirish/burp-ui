@@ -17,7 +17,7 @@ import logging
 import configobj
 import validate
 
-from .app import __version__, __release__
+from .desc import __version__, __release__
 
 
 class BUIConfig(dict):

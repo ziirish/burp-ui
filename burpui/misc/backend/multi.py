@@ -12,7 +12,7 @@ from six import iteritems
 from .interface import BUIbackend
 from ..parser.interface import BUIparser
 from ...exceptions import BUIserverException
-from ..._compat import pickle
+from ..._compat import pickle, to_unicode, to_bytes
 from ...utils import implement
 
 
@@ -399,14 +399,15 @@ class NClient(BUIbackend):
     def setup(self, sock, gsock, data):
         length = struct.pack('!Q', len(data))
         sock.sendall(length)
-        sock.sendall(data.encode('UTF-8'))
+        data = to_unicode(data)
+        sock.sendall(to_bytes(data))
         self.logger.debug("Sending: {}".format(data))
-        tmp = sock.recv(2).decode('UTF-8')
+        tmp = to_unicode(sock.recv(2))
         self.logger.debug("recv: '{}'".format(tmp))
         if 'ER' == tmp:
             lengthbuf = sock.recv(8)
             length, = struct.unpack('!Q', lengthbuf)
-            err = gsock.recvall(length).decode('UTF-8')
+            err = to_unicode(gsock.recvall(length))
             raise BUIserverException(err)
         if 'OK' != tmp:
             self.logger.debug('Ooops, unsuccessful!')
@@ -445,7 +446,7 @@ class NClient(BUIbackend):
                         return res
                     lengthbuf = sock.recv(8)
                     length, = struct.unpack('!Q', lengthbuf)
-                    res = gsock.recvall(length).decode('UTF-8')
+                    res = to_unicode(gsock.recvall(length))
                 except IOError as e:
                     if not restarted and e.errno == errno.EPIPE:
                         self.logger.warning('Broken pipe, restarting the request')
@@ -498,9 +499,9 @@ class NClient(BUIbackend):
             self.logger.warning(msg)
             raise BUIserverException(msg)
         key = '{}{}'.format(self.password, 'store_conf_cli')
-        key = key.encode(encoding='utf-8')
+        key = to_bytes(key)
         pickles = b64encode(pickle.dumps({'data': data, 'conf': conf, 'client': client}, 2))
-        bytes_pickles = pickles.encode(encoding='utf-8')
+        bytes_pickles = to_bytes(pickles)
         digest = hmac.new(key, bytes_pickles, hashlib.sha1).hexdigest()
         data = {'func': 'store_conf_cli', 'args': pickles, 'pickled': True, 'digest': digest}
         return json.loads(self.do_command(data))
@@ -518,9 +519,9 @@ class NClient(BUIbackend):
             self.logger.warning(msg)
             raise BUIserverException(msg)
         key = u'{}{}'.format(self.password, 'store_conf_srv')
-        key = key.encode(encoding='utf-8')
+        key = to_bytes(key)
         pickles = b64encode(pickle.dumps({'data': data, 'conf': conf}, 2))
-        bytes_pickles = pickles.encode(encoding='utf-8')
+        bytes_pickles = to_bytes(pickles)
         digest = hmac.new(key, bytes_pickles, hashlib.sha1).hexdigest()
         data = {'func': 'store_conf_srv', 'args': pickles, 'pickled': True, 'digest': digest}
         return json.loads(self.do_command(data))

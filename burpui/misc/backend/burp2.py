@@ -21,6 +21,7 @@ from .burp1 import Burp as Burp1
 from ..parser.burp2 import Parser
 from ...utils import human_readable as _hr, utc_to_local, sanitize_string
 from ...exceptions import BUIserverException
+from ..._compat import to_bytes, to_unicode
 
 if sys.version_info < (3, 3):
     TimeoutError = OSError
@@ -289,7 +290,7 @@ class Burp(Burp1):
         if self.proc.stdin not in write:
             self._kill_burp()
             raise OSError('Unable to setup burp client')
-        self.proc.stdin.write('j:pretty-print-off\n'.encode('utf-8'))
+        self.proc.stdin.write(to_bytes('j:pretty-print-off\n'))
         jso = self._read_proc_stdout(self.timeout)
         if self._is_warning(jso):
             self.logger.info(jso['warning'])
@@ -375,7 +376,7 @@ class Burp(Burp1):
                 read, _, _ = select([self.proc.stdout], [], [], timeout)
                 if self.proc.stdout not in read:
                     raise TimeoutError('Read operation timed out')
-                doc += self.proc.stdout.readline().decode('utf-8').rstrip('\n')
+                doc += to_unicode(self.proc.stdout.readline()).rstrip('\n')
                 jso = self._is_valid_json(doc)
                 # if the string is a valid json and looks like a logline, we
                 # simply ignore it
@@ -404,7 +405,7 @@ class Burp(Burp1):
             _, write, _ = select([], [self.proc.stdin], [], self.timeout)
             if self.proc.stdin not in write:
                 raise TimeoutError('Write operation timed out')
-            self.proc.stdin.write(query.encode('utf-8'))
+            self.proc.stdin.write(to_bytes(query))
             jso = self._read_proc_stdout(timeout)
             if self._is_warning(jso):
                 self.logger.warning(jso['warning'])
@@ -861,10 +862,7 @@ class Burp(Burp1):
         if not root:
             top = ''
         else:
-            try:
-                top = root.decode('utf-8', 'replace')
-            except (UnicodeDecodeError, AttributeError):
-                top = root
+            top = to_unicode(root)
 
         # we know this operation may take a while so we arbitrary increase the
         # read timeout
