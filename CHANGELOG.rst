@@ -4,9 +4,11 @@ Changelog
 0.4.3 (12/28/2016)
 ------------------
 
+- Fix: issue `#190 <https://git.ziirish.me/ziirish/burp-ui/issues/190>`_
 - Fix: missing configuration in docker image
 - Fix: help troubleshooting some errors
 - Fix: missing vss_strip binary
+- Fix: encoding error that made unable to browse backups with burp1 backend
 
 0.4.2 (12/16/2016)
 ------------------

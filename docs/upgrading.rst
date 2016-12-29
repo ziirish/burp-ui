@@ -34,7 +34,7 @@ v0.4.0
 - **New** - The ``bui-manage`` tool can now help you setup both `Burp`_ and
   `Burp-UI`_.
 - **New** - The SQL requirements have evolved, you **MUST** run
-  ``pip install --upgrade "burp-ui[sql]"`` if you wish to keep using persistent
+  ``pip install --upgrade burp-ui-sql`` if you wish to keep using persistent
   storage.
 
 
