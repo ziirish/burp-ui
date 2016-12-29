@@ -17,7 +17,7 @@ import tarfile
 import logging
 
 from inspect import currentframe, getouterframes
-from ._compat import PY3
+from ._compat import PY3, to_unicode
 
 NOTIF_OK = 0
 NOTIF_WARN = 1
@@ -234,12 +234,12 @@ def sanitize_string(string, strict=True):
     :type string: str
     """
     if strict:
-        return string.encode('unicode_escape').decode('utf-8')
+        return to_unicode(string.encode('unicode_escape'))
     else:
         import re
         ret = repr(string).replace('\\\\', '\\')
         ret = re.sub(r"^u?'(.*)'$", r"\1", ret)
-        return ret.decode('utf-8')
+        return to_unicode(ret)
 
 
 def lookup_file(name=None, guess=True, directory=False, check=True):

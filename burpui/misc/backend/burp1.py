@@ -24,7 +24,7 @@ from ..parser.burp1 import Parser
 from ...utils import human_readable as _hr, BUIcompress, sanitize_string, \
     utc_to_local
 from ...exceptions import BUIserverException
-from ..._compat import unquote, PY3
+from ..._compat import unquote, PY3, to_unicode, to_bytes
 
 if PY3:
     from shlex import quote
@@ -350,10 +350,12 @@ class Burp(BUIbackend):
         """See :func:`burpui.misc.backend.interface.BUIbackend.status`"""
         result = []
         try:
-            query = sanitize_string(query.rstrip())
+            query = query.rstrip()
             self.logger.info("query: '{}'".format(query))
-            qry = b''
-            qry += '{0}\n'.format(query).encode('utf-8')
+            # FIXME: cannot sanitize string due to unicode :/
+            # NOTE: converting it to bytes should minimize the risks though
+            # query = sanitize_string(query.rstrip())
+            qry = to_bytes('{}\n'.format(query))
             sock = socket.socket(self.family, socket.SOCK_STREAM)
             sock.connect((self.host, self.port))
             sock.send(qry)
@@ -365,8 +367,7 @@ class Burp(BUIbackend):
                 if not line:
                     continue
                 try:
-                    if not PY3:
-                        line = line.decode('utf-8', 'replace')
+                    line = to_unicode(line)
                 except UnicodeDecodeError:  # pragma: no cover
                     pass
                 result.append(line)
@@ -868,13 +869,7 @@ class Burp(BUIbackend):
         if not root:
             top = ''
         else:
-            if not PY3:
-                try:
-                    top = root.decode('utf-8', 'replace')
-                except UnicodeDecodeError:
-                    top = root
-            else:
-                top = root
+            top = to_unicode(root)
 
         filemap = self.status('c:{0}:b:{1}:p:{2}\n'.format(name, backup, top))
         useful = False
@@ -995,10 +990,7 @@ class Burp(BUIbackend):
         # hack to handle client-side encrypted backups
         # this is now handled client-side, but we should never trust user input
         # so we need to handle it server-side too
-        if PY3:
-            decode = out.decode('utf-8')
-        else:
-            decode = out
+        decode = to_unicode(out)
         if 'zstrm inflate error: -3' in decode and 'transfer file returning: -1' in decode:
             status = 1
             out = 'encrypted'

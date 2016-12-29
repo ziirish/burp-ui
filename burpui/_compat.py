@@ -7,6 +7,7 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
+import re
 import sys
 
 try:
@@ -17,10 +18,29 @@ except ImportError:
 if sys.version_info[0] >= 3:
     PY3 = True
     from urllib.parse import unquote, quote  # noqa
+    text_type = str
+    string_types = (str,)
 else:
     PY3 = False
     from urllib import unquote, quote  # noqa
+    text_type = unicode
+    string_types = (str, unicode)
 
+
+def to_bytes(text):
+    """Transform string to bytes."""
+    if isinstance(text, text_type):
+        text = text.encode('utf-8')
+    return text
+
+
+def to_unicode(input_bytes, encoding='utf-8'):
+    """Decodes input_bytes to text if needed."""
+    if not isinstance(input_bytes, string_types):
+        input_bytes = input_bytes.decode(encoding)
+    elif re.match(r'\\u[0-9a-f]{4}', input_bytes):
+        input_bytes = input_bytes.decode('unicode-escape')
+    return input_bytes
 
 # maps module name -> attribute name -> original item
 # e.g. "time" -> "sleep" -> built-in function sleep
