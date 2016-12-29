@@ -84,9 +84,13 @@ class SessionManager(object):
         if self.session_managed():
             from .ext.sql import db
             from .models import Session
+            id = self.get_session_id()
+            old = Session.query.filter_by(uuid=id).first()
+            if old:
+                Session.query.filter_by(uuid=id).delete()
             ip = self.anonym_ip(ip)
             store = Session(
-                self.get_session_id(),
+                id,
                 user,
                 ip,
                 ua,
