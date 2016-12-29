@@ -11,3 +11,4 @@ dist
 _build
 .tags
 celerybeat-schedule
+pkgs/burp-ui-sql/burpui_sql/VERSION
