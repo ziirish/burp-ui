@@ -88,7 +88,7 @@ If you need persistent data, you will need additional dependencies as well:
 
 ::
 
-    pip install "burp-ui[sql]"
+    pip install burp-ui-sql
 
 
 Burp1

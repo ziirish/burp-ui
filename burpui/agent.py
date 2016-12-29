@@ -23,7 +23,7 @@ from logging.handlers import RotatingFileHandler
 
 from .exceptions import BUIserverException
 from .misc.backend.interface import BUIbackend
-from ._compat import pickle
+from ._compat import pickle, to_bytes, to_unicode
 from .utils import BUIlogging
 from .config import config
 
@@ -168,7 +168,8 @@ class BUIAgent(BUIbackend, BUIlogging):
                 length, = struct.unpack('!Q', lengthbuf)
                 data = self.recvall(length)
                 self._logger('info', 'recv: {}'.format(data))
-                txt = data.decode('UTF-8')
+                txt = to_unicode(data)
+                self._logger('info', 'recv2: {}'.format(txt))
                 if txt == 'RE':
                     return
                 j = json.loads(txt)
@@ -188,7 +189,7 @@ class BUIAgent(BUIbackend, BUIlogging):
                         if err:
                             self.request.sendall(b'ER')
                             self.request.sendall(struct.pack('!Q', len(err)))
-                            self.request.sendall(err.encode('UTF-8'))
+                            self.request.sendall(to_bytes(err))
                             self._logger('error', 'Restoration failed')
                             return
                     elif j['func'] == 'get_file':
@@ -203,7 +204,7 @@ class BUIAgent(BUIbackend, BUIlogging):
                         if err:
                             self.request.sendall(b'ER')
                             self.request.sendall(struct.pack('!Q', len(err)))
-                            self.request.sendall(err.encode('UTF-8'))
+                            self.request.sendall(to_bytes(err))
                             self._logger('error', err)
                             return
                         size = os.path.getsize(path)
@@ -219,7 +220,7 @@ class BUIAgent(BUIbackend, BUIlogging):
                         lengthbuf = self.request.recv(8)
                         length, = struct.unpack('!Q', lengthbuf)
                         data = self.recvall(length)
-                        txt = data.decode('UTF-8')
+                        txt = to_unicode(data)
                         if txt == 'RE':
                             return
                     elif j['func'] == 'del_file':
@@ -234,7 +235,7 @@ class BUIAgent(BUIbackend, BUIlogging):
                         if err:
                             self.request.sendall(b'ER')
                             self.request.sendall(struct.pack('!Q', len(err)))
-                            self.request.sendall(err.encode('UTF-8'))
+                            self.request.sendall(to_bytes(err))
                             self._logger('error', err)
                             return
                         res = json.dumps(False)
@@ -248,9 +249,9 @@ class BUIAgent(BUIbackend, BUIlogging):
                                 import hmac
                                 import hashlib
                                 from base64 import b64decode
-                                pickles = j['args'].encode(encoding='utf-8')
+                                pickles = to_bytes(j['args'])
                                 key = u'{}{}'.format(self.password, j['func'])
-                                key = key.encode(encoding='utf-8')
+                                key = to_bytes(key)
                                 bytes_pickles = pickles
                                 digest = hmac.new(key, bytes_pickles, hashlib.sha1).hexdigest()
                                 if digest != j['digest']:
@@ -267,10 +268,10 @@ class BUIAgent(BUIbackend, BUIlogging):
                     self._logger('error', traceback.format_exc())
                     self._logger('warning', 'Forwarding Exception: {}'.format(res))
                     self.request.sendall(struct.pack('!Q', len(res)))
-                    self.request.sendall(res.encode('UTF-8'))
+                    self.request.sendall(to_bytes(res))
                     return
                 self.request.sendall(struct.pack('!Q', len(res)))
-                self.request.sendall(res.encode('UTF-8'))
+                self.request.sendall(to_bytes(res))
             except AttributeError as e:
                 self._logger('warning', '{}\nWrong method => {}'.format(traceback.format_exc(), str(e)))
                 self.request.sendall(b'KO')

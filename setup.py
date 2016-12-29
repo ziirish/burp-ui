@@ -183,16 +183,15 @@ def readme():
             desc += l
     return desc
 
-with open(os.path.join(ROOT, 'burpui', '__init__.py')) as f:
-    data = f.read()
+sys.path.insert(0, os.path.join(ROOT))
 
-    from burpui.app import __author__, __author_email__, __description__, \
-                       __url__, __title__
-    name = __title__
-    author = __author__
-    author_email = __author_email__
-    description = __description__
-    url = __url__
+from burpui.desc import __author__, __author_email__, __description__, \
+        __url__, __title__
+name = __title__
+author = __author__
+author_email = __author_email__
+description = __description__
+url = __url__
 
 with open(os.path.join(ROOT, 'requirements.txt')) as f:
     requires = [x.strip() for x in f if x.strip()]

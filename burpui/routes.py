@@ -418,6 +418,8 @@ def login():
         else:
             with force_locale(user.language):
                 flash(_('Wrong username or password'), 'danger')
+    elif form.is_submitted():
+        flash(_('Wrong CSRF token, please try again'), 'warning')
     return render_template('login.html', form=form, login=True)
 
 

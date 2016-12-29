@@ -102,6 +102,10 @@ gives you the instructions to fix it.
 .. note:: You'll have to restart your burp-server to bind to the new *status_address*
 
 
+Other errors may be reported as well by the ``docker-compose logs`` command.
+Please read its output carefully.
+
+
 If the error still occurs, you may need to investigate further.
 You can run these commands:
 
