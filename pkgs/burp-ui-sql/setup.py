@@ -3,12 +3,15 @@
 
 import os
 import sys
+import shutil
 
 from setuptools import setup, find_packages
 
-ROOT=os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..')
-## Try to load modules from our current env first
-#sys.path.insert(0, ROOT)
+# only used to build the package
+ROOT = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..')
+
+if os.path.exists(os.path.join(ROOT, 'burpui', 'VERSION')):
+    shutil.copyfile(os.path.join(ROOT, 'burpui', 'VERSION'), 'burpui_sql/VERSION')
 
 readme = """
 Burp-UI Meta package for SQL requirements

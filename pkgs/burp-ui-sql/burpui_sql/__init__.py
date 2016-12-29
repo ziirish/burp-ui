@@ -20,9 +20,8 @@ __description__ = ('Burp-UI is a web-ui for burp backup written in python with '
                    'Flask and jQuery/Bootstrap')
 __license__ = 'BSD 3-clause'
 
-try:
-    ROOT = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', '..')
-    sys.path.insert(0, ROOT)
-    from burpui.desc import __version__
-except ImportError:
+ROOT = os.path.join(os.path.dirname(os.path.realpath(__file__)))
+if os.path.exists(os.path.join(ROOT, 'VERSION')):
+    __version__ = open(os.path.join(ROOT, 'VERSION')).read().rstrip()
+else:
     __version__ = '0.4.3'
