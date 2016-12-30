@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-12-16 10:42+0100\n"
+"POT-Creation-Date: 2016-12-30 09:40+0100\n"
 "PO-Revision-Date: 2016-08-25 15:19+0200\n"
 "Last-Translator: Ziirish <hi+burpui@ziirish.me>\n"
 "Language: fr\n"
@@ -18,11 +18,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.3.4\n"
 
-#: burpui/app.py:481
+#: burpui/app.py:465
 msgid "Please log in to access this page."
 msgstr "Veuillez vous authentifier pour accéder à cette page."
 
-#: burpui/app.py:484
+#: burpui/app.py:468
 msgid "Please reauthenticate to access this page."
 msgstr "Veuillez vous ré-authentifier pour accéder à cette page."
 
@@ -58,6 +58,10 @@ msgstr "Connecté avec succès"
 #: burpui/routes.py:420
 msgid "Wrong username or password"
 msgstr "Mauvais nom d&#39;utilisateur ou mot de passe"
+
+#: burpui/routes.py:422
+msgid "Wrong CSRF token, please try again"
+msgstr "Mauvais token CSRF, veuillez réessayer"
 
 #: burpui/misc/parser/burp2.py:55
 msgid "max secs"
