@@ -298,6 +298,7 @@ def create_app(conf=None, verbose=0, logfile=None, gunicorn=True,
     app.config['CFG'] = None
 
     # Some config
+    app.config['BUI_CLI'] = cli
 
     # FIXME: strange behavior when bundling errors
     # app.config['BUNDLE_ERRORS'] = True

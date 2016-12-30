@@ -232,14 +232,15 @@ class Burp(Burp1):
         self.logger.info('includes: {}'.format(self.includes))
         self.logger.info('enforce: {}'.format(self.enforce))
         self.logger.info('revoke: {}'.format(self.revoke))
-        try:
-            # make the connection
-            self._spawn_burp(True)
-            self.status()
-        except BUIserverException:
-            pass
-        except OSError as exp:
-            self.logger.critical(str(exp))
+        if not self.app.config['BUI_CLI']:
+            try:
+                # make the connection
+                self._spawn_burp(True)
+                self.status()
+            except BUIserverException:
+                pass
+            except OSError as exp:
+                self.logger.critical(str(exp))
 
     def __exit__(self, typ, value, traceback):
         """try not to leave child process server side"""

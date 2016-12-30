@@ -4,6 +4,8 @@ Changelog
 0.4.3 (12/28/2016)
 ------------------
 
+- Fix: issue `#186 <https://git.ziirish.me/ziirish/burp-ui/issues/186>`_
+- Fix: issue `#188 <https://git.ziirish.me/ziirish/burp-ui/issues/188>`_
 - Fix: issue `#190 <https://git.ziirish.me/ziirish/burp-ui/issues/190>`_
 - Fix: missing configuration in docker image
 - Fix: help troubleshooting some errors

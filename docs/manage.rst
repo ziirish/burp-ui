@@ -79,7 +79,7 @@ You will also need some extra requirements:
 
 ::
 
-    pip install "burp-ui[sql]"
+    pip install --upgrade burp-ui-sql
 
 
 Then you just have to run the following command to have your database setup:
