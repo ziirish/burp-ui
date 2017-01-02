@@ -232,7 +232,7 @@ class Burp(Burp1):
         self.logger.info('includes: {}'.format(self.includes))
         self.logger.info('enforce: {}'.format(self.enforce))
         self.logger.info('revoke: {}'.format(self.revoke))
-        if not self.app.config['BUI_CLI']:
+        if self.app and not self.app.config['BUI_CLI']:
             try:
                 # make the connection
                 self._spawn_burp(True)
