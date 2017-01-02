@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.4.4 (01/02/2017)
+------------------
+
+- Fix: issue `#193 <https://git.ziirish.me/ziirish/burp-ui/issues/193>`_
+
 0.4.3 (12/28/2016)
 ------------------
 
