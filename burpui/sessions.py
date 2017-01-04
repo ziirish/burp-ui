@@ -103,7 +103,6 @@ class SessionManager(object):
     def session_in_db(self):
         """Tell if the current session exists in db"""
         if self.session_managed():
-            from .ext.sql import db
             from .models import Session
             id = self.get_session_id()
             return Session.query.filter_by(uuid=id).first() is not None
