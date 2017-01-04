@@ -1,16 +1,16 @@
 Badges
 ======
 
-.. image:: https://git.ziirish.me/ci/projects/1/status.png?ref=stable
+.. image:: https://git.ziirish.me/ci/projects/1/status.png?ref=master
     :target: https://git.ziirish.me/ziirish/burp-ui/pipelines
     :alt: Build Status
 
-.. image:: https://git.ziirish.me/ziirish/burp-ui/badges/stable/coverage.svg
+.. image:: https://git.ziirish.me/ziirish/burp-ui/badges/master/coverage.svg
     :target: https://git.ziirish.me/ziirish/burp-ui/pipelines
     :alt: Test coverage
 
-.. image:: https://readthedocs.org/projects/burp-ui/badge/?version=stable
-    :target: https://readthedocs.org/projects/burp-ui/?badge=stable
+.. image:: https://readthedocs.org/projects/burp-ui/badge/?version=latest
+    :target: https://readthedocs.org/projects/burp-ui/?badge=latest
     :alt: Documentation Status
 
 Introduction
@@ -19,9 +19,8 @@ Introduction
 Screenshots
 -----------
 
-.. image:: https://git.ziirish.me/ziirish/burp-ui/raw/stable/docs/_static/burp-ui.gif
-    :target: https://git.ziirish.me/ziirish/burp-ui/blob/stable/docs/_static/burp-ui.gif
-
+.. image:: https://git.ziirish.me/ziirish/burp-ui/raw/master/docs/_static/burp-ui.gif
+    :target: https://git.ziirish.me/ziirish/burp-ui/blob/master/docs/_static/burp-ui.gif
 
 Demo
 ----
@@ -35,7 +34,6 @@ Credentials:
 - *admin / admin* to play with ``Burp-UI`` as an administrator
 - *demo / demo* to play with ``Burp-UI`` as a regular user
 
-
 What's that?
 ------------
 
@@ -44,7 +42,6 @@ burp-servers.
 You can view different reports about burp-servers, burp-clients, backups, etc.
 ``Burp-UI`` allows you to perform *online* restorations and to edit/manage
 your burp-server's configuration files.
-
 
 Who are you?
 ------------
@@ -57,28 +54,24 @@ If you like my work, you can:
 * Buy me a beer or some fries (or both!)
 * Make a donation on my `Paypal <http://ziirish.info>`__
 
-
 Documentation
 =============
 
 The documentation is hosted on `readthedocs <https://readthedocs.org>`_ at the
 following address: `burp-ui.readthedocs.io
-<https://burp-ui.readthedocs.io/en/stable/>`_
-
+<https://burp-ui.readthedocs.io/en/latest/>`_
 
 FAQ
 ===
 
-A `FAQ <https://burp-ui.readthedocs.io/en/stable/faq.html>`_ is available with
+A `FAQ <https://burp-ui.readthedocs.io/en/latest/faq.html>`_ is available with
 the documentation.
-
 
 Community
 =========
 
 Please refer to the `Contributing
-<https://burp-ui.readthedocs.io/en/stable/contributing.html>`_ page.
-
+<https://burp-ui.readthedocs.io/en/latest/contributing.html>`_ page.
 
 Notes
 =====
@@ -89,10 +82,9 @@ Feel free to report any issues on my `gitlab
 I have closed the *github tracker* to have a unique tracker system.
 
 Also please, read the `Contributing
-<https://burp-ui.readthedocs.io/en/stable/contributing.html>`_
+<https://burp-ui.readthedocs.io/en/latest/contributing.html>`_
 page before reporting any issue to make sure we have all the informations to
 help you.
-
 
 Licenses
 ========
@@ -115,10 +107,9 @@ But this project is built on top of other tools. Here is a non exhaustive list:
 - `AngularStrap <http://mgcrea.github.io/angular-strap/>`_
 - `lodash <https://github.com/lodash/lodash>`_
 - `DataTables <http://datatables.net/>`_
-- Home-made `favicon <https://git.ziirish.me/ziirish/burp-ui/blob/stable/burpui/static/images/favicon.ico>`_ based on pictures from `simpsoncrazy <http://www.simpsoncrazy.com/pictures/homer>`_
+- Home-made `favicon <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/images/favicon.ico>`_ based on pictures from `simpsoncrazy <http://www.simpsoncrazy.com/pictures/homer>`_
 
 Also note that this project is made with the Awesome `Flask`_ micro-framework.
-
 
 Thanks
 ======
@@ -133,6 +124,6 @@ would not exist without `Burp`_.
 
 
 .. _Flask: http://flask.pocoo.org/
-.. _License: https://git.ziirish.me/ziirish/burp-ui/blob/stable/LICENSE
+.. _License: https://git.ziirish.me/ziirish/burp-ui/blob/master/LICENSE
 .. _Burp: http://burp.grke.org/
-.. _burpui.cfg: https://git.ziirish.me/ziirish/burp-ui/blob/stable/share/burpui/etc/burpui.sample.cfg
+.. _burpui.cfg: https://git.ziirish.me/ziirish/burp-ui/blob/master/share/burpui/etc/burpui.sample.cfg

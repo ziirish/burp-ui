@@ -100,6 +100,15 @@ class SessionManager(object):
             db.session.add(store)
             db.session.commit()
 
+    def session_in_db(self):
+        """Tell if the current session exists in db"""
+        if self.session_managed():
+            from .models import Session
+            id = self.get_session_id()
+            return Session.query.filter_by(uuid=id).first() is not None
+        # don't need to store it since it is not managed anyway
+        return True
+
     def delete_session(self):
         """Remove the session"""
         self.delete_session_by_id(getattr(session, 'sid', None))

@@ -189,16 +189,16 @@ class BasicLoader(BUIloader):
             return False, message, NOTIF_ERROR
         current = self.users[user]
         if current['salted']:
-            func = check_password_hash
+            comp = check_password_hash
         else:
-            def func(x, y):
+            def comp(x, y):
                 return x == y
         curr = current['pwd']
-        if old_passwd and not func(curr, old_passwd):
+        if old_passwd and not comp(curr, old_passwd):
             message = "unable to authenticate user '{}'".format(user)
             self.logger.error(message)
             return False, message, NOTIF_ERROR
-        if func(curr, passwd):
+        if comp(curr, passwd):
             message = 'password is the same'
             self.logger.warning(message)
             return False, message, NOTIF_WARN

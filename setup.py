@@ -176,7 +176,7 @@ def readme():
                 skip = True
             if skip:
                 cpt += 1
-            if cpt > 7:
+            if cpt > 6:
                 skip = False
             if skip:
                 continue
