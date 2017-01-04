@@ -27,6 +27,7 @@ can play with:
 - conf: Path to the `Burp-UI`_ configuration file
 - verbose: Verbosity level between 0 and 4
 - logfile: Path to a logfile in order to log `Burp-UI`_ internal messages
+- reverse_proxy: Whether we are behind a reverse-proxy or not (defaults to True)
 
 .. warning:: You **MUST** set the *appsecret* option in your configuration
              file when using gunicorn.
@@ -41,13 +42,13 @@ Advanced usage
 `Gunicorn`_ supports further settings (see its `documentation
 <http://docs.gunicorn.org/en/stable/>`_ for details).
 For instance, you would probably like to use the ``-c`` flag with the sample
-configuration file bundled with `Burp-UI`_ in *contrib/gunicorn/burpui_config.py*.
+configuration file bundled with `Burp-UI`_ in *contrib/gunicorn/burpui_gunicorn.py*.
 
 Usage example:
 
 ::
 
-    gunicorn -c burpui_config.py 'burpui:create_app(conf="/etc/burp/burpui.cfg",logfile="/var/log/gunicorn/burp-ui_info.log")'
+    gunicorn -c burpui_gunicorn.py 'burpui:create_app(conf="/etc/burp/burpui.cfg",logfile="/var/log/gunicorn/burp-ui_info.log")'
 
 
 Daemon
@@ -56,24 +57,13 @@ Daemon
 If you wish to run `Burp-UI`_ as a daemon process, the recommanded way is to use
 `Gunicorn`_.
 
-When installing the *gunicorn* package on debian, there is a handler script that
-is able to start several instances of `Gunicorn`_ as daemons.
+Requirements
+^^^^^^^^^^^^
 
-All you need to do is installing the *gunicorn* package and adding a
-configuration file in */etc/gunicorn.d/*.
-
-There is a sample configuration file available
-`here <https://git.ziirish.me/ziirish/burp-ui/blob/master/contrib/gunicorn.d/burp-ui>`__.
-
-If you are using this sample configuration file, make sure to create the
-*burpui* user with the appropriate permissions first:
+First of all, you'll need a dedicated user.
 
 ::
 
-    # install the gunicorn package
-    apt-get install gunicorn
-    # copy the gunicorn sample configuration
-    cp /usr/local/share/burpui/contrib/gunicorn.d/burp-ui /etc/gunicorn.d/
     # create the burpui user
     useradd -m -r -d /var/lib/burpui -c 'Burp-UI daemon user' burpui
     mkdir /etc/burp
@@ -124,12 +114,7 @@ Now you need to add the *bui-agent1* client to the authorized clients:
 
 
 Finally, make sure you set ``bconfcli: /var/lib/burpui/burp.conf`` in your 
-`Burp-UI`_ configuration filei (*/etc/burp/burpui.cfg*), and then you can
-restart `Gunicorn`_:
-
-::
-
-    service gunicorn restart
+`Burp-UI`_ configuration file (*/etc/burp/burpui.cfg*).
 
 
 If you want to take advantage of *advanced* features such as client add/removal
@@ -157,6 +142,59 @@ Finally you can restart your ``burp-server``.
 
 .. note:: The above commands are meant for *default* setup. You may need to
           adapt the paths.
+
+
+Debian-style
+^^^^^^^^^^^^
+
+When installing the *gunicorn* package on debian, there is a handler script that
+is able to start several instances of `Gunicorn`_ as daemons.
+
+All you need to do is installing the *gunicorn* package and adding a
+configuration file in */etc/gunicorn.d/*.
+
+There is a sample configuration file available
+`here <https://git.ziirish.me/ziirish/burp-ui/blob/master/contrib/gunicorn.d/burp-ui>`__.
+
+::
+
+    # install the gunicorn package
+    apt-get install gunicorn
+    # copy the gunicorn sample configuration
+    cp /usr/local/share/burpui/contrib/gunicorn.d/burp-ui /etc/gunicorn.d/
+    # now restart gunicorn
+    service gunicorn restart
+
+
+Systemd
+^^^^^^^
+
+On non debian systems, the handler script may not be available. You will then
+have to create your own service. We can do this for systemd for example:
+
+::
+
+    # copy the gunicorn configuration file
+    cp /usr/local/share/contrib/gunicorn/burpui_gunicorn.py /etc/burp/
+    # create the service file
+    cat >/etc/systemd/service/bui-gunicorn.service<<EOF
+    [Unit]
+    Description=Burp-UI gunicorn service
+    After=network.target
+
+    [Service]
+    User=burpui
+    Group=burpui
+    ExecStart=/usr/local/bin/gunicorn -c /etc/burp/burpui_gunicorn.py 'burpui:create_app(conf="/etc/burp/burpui.cfg",logfile="/var/log/gunicorn/burp-ui_info.log")'
+
+    [Install]
+    WantedBy=multi-user.target
+    EOF
+    # enable the new service
+    systemctl enable bui-gunicorn.service
+    # start the service
+    systemctl start bui-gunicorn.service
+
 
 Reverse-Proxy
 -------------

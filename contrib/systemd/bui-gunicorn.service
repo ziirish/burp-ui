@@ -1,0 +1,11 @@
+[Unit]
+Description=Burp-UI gunicorn service
+After=network.target
+
+[Service]
+User=burpui
+Group=burpui
+ExecStart=/usr/local/bin/gunicorn -c /etc/burp/burpui_gunicorn.py 'burpui:create_app(conf="/etc/burp/burpui.cfg",logfile="/var/log/gunicorn/burp-ui_info.log")'
+
+[Install]
+WantedBy=multi-user.target

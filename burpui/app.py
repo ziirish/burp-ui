@@ -183,8 +183,7 @@ def create_celery(myapp, warn=True):
     return None
 
 
-def create_app(conf=None, verbose=0, logfile=None, gunicorn=True,
-               unittest=False, debug=False, cli=False):
+def create_app(conf=None, verbose=0, logfile=None, **kwargs):
     """Initialize the whole application.
 
     :param conf: Configuration file to use
@@ -196,21 +195,20 @@ def create_app(conf=None, verbose=0, logfile=None, gunicorn=True,
     :param logfile: Store the logs in the given file
     :type logfile: str
 
-    :param gunicorn: Enable gunicorn engine instead of flask's default
-    :type gunicorn: bool
-
-    :param unittest: Are we running tests (used for test only)
-    :type unittest: bool
-
-    :param debug: Enable debug mode
-    :type debug: bool
-
-    :param cli: Are we running the CLI
-    :type cli: bool
+    :param kwargs: Extra options:
+                   - gunicorn (bool): Enable gunicorn engine instead of flask's
+                     default. Default is True.
+                   - unittest (bool): Are we running tests (used for test only).
+                     Default is False.
+                   - debug (bool): Enable debug mode. Default is False.
+                   - cli (bool): Are we running the CLI. Default is False.
+                   - reverse_proxy (bool): Are we behind a reverse-proxy.
+                     Default is True if gunicorn is True
+    :type kwargs: dict
 
     :returns: A :class:`burpui.server.BUIServer` object
     """
-    from flask import g
+    from flask import g, request
     from flask_login import LoginManager
     from flask_bower import Bower
     from flask_babel import gettext
@@ -223,6 +221,12 @@ def create_app(conf=None, verbose=0, logfile=None, gunicorn=True,
     from .ext.i18n import babel, get_locale
 
     logger = logging.getLogger('burp-ui')
+
+    gunicorn = kwargs.get('gunicorn', True)
+    unittest = kwargs.get('unittest', False)
+    debug = kwargs.get('debug', False)
+    cli = kwargs.get('cli', False)
+    reverse_proxy = kwargs.get('reverse_proxy', gunicorn)
 
     # The debug argument used to be a boolean so we keep supporting this format
     if isinstance(verbose, bool):
@@ -282,7 +286,9 @@ def create_app(conf=None, verbose=0, logfile=None, gunicorn=True,
         'logfile: {}\n'.format(logfile) +
         'gunicorn: {}\n'.format(gunicorn) +
         'debug: {}\n'.format(debug) +
-        'unittest: {}'.format(unittest)
+        'unittest: {}\n'.format(unittest) +
+        'cli: {}\n'.format(cli) +
+        'reverse_proxy: {}'.format(reverse_proxy)
     )
 
     if not unittest:
@@ -345,9 +351,8 @@ def create_app(conf=None, verbose=0, logfile=None, gunicorn=True,
 
     app.wsgi_app = ReverseProxied(app.wsgi_app, app)
 
-    # Manage gunicorn special tricks & improvements
-    if gunicorn:  # pragma: no cover
-        logger.info('Using gunicorn')
+    # Manage reverse_proxy special tricks & improvements
+    if reverse_proxy:  # pragma: no cover
         from werkzeug.contrib.fixers import ProxyFix
 
         app.wsgi_app = ProxyFix(app.wsgi_app)
@@ -484,6 +489,16 @@ def create_app(conf=None, verbose=0, logfile=None, gunicorn=True,
     bower = Bower()
     bower.init_app(app)
 
+    def _check_session(user, request):
+        if user and not session_manager.session_in_db():
+            login = getattr(user, 'name', None)
+            if login:
+                session_manager.store_session(
+                    login,
+                    request.remote_addr,
+                    request.headers.get('User-Agent')
+                )
+
     @app.before_request
     def setup_request():
         g.locale = get_locale()
@@ -501,14 +516,18 @@ def create_app(conf=None, verbose=0, logfile=None, gunicorn=True,
     def load_user(userid):
         """User loader callback"""
         if app.auth != 'none':
-            return app.uhandler.user(userid)
+            user = app.uhandler.user(userid)
+            _check_session(user, request)
+            return user
         return None
 
     @app.login_manager.request_loader
     def load_user_from_request(request):
         """User loader from request callback"""
         if app.auth != 'none':
-            return basic_login_from_request(request, app)
+            user = basic_login_from_request(request, app)
+            _check_session(user, request)
+            return user
 
     @app.after_request
     def after_request(response):
