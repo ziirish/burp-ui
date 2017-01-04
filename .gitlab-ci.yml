@@ -46,9 +46,9 @@ build:py2:
   only:
   - master
   - demo
-#  artifacts:
-#    path:
-#    - dist/
+  artifacts:
+    path:
+    - dist/
 
 build:py3:
   stage: build
@@ -59,9 +59,9 @@ build:py3:
   - build
   only:
   - master
-#  artifacts:
-#    paths:
-#    - dist/
+  artifacts:
+    paths:
+    - dist/
 
 deploy:demo:
   stage: deploy
