@@ -238,7 +238,7 @@ setup(
         (os.path.join(contrib, 'centos'), ['contrib/centos/init.sh']),
         (os.path.join(contrib, 'debian'), ['contrib/debian/init.sh', 'contrib/debian/bui-celery.init']),
         (os.path.join(contrib, 'gunicorn.d'), ['contrib/gunicorn.d/burp-ui']),
-        (os.path.join(contrib, 'gunicorn'), ['contrib/gunicorn/burpui_config.py']),
+        (os.path.join(contrib, 'gunicorn'), ['contrib/gunicorn/burpui_gunicorn.py']),
     ] + migrations,
     install_requires=requires,
     extras_require={

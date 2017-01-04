@@ -1,7 +1,7 @@
 # Sample Gunicorn configuration file.
 
 # usage:
-# gunicorn -c burpui_config.py 'burpui:create_app(conf="/etc/burp/burpui.cfg",logfile="/var/log/gunicorn/burp-ui_info.log")'
+# gunicorn -c burpui_gunicorn.py 'burpui:create_app(conf="/etc/burp/burpui.cfg",logfile="/var/log/gunicorn/burp-ui_info.log")'
 
 #
 # Server socket
