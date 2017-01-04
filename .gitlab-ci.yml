@@ -47,7 +47,7 @@ build:py2:
   - master
   - demo
   artifacts:
-    path:
+    paths:
     - dist/
 
 build:py3:
