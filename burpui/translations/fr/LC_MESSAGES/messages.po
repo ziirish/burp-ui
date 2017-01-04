@@ -1,7 +1,7 @@
 # French translations for Burp-UI.
-# Copyright (C) 2016 ORGANIZATION
+# Copyright (C) 2017 ZIIRISH
 # This file is distributed under the same license as the PROJECT project.
-# Ziirish <hi+burpui@ziirish.me>, 2016.
+# Ziirish <hi+burpui@ziirish.me>, 2017.
 #
 msgid ""
 msgstr ""

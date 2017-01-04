@@ -52,7 +52,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Burp-UI'
-copyright = u'2016, Ziirish'
+copyright = u'2017, Ziirish'
 author = u'Ziirish'
 
 # The version info for the project you're documenting, acts as replacement for
