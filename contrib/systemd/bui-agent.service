@@ -5,6 +5,7 @@ After=network.target
 [Service]
 ExecStart=/usr/local/bin/bui-agent
 User=burpui
+Group=burpui
 
 [Install]
 WantedBy=multi-user.target
