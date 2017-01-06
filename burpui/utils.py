@@ -16,6 +16,7 @@ import zipfile
 import tarfile
 import logging
 
+from uuid import UUID
 from inspect import currentframe, getouterframes
 from ._compat import PY3, to_unicode
 
@@ -240,6 +241,16 @@ def sanitize_string(string, strict=True):
         ret = repr(string).replace('\\\\', '\\')
         ret = re.sub(r"^u?'(.*)'$", r"\1", ret)
         return to_unicode(ret)
+
+
+def is_uuid(string):
+    """Tells if a given string is a UUID"""
+    try:
+        val = UUID(string, version=4)
+    except ValueError:
+        return False
+
+    return val.hex == string.replace('-', '')
 
 
 def lookup_file(name=None, guess=True, directory=False, check=True):

@@ -53,6 +53,11 @@ class UserAuthHandler(BUIhandler):
         self.users[key] = ret
         return ret
 
+    def remove(self, name):
+        """See :func:`burpui.misc.auth.interface.BUIhandler.remove`"""
+        if name in self.users:
+            del self.users[name]
+
 
 class UserHandler(BUIuser):
     """See :class:`burpui.misc.auth.interface.BUIuser`"""

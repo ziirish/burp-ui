@@ -208,11 +208,12 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
 
     :returns: A :class:`burpui.server.BUIServer` object
     """
-    from flask import g, request
+    from flask import g, request, session
     from flask_login import LoginManager
     from flask_bower import Bower
     from flask_babel import gettext
-    from .utils import basic_login_from_request, ReverseProxied, lookup_file
+    from .utils import basic_login_from_request, ReverseProxied, lookup_file, \
+        is_uuid
     from .server import BUIServer as BurpUI
     from .sessions import session_manager
     from .routes import view, mypad
@@ -489,22 +490,26 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
     bower = Bower()
     bower.init_app(app)
 
-    def _check_session(user, request):
+    def _check_session(user, request, api=False):
         if user and not session_manager.session_in_db():
             login = getattr(user, 'name', None)
-            if login:
+            if login and not is_uuid(login):
+                remember = session.get('persistent', False)
                 session_manager.store_session(
                     login,
                     request.remote_addr,
-                    request.headers.get('User-Agent')
+                    request.headers.get('User-Agent'),
+                    remember,
+                    api
                 )
+            elif login:
+                app.uhandler.remove(login)
 
     @app.before_request
     def setup_request():
         g.locale = get_locale()
         # make sure to store secure cookie if required
         if app.scookie:
-            from flask import request
             criteria = [
                 request.is_secure,
                 request.headers.get('X-Forwarded-Proto', 'http') == 'https'
@@ -517,7 +522,7 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
         """User loader callback"""
         if app.auth != 'none':
             user = app.uhandler.user(userid)
-            _check_session(user, request)
+            _check_session(user, request, True)
             return user
         return None
 

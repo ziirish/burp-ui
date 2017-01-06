@@ -85,9 +85,7 @@ class SessionManager(object):
             from .ext.sql import db
             from .models import Session
             id = self.get_session_id()
-            old = Session.query.filter_by(uuid=id).first()
-            if old:
-                Session.query.filter_by(uuid=id).delete()
+            Session.query.filter_by(uuid=id).delete()
             ip = self.anonym_ip(ip)
             store = Session(
                 id,
@@ -99,6 +97,7 @@ class SessionManager(object):
             )
             db.session.add(store)
             db.session.commit()
+            session['persistent'] = remember
 
     def session_in_db(self):
         """Tell if the current session exists in db"""
@@ -236,7 +235,7 @@ class SessionManager(object):
                 user = self.get_session_username_by_id(id)
                 if user and user in users:
                     users.pop(user)
-                elif id in users:
+                if id in users:
                     users.pop(id)
         return True
 

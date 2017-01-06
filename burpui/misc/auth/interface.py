@@ -39,7 +39,7 @@ class BUIhandler(with_metaclass(ABCMeta, object)):
         pass  # pragma: no cover
 
     @abstractmethod
-    def user(self, name=None):
+    def user(self, name=None, refresh=False):
         """The :func:`burpui.misc.auth.interface.BUIhandler.user` function
         returns the :class:`flask_login:flask_login.UserMixin` object
         corresponding to the given user name.
@@ -47,9 +47,21 @@ class BUIhandler(with_metaclass(ABCMeta, object)):
         :param name: Name of the user
         :type name: str
 
-        :returns: The corresponding user object
+        :param refresh: Whether we need to re-create a fresh user or not
+        :type refresh: bool
+
+        :returns: :class:`burpui.misc.auth.interface.BUIuser`
         """
         return None  # pragma: no cover
+
+    def remove(self, name):
+        """The :func:`burpui.misc.auth.interface.BUIhandler.remove` function
+        allows to remove a user from the cache.
+
+        :param name: Name of the user to remove
+        :type name: str
+        """
+        pass
 
     @property
     def loader(self):
