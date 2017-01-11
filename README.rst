@@ -86,6 +86,18 @@ Also please, read the `Contributing
 page before reporting any issue to make sure we have all the informations to
 help you.
 
+See also
+========
+
+Starting with burp-ui v0.3.0, I introduced you [burp_server_report](https://github.com/pablodav/burp_server_reports)
+a project lead by Pablo Estigarribia.
+
+Pablo also contributed to other interesting projects to automate burp and burp-ui
+deployments through Ansible:
+
+- [burpui_server](https://galaxy.ansible.com/CoffeeITWorks/burpui_server/)
+- [burp2_server](https://galaxy.ansible.com/CoffeeITWorks/burp2_server/)
+
 Licenses
 ========
 
