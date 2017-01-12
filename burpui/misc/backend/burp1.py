@@ -842,9 +842,9 @@ class Burp(BUIbackend):
                 # skip backups before "start"
                 if start and backup_date < start:
                     continue
-                # don't need to go further if backups after "end"
+                # skip backups after "end"
                 if end and backup_date > end:
-                    break
+                    continue
                 log = self.get_backup_logs(spl[0], name)
                 bkp['encrypted'] = log['encrypted']
                 bkp['received'] = log['received']

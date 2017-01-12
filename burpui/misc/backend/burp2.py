@@ -822,9 +822,9 @@ class Burp(Burp1):
             # skip backups before "start"
             if start and backup['timestamp'] < start:
                 continue
-            # don't need to go further if backups after "end"
+            # skip backups after "end"
             if end and backup['timestamp'] > end:
-                break
+                continue
             log = self.get_backup_logs(backup['number'], name)
             try:
                 back['encrypted'] = log['encrypted']
