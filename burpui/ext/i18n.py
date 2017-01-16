@@ -17,6 +17,7 @@ babel = Babel()
 LANGUAGES = {
     'en': 'English',
     'fr': 'Français',
+    'es': 'Español',
 }
 config['LANGUAGES'] = LANGUAGES
 
