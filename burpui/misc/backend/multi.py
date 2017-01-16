@@ -13,7 +13,7 @@ from .interface import BUIbackend
 from ..parser.interface import BUIparser
 from ...exceptions import BUIserverException
 from ..._compat import pickle, to_unicode, to_bytes
-from ...utils import implement
+from ...decorators import implement
 
 
 INTERFACE_METHODS = BUIbackend.__abstractmethods__

@@ -11,6 +11,7 @@ from . import api, cache_key
 from ..server import BUIServer  # noqa
 from .custom import fields, Resource
 from ..exceptions import BUIserverException
+from ..decorators import browser_cache
 
 from six import iteritems
 from flask import current_app
@@ -218,6 +219,7 @@ class ClientsReport(Resource):
     })
 
     @api.cache.cached(timeout=1800, key_prefix=cache_key)
+    @browser_cache(1800)
     @ns.marshal_with(report_fields, code=200, description='Success')
     @ns.expect(parser)
     @ns.doc(
@@ -403,6 +405,7 @@ class ClientsStats(Resource):
     })
 
     @api.cache.cached(timeout=1800, key_prefix=cache_key)
+    @browser_cache(1800)
     @ns.marshal_list_with(client_fields, code=200, description='Success')
     @ns.expect(parser)
     @ns.doc(
@@ -487,6 +490,7 @@ class AllClients(Resource):
     })
 
     @api.cache.cached(timeout=1800, key_prefix=cache_key)
+    @browser_cache(1800)
     @ns.marshal_list_with(client_fields, code=200, description='Success')
     @ns.expect(parser)
     @ns.doc(

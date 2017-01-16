@@ -316,24 +316,6 @@ def utc_to_local(timestamp):
         return timestamp
 
 
-def implement(func):
-    """A decorator indicating the method is implemented.
-
-    For the agent and the 'multi' backend, we inherit the backend interface but
-    we don't really implement it because we just act as a proxy.
-    But maintaining the exhaustive list of methods in several places to always
-    implement the same "proxy" thing was painful so I ended up cheating to
-    dynamically implement those methods thanks to the __getattribute__ magic
-    function.
-
-    But sometimes we want to implement specific things, hence this decorator
-    to indicate we don't want the default "magic" implementation and use the
-    custom implementation instead.
-    """
-    func.__ismethodimplemented__ = True
-    return func
-
-
 def basic_login_from_request(request, app):
     """Check 'Authorization' headers and log the user in if possible.
 
