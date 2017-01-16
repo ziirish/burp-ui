@@ -16,6 +16,18 @@ You may find all the basic informations to get started with `Burp-UI`_ in the
 `README`_ file. You can also read the `step-by-step <step-by-step.html>`_ page
 to get started.
 
+How does Burp-UI work?
+----------------------
+
+The answer depends whether you are using burp 1.x or burp 2.x. Basically,
+`Burp-UI`_ tries to provide a consistent API between the *Frontend* (the UI) and
+the burp server. To do so, it implements two *Backends*: burp-1 and burp-2.
+You can select either of these with the `version <usage.html#versions>`__ flag
+in your configuration.
+
+You can also refer to the `Architecture <architecture.html>`__ page of the
+documentation to know more about those backends.
+
 How to configure my *firewall*?
 -------------------------------
 
