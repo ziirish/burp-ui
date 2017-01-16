@@ -11,7 +11,6 @@ import time
 import datetime
 
 from functools import wraps
-from flask import make_response
 from wsgiref.handlers import format_date_time
 from flask_restplus.utils import unpack
 
