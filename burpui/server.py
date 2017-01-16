@@ -290,6 +290,7 @@ class BUIServer(Flask):
             self.load_modules()
 
     def load_modules(self, strict=True):
+        """Load the extensions"""
         if self.auth and 'none' not in self.auth:
             try:
                 self.uhandler = UserAuthHandler(self)
@@ -371,9 +372,21 @@ class BUIServer(Flask):
             )
             sys.exit(2)
 
+    def get_send_file_max_age(self, name):
+        """Provides default cache_timeout for the send_file() functions."""
+        lname = name.lower()
+        extensions = ['js', 'css', 'woff']
+        for ext in extensions:
+            if lname.endswith('.{}'.format(ext)):
+                return 3600 * 24 * 30  # 30 days
+        return Flask.get_send_file_max_age(self, name)
+
     def manual_run(self):
         """The :func:`burpui.server.BUIServer.manual_run` functions is used to
         actually launch the ``Burp-UI`` server.
+
+        .. deprecated:: 0.4.0
+           You should now run the Flask's run command.
         """
         if not self.init:
             self.setup()
