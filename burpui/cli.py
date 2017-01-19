@@ -343,7 +343,7 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database, dry):
             click.echo(
                 click.style(
                     'It looks like some dependencies are missing. Did you ran '
-                    'the \'pip install burp-ui[sql]\' command first?',
+                    'the \'pip install burp-ui-sql\' command first?',
                     fg='yellow'
                 )
             )

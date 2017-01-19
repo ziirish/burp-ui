@@ -107,7 +107,7 @@ def create_db(myapp, cli=False):
         except ImportError:
             myapp.logger.critical(
                 'Unable to load requirements, you may want to run \'pip '
-                'install "burp-ui[sql]"\'. Disabling SQL support for now.'
+                'install burp-ui-sql\'. Disabling SQL support for now.'
             )
             myapp.config['WITH_SQL'] = False
 
