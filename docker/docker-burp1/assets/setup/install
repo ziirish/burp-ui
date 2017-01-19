@@ -6,7 +6,8 @@ SETUP_DIR="/app/setup"
 CONFIG_DIR="${SETUP_DIR}/config"
 BURP="https://git.ziirish.me/ziirish/burp.git"
 BURP_VERSION="1.4.40"
-BURPUI="https://burpui.ziirish.me/builds/burp-ui.dev.tar.gz"
+#BURPUI="https://burpui.ziirish.me/builds/burp-ui.dev.tar.gz"
+BURPUI="/tmp/burpui.dev.tar.gz"
 
 # Install burp
 git clone $BURP

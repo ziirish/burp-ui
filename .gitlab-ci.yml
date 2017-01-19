@@ -67,6 +67,7 @@ deploy:demo:
   stage: deploy
   script:
   - find docker/ -name "install" | xargs sed -i "s/@build@/$(git rev-parse HEAD)/"
+  - find docker/ -name "Dockerfile" | xargs sed -i "s,^.*@ARTIFACTS@.*$,ADD $(find $PWD/dist -name '*.tar.gz') /tmp/burpui.dev.tar.gz,"
   - cp -r docker/ /srv/demo/
   - cd /srv/demo/docker/
   - docker-compose build
