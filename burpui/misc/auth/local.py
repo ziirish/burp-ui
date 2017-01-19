@@ -1,4 +1,7 @@
 # -*- coding: utf8 -*-
+import os
+import sys
+
 from .interface import BUIhandler, BUIuser, BUIloader
 
 
@@ -121,6 +124,7 @@ class LocalUser(BUIuser):
     def get_id(self):
         return self.id
 
+
 # HERE IS THE PAM MODULE FROM https://atlee.ca/software/pam/
 # (c) 2007 Chris AtLee <chris@atlee.ca>
 # Licensed under the MIT license:
@@ -133,11 +137,9 @@ a user against the Pluggable Authentication Modules (PAM) on the system.
 
 Implemented using ctypes, so no compilation is necessary.
 """
-from ctypes import CDLL, POINTER, Structure, CFUNCTYPE, cast, pointer, sizeof
-from ctypes import c_void_p, c_uint, c_char_p, c_char, c_int
-from ctypes.util import find_library
-import os
-import sys
+from ctypes import CDLL, POINTER, Structure, CFUNCTYPE, cast, pointer, sizeof  # noqa
+from ctypes import c_void_p, c_uint, c_char_p, c_char, c_int  # noqa
+from ctypes.util import find_library  # noqa
 
 
 def load_library(nickname, search_names=None):
@@ -223,8 +225,8 @@ PAM_TEXT_INFO = 4
 class PamHandle(Structure):
     """wrapper class for pam_handle_t"""
     _fields_ = [
-            ("handle", c_void_p)
-            ]
+        ("handle", c_void_p)
+    ]
 
     def __init__(self):
         Structure.__init__(self)
@@ -234,9 +236,9 @@ class PamHandle(Structure):
 class PamMessage(Structure):
     """wrapper class for pam_message structure"""
     _fields_ = [
-            ("msg_style", c_int),
-            ("msg", POINTER(c_char)),
-            ]
+        ("msg_style", c_int),
+        ("msg", POINTER(c_char)),
+    ]
 
     def __repr__(self):
         return "<PamMessage %i '%s'>" % (self.msg_style, self.msg)
@@ -245,31 +247,31 @@ class PamMessage(Structure):
 class PamResponse(Structure):
     """wrapper class for pam_response structure"""
     _fields_ = [
-            ("resp", POINTER(c_char)),
-            ("resp_retcode", c_int),
-            ]
+        ("resp", POINTER(c_char)),
+        ("resp_retcode", c_int),
+    ]
 
     def __repr__(self):
         return "<PamResponse %i '%s'>" % (self.resp_retcode, self.resp)
 
 
 CONV_FUNC = CFUNCTYPE(c_int,
-        c_int, POINTER(POINTER(PamMessage)),
-               POINTER(POINTER(PamResponse)), c_void_p)
+                      c_int, POINTER(POINTER(PamMessage)),
+                      POINTER(POINTER(PamResponse)), c_void_p)
 
 
 class PamConv(Structure):
     """wrapper class for pam_conv structure"""
     _fields_ = [
-            ("conv", CONV_FUNC),
-            ("appdata_ptr", c_void_p)
-            ]
+        ("conv", CONV_FUNC),
+        ("appdata_ptr", c_void_p)
+    ]
 
 
 PAM_START = LIBPAM.pam_start
 PAM_START.restype = c_int
 PAM_START.argtypes = [c_char_p, c_char_p, POINTER(PamConv),
-        POINTER(PamHandle)]
+                      POINTER(PamHandle)]
 
 PAM_END = LIBPAM.pam_end
 PAM_END.restpe = c_int
