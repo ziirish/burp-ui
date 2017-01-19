@@ -49,17 +49,6 @@ them using the following command:
     pip install "burp-ui[ldap_authentication]"
 
 
-Local
------
-
-For Local authentication (optional), we need extra dependencies as well. You can
-install them using the following command:
-
-::
-
-    pip install "burp-ui[local_authentication]"
-
-
 Redis
 -----
 

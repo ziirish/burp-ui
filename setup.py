@@ -17,6 +17,70 @@ from setuptools.command.egg_info import egg_info
 
 ROOT=os.path.join(os.path.dirname(os.path.realpath(__file__)))
 
+# Not sure bower was a great idea...
+VENDOR_TO_KEEP = [
+    'burpui/static/vendor/bootswatch/slate/bootstrap.min.css',
+    'burpui/static/vendor/bootswatch/fonts/glyphicons-halflings-regular.eot',
+    'burpui/static/vendor/bootswatch/fonts/glyphicons-halflings-regular.svg',
+    'burpui/static/vendor/bootswatch/fonts/glyphicons-halflings-regular.ttf',
+    'burpui/static/vendor/bootswatch/fonts/glyphicons-halflings-regular.woff',
+    'burpui/static/vendor/bootswatch/fonts/glyphicons-halflings-regular.woff2',
+    'burpui/static/vendor/nvd3/build/nv.d3.min.css',
+    'burpui/static/vendor/datatables.net-bs/css/dataTables.bootstrap.min.css',
+    'burpui/static/vendor/datatables.net-responsive-bs/css/responsive.bootstrap.min.css',
+    'burpui/static/vendor/jquery.fancytree/dist/skin-bootstrap/ui.fancytree.min.css',
+    'burpui/static/vendor/bootstrap-switch/dist/css/bootstrap3/bootstrap-switch.min.css',
+    'burpui/static/vendor/ui-select/dist/select.min.css',
+    'burpui/static/vendor/jquery/dist/jquery.min.js',
+    'burpui/static/vendor/jquery-ui/jquery-ui.min.js',
+    'burpui/static/vendor/bootstrap/dist/js/bootstrap.min.js',
+    'burpui/static/vendor/typeahead.js/dist/typeahead.bundle.min.js',
+    'burpui/static/vendor/d3/d3.min.js',
+    'burpui/static/vendor/nvd3/build/nv.d3.min.js',
+    'burpui/static/vendor/datatables.net/js/jquery.dataTables.min.js',
+    'burpui/static/vendor/datatables.net-bs/js/dataTables.bootstrap.min.js',
+    'burpui/static/vendor/datatables.net-responsive/js/dataTables.responsive.js',
+    'burpui/static/vendor/datatables.net-responsive-bs/js/responsive.bootstrap.js',
+    'burpui/static/vendor/jquery.fancytree/dist/jquery.fancytree-all.min.js',
+    'burpui/static/vendor/jquery-file-download/src/Scripts/jquery.fileDownload.js',
+    'burpui/static/vendor/lodash/dist/lodash.min.js',
+    'burpui/static/vendor/angular/angular.min.js',
+    'burpui/static/vendor/angular-route/angular-route.min.js',
+    'burpui/static/vendor/angular-sanitize/angular-sanitize.min.js',
+    'burpui/static/vendor/angular-resource/angular-resource.min.js',
+    'burpui/static/vendor/angular-animate/angular-animate.min.js',
+    'burpui/static/vendor/bootstrap-switch/dist/js/bootstrap-switch.min.js',
+    'burpui/static/vendor/angular-bootstrap-switch/dist/angular-bootstrap-switch.min.js',
+    'burpui/static/vendor/ui-select/dist/select.min.js',
+    'burpui/static/vendor/angular-strap/dist/angular-strap.min.js',
+    'burpui/static/vendor/angular-strap/dist/angular-strap.tpl.min.js',
+    'burpui/static/vendor/angular-onbeforeunload/build/angular-onbeforeunload.js',
+    'burpui/static/vendor/moment/min/moment.min.js',
+    'burpui/static/vendor/moment/locale/fr.js',
+    'burpui/static/vendor/moment/locale/es.js',
+    'burpui/static/vendor/angular-ui-calendar/src/calendar.js',
+    'burpui/static/vendor/fullcalendar/dist/fullcalendar.min.css',
+    'burpui/static/vendor/fullcalendar/dist/fullcalendar.print.min.css',
+    'burpui/static/vendor/fullcalendar/dist/fullcalendar.min.js',
+    'burpui/static/vendor/fullcalendar/dist/gcal.min.js',
+    'burpui/static/vendor/fullcalendar/dist/locale/fr.js',
+    'burpui/static/vendor/fullcalendar/dist/locale/es.js',
+    'burpui/static/vendor/angular-bootstrap/ui-bootstrap.min.js',
+    'burpui/static/vendor/angular-bootstrap/ui-bootstrap-tpls.min.js',
+    'burpui/static/vendor/components-font-awesome/css/font-awesome.min.css',
+    'burpui/static/vendor/components-font-awesome/fonts/FontAwesome.otf',
+    'burpui/static/vendor/components-font-awesome/fonts/fontawesome-webfont.eot',
+    'burpui/static/vendor/components-font-awesome/fonts/fontawesome-webfont.svg',
+    'burpui/static/vendor/components-font-awesome/fonts/fontawesome-webfont.ttf',
+    'burpui/static/vendor/components-font-awesome/fonts/fontawesome-webfont.woff',
+    'burpui/static/vendor/components-font-awesome/fonts/fontawesome-webfont.woff2',
+]
+
+for p in VENDOR_TO_KEEP:
+    if not os.path.exists(p):
+        print '!!', p
+
+# sys.exit(0)
 
 class DevelopWithBuildStatic(develop):
     def install_for_development(self):
@@ -86,64 +150,7 @@ class BuildStatic(Command):
                     pass
             except:
                 pass
-        # Not sure bower was a great idea...
-        keep = [
-            'burpui/static/vendor/bootswatch/slate/bootstrap.min.css',
-            'burpui/static/vendor/bootswatch/fonts/glyphicons-halflings-regular.eot',
-            'burpui/static/vendor/bootswatch/fonts/glyphicons-halflings-regular.svg',
-            'burpui/static/vendor/bootswatch/fonts/glyphicons-halflings-regular.ttf',
-            'burpui/static/vendor/bootswatch/fonts/glyphicons-halflings-regular.woff',
-            'burpui/static/vendor/bootswatch/fonts/glyphicons-halflings-regular.woff2',
-            'burpui/static/vendor/nvd3/build/nv.d3.min.css',
-            'burpui/static/vendor/datatables.net-bs/css/dataTables.bootstrap.min.css',
-            'burpui/static/vendor/datatables.net-responsive-bs/css/responsive.bootstrap.min.css',
-            'burpui/static/vendor/jquery.fancytree/dist/skin-bootstrap/ui.fancytree.min.css',
-            'burpui/static/vendor/bootstrap-switch/dist/css/bootstrap3/bootstrap-switch.min.css',
-            'burpui/static/vendor/ui-select/dist/select.min.css',
-            'burpui/static/vendor/jquery/dist/jquery.min.js',
-            'burpui/static/vendor/jquery-ui/jquery-ui.min.js',
-            'burpui/static/vendor/bootstrap/dist/js/bootstrap.min.js',
-            'burpui/static/vendor/typeahead.js/dist/typeahead.bundle.min.js',
-            'burpui/static/vendor/d3/d3.min.js',
-            'burpui/static/vendor/nvd3/build/nv.d3.min.js',
-            'burpui/static/vendor/datatables.net/js/jquery.dataTables.min.js',
-            'burpui/static/vendor/datatables.net-bs/js/dataTables.bootstrap.min.js',
-            'burpui/static/vendor/datatables.net-responsive/js/dataTables.responsive.js',
-            'burpui/static/vendor/datatables.net-responsive-bs/js/responsive.bootstrap.js',
-            'burpui/static/vendor/jquery.fancytree/dist/jquery.fancytree-all.min.js',
-            'burpui/static/vendor/jquery-file-download/src/Scripts/jquery.fileDownload.js',
-            'burpui/static/vendor/lodash/dist/lodash.min.js',
-            'burpui/static/vendor/angular/angular.min.js',
-            'burpui/static/vendor/angular-route/angular-route.min.js',
-            'burpui/static/vendor/angular-sanitize/angular-sanitize.min.js',
-            'burpui/static/vendor/angular-resource/angular-resource.min.js',
-            'burpui/static/vendor/angular-animate/angular-animate.min.js',
-            'burpui/static/vendor/bootstrap-switch/dist/js/bootstrap-switch.min.js',
-            'burpui/static/vendor/angular-bootstrap-switch/dist/angular-bootstrap-switch.min.js',
-            'burpui/static/vendor/ui-select/dist/select.min.js',
-            'burpui/static/vendor/angular-strap/dist/angular-strap.min.js',
-            'burpui/static/vendor/angular-strap/dist/angular-strap.tpl.min.js',
-            'burpui/static/vendor/angular-onbeforeunload/build/angular-onbeforeunload.js',
-            'burpui/static/vendor/moment/min/moment.min.js',
-            'burpui/static/vendor/moment/locale/fr.js',
-            'burpui/static/vendor/moment/locale/es.js',
-            'burpui/static/vendor/angular-ui-calendar/src/calendar.js',
-            'burpui/static/vendor/fullcalendar/dist/fullcalendar.min.css',
-            'burpui/static/vendor/fullcalendar/dist/fullcalendar.print.css',
-            'burpui/static/vendor/fullcalendar/dist/fullcalendar.min.js',
-            'burpui/static/vendor/fullcalendar/dist/gcal.js',
-            'burpui/static/vendor/fullcalendar/dist/lang/fr.js',
-            'burpui/static/vendor/fullcalendar/dist/lang/es.js',
-            'burpui/static/vendor/angular-bootstrap/ui-bootstrap.min.js',
-            'burpui/static/vendor/angular-bootstrap/ui-bootstrap-tpls.min.js',
-            'burpui/static/vendor/components-font-awesome/css/font-awesome.min.css',
-            'burpui/static/vendor/components-font-awesome/fonts/FontAwesome.otf',
-            'burpui/static/vendor/components-font-awesome/fonts/fontawesome-webfont.eot',
-            'burpui/static/vendor/components-font-awesome/fonts/fontawesome-webfont.svg',
-            'burpui/static/vendor/components-font-awesome/fonts/fontawesome-webfont.ttf',
-            'burpui/static/vendor/components-font-awesome/fonts/fontawesome-webfont.woff',
-            'burpui/static/vendor/components-font-awesome/fonts/fontawesome-webfont.woff2',
-        ]
+        keep = VENDOR_TO_KEEP
         dirlist = []
         for dirname, subdirs, files in os.walk('burpui/static/vendor'):
             for filename in files:
@@ -246,7 +253,6 @@ setup(
     extras_require={
         'ssl': ['pyOpenSSL'],
         'ldap_authentication': ['ldap3'],
-        'local_authentication': ['pam'],
         'extra': ['ujson'],
         'gunicorn': ['gevent', 'gunicorn'],
         'gunicorn-extra': ['redis', 'Flask-Session==0.3.0'],
