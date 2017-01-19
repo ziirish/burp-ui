@@ -13,6 +13,8 @@
  *   ]
  * }
  */
+{% import 'macros.html' as macros %}
+
 var _client = function() {};
 var _clients = function() {};
 var _servers = function() {};
@@ -33,15 +35,19 @@ app.controller('CalendarCtrl', function($scope, $http, $compile, uiCalendarConfi
 
 	$scope.uiConfig = {
 		calendar: {
+			{{ macros.translate_calendar() }}
 			editable: false,
 			eventLimit: true,
 			firstDay: 1,
-			locale: '{{ g.locale }}',
 			header:{
 				left: 'month,listWeek',
 				center: 'title',
 				right: 'today prev,next'
 			},
+			monthNames: moment.months(),
+			monthNamesShort: moment.monthsShort(),
+			dayNames: moment.weekdays(),
+			dayNamesShort: moment.weekdaysShort(),
 			eventRender: $scope.eventRender,
 			viewRender: function(view, element) {
 				$scope.fetchEvents(view.start.format(), view.end.format());

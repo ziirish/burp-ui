@@ -123,6 +123,13 @@ $(document).ready(function() {
   {% endif -%}
 {%- endmacro %}
 
+{# Enables the calendar translation if needed #}
+{% macro translate_calendar() -%}
+  {% if g.locale and g.locale != 'en' -%}
+  locale: '{{ g.locale }}',
+  {% endif -%}
+{%- endmacro %}
+
 {# Record number of elements to display #}
 {% macro page_length(selector) -%}
 $('{{ selector }}').on('length.dt', function(e, settings, len) {
