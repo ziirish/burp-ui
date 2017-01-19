@@ -14,7 +14,11 @@ To do so, run the following commands:
     pip install virtualenv
     virtualenv /opt/bui-venv
     source /opt/bui-venv/bin/activate
-    pip install --upgrade https://burpui.ziirish.me/builds/burp-ui.dev.tar.gz
+    cd /tmp
+    # the .tar.gz works with both python 2 and python 3
+    wget https://git.ziirish.me/ziirish/burp-ui/builds/artifacts/master/download?job=build:py2 -O burp-ui_build.zip
+    unzip burp-ui_build.zip
+    pip install --upgrade dist/burp-ui.*.tar.gz
 
 
 You can uninstall/disable this `Burp-UI`_ setup by typing ``deactivate`` and
