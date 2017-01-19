@@ -167,7 +167,7 @@ wish to change this, you would run something like:
     burp-ui -- -h 0.0.0.0 -p 8080
 
 
-.. note:: The ``--`` is mendatory.
+.. note:: The ``--`` is mandatory.
 
 
 .. _Flask: http://flask.pocoo.org/

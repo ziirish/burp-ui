@@ -487,7 +487,7 @@ Now you can add *ldap* specific options:
 
 .. note:: The *host* options accepts URI style (ex: ldap://127.0.0.1:389)
 
-.. warning:: The quotes (") around *base* and *binddn* are **MENDATORY**
+.. warning:: The quotes (") around *base* and *binddn* are **MANDATORY**
 
 Basic
 ^^^^^
@@ -603,7 +603,7 @@ Now you can add *basic acl* specific options:
     user4 = '{"agent1": ["client6", "client7"], "agent2": ["client8"]}'
 
 
-.. warning:: The double-quotes and single-quotes are **MENDATORY**
+.. warning:: The double-quotes and single-quotes are **MANDATORY**
 
 
 By default, if a user is named ``admin`` it will be granted the admin role.
