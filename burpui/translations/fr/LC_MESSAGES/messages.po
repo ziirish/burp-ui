@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-12-30 09:40+0100\n"
+"POT-Creation-Date: 2017-01-20 08:31+0100\n"
 "PO-Revision-Date: 2016-08-25 15:19+0200\n"
 "Last-Translator: Ziirish <hi+burpui@ziirish.me>\n"
 "Language: fr\n"
@@ -18,11 +18,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.3.4\n"
 
-#: burpui/app.py:465
+#: burpui/app.py:471
 msgid "Please log in to access this page."
 msgstr "Veuillez vous authentifier pour accéder à cette page."
 
-#: burpui/app.py:468
+#: burpui/app.py:474
 msgid "Please reauthenticate to access this page."
 msgstr "Veuillez vous ré-authentifier pour accéder à cette page."
 
@@ -43,23 +43,23 @@ msgstr "Langue"
 msgid "Remember me"
 msgstr "Rester connecté"
 
-#: burpui/routes.py:186 burpui/routes.py:193
+#: burpui/routes.py:188 burpui/routes.py:195
 msgid "Sorry, there are no running backups"
 msgstr "Désolé, il n&#39;y a pas de backups"
 
-#: burpui/routes.py:213 burpui/routes.py:251
+#: burpui/routes.py:215 burpui/routes.py:253
 msgid "Sorry, there are no restore file found for this client"
 msgstr "Désolé, il n&#39;y a pas restoration prévue pour ce client"
 
-#: burpui/routes.py:410
+#: burpui/routes.py:412
 msgid "Logged in successfully"
 msgstr "Connecté avec succès"
 
-#: burpui/routes.py:420
+#: burpui/routes.py:422
 msgid "Wrong username or password"
 msgstr "Mauvais nom d&#39;utilisateur ou mot de passe"
 
-#: burpui/routes.py:422
+#: burpui/routes.py:424
 msgid "Wrong CSRF token, please try again"
 msgstr "Mauvais token CSRF, veuillez réessayer"
 
@@ -993,33 +993,84 @@ msgstr "Parcourir l'"
 msgid "Administration"
 msgstr "Administration"
 
-#: burpui/templates/client-browse.html:8 burpui/templates/client.html:8
-#: burpui/templates/client.html:12 burpui/templates/clients.html:8
-#: burpui/templates/clients.html:11 burpui/templates/servers.html:7
+#: burpui/templates/backup-report.html:8 burpui/templates/backup-report.html:13
+#: burpui/templates/calendar.html:8 burpui/templates/calendar.html:11
+#: burpui/templates/client-browse.html:8 burpui/templates/client-report.html:8
+#: burpui/templates/client-report.html:12 burpui/templates/client.html:8
+#: burpui/templates/client.html:12 burpui/templates/clients-report.html:8
+#: burpui/templates/clients-report.html:11 burpui/templates/clients.html:8
+#: burpui/templates/clients.html:11 burpui/templates/live-monitor.html:5
+#: burpui/templates/servers-report.html:7 burpui/templates/servers.html:7
+#: burpui/templates/settings.html:8
 msgid "Home"
 msgstr "Accueil"
 
-#: burpui/templates/client-browse.html:9
+#: burpui/templates/backup-report.html:9 burpui/templates/client-browse.html:9
+#: burpui/templates/client-report.html:9 burpui/templates/client.html:9
+#: burpui/templates/clients-report.html:9 burpui/templates/clients.html:9
 #, python-format
 msgid "%(server)s clients"
 msgstr "Clients de %(server)s"
 
+#: burpui/templates/backup-report.html:10
+#: burpui/templates/backup-report.html:14
 #: burpui/templates/client-browse.html:10
 #: burpui/templates/client-browse.html:14
+#: burpui/templates/client-report.html:10
+#: burpui/templates/client-report.html:13 burpui/templates/client.html:10
+#: burpui/templates/client.html:13
 #, python-format
 msgid "%(client)s overview"
 msgstr "Aperçu de %(client)s"
 
+#: burpui/templates/backup-report.html:11
+#: burpui/templates/backup-report.html:15
 #: burpui/templates/client-browse.html:11
 #: burpui/templates/client-browse.html:15
 #, python-format
 msgid "Backup n°%(number)s overview"
 msgstr "Sauvegarde n°%(number)s"
 
+#: burpui/templates/backup-report.html:19
 #: burpui/templates/client-browse.html:19
 #, python-format
 msgid "Backup n°%(number)s of %(client)s"
 msgstr "Sauvegarde n°%(number)s de %(client)s"
+
+#: burpui/templates/backup-report.html:25
+#: burpui/templates/client-report.html:23 burpui/templates/live-monitor.html:79
+msgid "New"
+msgstr "Nouveaux"
+
+#: burpui/templates/backup-report.html:31
+#: burpui/templates/client-report.html:29 burpui/templates/live-monitor.html:80
+msgid "Changed"
+msgstr "Changés"
+
+#: burpui/templates/backup-report.html:37
+#: burpui/templates/client-report.html:35 burpui/templates/live-monitor.html:81
+msgid "Unchanged"
+msgstr "Inchangés"
+
+#: burpui/templates/backup-report.html:43
+#: burpui/templates/client-report.html:41 burpui/templates/live-monitor.html:82
+msgid "Deleted"
+msgstr "Supprimés"
+
+#: burpui/templates/backup-report.html:49
+#: burpui/templates/client-report.html:47
+msgid "Total"
+msgstr "Totaux"
+
+#: burpui/templates/backup-report.html:55
+#: burpui/templates/client-report.html:53 burpui/templates/live-monitor.html:83
+msgid "Scanned"
+msgstr "Scannés"
+
+#: burpui/templates/calendar.html:9 burpui/templates/calendar.html:12
+#: burpui/templates/sidebar.html:43 burpui/templates/small_topbar.html:31
+msgid "Calendar"
+msgstr "Calendrier"
 
 #: burpui/templates/client-browse.html:24
 msgid "filter..."
@@ -1060,7 +1111,7 @@ msgstr ""
 msgid "Load all nodes"
 msgstr "Pré-charger tous les nœuds"
 
-#: burpui/templates/client-browse.html:48
+#: burpui/templates/client-browse.html:48 burpui/templates/settings.html:17
 msgid "Loading, Please wait..."
 msgstr "Chargement, veuillez patienter..."
 
@@ -1146,15 +1197,24 @@ msgstr "Erreur de restauration"
 msgid "An error occurred while processing the restoration."
 msgstr "Une erreur s'est produite lors de la restauration."
 
-#: burpui/templates/client.html:10 burpui/templates/client.html:13
-msgid "overview"
-msgstr "aperçu"
+#: burpui/templates/client-report.html:59
+msgid "Statistics"
+msgstr "Statistiques"
+
+#: burpui/templates/client.html:19
+msgid "Backups"
+msgstr "Sauvegardes"
 
 #: burpui/templates/client.html:21 burpui/templates/client.html:32
 msgid "Number"
 msgstr "Numéro"
 
+#: burpui/templates/client.html:22 burpui/templates/client.html:33
+msgid "Date"
+msgstr "Date"
+
 #: burpui/templates/client.html:23 burpui/templates/client.html:34
+#: burpui/templates/live-monitor.html:56 burpui/templates/live-monitor.html:62
 msgid "Bytes received"
 msgstr "Octets reçus"
 
@@ -1166,13 +1226,14 @@ msgstr "Taille (estimation)"
 msgid "Deletable"
 msgstr "Supprimable"
 
-#: burpui/templates/client.html:44
-msgid "Sorry!"
-msgstr "Désolé!"
+#: burpui/templates/client.html:26 burpui/templates/client.html:37
+#: burpui/templates/clients.html:17 burpui/templates/servers.html:18
+msgid "Status"
+msgstr "Status"
 
 #: burpui/templates/client.html:44
-msgid "There are no backups for this client."
-msgstr "Il n'y a pas de sauvegardes pour ce client."
+msgid "<strong>Sorry!</strong> There are no backups for this client."
+msgstr "<strong>Désolé !</strong> Il n'y a pas de sauvegardes pour ce client."
 
 #: burpui/templates/client.html:50
 msgid "Edit restore"
@@ -1186,6 +1247,33 @@ msgstr "Planifier sauvegarde"
 msgid "Cancel backup"
 msgstr "Annuler sauvegarde"
 
+#: burpui/templates/clients-report.html:15
+msgid "Global server report"
+msgstr "Rapport global du serveur"
+
+#: burpui/templates/clients-report.html:21
+msgid "Clients repartition"
+msgstr "Répartition des clients"
+
+#: burpui/templates/clients-report.html:27
+#: burpui/templates/servers-report.html:22
+msgid "Used space"
+msgstr "Espace disque"
+
+#: burpui/templates/clients-report.html:33
+#: burpui/templates/servers-report.html:28
+msgid "Total files"
+msgstr "Nombre de fichiers"
+
+#: burpui/templates/clients-report.html:39
+#: burpui/templates/servers-report.html:34
+msgid "Number of backups"
+msgstr "Nombre de sauvegardes"
+
+#: burpui/templates/clients.html:15 burpui/templates/servers.html:17
+msgid "Clients"
+msgstr "Clients"
+
 #: burpui/templates/clients.html:22 burpui/templates/servers.html:16
 msgid "Name"
 msgstr "Nom"
@@ -1197,6 +1285,38 @@ msgstr "État"
 #: burpui/templates/clients.html:24
 msgid "Last Backup"
 msgstr "Dernière sauvegarde"
+
+#: burpui/templates/live-monitor.html:6 burpui/templates/topbar.html:49
+msgid "Live monitor"
+msgstr "Moniteur temps réél"
+
+#: burpui/templates/live-monitor.html:11
+msgid ""
+"{{ ::client.client }}<span ng-if=\"client.agent\"> on {{ ::client.agent "
+"}}</span>"
+msgstr ""
+"{{ ::client.client }}<span ng-if=\"client.agent\"> sur {{ ::client.agent "
+"}}</span>"
+
+#: burpui/templates/live-monitor.html:21
+msgid "Path"
+msgstr "Chemin"
+
+#: burpui/templates/live-monitor.html:34
+msgid "Phase"
+msgstr "Phase"
+
+#: burpui/templates/live-monitor.html:40
+msgid "Time left"
+msgstr "Temps restant"
+
+#: burpui/templates/live-monitor.html:46
+msgid "Warning<span ng-if=\"client.counters.warning > 1\">s</span>"
+msgstr "Problème<span ng-if=\"client.counters.warning > 1\">s</span>"
+
+#: burpui/templates/live-monitor.html:68
+msgid "Speed"
+msgstr "Vitesse"
 
 #: burpui/templates/login.html:7
 msgid "Login"
@@ -1216,9 +1336,76 @@ msgstr ""
 "                Vous pouvez vous connecter avec les comptes "
 "<em>admin</em> / <em>admin</em> ou <em>demo</em> / <em>demo</em>.\n"
 
+#: burpui/templates/servers-report.html:10
+msgid "Global report"
+msgstr "Rapport global"
+
+#: burpui/templates/servers-report.html:16
+msgid "Clients repartition per server"
+msgstr "Répartition des clients par serveur"
+
 #: burpui/templates/servers.html:10 burpui/templates/topbar.html:23
 msgid "Servers"
 msgstr "Serveurs"
+
+#: burpui/templates/settings.html:9
+#, python-format
+msgid "Burp Configuration of %(server)s"
+msgstr "Configuration Burp de %(server)s"
+
+#: burpui/templates/settings.html:11
+msgid "Burp Configuration"
+msgstr "Configuration Burp"
+
+#: burpui/templates/settings.html:31 burpui/templates/sideconfig.html:5
+msgid "Booleans"
+msgstr "Booléens"
+
+#: burpui/templates/settings.html:49 burpui/templates/settings.html:91
+#: burpui/templates/settings.html:128 burpui/templates/settings.html:170
+msgid "Select an option"
+msgstr "Choisissez une option"
+
+#: burpui/templates/settings.html:70 burpui/templates/sideconfig.html:6
+msgid "Strings"
+msgstr "Chaînes"
+
+#: burpui/templates/settings.html:112 burpui/templates/sideconfig.html:7
+msgid "Integers"
+msgstr "Nombres"
+
+#: burpui/templates/settings.html:149 burpui/templates/sideconfig.html:8
+msgid "Multi"
+msgstr "Valeurs multiples"
+
+#: burpui/templates/settings.html:191
+msgid "Source external configuration files"
+msgstr ""
+
+#: burpui/templates/settings.html:197 burpui/templates/settings.html:220
+msgid "source config"
+msgstr "Charger configuration"
+
+#: burpui/templates/settings.html:229 burpui/templates/user.html:59
+msgid "Submit"
+msgstr "Envoyer"
+
+#: burpui/templates/settings.html:234
+#, python-format
+msgid "Remove '%(client)s'"
+msgstr "Supprimer '%(client)s'"
+
+#: burpui/templates/settings.html:237
+msgid "Do not remove the configuration:"
+msgstr "Ne pas supprimer la configuration :"
+
+#: burpui/templates/settings.html:238
+msgid "Remove associated certificate:"
+msgstr "Supprimer les certificats associés :"
+
+#: burpui/templates/settings.html:239
+msgid "Revoke associated certificate:"
+msgstr "Révoquer les certificats associés :"
 
 #: burpui/templates/sideadmin.html:3
 msgid "Administration navigation"
@@ -1239,9 +1426,9 @@ msgstr "Contrôles d'accès"
 
 #: burpui/templates/sidebar.html:18 burpui/templates/sidebar.html:20
 #: burpui/templates/sidebar.html:22 burpui/templates/sidebar.html:24
-#: burpui/templates/sidebar.html:26 burpui/templates/small_topbar.html:12
-#: burpui/templates/small_topbar.html:14 burpui/templates/small_topbar.html:16
-#: burpui/templates/small_topbar.html:18
+#: burpui/templates/sidebar.html:26 burpui/templates/small_topbar.html:10
+#: burpui/templates/small_topbar.html:12 burpui/templates/small_topbar.html:14
+#: burpui/templates/small_topbar.html:16 burpui/templates/small_topbar.html:18
 msgid "Overview"
 msgstr "Aperçu"
 
@@ -1253,19 +1440,27 @@ msgstr "Aperçu"
 msgid "Reports"
 msgstr "Rapports"
 
-#: burpui/templates/sidebar.html:43 burpui/templates/small_topbar.html:31
-msgid "Calendar"
-msgstr "Calendrier"
-
 #: burpui/templates/sideconfig.html:3
 msgid "Configuration navigation"
 msgstr "Navigation"
+
+#: burpui/templates/sideconfig.html:9
+msgid "Source files"
+msgstr "Charger les fichiers"
 
 #: burpui/templates/sideconfig.html:11
 msgid "Client to configure"
 msgstr "Client à configurer"
 
-#: burpui/templates/sideconfig.html:31
+#: burpui/templates/sideconfig.html:15
+msgid "Select a client"
+msgstr "Sélectionner un client"
+
+#: burpui/templates/sideconfig.html:23
+msgid "config:"
+msgstr "configuration :"
+
+#: burpui/templates/sideconfig.html:33
 msgid "Create new client"
 msgstr "Créer un nouveau client"
 
@@ -1289,10 +1484,6 @@ msgstr "Afficher menu"
 msgid "About"
 msgstr "À propos"
 
-#: burpui/templates/topbar.html:49
-msgid "Live monitor"
-msgstr "Moniteur temps réél"
-
 #: burpui/templates/topbar.html:64 burpui/templates/user.html:7
 msgid "User settings"
 msgstr "Paramètres utilisateur"
@@ -1308,6 +1499,10 @@ msgstr "Rafraîchir"
 #: burpui/templates/topbar.html:82
 msgid "Search client..."
 msgstr "Rechercher client..."
+
+#: burpui/templates/user.html:16
+msgid "IP"
+msgstr "IP"
 
 #: burpui/templates/user.html:17
 msgid "Last seen"
@@ -1353,10 +1548,6 @@ msgstr "Nouveau mot de passe (confirmation)"
 msgid "Cancel"
 msgstr "Annuler"
 
-#: burpui/templates/user.html:59
-msgid "Submit"
-msgstr "Envoyer"
-
 #: burpui/templates/user.html:82
 msgid "You are about to revoke a session, are you sure?"
 msgstr "Vous êtes sur le point de révoquer une session, êtes vous sûr ?"
@@ -1379,11 +1570,11 @@ msgstr "Réduire l&#39;arborescence"
 
 #: burpui/templates/js/client-browse.js:307
 msgid "Loading"
-msgstr ""
+msgstr "Chargement"
 
 #: burpui/templates/js/client-browse.js:313
 msgid "Nodes loaded"
-msgstr ""
+msgstr "Arborescence chargée"
 
 #: burpui/templates/js/client.js:97
 msgid "Encrypted backup"
@@ -1418,5 +1609,20 @@ msgid "now"
 msgstr "maintenant"
 
 #~ msgid ""
+#~ msgstr ""
+
+#~ msgid "overview"
+#~ msgstr "aperçu"
+
+#~ msgid "Sorry!"
+#~ msgstr "Désolé!"
+
+#~ msgid "There are no backups for this client."
+#~ msgstr "Il n'y a pas de sauvegardes pour ce client."
+
+#~ msgid "Source external configuration files"
+#~ msgstr "Charger des configurations externes"
+
+#~ msgid "Source configuration files"
 #~ msgstr ""
 

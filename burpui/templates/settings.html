@@ -5,16 +5,16 @@
           {% include "small_topbar.html" %}
           <ul class="breadcrumb" style="margin-bottom: 5px;">
             {% if server -%}
-            <li><a href="{{ url_for('view.home') }}">Home</a></li>
-            <li class="active">{{ server }} Burp Configuration</li>
+            <li><a href="{{ url_for('view.home') }}">{{ _('Home') }}</a></li>
+            <li class="active">{{ _('Burp Configuration of %(server)s', server=server) }}</li>
             {% else -%}
-            <li class="active">Burp Configuration</li>
+            <li class="active">{{ _('Burp Configuration') }}</li>
             {% endif -%}
           </ul>
           <br />
 
           <div id="waiting-container" class="row">
-            <span class="icon-refresh-animate glyphicon glyphicon-refresh"></span>&nbsp;Loading, Please wait...
+            <span class="icon-refresh-animate glyphicon glyphicon-refresh"></span>&nbsp;{{ _('Loading, Please wait...') }}
             <br />
             <div class="progress progress-striped active">
               <div class="progress-bar progress-bar-info" style="width: 100%"></div>
@@ -27,10 +27,10 @@
             {% else -%}
             <form class="form-horizontal" action="{{ url_for('api.server_settings', conf=conf, server=server) }}" method="POST" ng-submit="submit($event)" name="setSettings" onbeforeunload>
             {% endif -%}
+              <fieldset>
+                <legend id="boolean">{{ _('Booleans') }}</legend>
               {# From here, the jinja syntax is escaped because we use the angularjs syntax #}
               {% raw %}
-              <fieldset>
-                <legend id="boolean">Booleans</legend>
                 <div class="form-group" ng-repeat="bool in bools">
                   <label for="{{ ::bool.name }}_view" class="col-lg-3 control-label">{{ ::bool.name }}</label>
                   <div class="col-lg-2">
@@ -45,7 +45,11 @@
                 <div class="form-group" ng-hide="!add.bools">
                   <div class="col-lg-3">
                     <ui-select ng-model="new.bools" ng-disabled="!add.bools" style="width: 100%;" on-select="select($item, $select, 'bools')">
-                      <ui-select-match placeholder="Select an option">{{ $select.selected.name }}</ui-select-match>
+              {% endraw %}
+                    <ui-select-match placeholder="{{ _('Select an option') }}">
+              {% raw %}
+                        {{ $select.selected.name }}
+                      </ui-select-match>
                       <ui-select-choices repeat="value.name as value in avail.bools | filter: $select.search">
                         <div ng-bind-html="value.name | highlight: $select.search"></div>
                       </ui-select-choices>
@@ -62,7 +66,9 @@
                 </div>
               </fieldset>
               <fieldset>
-                <legend id="string">Strings</legend>
+              {% endraw %}
+                <legend id="string">{{ _('Strings') }}</legend>
+              {% raw %}
                 <div class="form-group" ng-repeat="string in strings" ng-class="{'has-error': invalid[string.name] }">
                   <label for="{{ ::string.name }}" class="col-lg-3 control-label">{{ ::string.name }}</label>
                   <div ng-if="!suggest[string.name]" class="col-lg-2">
@@ -81,7 +87,11 @@
                 <div class="form-group" ng-hide="!add.strings">
                   <div class="col-lg-3">
                     <ui-select ng-model="new.strings" ng-disabled="!add.strings" style="width: 100%;" on-select="select($item, $select, 'strings')">
-                      <ui-select-match placeholder="Select an option">{{ $select.selected.name }}</ui-select-match>
+              {% endraw %}
+                    <ui-select-match placeholder="{{ _('Select an option') }}">
+              {% raw %}
+                        {{ $select.selected.name }}
+                      </ui-select-match>
                       <ui-select-choices repeat="value.name as value in avail.strings | filter: $select.search">
                         <div ng-bind-html="value.name | highlight: $select.search"></div>
                       </ui-select-choices>
@@ -98,7 +108,9 @@
                 </div>
               </fieldset>
               <fieldset>
-                <legend id="integer">Integers</legend>
+              {% endraw %}
+                <legend id="integer">{{ _('Integers') }}</legend>
+              {% raw %}
                 <div class="form-group" ng-class="{'has-error': !setSettings[int.name].$valid}" ng-repeat="int in integers">
                   <label for="{{ ::int.name }}" class="col-lg-3 control-label">{{ ::int.name }}</label>
                   <div class="col-lg-2">
@@ -112,7 +124,11 @@
                 <div class="form-group" ng-hide="!add.integers">
                   <div class="col-lg-3">
                     <ui-select ng-model="new.integers" ng-disabled="!add.integers" style="width: 100%;" on-select="select($item, $select, 'integers')">
-                      <ui-select-match placeholder="Select an option">{{ $select.selected.name }}</ui-select-match>
+              {% endraw %}
+                    <ui-select-match placeholder="{{ _('Select an option') }}">
+              {% raw %}
+                        {{ $select.selected.name }}
+                      </ui-select-match>
                       <ui-select-choices repeat="value.name as value in avail.integers | filter: $select.search">
                         <div ng-bind-html="value.name | highlight: $select.search"></div>
                       </ui-select-choices>
@@ -129,7 +145,9 @@
                 </div>
               </fieldset>
               <fieldset>
-                <legend id="multi">Multi</legend>
+              {% endraw %}
+                <legend id="multi">{{ _('Multi') }}</legend>
+              {% raw %}
                 <div class="well" ng-repeat="multi in multis">
                   <div class="form-group" ng-repeat="(i, val) in multi.value track by $index">
                     <label class="col-lg-3 control-label" for="{{ ::$parent.multi.name }}-{{ $index }}">{{ ::$parent.multi.name }}</label>
@@ -148,7 +166,11 @@
                 <div class="form-group" ng-hide="!add.multis">
                   <div class="col-lg-3">
                     <ui-select ng-model="new.multis" ng-disabled="!add.multis" style="width: 100%;" on-select="select($item, $select, 'multis')">
-                      <ui-select-match placeholder="Select an option">{{ $select.selected.name }}</ui-select-match>
+              {% endraw %}
+                      <ui-select-match placeholder="{{ _('Select an option') }}">
+              {% raw %}
+                        {{ $select.selected.name }}
+                      </ui-select-match>
                       <ui-select-choices repeat="value.name as value in avail.multis | filter: $select.search">
                         <div ng-bind-html="value.name | highlight: $select.search"></div>
                       </ui-select-choices>
@@ -165,10 +187,16 @@
                 </div>
               </fieldset>
               <fieldset>
-                <legend id="includes_source">Source files</legend>
+              {% endraw %}
+                <legend id="includes_source">{{ _('Source external configuration files') }}</legend>
+              {% raw %}
                 <div class="well">
                   <div class="form-group" ng-repeat="(i, val) in includes track by $index" ng-class="{'has-error': inc_invalid[$index] }">
-                    <label for="include-{{ $index }}" class="col-lg-3 control-label">source</label>
+                    <label for="include-{{ $index }}" class="col-lg-3 control-label">
+              {% endraw %}
+                      {{ _('source config') }}
+              {% raw %}
+                    </label>
                     <div class="col-lg-2">
                       <input class="form-control" type="text" id="include-{{ $index }}" name="includes" ng-model="includes[i]" ng-focus="focusIn($event)" ng-blur="focusOut($event)" placeholder="{{ ::placeholders['.'] }}">
                       <input type="hidden" ng-disabled="{{ includes_ori[$index] === false }}" name="includes_ori" value="{{ includes_ori[$index] }}">
@@ -188,27 +216,27 @@
                     <div class="col-lg-5" ng-if="$first" ng-bind-html="::server_doc['.']"></div>
                   </div>
                   <div class="form-group">
-                    <label for="btn-add-include" class="col-lg-3 control-label">source</label>
+              {% endraw %}
+                    <label for="btn-add-include" class="col-lg-3 control-label">{{ _('source config') }}</label>
                     <div class="col-lg-9">
                       <button type="button" class="btn btn-success btn-primary" ng-click="clickAddIncludes()"><span class="glyphicon glyphicon-plus"></span></button>
                     </div>
                   </div>
                 </div>
               </fieldset>
-              {% endraw %}
               <div class="btn-toolbar">
                 <div class="col-lg-3 col-lg-offset-3">
-                  <button type="submit" class="btn btn-primary" ng-disabled="!setSettings.$valid">Submit</button>
+                  <button type="submit" class="btn btn-primary" ng-disabled="!setSettings.$valid">{{ _('Submit') }}</button>
                 </div>
                 <div class="col-lg-6">
                   {% if client and not conf -%}
                   <div class="btn-group dropupi text-right">
-                    <button type="button" class="btn btn-danger" ng-click="deleteClient()">Remove '{{ client }}'</button>
+                    <button type="button" class="btn btn-danger" ng-click="deleteClient()">{{ _("Remove '%(client)s'", client=client) }}</button>
                     <button class="btn btn-danger dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
                     <ul class="dropdown-menu browse">
-                      <li><label for="keepconf">Do not remove the configuration:&nbsp;</label><input type="checkbox" id="keepconf" name="keepconf"></li>
-                      <li><label for="delcert">Remove associated certificate:&nbsp;</label><input type="checkbox" id="delcert" name="delcert"></li>
-                      <li><label for="revoke">Revoke associated certificate:&nbsp;</label><input type="checkbox" id="revoke" name="revoke" ng-disabled="!revokeEnabled"></li>
+                      <li><label for="keepconf">{{ _('Do not remove the configuration:') }}&nbsp;</label><input type="checkbox" id="keepconf" name="keepconf"></li>
+                      <li><label for="delcert">{{ _('Remove associated certificate:') }}&nbsp;</label><input type="checkbox" id="delcert" name="delcert"></li>
+                      <li><label for="revoke">{{ _('Revoke associated certificate:') }}&nbsp;</label><input type="checkbox" id="revoke" name="revoke" ng-disabled="!revokeEnabled"></li>
                   </div>
                   {% endif -%}
                 </div>

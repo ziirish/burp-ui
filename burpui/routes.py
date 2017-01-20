@@ -37,29 +37,31 @@ Here are some custom filters
 
 
 @view.app_template_filter()
-def mypad(s):
+def mypad(value):
     """
     Filter: used to pad 0's to backup numbers as in the burp's status monitor
     """
-    if not s:
+    if not value:
         return '0000000'
-    return '{0:07d}'.format(int(s))
+    return '{0:07d}'.format(int(value))
 
 
 @view.app_template_filter()
-def time_human(d):
-    s = ''
-    seconds = (((d % 31536000) % 86400) % 3600) % 60
-    minutes = math.floor((((d % 31536000) % 86400) % 3600) / 60)
-    hours = math.floor(((d % 31536000) % 86400) / 3600)
+def time_human(value):
+    """Convert the input value to human readable time"""
+    string = ''
+    seconds = (((value % 31536000) % 86400) % 3600) % 60
+    minutes = math.floor((((value % 31536000) % 86400) % 3600) / 60)
+    hours = math.floor(((value % 31536000) % 86400) / 3600)
     if hours > 0:
-        s = '%02dH' % hours
-    return '%s %02dm %02ds' % (s, minutes, seconds)
+        string = '%02dH' % hours
+    return '%s %02dm %02ds' % (string, minutes, seconds)
 
 
 @view.app_template_filter()
-def bytes_human(b):
-    return '{0:.1eM}'.format(_hr(b))
+def bytes_human(value):
+    """Convert the input value to human readable bytes"""
+    return '{0:.1eM}'.format(_hr(value))
 
 
 """

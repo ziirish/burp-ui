@@ -2,27 +2,29 @@
           <div id="navbar-config">
             <h4>{{ _('Configuration navigation') }}</h4>
             <ul class="nav nav-sidebar bui-scrollspy">
-              <li class="active" data-target="#boolean"><a href="#boolean">Booleans</a></li>
-              <li data-target="#string"><a href="#string">Strings</a></li>
-              <li data-target="#integer"><a href="#integer">Integers</a></li>
-              <li data-target="#multi"><a href="#multi">Multi</a></li>
-              <li data-target="#includes_source"><a href="#includes_source">Source files</a></li>
+              <li class="active" data-target="#boolean"><a href="#boolean">{{ _('Booleans') }}</a></li>
+              <li data-target="#string"><a href="#string">{{ _('Strings') }}</a></li>
+              <li data-target="#integer"><a href="#integer">{{ _('Integers') }}</a></li>
+              <li data-target="#multi"><a href="#multi">{{ _('Multi') }}</a></li>
+              <li data-target="#includes_source"><a href="#includes_source">{{ _('Source files') }}</a></li>
             </ul>
             <h4>{{ _('Client to configure') }}</h4>
             <ul class="nav nav-sidebar" ng-cloak>
-              {% raw %}
               <li>
                 <ui-select ng-model="client.selected" style="width: 100%;" on-select="selectClient($item, $select)">
-                  <ui-select-match placeholder="Select a client">{{ $select.selected.name }}</ui-select-match>
+                  <ui-select-match placeholder="{{ _('Select a client') }}">
+              {% raw -%}
+                    {{ $select.selected.name }}
+                  </ui-select-match>
                   <ui-select-choices repeat="client in clients | filter: {name: $select.search}">
                     <div ng-bind-html="client.name | highlight: $select.search"></div>
                     <small>
-                      config: <span ng-bind-html="''+client.value | highlight: $select.search"></span>
+              {% endraw -%}
+                      {{ _('config:') }} <span ng-bind-html="''+client.value | highlight: $select.search"></span>
                     </small>
                   </ui-select-choices>
                 </ui-select>
               </li>
-              {% endraw %}
             </ul>
             <ul class="nav nav-sidebar">
               <li>

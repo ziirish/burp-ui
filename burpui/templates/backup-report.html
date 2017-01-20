@@ -5,54 +5,54 @@
           {% include "small_topbar.html" %}
           <ul class="breadcrumb" style="margin-bottom: 5px;">
             {% if server -%}
-            <li><a href="{{ url_for('view.home') }}">Home</a></li>
-            <li><a href="{{ url_for('view.clients', server=server) }}">{{ server }} clients</a></li>
-            <li><a href="{{ url_for('view.client', name=cname, server=server) }}">{{ cname }} overview</a></li>
-            <li class="active">Backup n°{{ nbackup|mypad }} overview</li>
+            <li><a href="{{ url_for('view.home') }}">{{ _('Home') }}</a></li>
+            <li><a href="{{ url_for('view.clients', server=server) }}">{{ _('%(server)s clients', server=server) }}</a></li>
+            <li><a href="{{ url_for('view.client', name=cname, server=server) }}">{{ _('%(client)s overview', client=cname) }}</a></li>
+            <li class="active">{{ _('Backup n°%(number)s overview', number=mypad(nbackup)) }}</li>
             {% else -%}
-            <li><a href="{{ url_for('view.home') }}">Home</a></li>
-            <li><a href="{{ url_for('view.client', name=cname) }}">{{ cname }} overview</a></li>
-            <li class="active">Backup n°{{ nbackup|mypad }} overview</li>
+            <li><a href="{{ url_for('view.home') }}">{{ _('Home') }}</a></li>
+            <li><a href="{{ url_for('view.client', name=cname) }}">{{ _('%(client)s overview', client=cname) }}</a></li>
+            <li class="active">{{  _('Backup n°%(number)s overview', number=mypad(nbackup)) }}</li>
             {% endif -%}
           </ul>
           <br />
-          <h1 class="page-header">Backup n°{{ nbackup|mypad }} of {{ cname }}</h1>
+          <h1 class="page-header">{{ _('Backup n°%(number)s of %(client)s', number=mypad(nbackup), client=cname) }}</h1>
           <div class="row placeholders">
             <div class="col-xs-6 col-sm-6 placeholder">
               <div class="mycharts" id="chart_new" style="height: 350px;">
                 <svg></svg>
               </div>
-              <h4>New</h4>
+              <h4>{{ _('New') }}</h4>
             </div>
             <div class="col-xs-6 col-sm-6 placeholder">
               <div class="mycharts" id="chart_changed" style="height: 350px;">
                 <svg></svg>
               </div>
-              <h4>Changed</h4>
+              <h4>{{ _('Changed') }}</h4>
             </div>
             <div class="col-xs-6 col-sm-6 placeholder">
               <div class="mycharts" id="chart_unchanged" style="height: 350px;">
                 <svg></svg>
               </div>
-              <h4>Unchanged</h4>
+              <h4>{{ _('Unchanged') }}</h4>
             </div>
             <div class="col-xs-6 col-sm-6 placeholder">
               <div class="mycharts" id="chart_deleted" style="height: 350px;">
                 <svg></svg>
               </div>
-              <h4>Deleted</h4>
+              <h4>{{ _('Deleted') }}</h4>
             </div>
             <div class="col-xs-6 col-sm-6 placeholder">
               <div class="mycharts" id="chart_total" style="height: 350px;">
                 <svg></svg>
               </div>
-              <h4>Total</h4>
+              <h4>{{ _('Total') }}</h4>
             </div>
             <div class="col-xs-6 col-sm-6 placeholder">
               <div class="mycharts" id="chart_scanned" style="height: 350px;">
                 <svg></svg>
               </div>
-              <h4>Scanned</h4>
+              <h4>{{ _('Scanned') }}</h4>
             </div>
             <!--
             <div class="col-xs-12 col-sm-12 placeholder">

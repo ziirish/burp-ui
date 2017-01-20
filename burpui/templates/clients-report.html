@@ -5,38 +5,38 @@
           {% include "small_topbar.html" %}
           <ul class="breadcrumb" style="margin-bottom: 5px;">
             {% if server -%}
-            <li><a href="{{ url_for('view.home') }}">Home</a></li>
-            <li class="active">{{ server }} clients</li>
+            <li><a href="{{ url_for('view.home') }}">{{ _('Home') }}</a></li>
+            <li class="active">{{ _('%(server)s clients', server=server) }}</li>
             {% else -%}
-            <li class="active">Home</li>
+            <li class="active">{{ _('Home') }}</li>
             {% endif -%}
           </ul>
           <br />
-          <h1 class="page-header">Global server report</h1>
+          <h1 class="page-header">{{ _('Global server report') }}</h1>
           <div class="row placeholders">
             <div class="col-xs-6 col-sm-6 placeholder">
               <div class="mycharts" id="chart_repartition" style="height: 350px;">
                 <svg></svg>
               </div>
-              <h4>Clients repartition</h4>
+              <h4>{{ _('Clients repartition') }}</h4>
             </div>
             <div class="col-xs-6 col-sm-6 placeholder">
               <div class="mycharts" id="chart_size" style="height: 350px;">
                 <svg></svg>
               </div>
-              <h4>Used space</h4>
+              <h4>{{ _('Used space') }}</h4>
             </div>
             <div class="col-xs-6 col-sm-6 placeholder">
               <div class="mycharts" id="chart_files" style="height: 350px;">
                 <svg></svg>
               </div>
-              <h4>Total files</h4>
+              <h4>{{ _('Total files') }}</h4>
             </div>
             <div class="col-xs-6 col-sm-6 placeholder">
               <div class="mycharts" id="chart_backups" style="height: 350px;">
                 <svg></svg>
               </div>
-              <h4>Number of backups</h4>
+              <h4>{{ _('Number of backups') }}</h4>
             </div>
           </div>
         </div>
