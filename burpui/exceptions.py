@@ -11,7 +11,7 @@
 try:
     from werkzeug.exceptions import HTTPException
 except ImportError:
-    HTTPException = object
+    HTTPException = Exception
 
 
 class BUIserverException(HTTPException):
