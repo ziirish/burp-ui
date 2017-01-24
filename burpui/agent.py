@@ -26,6 +26,7 @@ from .misc.backend.interface import BUIbackend
 from ._compat import pickle, to_bytes, to_unicode
 from .utils import BUIlogging
 from .config import config
+from .desc import __version__
 
 G_PORT = 10000
 G_BIND = u'::'
@@ -52,7 +53,10 @@ class BurpHandler(BUIbackend):
         self.vers = vers
         self.logger = logger
 
-        module = 'burpui.misc.backend.burp{0}'.format(self.vers)
+        top = __name__
+        if '.' in top:
+            top = top.split('.')[0]
+        module = '{0}.misc.backend.burp{1}'.format(top, self.vers)
         try:
             sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
             mod = __import__(module, fromlist=['Burp'])
@@ -184,6 +188,8 @@ class BUIAgent(BUIbackend, BUIlogging):
                             res = json.dumps(getattr(parser, j['method'])(**j['args']))
                         else:
                             res = json.dumps(getattr(parser, j['method'])())
+                    elif j['func'] == 'agent_version':
+                        res = json.dumps(__version__)
                     elif j['func'] == 'restore_files':
                         res, err = getattr(self.client, j['func'])(**j['args'])
                         if err:
@@ -256,7 +262,15 @@ class BUIAgent(BUIbackend, BUIlogging):
                                 digest = hmac.new(key, bytes_pickles, hashlib.sha1).hexdigest()
                                 if digest != j['digest']:
                                     raise BUIserverException('Integrity check failed: {} != {}'.format(digest, j['digest']))
-                                j['args'] = pickle.loads(b64decode(pickles))
+                                # We need to replace the burpui datastructure
+                                # module by our own since it's the same but
+                                # burpui may not be installed
+                                mod = __name__
+                                if '.' in mod:
+                                    mod = mod.split('.')[0]
+                                data = b64decode(pickles)
+                                data = data.replace(b'burpui.datastructures', to_bytes('{}.datastructures'.format(mod)))
+                                j['args'] = pickle.loads(data)
                             res = json.dumps(getattr(self.client, j['func'])(**j['args']))
                         else:
                             res = json.dumps(getattr(self.client, j['func'])())

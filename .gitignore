@@ -12,3 +12,5 @@ _build
 .tags
 celerybeat-schedule
 pkgs/burp-ui-sql/burpui_sql/VERSION
+pkgs/burp-ui-extra/burpui_extra/VERSION
+pkgs/burp-ui-agent/burpui_agent

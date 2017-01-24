@@ -8,16 +8,19 @@ import struct
 import traceback
 
 from six import iteritems
+from werkzeug.datastructures import ImmutableMultiDict as _ImmutableMultiDict
 
 from .interface import BUIbackend
 from ..parser.interface import BUIparser
 from ...exceptions import BUIserverException
 from ..._compat import pickle, to_unicode, to_bytes
 from ...decorators import implement
+from ...datastructures import ImmutableMultiDict
 
 
 INTERFACE_METHODS = BUIbackend.__abstractmethods__
 PARSER_INTERFACE_METHODS = BUIparser.__abstractmethods__
+AGENT_VERSION_CAST = '0.4.9999'
 
 
 class ProxyCall(object):
@@ -361,6 +364,7 @@ class NClient(BUIbackend):
         self.ssl = ssl
         self.app = app
         self.timeout = timeout or 5
+        self.version = None
 
     def __getattribute__(self, name):
         # always return this value because we need it and if we don't do that
@@ -383,6 +387,17 @@ class NClient(BUIbackend):
             elif func:
                 return func
         return object.__getattribute__(self, name)
+
+    def _get_agent_version(self):
+        if self.ping() and not self.version:
+            data = {'func': 'agent_version'}
+            try:
+                self.version = json.loads(self.do_command(data))
+            except BUIserverException:
+                # just ignore the error if this custom function is not
+                # implemented
+                pass
+        return self.version
 
     def ping(self):
         """Check if we are connected to the agent"""
@@ -493,11 +508,14 @@ class NClient(BUIbackend):
         import hmac
         import hashlib
         from base64 import b64encode
-        from werkzeug.datastructures import ImmutableMultiDict
-        if not isinstance(data, ImmutableMultiDict):
+        if not isinstance(data, _ImmutableMultiDict):
             msg = 'Wrong data type'
             self.logger.warning(msg)
             raise BUIserverException(msg)
+        vers = self._get_agent_version()
+        if vers and vers >= AGENT_VERSION_CAST:
+            # convert the data to our custom ImmutableMultiDict
+            data = ImmutableMultiDict(data.to_dict(False))
         key = '{}{}'.format(self.password, 'store_conf_cli')
         key = to_bytes(key)
         pickles = b64encode(pickle.dumps({'data': data, 'conf': conf, 'client': client}, 2))
@@ -513,11 +531,14 @@ class NClient(BUIbackend):
         import hmac
         import hashlib
         from base64 import b64encode
-        from werkzeug.datastructures import ImmutableMultiDict
-        if not isinstance(data, ImmutableMultiDict):
+        if not isinstance(data, _ImmutableMultiDict):
             msg = 'Wrong data type'
             self.logger.warning(msg)
             raise BUIserverException(msg)
+        vers = self._get_agent_version()
+        if vers and vers >= AGENT_VERSION_CAST:
+            # convert the data to our custom ImmutableMultiDict
+            data = ImmutableMultiDict(data.to_dict(False))
         key = u'{}{}'.format(self.password, 'store_conf_srv')
         key = to_bytes(key)
         pickles = b64encode(pickle.dumps({'data': data, 'conf': conf}, 2))

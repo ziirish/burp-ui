@@ -42,7 +42,7 @@ def parse_args(mode=True, name=None):
 
     if options.version:
         from burpui.desc import __title__, __version__, __release__
-        ver = '{}: v{}'.format(name or __title__, __version__)
+        ver = '{}: v{}'.format(mname or __title__, __version__)
         if options.log:
             ver = '{} ({})'.format(ver, __release__)
         print(ver)

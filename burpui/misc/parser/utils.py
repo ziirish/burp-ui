@@ -14,11 +14,11 @@ import shutil
 from copy import copy
 from hashlib import md5
 from collections import OrderedDict
-from werkzeug.datastructures import MultiDict
 from glob import glob
 from six import iteritems, viewkeys
 
 from ...utils import NOTIF_ERROR, NOTIF_OK, NOTIF_WARN, sanitize_string
+from ...datastructures import MultiDict
 
 
 class Option(object):

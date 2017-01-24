@@ -17,7 +17,7 @@ from ..utils import NOTIF_INFO
 from six import iteritems
 from flask_babel import gettext as _
 from flask import jsonify, request, url_for, current_app
-from werkzeug.datastructures import ImmutableMultiDict
+from ..datastructures import ImmutableMultiDict
 
 bui = current_app  # type: BUIServer
 ns = api.namespace('settings', 'Settings methods')

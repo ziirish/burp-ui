@@ -20,11 +20,42 @@ if sys.version_info[0] >= 3:
     from urllib.parse import unquote, quote  # noqa
     text_type = str
     string_types = (str,)
+
+    def iterkeys(d, *args, **kwargs):
+        return iter(d.keys(*args, **kwargs))
+
+    def itervalues(d, *args, **kwargs):
+        return iter(d.values(*args, **kwargs))
+
+    def iteritems(d, *args, **kwargs):
+        return iter(d.items(*args, **kwargs))
+
+    def iterlists(d, *args, **kwargs):
+        return iter(d.lists(*args, **kwargs))
+
+    def iterlistvalues(d, *args, **kwargs):
+        return iter(d.listvalues(*args, **kwargs))
+
 else:
     PY3 = False
     from urllib import unquote, quote  # noqa
     text_type = unicode
     string_types = (str, unicode)
+
+    def iterkeys(d, *args, **kwargs):
+        return d.iterkeys(*args, **kwargs)
+
+    def itervalues(d, *args, **kwargs):
+        return d.itervalues(*args, **kwargs)
+
+    def iteritems(d, *args, **kwargs):
+        return d.iteritems(*args, **kwargs)
+
+    def iterlists(d, *args, **kwargs):
+        return d.iterlists(*args, **kwargs)
+
+    def iterlistvalues(d, *args, **kwargs):
+        return d.iterlistvalues(*args, **kwargs)
 
 
 def to_bytes(text):

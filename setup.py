@@ -236,14 +236,12 @@ setup(
     entry_points={
         'console_scripts': [
             'burp-ui=burpui.__main__:server',
-            'bui-agent=burpui.__main__:agent',
             'bui-celery=burpui.__main__:celery',
             'bui-manage=burpui.__main__:manage',
         ],
     },
     data_files=[
         (confdir, [os.path.join(confdir, 'burpui.sample.cfg')]),
-        (confdir, [os.path.join(confdir, 'buiagent.sample.cfg')]),
         (os.path.join(contrib, 'centos'), ['contrib/centos/init.sh']),
         (os.path.join(contrib, 'debian'), ['contrib/debian/init.sh', 'contrib/debian/bui-celery.init']),
         (os.path.join(contrib, 'gunicorn.d'), ['contrib/gunicorn.d/burp-ui']),
@@ -251,7 +249,6 @@ setup(
     ] + migrations,
     install_requires=requires,
     extras_require={
-        'ssl': ['pyOpenSSL'],
         'ldap_authentication': ['ldap3'],
         'extra': ['ujson'],
         'gunicorn': ['gevent', 'gunicorn'],
@@ -262,6 +259,7 @@ setup(
         'debian_wheezy': ['functools32'],
         'celery': ['Celery', 'redis'],
         'sql': ['Flask-SQLAlchemy', 'Flask-Migrate>=2.0.1', 'sqlalchemy-utils'],
+        'limit': ['Flask-Limiter', 'redis'],
     },
     tests_require=test_requires,
     classifiers=[
