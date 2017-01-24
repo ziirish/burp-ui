@@ -168,7 +168,7 @@ class Burp(Burp1):
                 )
                 confsrv = G_BURPCONFSRV
 
-            if not self.burpbin and self.app.strict:
+            if not self.burpbin and getattr(self.app, 'strict', True):
                 # The burp binary is mandatory for this backend
                 raise Exception(
                     'This backend *CAN NOT* work without a burp binary'
@@ -183,13 +183,13 @@ class Burp(Burp1):
                 "'%s' is not a directory",
                 tmpdir
             )
-            if tmpdir == G_TMPDIR and self.app.strict:
+            if tmpdir == G_TMPDIR and getattr(self.app, 'strict', True):
                 raise IOError(
                     "Cannot use '{}' as tmpdir".format(tmpdir)
                 )
             tmpdir = G_TMPDIR
             if os.path.exists(tmpdir) and not os.path.isdir(tmpdir) and \
-                    self.app.strict:
+                    getattr(self.app, 'strict', True):
                 raise IOError(
                     "Cannot use '{}' as tmpdir".format(tmpdir)
                 )
@@ -206,13 +206,13 @@ class Burp(Burp1):
                 cmd,
                 universal_newlines=True
             ).rstrip()
-            if version < BURP_MINIMAL_VERSION and self.app.strict:
+            if version < BURP_MINIMAL_VERSION and getattr(self.app, 'strict', True):
                 raise Exception(
                     'Your burp version ({}) does not fit the minimal'
                     ' requirements: {}'.format(version, BURP_MINIMAL_VERSION)
                 )
         except subprocess.CalledProcessError as exp:
-            if self.app.strict:
+            if getattr(self.app, 'strict', True):
                 raise Exception(
                     'Unable to determine your burp version: {}'.format(str(exp))
                 )
@@ -423,7 +423,7 @@ class Burp(Burp1):
         except (OSError, Exception) as exp:
             msg = 'Cannot launch burp process: {}'.format(str(exp))
             self.logger.error(msg)
-            if self.app.strict:
+            if getattr(self.app, 'strict', True):
                 raise BUIserverException(msg)
         return None
 
