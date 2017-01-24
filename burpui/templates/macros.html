@@ -148,18 +148,18 @@ $('{{ selector }}').on('length.dt', function(e, settings, len) {
 {% macro timestamp_filter() -%}
 // extends DataTables sorting
 jQuery.extend( jQuery.fn.dataTableExt.oSort, {
-	"timestamp-pre": function ( a ) {
-		var $obj = $(a);
+  "timestamp-pre": function ( a ) {
+    var $obj = $(a);
     var title = $obj.attr('title')
     if (typeof title !== typeof undefined && title !== false)
-  		return moment($obj.attr('title'), moment.ISO_8601).valueOf();
+      return moment(title, moment.ISO_8601).valueOf();
     return moment().valueOf();
-	},
-	"timestamp-asc": function ( a, b ) {
-		return ((a < b) ? -1 : ((a > b) ? 1 : 0));
-	},
-	"timestamp-desc": function ( a, b ) {
-		return ((a < b) ? 1 : ((a > b) ? -1 : 0));
-	}
+  },
+  "timestamp-asc": function ( a, b ) {
+    return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+  },
+  "timestamp-desc": function ( a, b ) {
+    return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+  }
 } );
 {%- endmacro %}
