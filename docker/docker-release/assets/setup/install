@@ -18,8 +18,8 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y libssl-dev burp-client
 
 # Install burp-ui
 pip install --upgrade pip
-pip install "requests[security]"
-pip install --upgrade cffi
+#pip install "requests[security]"
+#pip install --upgrade cffi
 cd /burp-ui
 git submodule update --init
 pip install -r requirements.txt
@@ -34,6 +34,7 @@ pip install sqlalchemy-utils
 pip install celery
 pip install dist/*.tar.gz
 
+cffi=$(grep cffi requirements.txt)
 cd
 rm -rf /burp-ui
 
@@ -109,4 +110,6 @@ apt-get remove -y python2.7-dev git python-pip libffi-dev libssl-dev wget
 apt-get clean
 apt-get autoclean
 apt-get -y autoremove
+# cffi breaks after the cleanup
+/usr/local/bin/pip install $cffi
 rm -rf /var/lib/apt/lists/*
