@@ -182,26 +182,35 @@ class BasicLoader(BUIloader):
     def change_password(self, user, passwd, old_passwd=None):
         """Change a user password"""
         self._setup_users()
+        old_users = self.users
         self.load_users(True)
-        if user not in self.users:
+        current = self.users.get(
+            user,
+            old_users.get(user, None)
+        )
+
+        if not current:
             message = "user '{}' does not exist".format(user)
             self.logger.error(message)
             return False, message, NOTIF_ERROR
-        current = self.users[user]
+
         if current['salted']:
             comp = check_password_hash
         else:
             def comp(x, y):
                 return x == y
+
         curr = current['pwd']
         if old_passwd and not comp(curr, old_passwd):
             message = "unable to authenticate user '{}'".format(user)
             self.logger.error(message)
             return False, message, NOTIF_ERROR
+
         if comp(curr, passwd):
             message = 'password is the same'
             self.logger.warning(message)
             return False, message, NOTIF_WARN
+
         pwd = generate_password_hash(passwd)
         self.conf.options[self.section][user] = pwd
         self.conf.options.write()
