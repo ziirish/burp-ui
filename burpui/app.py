@@ -491,10 +491,20 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
     bower.init_app(app)
 
     def _check_session(user, request, api=False):
+        """Check if the session is in the db"""
         if user and not session_manager.session_in_db():
             login = getattr(user, 'name', None)
             if login and not is_uuid(login):
                 remember = session.get('persistent', False)
+                if not remember:
+                    from flask_login import decode_cookie
+                    remember_cookie = request.cookies.get(
+                        app.config.get('REMEMBER_COOKIE_NAME'),
+                        False
+                    )
+                    # check if the remember_cookie is legit
+                    if remember_cookie and decode_cookie(remember_cookie):
+                        remember = True
                 session_manager.store_session(
                     login,
                     request.remote_addr,
@@ -522,7 +532,7 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
         """User loader callback"""
         if app.auth != 'none':
             user = app.uhandler.user(userid)
-            _check_session(user, request, True)
+            _check_session(user, request)
             return user
         return None
 
@@ -531,7 +541,7 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
         """User loader from request callback"""
         if app.auth != 'none':
             user = basic_login_from_request(request, app)
-            _check_session(user, request)
+            _check_session(user, request, True)
             return user
 
     @app.after_request

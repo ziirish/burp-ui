@@ -219,7 +219,7 @@ class SessionManager(object):
             if not hasattr(self.app.session_interface, 'serializer'):
                 return False
             # if we are working on the current session that have been freshly
-            # created, it's content has not been dumped yet
+            # created, its content has not been dumped yet
             dump = self.backend.get(key)
             if dump:
                 sess = self.app.session_interface.serializer.loads(dump)

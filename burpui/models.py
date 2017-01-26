@@ -10,7 +10,7 @@
 import datetime
 
 from .ext.sql import db
-from flask import current_app
+from flask import current_app, session
 from .server import BUIServer  # noqa
 
 app = current_app  # type: BUIServer
@@ -65,6 +65,8 @@ class Session(db.Model):
         if self.permanent:
             self.expire = datetime.datetime.utcnow() + \
                 app.permanent_session_lifetime
+            if 'remember' not in session:
+                session['remember'] = 'set'
         db.session.commit()
 
     def __repr__(self):

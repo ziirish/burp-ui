@@ -253,6 +253,7 @@ class BUIServer(Flask):
             self.config['PERMANENT_SESSION_LIFETIME'] = timedelta(
                 days=days
         )
+        self.config['REMEMBER_COOKIE_NAME'] = 'remember_token'
         days = self.conf.safe_get(
             'sessiontime',
             'integer',
