@@ -6,6 +6,8 @@ import json
 
 class ACLloader(BUIaclLoader):
     """See :class:`burpui.misc.acl.interface.BUIaclLoader`"""
+    section = name = 'BASIC:ACL'
+
     def __init__(self, app=None):
         """See :func:`burpui.misc.acl.interface.BUIaclLoader.__init__`
 
@@ -19,14 +21,23 @@ class ACLloader(BUIaclLoader):
         self.clients = {}
         self.servers = {}
         self.standalone = self.app.standalone
-        conf = self.app.conf
+        self._acl = None
+        self.conf_id = None
+        self.conf = self.app.conf
+        self.load_acl(True)
+
+    def load_acl(self, force=False):
+        if not force and self.conf_id:
+            if not self.conf.changed(self.conf_id):
+                return False
+
         adms = []
-        if 'BASIC:ACL' in conf.options:
-            adms = conf.safe_get('admin', 'force_list', section='BASIC:ACL')
-            for opt in conf.options.get('BASIC:ACL').keys():
+        if self.section in self.conf.options:
+            adms = self.conf.safe_get('admin', 'force_list', section=self.section)
+            for opt in self.conf.options.get(self.section).keys():
                 if opt == 'admin':
                     continue
-                lit = conf.safe_get(opt, section='BASIC:ACL')
+                lit = self.conf.safe_get(opt, section=self.section)
                 rec = []
                 try:
                     rec = json.loads(lit)
@@ -39,15 +50,21 @@ class ACLloader(BUIaclLoader):
 
         if adms and adms != [None]:
             self.admins = adms
-        self._acl = BasicACL(self)
+
         self.logger.debug('admins: ' + str(self.admins))
         self.logger.debug('clients: ' + str(self.clients))
         self.logger.debug('servers: ' + str(self.servers))
+
+        self.conf_id = self.conf.id
+        self._acl = BasicACL(self)
+
+        return True
 
     @property
     def acl(self):
         """Property to retrieve the backend"""
         if self._acl:
+            self.load_acl()
             return self._acl
         return None  # pragma: no cover
 
