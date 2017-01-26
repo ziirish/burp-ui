@@ -19,21 +19,25 @@ pip install wheel
 echo "building dist"
 [ "$(sed 's/\([[:digit:]]*\)\..*$/\1/' <<<$VERSION)" -eq 2 ] && {
     $PYTHON setup.py sdist bdist_wheel bdist_egg
+    mkdir meta
     cd pkgs
     for pkg in *
     do
         cd $pkg
         $PYTHON setup.py sdist bdist_wheel bdist_egg
+        find dist -exec cp "{}" ../../meta/ \;
         cd ..
     done
     cd ..
 } || {
     $PYTHON setup.py bdist_egg
+    mkdir meta
     cd pkgs
     for pkg in *
     do
         cd $pkg
         $PYTHON setup.py bdist_egg
+        find dist -exec cp "{}" ../../meta/ \;
         cd ..
     done
     cd ..

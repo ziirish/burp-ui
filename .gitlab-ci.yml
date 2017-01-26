@@ -49,7 +49,7 @@ build:py2:
   artifacts:
     paths:
     - dist/
-    - pkgs/*/dist/
+    - meta/
 
 build:py3:
   stage: build
@@ -63,7 +63,7 @@ build:py3:
   artifacts:
     paths:
     - dist/
-    - pkgs/*/dist/
+    - meta/
 
 deploy:demo:
   stage: deploy
