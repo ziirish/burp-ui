@@ -375,11 +375,12 @@ class BUIServer(Flask):
 
     def get_send_file_max_age(self, name):
         """Provides default cache_timeout for the send_file() functions."""
-        lname = name.lower()
-        extensions = ['js', 'css', 'woff']
-        for ext in extensions:
-            if lname.endswith('.{}'.format(ext)):
-                return 3600 * 24 * 30  # 30 days
+        if name:
+            lname = name.lower()
+            extensions = ['js', 'css', 'woff']
+            for ext in extensions:
+                if lname.endswith('.{}'.format(ext)):
+                    return 3600 * 24 * 30  # 30 days
         return Flask.get_send_file_max_age(self, name)
 
     def manual_run(self):
