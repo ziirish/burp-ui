@@ -337,7 +337,6 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
         list=list,
         mypad=mypad,
         version_id='{}-{}'.format(__version__, __release__),
-        config=app.config
     )
 
     # manage application secret key
@@ -358,7 +357,7 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
 
         app.wsgi_app = ProxyFix(app.wsgi_app)
 
-    if app.storage and app.storage.lower() != 'default':
+    if app.storage and app.storage.lower() == 'redis':
         try:
             # Session setup
             if not app.session_db or \
@@ -378,10 +377,11 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
                     db = int(db)
                 except ValueError:
                     db = 0
-                logger.debug('Using redis://guest:****@{}:{}/{}'.format(
-                    host,
-                    port,
-                    db)
+                logger.debug(
+                    'SESSION: Using redis://guest:****@{}:{}/{}'.format(
+                        host,
+                        port,
+                        db)
                 )
                 red = Redis(host=host, port=port, db=db, password=pwd)
                 app.config['SESSION_TYPE'] = 'redis'
@@ -390,6 +390,9 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
                 app.config['SESSION_PERMANENT'] = False
                 sess.init_app(app)
                 session_manager.backend = red
+        except Exception as exp:
+            logger.warning('Unable to initialize session: {}'.format(str(exp)))
+        try:
             # Cache setup
             if not app.cache_db or \
                     app.cache_db.lower() not in ['none']:
@@ -406,7 +409,7 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
                     db = int(db)
                 except ValueError:
                     db = 1
-                logger.debug('Using redis://guest:****@{}:{}/{}'.format(
+                logger.debug('CACHE: Using redis://guest:****@{}:{}/{}'.format(
                     host,
                     port,
                     db)
@@ -426,9 +429,48 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
                     cache.clear()
             else:
                 cache.init_app(app)
-        except Exception as e:
-            logger.warning('Unable to initialize redis: {}'.format(str(e)))
+        except Exception as exp:
+            logger.warning('Unable to initialize cache: {}'.format(str(exp)))
             cache.init_app(app)
+        try:
+            # Limiter setup
+            if not app.limiter or app.limiter.lower() not in ['none']:
+                from .ext.limit import limiter
+                app.config['RATELIMIT_HEADERS_ENABLED'] = True
+                if app.limiter and app.limiter not in ['default', 'redis']:
+                    app.config['RATELIMIT_STORAGE_URL'] = app.limiter
+                else:
+                    db = 3
+                    host, port, pwd = get_redis_server(app)
+                    if pwd:
+                        conn = 'redis://guest:{}@{}:{}/{}'.format(
+                            pwd,
+                            host,
+                            port,
+                            db
+                        )
+                    else:
+                        conn = 'redis://{}:{}/{}'.format(host, port, db)
+                    app.config['RATELIMIT_STORAGE_URL'] = conn
+
+                (_, _, pwd, host, port, db) = parse_db_setting(
+                    app.config['RATELIMIT_STORAGE_URL']
+                )
+
+                logger.debug(
+                    'LIMITER: Using redis://guest:****@{}:{}/{}'.format(
+                        host,
+                        port,
+                        db
+                    )
+                )
+                limiter.init_app(app)
+                app.config['WITH_LIMIT'] = True
+        except ImportError:
+            logger.warning('Unable to load limiter. Did you run \'pip install '
+                           'flask-limiter\'?')
+        except Exception as exp:
+            logger.warning('Unable to initialize limiter: {}'.format(str(exp)))
     else:
         cache.init_app(app)
 

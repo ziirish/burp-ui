@@ -34,6 +34,8 @@ G_STORAGE = u''
 G_CACHE = u''
 G_SESSION = u''
 G_REDIS = u''
+G_LIMITER = False
+G_RATIO = u'20/minute'
 G_CELERY = False
 G_SCOOKIE = True
 G_DEMO = False
@@ -82,6 +84,8 @@ class BUIServer(Flask):
             'redis': G_REDIS,
             'celery': G_CELERY,
             'database': G_DATABASE,
+            'limiter': G_LIMITER,
+            'ratio': G_RATIO,
         },
         'Experimental': {
             'noserverrestore': G_NO_SERVER_RESTORE,
@@ -94,19 +98,23 @@ class BUIServer(Flask):
 
         :param app: The Flask application to launch
         """
+        super(BUIServer, self).__init__('burpui')
         self.init = False
         # We cannot override the Flask's logger so we use our own
-        self.builogger = logging.getLogger('burp-ui')
-        self.builogger.disabled = True
-        super(BUIServer, self).__init__('burpui')
+        self._logger = logging.getLogger('burp-ui')
+        self._logger.disabled = True
+        self.conf = config
+        # switch the flask config with our magic config object
+        self.conf.update(self.config)
+        self.config = self.conf
 
     def enable_logger(self, enable=True):
         """Enable or disable the logger"""
-        self.builogger.disabled = not enable
+        self._logger.disabled = not enable
 
     @property
     def logger(self):
-        return self.builogger
+        return self._logger
 
     def setup(self, conf=None, unittest=False, cli=False):
         """The :func:`burpui.server.BUIServer.setup` functions is used to setup
@@ -131,13 +139,8 @@ class BUIServer(Flask):
             raise IOError('No configuration file found')
 
         # Raise exception if errors are encountered during parsing
-        self.conf = config
         self.conf.parse(conf, True, self.defaults)
         self.conf.default_section('Global')
-
-        # switch the flask config with our magic config object
-        self.conf.update(self.config)
-        self.config = self.conf
 
         self.port = self.config['BUI_PORT'] = self.conf.safe_get(
             'port',
@@ -208,6 +211,17 @@ class BUIServer(Flask):
             'redis',
             section='Production'
         )
+        self.limiter = self.config['BUI_LIMITER'] = self.conf.safe_get(
+            'limiter',
+            'boolean_or_string',
+            section='Production'
+        )
+        if isinstance(self.limiter, bool) and not self.limiter:
+            self.limiter = self.config['BUI_LIMITER'] = 'none'
+        self.ratio = self.config['BUI_RATIO'] = self.conf.safe_get(
+            'ratio',
+            section='Production'
+        )
         self.use_celery = self.config['BUI_CELERY'] = self.conf.safe_get(
             'celery',
             'boolean_or_string',
@@ -219,6 +233,7 @@ class BUIServer(Flask):
                 'boolean_or_string',
                 section='Production'
         )
+        self.config['WITH_LIMIT'] = False
         if isinstance(self.database, bool):
             self.config['WITH_SQL'] = self.database
         else:

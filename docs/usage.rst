@@ -140,6 +140,17 @@ follow:
     # http://docs.sqlalchemy.org/en/latest/core/engines.html#database-urls
     # example: sqlite:////var/lib/burpui/store.db
     database = none
+    # whether to rate limit the API or not
+    # may also be a redis url like: redis://localhost:6379/0
+    # if set to "true" or "redis" or "default", the url defaults to:
+    # redis://<redis_host>:<redis_port>/3
+    # where <redis_host> is the host part, and <redis_port> is the port part of
+    # the above "redis" setting
+    # Note: the limiter only applies to the API routes
+    limiter = false
+    # limiter ratio
+    # see https://flask-limiter.readthedocs.io/en/stable/#ratelimit-string
+    ratio = 20/minute
 
 
 Experimental

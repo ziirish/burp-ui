@@ -80,6 +80,16 @@ If you need persistent data, you will need additional dependencies as well:
     pip install burp-ui-sql
 
 
+Limiter
+-------
+
+If you want to rate-limit the API, you will need additional dependencies too:
+
+::
+
+    pip install flask-limiter
+
+
 Burp1
 -----
 

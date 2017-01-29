@@ -71,6 +71,9 @@ class Api(ApiPlus):
     CELERY_REQUIRED = ['async']
 
     def load_all(self):
+        if config['WITH_LIMIT']:
+            from ..ext.limit import limiter
+            self.decorators.append(limiter.limit(config['BUI_RATIO']))
         """hack to automatically import api modules"""
         if not self.loaded:
             sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))

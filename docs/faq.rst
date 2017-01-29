@@ -105,11 +105,40 @@ Are there any known issues?
 There is a `known issue <introduction.html#known-issues>`__ section in this
 documentation.
 
+Why using redis?
+----------------
+
+Redis may be used for several things:
+
+- store the sessions server side (by default sessions are stored client side in
+  a secure cookie)
+- cache some data
+- monitor API usage for the rate limiter
+
+All of these features are totally optional.
+Redis is also used by celery to interact between Burp-UI and the asynchronous
+worker.
+
+Why using SQL?
+--------------
+
+The SQL database is currently used to keep a track of several meta-data.
+Again, it is totally optional to use it.
+
 Burp-UI does not work anymore since I upgraded it, what can I do?
 -----------------------------------------------------------------
 
 Make sure you read the `upgrading <upgrading.html>`_ page in case some breaking
 changes occurred.
+
+I am getting errors while restoring large files (>3GB), what should I do?
+-------------------------------------------------------------------------
+
+The default *zip* module does not support large files by default. You can either
+enable large file support by setting ``zip64 = true`` in the ``[Experimental]``
+section.
+Alternatively, you can choose an other compression module by selecting an other
+extension while proceeding the restoration.
 
 How can I contribute?
 ---------------------
