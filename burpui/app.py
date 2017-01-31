@@ -57,7 +57,7 @@ def get_redis_server(myapp):
     return host, port, pwd
 
 
-def create_db(myapp, cli=False):
+def create_db(myapp, cli=False, create=True):
     """Create the SQLAlchemy instance if possible
 
     :param myapp: Application context
@@ -73,22 +73,37 @@ def create_db(myapp, cli=False):
             myapp.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
             if not database_exists(myapp.config['SQLALCHEMY_DATABASE_URI']) and \
                     not cli:
-                try:
-                    create_database(
-                        myapp.config['SQLALCHEMY_DATABASE_URI']
+                if create:
+                    import subprocess
+                    cmd = [
+                        'bui-manage',
+                        '-c',
+                        myapp.config['CFG'],
+                        'db',
+                        'upgrade'
+                    ]
+                    upgd = subprocess.Popen(
+                        cmd,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE
                     )
-                    db.init_app(myapp)
-                    with myapp.app_context():
-                        db.create_all()
-                        db.session.commit()
-                    return db
-                except OperationalError as exp:
+                    (out, err) = upgd.communicate()
+                    if upgd.returncode != 0:
+                        myapp.logger.error(
+                            'Disabling SQL support because '
+                            'something went wrong while setting up the '
+                            'database:\n{}'.format(out)
+                        )
+                        myapp.config['WITH_SQL'] = False
+                        return None
+                    return create_db(myapp, cli, False)
+                else:
                     myapp.logger.error(
-                        'An error occured, disabling SQL support: '
-                        '{}'.format(str(exp))
+                        'Database not found, disabling SQL support'
                     )
                     myapp.config['WITH_SQL'] = False
                     return None
+
             db.init_app(myapp)
             if not cli:
                 with myapp.app_context():
@@ -98,8 +113,8 @@ def create_db(myapp, cli=False):
                         if 'no such table' in str(exp):
                             myapp.logger.critical(
                                 'Your database seem out of sync, you may want '
-                                'to run \'bui-manage db upgrade\'. Disabling '
-                                'SQL support for now.'
+                                'to run \'bui-manage db upgrade\'.\n'
+                                'Disabling SQL support for now.'
                             )
                             myapp.config['WITH_SQL'] = False
                             return None
@@ -107,7 +122,7 @@ def create_db(myapp, cli=False):
         except ImportError:
             myapp.logger.critical(
                 'Unable to load requirements, you may want to run \'pip '
-                'install burp-ui-sql\'. Disabling SQL support for now.'
+                'install burp-ui-sql\'.\nDisabling SQL support for now.'
             )
             myapp.config['WITH_SQL'] = False
 

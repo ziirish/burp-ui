@@ -18,9 +18,9 @@ app = current_app  # type: BUIServer
 
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    uuid = db.Column(db.String, unique=True)
-    task = db.Column(db.String)
-    user = db.Column(db.String, nullable=True)
+    uuid = db.Column(db.String(256), unique=True)
+    task = db.Column(db.String(256))
+    user = db.Column(db.String(256), nullable=True)
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     expire = db.Column(db.DateTime, nullable=True)
 
@@ -37,10 +37,10 @@ class Task(db.Model):
 
 class Session(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    uuid = db.Column(db.String, unique=True)
-    user = db.Column(db.String)
-    ip = db.Column(db.String, nullable=True)
-    ua = db.Column(db.String, nullable=True)
+    uuid = db.Column(db.String(256), unique=True)
+    user = db.Column(db.String(256))
+    ip = db.Column(db.String(256), nullable=True)
+    ua = db.Column(db.String(2048), nullable=True)
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     expire = db.Column(db.DateTime, nullable=True)
     permanent = db.Column(db.Boolean)
