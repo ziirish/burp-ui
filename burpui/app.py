@@ -71,7 +71,7 @@ def create_db(myapp, cli=False, unittest=False, create=True):
             from sqlalchemy_utils.functions import database_exists
             myapp.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
             if not database_exists(myapp.config['SQLALCHEMY_DATABASE_URI']) and \
-                    not cli:
+                    not cli and not unittest:
                 if create:
                     import subprocess
                     cmd = [
@@ -104,7 +104,7 @@ def create_db(myapp, cli=False, unittest=False, create=True):
                     return None
 
             db.init_app(myapp)
-            if not cli:
+            if not cli and not unittest:
                 with myapp.app_context():
                     try:
                         test_database()
