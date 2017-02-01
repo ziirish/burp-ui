@@ -57,7 +57,7 @@ def get_redis_server(myapp):
     return host, port, pwd
 
 
-def create_db(myapp, cli=False, create=True):
+def create_db(myapp, cli=False, unittest=False, create=True):
     """Create the SQLAlchemy instance if possible
 
     :param myapp: Application context
@@ -68,8 +68,7 @@ def create_db(myapp, cli=False, create=True):
             from .ext.sql import db
             from .models import test_database
             from sqlalchemy.exc import OperationalError
-            from sqlalchemy_utils.functions import database_exists, \
-                create_database
+            from sqlalchemy_utils.functions import database_exists
             myapp.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
             if not database_exists(myapp.config['SQLALCHEMY_DATABASE_URI']) and \
                     not cli:
@@ -96,7 +95,7 @@ def create_db(myapp, cli=False, create=True):
                         )
                         myapp.config['WITH_SQL'] = False
                         return None
-                    return create_db(myapp, cli, False)
+                    return create_db(myapp, cli, unittest, False)
                 else:
                     myapp.logger.error(
                         'Database not found, disabling SQL support'
@@ -504,7 +503,7 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
     babel.init_app(app)
 
     # Create SQLAlchemy if enabled
-    create_db(app, cli)
+    create_db(app, cli, unittest)
 
     # We initialize the API
     api.version = __version__
