@@ -35,17 +35,11 @@ var _servers = function() {
 			$(this).parent().show();
 		});
 		$.each(d['servers'], function(k, s) {
-			size.push({'label': s.name, 'value': s.stats.totsize});
-			files.push({'label': s.name, 'value': s.stats.total});
-			if (s.stats.windows > 0) {
-				rep.push({'label': s.name + ' - Windows', 'value': s.stats.windows});
-			}
-			if (s.stats.linux > 0) {
-				rep.push({'label': s.name + ' - Unix/Linux', 'value': s.stats.linux});
-			}
-			if (s.stats.unknown > 0) {
-				rep.push({'label': s.name + ' - Unknown', 'value': s.stats.unknown});
-			}
+			size.push({'label': s.name, 'value': s.number.totsize});
+			files.push({'label': s.name, 'value': s.number.total});
+			$.each(s.number.os, function(o, n) {
+				rep.push({'label': s.name + ' - ' + o, 'value': n});
+			});
 		});
 		$.each(d['backups'], function(k, b) {
 			backups.push({'label': b.name, 'value': b.number});

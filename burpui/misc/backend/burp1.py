@@ -424,7 +424,7 @@ class Burp(BUIbackend):
 
         :returns: Dict containing the backup log
         """
-        backup = {'windows': 'unknown', 'number': int(number)}
+        backup = {'os': 'unknown', 'number': int(number)}
         if forward:
             backup['name'] = client
         keys = {
@@ -526,11 +526,11 @@ class Burp(BUIbackend):
             if line == '-list begin-' or line == '-list end-':
                 continue
             (key, val) = line.split(':')
-            if backup['windows'] == 'unknown' and key == 'client_is_windows':
+            if backup['os'] == 'unknown' and key == 'client_is_windows':
                 if val == '1':
-                    backup['windows'] = 'true'
+                    backup['os'] = 'Windows'
                 else:
-                    backup['windows'] = 'false'
+                    backup['os'] = 'Unix/Linux'
                 continue
             if key not in keys:
                 continue
@@ -592,13 +592,13 @@ class Burp(BUIbackend):
             'total': r'^\s*Grand total:?\s+([\d\s]+)\s+\|\s+(\d+)$'
         }
         _ = agent  # noqa
-        backup = {'windows': 'false', 'number': int(number)}
+        backup = {'os': 'Unix/Linux', 'number': int(number)}
         if client is not None:
             backup['name'] = client
         useful = False
         for line in filemap:
             if re.match(r'^\d{4}-\d{2}-\d{2} (\d{2}:){3} \w+\[\d+\] Client is Windows$', line):
-                backup['windows'] = 'true'
+                backup['os'] = 'Windows'
             elif not useful and not re.match(r'^-+$', line):
                 continue
             elif useful and re.match(r'^-+$', line):
@@ -665,14 +665,14 @@ class Burp(BUIbackend):
             if not client:
                 continue
             stats = self.get_backup_logs(client[-1]['number'], cli['name'])
-            windows = stats['windows'] if 'windows' in stats else "unknown"
+            os = stats['os'] if 'os' in stats else "unknown"
             totsize = stats['totsize'] if 'totsize' in stats else 0
             total = stats['total']['total'] if \
                 'total' in stats and 'total' in stats['total'] else 0
             cls.append({
                 'name': cli['name'],
                 'stats': {
-                    'windows': windows,
+                    'os': os,
                     'totsize': totsize,
                     'total': total
                 }

@@ -203,7 +203,7 @@ class ClientsReport(Resource):
     stats_fields = ns.model('ClientsStats', {
         'total': fields.Integer(required=True, description='Number of files', default=0),
         'totsize': fields.Integer(required=True, description='Total size occupied by all the backups of this client', default=0),
-        'windows': fields.String(required=True, description='Is the client a windows machine', default='unknown'),
+        'os': fields.String(required=True, description='OS of the client', default='unknown'),
     })
     client_fields = ns.model('ClientsReport', {
         'name': fields.String(required=True, description='Client name'),
@@ -253,7 +253,7 @@ class ClientsReport(Resource):
                   "stats": {
                     "total": 296377,
                     "totsize": 57055793698,
-                    "windows": "unknown"
+                    "os": "unknown"
                   }
                 },
                 {
@@ -261,7 +261,7 @@ class ClientsReport(Resource):
                   "stats": {
                     "total": 3117,
                     "totsize": 5345361,
-                    "windows": "true"
+                    "os": "windows"
                   }
                 }
               ]
@@ -337,18 +337,18 @@ class ClientsReport(Resource):
                 'stats': {
                     'total': 0,
                     'totsize': 0,
-                    'windows': None
+                    'os': None
                 }
             }
             for client in clients_orig:
                 if client.get('name') not in clients_name:
                     complement['stats']['total'] += client.get('stats', {}).get('total', 0)
                     complement['stats']['totsize'] += client.get('stats', {}).get('totsize', 0)
-                    os = client.get('stats', {}).get('windows', 'unknown')
-                    if not complement['stats']['windows']:
-                        complement['stats']['windows'] = os
-                    elif os != complement['stats']['windows']:
-                        complement['stats']['windows'] = 'unknown'
+                    os = client.get('stats', {}).get('os', 'unknown')
+                    if not complement['stats']['os']:
+                        complement['stats']['os'] = os
+                    elif os != complement['stats']['os']:
+                        complement['stats']['os'] = 'unknown'
 
             ret['clients'].append(complement)
             ret['backups'].append(backups)

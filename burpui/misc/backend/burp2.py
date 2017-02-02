@@ -57,6 +57,9 @@ class Burp(Burp1):
     :type conf: :class:`burpui.config.BUIConfig`
     """
 
+    # chache to store the guessed OS
+    _os_cache = {}
+
     def __init__(self, server=None, conf=None):
         """
         :param server: ``Burp-UI`` server instance in order to access logger
@@ -501,7 +504,7 @@ class Burp(Burp1):
         :returns: Dict containing the backup log
         """
         ret = {}
-        backup = {'windows': 'unknown', 'number': int(number)}
+        backup = {'os': self._guess_os(client), 'number': int(number)}
         if forward:
             backup['name'] = client
         translate = {
@@ -757,6 +760,66 @@ class Burp(Burp1):
             return 'server crashed'
         return status
 
+    def _get_last_backup(self, name):
+        """Return the last backup of a given client
+
+        :param name: Name of the client
+        :type name: str
+
+        :returns: The last backup
+        """
+        try:
+            clients = self.status('c:{}'.format(name))
+            client = clients['clients'][0]
+            return client['backups'][0]
+        except (KeyError, BUIserverException):
+            return None
+
+    def _guess_os(self, name):
+        """Return the OS of the given client based on the magic *os* label
+
+        :param name: Name of the client
+        :type name: str
+
+        :returns: The guessed OS of the client
+
+        ::
+
+            grep label /etc/burp/clientconfdir/toto
+            label = os: Darwin OS
+        """
+        ret = 'Unknown'
+        if name in self._os_cache:
+            return self._os_cache[name]
+
+        labels = self.get_client_labels(name)
+        OSES = []
+
+        for label in labels:
+            if re.match('os:', label, re.IGNORECASE):
+                _os = label.split(':', 1)[1].strip()
+                if _os not in OSES:
+                    OSES.append(_os)
+
+        if OSES:
+            ret = OSES[-1]
+        else:
+            # more aggressive check
+            last = self._get_last_backup(name)
+            if last:
+                try:
+                    tree = self.get_tree(name, last['number'])
+
+                    if tree[0]['name'] != '/':
+                        ret = 'Windows'
+                    else:
+                        ret = 'Unix/Linux'
+                except (KeyError, BUIserverException):
+                    pass
+
+        self._os_cache[name] = ret
+        return ret
+
     def get_all_clients(self, agent=None):
         """See
         :func:`burpui.misc.backend.interface.BUIbackend.get_all_clients`
@@ -861,7 +924,7 @@ class Burp(Burp1):
         if not name or not backup:
             return ret
         if not root:
-            top = ''
+            top = u''
         else:
             top = to_unicode(root)
 

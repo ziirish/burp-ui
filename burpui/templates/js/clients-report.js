@@ -34,6 +34,7 @@ var _clients = function() {
 		size = [];
 		files = [];
 		backups = {};
+		repartition = {};
 		windows = 0;
 		nonwin = 0;
 		unknown = 0;
@@ -41,12 +42,10 @@ var _clients = function() {
 			$(this).parent().show();
 		});
 		$.each(d['clients'], function(k, c) {
-			if (c.stats.windows == 'true') {
-				windows++;
-			} else if (c.stats.windows == 'unknown') {
-				unknown++;
+			if (c.stats.os in repartition) {
+				repartition[c.stats.os]++;
 			} else {
-				nonwin++;
+				repartition[c.stats.os] = 1;
 			}
 			size.push({'label': c.name, 'value': c.stats.totsize});
 			files.push({'label': c.name, 'value': c.stats.total});
@@ -54,7 +53,10 @@ var _clients = function() {
 		$.each(d['backups'], function(k, c) {
 			backups[c.name] = c.number;
 		});
-		rep = [{'label': 'Windows', 'value': windows}, {'label': 'Unix/Linux', 'value': nonwin}, {'label': 'Unknown', 'value': unknown}];
+		rep = [];
+		$.each(repartition, function(label, value) {
+			rep.push({'label': label, 'value': value});
+		});
 		$.each(_charts_obj, function(i, c) {
 			switch (c.key) {
 				case 'chart_repartition':

@@ -7,6 +7,7 @@ from .custom import fields, Resource
 from ..exceptions import BUIserverException
 
 from flask import current_app
+from six import iteritems
 
 bui = current_app  # type: BUIServer
 ns = api.namespace('servers', 'Servers methods')
@@ -102,16 +103,18 @@ class ServersReport(Resource):
 
     This resource is part of the :mod:`burpui.api.servers` module.
     """
+    wild = fields.Wildcard(fields.Integer, required=False, description='Total number of clients of a given OS')
+    os_fields = ns.model('OS', {
+        '*': wild,
+    })
     stats_fields = ns.model('ServersStats', {
         'total': fields.Integer(required=True, description='Number of files', default=0),
         'totsize': fields.Integer(required=True, description='Total size occupied by all the backups of this server', default=0),
-        'linux': fields.Integer(required=True, description='Total number of Linux/Unix clients on this server', default=0),
-        'windows': fields.Integer(required=True, description='Total number of Windows clients on this server', default=0),
-        'unknown': fields.Integer(required=True, description='Total number of Unknown clients on this server', default=0),
+        'os': fields.Nested(os_fields),
     })
     server_fields = ns.model('ServersReport', {
         'name': fields.String(required=True, description='Server name'),
-        'stats': fields.Nested(stats_fields, required=True),
+        'number': fields.Nested(stats_fields, required=True),
     })
     backup_fields = ns.model('ServersBackup', {
         'name': fields.String(required=True, description='Server name'),
@@ -148,12 +151,12 @@ class ServersReport(Resource):
               "servers": [
                 {
                   "name": "AGENT1",
-                  "stats": {
-                    "linux": 4,
+                  "number": {
+                    "os": {
+                      "linux": 4
+                    },
                     "total": 349705,
                     "totsize": 119400711726,
-                    "unknown": 0,
-                    "windows": 1
                   }
                 }
               ]
@@ -180,9 +183,7 @@ class ServersReport(Resource):
                     'stats': {
                         'total': 0,
                         'totsize': 0,
-                        'linux': 0,
-                        'windows': 0,
-                        'unknown': 0,
+                        'os': {}
                     },
                     'number': 0
                 }
@@ -197,17 +198,22 @@ class ServersReport(Resource):
                 j = bui.client.get_clients_report(clients, serv)
                 if 'clients' not in j or 'backups' not in j:
                     continue
+
+                os = {}
                 for stats in j['clients']:
                     for key in ['total', 'totsize']:
                         out['stats'][key] += stats['stats'][key]
-                    if stats['stats']['windows'] == 'true':
-                        out['stats']['windows'] += 1
-                    elif stats['stats']['windows'] == 'false':
-                        out['stats']['linux'] += 1
+                    if stats['stats']['os'] in os:
+                        os[stats['stats']['os']] += 1
                     else:
-                        out['stats']['unknown'] += 1
+                        os[stats['stats']['os']] = 1
+
+                for key, val in iteritems(os):
+                    out['stats']['os'][key] = val
+
                 for bkp in j['backups']:
                     out['number'] += bkp['number']
+
                 backups.append({'name': serv, 'number': out['number']})
                 servers.append({'name': serv, 'number': out['stats']})
 

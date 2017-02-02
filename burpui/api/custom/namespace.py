@@ -14,8 +14,9 @@ from flask import Response as FlaskResponse, request, current_app, \
     has_app_context
 from flask_restplus import Namespace as NamespacePlus
 from flask_restplus.utils import unpack, merge
-from flask_restplus.marshalling import marshal_with as marshal_with_plus, \
-    marshal
+from flask_restplus.marshalling import marshal_with as marshal_with_plus
+
+from .my_marshalling import marshal
 
 
 class marshal_with(marshal_with_plus):
