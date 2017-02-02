@@ -132,7 +132,7 @@ moving forward.
 
 Thank you to the `Flask`_ developers and community.
 
-Special Thanks to Graham Keeling for its great piece of software! This project
+Special Thanks to Graham Keeling for his great piece of software! This project
 would not exist without `Burp`_.
 
 
