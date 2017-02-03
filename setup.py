@@ -78,7 +78,7 @@ VENDOR_TO_KEEP = [
 
 for p in VENDOR_TO_KEEP:
     if not os.path.exists(p):
-        print '!!', p
+        print('!!', p)
 
 # sys.exit(0)
 

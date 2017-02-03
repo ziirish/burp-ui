@@ -24,3 +24,4 @@ burpui:
 #    - DATABASE_URL=sqlite:////var/lib/burpui/store.db
 #    - REDIS_SERVER=redis:6379
 #    - BURP_SERVER_ADDR=auto
+#    - TIMEZONE=Europe/Paris

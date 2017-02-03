@@ -35,6 +35,8 @@ provided. There are a few variables supported to setup your system:
  - **BURP_SERVER_ADDR** - Specify the address of the burp-server status port.
    If set to "auto" (the default), we will use the address of the docker host.
    Make sure your status port is listening on this interface.
+ - **TIMEZONE** - Specify the timezone of your burp-server. It defaults to
+   Europe/Paris.
 
 
 The provided *docker-compose.yml* file suggests that you *mount* the */etc/burp*

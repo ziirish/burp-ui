@@ -340,6 +340,7 @@ class ClientsReport(Resource):
                     'os': None
                 }
             }
+            # TODO: fix OS aggregation
             for client in clients_orig:
                 if client.get('name') not in clients_name:
                     complement['stats']['total'] += client.get('stats', {}).get('total', 0)

@@ -284,11 +284,11 @@ class Burp(Burp1):
         # wait a little bit in case the process dies on a network error
         time.sleep(0.5)
         if not self._proc_is_alive():
-            details = ''
+            details = u''
             if verbose:
-                details = ':\n'
+                details = u':\n'
                 out, _ = self.proc.communicate()
-                details += out
+                details += to_unicode(out)
             raise OSError('Unable to spawn burp process{}'.format(details))
         _, write, _ = select([], [self.proc.stdin], [], self.timeout)
         if self.proc.stdin not in write:
