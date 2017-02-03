@@ -169,6 +169,8 @@ class BUIAgent(BUIbackend, BUIlogging):
                 err = None
                 res = ''
                 lengthbuf = self.request.recv(8)
+                if not lengthbuf:
+                    return
                 length, = struct.unpack('!Q', lengthbuf)
                 data = self.recvall(length)
                 self._logger('info', 'recv: {}'.format(data))
