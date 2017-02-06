@@ -721,7 +721,7 @@ class Burp(BUIbackend):
 
         if 'bytes' not in res:
             res['bytes'] = 0
-        if viewkeys(res) & {'start', 'estimated_bytes', 'bytes_in'}:
+        if set(['start', 'estimated_bytes', 'bytes_in']) <= set(viewkeys(res)):
             try:
                 diff = time.time() - int(res['start'])
                 byteswant = int(res['estimated_bytes'])

@@ -640,8 +640,9 @@ class Burp(Burp1):
             return ret
 
         backup = None
+        phases = ['working', 'finishing']
         for back in client['backups']:
-            if 'flags' in back and 'working' in back['flags']:
+            if 'flags' in back and any([x in back['flags'] for x in phases]):
                 backup = back
                 break
         # check we found a working backup
@@ -681,9 +682,14 @@ class Burp(Burp1):
             else:
                 ret[name] = counter['count']
 
+        for phase in phases:
+            if phase in backup['flags']:
+                ret['phase'] = phase
+                break
+
         if 'bytes' not in ret:
             ret['bytes'] = 0
-        if viewkeys(ret) & {'time_start', 'estimated_bytes', 'bytes'}:
+        if set(['time_start', 'estimated_bytes', 'bytes']) <= set(viewkeys(ret)):
             try:
                 diff = time.time() - int(ret['time_start'])
                 byteswant = int(ret['estimated_bytes'])

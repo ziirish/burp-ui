@@ -19,54 +19,44 @@ var _client = function() {};
 var _clients = function() {};
 var _servers = function() {};
 
-var app = angular.module('MainApp', ['ngSanitize', 'ui.calendar', 'ui.bootstrap']);
+$(document).ready(function() {
 
-app.controller('CalendarCtrl', function($scope, $http, $compile, uiCalendarConfig) {
-	$scope.eventSources = [];
-
-	$scope.eventRender = function( event, element, view ) {
+	myEventRender = function( event, element, view ) {
 		element.attr({
-			'tooltip-placement': 'bottom',
-			'uib-tooltip': event.title+' Duration: '+_time_human_readable((new Date(event.end) - new Date(event.start))/1000),
-			'tooltip-append-to-body': true,
+			'title': event.title+', Duration: '+_time_human_readable((new Date(event.end) - new Date(event.start))/1000),
 		});
-		$compile(element)($scope);
 	};
 
-	$scope.uiConfig = {
-		calendar: {
-			{{ macros.translate_calendar() }}
-			editable: false,
-			eventLimit: true,
-			firstDay: 1,
-			header:{
-				left: 'month,listWeek',
-				center: 'title',
-				right: 'today prev,next'
-			},
-			monthNames: moment.months(),
-			monthNamesShort: moment.monthsShort(),
-			dayNames: moment.weekdays(),
-			dayNamesShort: moment.weekdaysShort(),
-			eventRender: $scope.eventRender,
-			viewRender: function(view, element) {
-				$scope.fetchEvents(view.start.format(), view.end.format());
-			}
-		}
-	};
-
-	$scope.fetchEvents = function(start, end) {
+	fetchEvents = function(start, end) {
 		{% if config.WITH_CELERY -%}
 		var feed_url = '{{ url_for("api.async_history", client=cname, server=server) }}?start='+start+'&end='+end;
 		{% else -%}
 		var feed_url = '{{ url_for("api.history", client=cname, server=server) }}?start='+start+'&end='+end;
 		{% endif -%}
-		$http.get(feed_url, { headers: { 'X-From-UI': true } })
-			.success(function(data, status, headers, config) {
-				$scope.eventSources.splice(0);
-				angular.forEach(data, function(source) {
-					$scope.eventSources.push(source);
+		$.get(feed_url)
+			.done(function(data) {
+				cal = $('#calendar')
+				cal.fullCalendar('removeEventSources');
+				$.each(data, function(i, source) {
+					source.cache = true;
+					cal.fullCalendar('addEventSource', source);
 				});
 			});
 	};
+
+	$('#calendar').fullCalendar({
+		{{ macros.translate_calendar() }}
+		editable: false,
+		eventLimit: true,
+		firstDay: 1,
+		header:{
+			left: 'month,listWeek',
+			center: 'title',
+			right: 'today prev,next'
+		},
+		eventRender: myEventRender,
+		viewRender: function(view, element) {
+			fetchEvents(view.start.format(), view.end.format());
+		}
+	});
 });

@@ -11,6 +11,7 @@ from . import api, cache_key
 from ..server import BUIServer  # noqa
 from .custom import fields, Resource
 from ..exceptions import BUIserverException
+from ..decorators import browser_cache
 from ..ext.cache import cache
 
 from six import iteritems
@@ -325,6 +326,7 @@ class About(Resource):
     })
 
     @cache.cached(timeout=3600, key_prefix=cache_key)
+    @browser_cache(3600)
     @ns.marshal_with(about_fields, code=200, description='Success')
     @ns.expect(parser)
     def get(self, server=None):
@@ -430,6 +432,7 @@ class History(Resource):
     })
 
     @cache.cached(timeout=1800, key_prefix=cache_key)
+    @browser_cache(1800)
     @ns.marshal_list_with(history_fields, code=200, description='Success')
     @ns.expect(parser)
     @ns.doc(

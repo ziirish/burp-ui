@@ -22,6 +22,7 @@ from ..sessions import session_manager
 from ..ext.async import celery
 from ..ext.cache import cache
 from ..config import config
+from ..decorators import browser_cache
 
 from six import iteritems
 from zlib import adler32
@@ -754,6 +755,7 @@ class AsyncHistory(History):
     """
 
     @cache.cached(timeout=1800, key_prefix=cache_key)
+    @browser_cache(1800)
     @ns.marshal_with(
         History.history_fields,
         code=200,
@@ -845,6 +847,7 @@ class AsyncClientsReport(ClientsReport):
     """
 
     @api.cache.cached(timeout=1800, key_prefix=cache_key)
+    @browser_cache(1800)
     @ns.marshal_with(
         ClientsReport.report_fields,
         code=200,
