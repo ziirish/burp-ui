@@ -211,13 +211,13 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
 
     :param kwargs: Extra options:
                    - gunicorn (bool): Enable gunicorn engine instead of flask's
-                     default. Default is True.
+                   default. Default is True.
                    - unittest (bool): Are we running tests (used for test only).
-                     Default is False.
+                   Default is False.
                    - debug (bool): Enable debug mode. Default is False.
                    - cli (bool): Are we running the CLI. Default is False.
                    - reverse_proxy (bool): Are we behind a reverse-proxy.
-                     Default is True if gunicorn is True
+                   Default is True if gunicorn is True
     :type kwargs: dict
 
     :returns: A :class:`burpui.server.BUIServer` object
