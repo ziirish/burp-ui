@@ -88,7 +88,8 @@ on any machine as long as you can access the burp status port, but you will not
 be able to edit the burp server configuration file within the *settings* view of
 `Burp-UI`_.
 You also need to configure a *restore_client* on your burp server corresponding
-to the client you will use through `Burp-UI`_
+to the client you will use through `Burp-UI`_ (see the `restoration procedure
+<#restoration>`_ above)
 
 
 Options
@@ -116,6 +117,11 @@ Options
       -i <MIGRATIONSDIR>, --migrations <MIGRATIONSDIR>
                             migrations directory
 
+
+.. note:: Since v0.4.0, the *bind* and *port* options are not supported anymore.
+          You can still force the port and listening address as explained bellow
+          or you can have a look at the `upgrading <upgrading.html#v0.4.0>`_
+          section of the documentation for further details.
 
 Developer options
 -----------------

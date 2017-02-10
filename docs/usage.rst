@@ -5,12 +5,6 @@ Usage
 `Burp`_ from the stable to the latest versions. `Burp`_ exists in two major
 versions: 1.x.x and 2.x.x.
 
-.. note::
-    The version 2.x.x of `Burp`_ is currently in heavy development and should
-    bring a lot of improvements, but also a lot of rework especially regarding
-    the ``status port`` which is the main communication system between `Burp`_
-    and `Burp-UI`_.
-
 Both `Versions`_ are supported by `Burp-UI`_ thanks to its modular design.
 The consequence is you have various options in the configuration file to suite
 everybody needs.

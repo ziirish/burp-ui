@@ -14,6 +14,7 @@ v0.4.0
   longer possible to serve the application over SSL (HTTPS) anymore from within
   the Flask's server. You'll need to use a dedicated application server for this
   purpose such as `gunicorn <gunicorn.html>`_ or a reverse-proxy.
+  The *bind* and *port* option have also been removed due to the same reason.
 
   Or you can use the ``python -m burpui -m legacy [--help]`` command that
   **SHOULD** be backward compatible (but note that no further support will be
