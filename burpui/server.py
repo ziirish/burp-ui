@@ -17,6 +17,7 @@ from .config import config
 
 from datetime import timedelta
 from flask import Flask
+from six import iteritems
 
 
 G_PORT = 5000
@@ -310,7 +311,12 @@ class BUIServer(Flask):
         if self.auth and 'none' not in self.auth:
             try:
                 self.uhandler = UserAuthHandler(self)
-            except Exception as e:
+                for back, err in iteritems(self.uhandler.errors):
+                    self.logger.critical(
+                        'Unable to load \'{}\' authentication backend:\n{}'
+                        .format(back, err)
+                    )
+            except ImportError as e:
                 self.logger.critical(
                     'Import Exception, module \'{0}\': {1}'.format(
                         self.auth,

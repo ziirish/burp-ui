@@ -16,6 +16,7 @@ class UserAuthHandler(BUIhandler):
         self.app = app
         self.users = {}
         backends = []
+        self.errors = {}
         if self.app.auth:
             me, _ = os.path.splitext(os.path.basename(__file__))
             back = self.app.auth
@@ -29,10 +30,14 @@ class UserAuthHandler(BUIhandler):
                     obj = mod.UserHandler(self.app)
                     backends.append(obj)
                 except:
-                    pass
+                    import traceback
+                    self.errors[au] = traceback.format_exc()
         backends.sort(key=lambda x: x.priority, reverse=True)
         if not backends:
-            raise ImportError('No backend found for \'{}\''.format(self.app.auth))
+            raise ImportError(
+                'No backend found for \'{}\':\n{}'.format(self.app.auth,
+                                                          self.errors)
+            )
         self.backends = OrderedDict()
         for obj in backends:
             self.backends[obj.name] = obj
