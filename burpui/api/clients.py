@@ -219,7 +219,6 @@ class ClientsReport(Resource):
     })
 
     @api.cache.cached(timeout=1800, key_prefix=cache_key)
-    @browser_cache(1800)
     @ns.marshal_with(report_fields, code=200, description='Success')
     @ns.expect(parser)
     @ns.doc(
@@ -228,6 +227,7 @@ class ClientsReport(Resource):
             500: 'Internal failure',
         },
     )
+    @browser_cache(1800)
     def get(self, server=None):
         """Returns a global report about all the clients of a given server
 
@@ -406,7 +406,6 @@ class ClientsStats(Resource):
     })
 
     @api.cache.cached(timeout=1800, key_prefix=cache_key)
-    @browser_cache(1800)
     @ns.marshal_list_with(client_fields, code=200, description='Success')
     @ns.expect(parser)
     @ns.doc(
@@ -415,6 +414,7 @@ class ClientsStats(Resource):
             500: 'Internal failure',
         },
     )
+    @browser_cache(1800)
     def get(self, server=None):
         """Returns a list of clients with their states
 
@@ -491,7 +491,6 @@ class AllClients(Resource):
     })
 
     @api.cache.cached(timeout=1800, key_prefix=cache_key)
-    @browser_cache(1800)
     @ns.marshal_list_with(client_fields, code=200, description='Success')
     @ns.expect(parser)
     @ns.doc(
@@ -500,6 +499,7 @@ class AllClients(Resource):
             403: 'Insufficient permissions',
         },
     )
+    @browser_cache(1800)
     def get(self, server=None):
         """Returns a list of all clients with their associated Agent if any
 

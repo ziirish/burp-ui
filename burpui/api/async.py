@@ -755,7 +755,6 @@ class AsyncHistory(History):
     """
 
     @cache.cached(timeout=1800, key_prefix=cache_key)
-    @browser_cache(1800)
     @ns.marshal_with(
         History.history_fields,
         code=200,
@@ -770,6 +769,7 @@ class AsyncHistory(History):
             403: 'Insufficient permissions',
         },
     )
+    @browser_cache(1800)
     def get(self, client=None, server=None):
         """Returns a list of calendars describing the backups that have been
         completed so far
@@ -847,7 +847,6 @@ class AsyncClientsReport(ClientsReport):
     """
 
     @api.cache.cached(timeout=1800, key_prefix=cache_key)
-    @browser_cache(1800)
     @ns.marshal_with(
         ClientsReport.report_fields,
         code=200,
@@ -861,6 +860,7 @@ class AsyncClientsReport(ClientsReport):
             500: 'Internal failure',
         },
     )
+    @browser_cache(1800)
     def get(self, server=None):
         """Returns a global report about all the clients of a given server
 

@@ -48,6 +48,7 @@ $(document).ready(function() {
 		{{ macros.translate_calendar() }}
 		editable: false,
 		eventLimit: true,
+		eventLimitClick: 'day',
 		firstDay: 1,
 		header:{
 			left: 'month,listWeek',
