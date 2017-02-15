@@ -13,6 +13,7 @@ from .custom import fields, Resource
 from ..exceptions import BUIserverException
 from ..decorators import browser_cache
 from ..ext.cache import cache
+from ..ext.i18n import LANGUAGES
 
 from six import iteritems
 from flask import flash, url_for, current_app, session
@@ -291,6 +292,40 @@ class Alert(Resource):
         level = translate(args['level'])
         flash(message, level)
         return {'message': message, 'level': level}, 201
+
+
+@ns.route('/languages', endpoint='languages')
+class Languages(Resource):
+    """The :class:`burpui.api.misc.Languages` resource allows you to retrieve
+    a list of supported languages.
+
+    This resource is part of the :mod:`burpui.api.misc` module.
+    """
+    wild = fields.Wildcard(fields.String, description='Supported languages')
+    languages_fields = ns.model('Languages', {
+        '*': wild,
+    })
+
+    @api.cache.cached(timeout=3600, key_prefix=cache_key)
+    @ns.marshal_with(languages_fields, code=200, description='Success')
+    @browser_cache(3600)
+    def get(self):
+        """Returns a list of supported languages
+
+        **GET** method provided by the webservice.
+
+        The *JSON* returned is:
+        ::
+
+            {
+              "en": "English",
+              "fr": "Français"
+            }
+
+
+        :returns: The *JSON* described above.
+        """
+        return LANGUAGES
 
 
 @ns.route('/about',
