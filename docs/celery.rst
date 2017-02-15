@@ -3,7 +3,7 @@ Celery
 
 Since *v0.3.0*, `Burp-UI`_ supports asynchronous operations thanks to `Celery`_.
 In order to use this feature, you need to enable it in the configuration (see
-`Production <usage.html#production>`__ section)
+`Production <advanced_usage.html#production>`__ section)
 
 You will also need some extra requirements:
 

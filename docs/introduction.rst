@@ -1,11 +1,11 @@
 Introduction
 ============
 
-`Burp-UI`_ is a web-based interface for `Burp`_. It's purpose is to give you a
+`Burp-UI`_ is a web-based interface for `Burp`_. Its purpose is to give you a
 *nice* way to monitor your backups with some dashboards, but you will also have
 the ability to download files from backups and to configure your burp-server.
 
-The project also provides a full documented `API <api.html>`_ so that you can
+The project also provides a fully documented `API <api.html>`_ so that you can
 develop any front-end you like on top of it. The core will take care of the
 communication with the burp server(s) for you.
 

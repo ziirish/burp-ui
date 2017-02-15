@@ -73,7 +73,8 @@ Database
 --------
 
 To manage database migration, you first need to enable database support within
-your configuration file (see `Production <usage.html#production>`__ section)
+your configuration file (see `Production <advanced_usage.html#production>`__
+section)
 
 You will also need some extra requirements:
 
@@ -116,7 +117,7 @@ You can create new users using the ``bui-manage`` file like this:
     bui-manage create_user <new_username>
 
 
-By default, the script will create new users for the `Basic <usage.html#basic>`_
+By default, the script will create new users for the `Basic <advanced_usage.html#basic>`_
 authentication backend.
 Without further details, a new password will be generated.
 You can either provide a password through the command line or tell the script to

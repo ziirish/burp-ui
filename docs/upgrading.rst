@@ -7,6 +7,20 @@ Each section presents major/breaking changes, new requirements and new options.
 For a complete list of changes, you may refer to the
 `CHANGELOG <changelog.html>`_ page.
 
+v0.5.0
+------
+
+- **Breaking** - The *standalone* option has been renamed to *single* to avoid
+  confusion.
+- **Breaking** - The database schema evolved between v0.4.0 and v0.5.0. In order
+  to apply these modifications, you **MUST** run the ``bui-manage db upgrade``
+  command before restarting your `Burp-UI`_ application (if you are using
+  celery, you must restart it too).
+
+  More details on the `Manage <manage.html>`__ and `Celery <celery.html>`__
+  pages.
+
+
 v0.4.0
 ------
 

@@ -93,8 +93,8 @@ If you want to rate-limit the API, you will need additional dependencies too:
 Burp1
 -----
 
-The `burp1 backend <usage.html#burp1>`__ supports burp versions from 1.3.48 to
-1.4.40.
+The `burp1 backend <advanced_usage.html#burp1>`__ supports burp versions from
+1.3.48 to 1.4.40.
 With these versions of burp, the status port is only listening on the local
 machine loopback interface (ie. ``localhost`` or ``127.0.0.1``). It means you
 *MUST* run `Burp-UI`_ on the same host that is running your burp server in order
@@ -105,9 +105,19 @@ Alternatively, you can use a `bui-agent <buiagent.html>`__.
 Burp2
 -----
 
-The `burp2 backend <usage.html#burp2>`__ supports only burp 2.0.18 and above.
+The `burp2 backend <advanced_usage.html#burp2>`__ supports only burp 2.0.18 and
+above.
 Some versions are known to contain critical issues resulting in a non-functional
 `Burp-UI`_: 2.0.24, 2.0.26 and 2.0.30
 If you are using an older version of burp2 `Burp-UI`_ will fail to start.
+
+
+Getting started
+---------------
+
+The first thing to do before digging into `Burp-UI`_ is probably to read its
+`architecture <architecture.html>`_ in order to understand how it works.
+Once it's done, you can refer to the `installation <installation.html>`_ page.
+
 
 .. _Burp-UI: https://git.ziirish.me/ziirish/burp-ui

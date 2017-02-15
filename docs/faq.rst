@@ -13,8 +13,8 @@ How to start using Burp-UI?
 ---------------------------
 
 You may find all the basic informations to get started with `Burp-UI`_ in the
-`README`_ file. You can also read the `step-by-step <step-by-step.html>`_ page
-to get started.
+`README`_ file and in this documentation. You can also read the
+`step-by-step <step-by-step.html>`_ page for some detailed use-cases.
 
 How does Burp-UI work?
 ----------------------
@@ -22,8 +22,8 @@ How does Burp-UI work?
 The answer depends whether you are using burp 1.x or burp 2.x. Basically,
 `Burp-UI`_ tries to provide a consistent API between the *Frontend* (the UI) and
 the burp server. To do so, it implements two *Backends*: burp-1 and burp-2.
-You can select either of these with the `version <usage.html#versions>`__ flag
-in your configuration.
+You can select either of these with the `version <advanced_usage.html#versions>`__
+flag in your configuration.
 
 You can also refer to the `Architecture <architecture.html>`__ page of the
 documentation to know more about those backends.
@@ -31,7 +31,7 @@ documentation to know more about those backends.
 How to configure my *firewall*?
 -------------------------------
 
-When running `Burp-UI`_ in standalone `mode <usage.html#versions>`__, the
+When running `Burp-UI`_ in single `mode <advanced_usage.html#versions>`__, the
 embedded webserver listens on port **5000** on all interfaces.
 
 The `Burp-UI`_ agents listen on port **10000** by default.
@@ -42,7 +42,7 @@ What are the default credentials?
 ---------------------------------
 
 The default login / password is *admin* / *admin* with the
-`basic <usage.html#basic>`__ authentication backend.
+`basic <advanced_usage.html#basic>`__ authentication backend.
 
 How does the online restoration feature work?
 ---------------------------------------------
@@ -62,8 +62,8 @@ Because of this workflow, and especially the use of the ``-C`` flag you need to
 tell your burp-server the client used by `Burp-UI`_ can perform a restoration
 for a different client.
 You can refer to the `restoration <installation.html#restoration>`__ section of
-this documentation along with the `version <usage.html#versions>`__ section for
-more details.
+this documentation along with the `version <advanced_usage.html#versions>`__
+section for more details.
 
 What does the server-initiated restoration feature do and how to make it work?
 ------------------------------------------------------------------------------
@@ -125,10 +125,19 @@ Why using SQL?
 The SQL database is currently used to keep a track of several meta-data.
 Again, it is totally optional to use it.
 
+Burp-UI does not seem to understand the *bind* and *port* options anymore, what should I do?
+--------------------------------------------------------------------------------------------
+
+Since v0.4.0, the new Flask development server is used when running in
+*single* mode. The *bind* and *port* options are not read anymore.
+You can either run `Burp-UI`_ with the ``-- -h x.x.x.x -p yyyy`` flags or use
+the legacy launcher ``python -m burpui -m legacy [--help]``.
+See the `upgrading <upgrading.html#v0-4-0>`__ page for details.
+
 Burp-UI does not work anymore since I upgraded it, what can I do?
 -----------------------------------------------------------------
 
-Make sure you read the `upgrading <upgrading.html>`_ page in case some breaking
+Make sure you read the `upgrading <upgrading.html>`__ page in case some breaking
 changes occurred.
 
 I am getting errors while restoring large files (>3GB), what should I do?

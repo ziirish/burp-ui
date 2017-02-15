@@ -131,6 +131,14 @@ and init scripts. We copy them at the right place:
     cp /usr/local/share/burpui/etc/burpui.sample.cfg /etc/burp/burpui.cfg
 
 
+We have to edit the default configuration in order to work with a `Burp`_-1
+server:
+
+::
+
+    sed -i "s/^version = .*/version = 1/" /etc/burp/burpui.cfg
+
+
 The default configuration is plug and play for this case, we just have to start
 `Burp-UI`_:
 
@@ -151,7 +159,7 @@ documentation.
 Burp2 server
 ------------
 
-In this scenario, we are going to install a `Burp`_ server version 2.0.28.
+In this scenario, we are going to install a `Burp`_ server version 2.0.54.
 We assume you are using the user *root* to run the following commands.
 
 We begin with the installation of `Burp`_ itself.
@@ -163,18 +171,22 @@ install `Burp-UI`_:
 
     apt-get update
     apt-get install uthash-dev g++ make libssl-dev librsync-dev python2.7-dev \
-    git python-pip libffi-dev libyajl-dev libz-dev
+        git python-pip libffi-dev libyajl-dev libz-dev
 
 
 Now we retrieve the `Burp`_ sources and then we compile and install it:
+
+.. note:: There are now plenty of official and unofficial burp packages. See
+          `here <https://github.com/grke/burp/wiki/Binary-packages>`_ for
+          details.
 
 ::
 
     cd /usr/src
     git clone https://github.com/grke/burp.git
     cd burp
-    git checkout tags/2.0.28
-    ./configure
+    git checkout tags/2.0.54
+    ./configure --prefix=/usr --sysconfdir=/etc/burp --localstatedir=/var
     make
     make install
     # we also install init scripts
@@ -263,14 +275,6 @@ and init scripts. We copy them at the right place:
     cp /usr/local/share/burpui/etc/burpui.sample.cfg /etc/burp/burpui.cfg
 
 
-We have to edit the default configuration in order to work with a `Burp`_-2
-server:
-
-::
-
-    sed -i "s/^version = .*/version = 2/" /etc/burp/burpui.cfg
-
-
 That's it, the other default parameter should be able to handle such a setup.
 We can start `Burp-UI`_:
 
@@ -288,12 +292,6 @@ For further customization, you can refer to the `usage`_ page of this
 documentation.
 
 
-Multiple servers
-----------------
-
-[TODO]
-
-
 .. _Burp-UI: https://git.ziirish.me/ziirish/burp-ui
 .. _Burp: http://burp.grke.net/
-.. _usage: usage.html
+.. _usage: advanced_usage.html

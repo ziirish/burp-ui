@@ -121,12 +121,12 @@ Each option is commented, but here is a more detailed documentation:
 - *sslcert*: What SSL certificate to use when SSL is enabled.
 - *sslkey*: What SSL key to use when SSL is enabled.
 - *version*: What version of `Burp`_ this `bui-agent`_ instance manages. (see
-  `Burp-UI versions <usage.html#versions>`__ for more details)
+  `Burp-UI versions <advanced_usage.html#versions>`__ for more details)
 - *password*: The shared secret between the `Burp-UI`_ server and `bui-agent`_.
 
 As with `Burp-UI`_, you need a specific section depending on the *version*
-value. Please refer to the `Burp-UI versions <usage.html#versions>`__ section
-for more details.
+value. Please refer to the `Burp-UI versions <advanced_usage.html#versions>`__
+section for more details.
 
 Daemon
 ------

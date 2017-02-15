@@ -169,8 +169,9 @@ There is a sample configuration file available
 Systemd
 ^^^^^^^
 
-On non debian systems, the handler script may not be available. You will then
-have to create your own service. We can do this for systemd for example:
+If you are not running on debian or you prefer not to use the gunicorn debian
+package, the handler script may not be available. You will then have to create
+your own service. We can do this for systemd for example:
 
 ::
 
@@ -234,7 +235,7 @@ Sub-root path
 You can host `Burp-UI`_ behind a sub-root path. For instance ``/burpui``.
 To accomplish this, you can either setup your reverse-proxy to announce the
 desired *prefix*, or you can use the ``prefix`` option in your `Burp-UI`_
-configuration file (see `usage <usage.html>`_ for details).
+configuration file (see `usage <advanced_usage.html>`_ for details).
 
 If you want to configure this reverse-proxy side, you need to announce the HTTP
 Header ``X-Script-Name``.
@@ -293,8 +294,8 @@ It is using `Gunicorn`_ along with Nginx as described above.
 In order to improve performances, `Redis`_ can be used to cache sessions and
 various API calls.
 
-See the `production <usage.html#production>`_ section of the
-`usage <usage.html>`_ page.
+See the `production <advanced_usage.html#production>`_ section of the
+`usage <advanced_usage.html>`_ page.
 
 .. _Gunicorn: http://gunicorn.org/
 .. _Burp-UI: https://git.ziirish.me/ziirish/burp-ui

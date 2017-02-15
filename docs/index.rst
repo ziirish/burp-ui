@@ -21,14 +21,16 @@ Documentation
    introduction
    requirements
    installation
+   basic_usage
+   running
    upgrading
-   architecture
-   usage
+   advanced_usage
    manage
    celery
    gunicorn
    docker
    buiagent
+   architecture
    contributing
    changelog
    faq
