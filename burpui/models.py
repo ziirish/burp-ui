@@ -78,7 +78,27 @@ class Session(db.Model):
         )
 
 
+class Pref(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user = db.Column(db.String(256))
+    key = db.Column(db.String(256), nullable=False)
+    value = db.Column(db.String(256))
+
+    def __init__(self, user, key, value=None):
+        self.user = user
+        self.key = key
+        self.value = value
+
+    def __repr__(self):
+        return '<Pref {}: {} = {}>'.format(
+            self.user,
+            self.key,
+            self.value
+        )
+
+
 def test_database():
     # This is probably not optimal on huge databases
     Task.query.first()
     Session.query.first()
+    Pref.query.first()

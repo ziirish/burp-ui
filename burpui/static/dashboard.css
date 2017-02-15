@@ -84,6 +84,7 @@ body {
 
 .alert {
   margin-left: 4px;
+  margin-right: 4px;
   margin-bottom: 4px;
 }
 
@@ -350,4 +351,24 @@ td {
 
 .tooltip {
   word-wrap: break-word;
+}
+
+.node {
+  cursor: pointer;
+}
+
+.node circle {
+  fill: #fff;
+  stroke: steelblue;
+  stroke-width: 3px;
+}
+
+.node text {
+  font: 12px sans-serif;
+}
+
+.link {
+  fill: none;
+  stroke: #555;
+  stroke-width: 1px;
 }

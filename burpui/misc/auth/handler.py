@@ -3,6 +3,7 @@ import os
 
 from ...sessions import session_manager
 from .interface import BUIhandler, BUIuser
+
 from importlib import import_module
 from flask import session
 from six import iteritems
@@ -83,9 +84,9 @@ class UserHandler(BUIuser):
         self.real = None
         self.admin = not self.app.acl
 
-        for name, back in iteritems(self.backends):
-            u = back.user(self.name)
-            res = u.get_id()
+        for _, back in iteritems(self.backends):
+            user = back.user(self.name)
+            res = user.get_id()
             if res:
                 self.active = True
                 self.name = res
@@ -93,6 +94,32 @@ class UserHandler(BUIuser):
                 if self.app.acl:
                     self.admin = self.app.acl.is_admin(self.name)
                 break
+        # language may change upon login
+        self._store_lang()
+        # now load the available prefs
+        self._load_prefs()
+
+    def _load_prefs(self):
+        session['login'] = self.name
+        if self.app.config['WITH_SQL']:
+            from ...models import Pref
+            prefs = Pref.query.filter_by(user=self.name).all()
+            for pref in prefs:
+                if hasattr(self, pref.key):
+                    setattr(self, pref.key, pref.value)
+                session[pref.key] = pref.value
+
+    def _store_lang(self):
+        if self.app.config['WITH_SQL'] and self.language:
+            from ...ext.sql import db
+            from ...models import Pref
+            pref = Pref.query.filter_by(user=self.name, key='language').first()
+            if pref:
+                pref.value = self.language
+            else:
+                pref = Pref(self.name, 'language', self.language)
+                db.session.add(pref)
+            db.session.commit()
 
     def refresh_session(self):
         self.authenticated = session.get('authenticated', False)

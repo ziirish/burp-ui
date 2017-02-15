@@ -403,8 +403,8 @@ def login():
         if 'login' in session and session['login'] != form.username.data:
             session.clear()
             session['login'] = form.username.data
+        session['language'] = form.language.data
         user = bui.uhandler.user(form.username.data, refresh)
-        user.language = form.language.data
         if user.is_active and user.login(form.password.data):
             login_user(user, remember=form.remember.data)
             # at the time the context is loaded, the locale is not set
@@ -433,7 +433,6 @@ def logout():
             session.pop(key)
     session_manager.delete_session()
     logout_user()
-    session.clear()
     return redirect(url_for('.home'))
 
 

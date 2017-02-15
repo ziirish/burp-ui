@@ -37,21 +37,21 @@
                   <div class="col-lg-3">
                     <input class="form-control input-sm" name="oldPass" id="oldPassword" placeholder="{{ _('Current password') }}" type="password" ng-required="true" ng-model="user.oldPassword">
                   </div>
-                  <span ng-show="changePassword.oldPass.$invalid  && changePassword.oldPass.$dirty" class="help-inline text-danger" ng-cloak>Required</span>
+                  <span ng-show="changePassword.oldPass.$invalid  && changePassword.oldPass.$dirty" class="help-inline text-danger" ng-cloak>{{ _('Required') }}</span>
                 </div>
                 <div class="form-group" ng-class="{'has-error': changePassword.newPass.$invalid && changePassword.newPass.$dirty}">
                   <label for="inputPassword" class="col-lg-2 control-label">{{ _('New password') }}</label>
                   <div class="col-lg-3">
                     <input class="form-control input-sm" name="newPass" id="inputPassword" placeholder="{{ _('New password') }}" type="password" ng-required="true" ng-model="user.newPassword">
                   </div>
-                  <span ng-show="changePassword.newPass.$invalid  && changePassword.newPass.$dirty" class="help-inline text-danger" ng-cloak>Required</span>
+                  <span ng-show="changePassword.newPass.$invalid  && changePassword.newPass.$dirty" class="help-inline text-danger" ng-cloak>{{ _('Required') }}</span>
                 </div>
                 <div class="form-group" ng-class="{'has-warning': changePassword.confPass.$invalid  && changePassword.confPass.$dirty}">
                   <label for="confirmPassword" class="col-lg-2 control-label">{{ _('Confirm password') }}</label>
                   <div class="col-lg-3">
                     <input class="form-control input-sm" name="confPass" id="confirmPassword" placeholder="{{ _('New password (confirm)') }}" type="password" ng-required="true" ng-model="user.confPassword" compare-to="user.newPassword">
                   </div>
-                  <span ng-show="changePassword.confPass.$invalid  && changePassword.confPass.$dirty" class="help-inline text-warning" ng-cloak>Passwords mismatch</span>
+                  <span ng-show="changePassword.confPass.$invalid  && changePassword.confPass.$dirty" class="help-inline text-warning" ng-cloak>{{ _('Passwords mismatch') }}</span>
                 </div>
                 <div class="form-group">
                   <div class="col-lg-10 col-lg-offset-2">
@@ -61,14 +61,46 @@
                 </div>
               </fieldset>
             </form>
+            <form class="form-horizontal well" name="changePrefs" ng-submit="submitChangePrefs($event)" method="POST" action="{{ url_for('api.prefs_ui') }}">
+              <fieldset>
+                <legend>{{ _('UI Settings') }}</legend>
+                <div class="form-group">
+                  <label for="pageItems" class="col-lg-2 control-label">{{ _('Items per page') }}</label>
+                  <div class="col-lg-3">
+                    <select class="form-control" name="pageLength" id="pageItems" ng-options="opt for (i, opt) in lengthMenu" ng-model="prefs.pageLength"></select>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="language" class="col-lg-2 control-label">{{ _('Language') }}</label>
+                  <div class="col-lg-3">
+                    <select class="form-control" name="language" id="language" ng-model="prefs.language">
+                      {% raw %}
+                      <option ng-cloak ng-repeat="lang in languages" value="{{lang.id}}">{{ lang.name }}</option>
+                      {% endraw %}
+                    </select>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="dateFormat" class="col-lg-2 control-label">{{ _('Date format') }}</label>
+                  <div class="col-lg-3">
+                    <input class="form-control" name="dateFormat" id="dateFormat" type="text" ng-model="prefs.dateFormat" placeholder="{{ _('Defaults to \'llll\'') }}">
+                  </div>
+                  <span class="help-inline text-default">{{ _('See <a href="%(url)s">here</a> for available formats', url='http://momentjs.com/docs/#/displaying/') }}</span>
+                </div>
+                <div class="form-group">
+                  <div class="col-lg-10 col-lg-offset-2">
+                    <button type="reset" class="btn btn-default">{{ _('Cancel') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ _('Submit') }}</button>
+                  </div>
+                </div>
+              </fieldset>
+            </form>
             <div></div>
           </div>
-          <!-- NOT YET IMPLEMENTED
           <div id="user-panel-acl" class="form-container">
             <legend id="acl">{{ _('ACL') }}</legend>
-            <div></div>
+            <div id="acl-tree"></div>
           </div>
-          -->
         </div>
         <div id="confirmation-modal" class="modal fade">
           <div class="modal-dialog modal-lg">

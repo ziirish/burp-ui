@@ -34,10 +34,6 @@ class BUIhandler(with_metaclass(ABCMeta, object)):
     del_user = False
     change_password = False
 
-    def __init__(self, app=None):
-        """Constructor"""
-        pass  # pragma: no cover
-
     @abstractmethod
     def user(self, name=None, refresh=False):
         """The :func:`burpui.misc.auth.interface.BUIhandler.user` function

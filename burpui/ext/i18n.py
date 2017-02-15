@@ -7,17 +7,18 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
-from flask import request
+from flask import request, session
 from flask_babel import Babel
 from flask_login import current_user
 from ..config import config
+from .._compat import to_unicode
 
 babel = Babel()
 
 LANGUAGES = {
-    'en': 'English',
-    'fr': 'Français',
-    'es': 'Español',
+    'en': to_unicode('English'),
+    'fr': to_unicode('Français'),
+    'es': to_unicode('Español'),
 }
 config['LANGUAGES'] = LANGUAGES
 
@@ -27,4 +28,6 @@ def get_locale():
     locale = None
     if current_user and not current_user.is_anonymous:
         locale = getattr(current_user, 'language', None)
+    elif 'language' in session:
+        locale = session.get('language', None)
     return locale or request.accept_languages.best_match(config['LANGUAGES'].keys())

@@ -29,6 +29,55 @@ app.controller('UserCtrl', function($timeout, $scope, $http, $scrollspy) {
 		newPassword: '',
 		confPassword: ''
 	};
+	$scope.prefs = {};
+
+	// Get the available pageLength
+	var table = $('#table-sessions').DataTable();
+	var settings = table.settings();
+	$scope.lengthMenu = settings[0].aLengthMenu;
+
+	// Available languages
+	$scope.languages = [
+		{% for key, val in config['LANGUAGES'].iteritems() %}
+		{ 'name': '{{ val.decode("utf-8") }}', 'id': '{{ key }}' },
+		{% endfor %}
+	];
+
+	$http.get("{{ url_for('api.prefs_ui') }}", { headers: { 'X-From-UI': true } })
+		.then(function(response) {
+			$scope.prefs = response.data;
+
+			$scope.prefs.language = '{{ g.locale }}';
+
+			// current pageLength
+			$scope.prefs.pageLength = table.page.len();
+		});
+
+	$scope.submitChangePrefs = function(e) {
+		e.preventDefault();
+		var form = $(e.target);
+		var submit = form.find('button[type="submit"]');
+		var sav = submit.text();
+		submit.text('Saving...');
+		submit.attr('disabled', true);
+		table.page.len($scope.prefs.pageLength).draw();
+		/* submit the data */
+		$.ajax({
+			url: form.attr('action'),
+			type: 'POST',
+			data: $scope.prefs,
+			headers: { 'X-From-UI': true },
+		})
+		.fail(myFail)
+		.done(function(data) {
+			notif(NOTIF_SUCCESS, "{{ _('Preferences successfuly saved') }}");
+		})
+		.always(function() {
+			/* reset the submit button state */
+			submit.text(sav);
+			submit.attr('disabled', false);
+		});
+	};
 
 	$scope.submitChangePass = function(e) {
 		e.preventDefault();
@@ -253,3 +302,192 @@ $('#perform-revoke').on('click', function(e) {
 		}
 	}).fail(myFail);
 });
+
+// adapted from http://bl.ocks.org/d3noob/8375092
+// ************** Generate the tree diagram	 *****************
+var w = window,
+		d = document,
+		e = d.documentElement,
+		g = d.getElementsByTagName('body')[0],
+		x = $('#acl-tree').width(),
+		y = w.innerHeight|| e.clientHeight|| g.clientHeight;
+
+var margin = {top: 20, right: 120, bottom: 20, left: 120},
+	width = x - margin.right - margin.left,
+	height = (y*0.9) - margin.top - margin.bottom;
+
+var i = 0,
+	duration = 750,
+	root;
+
+var tree = d3.layout.tree()
+	.size([height, width]);
+
+var diagonal = d3.svg.diagonal()
+	.projection(function(d) { return [d.y, d.x]; });
+
+var svg = d3.select("#acl-tree").append("svg")
+	.attr("width", width + margin.right + margin.left)
+	.attr("height", height + margin.top + margin.bottom)
+	.append("g")
+	.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+d3.select(self.frameElement).style("height", height+"px");
+
+function update_tree(source) {
+
+	// Compute the new tree layout.
+	var nodes = tree.nodes(root).reverse(),
+		links = tree.links(nodes);
+
+	// Normalize for fixed-depth.
+	nodes.forEach(function(d) { d.y = d.depth * 180; });
+
+	// Update the nodes…
+	var node = svg.selectAll("g.node")
+		.data(nodes, function(d) { return d.id || (d.id = ++i); });
+
+	// Enter any new nodes at the parent's previous position.
+	var nodeEnter = node.enter().append("g")
+		.attr("class", "node")
+		.attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
+		.on("click", click);
+
+	nodeEnter.append("circle")
+		.attr("r", 1e-6)
+		.style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
+
+	nodeEnter.append("text")
+		.attr("x", function(d) { return d.children || d._children ? -13 : 13; })
+		.attr("dy", ".35em")
+		.attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
+		.text(function(d) { return d.name; })
+		.style("fill-opacity", 1e-6);
+
+	// Transition nodes to their new position.
+	var nodeUpdate = node.transition()
+		.duration(duration)
+		.attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; });
+
+	nodeUpdate.select("circle")
+		.attr("r", 10)
+		.style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
+
+	nodeUpdate.select("text")
+		.style("fill-opacity", 1);
+
+	// Transition exiting nodes to the parent's new position.
+	var nodeExit = node.exit().transition()
+		.duration(duration)
+		.attr("transform", function(d) { return "translate(" + source.y + "," + source.x + ")"; })
+		.remove();
+
+	nodeExit.select("circle")
+		.attr("r", 1e-6);
+
+	nodeExit.select("text")
+		.style("fill-opacity", 1e-6);
+
+	// Update the links…
+	var link = svg.selectAll("path.link")
+		.data(links, function(d) { return d.target.id; });
+
+	// Enter any new links at the parent's previous position.
+	link.enter().insert("path", "g")
+		.attr("class", "link")
+		.attr("d", function(d) {
+			var o = {x: source.x0, y: source.y0};
+			return diagonal({source: o, target: o});
+		});
+
+	// Transition links to their new position.
+	link.transition()
+		.duration(duration)
+		.attr("d", diagonal);
+
+	// Transition exiting nodes to the parent's new position.
+	link.exit().transition()
+		.duration(duration)
+		.attr("d", function(d) {
+			var o = {x: source.x, y: source.y};
+			return diagonal({source: o, target: o});
+		})
+		.remove();
+
+	// Stash the old positions for transition.
+	nodes.forEach(function(d) {
+		d.x0 = d.x;
+		d.y0 = d.y;
+	});
+}
+
+// Toggle children on click.
+function click(d) {
+	if (d.children) {
+		d._children = d.children;
+		d.children = null;
+	} else {
+		d.children = d._children;
+		d._children = null;
+	}
+	update_tree(d);
+}
+
+d3.json("{{ url_for('api.clients_all') }}")
+	.header('X-From-UI', true)
+	.get(function(error, data) {
+		if (! error) {
+			root = {
+				{% if config.STANDALONE -%}
+				"name": "{{ _('clients') }}",
+				{% else -%}
+				"name": "{{ _('servers') }}",
+				{% endif -%}
+				"parent": "null",
+				"children": []
+			};
+			var children = {};
+
+			$.each(data, function(i, node) {
+				if (! node.agent) {
+					root.children.push({
+						'name': node.name,
+						'parent': "{{ _('clients') }}"
+					});
+					return;
+				}
+				if (! (node.agent in children)) {
+					children[node.agent] = {
+						'name': node.agent,
+						'parent': "{{ _('servers') }}",
+						'children': []
+					};
+				}
+				children[node.agent]['children'].push({
+					'name': node.name,
+					'parent': node.agent
+				});
+			});
+
+			$.each(children, function(i, nodes) {
+				root.children.push(nodes);
+			});
+
+			function collapse(d) {
+				if (d.children) {
+					d._children = d.children;
+					d._children.forEach(collapse);
+					d.children = null;
+				}
+			}
+
+			root.children.forEach(collapse);
+			root.x0 = height / 2;
+			root.y0 = 0;
+
+			update_tree(root);
+		}
+	});
+
+{% import 'macros.html' as macros %}
+{{ macros.smooth_scrolling() }}

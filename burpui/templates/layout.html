@@ -12,9 +12,10 @@
 
     <!-- Bootstrap core CSS -->
     <link href="{{ url_for('bower.static', filename='bootswatch/slate/bootstrap.min.css') }}" rel="stylesheet">
-    {% if report -%}
+    {% if report or me -%}
     <link href="{{ url_for('bower.static', filename='nvd3/build/nv.d3.min.css') }}" rel="stylesheet">
-    {% else -%}
+    {% endif -%}
+    {% if not report -%}
     <link href="{{ url_for('bower.static', filename='datatables.net-bs/css/dataTables.bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ url_for('bower.static', filename='datatables.net-responsive-bs/css/responsive.bootstrap.min.css') }}" rel="stylesheet">
     {% endif -%}
@@ -59,19 +60,20 @@
     <script src="{{ url_for('bower.static', filename='bootstrap/dist/js/bootstrap.min.js') }}"></script>
     <!-- Typeadhead + Bloodhound Javascript
     ================================================== -->
-    <script src="{{ url_for('bower.static', filename='typeahead.js/dist/typeahead.bundle.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='typeahead.js/dist/typeahead.jquery.min.js') }}"></script>
     <!-- MomentJS
     ================================================== -->
     <script src="{{ url_for('bower.static', filename='moment/min/moment.min.js') }}"></script>
     {% if g.locale and g.locale != 'en' -%}
     <script src="{{ url_for('bower.static', filename='moment/locale/{}.js'.format(g.locale)) }}"></script>
     {% endif -%}
-    {% if report -%}
+    {% if report or me -%}
     <!-- d3 + nvd3 Javascript
     ================================================== -->
     <script src="{{ url_for('bower.static', filename='d3/d3.min.js') }}"></script>
     <script src="{{ url_for('bower.static', filename='nvd3/build/nv.d3.min.js') }}"></script>
-    {% elif not calendar -%}
+    {% endif -%}
+    {% if not calendar and not report -%}
     <!-- DataTables
     ================================================== -->
     <script src="{{ url_for('bower.static', filename='datatables.net/js/jquery.dataTables.min.js') }}"></script>
