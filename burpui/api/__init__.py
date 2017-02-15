@@ -86,7 +86,10 @@ class Api(ApiPlus):
                     mod = '.' + name
                     if name not in self.CELERY_REQUIRED or config['WITH_CELERY']:
                         self.logger.debug('Loading API module: {}'.format(mod))
-                        import_module(mod, __name__)
+                        try:
+                            import_module(mod, __name__)
+                        except:
+                            self.logger.critical('Unable to load {}'.format(mod))
                     else:
                         self.logger.warning('Skipping API module: {}'.format(mod))
 
