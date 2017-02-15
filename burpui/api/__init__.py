@@ -89,7 +89,8 @@ class Api(ApiPlus):
                         try:
                             import_module(mod, __name__)
                         except:
-                            self.logger.critical('Unable to load {}'.format(mod))
+                            import traceback
+                            self.logger.critical('Unable to load {}:\n{}'.format(mod, traceback.format_exc()))
                     else:
                         self.logger.warning('Skipping API module: {}'.format(mod))
 
