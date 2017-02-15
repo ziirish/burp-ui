@@ -13,6 +13,8 @@ import datetime
 import arrow
 import fnmatch
 
+from ...ext.i18n import get_locale
+
 from flask_restplus import fields
 from flask_babel import gettext as _
 from flask import escape
@@ -67,7 +69,8 @@ class DateTimeHuman(fields.Raw):
         """Format the value"""
         new_value = self.parse(value)
         if new_value:
-            return new_value.humanize()
+            locale = get_locale()
+            return new_value.humanize(locale=locale)
         return _(str(value))
 
 
