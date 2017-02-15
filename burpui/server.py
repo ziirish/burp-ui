@@ -25,7 +25,7 @@ G_BIND = u'::'
 G_REFRESH = 180
 G_LIVEREFRESH = 5
 G_SSL = False
-G_STANDALONE = True
+G_SINGLE = True
 G_SSLCERT = u''
 G_SSLKEY = u''
 G_VERSION = 2
@@ -59,7 +59,8 @@ class BUIServer(Flask):
             'port': G_PORT,
             'bind': G_BIND,
             'ssl': G_SSL,
-            'standalone': G_STANDALONE,
+            'standalone': G_SINGLE,
+            'single': G_SINGLE,
             'sslcert': G_SSLCERT,
             'sslkey': G_SSLKEY,
             'version': G_VERSION,
@@ -160,8 +161,11 @@ class BUIServer(Flask):
             'ssl',
             'boolean'
         )
+        # option standalone has been renamed for less confusion
+        key = 'standalone' if 'standalone' in \
+            self.conf.conf.get(self.conf.section, {}) else 'single'
         self.standalone = self.config['STANDALONE'] = self.conf.safe_get(
-            'standalone',
+            key,
             'boolean'
         )
         self.sslcert = self.config['BUI_SSLCERT'] = self.conf.safe_get(
@@ -351,9 +355,9 @@ class BUIServer(Flask):
                 ACLloader = mod.ACLloader
                 self.acl_handler = ACLloader(self)
                 # for development purpose only
-                from .misc.acl.interface import BUIacl
-                self.acl = BUIacl
-                self.acl = self.acl_handler.acl
+                # from .misc.acl.interface import BUIacl
+                # self.acl = BUIacl
+                # self.acl = self.acl_handler.acl
             except Exception as e:
                 self.logger.critical(
                     'Import Exception, module \'{0}\': {1}'.format(
@@ -393,6 +397,19 @@ class BUIServer(Flask):
                 )
             )
             sys.exit(2)
+
+    @property
+    def acl(self):
+        """ACL module
+
+        :returns: :class:`burpui.misc.acl.interface.BUIacl`
+        """
+        if self.acl_engine and self.acl_engine.lower() != 'none':
+            # refresh acl to detect config changes
+            from .misc.acl.interface import BUIacl  # noqa
+            acl = self.acl_handler.acl  # type: BUIacl
+            return acl
+        return None
 
     def get_send_file_max_age(self, name):
         """Provides default cache_timeout for the send_file() functions."""
