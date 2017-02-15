@@ -227,7 +227,6 @@ class ClientsReport(Resource):
             500: 'Internal failure',
         },
     )
-    @browser_cache(1800)
     def get(self, server=None):
         """Returns a global report about all the clients of a given server
 
@@ -414,7 +413,6 @@ class ClientsStats(Resource):
             500: 'Internal failure',
         },
     )
-    @browser_cache(1800)
     def get(self, server=None):
         """Returns a list of clients with their states
 
@@ -460,12 +458,12 @@ class ClientsStats(Resource):
                      server not in
                      bui.acl.servers(self.username))):
                 self.abort(403, 'Sorry, you don\'t have any rights on this server')
-            j = bui.client.get_all_clients(agent=server)
+            jso = bui.client.get_all_clients(agent=server)
             if bui.acl and not self.is_admin:
-                j = [x for x in j if x['name'] in bui.acl.clients(self.username, server)]
+                jso = [x for x in jso if x['name'] in bui.acl.clients(self.username, server)]
         except BUIserverException as e:
             self.abort(500, str(e))
-        return j
+        return jso
 
 
 @ns.route('/all',
@@ -485,6 +483,7 @@ class AllClients(Resource):
     """
     parser = ns.parser()
     parser.add_argument('serverName', help='Which server to collect data from when in multi-agent mode')
+    parser.add_argument('user', help='For which user do we want the data (only works for admins')
     client_fields = ns.model('AllClients', {
         'name': fields.String(required=True, description='Client name'),
         'agent': fields.String(required=False, default=None, description='Associated Agent name'),
@@ -536,29 +535,35 @@ class AllClients(Resource):
         ret = []
         args = self.parser.parse_args()
         server = server or args['serverName']
+        user = (args.get('user', self.username) or self.username) if \
+            self.is_admin else self.username
+
+        # drop privileges when switching user
+        if user != self.username:
+            self.is_admin = False
 
         if (server and bui.acl and not self.is_admin and
-                server not in bui.acl.servers(self.username)):
+                server not in bui.acl.servers(user)):
             self.abort(403, "You are not allowed to view this server infos")
 
         if server:
             clients = bui.client.get_all_clients(agent=server)
             if bui.acl and not self.is_admin:
-                ret = [{'name': x, 'agent': server} for x in bui.acl.clients(self.username, server)]
+                ret = [{'name': x, 'agent': server} for x in bui.acl.clients(user, server)]
             else:
                 ret = [{'name': x['name'], 'agent': server} for x in clients]
             return ret
 
         if bui.standalone:
             if bui.acl and not self.is_admin:
-                ret = [{'name': x} for x in bui.acl.clients(self.username)]
+                ret = [{'name': x} for x in bui.acl.clients(user)]
             else:
                 ret = [{'name': x['name']} for x in bui.client.get_all_clients()]
         else:
             grants = {}
             if bui.acl and not self.is_admin:
-                for serv in bui.acl.servers(self.username):
-                    grants[serv] = bui.acl.clients(self.username, serv)
+                for serv in bui.acl.servers(user):
+                    grants[serv] = bui.acl.clients(user, serv)
             else:
                 for serv in bui.client.servers:
                     grants[serv] = 'all'
