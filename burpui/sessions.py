@@ -12,6 +12,7 @@ import datetime
 
 from flask import session, request
 
+# used for completion
 try:
     from redis import Redis  # noqa
 except ImportError:  # pragma: no cover
@@ -201,6 +202,8 @@ class SessionManager(object):
             session.pop('authenticated')
         id = getattr(session, 'sid', None)
         session.clear()
+        # simulate a logout to clear cookies
+        session['remember'] = 'clear'
         return self.invalidate_session_by_id(id, False)
 
     def invalidate_session_by_id(self, id, recurse=True):
@@ -223,8 +226,8 @@ class SessionManager(object):
             dump = self.backend.get(key)
             if dump:
                 sess = self.app.session_interface.serializer.loads(dump)
-                if 'authenticated' in sess:
-                    sess.pop('authenticated')
+                sess.clear()
+                sess['remember'] = 'clear'
                 ttl = self.backend.ttl(key)
                 val = self.app.session_interface.serializer.dumps(dict(sess))
                 self.backend.setex(name=key, value=val, time=ttl)
