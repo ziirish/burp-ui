@@ -14,7 +14,7 @@ appStart () {
   BURP_SERVER_CONFIG=${BURP_SERVER_CONFIG:-/etc/burp/burp-server.conf}
   BURP_SERVER_ADDR=${BURP_SERVER_ADDR:-auto}
   REDIS_SERVER=${REDIS_SERVER:-redis:6379}
-  DATABASE_URL=${DATABASE_URL:-sqlite:////var/lib/burpui/store.db}
+  DATABASE_URL=${DATABASE_URL:-mysql://burpui:burpui@mariadb/burpuidb}
   TIMEZONE=${TIMEZONE:-Europe/Paris}
 
   [ -e /usr/share/zoneinfo/$TIMEZONE ] && {
@@ -61,8 +61,6 @@ appStart () {
   #[ -e /etc/gunicorn.d/burp-ui.example ] || cp -a /etc/gunicorn.d/burp-ui /etc/gunicorn.d/burp-ui.example
   sed -r "s'@BURPUI_CONFIG@'$BURPUI_CONFIG'" /etc/supervisor.d/gunicorn.ini.sample >/etc/supervisor.d/gunicorn.ini
   sed -i -r "s'@BURPUI_VERBOSE@'$BURPUI_VERBOSE'" /etc/supervisor.d/gunicorn.ini
-  #perl -pe "s#\@BURPUI_CONFIG\@#$BURPUI_CONFIG#" /etc/supervisor.d/gunicorn.ini.sample >/etc/supervisor.d/gunicorn.ini
-  #perl -i -pe "s#\@BURPUI_VERBOSE\@#$BURPUI_VERBOSE#" /etc/supervisor.d/gunicorn.ini
 
   ssl_cert_ca=$(grep -E "^\s*ssl_cert_ca\s*=" $BURP_CLIENT_CONFIG | cut -d= -f2 | sed -e "s/\s*//g")
   ssl_cert=$(grep -E "^\s*ssl_cert\s*=" $BURP_CLIENT_CONFIG | cut -d= -f2 | sed -e "s/\s*//g")

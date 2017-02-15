@@ -2,11 +2,23 @@ redis:
   restart: always
   image: redis
 
+mariadb:
+  restart: always
+  image: mariadb
+  environment:
+    - MYSQL_USER=burpui
+    - MYSQL_PASSWORD=burpui
+    - MYSQL_DATABASE=burpuidb
+# Additionally, you may want to persist data
+# volumes:
+#   - /var/lib/buistore:/var/lib/mysql
+
 burpui:
   restart: always
   image: registry.ziirish.me/ziirish/burp-ui:latest
   links:
     - redis
+    - mariadb
   ports:
     - 127.0.0.1:5000:5000
   volumes:
@@ -21,7 +33,7 @@ burpui:
 #    - BURPUI_GID=5337
 #    - BURP_CLIENT_CONFIG=/tmp/burp.conf
 #    - BURP_SERVER_CONFIG=/etc/burp/burp-server.conf
-#    - DATABASE_URL=sqlite:////var/lib/burpui/store.db
+#    - DATABASE_URL=mysql://burpui:burpui@mariadb/burpuidb
 #    - REDIS_SERVER=redis:6379
 #    - BURP_SERVER_ADDR=auto
 #    - TIMEZONE=Europe/Paris
