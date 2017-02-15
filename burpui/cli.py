@@ -32,15 +32,20 @@ if VERBOSE:
 UNITTEST = os.environ.get('BUI_MODE') not in ['server', 'manage', 'celery', 'legacy']
 CLI = os.environ.get('BUI_MODE') not in ['server', 'legacy']
 
-app = create_app(
-    conf=os.environ.get('BUI_CONFIG'),
-    verbose=VERBOSE,
-    logfile=os.environ.get('BUI_LOGFILE'),
-    debug=DEBUG,
-    gunicorn=False,
-    unittest=UNITTEST,
-    cli=CLI
-)
+try:
+    app = create_app(
+        conf=os.environ.get('BUI_CONFIG'),
+        verbose=VERBOSE,
+        logfile=os.environ.get('BUI_LOGFILE'),
+        debug=DEBUG,
+        gunicorn=False,
+        unittest=UNITTEST,
+        cli=CLI
+    )
+except:
+    import traceback
+    traceback.print_exc()
+    sys.exit(1)
 
 try:
     from .app import create_db
