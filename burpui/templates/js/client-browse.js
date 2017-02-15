@@ -91,14 +91,6 @@ $( document ).ready(function() {
 			if (fixNeeded) {
 				data.node.fixSelection3AfterClick();
 			}
-			// TODO: make it recursively loadable
-			/*
-			data.node.visit(function(subNode){
-				if( subNode.isUndefined() && subNode.isExpanded() ) {
-					subNode.load();
-				}
-			});
-			*/
 		},
 		scrollParent: $(window),
 		renderColumns: function(event, data) {
@@ -109,7 +101,7 @@ $( document ).ready(function() {
 			$tdList.eq(2).text(node.data.uid);
 			$tdList.eq(3).text(node.data.gid);
 			$tdList.eq(4).text(node.data.size);
-			$tdList.eq(5).text(node.data.date);
+			$tdList.eq(5).html('<span title="'+node.data.date+'">'+moment(node.data.date).format('{{ g.date_format }}')+'</span>');
 		},
 		select: function(event, data) {
 			toggleRestorationForms(data.tree);
@@ -284,7 +276,6 @@ $( document ).ready(function() {
 		e.preventDefault();
 
 		var form = $(this);
-		/* FIXME: quick-fix cause i did not manage to get the form action */
 		var url = "{{ url_for('api.server_restore', name=cname, backup=nbackup, server=server) }}";
 		$.ajax({
 			url: url,
@@ -402,7 +393,6 @@ $( document ).ready(function() {
 var app = angular.module('MainApp', ['ngSanitize']);
 
 app.controller('BrowseCtrl', function($scope, $http) {
-	// var tree = $("#tree").fancytree("getTree");
 	$scope.sc_restore = {};
 	$scope.load_all = false;
 	{% if edit and edit.orig_client -%}
