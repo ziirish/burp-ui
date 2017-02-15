@@ -5,7 +5,6 @@
     :synopsis: Burp-UI configuration file parser for Burp1.
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 """
-# TODO: have a look at https://github.com/tsileo/dirtools to manage dir changes
 import re
 import os
 import json

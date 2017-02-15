@@ -833,6 +833,10 @@ class Doc(BUIparser):
         u'ssl_key_password': __(u"The SSL key password."),
         u'ssl_key': __(u"The path to the server SSL private key in PEM"
                        " format."),
+        u'ssl_peer_cn': __(u"Must match the common name in the SSL certificate"
+                           " that the server giveswhen it connects. If"
+                           " ssl_peer_cn is not set, the server name will be"
+                           " used instead."),
         u'status_address': __(u"Defines the main TCP address that the server"
                               " listens on for status requests. The default is"
                               " either '::1' or '127.0.0.1', dependent upon"
