@@ -574,6 +574,7 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
     @app.before_request
     def setup_request():
         g.locale = get_locale()
+        g.date_format = session.get('dateFormat', 'llll')
         # make sure to store secure cookie if required
         if app.scookie:
             criteria = [
@@ -588,6 +589,10 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
         """User loader callback"""
         if app.auth != 'none':
             user = app.uhandler.user(userid)
+            if 'X-Language' in request.headers:
+                language = request.headers.get('X-Language')
+                user.language = language
+                session['language'] = language
             _check_session(user, request)
             return user
         return None
@@ -603,7 +608,8 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
     @app.after_request
     def after_request(response):
         if getattr(g, 'basic_session', False):
-            session_manager.invalidate_current_session()
+            if session_manager.invalidate_current_session():
+                session_manager.delete_session()
         return response
 
     return app

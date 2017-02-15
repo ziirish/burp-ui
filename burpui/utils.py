@@ -337,6 +337,7 @@ def basic_login_from_request(request, app):
                 refresh = True
                 session.clear()
                 session['login'] = auth.username
+            session['language'] = request.headers.get('X-Language', 'en')
             user = app.uhandler.user(auth.username, refresh)
             if user.active and user.login(auth.password):
                 from flask_login import login_user
