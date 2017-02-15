@@ -12,7 +12,7 @@ import os
 import sys
 import logging
 
-from flask import Blueprint, Response, request, current_app
+from flask import Blueprint, Response, request, current_app, session
 from flask_restplus import Api as ApiPlus
 from flask_login import current_user
 from importlib import import_module
@@ -29,7 +29,7 @@ EXEMPT_METHODS = set(['OPTIONS'])
 
 
 def cache_key():
-    return '{}-{}-{}'.format(current_user.get_id(), request.path, request.values)
+    return '{}-{}-{}-{}'.format(current_user.name, request.path, request.values, session.get('language', ''))
 
 
 def api_login_required(func):
