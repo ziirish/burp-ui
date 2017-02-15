@@ -191,22 +191,36 @@ var _check_running = function() {
 {% endif -%}
 
 {% if not login -%}
-	{% if config.STANDALONE -%}
-/***
- * _clients_bh: Bloodhound object used for the autocompletion of the input field
- */
-var _clients_bh = new Bloodhound({
-	datumTokenizer: Bloodhound.tokenizers.obj.whitespace('name'),
-	queryTokenizer: Bloodhound.tokenizers.whitespace,
-	limit: 10,
-	prefetch: {
-		url: '{{ url_for("api.clients_stats") }}',
-		ttl: 1800000,
-		cacheKey: '{{ version_id }}{% if current_user and current_user.is_authenticated %}-{{ current_user.get_id() }}{% endif %}',
-	}
-});
 
-_clients_bh.initialize();
+var substringMatcher = function(objs) {
+	return function findMatches(q, cb) {
+		var matches, substringRegex;
+
+		// an array that will be populated with substring matches
+		matches = [];
+
+		// regex used to determine if a string contains the substring `q`
+		substrRegex = new RegExp(q, 'i');
+
+		// iterate through the pool of strings and for any string that
+		// contains the substring `q`, add it to the `matches` array
+		$.each(objs, function(i, obj) {
+			if (substrRegex.test(obj.name)) {
+				matches.push(obj);
+			}
+		});
+
+		cb(matches);
+	};
+};
+
+var _clients_all = [];
+
+	{% if config.STANDALONE -%}
+$.get("{{ url_for('api.clients_all') }}")
+	.done(function (data) {
+		_clients_all = data;
+	});
 
 /***
  * Map out _clients_bh to our input with the typeahead plugin
@@ -217,35 +231,23 @@ $('#input-client').typeahead({
 {
 	name: 'clients',
 	displayKey: 'name',
-	source: _clients_bh.ttAdapter()
+	source: substringMatcher(_clients_all),
 }).on('typeahead:selected', function(obj, datum, name) {
 	window.location = '{{ url_for("view.client") }}?name='+datum.name;
 });
 	{% else -%}
+
 		{% for srv in config.SERVERS -%}
-
-var _{{ srv }}_bh = new Bloodhound({
-	datumTokenizer: Bloodhound.tokenizers.obj.whitespace('name'),
-	queryTokenizer: Bloodhound.tokenizers.whitespace,
-	limit: 10,
-	prefetch: {
-		url: '{{ url_for("api.clients_stats", server=srv) }}',
-		filter: function(data) {
-			res = new Array();
-			$.each(data, function(i, d) {
-				n = d;
-				n.server = '{{ srv }}';
-				res.push(n);
-			});
-			return res;
-		},
-		ttl: 1800000,
-		cacheKey: '{{ version_id }}{% if current_user and current_user.is_authenticated %}-{{ current_user.get_id() }}{% endif %}-{{ srv }}',
-	}
-});
-
-_{{ srv }}_bh.initialize();
+var _clients_{{ srv }} = [];
 		{% endfor -%}
+
+$.get("{{ url_for('api.clients_all') }}")
+	.done(function (data) {
+		_clients_all = data;
+		$.each(_clients_all, function(i, v) {
+			window['_clients_'+v.agent].push(v);
+		});
+	});
 
 
 $('#input-client').typeahead({
@@ -256,7 +258,7 @@ $('#input-client').typeahead({
 {
 	name: '{{ srv }}',
 	displayKey: 'name',
-	source: _{{ srv }}_bh.ttAdapter(),
+	source: substringMatcher(_clients_{{ srv }}),
 	templates: {
 		header: '<h3 class="server-name">{{ srv }}</h3>'
 	}
@@ -269,7 +271,7 @@ $('#input-client').typeahead({
 			{% endif -%}
 		{% endfor -%}
 ).on('typeahead:selected', function(obj, datum) {
-	window.location = '{{ url_for("view.client") }}?name='+datum.name+'&serverName='+datum.server;
+	window.location = '{{ url_for("view.client") }}?name='+datum.name+'&serverName='+datum.agent;
 });
 	{% endif -%}
 {% endif -%}

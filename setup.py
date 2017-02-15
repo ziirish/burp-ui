@@ -34,7 +34,7 @@ VENDOR_TO_KEEP = [
     'burpui/static/vendor/jquery/dist/jquery.min.js',
     'burpui/static/vendor/jquery-ui/jquery-ui.min.js',
     'burpui/static/vendor/bootstrap/dist/js/bootstrap.min.js',
-    'burpui/static/vendor/typeahead.js/dist/typeahead.bundle.min.js',
+    'burpui/static/vendor/typeahead.js/dist/typeahead.jquery.min.js',
     'burpui/static/vendor/d3/d3.min.js',
     'burpui/static/vendor/nvd3/build/nv.d3.min.js',
     'burpui/static/vendor/datatables.net/js/jquery.dataTables.min.js',
