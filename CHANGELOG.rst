@@ -1,6 +1,23 @@
 Changelog
 =========
 
+Current
+-------
+
+- **BREAKING**: the *standalone* option has been renamed to *single* for less confusion
+- Add: `Spanish translation <https://git.ziirish.me/ziirish/burp-ui/merge_requests/66>`_ thanks to Pablo
+- Add: `reverse_proxy option <https://git.ziirish.me/ziirish/burp-ui/merge_requests/65>`_ while running through gunicorn
+- Add: persistent storage for user preferences if SQL storage enabled
+- Add: rate-limiting of the API
+- Improvement: more complete user panel (`#185 <https://git.ziirish.me/ziirish/burp-ui/issues/185>`_, `#184 <https://git.ziirish.me/ziirish/burp-ui/issues/184>`_, `#182 <https://git.ziirish.me/ziirish/burp-ui/issues/182>`_)
+- Fix: issue `#186 <https://git.ziirish.me/ziirish/burp-ui/issues/186>`_
+- Fix: issue `#192 <https://git.ziirish.me/ziirish/burp-ui/issues/192>`_
+- Fix: issue `#194 <https://git.ziirish.me/ziirish/burp-ui/issues/194>`_
+- Fix: issue `#196 <https://git.ziirish.me/ziirish/burp-ui/issues/196>`_
+- Fix: issue `#198 <https://git.ziirish.me/ziirish/burp-ui/issues/198>`_
+- Various bugfix
+- `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/v0.4.0...v0.5.0>`__
+
 0.4.4 (01/02/2017)
 ------------------
 
