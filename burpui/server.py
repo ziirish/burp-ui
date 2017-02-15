@@ -354,10 +354,6 @@ class BUIServer(Flask):
                 )
                 ACLloader = mod.ACLloader
                 self.acl_handler = ACLloader(self)
-                # for development purpose only
-                # from .misc.acl.interface import BUIacl
-                # self.acl = BUIacl
-                # self.acl = self.acl_handler.acl
             except Exception as e:
                 self.logger.critical(
                     'Import Exception, module \'{0}\': {1}'.format(
@@ -368,7 +364,6 @@ class BUIServer(Flask):
                 raise e
         else:
             self.acl_handler = False
-            self.acl = False
 
         self.logger.info('acl: {}'.format(self.acl_engine))
 
