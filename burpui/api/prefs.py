@@ -108,9 +108,7 @@ class PrefsUI(Resource):
     )
     def put(self):
         """Create prefs"""
-        ret = self._update_prefs()
-
-        return ret, 201
+        return self._update_prefs(), 201
 
     @ns.expect(parser)
     @ns.doc(
@@ -131,6 +129,11 @@ class PrefsUI(Resource):
             temp = args.get(key)
             if temp:
                 del sess[key]
+                if bui.config['WITH_SQL']:
+                    from ..ext.sql import db
+                    from ..models import Pref
+                    Pref.query.filter_by(user=self.username, key=key).delete()
+                    db.session.commit()
             ret[key] = sess.get(key)
 
         return ret
@@ -147,6 +150,4 @@ class PrefsUI(Resource):
     )
     def post(self):
         """Change prefs"""
-        ret = self._update_prefs()
-
-        return ret
+        return self._update_prefs()
