@@ -20,6 +20,7 @@ pip install ujson
 pip install gevent
 pip install redis
 pip install flask-limiter
+pip install mysqlclient
 pip install Flask-Session
 pip install Flask-SQLAlchemy
 pip install Flask-Migrate
