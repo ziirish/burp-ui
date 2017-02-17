@@ -7,7 +7,7 @@ CONFIG_DIR="${SETUP_DIR}/config"
 BURPUI="https://burpui.ziirish.me/builds/burp-ui.dev.tar.gz"
 
 apt-get update
-DEBIAN_FRONTEND=noninteractive apt-get install -y wget python2.7-dev git python-pip libffi-dev
+DEBIAN_FRONTEND=noninteractive apt-get install -y wget python2.7-dev git python-pip libffi-dev libmysqlclient-dev
 
 echo "deb http://ziirish.info/repos/debian/jessie zi-stable main" >/etc/apt/sources.list.d/ziirish.list
 wget https://ziirish.info/repos/debian.gpg -O- | apt-key add -
@@ -106,7 +106,7 @@ echo "password = abcdefgh" >/etc/burp/clientconfdir/agent
 touch /etc/burp/this_is_a_decoy_file_to_know_if_we_can_chown
 
 # cleanup
-apt-get remove -y python2.7-dev git python-pip libffi-dev libssl-dev wget
+apt-get remove -y python2.7-dev git python-pip libffi-dev libssl-dev wget libmysqlclient-dev
 apt-get clean
 apt-get autoclean
 apt-get -y autoremove

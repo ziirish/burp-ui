@@ -11,7 +11,7 @@ cd
 
 apt-get remove -y python-cffi
 apt-get update
-apt-get install -y libssl-dev
+apt-get install -y libssl-dev libmysqlclient-dev
 
 # Install burp-ui
 pip install --upgrade pip
