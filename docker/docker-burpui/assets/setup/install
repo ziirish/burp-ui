@@ -15,8 +15,6 @@ apt-get install -y libssl-dev
 
 # Install burp-ui
 pip install --upgrade pip
-pip install "requests[security]"
-pip install --upgrade cffi
 pip install --upgrade $BURPUI
 pip install ujson
 pip install gevent
