@@ -38,8 +38,8 @@ app.controller('UserCtrl', function($timeout, $scope, $http, $scrollspy) {
 
 	// Available languages
 	$scope.languages = [
-		{% for key, val in config['LANGUAGES'].iteritems() %}
-		{ 'name': '{{ val.decode("utf-8") }}', 'id': '{{ key }}' },
+		{% for key, val in config['LANGUAGES'].items() %}
+		{ 'name': '{{ val }}', 'id': '{{ key }}' },
 		{% endfor %}
 	];
 
