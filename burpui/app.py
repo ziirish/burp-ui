@@ -124,6 +124,12 @@ def create_db(myapp, cli=False, unittest=False, create=True):
                 'install burp-ui-sql\'.\nDisabling SQL support for now.'
             )
             myapp.config['WITH_SQL'] = False
+        except OperationalError as exp:
+            myapp.logger.critical(
+                'unable to contact database: {}\nDisabling SQL '
+                'support.'.format(exp)
+            )
+            myapp.config['WITH_SQL'] = False
 
     return None
 
