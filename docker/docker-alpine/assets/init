@@ -58,7 +58,6 @@ appStart () {
   }
 
   # You can change log verbosity at runtime
-  #[ -e /etc/gunicorn.d/burp-ui.example ] || cp -a /etc/gunicorn.d/burp-ui /etc/gunicorn.d/burp-ui.example
   sed -r "s'@BURPUI_CONFIG@'$BURPUI_CONFIG'" /etc/supervisor.d/gunicorn.ini.sample >/etc/supervisor.d/gunicorn.ini
   sed -i -r "s'@BURPUI_VERBOSE@'$BURPUI_VERBOSE'" /etc/supervisor.d/gunicorn.ini
 

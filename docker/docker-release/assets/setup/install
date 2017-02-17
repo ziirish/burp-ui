@@ -7,7 +7,7 @@ CONFIG_DIR="${SETUP_DIR}/config"
 BURPUI="https://burpui.ziirish.me/builds/burp-ui.dev.tar.gz"
 
 apt-get update
-DEBIAN_FRONTEND=noninteractive apt-get install -y wget python2.7-dev git python-pip libffi-dev libmysqlclient-dev
+DEBIAN_FRONTEND=noninteractive apt-get install -y wget python2.7-dev git python-pip libffi-dev libmysqlclient-dev libmysqlclient
 
 echo "deb http://ziirish.info/repos/debian/jessie zi-stable main" >/etc/apt/sources.list.d/ziirish.list
 wget https://ziirish.info/repos/debian.gpg -O- | apt-key add -

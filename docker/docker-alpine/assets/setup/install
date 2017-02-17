@@ -15,6 +15,8 @@ apk add --no-cache --virtual .build-deps \
 	libc-dev \
 	make
 
+apk add --no-cache mariadb-client-libs
+
 # Install burp-ui
 cd /burp-ui
 git submodule update --init
