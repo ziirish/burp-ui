@@ -26,6 +26,7 @@ demo-mariadb:
     - MYSQL_USER=burpui
     - MYSQL_PASSWORD=burpui
     - MYSQL_DATABASE=burpuidb
+    - MYSQL_RANDOM_ROOT_PASSWORD=yes
 
 demo-cli1:
   restart: always

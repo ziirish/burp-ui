@@ -9,6 +9,7 @@ mariadb:
     - MYSQL_USER=burpui
     - MYSQL_PASSWORD=burpui
     - MYSQL_DATABASE=burpuidb
+    - MYSQL_RANDOM_ROOT_PASSWORD=yes
 # Additionally, you may want to persist data
 # volumes:
 #   - /var/lib/buistore:/var/lib/mysql
