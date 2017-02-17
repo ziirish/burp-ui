@@ -5,8 +5,10 @@ Current
 -------
 
 - **BREAKING**: the *standalone* option has been renamed to *single* for less confusion
+- Add: bui-agent independent package to reduce dependencies
 - Add: `Spanish translation <https://git.ziirish.me/ziirish/burp-ui/merge_requests/66>`_ thanks to Pablo
 - Add: `reverse_proxy option <https://git.ziirish.me/ziirish/burp-ui/merge_requests/65>`_ while running through gunicorn
+- Add: `OS detection for burp 2 <https://git.ziirish.me/ziirish/burp-ui/issues/200>`_
 - Add: persistent storage for user preferences if SQL storage enabled
 - Add: rate-limiting of the API
 - Improvement: more complete user panel (`#185 <https://git.ziirish.me/ziirish/burp-ui/issues/185>`_, `#184 <https://git.ziirish.me/ziirish/burp-ui/issues/184>`_, `#182 <https://git.ziirish.me/ziirish/burp-ui/issues/182>`_)

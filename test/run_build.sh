@@ -35,6 +35,7 @@ echo "building dist"
     cd pkgs
     for pkg in *
     do
+        [ -f "$pkg" ] && continue
         cd $pkg
         $PYTHON setup.py bdist_egg
         find dist -exec cp "{}" ../../meta/ \;

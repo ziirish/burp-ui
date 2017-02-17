@@ -1,6 +1,8 @@
 Advanced usage
 ==============
 
+.. highlight:: ini
+
 `Burp-UI`_ has been written with modularity in mind. The aim is to support
 `Burp`_ from the stable to the latest versions. `Burp`_ exists in two major
 versions: 1.x.x and 2.x.x.

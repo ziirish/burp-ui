@@ -47,7 +47,7 @@ Production
 ----------
 
 Like I said earlier, I recommend using `Gunicorn`_ for production deployments.
-You can refer to the dedicated `gunicorn <gunicorn.html>`_ page of this
+You can refer to the dedicated `gunicorn <gunicorn.html>`__ page of this
 documentation to know everything on how to `Burp-UI`_ through `Gunicorn`_.
 
 
