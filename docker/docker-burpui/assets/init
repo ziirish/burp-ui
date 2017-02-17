@@ -4,6 +4,12 @@ set -e
 trap appStop SIGINT SIGTERM
 
 appStart () {
+  # sleep for mysql to be ready
+  sleep 2
+
+  # setup database
+  su -l burpui -c "/usr/local/bin/bui-manage db upgrade"
+
   # start supervisord
   /usr/bin/supervisord -c /etc/supervisor/supervisord.conf
 
