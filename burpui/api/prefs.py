@@ -8,12 +8,15 @@
 
 """
 from six import viewkeys
-from flask import session
+from flask import session, current_app, request
+from flask_login import current_user
 
 from . import api
+from ..server import BUIServer  # noqa
+from ..ext.i18n import LANGUAGES
 from .custom import Resource
-#  from ..exceptions import BUIserverException
 
+bui = current_app  # type: BUIServer
 ns = api.namespace('preferences', 'Preferences methods')
 
 
@@ -26,7 +29,70 @@ class PrefsUI(Resource):
     This resource is part of the :mod:`burpui.api.prefs` module.
     """
     parser = ns.parser()
-    parser.add_argument('pageLength', type=int, required=False, help='Number of element per page', location='values')
+    parser.add_argument(
+        'pageLength',
+        type=int,
+        required=False,
+        help='Number of element per page',
+        location='values'
+    )
+    parser.add_argument(
+        'language',
+        type=str,
+        required=False,
+        help='Language',
+        location='values',
+        choices=list(LANGUAGES.keys())
+    )
+    parser.add_argument(
+        'dateFormat',
+        type=str,
+        required=False,
+        help='Date format',
+        location='values'
+    )
+
+    @staticmethod
+    def _user_language(language):
+        """Set the current user language"""
+        if current_user and not current_user.is_anonymous:
+            setattr(current_user, 'language', language)
+
+    def _store_prefs(self, key, val):
+        """Store the prefs if persistent storage is enabled"""
+        if bui.config['WITH_SQL']:
+            from ..ext.sql import db
+            from ..models import Pref
+            pref = Pref.query.filter_by(user=self.username, key=key).first()
+            if pref:
+                if val:
+                    pref.value = val
+                else:
+                    db.session.delete(pref)
+            else:
+                pref = Pref(self.username, key, val)
+                db.session.add(pref)
+            db.session.commit()
+
+    def _update_prefs(self):
+        """update prefs"""
+        args = self.parser.parse_args()
+        sess = session
+        ret = {}
+        for key in viewkeys(args):
+            if key not in request.args and key not in request.form:
+                continue
+            temp = args.get(key)
+            if key == 'language':
+                self._user_language(temp)
+            if temp:
+                sess[key] = temp
+            elif key in sess:
+                del sess[key]
+            ret[key] = temp
+            self._store_prefs(key, temp)
+
+        return ret
 
     @ns.doc(
         responses={
@@ -61,16 +127,7 @@ class PrefsUI(Resource):
     )
     def put(self):
         """Create prefs"""
-        args = self.parser.parse_args()
-        sess = session
-        ret = {}
-        for key in viewkeys(args):
-            temp = args.get(key)
-            if temp:
-                sess[key] = temp
-                ret[key] = temp
-
-        return ret, 201
+        return self._update_prefs(), 201
 
     @ns.expect(parser)
     @ns.doc(
@@ -91,6 +148,11 @@ class PrefsUI(Resource):
             temp = args.get(key)
             if temp:
                 del sess[key]
+                if bui.config['WITH_SQL']:
+                    from ..ext.sql import db
+                    from ..models import Pref
+                    Pref.query.filter_by(user=self.username, key=key).delete()
+                    db.session.commit()
             ret[key] = sess.get(key)
 
         return ret
@@ -107,13 +169,4 @@ class PrefsUI(Resource):
     )
     def post(self):
         """Change prefs"""
-        args = self.parser.parse_args()
-        sess = session
-        ret = {}
-        for key in viewkeys(args):
-            temp = args.get(key)
-            if temp:
-                sess[key] = temp
-                ret[key] = temp
-
-        return ret
+        return self._update_prefs()
