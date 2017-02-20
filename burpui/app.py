@@ -381,13 +381,14 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
         try:
             # Session setup
             if not app.session_db or \
-                    app.session_db.lower() not in ['none']:
+                    str(app.session_db).lower() not in ['none', 'false']:
                 from redis import Redis
                 from .ext.session import sess
                 host, port, pwd = get_redis_server(app)
                 db = 0
                 if app.session_db and \
-                        app.session_db.lower() not in ['redis', 'default']:
+                        str(app.session_db).lower() not \
+                        in ['redis', 'default', 'true']:
                     try:
                         (_, _, pwd, host, port, db) = \
                             parse_db_setting(app.session_db)
@@ -415,11 +416,12 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
         try:
             # Cache setup
             if not app.cache_db or \
-                    app.cache_db.lower() not in ['none']:
+                    str(app.cache_db).lower() not in ['none', 'false']:
                 host, port, pwd = get_redis_server(app)
                 db = 1
                 if app.cache_db and \
-                        app.cache_db.lower() not in ['redis', 'default']:
+                        str(app.cache_db).lower() not \
+                        in ['redis', 'default', 'true']:
                     try:
                         (_, _, pwd, host, port, db) = \
                             parse_db_setting(app.cache_db)
@@ -454,10 +456,12 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
             cache.init_app(app)
         try:
             # Limiter setup
-            if not app.limiter or app.limiter.lower() not in ['none']:
+            if not app.limiter or str(app.limiter).lower() not \
+                    in ['none', 'false']:
                 from .ext.limit import limiter
                 app.config['RATELIMIT_HEADERS_ENABLED'] = True
-                if app.limiter and app.limiter not in ['default', 'redis']:
+                if app.limiter and str(app.limiter).lower() not \
+                        in ['default', 'redis', 'true']:
                     app.config['RATELIMIT_STORAGE_URL'] = app.limiter
                 else:
                     db = 3
