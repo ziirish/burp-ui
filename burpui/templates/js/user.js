@@ -39,7 +39,7 @@ app.controller('UserCtrl', function($timeout, $scope, $http, $scrollspy) {
 	// Available languages
 	$scope.languages = [
 		{% for key, val in config['LANGUAGES'].items() %}
-		{ 'name': '{{ val }}', 'id': '{{ key }}' },
+		{ 'name': {{ val|tojson }}, 'id': {{ key|tojson }} },
 		{% endfor %}
 	];
 
@@ -217,7 +217,7 @@ var _sessions_table = $('#table-sessions').dataTable( {
 					if (data.ua.lastIndexOf('iPhone') > 0) {
 						ret += '&nbsp;<i class="fa fa-mobile" aria-hidden="true"></i>';
 					} else if (data.ua.lastIndexOf('iPad') > 0) {
-						ret += 'anbsp;<i class="fa fa-tablet" aria-hidden="true"></i>';
+						ret += '&nbsp;<i class="fa fa-tablet" aria-hidden="true"></i>';
 					}
 				} else if (data.ua.lastIndexOf('Linux') > 0) {
 					ret += '&nbsp;<i class="fa fa-linux" aria-hidden="true"></i>';
@@ -273,7 +273,7 @@ _events_callback = function() {
 		} else {
 			$('#error-confirm').hide();
 		}
-		$('#session-details').empty().html(unescape($me.data('misc')));
+		$('#session-details').empty().text(unescape($me.data('misc')));
 		$('#perform-revoke').data('id', $me.data('id'));
 		$('#perform-revoke').data('current', $me.data('current'));
 		$('#confirmation-modal').modal('toggle');

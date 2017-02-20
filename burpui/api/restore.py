@@ -374,12 +374,14 @@ class DoServerRestore(Resource):
     parser.add_argument('force-sc', type=boolean, help='Whether to overwrite existing files', default=False, nullable=True)
     parser.add_argument('restoreto-sc', help='Restore files on an other client', nullable=True)
 
+    @api.disabled_on_demo()
     @ns.expect(parser)
     @ns.doc(
         responses={
             201: 'Success',
             400: 'Missing parameter',
             403: 'Insufficient permissions',
+            428: 'Configuration forbid this request',
             500: 'Internal failure',
         },
     )
@@ -407,6 +409,16 @@ class DoServerRestore(Resource):
         force = args['force-sc']
         to = args['restoreto-sc']
         json = []
+
+        if not bui.client.get_parser(agent=server).param('server_can_restore',
+                                                         'client_conf') or \
+                bui.noserverrestore:
+            self.abort(
+                428,
+                'Sorry this method is not available with the current '
+                'configuration'
+            )
+
         # Check params
         if not files_list or not name or not backup:
             self.abort(400, 'Missing options')

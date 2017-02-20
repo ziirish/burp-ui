@@ -91,7 +91,7 @@ var _clients_table = $('#table-clients').dataTable( {
 			type: 'timestamp',
 			render: function (data, type, row ) {
 				if (!(data.last in __status || data.last in __date))
-					return '<span data-toggle="tooltip" title="'+data.last+'">'+moment(data.last, moment.ISO_8601).format('{{ g.date_format }}')+'</span>';
+					return '<span data-toggle="tooltip" title="'+data.last+'">'+moment(data.last, moment.ISO_8601).format({{ g.date_format|tojson }})+'</span>';
 				return data.last
 			}
 		}

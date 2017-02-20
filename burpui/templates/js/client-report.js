@@ -61,7 +61,7 @@ var _client = function() {
 				.attr("colspan", 3)
 				.append("strong")
 				.classed("x-value", true)
-				.html(title);
+				.text(title);
 
 			var tbodyEnter = table.selectAll("tbody")
 				.data([d])
@@ -81,7 +81,7 @@ var _client = function() {
 			trowEnter.append("td")
 				.classed("key",true)
 				.classed("total",function(p) { return !!p.total})
-				.html(function(p, i) { 
+				.text(function(p, i) {
 					if (duration) {
 						return _time_human_readable(p.value);
 					}

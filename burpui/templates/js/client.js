@@ -70,7 +70,7 @@ var _client_table = $('#table-client').dataTable( {
 			data: null,
 			type: 'timestamp',
 			render: function ( data, type, row ) {
-				return '<span data-toggle="tooltip" title="'+data.date+'">'+moment(data.date, moment.ISO_8601).format('{{ g.date_format }}')+'</span>';
+				return '<span data-toggle="tooltip" title="'+data.date+'">'+moment(data.date, moment.ISO_8601).format({{ g.date_format|tojson }})+'</span>';
 			}
 		},
 		{

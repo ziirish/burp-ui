@@ -126,7 +126,7 @@ $(document).ready(function() {
 {# Enables the calendar translation if needed #}
 {% macro translate_calendar() -%}
   {% if g.locale and g.locale != 'en' -%}
-  locale: '{{ g.locale }}',
+  locale: {{ g.locale|tojson }},
   {% endif -%}
 {%- endmacro %}
 

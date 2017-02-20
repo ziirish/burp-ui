@@ -33,34 +33,31 @@ class PrefsUI(Resource):
         'pageLength',
         type=int,
         required=False,
-        help='Number of element per page',
-        location='values'
+        help='Number of element per page'
     )
     parser.add_argument(
         'language',
         type=str,
         required=False,
         help='Language',
-        location='values',
         choices=list(LANGUAGES.keys())
     )
     parser.add_argument(
         'dateFormat',
         type=str,
         required=False,
-        help='Date format',
-        location='values'
+        help='Date format'
     )
 
     @staticmethod
     def _user_language(language):
         """Set the current user language"""
-        if current_user and not current_user.is_anonymous:
+        if current_user and not current_user.is_anonymous and language:
             setattr(current_user, 'language', language)
 
     def _store_prefs(self, key, val):
         """Store the prefs if persistent storage is enabled"""
-        if bui.config['WITH_SQL']:
+        if bui.config['WITH_SQL'] and not bui.config['BUI_DEMO']:
             from ..ext.sql import db
             from ..models import Pref
             pref = Pref.query.filter_by(user=self.username, key=key).first()
@@ -69,7 +66,7 @@ class PrefsUI(Resource):
                     pref.value = val
                 else:
                     db.session.delete(pref)
-            else:
+            elif val:
                 pref = Pref(self.username, key, val)
                 db.session.add(pref)
             db.session.commit()
@@ -80,7 +77,7 @@ class PrefsUI(Resource):
         sess = session
         ret = {}
         for key in viewkeys(args):
-            if key not in request.args and key not in request.form:
+            if key not in request.values and key not in request.json:
                 continue
             temp = args.get(key)
             if key == 'language':
@@ -115,7 +112,7 @@ class PrefsUI(Resource):
             ret[key] = sess.get(key)
         return ret
 
-    @ns.expect(parser)
+    @ns.expect(parser, validate=True)
     @ns.doc(
         responses={
             201: 'Success',
@@ -157,7 +154,7 @@ class PrefsUI(Resource):
 
         return ret
 
-    @ns.expect(parser)
+    @ns.expect(parser, validate=True)
     @ns.doc(
         responses={
             200: 'Success',
