@@ -13,6 +13,7 @@ apk add --no-cache --virtual .build-deps \
 	git \
 	gcc \
 	libc-dev \
+	postgresql-dev \
 	make
 
 apk add --no-cache mariadb-client-libs
@@ -27,6 +28,7 @@ pip install gunicorn
 pip install gevent
 pip install redis
 pip install mysqlclient
+pip install psycopg2
 pip install flask-limiter
 pip install Flask-Session
 pip install Flask-SQLAlchemy

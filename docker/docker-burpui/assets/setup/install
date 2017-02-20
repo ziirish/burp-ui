@@ -11,7 +11,7 @@ cd
 
 apt-get remove -y python-cffi
 apt-get update
-apt-get install -y libssl-dev libmysqlclient-dev
+apt-get install -y libssl-dev libmysqlclient-dev libpq-dev
 
 # Install burp-ui
 pip install --upgrade pip
@@ -21,6 +21,7 @@ pip install gevent
 pip install redis
 pip install flask-limiter
 pip install mysqlclient
+pip install psycopg2
 pip install Flask-Session
 pip install Flask-SQLAlchemy
 pip install Flask-Migrate

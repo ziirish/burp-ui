@@ -19,14 +19,17 @@ demo-redis:
   volumes:
     - /srv/demo/redis:/data
 
-demo-mariadb:
+#demo-mariadb:
+#  restart: always
+#  image: mariadb
+#  environment:
+#    - MYSQL_USER=burpui
+#    - MYSQL_PASSWORD=burpui
+#    - MYSQL_DATABASE=burpuidb
+#    - MYSQL_RANDOM_ROOT_PASSWORD=yes
+demo-pg:
   restart: always
-  image: mariadb
-  environment:
-    - MYSQL_USER=burpui
-    - MYSQL_PASSWORD=burpui
-    - MYSQL_DATABASE=burpuidb
-    - MYSQL_RANDOM_ROOT_PASSWORD=yes
+  build: docker-pg/
 
 demo-cli1:
   restart: always
@@ -53,4 +56,4 @@ demo-bui:
     - demo-redis
     - demo-burp1
     - demo-burp2
-    - demo-mariadb
+    - demo-pg

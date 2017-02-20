@@ -3,6 +3,7 @@ CONFIG = {
         '--bind=0.0.0.0:5000',
         '--user=burpui',
         '--workers=5',
+        '--preload',
         '--worker-class=gevent',
         '--access-logfile=/var/log/gunicorn/burp-ui_access.log',
         '--error-logfile=/var/log/gunicorn/burp-ui_error.log',

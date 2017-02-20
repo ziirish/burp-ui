@@ -14,7 +14,7 @@ appStart () {
   BURP_SERVER_CONFIG=${BURP_SERVER_CONFIG:-/etc/burp/burp-server.conf}
   BURP_SERVER_ADDR=${BURP_SERVER_ADDR:-auto}
   REDIS_SERVER=${REDIS_SERVER:-redis:6379}
-  DATABASE_URL=${DATABASE_URL:-mysql://burpui:burpui@mariadb/burpuidb}
+  DATABASE_URL=${DATABASE_URL:-postgresql://burpui:burpui@pgsql/burpuidb}
   TIMEZONE=${TIMEZONE:-Europe/Paris}
 
   [ -e /usr/share/zoneinfo/$TIMEZONE ] && {

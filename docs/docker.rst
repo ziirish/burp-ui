@@ -29,7 +29,7 @@ provided. There are a few variables supported to setup your system:
  - **BURP_SERVER_CONFIG** - Specify the path of the burp-server configuration
    file. It defaults to "/etc/burp/burp-server.conf".
  - **DATABASE_URL** - Specify the URL of the database to connect to. It defaults
-   to "mysql://burpui:burpui@mariadb/burpuidb".
+   to "sqlite:////var/lib/burpui/store.db".
  - **REDIS_SERVER** - Specify the address of the redis server. It defaults to
    "redis:6379".
  - **BURP_SERVER_ADDR** - Specify the address of the burp-server status port.
