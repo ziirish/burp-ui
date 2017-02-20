@@ -93,7 +93,10 @@ def patch_item(module, attr, newitem, newmodule=None):
 
 def patch_module(name, items=None):
     toimport = items or []
-    replace_module = __import__('burpui._' + name, fromlist=toimport)
+    mod = __name__
+    if '.' in mod:
+        mod = mod.split('.')[0]
+    replace_module = __import__('{}._{}'.format(mod, name), fromlist=toimport)
     module_name = name
     module = __import__(module_name)
     if items is None:
