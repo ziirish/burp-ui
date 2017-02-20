@@ -23,6 +23,8 @@ def boolean(value):
     If the input is from the request JSON body, the type is already a native
     python boolean, and will be passed through without further parsing.
 
+    + validate checkbox fields
+
     :raises ValueError: if the boolean value is invalid
     """
     try:
@@ -30,7 +32,6 @@ def boolean(value):
     except ValueError as e:
         if not value:
             return False
-        value = value.lower()
-        if value == 'on':
+        if value.lower() == 'on':
             return True
         raise e
