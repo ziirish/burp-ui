@@ -5,7 +5,7 @@ Current
 -------
 
 - **BREAKING**: the *standalone* option has been renamed to *single* for less confusion
-- Add: bui-agent independent package to reduce dependencies
+- **BREAKING**: the ``bui-agent`` has now its own independent package to reduce dependencies
 - Add: `Spanish translation <https://git.ziirish.me/ziirish/burp-ui/merge_requests/66>`_ thanks to Pablo
 - Add: `reverse_proxy option <https://git.ziirish.me/ziirish/burp-ui/merge_requests/65>`_ while running through gunicorn
 - Add: `OS detection for burp 2 <https://git.ziirish.me/ziirish/burp-ui/issues/200>`_
