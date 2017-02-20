@@ -103,6 +103,13 @@ def create_db(myapp, cli=False, unittest=False, create=True):
                     myapp.config['WITH_SQL'] = False
                     return None
 
+            back = parse_db_setting(myapp.config['SQLALCHEMY_DATABASE_URI'])[0]
+            
+            if 'mysql' in back:
+                # optimize SQL pools for MySQL driver
+                myapp.config['SQLALCHEMY_POOL_SIZE'] = 20
+                myapp.config['SQLALCHEMY_POOL_RECYCLE'] = 600
+
             db.init_app(myapp)
             if not cli and not unittest:
                 with myapp.app_context():
@@ -331,10 +338,6 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
     # app.config['BUNDLE_ERRORS'] = True
 
     app.config['REMEMBER_COOKIE_HTTPONLY'] = True
-
-    # optimize SQL pools for MySQL driver
-    app.config['SQLALCHEMY_POOL_SIZE'] = 20
-    app.config['SQLALCHEMY_POOL_RECYCLE'] = 600
 
     if debug and not gunicorn:  # pragma: no cover
         app.config['DEBUG'] = True and not unittest
