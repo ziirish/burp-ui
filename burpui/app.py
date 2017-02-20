@@ -104,7 +104,7 @@ def create_db(myapp, cli=False, unittest=False, create=True):
                     return None
 
             back = parse_db_setting(myapp.config['SQLALCHEMY_DATABASE_URI'])[0]
-            
+
             if 'mysql' in back:
                 # optimize SQL pools for MySQL driver
                 myapp.config['SQLALCHEMY_POOL_SIZE'] = 20
