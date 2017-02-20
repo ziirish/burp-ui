@@ -52,8 +52,12 @@ class SessionManager(object):
                     self.invalidate_current_session()
                 else:
                     self.invalidate_session_by_id(id)
-                db.session.delete(store)
-                db.session.commit()
+                try:
+                    db.session.delete(store)
+                    db.session.commit()
+                except:
+                    db.session.rollback()
+                    return False
                 return True
             elif store:
                 ip = self.anonym_ip(request.remote_addr)
@@ -96,8 +100,11 @@ class SessionManager(object):
                 remember,
                 api
             )
-            db.session.add(store)
-            db.session.commit()
+            try:
+                db.session.add(store)
+                db.session.commit()
+            except:
+                db.session.rollback()
             session['persistent'] = remember
 
     def session_in_db(self):
@@ -118,8 +125,11 @@ class SessionManager(object):
         if self.session_managed():
             from .ext.sql import db
             from .models import Session
-            Session.query.filter_by(uuid=id).delete()
-            db.session.commit()
+            try:
+                Session.query.filter_by(uuid=id).delete()
+                db.session.commit()
+            except:
+                db.session.rollback()
 
     def get_session_username(self):
         """Return the username stored in the current session"""

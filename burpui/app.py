@@ -332,6 +332,10 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
 
     app.config['REMEMBER_COOKIE_HTTPONLY'] = True
 
+    # optimize SQL pools for MySQL driver
+    app.config['SQLALCHEMY_POOL_SIZE'] = 20
+    app.config['SQLALCHEMY_POOL_RECYCLE'] = 600
+
     if debug and not gunicorn:  # pragma: no cover
         app.config['DEBUG'] = True and not unittest
         app.config['TESTING'] = True and not unittest

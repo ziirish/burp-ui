@@ -237,8 +237,11 @@ def cleanup_restore():
                     if os.path.isfile(path):
                         os.unlink(path)
         finally:
-            db.session.delete(rec)
-            db.session.commit()
+            try:
+                db.session.delete(rec)
+                db.session.commit()
+            except:
+                db.session.rollback()
             task.revoke()
 
 
@@ -298,7 +301,10 @@ def perform_restore(self, client, backup,
         curr = Task.query.filter_by(uuid=self.request.id).first()
         if curr:
             curr.expire = datetime.utcnow() + expire
-            db.session.commit()
+            try:
+                db.session.commit()
+            except:
+                db.session.rollback()
 
     if err:
         # make the task crash
@@ -374,8 +380,11 @@ class AsyncRestoreStatus(Resource):
             if db:
                 rec = Task.query.filter_by(uuid=task_id).first()
                 if rec:
-                    db.session.delete(rec)
-                    db.session.commit()
+                    try:
+                        db.session.delete(rec)
+                        db.session.commit()
+                    except:
+                        db.session.rollback()
             task.revoke()
             err = str(task.result)
             self.abort(502, err)
@@ -440,8 +449,11 @@ class AsyncGetFile(Resource):
         if db:
             rec = Task.query.filter_by(uuid=task_id).first()
             if rec:
-                db.session.delete(rec)
-                db.session.commit()
+                try:
+                    db.session.delete(rec)
+                    db.session.commit()
+                except:
+                    db.session.rollback()
         task.revoke()
 
         if dst_server:
@@ -636,8 +648,11 @@ class AsyncRestore(Resource):
                 self.username,
                 timedelta(minutes=60)
             )
-            db.session.add(db_task)
-            db.session.commit()
+            try:
+                db.session.add(db_task)
+                db.session.commit()
+            except:
+                db.session.rollback()
         return {'id': task.id, 'name': 'perform_restore'}, 202
 
 

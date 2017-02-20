@@ -119,7 +119,10 @@ class UserHandler(BUIuser):
             else:
                 pref = Pref(self.name, 'language', self.language)
                 db.session.add(pref)
-            db.session.commit()
+            try:
+                db.session.commit()
+            except:
+                db.session.rollback()
 
     def refresh_session(self):
         self.authenticated = session.get('authenticated', False)

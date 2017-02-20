@@ -88,6 +88,9 @@ instance:
     pip install mysqlclient
 
 
+.. warning:: The MySQL driver does not seem to play nicely with concurrency, you
+             should set ``preload=False`` within your gunicorn config.
+
 Limiter
 -------
 

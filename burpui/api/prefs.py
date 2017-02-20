@@ -10,6 +10,7 @@
 from six import viewkeys
 from flask import session, current_app, request
 from flask_login import current_user
+from werkzeug.datastructures import MultiDict
 
 from . import api
 from ..server import BUIServer  # noqa
@@ -69,15 +70,23 @@ class PrefsUI(Resource):
             elif val:
                 pref = Pref(self.username, key, val)
                 db.session.add(pref)
-            db.session.commit()
+            try:
+                db.session.commit()
+            except:
+                db.session.rollback()
 
     def _update_prefs(self):
         """update prefs"""
         args = self.parser.parse_args()
         sess = session
         ret = {}
+        req = MultiDict()
+        for loc in ['values', 'json']:
+            data = getattr(request, loc, None)
+            if data:
+                req.update(data)
         for key in viewkeys(args):
-            if key not in request.values and key not in request.json:
+            if key not in req:
                 continue
             temp = args.get(key)
             if key == 'language':
@@ -148,8 +157,14 @@ class PrefsUI(Resource):
                 if bui.config['WITH_SQL']:
                     from ..ext.sql import db
                     from ..models import Pref
-                    Pref.query.filter_by(user=self.username, key=key).delete()
-                    db.session.commit()
+                    try:
+                        Pref.query.filter_by(
+                            user=self.username,
+                            key=key
+                        ).delete()
+                        db.session.commit()
+                    except:
+                        db.session.rollback()
             ret[key] = sess.get(key)
 
         return ret
