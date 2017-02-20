@@ -238,6 +238,8 @@ setup(
             'burp-ui=burpui.__main__:server',
             'bui-celery=burpui.__main__:celery',
             'bui-manage=burpui.__main__:manage',
+            'bui-agent-legacy=burpui.__main__:agent',
+            'burp-ui-legacy=burpui.__main__:legacy',
         ],
     },
     data_files=[
@@ -246,6 +248,7 @@ setup(
         (os.path.join(contrib, 'debian'), ['contrib/debian/init.sh', 'contrib/debian/bui-celery.init']),
         (os.path.join(contrib, 'gunicorn.d'), ['contrib/gunicorn.d/burp-ui']),
         (os.path.join(contrib, 'gunicorn'), ['contrib/gunicorn/burpui_gunicorn.py']),
+        (os.path.join(contrib, 'systemd'), ['contrib/systemd/bui-agent.service', 'contrib/systemd/bui-celery.service', 'contrib/systemd/bui-gunicorn.service']),
     ] + migrations,
     install_requires=requires,
     extras_require={
