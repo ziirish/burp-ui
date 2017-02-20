@@ -1,7 +1,7 @@
 Gunicorn
 ========
 
-Starting from v0.0.6, `Burp-UI`_ supports `Gunicorn`_ in
+Starting from *v0.0.6*, `Burp-UI`_ supports `Gunicorn`_ in
 order to handle multiple users simultaneously because some operations (like the
 online restoration) may take some time and thus may block any further requests.
 With `Gunicorn`_, you have several workers that can proceed the requests so you

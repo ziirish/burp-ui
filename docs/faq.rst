@@ -105,6 +105,17 @@ Are there any known issues?
 There is a `known issue <introduction.html#known-issues>`__ section in this
 documentation.
 
+I cannot find the ``bui-agent`` command anymore, where is it?
+-------------------------------------------------------------
+
+Since *v0.5.0*, the `bui-agent <buiagent.html>`_ has it's own package in order
+to reduce requirements. The agent does not need the Flask requirements and so
+on. You can now install it with the ``pip install burp-ui-agent`` command.
+Alternatively, there is now a ``bui-agent-legacy`` provided by the ``burp-ui``
+package.
+
+See the `upgrading <upgrading.html#v0-5-0>`__ section for more details.
+
 Why using redis?
 ----------------
 
@@ -128,7 +139,7 @@ Again, it is totally optional to use it.
 Burp-UI does not seem to understand the *bind* and *port* options anymore, what should I do?
 --------------------------------------------------------------------------------------------
 
-Since v0.4.0, the new Flask development server is used when running in
+Since *v0.4.0*, the new Flask development server is used when running in
 *single* mode. The *bind* and *port* options are not read anymore.
 You can either run `Burp-UI`_ with the ``-- -h x.x.x.x -p yyyy`` flags or use
 the legacy launcher ``python -m burpui -m legacy [--help]``.

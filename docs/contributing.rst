@@ -156,7 +156,7 @@ Troubleshooting
 In case you encounter troubles with ``Burp-UI``, you should run it with the
 ``-vvvv`` flag and paste the relevant output within your bug-report.
 Please also give the version of ``burp`` **AND** ``Burp-UI``.
-Since v0.0.6 you can use the ``-V`` or ``--version`` flag in order to get your
+Since *v0.0.6* you can use the ``-V`` or ``--version`` flag in order to get your
 version number.
 
 

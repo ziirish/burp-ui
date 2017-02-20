@@ -528,8 +528,8 @@ Now you can add *basic* specific options:
     as the password
 
 .. warning::
-    Since v0.3.0, passwords must be hashed (see `manage <manage.html#users>`_ to
-    know how to create new users with hashed passwords)
+    Since *v0.3.0*, passwords must be hashed (see `manage <manage.html#users>`_
+    to know how to create new users with hashed passwords)
 
 Local
 ^^^^^

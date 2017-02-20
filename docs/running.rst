@@ -34,13 +34,17 @@ for details.
 Option 2
 ^^^^^^^^
 
-Prior to v0.4.0, you could specify the *bind* and *port* option within the
+Prior to *v0.4.0*, you could specify the *bind* and *port* option within the
 `Burp-UI`_ configuration file.
 You can still use this behavior by running:
 
 ::
 
     python -m burpui -m legacy [--help]
+
+
+.. note:: Since *v0.5.0*, you can also use the ``burp-ui-legacy`` command to
+          achieve the same thing.
 
 
 Production

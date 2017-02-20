@@ -12,10 +12,14 @@ v0.5.0
 
 - **Breaking** - The *standalone* option has been renamed to *single* to avoid
   confusion.
-- **Breaking** - The database schema evolved between v0.4.0 and v0.5.0. In order
-  to apply these modifications, you **MUST** run the ``bui-manage db upgrade``
-  command before restarting your `Burp-UI`_ application (if you are using
-  celery, you must restart it too).
+- **BREAKING** - The ``bui-agent`` has now its own independent package to reduce
+  dependencies, you can install it with the ``pip install burp-ui-agent``
+  command. Alternatively, there is now a ``bui-agent-legacy`` command provided
+  by the ``burp-ui`` package.
+- **Breaking** - The database schema evolved between *v0.4.0* and *v0.5.0*. In
+  order to apply these modifications, you **MUST** run the
+  ``bui-manage db upgrade`` command before restarting your `Burp-UI`_
+  application (if you are using celery, you must restart it too).
 
   More details on the `Manage <manage.html>`__ and `Celery <celery.html>`__
   pages.
@@ -33,14 +37,14 @@ v0.4.0
   Or you can use the ``python -m burpui -m legacy [--help]`` command that
   **SHOULD** be backward compatible (but note that no further support will be
   provided since it is not the Flask's default behavior anymore).
-- **Breaking** - The database schema evolved between v0.3.0 and v0.4.0. In order
-  to apply these modifications, you **MUST** run the ``bui-manage db upgrade``
-  command before restarting your `Burp-UI`_ application (if you are using
-  celery, you must restart it too).
+- **Breaking** - The database schema evolved between *v0.3.0* and *v0.4.0*. In
+  order to apply these modifications, you **MUST** run the
+  ``bui-manage db upgrade`` command before restarting your `Burp-UI`_
+  application (if you are using celery, you must restart it too).
 
   More details on the `Manage <manage.html>`__ and `Celery <celery.html>`__
   pages.
-- **Breaking** - Plain text passwords are deprecated since v0.3.0 and are now
+- **Breaking** - Plain text passwords are deprecated since *v0.3.0* and are now
   disabled by default. It means you should not manually add new users in your
   burp-ui configuration anymore with ``login = password`` but you should now use
   the `bui-manage <manage.html>`__ command instead.
@@ -66,8 +70,8 @@ v0.3.0
   eye on it though.
 - **New** - Basic authentication backend now supports hashed passwords (*Note*:
   plain text passwords are now deprecated and the support will be dropped in
-  v0.4.0). You can create new users with the ``bui-manage`` tool, passwords
-  generated through this tool are hashed. *Note*: Starting with v0.4.0, plain
+  *v0.4.0*). You can create new users with the ``bui-manage`` tool, passwords
+  generated through this tool are hashed. *Note*: Starting with *v0.4.0*, plain
   text passwords will be automatically hashed.
 - **New** - Local authentication backend allows you to login using local
   accounts through pam.

@@ -63,10 +63,11 @@ Options
                             migrations directory
 
 
-.. note:: Since v0.4.0, the *bind* and *port* options are not supported anymore.
-          You can still force the port and listening address as explained bellow
-          or you can have a look at the `upgrading <upgrading.html#v0.4.0>`_
-          section of the documentation for further details.
+.. note:: Since *v0.4.0*, the *bind* and *port* options are not supported
+          anymore. You can still force the port and listening address as
+          explained bellow or you can have a look at the
+          `upgrading <upgrading.html#v0.4.0>`_ section of the documentation for
+          further details.
 
 Developer options
 -----------------
