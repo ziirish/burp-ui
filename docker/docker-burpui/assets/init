@@ -4,7 +4,7 @@ set -e
 trap appStop SIGINT SIGTERM
 
 appStart () {
-  # sleep for mysql to be ready
+  # wait for mysql to be ready
   sleep 2
 
   # setup database

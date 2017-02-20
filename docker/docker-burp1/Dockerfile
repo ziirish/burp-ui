@@ -12,7 +12,7 @@ RUN apt-get update \
 
 ADD assets/setup/ /app/setup/
 ADD assets/config/ /app/setup/config/
-# @ARTIFACTS@
+# @BUIAGENT_ARTIFACTS@
 
 ADD assets/init /app/init
 RUN chmod 755 /app/init

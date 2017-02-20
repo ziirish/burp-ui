@@ -5,7 +5,7 @@ set -e
 SETUP_DIR="/app/setup"
 CONFIG_DIR="${SETUP_DIR}/config"
 #BURPUI="https://burpui.ziirish.me/builds/burp-ui.dev.tar.gz"
-BURPUI="/tmp/burpui.dev.tar.gz"
+BURPUI="/tmp/burp-ui-agent.dev.tar.gz"
 
 echo "deb http://ziirish.info/repos/debian/jessie zi-stable main" >/etc/apt/sources.list.d/ziirish.list
 wget https://ziirish.info/repos/debian.gpg -O- | apt-key add -
