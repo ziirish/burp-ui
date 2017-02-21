@@ -91,6 +91,18 @@ instance:
 .. warning:: The MySQL driver does not seem to play nicely with concurrency, you
              should set ``preload=False`` within your gunicorn config.
 
+To use a PostgreSQL database, you need the ``psycopg2`` driver:
+
+::
+
+    pip install psycopg2
+
+
+.. warning:: The PostgreSQL driver does not seem to play nicely with
+             concurrency, you should set ``preload=False`` within your gunicorn
+             config.
+
+
 Limiter
 -------
 

@@ -38,8 +38,10 @@ $(document).ready(function() {
 				cal = $('#calendar')
 				cal.fullCalendar('removeEventSources');
 				$.each(data, function(i, source) {
-					source.cache = true;
-					cal.fullCalendar('addEventSource', source);
+					if (source) {
+						source.cache = true;
+						cal.fullCalendar('addEventSource', source);
+					}
 				});
 			});
 	};

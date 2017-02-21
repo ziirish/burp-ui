@@ -12,7 +12,7 @@ v0.5.0
 
 - **Breaking** - The *standalone* option has been renamed to *single* to avoid
   confusion.
-- **BREAKING** - The ``bui-agent`` has now its own independent package to reduce
+- **Breaking** - The ``bui-agent`` has now its own independent package to reduce
   dependencies, you can install it with the ``pip install burp-ui-agent``
   command. Alternatively, there is now a ``bui-agent-legacy`` command provided
   by the ``burp-ui`` package.

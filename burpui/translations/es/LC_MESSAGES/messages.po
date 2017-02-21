@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2017-01-20 08:31+0100\n"
+"POT-Creation-Date: 2017-02-20 17:33+0100\n"
 "PO-Revision-Date: 2017-01-14 17:32-0300\n"
 "Last-Translator: Pablo Estigarribia <pablodav@gmail.com>\n"
 "Language: es\n"
@@ -19,11 +19,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.3.4\n"
 
-#: burpui/app.py:471
+#: burpui/app.py:544
 msgid "Please log in to access this page."
 msgstr "Por favor inicia sesión para acceder a la página."
 
-#: burpui/app.py:474
+#: burpui/app.py:547
 msgid "Please reauthenticate to access this page."
 msgstr "Por favor, vuelve a iniciar sesión para acceder a esta página."
 
@@ -36,7 +36,7 @@ msgstr "Usuario"
 msgid "Password"
 msgstr "Contraseña"
 
-#: burpui/forms.py:20
+#: burpui/forms.py:20 burpui/templates/user.html:74
 msgid "Language"
 msgstr "Idiomas"
 
@@ -1190,6 +1190,13 @@ msgstr "La ruta de acceso a la clave privada SSL del servidor en formato PEM."
 
 #: burpui/misc/parser/doc.py:836
 msgid ""
+"Must match the common name in the SSL certificate that the server "
+"giveswhen it connects. If ssl_peer_cn is not set, the server name will be"
+" used instead."
+msgstr ""
+
+#: burpui/misc/parser/doc.py:840
+msgid ""
 "Defines the main TCP address that the server listens on for status "
 "requests. The default is either '::1' or '127.0.0.1', dependent upon "
 "compile time options."
@@ -1198,15 +1205,15 @@ msgstr ""
 "solicitudes de estado. El valor predeterminado es o bien ':: 1' o "
 "'127.0.0.1', dependiendo de las opciones de tiempo de compilación."
 
-#: burpui/misc/parser/doc.py:840
+#: burpui/misc/parser/doc.py:844
 msgid "Defines the TCP port that the server listens on for status requests."
 msgstr "Define el puerto TCP que el servidor escucha las solicitudes de estado."
 
-#: burpui/misc/parser/doc.py:842
+#: burpui/misc/parser/doc.py:846
 msgid "Log to stdout. Defaults to on."
 msgstr "Log a la salida estándar (stdout). Por defecto es encendido."
 
-#: burpui/misc/parser/doc.py:843
+#: burpui/misc/parser/doc.py:847
 msgid ""
 "When backing up Windows computers with burp protocol 1, this option "
 "allows you to prevent the VSS header data being backed up. The default is"
@@ -1219,11 +1226,11 @@ msgstr ""
 "que no tiene información de VSS en Windows, es necesario dar al cliente "
 "la opción de línea de comandos '-x'."
 
-#: burpui/misc/parser/doc.py:849
+#: burpui/misc/parser/doc.py:853
 msgid "Log to syslog. Defaults to off."
 msgstr "Log a syslog. El valor predeterminado es off."
 
-#: burpui/misc/parser/doc.py:850
+#: burpui/misc/parser/doc.py:854
 msgid ""
 "A user-definable argument to the timer script.You can have many of these."
 " The timer_arg options can be overridden by the client configuration "
@@ -1233,7 +1240,7 @@ msgstr ""
 "muchos de estos. Las opciones timer_arg pueden ser sobrescritos por los "
 "archivos de configuración del cliente en clientconfdir en el servidor."
 
-#: burpui/misc/parser/doc.py:854
+#: burpui/misc/parser/doc.py:858
 msgid ""
 "Path to the script to run when a client connects with the timed backup "
 "option. If the script exits with code 0, a backup will run. The first two"
@@ -1253,7 +1260,7 @@ msgstr ""
 "el cliente en los archivos de configuración clientconfdir en el servidor."
 " "
 
-#: burpui/misc/parser/doc.py:864
+#: burpui/misc/parser/doc.py:868
 #, python-format
 msgid ""
 "This allows you to tweak the format of the timestamps of individual "
@@ -1265,13 +1272,13 @@ msgstr ""
 " disponibles. Si esta opción no está definida, burp utiliza   \"%Y-%m-%d "
 "%H:%M:%S\"."
 
-#: burpui/misc/parser/doc.py:869
+#: burpui/misc/parser/doc.py:873
 msgid "Set the file creation umask. Default is 0022."
 msgstr ""
 "Ajuste la máscara de usuario de creación del archivo (umask). El valor "
 "predeterminado es 0022."
 
-#: burpui/misc/parser/doc.py:870
+#: burpui/misc/parser/doc.py:874
 msgid ""
 "Run as a particular user. This can be overridden by the client "
 "configuration files in clientconfdir on the server."
@@ -1280,7 +1287,7 @@ msgstr ""
 "los archivos de configuración del cliente en clientconfdir en el "
 "servidor."
 
-#: burpui/misc/parser/doc.py:873
+#: burpui/misc/parser/doc.py:877
 msgid ""
 "When this is on, which is the default, a warning will be issued when the "
 "client version does not match the server version. This option can be "
@@ -1292,7 +1299,7 @@ msgstr ""
 "servidor. Esta opción puede ser sobrescrita por los archivos de "
 "configuración del cliente en clientconfdir en el servidor."
 
-#: burpui/misc/parser/doc.py:878
+#: burpui/misc/parser/doc.py:882
 msgid ""
 "When backing up Windows computers, this option allows you to specify "
 "which drives have VSS snapshots taken of them. If you omit this option, "
@@ -1305,7 +1312,7 @@ msgstr ""
 "opciones 'include'. Si desea que no hay unidades para tener instantáneas,"
 " puede especificar 0."
 
-#: burpui/misc/parser/doc.py:884
+#: burpui/misc/parser/doc.py:888
 msgid ""
 "This option tells the server what to do when it finds the working "
 "directory of an interrupted backup (perhaps somebody pulled the plug on "
@@ -1738,6 +1745,7 @@ msgid "source config"
 msgstr ""
 
 #: burpui/templates/settings.html:229 burpui/templates/user.html:59
+#: burpui/templates/user.html:93
 msgid "Submit"
 msgstr "Ingresar"
 
@@ -1770,8 +1778,8 @@ msgstr "Usuarios"
 msgid "Settings"
 msgstr "Ajustes"
 
-#: burpui/templates/sideadmin.html:7 burpui/templates/sideuser.html:8
-#: burpui/templates/user.html:68
+#: burpui/templates/sideadmin.html:7 burpui/templates/sideuser.html:7
+#: burpui/templates/user.html:101
 msgid "ACL"
 msgstr "ACL"
 
@@ -1883,6 +1891,10 @@ msgstr "Revocar"
 msgid "Current password"
 msgstr "Contraseña actual"
 
+#: burpui/templates/user.html:40 burpui/templates/user.html:47
+msgid "Required"
+msgstr ""
+
 #: burpui/templates/user.html:43 burpui/templates/user.html:45
 msgid "New password"
 msgstr "Nueva contraseña"
@@ -1895,35 +1907,61 @@ msgstr "Confirmar contraseña"
 msgid "New password (confirm)"
 msgstr "Nueva contraseña (confirmar):"
 
-#: burpui/templates/user.html:58 burpui/templates/user.html:90
+#: burpui/templates/user.html:54
+msgid "Passwords mismatch"
+msgstr ""
+
+#: burpui/templates/user.html:58 burpui/templates/user.html:92
+#: burpui/templates/user.html:122
 msgid "Cancel"
 msgstr "Cancelar"
 
-#: burpui/templates/user.html:82
+#: burpui/templates/user.html:66
+msgid "UI Settings"
+msgstr ""
+
+#: burpui/templates/user.html:68
+msgid "Items per page"
+msgstr ""
+
+#: burpui/templates/user.html:84
+msgid "Date format"
+msgstr ""
+
+#: burpui/templates/user.html:86
+msgid "Defaults to 'llll'"
+msgstr ""
+
+#: burpui/templates/user.html:88
+#, python-format
+msgid "See <a href=\"%(url)s\">here</a> for available formats"
+msgstr ""
+
+#: burpui/templates/user.html:114
 msgid "You are about to revoke a session, are you sure?"
 msgstr "Usted está a punto de revocar una sesión, ¿está seguro?"
 
-#: burpui/templates/user.html:86
+#: burpui/templates/user.html:118
 msgid "Warning!"
 msgstr "¡Advertencia!"
 
-#: burpui/templates/user.html:86
+#: burpui/templates/user.html:118
 msgid "You are about to revoke your <strong>current</strong> session."
 msgstr "Vas a revocar su <strong> actual </ strong> sesión."
 
-#: burpui/templates/user.html:91
+#: burpui/templates/user.html:123
 msgid "Confirm"
 msgstr "Confirmar"
 
-#: burpui/templates/js/client-browse.js:126
+#: burpui/templates/js/client-browse.js:118
 msgid "Colapse tree"
 msgstr "Colapsar árbol"
 
-#: burpui/templates/js/client-browse.js:307
+#: burpui/templates/js/client-browse.js:298
 msgid "Loading"
 msgstr "Cargando"
 
-#: burpui/templates/js/client-browse.js:313
+#: burpui/templates/js/client-browse.js:304
 msgid "Nodes loaded"
 msgstr "Nodos cargados"
 
@@ -1958,6 +1996,18 @@ msgstr "nunca"
 #: burpui/templates/js/clients.js:22
 msgid "now"
 msgstr "ahora"
+
+#: burpui/templates/js/user.js:73
+msgid "Preferences successfuly saved"
+msgstr ""
+
+#: burpui/templates/js/user.js:442 burpui/templates/js/user.js:455
+msgid "clients"
+msgstr ""
+
+#: burpui/templates/js/user.js:444 burpui/templates/js/user.js:462
+msgid "servers"
+msgstr ""
 
 #~ msgid "overview"
 #~ msgstr "Descripción general"

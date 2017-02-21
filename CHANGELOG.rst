@@ -11,6 +11,7 @@ Current
 - Add: `OS detection for burp 2 <https://git.ziirish.me/ziirish/burp-ui/issues/200>`_
 - Add: persistent storage for user preferences if SQL storage enabled
 - Add: rate-limiting of the API
+- Improvement: speedup the calendar view
 - Improvement: more complete user panel (`#185 <https://git.ziirish.me/ziirish/burp-ui/issues/185>`_, `#184 <https://git.ziirish.me/ziirish/burp-ui/issues/184>`_, `#182 <https://git.ziirish.me/ziirish/burp-ui/issues/182>`_)
 - Fix: issue `#186 <https://git.ziirish.me/ziirish/burp-ui/issues/186>`_
 - Fix: issue `#192 <https://git.ziirish.me/ziirish/burp-ui/issues/192>`_

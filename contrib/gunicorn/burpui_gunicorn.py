@@ -79,9 +79,7 @@ worker_connections = 1000
 timeout = 300
 keepalive = 2
 
-# Set this to False when using a MySQL database because the MySQL driver does
-# not play nicely with concurrency
-preload = True
+preload = False
 
 #
 #   spew - Install a trace function that spews every line of Python

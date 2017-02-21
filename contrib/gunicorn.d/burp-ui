@@ -1,7 +1,7 @@
 CONFIG = {
     'working_dir': '/',
     'args': (
-        '--preload',
+#        '--preload',
         '--bind=0.0.0.0:5000',
         '--user=burpui',
         '--group=burpui',

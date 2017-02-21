@@ -4,7 +4,7 @@ CONFIG = {
         '--user=burpui',
         '--group=burpui',
         '--workers=5',
-        '--preload',
+#        '--preload',
         '--worker-class=gevent',
         '--access-logfile=/var/log/gunicorn/burp-ui_access.log',
         '--error-logfile=/var/log/gunicorn/burp-ui_error.log',
