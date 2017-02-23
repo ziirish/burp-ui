@@ -13,7 +13,17 @@
             {% endif -%}
           </ul>
           <br />
-          <h1 class="page-header">Calendar{% if cname %} of {{ cname }}{% if server %} on {{ server }}{% endif %}{% elif server %} of {{ server }}{% endif %}</h1>
+          <h1 class="page-header">
+            {% if server and client %}
+            {{ _('Calendar of %(client)s on %(server)s', client=cname, server=server) }}
+            {% elif client %}
+            {{ _('Calendar of %(client)s', client=cname) }}
+            {% elif server %}
+            {{ _('Calendars of %(server)s', server=server) }}
+            {% else %}
+            {{ _('Calendars') }}
+            {% endif %}
+          </h1>
           <div id='calendar'></div>
         </div>
 {% endblock %}

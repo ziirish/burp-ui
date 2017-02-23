@@ -309,6 +309,7 @@ def utc_to_local(timestamp):
     try:
         import arrow
         from tzlocal import get_localzone
+        # 1487607525 -> 1487611125
         utc = arrow.get(datetime.datetime.fromtimestamp(timestamp))
         local = utc.to(str(get_localzone()))
         return local.timestamp

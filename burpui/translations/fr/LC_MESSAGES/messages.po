@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2017-02-20 17:33+0100\n"
+"POT-Creation-Date: 2017-02-23 21:33+0100\n"
 "PO-Revision-Date: 2016-08-25 15:19+0200\n"
 "Last-Translator: Ziirish <hi+burpui@ziirish.me>\n"
 "Language: fr\n"
@@ -18,11 +18,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.3.4\n"
 
-#: burpui/app.py:544
+#: burpui/app.py:546
 msgid "Please log in to access this page."
 msgstr "Veuillez vous authentifier pour accéder à cette page."
 
-#: burpui/app.py:547
+#: burpui/app.py:549
 msgid "Please reauthenticate to access this page."
 msgstr "Veuillez vous ré-authentifier pour accéder à cette page."
 
@@ -1079,9 +1079,32 @@ msgstr "Scannés"
 msgid "Calendar"
 msgstr "Calendrier"
 
+#: burpui/templates/calendar.html:18
+#, python-format
+msgid "Calendar of %(client)s on %(server)s"
+msgstr "Calendrier de %(client)s sur %(server)s"
+
+#: burpui/templates/calendar.html:20
+#, python-format
+msgid "Calendar of %(client)s"
+msgstr "Calendrier de %(client)s"
+
+#: burpui/templates/calendar.html:22
+#, python-format
+msgid "Calendars of %(server)s"
+msgstr "Calendriers de %(server)s"
+
+#: burpui/templates/calendar.html:24
+msgid "Calendars"
+msgstr "Calendriers"
+
 #: burpui/templates/client-browse.html:24
 msgid "filter..."
 msgstr "filtrer..."
+
+#: burpui/templates/client-browse.html:27
+msgid "options"
+msgstr "options"
 
 #: burpui/templates/client-browse.html:31
 msgid "Hide unmatched nodes"
@@ -1123,8 +1146,29 @@ msgid "Loading, Please wait..."
 msgstr "Chargement, veuillez patienter..."
 
 #: burpui/templates/client-browse.html:58
+msgid "mode"
+msgstr "mode"
+
+#: burpui/templates/client-browse.html:58
+msgid "UID"
+msgstr "UID"
+
+#: burpui/templates/client-browse.html:58
+msgid "GID"
+msgstr "GID"
+
+#: burpui/templates/client-browse.html:58
 msgid "Size"
 msgstr "Taille"
+
+#: burpui/templates/client-browse.html:58 burpui/templates/client.html:22
+#: burpui/templates/client.html:33
+msgid "Date"
+msgstr "Date"
+
+#: burpui/templates/client-browse.html:78
+msgid "Information"
+msgstr "Information"
 
 #: burpui/templates/client-browse.html:81
 msgid ""
@@ -1215,10 +1259,6 @@ msgstr "Sauvegardes"
 #: burpui/templates/client.html:21 burpui/templates/client.html:32
 msgid "Number"
 msgstr "Numéro"
-
-#: burpui/templates/client.html:22 burpui/templates/client.html:33
-msgid "Date"
-msgstr "Date"
 
 #: burpui/templates/client.html:23 burpui/templates/client.html:34
 #: burpui/templates/live-monitor.html:56 burpui/templates/live-monitor.html:62

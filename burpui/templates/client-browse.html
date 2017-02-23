@@ -24,7 +24,7 @@
                   <input type="text" class="form-control" placeholder="{{ _('filter...') }}" name="search-tree" autocomplete="off">
                   <div class="input-group-btn">
                     <button class="btn btn-default dropdown-toggle" data-toggle="dropdown" type="button">
-                      <span class="glyphicon glyphicon-cog"></span> options
+                      <span class="glyphicon glyphicon-cog"></span> {{ _('options') }}
                       <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu browse">
@@ -55,7 +55,7 @@
             <table id="tree" class="table">
               <thead>
                 <tr>
-                  <th></th><th>mode</th><th>UID</th><th>GID</th><th>{{ _('Size') }}</th><th>Date</th>
+                  <th></th><th>{{ _('mode') }}</th><th>{{ _('UID') }}</th><th>{{ _('GID') }}</th><th>{{ _('Size') }}</th><th>{{ _('Date') }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -75,7 +75,7 @@
                 <div id="notice">
                   <div class="panel panel-warning">
                     <div class="panel-heading">
-                      <h3 class="panel-title"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;Information</h3>
+                      <h3 class="panel-title"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;{{ _('Information') }}</h3>
                     </div>
                     <div class="panel-body">
                       {{ _('This backup is encrypted, please provide the encryption password in order to perform an online restoration.') }}

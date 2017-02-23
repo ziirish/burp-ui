@@ -74,8 +74,10 @@ def create_db(myapp, cli=False, unittest=False, create=True):
                     not cli and not unittest:
                 if create:
                     import subprocess
+                    local = os.path.join(os.getcwd(), '..', 'bui-manage')
+                    buimanage = local if os.path.exists(local) else 'bui-manage'
                     cmd = [
-                        'bui-manage',
+                        buimanage,
                         '-c',
                         myapp.config['CFG'],
                         'db',
