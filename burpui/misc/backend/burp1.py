@@ -63,6 +63,10 @@ class Burp(BUIbackend):
                   purpose)
     :type dummy: boolean
     """
+
+    # backend version
+    _vers = 1
+
     states = {
         'i': 'idle',
         'r': 'running',
@@ -1138,3 +1142,7 @@ class Burp(BUIbackend):
         """See :func:`burpui.misc.backend.interface.BUIbackend.del_file`"""
         # only used by the multi backend. We do nothing
         return path
+
+    def version(self, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.version`"""
+        return self._vers

@@ -57,7 +57,9 @@ class Burp(Burp1):
     :type conf: :class:`burpui.config.BUIConfig`
     """
 
-    # chache to store the guessed OS
+    # backend version
+    _vers = 2
+    # cache to store the guessed OS
     _os_cache = {}
 
     def __init__(self, server=None, conf=None):

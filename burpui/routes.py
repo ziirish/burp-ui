@@ -356,7 +356,9 @@ def client(server=None, name=None):
     """Specific client overview"""
     c = name or request.args.get('name')
     server = server or request.args.get('serverName')
-    if bui.client.is_backup_running(c, agent=server):
+    # burp 2 allows to browse backups will backing up whereas burp 1 does not
+    if bui.client.version(server) == 1 and \
+            bui.client.is_backup_running(c, agent=server):
         return redirect(url_for('.live_monitor', name=c, server=server))
     return render_template(
         'client.html',
