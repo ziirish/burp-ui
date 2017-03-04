@@ -18,6 +18,10 @@
     {% if not report -%}
     <link href="{{ url_for('bower.static', filename='datatables.net-bs/css/dataTables.bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ url_for('bower.static', filename='datatables.net-responsive-bs/css/responsive.bootstrap.min.css') }}" rel="stylesheet">
+      {% if me -%}
+    <link href="{{ url_for('bower.static', filename='datatables.net-select-bs/css/select.bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('bower.static', filename='datatables.net-buttons-bs/css/buttons.bootstrap.min.css') }}" rel="stylesheet">
+      {% endif -%}
     {% endif -%}
     {% if tree -%}
     <link href="{{ url_for('bower.static', filename='jquery.fancytree/dist/skin-bootstrap/ui.fancytree.min.css') }}" rel="stylesheet">
@@ -78,8 +82,13 @@
     ================================================== -->
     <script src="{{ url_for('bower.static', filename='datatables.net/js/jquery.dataTables.min.js') }}"></script>
     <script src="{{ url_for('bower.static', filename='datatables.net-bs/js/dataTables.bootstrap.min.js') }}"></script>
-    <script src="{{ url_for('bower.static', filename='datatables.net-responsive/js/dataTables.responsive.js') }}"></script>
-    <script src="{{ url_for('bower.static', filename='datatables.net-responsive-bs/js/responsive.bootstrap.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='datatables.net-responsive/js/dataTables.responsive.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='datatables.net-responsive-bs/js/responsive.bootstrap.min.js') }}"></script>
+      {% if me -%}
+    <script src="{{ url_for('bower.static', filename='datatables.net-select/js/dataTables.select.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='datatables.net-buttons/js/dataTables.buttons.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='datatables.net-buttons-bs/js/buttons.bootstrap.min.js') }}"></script>
+      {% endif -%}
     {% endif -%}
     {% if about or live or settings or ng_controller -%}
     <!-- configuration angular views

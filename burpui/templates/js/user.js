@@ -58,7 +58,7 @@ app.controller('UserCtrl', function($timeout, $scope, $http, $scrollspy) {
 		var form = $(e.target);
 		var submit = form.find('button[type="submit"]');
 		var sav = submit.text();
-		submit.text('Saving...');
+		submit.text('{{ _("Saving...") }}');
 		submit.attr('disabled', true);
 		table.page.len($scope.prefs.pageLength).draw();
 		/* submit the data */
@@ -167,6 +167,9 @@ var _sessions_table = $('#table-sessions').dataTable( {
 	{{ macros.translate_datatable() }}
 	{{ macros.get_page_length() }}
 	responsive: true,
+	select: {
+		style: 'os',
+	},
 	ajax: {
 		url: '{{ url_for("api.user_sessions") }}',
 		headers: { 'X-From-UI': true },
@@ -175,75 +178,112 @@ var _sessions_table = $('#table-sessions').dataTable( {
 			return data;
 		}
 	},
+	dom: "<'row'<'col-sm-6'l><'col-sm-6'f>>" +
+		"<'row'<'col-sm-12'tr>>" +
+		"<'row'<'col-sm-5'><'col-sm-7'p>>" +
+		"<'row'<'col-sm-5'i>>" +
+		"<'row'B>",
+	buttons: [
+		'selectAll',
+		'selectNone',
+		{
+			text: '{{ _("Revoke selected") }}&nbsp;<span class="glyphicon glyphicon-trash"></span>',
+			className: 'btn-danger',
+			action: function (e, dt, node, config ) {
+				var rows = dt.rows( { selected: true } ).data();
+				var current = false;
+				var output = '';
+				$.each(rows, function(i, row) {
+					output += JSON.stringify(row, null, 4)+'\n';
+					if (row.current) {
+						current = true;
+					}
+				});
+				if (current) {
+					$('#error-confirm').show();
+				} else {
+					$('#error-confirm').hide();
+				}
+				$('#session-details').empty().text(output);
+				$('#perform-revoke').data('multi', true);
+				$('#confirmation-modal').modal('toggle');
+			},
+			enabled: false
+		}
+	],
 	order: [[1, 'desc']],
 	destroy: true,
-	/*
-	rowCallback: function( row, data ) {
-		// do nothing
-	},
-	*/
 	columns: [
 		{ data: 'ip' },
 		{
-			data: null,
+			data: 'timestamp',
 			type: 'timestamp',
 			render: function( data, type, row ) {
-				return '<span data-toggle="tooltip" title="'+data.timestamp+'">'+moment(data.timestamp, moment.ISO_8601).subtract(3, 'seconds').fromNow()+'</span>';
+				if (type === 'filter') {
+					return data;
+				}
+				return '<span data-toggle="tooltip" title="'+data+'">'+moment(data, moment.ISO_8601).subtract(3, 'seconds').fromNow()+'</span>';
 			}
 		},
 		{ 
-			data: null,
+			data: 'ua',
 			render: function( data, type, row ) {
+				if (type === 'filter' || type === 'sort') {
+					return data;
+				}
 				ret = '';
 				// Browser version
-				if (data.ua.lastIndexOf('MSIE') > 0 || data.ua.lastIndexOf('Trident') > 0) {
+				if (data.lastIndexOf('MSIE') > 0 || data.lastIndexOf('Trident') > 0) {
 					ret += '<i class="fa fa-internet-explorer" aria-hidden="true"></i>';
-				} else if (data.ua.lastIndexOf('Edge') > 0) {
+				} else if (data.lastIndexOf('Edge') > 0) {
 					ret += '<i class="fa fa-edge" aria-hidden="true"></i>';
-				} else if (/Firefox[\/\s](\d+\.\d+)/.test(data.ua)) {
+				} else if (/Firefox[\/\s](\d+\.\d+)/.test(data)) {
 					ret += '<i class="fa fa-firefox" aria-hidden="true"></i>';
-				} else if (data.ua.lastIndexOf('Chrome/') > 0) {
+				} else if (data.lastIndexOf('Chrome/') > 0) {
 					ret += '<i class="fa fa-chrome" aria-hidden="true"></i>';
-				} else if (data.ua.lastIndexOf('Safari/') > 0) {
+				} else if (data.lastIndexOf('Safari/') > 0) {
 					ret += '<i class="fa fa-safari" aria-hidden="true"></i>';
 				} else {
 					ret += '<i class="fa fa-question" aria-hidden="true"></i>';
 				}
 				// Optionally add OS version
-				if (data.ua.lastIndexOf('Android') > 0) {
+				if (data.lastIndexOf('Android') > 0) {
 					ret += '&nbsp;<i class="fa fa-android" aria-hidden="true"></i>';
-				} else if (data.ua.lastIndexOf('iPhone') > 0 || data.ua.lastIndexOf('iPad') > 0 || data.ua.lastIndexOf('Macintosh') > 0) {
+				} else if (data.lastIndexOf('iPhone') > 0 || data.lastIndexOf('iPad') > 0 || data.lastIndexOf('Macintosh') > 0) {
 					ret += '&nbsp;<i class="fa fa-apple" aria-hidden="true"></i>';
-					if (data.ua.lastIndexOf('iPhone') > 0) {
+					if (data.lastIndexOf('iPhone') > 0) {
 						ret += '&nbsp;<i class="fa fa-mobile" aria-hidden="true"></i>';
-					} else if (data.ua.lastIndexOf('iPad') > 0) {
+					} else if (data.lastIndexOf('iPad') > 0) {
 						ret += '&nbsp;<i class="fa fa-tablet" aria-hidden="true"></i>';
 					}
-				} else if (data.ua.lastIndexOf('Linux') > 0) {
+				} else if (data.lastIndexOf('Linux') > 0) {
 					ret += '&nbsp;<i class="fa fa-linux" aria-hidden="true"></i>';
-				} else if (data.ua.lastIndexOf('Windows') > 0) {
+				} else if (data.lastIndexOf('Windows') > 0) {
 					ret += '&nbsp;<i class="fa fa-windows" aria-hidden="true"></i>';
 				}
-				return '<span data-toggle="tooltip" title="'+data.ua+'">'+ret+'</span>';
+				return '<span data-toggle="tooltip" title="'+data+'">'+ret+'</span>';
 			}
 		},
 		{
-			data: null,
+			data: 'api',
 			render: function( data, type, row ) {
-				return '<span class="glyphicon glyphicon-'+(data.api?'ok':'remove')+'"></span>';
+				return '<span class="glyphicon glyphicon-'+(data?'ok':'remove')+'"></span>';
 			}
 		},
 		{
-			data: null,
+			data: 'current',
 			render: function( data, type, row ) {
-				return '<span class="glyphicon glyphicon-'+(data.current?'ok':'remove')+'"></span>';
+				return '<span class="glyphicon glyphicon-'+(data?'ok':'remove')+'"></span>';
 			}
 		},
 		{
-			data: null,
+			data: 'expire',
 			type: 'timestamp',
 			render: function( data, type, row ) {
-				return '<span data-toggle="tooltip" title="'+data.expire+'">'+moment(data.expire, moment.ISO_8601).fromNow()+'</span>';
+				if (type === 'filter') {
+					return data;
+				}
+				return '<span data-toggle="tooltip" title="'+data+'">'+moment(data, moment.ISO_8601).fromNow()+'</span>';
 			}
 		},
 		{
@@ -255,6 +295,14 @@ var _sessions_table = $('#table-sessions').dataTable( {
 	],
 });
 var first = true;
+
+var select_event = function( e, dt, type, indexes ) {
+	var selectedRows = _sessions_table.api().rows( { selected: true } ).count();
+	_sessions_table.api().button( 2 ).enable( selectedRows > 0 );
+};
+
+_sessions_table.on('select.dt', select_event);
+_sessions_table.on('deselect.dt', select_event);
 
 var _sessions = function() {
 	if (first) {
@@ -285,22 +333,44 @@ _sessions_table.on('responsive-display.dt', function ( e, datatable, row, showHi
 });
 {{ macros.page_length('#table-sessions') }}
 
-$('#perform-revoke').on('click', function(e) {
-	$me = $(this);
-	if ($me.data('current')) {
-		window.location = '{{ url_for("view.logout") }}';
-		return;
-	}
-	$.ajax({
-		url: '{{ url_for("api.user_sessions") }}/'+$me.data('id'),
+var revoke_session = function(id, refresh) {
+	 return $.ajax({
+		url: '{{ url_for("api.user_sessions") }}/'+id,
 		headers: { 'X-From-UI': true },
 		type: 'DELETE'
 	}).done(function(data) {
 		notifAll(data);
-		if (data[0] == NOTIF_SUCCESS) {
+		if (refresh && data[0] == NOTIF_SUCCESS) {
 			_sessions();
 		}
 	}).fail(myFail);
+};
+
+$('#perform-revoke').on('click', function(e) {
+	$me = $(this);
+	if ($me.data('multi')) {
+		var rows = _sessions_table.api().rows( { selected: true } ).data();
+		var current = undefined;
+		var last;
+		$.each(rows, function(i, row) {
+			if (row.current) {
+				current = row;
+				return;
+			}
+			last = revoke_session(row.uuid, false);
+		});
+		if (current) {
+			window.location = '{{ url_for("view.logout") }}';
+			return;
+		}
+		last.done(function() { _sessions(); });
+		return;
+	}
+	if ($me.data('current')) {
+		window.location = '{{ url_for("view.logout") }}';
+		return;
+	}
+	revoke_session($me.data('id'), true);
 });
 
 // adapted from http://bl.ocks.org/d3noob/8375092
