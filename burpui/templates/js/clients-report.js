@@ -4,7 +4,10 @@ var _charts_obj = [];
 var initialized = false;
 
 var _clients = function() {
+	var limit, aggreg;
 	if (!initialized) {
+		limit = 8;
+		aggreg = 'number';
 		$.each(_charts, function(i, j) {
 			tmp =  nv.models.pieChart()
 				.x(function(d) { return d.label })
@@ -23,13 +26,16 @@ var _clients = function() {
 
 			_charts_obj.push({ 'key': 'chart_'+j, 'obj': tmp, 'data': [] });
 		});
+	} else {
+		limit = $('#limit').val();
+		aggreg = $('#aggreg').val();
 	}
 	{% if config.WITH_CELERY -%}
 	url = '{{ url_for("api.async_clients_report", server=server) }}';
 	{% else -%}
 	url = '{{ url_for("api.clients_report", server=server) }}';
 	{% endif -%}
-	$.getJSON(url, function(d) {
+	$.getJSON(url, {limit: limit, aggregation: aggreg}, function(d) {
 		rep = [];
 		size = [];
 		files = [];

@@ -192,7 +192,7 @@ class ClientsReport(Resource):
     parser = ns.parser()
     parser.add_argument('serverName', help='Which server to collect data from when in multi-agent mode')
     parser.add_argument('limit', type=int, default=8, help='Number of elements to return')
-    parser.add_argument('aggregation', help='What aggregation to operate', default='number', choices=('number', 'files', 'size'))
+    parser.add_argument('aggregation', help='What aggregation to operate', default='number', choices=('number', 'files', 'size', 'none'))
 
     translation = {
         'number': 'number',
@@ -299,6 +299,9 @@ class ClientsReport(Resource):
         if limit > 1:
             limit -= 1
             aggregate = True
+        if aggregation == 'none':
+            aggregate = False
+            limit = 0
         # limit the number of elements to return so the graphs stay readable
         if len(backups) > limit and limit > 0:
             if aggregation == 'number':
