@@ -16,7 +16,7 @@ var _client = function() {
 							.margin({bottom: 115, left: 100})
 							;
 
-			tmp.xAxis.showMaxMin(true).tickFormat(function(d) { console.log(d); return d3.time.format('%x %X')(new Date(d)) }).rotateLabels(-45);
+			tmp.xAxis.showMaxMin(true).tickFormat(function(d) { return d3.time.format('%x %X')(new Date(d)) }).rotateLabels(-45);
 
 			tmp.yAxis.tickFormat(d3.format('f'));
 

@@ -200,7 +200,7 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', function($scope, 
 			/* UX tweak: disable the submit button + change text */
 			submit = form.find('button[type="submit"]');
 			sav = submit.text();
-			submit.text('Saving...');
+			submit.text('{{ _("Saving...") }}');
 			submit.attr('disabled', true);
 			/* submit the data */
 			$.ajax({
@@ -266,7 +266,7 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', function($scope, 
 			$scope.new[type] = undefined;
 		}
 		$scope.add[type] = true;
-		keys = _.pluck($scope[type], 'name');
+		keys = _.map($scope[type], 'name');
 		diff = _.difference($scope.all[type], keys);
 		$scope.avail[type] = [];
 		_(diff).forEach(function(n) {
