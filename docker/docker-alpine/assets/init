@@ -78,21 +78,6 @@ appStart () {
     exit 1
   }
 
-  #[ ! -e "$ssl_cert_ca" -a ! -e "$ssl_cert" -a ! -e "$ssl_key" ] && {
-  #  # pre-generate burp certs because of https://github.com/grke/burp/issues/512
-  #  TMPFILE=$(mktemp)
-  #  /usr/sbin/burp -c $BURP_CLIENT_CONFIG -a l 2>&1 >$TMPFILE || {
-  #    echo "Unable to contact burp server"
-  #    exit 2
-  #  }
-  #  for file in $(grep "Could not find ssl" $TMPFILE | cut -d' ' -f8 | sed "s/:$//")
-  #  do
-  #    chgrp burpui $file
-  #    chmod g+rw $file
-  #  done
-  #  rm $TMPFILE
-  #}
-
   # start supervisord
   /usr/bin/supervisord -c /etc/supervisord.conf
 
@@ -127,7 +112,7 @@ appStop() {
 
 appHelp () {
   echo "Available options:"
-  echo " app:start          - Starts the gitlab server (default)"
+  echo " app:start          - Starts the burp-ui server (default)"
   echo " app:help           - Displays the help"
   echo " [command]          - Execute the specified linux command eg. bash."
 }

@@ -37,7 +37,7 @@ appStop() {
 
 appHelp () {
   echo "Available options:"
-  echo " app:start          - Starts the gitlab server (default)"
+  echo " app:start          - Starts the burp-ui server (default)"
   echo " app:help           - Displays the help"
   echo " [command]          - Execute the specified linux command eg. bash."
 }
