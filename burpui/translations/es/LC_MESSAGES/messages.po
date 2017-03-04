@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2017-02-23 21:33+0100\n"
+"POT-Creation-Date: 2017-03-04 18:38+0100\n"
 "PO-Revision-Date: 2017-01-14 17:32-0300\n"
 "Last-Translator: Pablo Estigarribia <pablodav@gmail.com>\n"
 "Language: es\n"
@@ -52,15 +52,15 @@ msgstr "Lo sentimos, no hay respaldos en progreso."
 msgid "Sorry, there are no restore file found for this client"
 msgstr "Lo sentimos, no hay archivo de restore encontrado para este cliente"
 
-#: burpui/routes.py:412
+#: burpui/routes.py:414
 msgid "Logged in successfully"
 msgstr "Sesión iniciada con éxito"
 
-#: burpui/routes.py:422
+#: burpui/routes.py:424
 msgid "Wrong username or password"
 msgstr "El nombre de usuario o la contraseña son incorrectos."
 
-#: burpui/routes.py:424
+#: burpui/routes.py:426
 msgid "Wrong CSRF token, please try again"
 msgstr "Token CSRF incorrecto, por favor intente de nuevo"
 
@@ -1565,6 +1565,7 @@ msgid "Restore files on an other client"
 msgstr "Restaurar archivos en otro cliente"
 
 #: burpui/templates/client-browse.html:109
+#: burpui/templates/clients-report.html:35
 msgid "none"
 msgstr "ninguno"
 
@@ -1651,21 +1652,45 @@ msgstr "Cancelar respaldo"
 msgid "Global server report"
 msgstr ""
 
+#: burpui/templates/clients-report.html:19
+msgid "Number of clients to display"
+msgstr ""
+
 #: burpui/templates/clients-report.html:21
+msgid "All"
+msgstr ""
+
+#: burpui/templates/clients-report.html:33
+msgid "Aggregate by"
+msgstr ""
+
+#: burpui/templates/clients-report.html:35
+msgid "number of backups"
+msgstr ""
+
+#: burpui/templates/clients-report.html:35
+msgid "number of files"
+msgstr ""
+
+#: burpui/templates/clients-report.html:35
+msgid "used space"
+msgstr ""
+
+#: burpui/templates/clients-report.html:51
 msgid "Clients repartition"
 msgstr ""
 
-#: burpui/templates/clients-report.html:27
+#: burpui/templates/clients-report.html:57
 #: burpui/templates/servers-report.html:22
 msgid "Used space"
 msgstr ""
 
-#: burpui/templates/clients-report.html:33
+#: burpui/templates/clients-report.html:63
 #: burpui/templates/servers-report.html:28
 msgid "Total files"
 msgstr ""
 
-#: burpui/templates/clients-report.html:39
+#: burpui/templates/clients-report.html:69
 #: burpui/templates/servers-report.html:34
 msgid "Number of backups"
 msgstr ""
@@ -1719,6 +1744,27 @@ msgstr ""
 #: burpui/templates/login.html:7
 msgid "Login"
 msgstr "Iniciar Sesión"
+
+#: burpui/templates/macros.html:125
+#, python-format
+msgid "You have selected %%d rows"
+msgstr ""
+
+#: burpui/templates/macros.html:126
+msgid "Click a row to select it (hold ctrl to select several)"
+msgstr ""
+
+#: burpui/templates/macros.html:127
+msgid "You have selected 1 row"
+msgstr ""
+
+#: burpui/templates/macros.html:131
+msgid "Select all"
+msgstr ""
+
+#: burpui/templates/macros.html:132
+msgid "Deselect all"
+msgstr ""
 
 #: burpui/templates/notifications.html:18
 msgid ""
@@ -2037,15 +2083,23 @@ msgstr "nunca"
 msgid "now"
 msgstr "ahora"
 
+#: burpui/templates/js/settings.js:203 burpui/templates/js/user.js:61
+msgid "Saving..."
+msgstr ""
+
 #: burpui/templates/js/user.js:73
 msgid "Preferences successfuly saved"
 msgstr ""
 
-#: burpui/templates/js/user.js:442 burpui/templates/js/user.js:455
+#: burpui/templates/js/user.js:190
+msgid "Revoke selected"
+msgstr ""
+
+#: burpui/templates/js/user.js:512 burpui/templates/js/user.js:525
 msgid "clients"
 msgstr ""
 
-#: burpui/templates/js/user.js:444 burpui/templates/js/user.js:462
+#: burpui/templates/js/user.js:514 burpui/templates/js/user.js:532
 msgid "servers"
 msgstr ""
 
