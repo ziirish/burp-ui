@@ -185,11 +185,25 @@ var _sessions_table = $('#table-sessions').dataTable( {
 		"<'row'B>",
 	buttons: [
 		'selectAll',
+		{
+			text: '{{ _("Select all filtered") }}&nbsp;<i class="fa fa-filter" aria-hidden="true"></i>&nbsp;<i class="fa fa-check-square-o" aria-hidden="true"></i>',
+			extend: 'selectAll',
+			action: function ( e, dt, node, config ) {
+				dt.rows( { search: 'applied' } ).select();
+			}
+		},
 		'selectNone',
+		{
+			text : '{{ _("Deselect all filtered") }}&nbsp;<i class="fa fa-filter" aria-hidden="true"></i>&nbsp;<i class="fa fa-square-o" aria-hidden="true"></i>',
+			extend: 'selectNone',
+			action: function ( e, dt, node, config ) {
+				dt.rows( { search: 'applied' } ).deselect();
+			}
+		},
 		{
 			text: '{{ _("Revoke selected") }}&nbsp;<span class="glyphicon glyphicon-trash"></span>',
 			className: 'btn-danger',
-			action: function (e, dt, node, config ) {
+			action: function ( e, dt, node, config ) {
 				var rows = dt.rows( { selected: true } ).data();
 				var current = false;
 				var output = '';
@@ -296,14 +310,6 @@ var _sessions_table = $('#table-sessions').dataTable( {
 });
 var first = true;
 
-var select_event = function( e, dt, type, indexes ) {
-	var selectedRows = _sessions_table.api().rows( { selected: true } ).count();
-	_sessions_table.api().button( 2 ).enable( selectedRows > 0 );
-};
-
-_sessions_table.on('select.dt', select_event);
-_sessions_table.on('deselect.dt', select_event);
-
 var _sessions = function() {
 	if (first) {
 		first = false;
@@ -312,7 +318,7 @@ var _sessions = function() {
 	}
 };
 
-_events_callback = function() {
+var _events_callback = function() {
 	$('[data-toggle="tooltip"]').tooltip();
 	$('[data-toggle="revoke-session"]').on('click', function(e) {
 		$me = $(this);
@@ -327,6 +333,14 @@ _events_callback = function() {
 		$('#confirmation-modal').modal('toggle');
 	});
 };
+
+var select_event = function( e, dt, type, indexes ) {
+	var selectedRows = _sessions_table.api().rows( { selected: true } ).count();
+	_sessions_table.api().buttons( [3, 4] ).enable( selectedRows > 0 );
+};
+
+_sessions_table.on('select.dt', select_event);
+_sessions_table.on('deselect.dt', select_event);
 _sessions_table.on('draw.dt', _events_callback);
 _sessions_table.on('responsive-display.dt', function ( e, datatable, row, showHide, update ) {
 	_events_callback();

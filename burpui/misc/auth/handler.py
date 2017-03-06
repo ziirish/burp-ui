@@ -127,6 +127,7 @@ class UserHandler(BUIuser):
     def refresh_session(self):
         self.authenticated = session.get('authenticated', False)
         self.language = session.get('language', None)
+        self._load_prefs()
 
     def login(self, passwd=None):
         """See :func:`burpui.misc.auth.interface.BUIuser.login`"""

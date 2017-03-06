@@ -58,7 +58,7 @@ documentation to know everything on how to `Burp-UI`_ through `Gunicorn`_.
 Going further
 -------------
 
-Please refer to the `advanced usage <advanced_usage.html>` page for details on
+Please refer to the `advanced usage <advanced_usage.html>`_ page for details on
 how to use/customize `Burp-UI`_.
 
 
