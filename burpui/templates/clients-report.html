@@ -34,7 +34,7 @@
                 <select name="aggreg" id="aggreg" class="form-control" onchange="_clients()">
                   {% for x,y in (('none', _('none')), ('number', _('number of backups')), ('files', _('number of files')), ('size', _('used space'))) %}
                   {% if (g.aggreg is not none and g.aggreg == x) or x == 'number' %}
-                  <option value"{{ x }}" selected>{{ y }}</option>
+                  <option value="{{ x }}" selected>{{ y }}</option>
                   {% else %}
                   <option value="{{ x }}">{{ y }}</option>
                   {% endif %}
