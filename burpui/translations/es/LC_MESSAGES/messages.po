@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2017-03-04 18:38+0100\n"
+"POT-Creation-Date: 2017-03-07 11:27+0100\n"
 "PO-Revision-Date: 2017-01-14 17:32-0300\n"
 "Last-Translator: Pablo Estigarribia <pablodav@gmail.com>\n"
 "Language: es\n"
@@ -1491,7 +1491,7 @@ msgstr ""
 "archivos en la respaldo"
 
 #: burpui/templates/client-browse.html:43
-msgid "Load all nodes"
+msgid "Fetch all nodes"
 msgstr "Cargar todos los nodos"
 
 #: burpui/templates/client-browse.html:48 burpui/templates/settings.html:17
@@ -1661,7 +1661,7 @@ msgid "All"
 msgstr ""
 
 #: burpui/templates/clients-report.html:33
-msgid "Aggregate by"
+msgid "Sort by"
 msgstr ""
 
 #: burpui/templates/clients-report.html:35
@@ -2091,15 +2091,23 @@ msgstr ""
 msgid "Preferences successfuly saved"
 msgstr ""
 
-#: burpui/templates/js/user.js:190
+#: burpui/templates/js/user.js:189
+msgid "Select all filtered"
+msgstr ""
+
+#: burpui/templates/js/user.js:197
+msgid "Deselect all filtered"
+msgstr ""
+
+#: burpui/templates/js/user.js:204
 msgid "Revoke selected"
 msgstr ""
 
-#: burpui/templates/js/user.js:512 burpui/templates/js/user.js:525
+#: burpui/templates/js/user.js:526 burpui/templates/js/user.js:539
 msgid "clients"
 msgstr ""
 
-#: burpui/templates/js/user.js:514 burpui/templates/js/user.js:532
+#: burpui/templates/js/user.js:528 burpui/templates/js/user.js:546
 msgid "servers"
 msgstr ""
 
@@ -2113,5 +2121,8 @@ msgstr ""
 #~ msgstr "No hay respaldo para este cliente."
 
 #~ msgid "Source configuration files"
+#~ msgstr ""
+
+#~ msgid "Aggregate by"
 #~ msgstr ""
 

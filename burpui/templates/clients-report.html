@@ -30,7 +30,7 @@
             </form>
             <form class="form-inline col-md-4 col-md-offset-4">
               <div class="form-group">
-                <label for="aggreg">{{ _('Aggregate by') }}&nbsp;</label>
+                <label for="aggreg">{{ _('Sort by') }}&nbsp;</label>
                 <select name="aggreg" id="aggreg" class="form-control" onchange="_clients()">
                   {% for x,y in (('none', _('none')), ('number', _('number of backups')), ('files', _('number of files')), ('size', _('used space'))) %}
                   {% if (g.aggreg is not none and g.aggreg == x) or x == 'number' %}

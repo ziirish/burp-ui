@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2017-03-04 18:38+0100\n"
+"POT-Creation-Date: 2017-03-07 11:27+0100\n"
 "PO-Revision-Date: 2016-08-25 15:19+0200\n"
 "Last-Translator: Ziirish <hi+burpui@ziirish.me>\n"
 "Language: fr\n"
@@ -1138,7 +1138,7 @@ msgstr ""
 "présents dans votre sauvegarde"
 
 #: burpui/templates/client-browse.html:43
-msgid "Load all nodes"
+msgid "Fetch all nodes"
 msgstr "Pré-charger tous les nœuds"
 
 #: burpui/templates/client-browse.html:48 burpui/templates/settings.html:17
@@ -1308,8 +1308,8 @@ msgid "All"
 msgstr "Tous"
 
 #: burpui/templates/clients-report.html:33
-msgid "Aggregate by"
-msgstr "Aggréger par"
+msgid "Sort by"
+msgstr "Trier par"
 
 #: burpui/templates/clients-report.html:35
 msgid "number of backups"
@@ -1700,7 +1700,7 @@ msgstr "Chargement"
 
 #: burpui/templates/js/client-browse.js:304
 msgid "Nodes loaded"
-msgstr "Arborescence chargée"
+msgstr "Nœuds chargés"
 
 #: burpui/templates/js/client.js:97
 msgid "Encrypted backup"
@@ -1742,15 +1742,23 @@ msgstr "Sauvegarde..."
 msgid "Preferences successfuly saved"
 msgstr "Préférences sauvegardées avec succès"
 
-#: burpui/templates/js/user.js:190
+#: burpui/templates/js/user.js:189
+msgid "Select all filtered"
+msgstr "Sélectionner éléments filtrés"
+
+#: burpui/templates/js/user.js:197
+msgid "Deselect all filtered"
+msgstr "Dé-sélectionner éléments filtrés"
+
+#: burpui/templates/js/user.js:204
 msgid "Revoke selected"
 msgstr "Révoquer la sélection"
 
-#: burpui/templates/js/user.js:512 burpui/templates/js/user.js:525
+#: burpui/templates/js/user.js:526 burpui/templates/js/user.js:539
 msgid "clients"
 msgstr "clients"
 
-#: burpui/templates/js/user.js:514 burpui/templates/js/user.js:532
+#: burpui/templates/js/user.js:528 burpui/templates/js/user.js:546
 msgid "servers"
 msgstr "serveurs"
 
@@ -1771,4 +1779,7 @@ msgstr "serveurs"
 
 #~ msgid "Source configuration files"
 #~ msgstr ""
+
+#~ msgid "Aggregate by"
+#~ msgstr "Aggréger par"
 
