@@ -1,5 +1,5 @@
-Badges
-======
+Burp-UI
+=======
 
 .. image:: https://git.ziirish.me/ci/projects/1/status.png?ref=master
     :target: https://git.ziirish.me/ziirish/burp-ui/pipelines
@@ -13,17 +13,19 @@ Badges
     :target: https://readthedocs.org/projects/burp-ui/?badge=latest
     :alt: Documentation Status
 
+.. contents::
+
 Introduction
-============
+------------
 
 Screenshots
------------
+^^^^^^^^^^^
 
 .. image:: https://git.ziirish.me/ziirish/burp-ui/raw/master/docs/_static/burp-ui.gif
     :target: https://git.ziirish.me/ziirish/burp-ui/blob/master/docs/_static/burp-ui.gif
 
 Demo
-----
+^^^^
 
 A screenshot is worth a thousand words, but a Demo is worth a thousand
 screenshots.
@@ -31,11 +33,11 @@ You can now play with ``Burp-UI`` at `demo.ziirish.me <https://demo.ziirish.me>`
 
 Credentials:
 
-- *admin / admin* to play with ``Burp-UI`` as an administrator
-- *demo / demo* to play with ``Burp-UI`` as a regular user
+- *admin* / *admin* to play with ``Burp-UI`` as an administrator
+- *demo* / *demo* to play with ``Burp-UI`` as a regular user
 
 What's that?
-------------
+^^^^^^^^^^^^
 
 Let me introduce you ``Burp-UI``. It is a web-based UI to manage your
 burp-servers.
@@ -44,9 +46,9 @@ You can view different reports about burp-servers, burp-clients, backups, etc.
 your burp-server's configuration files.
 
 Who are you?
-------------
+^^^^^^^^^^^^
 
-I'm `Ziirish <http://ziirish.info>`__, a French sysadmin who loves `Burp`_ and
+I'm `Ziirish <http://ziirish.info>`__, a French *DevOps* who loves `Burp`_ and
 who'd like to help its adoption by providing it a nice and powerful interface.
 If you like my work, you can:
 
@@ -55,26 +57,26 @@ If you like my work, you can:
 * Make a donation on my `Paypal <http://ziirish.info>`__
 
 Documentation
-=============
+-------------
 
 The documentation is hosted on `readthedocs <https://readthedocs.org>`_ at the
 following address: `burp-ui.readthedocs.io
 <https://burp-ui.readthedocs.io/en/latest/>`_
 
 FAQ
-===
+---
 
 A `FAQ <https://burp-ui.readthedocs.io/en/latest/faq.html>`_ is available with
 the documentation.
 
 Community
-=========
+---------
 
 Please refer to the `Contributing
 <https://burp-ui.readthedocs.io/en/latest/contributing.html>`_ page.
 
 Notes
-=====
+-----
 
 Feel free to report any issues on my `gitlab
 <https://git.ziirish.me/ziirish/burp-ui/issues>`_.
@@ -87,7 +89,7 @@ page before reporting any issue to make sure we have all the informations to
 help you.
 
 See also
-========
+--------
 
 Starting with burp-ui v0.3.0, I introduced you `burp_server_report
 <https://github.com/pablodav/burp_server_reports>`_
@@ -100,7 +102,7 @@ deployments through Ansible:
 - `burp2_server <https://galaxy.ansible.com/CoffeeITWorks/burp2_server/>`_
 
 Licenses
-========
+--------
 
 ``Burp-UI`` is released under the BSD 3-clause `License`_.
 
@@ -125,7 +127,7 @@ But this project is built on top of other tools. Here is a non exhaustive list:
 Also note that this project is made with the Awesome `Flask`_ micro-framework.
 
 Thanks
-======
+------
 
 Thank you all for your feedbacks and bug reports. Those are making the project
 moving forward.
