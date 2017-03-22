@@ -79,5 +79,5 @@ for img in $IMAGES
 do
         [ -d ${SCRIPTPATH}/docker/py${img} ] || continue
         echo "[-] ${img}"
-        docker run -it --rm -v ${SCRIPTPATH}/..:/home/burp-ui ${USR}/py${img}:${img} /bin/bash -c "cd /home/burp-ui && /home/burp-ui/test/run_tests.sh"
+        docker run -it --rm -v ${SCRIPTPATH}/..:/home/burp-ui ${USR}/py${img}:${img} /bin/bash -c "cd /home/burp-ui && /home/burp-ui/tests/run_tests.sh"
 done
