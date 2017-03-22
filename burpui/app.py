@@ -30,7 +30,7 @@ def parse_db_setting(string):
         '(?P<host>[\w_.-]+):?(?P<port>\d+)?(?:/(?P<db>\w+))?',
         string
     )
-    if not parts:
+    if not parts:  # pragma: no cover
         raise ValueError('Unable to parse the db: "{}"'.format(string))
     back = parts.group('backend') or ''
     user = parts.group('user') or None
@@ -52,7 +52,7 @@ def get_redis_server(myapp):
                 port = int(port)
             except (ValueError, IndexError):
                 port = 6379
-        except ValueError:
+        except ValueError:  # pragma: no cover
             pass
     return host, port, pwd
 
@@ -72,7 +72,7 @@ def create_db(myapp, cli=False, unittest=False, create=True):
             myapp.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
             if not database_exists(myapp.config['SQLALCHEMY_DATABASE_URI']) and \
                     not cli and not unittest:
-                if create:
+                if create:  # pragma: no cover
                     import subprocess
                     local = os.path.join(os.getcwd(), '..', 'bui-manage')
                     buimanage = local if os.path.exists(local) else 'bui-manage'
@@ -98,7 +98,7 @@ def create_db(myapp, cli=False, unittest=False, create=True):
                         myapp.config['WITH_SQL'] = False
                         return None
                     return create_db(myapp, cli, unittest, False)
-                else:
+                else:  # pragma: no cover
                     myapp.logger.error(
                         'Database not found, disabling SQL support'
                     )
@@ -107,13 +107,13 @@ def create_db(myapp, cli=False, unittest=False, create=True):
 
             back = parse_db_setting(myapp.config['SQLALCHEMY_DATABASE_URI'])[0]
 
-            if 'mysql' in back:
+            if 'mysql' in back:  # pragma: no cover
                 # optimize SQL pools for MySQL driver
                 myapp.config['SQLALCHEMY_POOL_SIZE'] = 20
                 myapp.config['SQLALCHEMY_POOL_RECYCLE'] = 600
 
             db.init_app(myapp)
-            if not cli and not unittest:
+            if not cli and not unittest:  # pragma: no cover
                 with myapp.app_context():
                     try:
                         test_database()
@@ -127,13 +127,13 @@ def create_db(myapp, cli=False, unittest=False, create=True):
                             myapp.config['WITH_SQL'] = False
                             return None
             return db
-        except ImportError:
+        except ImportError:  # pragma: no cover
             myapp.logger.critical(
                 'Unable to load requirements, you may want to run \'pip '
                 'install burp-ui-sql\'.\nDisabling SQL support for now.'
             )
             myapp.config['WITH_SQL'] = False
-        except OperationalError as exp:
+        except OperationalError as exp:  # pragma: no cover
             myapp.logger.critical(
                 'unable to contact database: {}\nDisabling SQL '
                 'support.'.format(exp)
@@ -149,7 +149,7 @@ def create_celery(myapp, warn=True):
     :param myapp: Application context
     :type myapp: :class:`burpui.server.BUIServer`
     """
-    if myapp.config['WITH_CELERY']:
+    if myapp.config['WITH_CELERY']:  # pragma: no cover
         from .ext.async import celery
         from .exceptions import BUIserverException
         host, oport, pwd = get_redis_server(myapp)
@@ -200,7 +200,7 @@ def create_celery(myapp, warn=True):
 
         return celery
 
-    if warn:
+    if warn:  # pragma: no cover
         message = 'Something went wrong while initializing celery worker.\n' \
                   'Maybe it is not enabled in your conf ' \
                   '({}).'.format(myapp.config['CFG'])
@@ -321,7 +321,7 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
         'reverse_proxy: {}'.format(reverse_proxy)
     )
 
-    if not unittest:
+    if not unittest:  # pragma: no cover
         from ._compat import patch_json
         patch_json()
 
@@ -369,8 +369,10 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
     )
 
     # manage application secret key
-    if app.secret_key and (app.secret_key.lower() == 'none' or
-                           (app.secret_key.lower() == 'random' and gunicorn)):
+    if app.secret_key and \
+            (app.secret_key.lower() == 'none' or
+             (app.secret_key.lower() == 'random' and \
+              gunicorn)):  # pragma: no cover
         logger.critical('Your setup is not secure! Please consider setting a'
                         ' secret key in your configuration file')
         app.secret_key = 'Burp-UI'
@@ -398,7 +400,7 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
                 if app.session_db and \
                         str(app.session_db).lower() not \
                         in ['redis', 'default', 'true']:
-                    try:
+                    try:  # pragma: no cover
                         (_, _, pwd, host, port, db) = \
                             parse_db_setting(app.session_db)
                     except ValueError as exp:
@@ -420,7 +422,7 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
                 app.config['SESSION_PERMANENT'] = False
                 sess.init_app(app)
                 session_manager.backend = red
-        except Exception as exp:
+        except Exception as exp:  # pragma: no cover
             logger.warning('Unable to initialize session: {}'.format(str(exp)))
         try:
             # Cache setup
@@ -431,7 +433,7 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
                 if app.cache_db and \
                         str(app.cache_db).lower() not \
                         in ['redis', 'default', 'true']:
-                    try:
+                    try:  # pragma: no cover
                         (_, _, pwd, host, port, db) = \
                             parse_db_setting(app.cache_db)
                     except ValueError as exp:
@@ -458,15 +460,15 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
                 # clear cache at startup in case we removed or added servers
                 with app.app_context():
                     cache.clear()
-            else:
+            else:  # pragma: no cover
                 cache.init_app(app)
-        except Exception as exp:
+        except Exception as exp:  # pragma: no cover
             logger.warning('Unable to initialize cache: {}'.format(str(exp)))
             cache.init_app(app)
         try:
             # Limiter setup
             if not app.limiter or str(app.limiter).lower() not \
-                    in ['none', 'false']:
+                    in ['none', 'false']:  # pragma: no cover
                 from .ext.limit import limiter
                 app.config['RATELIMIT_HEADERS_ENABLED'] = True
                 if app.limiter and str(app.limiter).lower() not \
@@ -499,10 +501,10 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
                 )
                 limiter.init_app(app)
                 app.config['WITH_LIMIT'] = True
-        except ImportError:
+        except ImportError:  # pragma: no cover
             logger.warning('Unable to load limiter. Did you run \'pip install '
                            'flask-limiter\'?')
-        except Exception as exp:
+        except Exception as exp:  # pragma: no cover
             logger.warning('Unable to initialize limiter: {}'.format(str(exp)))
     else:
         cache.init_app(app)
@@ -515,7 +517,7 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
         try:
             from .api.async import force_scheduling_now
             force_scheduling_now()
-        except:
+        except:  # pragma: no cover
             pass
 
     # Initialize i18n
@@ -567,7 +569,7 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
 
     def _check_session(user, request, api=False):
         """Check if the session is in the db"""
-        if user and not session_manager.session_in_db():
+        if user and not session_manager.session_in_db():  # pragma: no cover
             login = getattr(user, 'name', None)
             if login and not is_uuid(login):
                 remember = session.get('persistent', False)

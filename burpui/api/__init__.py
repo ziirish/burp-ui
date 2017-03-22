@@ -39,7 +39,7 @@ def api_login_required(func):
     @wraps(func)
     def decorated_view(*args, **kwargs):
         """decorator"""
-        if request.method in EXEMPT_METHODS:
+        if request.method in EXEMPT_METHODS:  # pragma: no cover
             return func(*args, **kwargs)
         # 'func' is a Flask.view.MethodView so we have access to some special
         # params
@@ -88,7 +88,7 @@ class Api(ApiPlus):
                         self.logger.debug('Loading API module: {}'.format(mod))
                         try:
                             import_module(mod, __name__)
-                        except:
+                        except:  # pragma: no cover
                             import traceback
                             self.logger.critical('Unable to load {}:\n{}'.format(mod, traceback.format_exc()))
                     else:
@@ -108,7 +108,7 @@ class Api(ApiPlus):
         def decorator(func):
             @wraps(func)
             def decorated(resource, *args, **kwargs):
-                if key not in kwargs:
+                if key not in kwargs:  # pragma: no cover
                     resource.abort(500, "key '{}' not found".format(key))
                 if kwargs[key] != resource.username and not resource.is_admin:
                     resource.abort(code, message)

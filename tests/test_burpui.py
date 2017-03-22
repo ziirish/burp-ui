@@ -34,7 +34,7 @@ class BurpuiLiveTestCase(LiveServerTestCase):
 
     def create_app(self):
         conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../share/burpui/etc/burpui.sample.cfg')
-        bui = BUIinit(debug=12, gunicorn=False, unittest=True)
+        bui = BUIinit(debug=12, logfile='/dev/null', gunicorn=False, unittest=True)
         bui.setup(conf, True)
         bui.config['DEBUG'] = False
         bui.config['TESTING'] = True
@@ -105,7 +105,7 @@ class BurpuiAPITestCase(TestCase):
 
     def create_app(self):
         conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test2.cfg')
-        bui = BUIinit(gunicorn=False, unittest=True)
+        bui = BUIinit(logfile='/dev/null', gunicorn=False, unittest=True)
         bui.setup(conf, True)
         bui.config['TESTING'] = True
         bui.config['LOGIN_DISABLED'] = True
@@ -238,7 +238,7 @@ class BurpuiRoutesTestCase(TestCase):
     def create_app(self):
         with patch('socket.socket'):
             conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test4.cfg')
-            bui = BUIinit(conf, gunicorn=False, unittest=True)
+            bui = BUIinit(conf, logfile='/dev/null', gunicorn=False, unittest=True)
             bui.setup(conf, True)
             bui.config['TESTING'] = True
             bui.config['LOGIN_DISABLED'] = True
@@ -275,7 +275,7 @@ class BurpuiLoginTestCase(TestCase):
 
     def create_app(self):
         conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../share/burpui/etc/burpui.sample.cfg')
-        bui = BUIinit(conf, False, None, gunicorn=False, unittest=True)
+        bui = BUIinit(conf, False, '/dev/null', gunicorn=False, unittest=True)
         bui.config['TESTING'] = True
         bui.config['LIVESERVER_PORT'] = 5001
         bui.config['WTF_CSRF_ENABLED'] = False
@@ -308,19 +308,19 @@ class BurpuiACLTestCase(TestCase):
     def tearDown(self):
         print ('\nTest 6 Finished!\n')
 
-    def login(self, username, password):
+    def login(self, username, password, headers=None):
         return self.client.post(url_for('view.login'), data=dict(
             username=username,
             password=password,
             language='en'
-        ), follow_redirects=True)
+        ), headers=headers, follow_redirects=True)
 
     def logout(self):
         return self.client.get(url_for('view.logout'), follow_redirects=True)
 
     def create_app(self):
         conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test6.cfg')
-        bui = BUIinit(conf, False, None, gunicorn=False, unittest=True)
+        bui = BUIinit(conf, False, '/dev/null', gunicorn=False, unittest=True)
         bui.config['TESTING'] = True
         bui.config['LIVESERVER_PORT'] = 5001
         bui.config['WTF_CSRF_ENABLED'] = False
@@ -348,6 +348,12 @@ class BurpuiACLTestCase(TestCase):
             self.assertEqual(sorted(response.json, key=lambda k: k['name']), sorted([{u'id': u'admin', u'name': u'admin', u'backend': u'BASIC'}, {u'id': u'user1', u'name': u'user1', u'backend': u'BASIC'}], key=lambda k: k['name']))
             self.assertEqual(sorted(response2.json, key=lambda k: k['name']), sorted([{u'add': True, u'del': True, u'name': u'BASIC', u'mod': True}], key=lambda k: k['name']))
 
+    def test_change_password(self):
+        with self.client:
+            rv = self.login('user1', 'password')
+            response = self.client.post(url_for('api.auth_users', name='user1'), data={'backend': 'BASIC', 'old_password': 'plop', 'password': 'toto'}, headers={'X-Language': 'en'})
+            self.assert_status(response, 200)
+
     def test_config_render_ko(self):
         with self.client:
             rv = self.login('user1', 'password')
@@ -362,6 +368,16 @@ class BurpuiACLTestCase(TestCase):
             self.assert403(response)
             self.logout()
 
+    def test_api_403(self):
+        with self.client:
+            response = self.client.get(url_for('api.client_settings', client='toto'), headers={'X-From-UI': True})
+            self.assert403(response)
+
+    def test_api_401(self):
+        with self.client:
+            response = self.client.get(url_for('api.client_settings', client='toto'))
+            self.assert401(response)
+
 
 class BurpuiTestInit(TestCase):
 
@@ -373,13 +389,17 @@ class BurpuiTestInit(TestCase):
         os.unlink(self.tmpFile)
 
     def create_app(self):
-        conf1 = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test7-1.cfg')
-        conf2 = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test7-2.cfg')
-        conf4 = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test7-4.cfg')
-        BUIinit(conf1, False, None, gunicorn=False, unittest=True)
-        BUIinit(conf2, False, None, gunicorn=False, unittest=True)
-        BUIinit(conf4, False, None, gunicorn=False, unittest=True)
-        bui = BUIinit(None, False, None, gunicorn=False, unittest=True)
+        kwargs = {'verbose': 0, 'logfile': '/dev/null', 'gunicorn': False, 'unittest': True}
+        root = os.path.dirname(os.path.realpath(__file__))
+        conf1 = os.path.join(root, 'test7-1.cfg')
+        conf2 = os.path.join(root, 'test7-2.cfg')
+        conf4 = os.path.join(root, 'test7-4.cfg')
+        conf5 = os.path.join(root, 'test7-5.cfg')
+        BUIinit(conf1, **kwargs)
+        BUIinit(conf2, **kwargs)
+        BUIinit(conf4, **kwargs)
+        BUIinit(conf5, **kwargs)
+        bui = BUIinit(None, **kwargs)
         bui.config['TESTING'] = True
         bui.config['LIVESERVER_PORT'] = 5001
         bui.config['WTF_CSRF_ENABLED'] = False
@@ -391,7 +411,7 @@ class BurpuiTestInit(TestCase):
         self.assertRaises(IOError, BUIinit, 'thisfileisnotlikelytoexist', True, self.tmpFile, gunicorn=False, unittest=True)
         self.assertRaises(IOError, BUIinit, 'thisfileisnotlikelytoexist', False, self.tmpFile, gunicorn=False, unittest=True)
         conf3 = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test7-3.cfg')
-        self.assertRaises(ImportError, BUIinit, conf3, False, None, gunicorn=False, unittest=True)
+        self.assertRaises(ImportError, BUIinit, conf3, 12, '/dev/null', gunicorn=False, unittest=True)
 
 
 class BurpuiRedisTestCase(TestCase):
@@ -417,7 +437,7 @@ class BurpuiRedisTestCase(TestCase):
     @patch('redis.Redis', mock_redis_client)
     def create_app(self):
         conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test8.cfg')
-        bui = BUIinit(conf, False, None, gunicorn=False, unittest=True)
+        bui = BUIinit(conf, False, '/dev/null', gunicorn=False, unittest=True)
         bui.config['TESTING'] = True
         bui.config['LIVESERVER_PORT'] = 5001
         bui.config['WTF_CSRF_ENABLED'] = False
