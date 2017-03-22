@@ -29,7 +29,8 @@ Demo
 
 A screenshot is worth a thousand words, but a Demo is worth a thousand
 screenshots.
-You can now play with ``Burp-UI`` at `demo.ziirish.me <https://demo.ziirish.me>`_
+You can now play with ``Burp-UI`` at
+`demo.burp-ui.org <https://demo.burp-ui.org/>`_
 
 Credentials:
 
@@ -60,20 +61,17 @@ Documentation
 -------------
 
 The documentation is hosted on `readthedocs <https://readthedocs.org>`_ at the
-following address: `burp-ui.readthedocs.io
-<https://burp-ui.readthedocs.io/en/latest/>`_
+following address: `burp-ui.readthedocs.io`_
 
 FAQ
 ---
 
-A `FAQ <https://burp-ui.readthedocs.io/en/latest/faq.html>`_ is available with
-the documentation.
+A `FAQ`_ is available with the documentation.
 
 Community
 ---------
 
-Please refer to the `Contributing
-<https://burp-ui.readthedocs.io/en/latest/contributing.html>`_ page.
+Please refer to the `Contributing`_ page.
 
 Notes
 -----
@@ -83,10 +81,8 @@ Feel free to report any issues on my `gitlab
 
 I have closed the *github tracker* to have a unique tracker system.
 
-Also please, read the `Contributing
-<https://burp-ui.readthedocs.io/en/latest/contributing.html>`_
-page before reporting any issue to make sure we have all the informations to
-help you.
+Also please, read the `Contributing`_ page before reporting any issue to make
+sure we have all the informations to help you.
 
 See also
 --------
@@ -142,3 +138,6 @@ would not exist without `Burp`_.
 .. _License: https://git.ziirish.me/ziirish/burp-ui/blob/master/LICENSE
 .. _Burp: http://burp.grke.org/
 .. _burpui.cfg: https://git.ziirish.me/ziirish/burp-ui/blob/master/share/burpui/etc/burpui.sample.cfg
+.. _burp-ui.readthedocs.io: https://burp-ui.readthedocs.io/en/latest/
+.. _FAQ: https://burp-ui.readthedocs.io/en/latest/faq.html
+.. _Contributing: https://burp-ui.readthedocs.io/en/latest/contributing.html

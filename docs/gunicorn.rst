@@ -20,9 +20,16 @@ You will then be able to launch `Burp-UI`_ this way:
     gunicorn -k gevent -w 4 'burpui:create_app(conf="/path/to/burpui.cfg")'
 
 
+This will listen to 127.0.0.1:8000 by default. See the ``gunicorn``
+`documentation <http://docs.gunicorn.org/en/stable/settings.html>`__ for
+details.
+
+You will need to add the ``-b 0.0.0.0:5000`` option in order to listen on all
+interfaces on port 5000 for instance.
+
 When using ``gunicorn``, the command line options are not available. Instead,
-run the `Burp-UI`_ ``create_app`` method directly. Here are the parameters you
-can play with:
+you run the `Burp-UI`_ ``create_app`` method directly. Here are the parameters
+you can play with:
 
 - conf: Path to the `Burp-UI`_ configuration file
 - verbose: Verbosity level between 0 and 4
@@ -40,7 +47,7 @@ Advanced usage
 --------------
 
 `Gunicorn`_ supports further settings (see its `documentation
-<http://docs.gunicorn.org/en/stable/>`_ for details).
+<http://docs.gunicorn.org/en/stable/>`__ for details).
 For instance, you would probably like to use the ``-c`` flag with the sample
 configuration file bundled with `Burp-UI`_ in *contrib/gunicorn/burpui_gunicorn.py*.
 
@@ -111,6 +118,14 @@ Now you need to add the *bui-agent1* client to the authorized clients:
 
     echo "password = abcdefgh" >/etc/burp/clientconfdir/bui-agent1
     echo "restore_client = bui-agent1" >>/etc/burp/burp-server.conf
+
+
+You will also need to increase the number of status clients by setting
+``max_status_children`` to 15:
+
+::
+
+    echo "max_status_children = 15" >>/etc/burp/burp-server.conf
 
 
 Finally, make sure you set ``bconfcli: /var/lib/burpui/burp.conf`` in your 
@@ -293,11 +308,20 @@ It is using `Gunicorn`_ along with Nginx as described above.
 
 In order to improve performances, `Redis`_ can be used to cache sessions and
 various API calls.
+You can also enable the `celery <celery.html>`_ worker for asynchronous jobs.
+Additionally, you can enable the `SQL <manage.html#database>`_ storage.
+
+The `FAQ <faq.html>`_ answers these questions:
+
+- `Why using redis? <faq.html#why-using-redis>`_
+- `Why using SQL? <faq.html#why-using-sql>`_
+- `Why using Celery? <faq.html#why-using-celery>`_
+
 
 See the `production <advanced_usage.html#production>`_ section of the
 `usage <advanced_usage.html>`_ page.
 
 .. _Gunicorn: http://gunicorn.org/
 .. _Burp-UI: https://git.ziirish.me/ziirish/burp-ui
-.. _demo: https://demo.ziirish.me/
+.. _demo: https://demo.burp-ui.org/
 .. _Redis: http://redis.io/

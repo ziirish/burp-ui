@@ -4,7 +4,7 @@ FAQ
 Is there a demo somewhere?
 --------------------------
 
-Yes, you can play with `Burp-UI`_ at `demo.ziirish.me`_. Credentials are:
+Yes, you can play with `Burp-UI`_ at `demo.burp-ui.org`_. Credentials are:
 
 - *admin* / *admin* to play with `Burp-UI`_ as an administrator
 - *demo* / *demo* to play with `Burp-UI`_ as a regular user
@@ -81,6 +81,9 @@ How can I start Burp-UI as a daemon?
 There are several *init scripts* provided by some users available
 `here <https://git.ziirish.me/ziirish/burp-ui/tree/master/contrib>`__.
 
+.. note:: I do not (and cannot) support these scripts. Only the `Gunicorn`_ way
+          is supported.
+
 The recommended way to run `Burp-UI`_ in production is to use `Gunicorn`_. You
 can refer to the `gunicorn <gunicorn.html#daemon>`__ section of this
 documentation for more details.
@@ -134,7 +137,17 @@ Why using SQL?
 --------------
 
 The SQL database is currently used to keep a track of several meta-data.
+Since *v0.5.0*, the SQL database is able to store user preferences.
 Again, it is totally optional to use it.
+
+Why using Celery?
+-----------------
+
+Celery is used to run some asynchronous jobs such as reports computations or
+online restorations.
+
+Computing reports asynchronously allows faster answer especially when you manage
+several dozens of clients.
 
 Burp-UI does not seem to understand the *bind* and *port* options anymore, what should I do?
 --------------------------------------------------------------------------------------------
@@ -160,6 +173,16 @@ section.
 Alternatively, you can choose an other compression module by selecting an other
 extension while proceeding the restoration.
 
+I see a lot of *cannot spawn burp process* errors, what can I do?
+-----------------------------------------------------------------
+
+This error means `Burp-UI`_ is not able to communicate with the burp server.
+You should check your logs (both `Burp-UI`_'s and burp server's) to understand
+what is wrong.
+If you are using `Gunicorn`_, it is possible you reached the limit of *status
+children*. You can safely increase the ``max_status_children`` setting in your
+*burp-server.conf* file to 15 (the default is 5).
+
 How can I contribute?
 ---------------------
 
@@ -172,4 +195,4 @@ documentation.
 .. _Burp-UI: https://git.ziirish.me/ziirish/burp-ui
 .. _Gunicorn: http://gunicorn.org/
 .. _README: https://git.ziirish.me/ziirish/burp-ui/blob/master/README.rst
-.. _demo.ziirish.me: https://demo.ziirish.me/
+.. _demo.burp-ui.org: https://demo.burp-ui.org/

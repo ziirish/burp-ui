@@ -6,7 +6,7 @@ Flask's `development server <http://flask.pocoo.org/docs/0.12/server/>`_ or you
 can use any of the `deployement options <http://flask.pocoo.org/docs/0.12/deploying/>`_
 provided by Flask.
 
-.. note:: I personaly focus on ``gunicorn`` support for production deployments
+.. note:: I personally focus on ``gunicorn`` support for production deployments
 
 
 Sandboxing

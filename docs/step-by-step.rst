@@ -16,7 +16,6 @@ describe the steps to setup your server from Scratch.
 
 1. `Burp1 server`_ with `Burp-UI`_
 2. `Burp2 server`_ with `Burp-UI`_
-3. `Multiple servers`_ with `bui-agents <buiagent.html>`_
 
 
 Burp1 server

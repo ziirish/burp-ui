@@ -174,7 +174,7 @@ Current
 - Fix: issue `#99 <https://git.ziirish.me/ziirish/burp-ui/issues/99>`_
 - Fix: issue `#100 <https://git.ziirish.me/ziirish/burp-ui/issues/100>`_
 - Fix: issue `#101 <https://git.ziirish.me/ziirish/burp-ui/issues/101>`_
-- `demo <https://demo.ziirish.me/>`_
+- `demo <https://demo.burp-ui.org/>`_
 - API refactoring
 - Security fixes
 - Bugfixes
