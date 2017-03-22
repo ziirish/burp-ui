@@ -255,7 +255,7 @@ class BurpuiRoutesTestCase(TestCase):
     def test_get_clients(self):
         with patch('burpui.misc.backend.burp1.Burp.status', side_effect=mock_status):
             response = self.client.get(url_for('api.clients_stats'))
-            self.assertEqual(sorted(response.json), sorted([{u'state': u'idle', u'last': u'never', u'human': u'never', u'name': u'testclient', u'phase': None, u'percent': 0}]))
+            self.assertEqual(sorted(response.json, key=lambda k: k['name']), sorted([{u'state': u'idle', u'last': u'never', u'human': u'never', u'name': u'testclient', u'phase': None, u'percent': 0}], key=lambda k: k['name']))
 
 
 class BurpuiLoginTestCase(TestCase):
@@ -345,8 +345,8 @@ class BurpuiACLTestCase(TestCase):
             rv = self.login('admin', 'admin')
             response = self.client.get(url_for('api.auth_users'))
             response2 = self.client.get(url_for('api.auth_backends'))
-            self.assertEqual(sorted(response.json), sorted([{u'id': u'admin', u'name': u'admin', u'backend': u'BASIC'}, {u'id': u'user1', u'name': u'user1', u'backend': u'BASIC'}]))
-            self.assertEqual(sorted(response2.json), sorted([{u'add': True, u'del': True, u'name': u'BASIC', u'mod': True}]))
+            self.assertEqual(sorted(response.json, key=lambda k: k['name']), sorted([{u'id': u'admin', u'name': u'admin', u'backend': u'BASIC'}, {u'id': u'user1', u'name': u'user1', u'backend': u'BASIC'}], key=lambda k: k['name']))
+            self.assertEqual(sorted(response2.json, key=lambda k: k['name']), sorted([{u'add': True, u'del': True, u'name': u'BASIC', u'mod': True}], key=lambda k: k['name']))
 
     def test_config_render_ko(self):
         with self.client:
