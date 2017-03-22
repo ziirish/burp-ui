@@ -44,7 +44,7 @@ test:py3.6:
   image: python:3.6
   script:
   - pip install tox
-  - tox -e py34
+  - tox -e py36
   tags:
   - docker
   except:
