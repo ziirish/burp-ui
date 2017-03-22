@@ -121,3 +121,6 @@ deploy:demo:
   - deploy
   only:
   - demo
+  environment:
+    name: demo
+    url: https://demo.burp-ui.org/
