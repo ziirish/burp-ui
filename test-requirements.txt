@@ -1,4 +1,4 @@
-Flask-Testing==0.5.0
+Flask-Testing
 nose
 coverage
 mock

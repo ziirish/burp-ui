@@ -210,10 +210,20 @@ url = __url__
 with open(os.path.join(ROOT, 'requirements.txt')) as f:
     requires = [x.strip() for x in f if x.strip()]
 
-with open(os.path.join(ROOT, 'test-requirements.txt')) as f:
-    test_requires = [x.strip() for x in f if x.strip()]
-
 dev_requires = ['flake8', 'pylint']
+test_requires = [
+    'Flask-Testing',
+    'nose',
+    'coverage',
+    'mock',
+    'mockredispy',
+    'Flask-Session',
+    'Celery',
+    'redis',
+    'Flask-SQLAlchemy',
+    'Flask-Migrate',
+    'sqlalchemy_utils',
+]
 
 datadir = os.path.join('share', 'burpui')
 confdir = os.path.join(datadir, 'etc')
@@ -262,7 +272,7 @@ setup(
         'gunicorn': ['gevent', 'gunicorn'],
         'gunicorn-extra': ['redis', 'Flask-Session==0.3.0'],
         'agent': ['gevent'],
-        'test': test_requires,
+        'ci': test_requires,
         'dev': dev_requires,
         'debian_wheezy': ['functools32'],
         'celery': ['Celery', 'redis'],

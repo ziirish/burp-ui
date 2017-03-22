@@ -26,7 +26,7 @@ from ...utils import human_readable as _hr, BUIcompress, sanitize_string, \
 from ...exceptions import BUIserverException
 from ..._compat import unquote, PY3, to_unicode, to_bytes
 
-if PY3:
+if PY3:  # pragma: no cover
     from shlex import quote
 else:
     from pipes import quote
@@ -242,7 +242,7 @@ class Burp(BUIbackend):
         except:
             pass
 
-        try:
+        try:  # pragma: no cover
             cmd = [self.burpbin, '-a', 'l']
             if self.burpconfcli:
                 cmd += ['-c', self.burpconfcli]

@@ -6,7 +6,6 @@ include CONTRIBUTORS
 include burpui/VERSION
 include burpui/RELEASE
 include requirements.txt
-include test-requirements.txt
 include share/burpui/etc/burpui.sample.cfg
 include babel.cfg
 graft contrib

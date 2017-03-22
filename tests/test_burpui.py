@@ -219,6 +219,14 @@ class BurpuiAPITestCase(TestCase):
         self.assert500(response)
 
 
+def mock_status(query='\n', timeout=None, agent=None):
+    answers = {
+        '': ['testclient  2   i   0'],
+        '\n': ['testclient  2   i   0'],
+    }
+    return answers.get(query, [])
+
+
 class BurpuiRoutesTestCase(TestCase):
 
     def setUp(self):
@@ -228,23 +236,26 @@ class BurpuiRoutesTestCase(TestCase):
         print ('\nTest 4 Finished!\n')
 
     def create_app(self):
-        conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test4.cfg')
-        bui = BUIinit(conf, gunicorn=False, unittest=True)
-        bui.setup(conf, True)
-        bui.config['TESTING'] = True
-        bui.config['LOGIN_DISABLED'] = True
-        bui.config['LIVESERVER_PORT'] = 5001
-        bui.config['SECRET_KEY'] = 'toto'
-        bui.login_manager.init_app(bui)
-        return bui
+        with patch('socket.socket'):
+            conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test4.cfg')
+            bui = BUIinit(conf, gunicorn=False, unittest=True)
+            bui.setup(conf, True)
+            bui.config['TESTING'] = True
+            bui.config['LOGIN_DISABLED'] = True
+            bui.config['LIVESERVER_PORT'] = 5001
+            bui.config['SECRET_KEY'] = 'toto'
+            bui.login_manager.init_app(bui)
+            return bui
 
     def test_live_monitor(self):
-        response = self.client.get(url_for('view.live_monitor'), follow_redirects=True)
-        assert 'Sorry, there are no running backups' in response.data.decode('utf-8')
+        with patch('burpui.misc.backend.burp1.Burp.status', side_effect=mock_status):
+            response = self.client.get(url_for('view.live_monitor'), follow_redirects=True)
+            assert 'Sorry, there are no running backups' in response.data.decode('utf-8')
 
     def test_get_clients(self):
-        response = self.client.get(url_for('api.clients_stats'))
-        self.assertEqual(response.json, [{u'state': u'idle', u'last': u'never', u'human': u'never', u'name': u'testclient', u'phase': None, u'percent': 0}])
+        with patch('burpui.misc.backend.burp1.Burp.status', side_effect=mock_status):
+            response = self.client.get(url_for('api.clients_stats'))
+            self.assertEqual(sorted(response.json), sorted([{u'state': u'idle', u'last': u'never', u'human': u'never', u'name': u'testclient', u'phase': None, u'percent': 0}]))
 
 
 class BurpuiLoginTestCase(TestCase):
@@ -334,8 +345,8 @@ class BurpuiACLTestCase(TestCase):
             rv = self.login('admin', 'admin')
             response = self.client.get(url_for('api.auth_users'))
             response2 = self.client.get(url_for('api.auth_backends'))
-            self.assertEqual(response.json, [{u'id': u'admin', u'name': u'admin', u'backend': u'BASIC'}, {u'id': u'user1', u'name': u'user1', u'backend': u'BASIC'}])
-            self.assertEqual(response2.json, [{u'add': True, u'del': True, u'name': u'BASIC', u'mod': True}])
+            self.assertEqual(sorted(response.json), sorted([{u'id': u'admin', u'name': u'admin', u'backend': u'BASIC'}, {u'id': u'user1', u'name': u'user1', u'backend': u'BASIC'}]))
+            self.assertEqual(sorted(response2.json), sorted([{u'add': True, u'del': True, u'name': u'BASIC', u'mod': True}]))
 
     def test_config_render_ko(self):
         with self.client:

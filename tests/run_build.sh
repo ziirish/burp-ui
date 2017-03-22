@@ -12,7 +12,6 @@ echo "test requirements"
     exit 1
 }
 
-pip install --upgrade pip
 pip install -r requirements.txt
 pip install wheel
 

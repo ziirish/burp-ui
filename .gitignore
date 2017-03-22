@@ -5,6 +5,7 @@ burpui-dev.cfg*
 burpui/RELEASE
 devel.sh
 *.egg*
+.tox
 .coverage
 .coveragerc
 .pylintrc

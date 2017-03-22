@@ -43,4 +43,22 @@ To do so, run the following commands:
     git submodule update --init
 
 
+Before submitting your code, make sure the tests still run.
+To do that, you can use `tox <https://tox.readthedocs.io/en/latest/>`_ like
+this:
+
+::
+
+    pip install tox
+    tox
+
+
+By defaults, it will run tests against python 2.7, 3.4 and 3.6. However, you can
+choose the versions specifically like this:
+
+::
+
+    tox -e py27
+
+
 .. _Burp-UI: https://git.ziirish.me/ziirish/burp-ui
