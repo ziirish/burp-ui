@@ -7,6 +7,7 @@ devel.sh
 *.egg*
 .coverage
 .coveragerc
+.pylintrc
 dist
 _build
 .tags

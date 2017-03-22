@@ -21,7 +21,7 @@ test:py2.7:
   stage: test
   image: ziirish/python:2.7
   script:
-  - /bin/bash test/run_tests.sh
+  - /bin/bash tests/run_tests.sh
   tags:
   - docker
   except:
@@ -31,7 +31,7 @@ test:py3.4:
   stage: test
   image: ziirish/python:3.4
   script:
-  - /bin/bash test/run_tests.sh
+  - /bin/bash tests/run_tests.sh
   tags:
   - docker
   except:
@@ -40,7 +40,7 @@ test:py3.4:
 build:py2:
   stage: build
   script:
-  - /bin/bash test/run_build.sh
+  - /bin/bash tests/run_build.sh
   tags:
   - build
   only:
@@ -51,12 +51,26 @@ build:py2:
     - dist/
     - meta/
 
+build:py3:
+  stage: build
+  image: ziirish/python:3.4
+  script:
+  - /bin/bash tests/run_build.sh
+  tags:
+  - build
+  only:
+  - master
+  artifacts:
+    paths:
+    - dist/
+    - meta/
+
 build:docker:latest:
   stage: build
   script:
   - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
-  - docker build -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:latest .
-  - docker build -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:latest-py3.6 -f Dockerfile-py3.6 .
+  - docker build -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:latest -f docker/Dockerfile .
+  - docker build -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:latest-py3.6 -f docker/Dockerfile-py3.6 .
   - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:latest
   - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:latest-py3.6
   tags:
@@ -68,8 +82,8 @@ build:docker:release:
   stage: build
   script:
   - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
-  - docker build -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$CI_BUILD_TAG .
-  - docker build -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$CI_BUILD_TAG-py3.6 -f Dockerfile-py3.6 .
+  - docker build -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$CI_BUILD_TAG -f docker/Dockerfile .
+  - docker build -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$CI_BUILD_TAG-py3.6 -f docker/Dockerfile-py3.6 .
   - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$CI_BUILD_TAG
   - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$CI_BUILD_TAG-py3.6
   only:
@@ -77,28 +91,14 @@ build:docker:release:
   tags:
   - registry
 
-build:py3:
-  stage: build
-  image: ziirish/python:3.4
-  script:
-  - /bin/bash test/run_build.sh
-  tags:
-  - build
-  only:
-  - master
-  artifacts:
-    paths:
-    - dist/
-    - meta/
-
 deploy:demo:
   stage: deploy
   script:
-  - find docker/ -name "install" | xargs sed -i "s/@build@/$(git rev-parse HEAD)/"
-  - cd docker && find . -maxdepth 1 -type d -a ! -name dist -exec cp -r ../dist "{}/" \; -exec cp -r ../meta "{}/" \; && cd ..
-  - find docker/ -name "Dockerfile" | xargs sed -i "s,^.*@ARTIFACTS@.*$,COPY dist/*.tar.gz /tmp/burpui.dev.tar.gz,;s,^.*@BUIAGENT_ARTIFACTS@.*$,COPY meta/burp-ui-agent*.tar.gz /tmp/burp-ui-agent.dev.tar.gz,"
+  - find docker/demo/ -name "install" | xargs sed -i "s/@build@/$(git rev-parse HEAD)/"
+  - cd docker/demo/ && find . -maxdepth 1 -type d -a ! -name dist -exec cp -r ../../dist "{}/" \; -exec cp -r ../../meta "{}/" \; && cd ../..
+  - find docker/demo/ -name "Dockerfile" | xargs sed -i "s,^.*@ARTIFACTS@.*$,COPY dist/*.tar.gz /tmp/burpui.dev.tar.gz,;s,^.*@BUIAGENT_ARTIFACTS@.*$,COPY meta/burp-ui-agent*.tar.gz /tmp/burp-ui-agent.dev.tar.gz,"
   - test -d /srv/demo/docker && rm -rf /srv/demo/docker
-  - cp -r docker/ /srv/demo/
+  - cp -r docker/demo/ /srv/demo/
   - cd /srv/demo/docker/
   - docker-compose build
   - docker-compose stop
@@ -107,5 +107,4 @@ deploy:demo:
   tags:
   - deploy
   only:
-  - rc
   - demo

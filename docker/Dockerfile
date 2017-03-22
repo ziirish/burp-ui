@@ -10,11 +10,11 @@ RUN apt-get update \
  && dpkg-reconfigure -f noninteractive tzdata \
  && rm -rf /var/lib/apt/lists/*
 
-ADD . /burp-ui
+ADD .. /burp-ui
 
-ADD docker/docker-release/assets/setup/ /app/setup/
-ADD docker/docker-release/assets/config/ /app/setup/config/
-ADD docker/docker-release/assets/init /app/init
+ADD docker-release/assets/setup/ /app/setup/
+ADD docker-release/assets/config/ /app/setup/config/
+ADD docker-release/assets/init /app/init
 
 RUN chmod 755 /app/init
 RUN chmod 755 /app/setup/install
