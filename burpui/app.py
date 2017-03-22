@@ -371,7 +371,7 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
     # manage application secret key
     if app.secret_key and \
             (app.secret_key.lower() == 'none' or
-             (app.secret_key.lower() == 'random' and \
+             (app.secret_key.lower() == 'random' and
               gunicorn)):  # pragma: no cover
         logger.critical('Your setup is not secure! Please consider setting a'
                         ' secret key in your configuration file')
