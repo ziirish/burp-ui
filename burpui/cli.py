@@ -12,7 +12,6 @@ jQuery/Bootstrap
 import os
 import sys
 import click
-import subprocess
 
 from .app import create_app
 
