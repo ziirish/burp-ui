@@ -143,7 +143,7 @@ Optionally your python version and your OS might be useful as well.
 Questions
 ---------
 
-Ask questions in the `discussion forum <https://burpui.ziirish.me/>`__. Do not
+Ask questions in the `discussion forum <https://forum.burp-ui.org/>`__. Do not
 use the issue tracker for this purpose.
 
 ``Burp-UI`` has extensive online documentation please read the `doc

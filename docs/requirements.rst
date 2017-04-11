@@ -77,7 +77,7 @@ If you need persistent data, you will need additional dependencies as well:
 
 ::
 
-    pip install burp-ui-sql
+    pip install "burp-ui[sql]"
 
 
 Now if you want to use a MySQL database, you will need the proper driver. For

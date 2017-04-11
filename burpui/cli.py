@@ -290,6 +290,7 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database, dry):
             # detect missing modules
             import redis as redis_client  # noqa
             import celery  # noqa
+            import socket
             if ('redis' not in app.conf.options['Production'] or
                 'redis' in app.conf.options['Production'] and
                 app.conf.options['Production']['redis'] != redis) and \
@@ -297,8 +298,19 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database, dry):
                 app.conf.options['Production']['redis'] = redis
 
             rhost, rport, _ = get_redis_server(app)
-            DEVNULL = open(os.devnull, 'wb')
-            ret = subprocess.call(['/bin/nc', '-z', '-w5', str(rhost), str(rport)], stdout=DEVNULL, stderr=subprocess.STDOUT)
+            ret = -1
+            for res in socket.getaddrinfo(rhost, rport, socket.AF_UNSPEC, socket.SOCK_STREAM):
+                if ret == 0:
+                    break
+                af, socktype, proto, _, sa = res
+                try:
+                    s = socket.socket(af, socktype, proto)
+                except socket.error:
+                    continue
+                try:
+                    ret = s.connect_ex(sa)
+                except:
+                    continue
 
             if ret == 0:
                 app.conf.options['Production']['celery'] = 'true'
@@ -344,7 +356,7 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database, dry):
             click.echo(
                 click.style(
                     'It looks like some dependencies are missing. Did you ran '
-                    'the \'pip install burp-ui-sql\' command first?',
+                    'the \'pip install "burp-ui[sql]"\' command first?',
                     fg='yellow'
                 )
             )

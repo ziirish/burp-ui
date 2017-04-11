@@ -130,7 +130,7 @@ def create_db(myapp, cli=False, unittest=False, create=True):
         except ImportError:  # pragma: no cover
             myapp.logger.critical(
                 'Unable to load requirements, you may want to run \'pip '
-                'install burp-ui-sql\'.\nDisabling SQL support for now.'
+                'install "burp-ui[sql]"\'.\nDisabling SQL support for now.'
             )
             myapp.config['WITH_SQL'] = False
         except OperationalError as exp:  # pragma: no cover

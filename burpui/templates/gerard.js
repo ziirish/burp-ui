@@ -217,28 +217,33 @@ var substringMatcher = function(objs) {
 var _clients_all = [];
 
 	{% if config.STANDALONE -%}
+
 $.get("{{ url_for('api.clients_all') }}")
 	.done(function (data) {
 		_clients_all = data;
+
+		/***
+		 * Map out _clients_bh to our input with the typeahead plugin
+		 */
+		$('#input-client').typeahead({
+			highlight: true
+		},
+		{
+			name: 'clients',
+			displayKey: 'name',
+			source: substringMatcher(_clients_all),
+		}).on('typeahead:selected', function(obj, datum, name) {
+			window.location = '{{ url_for("view.client") }}?name='+datum.name;
+		});
+
 	});
 
-/***
- * Map out _clients_bh to our input with the typeahead plugin
- */
-$('#input-client').typeahead({
-	highlight: true
-},
-{
-	name: 'clients',
-	displayKey: 'name',
-	source: substringMatcher(_clients_all),
-}).on('typeahead:selected', function(obj, datum, name) {
-	window.location = '{{ url_for("view.client") }}?name='+datum.name;
-});
 	{% else -%}
 
 		{% for srv in config.SERVERS -%}
+
 var _clients_{{ srv }} = [];
+
 		{% endfor -%}
 
 $.get("{{ url_for('api.clients_all') }}")

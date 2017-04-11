@@ -80,8 +80,10 @@ following command:
 
 ::
 
-    pip install "burp-ui[agent]"
+    pip install burp-ui-agent
 
+
+.. note:: Starting with *v0.5.0*, the agent now has its own package.
 
 Configuration
 -------------
@@ -128,27 +130,6 @@ As with `Burp-UI`_, you need a specific section depending on the *version*
 value. Please refer to the `Burp-UI versions <advanced_usage.html#versions>`__
 section for more details.
 
-Daemon
-------
-
-I have no plan to implement daemon features, but there are a lot of tools
-available to help you achieve such a behavior.
-
-For instance, you can create a systemd service file containing:
-
-::
-
-    [Unit]
-    Description=Burp-UI agent service
-    After=network.target
-
-    [Service]
-    ExecStart=/usr/local/bin/bui-agent
-    User=burpui
-
-
-You can also have a look at how the demo works (it uses supervisor)
-
 Example
 -------
 
@@ -173,7 +154,18 @@ http://front:5000/ for instance, and the `Burp-UI`_ instance (front) will
 Service
 =======
 
-To run bui-agent as service. 
+I have no plan to implement daemon features, but there are a lot of tools
+available to help you achieve such a behavior.
+
+To run bui-agent as a service, a systemd file is provided. You can use it like
+this:
+
+::
+
+    cp /usr/local/share/burpui/contrib/systemd/bui-agent.service /etc/systemd/system/
+    systemctl daemon-reload
+    systemctl enable bui-agent.service
+    systemctl start bui-agent.service
 
 
 

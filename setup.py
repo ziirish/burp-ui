@@ -5,7 +5,7 @@ import os
 import re
 import sys
 
-from subprocess import check_output, call
+from subprocess import check_output, call, STDOUT
 from distutils import log
 from distutils.core import Command
 from setuptools import setup, find_packages
@@ -16,6 +16,7 @@ from setuptools.command.bdist_egg import bdist_egg
 from setuptools.command.egg_info import egg_info
 
 ROOT=os.path.join(os.path.dirname(os.path.realpath(__file__)))
+DEVNULL = open(os.devnull, 'wb')
 
 # Not sure bower was a great idea...
 VENDOR_TO_KEEP = [
@@ -140,21 +141,21 @@ class BuildStatic(Command):
     def run(self):
         os.chdir(ROOT)
         log.info("getting revision number")
-        call('{} ./burpui -m manage compile_translation'.format(sys.executable).split())
+        call('{} ./burpui -m manage compile_translation'.format(sys.executable).split(), stderr=DEVNULL)
         rev = 'stable'
-        if os.path.exists('.git/HEAD'):
+        if os.path.exists('.git') and call("which git", shell=True, stderr=STDOUT, stdout=DEVNULL) == 0:
             try:
-                branch = check_output('sed s@^.*/@@g .git/HEAD'.split()).rstrip()
+                branch = check_output('git rev-parse HEAD', shell=True).rstrip()
                 ver = open(os.path.join('burpui', 'VERSION')).read().rstrip()
                 if branch and 'dev' in ver:
                     rev = branch
-                try:
-                    with open('burpui/RELEASE', 'w') as f:
-                        f.write(rev)
-                except:
-                    pass
             except:
                 pass
+        try:
+            with open('burpui/RELEASE', 'w') as f:
+                f.write(rev)
+        except:
+            pass
         keep = VENDOR_TO_KEEP
         dirlist = []
         for dirname, subdirs, files in os.walk('burpui/static/vendor'):
