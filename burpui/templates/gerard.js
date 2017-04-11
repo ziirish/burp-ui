@@ -454,6 +454,6 @@ $(function() {
 	{% if not login -%}
 	var refresh_running = setInterval(function () {
 		_check_running();
-	}, {{ config.REFRESH * 1000 }});
+	}, {{ config.LIVEREFRESH * 1000 }});
 	{% endif -%}
 });

@@ -229,12 +229,18 @@ class Burp(BUIbackend):
         """See :func:`burpui.misc.backend.interface.BUIbackend.is_one_backup_running`"""
         r = []
         if agent:
-            r = self.servers[agent].is_one_backup_running(agent)
+            try:
+                r = self.servers[agent].is_one_backup_running(agent)
+            except BUIserverException:
+                pass
             self.running[agent] = r
         else:
             r = {}
             for name, serv in iteritems(self.servers):
-                r[name] = serv.is_one_backup_running()
+                try:
+                    r[name] = serv.is_one_backup_running()
+                except BUIserverException:
+                    r[name] = []
 
             self.running = r
         self.refresh = time.time()

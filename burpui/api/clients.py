@@ -118,6 +118,7 @@ class RunningBackup(Resource):
         'running': fields.Boolean(required=True, description='Is there a backup running right now'),
     })
 
+    @api.cache.cached(timeout=60, key_prefix=cache_key)
     @ns.marshal_with(running_fields, code=200, description='Success')
     def get(self, server=None):
         """Tells if a backup is running right now

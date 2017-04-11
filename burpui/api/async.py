@@ -675,6 +675,7 @@ class AsyncRunningBackup(RunningBackup):
     This resource is part of the :mod:`burpui.api.async` module.
     """
 
+    @api.cache.cached(timeout=60, key_prefix=cache_key)
     @ns.marshal_with(
         RunningBackup.running_fields,
         code=200,
