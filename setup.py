@@ -139,8 +139,9 @@ class BuildStatic(Command):
 
     def run(self):
         os.chdir(ROOT)
-        log.info("getting revision number")
+        log.info('compiling translations')
         call('{} ./burpui -m manage compile_translation'.format(sys.executable).split(), stderr=DEVNULL)
+        log.info('getting revision number')
         rev = 'stable'
         if os.path.exists('.git') and call("which git", shell=True, stderr=STDOUT, stdout=DEVNULL) == 0:
             try:
@@ -149,14 +150,16 @@ class BuildStatic(Command):
                 log.info('version: {}'.format(ver))
                 if branch and 'dev' in ver:
                     rev = branch
+                try:
+                    log.info('revision: {}'.format(rev))
+                    with open('burpui/RELEASE', 'wb') as f:
+                        f.write(rev)
+                except:
+                    log.error('Unable to create release file')
             except:
                 pass
-        try:
-            log.info('revision: {}'.format(rev))
-            with open('burpui/RELEASE', 'wb') as f:
-                f.write(rev)
-        except:
-            log.error('Unable to create release file')
+        else:
+            log.info('using upstream revision')
         keep = VENDOR_TO_KEEP
         dirlist = []
         for dirname, subdirs, files in os.walk('burpui/static/vendor'):
