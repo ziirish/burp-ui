@@ -84,9 +84,8 @@ VENDOR_TO_KEEP = [
 
 for p in VENDOR_TO_KEEP:
     if not os.path.exists(p):
-        print('!!', p)
+        log.info('!! missing: {}'.format(p))
 
-# sys.exit(0)
 
 class DevelopWithBuildStatic(develop):
     def install_for_development(self):
@@ -126,7 +125,7 @@ class PyTest(Command):
             errno = call(['make', 'test'])
             raise SystemExit(errno)
         except OSError:
-            print('Looks like the tools to run the tests are missing')
+            log.error('Looks like the tools to run the tests are missing')
 
 
 class BuildStatic(Command):
@@ -154,10 +153,10 @@ class BuildStatic(Command):
                 pass
         try:
             log.info('revision: {}'.format(rev))
-            with open('burpui/RELEASE', 'w') as f:
+            with open('burpui/RELEASE', 'wb') as f:
                 f.write(rev)
         except:
-            pass
+            log.error('Unable to create release file')
         keep = VENDOR_TO_KEEP
         dirlist = []
         for dirname, subdirs, files in os.walk('burpui/static/vendor'):
