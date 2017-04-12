@@ -467,7 +467,7 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
             cache.init_app(app)
         try:
             # Limiter setup
-            if not app.limiter or str(app.limiter).lower() not \
+            if app.limiter or str(app.limiter).lower() not \
                     in ['none', 'false']:  # pragma: no cover
                 from .ext.limit import limiter
                 app.config['RATELIMIT_HEADERS_ENABLED'] = True
@@ -508,17 +508,6 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
             logger.warning('Unable to initialize limiter: {}'.format(str(exp)))
     else:
         cache.init_app(app)
-
-    # Create celery app if enabled
-    create_celery(app, warn=False)
-    if app.config['WITH_CELERY']:
-        # may fail in case redis is not running (this can happen while running
-        # the bui-manage script)
-        try:
-            from .api.async import force_scheduling_now
-            force_scheduling_now()
-        except:  # pragma: no cover
-            pass
 
     # Initialize i18n
     babel.init_app(app)
@@ -566,6 +555,17 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
     app.config.setdefault('BOWER_REPLACE_URL_FOR', True)
     bower = Bower()
     bower.init_app(app)
+
+    # Create celery app if enabled
+    create_celery(app, warn=False)
+    if app.config['WITH_CELERY']:
+        # may fail in case redis is not running (this can happen while running
+        # the bui-manage script)
+        try:
+            from .api.async import force_scheduling_now
+            force_scheduling_now()
+        except:  # pragma: no cover
+            pass
 
     def _check_session(user, request, api=False):
         """Check if the session is in the db"""

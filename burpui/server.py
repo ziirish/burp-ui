@@ -301,6 +301,7 @@ class BUIServer(Flask):
         self.logger.info('auth: {}'.format(self.auth))
         self.logger.info('celery: {}'.format(self.use_celery))
         self.logger.info('redis: {}'.format(self.redis))
+        self.logger.info('limiter: {}'.format(self.limiter))
         self.logger.info('database: {}'.format(self.database))
         self.logger.info('with SQL: {}'.format(self.config['WITH_SQL']))
         self.logger.info('with Celery: {}'.format(self.config['WITH_CELERY']))
