@@ -573,7 +573,10 @@ class AllClients(Resource):
                     grants[serv] = 'all'
             for (serv, clients) in iteritems(grants):
                 if not isinstance(clients, list):
-                    clients = [x['name'] for x in bui.client.get_all_clients(agent=serv)]
+                    try:
+                        clients = [x['name'] for x in bui.client.get_all_clients(agent=serv)]
+                    except BUIserverException:
+                        clients = []
                 ret += [{'name': x, 'agent': serv} for x in clients]
 
         return ret

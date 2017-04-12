@@ -213,7 +213,7 @@ class Live(Resource):
                 server not in bui.acl.servers(self.username)):
             self.abort(403, 'You are not allowed to view stats of this server')
         if server:
-            l = bui.client.is_one_backup_running(server)[server]
+            l = bui.client.is_one_backup_running(server)
             # ACL
             if bui.acl and not self.is_admin:
                 allowed = bui.acl.clients(self.username, server)
