@@ -147,11 +147,13 @@ class BuildStatic(Command):
             try:
                 branch = check_output('git rev-parse HEAD', shell=True).rstrip()
                 ver = open(os.path.join('burpui', 'VERSION')).read().rstrip()
+                log.info('version: {}'.format(ver))
                 if branch and 'dev' in ver:
                     rev = branch
             except:
                 pass
         try:
+            log.info('revision: {}'.format(rev))
             with open('burpui/RELEASE', 'w') as f:
                 f.write(rev)
         except:
