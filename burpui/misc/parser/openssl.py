@@ -11,7 +11,7 @@ import codecs
 import logging
 import subprocess
 
-from ..._compat import PY3
+from ..._compat import PY3, to_unicode
 
 from hashlib import md5
 from six import iteritems
@@ -108,13 +108,13 @@ class OSSLAuth(object):
         c_cert = self._get_crt_path(client)
         try:
             DEVNULL = open(os.devnull, 'w')
-            openssl = subprocess.check_output([
+            openssl = to_unicode(subprocess.check_output([
                 'which',
                 'openssl'],
                 stderr=DEVNULL
-            ).rstrip('\n')
+            )).rstrip('\n')
             # FIXME: Don't know why pyOpenssl does not return the hex serial :-/
-            _, serial = subprocess.check_output([
+            _, serial = to_unicode(subprocess.check_output([
                 openssl,
                 'x509',
                 '-serial',
@@ -122,7 +122,7 @@ class OSSLAuth(object):
                 '-in',
                 c_cert],
                 stderr=DEVNULL
-            ).rstrip('\n').split('=')
+            )).rstrip('\n').split('=')
             self.logger.debug('{} serial: {}'.format(client, serial))
             subprocess.check_call([
                 self.global_conf.get('ca_burp_ca'),

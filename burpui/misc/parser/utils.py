@@ -842,7 +842,7 @@ class Config(File):
 
     def _parse(self):
 
-        orig = self.files
+        orig = self.files.copy()
         for root, conf in iteritems(orig):
             conf.parse()
             for key, val in iteritems(conf.flatten('include', False)):
