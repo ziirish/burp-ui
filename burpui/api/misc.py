@@ -25,7 +25,7 @@ bui = current_app  # type: BUIServer
 ns = api.namespace('misc', 'Misc methods')
 
 counters_fields = ns.model('Counters', {
-    'phase': fields.Integer(description='Backup phase'),
+    'phase': fields.String(description='Backup phase'),
     'Total': fields.List(fields.Integer, description='new/deleted/scanned/unchanged/total', attribute='total'),
     'Files': fields.List(fields.Integer, description='new/deleted/scanned/unchanged/total', attribute='files'),
     'Files (encrypted)': fields.List(fields.Integer, description='new/deleted/scanned/unchanged/total', attribute='files_encrypted'),
