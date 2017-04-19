@@ -10,6 +10,7 @@
 """
 import os
 import sys
+import uuid
 import logging
 
 from flask import Blueprint, Response, request, current_app, session
@@ -29,7 +30,14 @@ EXEMPT_METHODS = set(['OPTIONS'])
 
 
 def cache_key():
-    return '{}-{}-{}-{}'.format(current_user.name, request.path, request.values, session.get('language', ''))
+    key = '{}-{}-{}-{}-{}'.format(
+        session.get('login', uuid.uuid4()),
+        request.path,
+        request.values,
+        request.headers.get('X-Session-Tag', ''),
+        session.get('language', '')
+    )
+    return key
 
 
 def api_login_required(func):
@@ -84,15 +92,23 @@ class Api(ApiPlus):
                         ext == '.py' and
                         name not in ['__init__', '.', '..']):
                     mod = '.' + name
-                    if name not in self.CELERY_REQUIRED or config['WITH_CELERY']:
+                    if name not in self.CELERY_REQUIRED or \
+                            config['WITH_CELERY']:
                         self.logger.debug('Loading API module: {}'.format(mod))
                         try:
                             import_module(mod, __name__)
                         except:  # pragma: no cover
                             import traceback
-                            self.logger.critical('Unable to load {}:\n{}'.format(mod, traceback.format_exc()))
+                            self.logger.critical(
+                                'Unable to load {}:\n{}'.format(
+                                    mod,
+                                    traceback.format_exc()
+                                )
+                            )
                     else:
-                        self.logger.warning('Skipping API module: {}'.format(mod))
+                        self.logger.warning(
+                            'Skipping API module: {}'.format(mod)
+                        )
 
     def acl_admin_required(self, message='Access denied', code=403):
         def decorator(func):
@@ -121,7 +137,10 @@ class Api(ApiPlus):
             @wraps(func)
             def decorated(resource, *args, **kwargs):
                 if config['BUI_DEMO']:
-                    resource.abort(405, 'Sorry, this feature is not available on the demo')
+                    resource.abort(
+                        405,
+                        'Sorry, this feature is not available on the demo'
+                    )
                 return func(resource, *args, **kwargs)
             return decorated
         return decorator
@@ -137,7 +156,13 @@ class Api(ApiPlus):
 
 
 apibp = Blueprint('api', __name__, url_prefix='/api')
-api = Api(apibp, title='Burp-UI API', description='Burp-UI API to interact with burp', doc='/doc', decorators=[api_login_required])
+api = Api(
+    apibp,
+    title='Burp-UI API',
+    description='Burp-UI API to interact with burp',
+    doc='/doc',
+    decorators=[api_login_required]
+)
 
 
 @api.errorhandler(BUIserverException)

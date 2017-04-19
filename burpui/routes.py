@@ -8,6 +8,7 @@
 
 """
 import math
+import uuid
 
 from flask import request, render_template, redirect, url_for, abort, \
     flash, Blueprint as FlaskBlueprint, session, current_app
@@ -405,6 +406,8 @@ def login():
         if 'login' in session and session['login'] != form.username.data:
             session.clear()
             session['login'] = form.username.data
+        if 'tag_id' not in session:
+            session['tag_id'] = uuid.uuid4()
         session['language'] = form.language.data
         user = bui.uhandler.user(form.username.data, refresh)
         if user.is_active and user.login(form.password.data):

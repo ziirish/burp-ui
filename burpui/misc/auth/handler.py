@@ -23,7 +23,7 @@ class UserAuthHandler(BUIhandler):
             back = self.app.auth
             for au in back:
                 if au == me:
-                    self.app.logger.error('Recursive import not permited!')
+                    self.app.logger.critical('Recursive import not permitted!')
                     continue
                 try:
                     (modpath, _) = __name__.rsplit('.', 1)

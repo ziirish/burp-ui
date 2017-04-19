@@ -3,9 +3,12 @@ var NOTIF_WARNING = 1;
 var NOTIF_ERROR   = 2;
 var NOTIF_INFO    = 3;
 
+var SESSION_TAG = $('meta[name=session]').attr("content");
+
 var _ajax_setup = function() {
 	$.ajaxSetup({
-		headers: { 'X-From-UI': true },
+		headers: { 'X-From-UI': true, 'X-Session-Tag': SESSION_TAG },
+		data: { '_session': SESSION_TAG },
 	});
 };
 _ajax_setup();
