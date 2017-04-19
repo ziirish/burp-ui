@@ -60,7 +60,7 @@ author = u'Ziirish'
 # built documents.
 #
 # The short X.Y version.
-version = open('../VERSION').read().rstrip()
+version = open('../burpui/VERSION').read().rstrip()
 # The full version, including alpha/beta/rc tags.
 release = version
 
