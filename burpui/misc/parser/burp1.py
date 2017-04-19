@@ -75,6 +75,8 @@ class Parser(Doc):
 
     @property
     def clients_conf(self):
+        if self._clientconfdir_changed():
+            self._load_conf_clients()
         for client, conf in iteritems(self._clients_conf):
             if conf.changed:
                 conf.parse(True)
