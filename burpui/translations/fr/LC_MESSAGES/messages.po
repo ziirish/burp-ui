@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2017-03-07 11:27+0100\n"
+"POT-Creation-Date: 2017-04-20 08:39+0200\n"
 "PO-Revision-Date: 2016-08-25 15:19+0200\n"
 "Last-Translator: Ziirish <hi+burpui@ziirish.me>\n"
 "Language: fr\n"
@@ -18,11 +18,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.3.4\n"
 
-#: burpui/app.py:546
+#: burpui/app.py:537
 msgid "Please log in to access this page."
 msgstr "Veuillez vous authentifier pour accéder à cette page."
 
-#: burpui/app.py:549
+#: burpui/app.py:540
 msgid "Please reauthenticate to access this page."
 msgstr "Veuillez vous ré-authentifier pour accéder à cette page."
 
@@ -43,23 +43,23 @@ msgstr "Langue"
 msgid "Remember me"
 msgstr "Rester connecté"
 
-#: burpui/routes.py:188 burpui/routes.py:195
+#: burpui/routes.py:189 burpui/routes.py:196
 msgid "Sorry, there are no running backups"
-msgstr "Désolé, il n&#39;y a pas de backups"
+msgstr "Désolé, il n'y a pas de backups"
 
-#: burpui/routes.py:215 burpui/routes.py:253
+#: burpui/routes.py:216 burpui/routes.py:254
 msgid "Sorry, there are no restore file found for this client"
 msgstr "Désolé, il n&#39;y a pas restoration prévue pour ce client"
 
-#: burpui/routes.py:414
+#: burpui/routes.py:417
 msgid "Logged in successfully"
 msgstr "Connecté avec succès"
 
-#: burpui/routes.py:424
+#: burpui/routes.py:427
 msgid "Wrong username or password"
 msgstr "Mauvais nom d&#39;utilisateur ou mot de passe"
 
-#: burpui/routes.py:426
+#: burpui/routes.py:429
 msgid "Wrong CSRF token, please try again"
 msgstr "Mauvais token CSRF, veuillez réessayer"
 
@@ -1358,6 +1358,10 @@ msgstr "État"
 msgid "Last Backup"
 msgstr "Dernière sauvegarde"
 
+#: burpui/templates/clients.html:25
+msgid "Monitor"
+msgstr "Moniteur"
+
 #: burpui/templates/live-monitor.html:6 burpui/templates/topbar.html:49
 msgid "Live monitor"
 msgstr "Moniteur temps réél"
@@ -1733,6 +1737,10 @@ msgstr "jamais"
 #: burpui/templates/js/clients.js:22
 msgid "now"
 msgstr "maintenant"
+
+#: burpui/templates/js/clients.js:110
+msgid "view"
+msgstr ""
 
 #: burpui/templates/js/settings.js:203 burpui/templates/js/user.js:61
 msgid "Saving..."

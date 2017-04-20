@@ -13,40 +13,40 @@
           <ul class="nav navbar-nav navbar-right">
             <li class="detail {% if about %}active{% endif %}">
               <a href="{{ url_for('view.about') }}">
-                <span class="glyphicon glyphicon-question-sign"></span><span class="dtl">&nbsp;{{ _('About') }}</span>
+                <i class="fa fa-question-circle" aria-hidden="true"></i><span class="dtl">&nbsp;{{ _('About') }}</span>
               </a>
             </li>
             {% if not login -%}
               {% if not config.STANDALONE -%}
             <li class="detail {% if not server and not about and not me and not admin %}active{% endif %}">
               <a href="{{ url_for('view.home') }}">
-                <span class="glyphicon glyphicon-hdd"></span><span class="dtl">&nbsp;{{ _('Servers') }}</span>
+                <span class="glyphicon glyphicon-hdd" aria-hidden="true"></span><span class="dtl">&nbsp;{{ _('Servers') }}</span>
               </a>
             </li>
                 {% if server -%}
             <li class="detail {% if clients %}active{% endif %}">
               <a href="{{ url_for('view.clients', server=server) }}">
-                <span class="glyphicon glyphicon-tasks"></span><span class="dtl">&nbsp;Clients</span>
+                <i class="fa fa-tasks" aria-hidden="true"></i><span class="dtl">&nbsp;{{ _('Clients') }}</span>
               </a>
             </li>
                 {% endif -%}
         {% else -%}
             <li class="detail {% if clients %}active{% endif %}">
               <a href="{{ url_for('view.home') }}">
-                <span class="glyphicon glyphicon-tasks"></span><span class="dtl">&nbsp;Clients</span>
+                <i class="fa fa-tasks" aria-hidden="true"></i><span class="dtl">&nbsp;{{ _('Clients') }}</span>
               </a>
             </li>
         {% endif -%}
         {% if config.STANDALONE or server or me -%}
             <li class="detail {% if settings %}active{% endif %}">
               <a href="{{ url_for('view.settings', server=server) }}">
-                <span class="glyphicon glyphicon-wrench"></span><span class="dtl">&nbsp;{{ _('Settings') }}</span>
+                <i class="fa fa-wrench" aria-hidden="true"></i><span class="dtl">&nbsp;{{ _('Settings') }}</span>
               </a>
             </li>
               {% endif -%}
             <li class="detail {% if live %}active{% endif %}">
               <a href="{{ url_for('view.live_monitor', server=server) }}">
-                <span id="toblink" class="glyphicon glyphicon-screenshot"></span><span class="dtl">&nbsp;{{ _('Live monitor') }}</span>
+                <i class="fa fa-terminal" id="toblink" aria-hidden="true"></i><span class="dtl">&nbsp;{{ _('Live monitor') }}</span>
               </a>
             </li>
               {% if current_user and current_user.is_authenticated -%}
@@ -54,25 +54,25 @@
             <!--
             <li class="detail {% if admin %}active{% endif %}">
               <a href="{{ url_for('view.admin') }}">
-                <span class="glyphicon glyphicon-cog"></span><span class="dtl">&nbsp;{{ _('Administration') }}</span>
+              <i class="fa fa-cogs" aria-hidden="true"></i><span class="dtl">&nbsp;{{ _('Administration') }}</span>
               </a>
             </li>
             -->
                 {% endif -%}
             <li class="detail {% if me %}active{% endif %}">
               <a href="{{ url_for('view.me') }}">
-                <span class="glyphicon glyphicon-user"></span><span class="dtl">&nbsp;{{ _('User settings') }}</span>
+                <i class="fa fa-user-circle" aria-hidden="true"></i><span class="dtl">&nbsp;{{ _('User settings') }}</span>
               </a>
             </li>
             <li class="detail">
               <a href="{{ url_for('view.logout') }}">
-                <span class="glyphicon glyphicon-log-out"></span><span class="dtl">&nbsp;{{ _('Logout') }}<small>({{ current_user.name }})</small></span>
+                <i class="fa fa-sign-out" aria-hidden="true"></i><span class="dtl">&nbsp;{{ _('Logout') }}{% if 'login' in session %}&nbsp;<small>({{ session['login'] }})</small>{% endif %}</span>
               </a>
             </li>
               {% endif -%}
             <li {% if live %}ng-click="refresh"{% endif %}>
-              <a id="refresh" href="#">
-                <span class="glyphicon glyphicon-refresh"></span><span class="hidden-md hidden-lg">&nbsp;{{ _('Refresh') }}</span>
+              <a id="refresh" href="#" title="{{ _('Refresh') }}">
+                <i class="fa fa-refresh" aria-hidden="true"></i><span class="hidden-md hidden-lg">&nbsp;{{ _('Refresh') }}</span>
               </a>
             </li>
             {% endif -%}
