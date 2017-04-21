@@ -182,6 +182,8 @@ what is wrong.
 If you are using `Gunicorn`_, it is possible you reached the limit of *status
 children*. You can safely increase the ``max_status_children`` setting in your
 *burp-server.conf* file to 15 (the default is 5).
+You can also check your *status port* is open and/or accessible by your client.
+To do so, you can run the ``burp -a m`` command.
 
 How can I contribute?
 ---------------------

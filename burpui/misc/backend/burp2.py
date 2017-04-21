@@ -245,7 +245,8 @@ class Burp(Burp1):
             except BUIserverException:
                 pass
             except OSError as exp:
-                self.logger.critical(str(exp))
+                msg = str(exp)
+                self.logger.critical(msg)
 
     def __exit__(self, typ, value, traceback):
         """try not to leave child process server side"""

@@ -430,10 +430,7 @@ def login():
 def logout():
     session_manager.delete_session()
     # cleanup the session at logout to avoid further reuse by another user
-    # we can keep the language since it is non critical imho
-    lang = session['language']
     session.clear()
-    session['language'] = lang
     logout_user()
     return redirect(url_for('.home'))
 

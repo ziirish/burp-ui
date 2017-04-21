@@ -8,6 +8,7 @@
 
 """
 import re
+import uuid
 import datetime
 
 from flask import session, request
@@ -147,7 +148,7 @@ class SessionManager(object):
     def get_session_id(self):
         """Return the current session id"""
         if self.app.storage and self.app.storage.lower() != 'default':
-            return getattr(session, 'sid', None)
+            return getattr(session, 'sid', str(uuid.uuid4()))
         return None
 
     def get_expired_sessions(self):
