@@ -1,7 +1,7 @@
 Burp-UI
 =======
 
-.. image:: https://git.ziirish.me/ci/projects/1/status.png?ref=master
+.. image:: https://git.ziirish.me/ziirish/burp-ui/badges/master/build.svg
     :target: https://git.ziirish.me/ziirish/burp-ui/pipelines
     :alt: Build Status
 
