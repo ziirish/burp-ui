@@ -22,6 +22,7 @@ from ..sessions import session_manager
 from ..ext.async import celery
 from ..ext.cache import cache
 from ..config import config
+from .._compat import PY3
 from ..decorators import browser_cache
 
 from six import iteritems
@@ -33,6 +34,9 @@ from datetime import timedelta, datetime
 from werkzeug.datastructures import Headers
 from celery.schedules import crontab
 from celery.utils.log import get_task_logger
+
+if not PY3:
+    from itertools import imap as map
 
 if config.get('WITH_SQL'):
     from ..ext.sql import db
@@ -137,10 +141,10 @@ def ping_backend():
             except BUIserverException:
                 return False
 
-        map(
+        list(map(
             __status,
             iteritems(bui.client.servers)
-        )
+        ))
 
 
 @celery.task(bind=True)
@@ -205,7 +209,7 @@ def cleanup_expired_sessions():
         if ret:
             session_manager.delete_session_by_id(sess.uuid)
         return ret
-    map(expires, session_manager.get_expired_sessions())
+    list(map(expires, session_manager.get_expired_sessions()))
 
 
 @celery.task
@@ -353,6 +357,7 @@ def force_scheduling_now():
     get_all_backups.delay()
     backup_running.delay()
     get_all_clients_reports.delay()
+    cleanup_expired_sessions.delay()
 
 
 @ns.route('/status/<task_id>', endpoint='async_restore_status')
