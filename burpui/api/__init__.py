@@ -11,6 +11,7 @@
 import os
 import sys
 import uuid
+import hashlib
 import logging
 
 from flask import Blueprint, Response, request, current_app, session
@@ -37,6 +38,7 @@ def cache_key():
         request.headers.get('X-Session-Tag', ''),
         session.get('language', '')
     )
+    key = hashlib.sha256(key).hexdigest()
     return key
 
 

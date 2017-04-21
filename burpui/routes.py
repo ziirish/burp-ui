@@ -402,12 +402,7 @@ def login():
     if form.validate_on_submit():
         # allow to switch to another backend
         refresh = True
-        # prevent session to be reused by another user
-        if 'login' in session and session['login'] != form.username.data:
-            session.clear()
-            session['login'] = form.username.data
-        if 'tag_id' not in session:
-            session['tag_id'] = uuid.uuid4()
+        session['tag_id'] = uuid.uuid4()
         session['language'] = form.language.data
         user = bui.uhandler.user(form.username.data, refresh)
         if user.is_active and user.login(form.password.data):
@@ -433,10 +428,12 @@ def login():
 @view.route('/logout')
 @login_required
 def logout():
-    for key in ['authenticated', 'persistent']:
-        if key in session:
-            session.pop(key)
     session_manager.delete_session()
+    # cleanup the session at logout to avoid further reuse by another user
+    # we can keep the language since it is non critical imho
+    lang = session['language']
+    session.clear()
+    session['language'] = lang
     logout_user()
     return redirect(url_for('.home'))
 
