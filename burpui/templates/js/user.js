@@ -300,12 +300,6 @@ var _sessions_table = $('#table-sessions').dataTable( {
 				return '<span data-toggle="tooltip" title="'+data+'">'+moment(data, moment.ISO_8601).fromNow()+'</span>';
 			}
 		},
-		{
-			data: null,
-			render: function( data, type, row ) {
-				return '<button class="btn btn-danger" data-toggle="revoke-session" data-id="'+data.uuid+'" data-current="'+data.current+'" data-misc="'+escape(JSON.stringify(data, null, 4))+'"><span class="glyphicon glyphicon-trash"></span></button>';
-			}
-		}
 	],
 });
 var first = true;
@@ -517,7 +511,7 @@ function click(d) {
 	update_tree(d);
 }
 
-d3.json("{{ url_for('api.clients_all') }}")
+d3.json("{{ url_for('api.clients_all') }}?_session=" + SESSION_TAG)
 	.header('X-From-UI', true)
 	.get(function(error, data) {
 		if (! error) {
