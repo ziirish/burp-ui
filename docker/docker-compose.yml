@@ -16,7 +16,7 @@ redis:
 
 pgsql:
   restart: always
-  image: registry.ziirish.me/ziirish/burp-ui:pgsql
+  image: registry.ziirish.me/ziirish/burp-ui/pgsql:latest
 ## Additionally, you may want to persist data
 ## volumes:
 ##   - /var/lib/buistore/pgsql:/var/lib/postgresql/data
