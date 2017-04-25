@@ -152,7 +152,7 @@ class Wildcard(fields.List):
         return self.container.format(value)
 
 
-def match_attribute(attr):
+def match_attributes(attr):
     return not(inspect.isroutine(attr) or
                (attr.__name__.startswith('__') and
                 attr.__name__.endswith('__')))
