@@ -146,7 +146,7 @@ follow:
     limiter = false
     # limiter ratio
     # see https://flask-limiter.readthedocs.io/en/stable/#ratelimit-string
-    ratio = 20/minute
+    ratio = 60/minute
 
 
 Experimental
