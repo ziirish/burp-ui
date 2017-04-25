@@ -126,7 +126,16 @@ tracker <https://git.ziirish.me/ziirish/burp-ui/issues>`__.
 All issues should contain the used command line to reproduce the problem, the
 debug output and both versions of burp and ``Burp-UI`` you are using.
 
-You can get those informations using the following commands:
+A Bug Report template is available directly in the Issue Tracker:
+
+.. image:: _static/issue_template.png
+    :alt: Issue Template
+
+The template illustrate the commands to run in order to provide as much details
+as you can in order to help reproduce the issue.
+
+If you are running ``Burp-UI`` bellow *v0.5.0*, you can get those informations
+using the following commands:
 
 ::
 

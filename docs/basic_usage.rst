@@ -36,6 +36,13 @@ You also need to configure a *restore_client* on your burp server corresponding
 to the client you will use through `Burp-UI`_ (see the `restoration procedure
 <#restoration>`_ above for details on how to do this)
 
+Tools
+-----
+
+Since *v0.5.0*, `Burp-UI`_ ships with some tools to help you configure both Burp
+and `Burp-UI`_. Please refer to the `bui-manage <manage.html#diag>`_ page for
+details.
+
 
 Options
 -------

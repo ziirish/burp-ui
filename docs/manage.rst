@@ -154,6 +154,7 @@ The available options are:
 ::
 
     bui-manage setup_burp --help
+
     Usage: flask setup_burp [OPTIONS]
 
       Setup burp client for burp-ui.
@@ -191,6 +192,83 @@ The docker image uses this script like this:
         -s $BURP_SERVER_CONFIG -h $BURP_SERVER_ADDR -c $BURPUI_CLIENT_NAME \
         -r $REDIS_SERVER -d $DATABASE_URL
 
+
+Sysinfo
+-------
+
+.. note::
+    This tool first appeard with `Burp-UI`_ *v0.5.0*.
+
+This tool will help you to gather system informations in order to make a
+detailed bug report.
+
+Example:
+
+::
+
+    bui-manage sysinfo
+
+    Python version:  2.7.9
+    Burp-UI version: 0.5.0 (stable)
+    Single mode:     True
+    Backend version: 2
+
+
+Diag
+----
+
+.. note::
+    This tool first appeard with `Burp-UI`_ *v0.5.0*.
+
+This tool will help you detect misconfiguration. It will **not** modify your
+files, you will have to use the `Configure <#configure>`_ tool for that.
+
+The available options are:
+
+::
+
+    bui-manage diag --help
+
+    Usage: flask diag [OPTIONS]
+
+      Check Burp-UI is correctly setup
+
+    Options:
+      -c, --client TEXT  Name of the burp client that will be used by Burp-UI
+                         (defaults to "bui")
+      -h, --host TEXT    Address of the status server (defaults to "::1")
+      -t, --tips         Show you some tips
+      --help             Show this message and exit.
+
+
+Examples:
+
+::
+
+    bui-manage diag
+
+    The cname of your burp client does not match: hydrogen != bui
+    The burp server address does not match: 127.0.0.1 != ::1
+    'max_status_children' is to low, you need to set it to 15 or more. Please edit your /etc/burp/burp-server.conf file
+    Your burp client is not listed as a 'restore_client'. You won't be able to view other clients stats!
+    For performance reasons, it is recommanded to enable the 'monitor_browse_cache'
+    Unable to find the /etc/burp/clientconfdir/bui file
+    Some errors have been found in your configuration. Please make sure you ran this command with the right flags! (see --help for details)
+
+    bui-manage diag -c hydrogen -h 127.0.0.1 -t
+
+    'max_status_children' is to low, you need to set it to 15 or more. Please edit your /etc/burp/burp-server.conf file
+    Your burp client is not listed as a 'restore_client'. You won't be able to view other clients stats!
+    For performance reasons, it is recommanded to enable the 'monitor_browse_cache'
+    Well, if you are sure about your settings, you can run the following command to help you setup your Burp-UI agent. (Note, the '--dry' flag is here to show you the modifications that will be applied. Once you are OK with those, you can re-run the command without the '--dry' flag):
+        > bui-manage setup_burp --host="127.0.0.1" --client="hydrogen" --dry
+
+
+When you configuration is OK, you should see this message:
+
+::
+
+    Congratulations! It seems everything is alright. Burp-UI should run without any issue now.
 
 .. _Burp-UI: https://git.ziirish.me/ziirish/burp-ui
 .. _Burp: http://burp.grke.org/

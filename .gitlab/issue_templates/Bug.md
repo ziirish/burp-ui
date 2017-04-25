@@ -20,6 +20,8 @@ following informations:
 - Any piece of configuration that might help understand/reproduce the problem
 - Any other information that you may find useful such as screenshots, etc.
 
+**WARNING**: be sure to remove any sensitive data from your logs/configurations.
+
 Thanks
 
 Below is an example of a expected bug report:
@@ -41,18 +43,14 @@ $ burp -v
 burp-2.0.54
 ```
 
-# Burp-UI
+# Sysinfo
 
 ```
-$ burp-ui -V -v
-burp-ui: v0.4.0 (stable)
-```
-
-# Python
-
-```
-$ python --version
-Python 3.6.0
+$ bui-manage sysinfo
+Python version:  3.6.1
+Burp-UI version: 0.5.0 (stable)
+Single mode:     True
+Backend version: 2
 ```
 
 # Steps to reproduce
@@ -66,27 +64,27 @@ Python 3.6.0
 ```
 10.0.0.100 - - [11/Apr/2017 15:10:31] "POST /login?next=%2F HTTP/1.1" 500 -
 Traceback (most recent call last):
-  File "/usr/local/lib/python2.7/dist-packages/flask/app.py", line 1994, in __call__
+  File "/usr/local/lib/python3.6/dist-packages/flask/app.py", line 1994, in __call__
     return self.wsgi_app(environ, start_response)
   File "/opt/workspace/burp-ui/burpui/utils.py", line 412, in __call__
     return self.wsgi_app(environ, start_response)
-  File "/usr/local/lib/python2.7/dist-packages/flask/app.py", line 1985, in wsgi_app
+  File "/usr/local/lib/python3.6/dist-packages/flask/app.py", line 1985, in wsgi_app
     response = self.handle_exception(e)
-  File "/usr/local/lib/python2.7/dist-packages/flask_restplus/api.py", line 557, in error_router
+  File "/usr/local/lib/python3.6/dist-packages/flask_restplus/api.py", line 557, in error_router
     return original_handler(e)
-  File "/usr/local/lib/python2.7/dist-packages/flask/app.py", line 1540, in handle_exception
+  File "/usr/local/lib/python3.6/dist-packages/flask/app.py", line 1540, in handle_exception
     reraise(exc_type, exc_value, tb)
-  File "/usr/local/lib/python2.7/dist-packages/flask/app.py", line 1982, in wsgi_app
+  File "/usr/local/lib/python3.6/dist-packages/flask/app.py", line 1982, in wsgi_app
     response = self.full_dispatch_request()
-  File "/usr/local/lib/python2.7/dist-packages/flask/app.py", line 1614, in full_dispatch_request
+  File "/usr/local/lib/python3.6/dist-packages/flask/app.py", line 1614, in full_dispatch_request
     rv = self.handle_user_exception(e)
-  File "/usr/local/lib/python2.7/dist-packages/flask_restplus/api.py", line 557, in error_router
+  File "/usr/local/lib/python3.6/dist-packages/flask_restplus/api.py", line 557, in error_router
     return original_handler(e)
-  File "/usr/local/lib/python2.7/dist-packages/flask/app.py", line 1517, in handle_user_exception
+  File "/usr/local/lib/python3.6/dist-packages/flask/app.py", line 1517, in handle_user_exception
     reraise(exc_type, exc_value, tb)
-  File "/usr/local/lib/python2.7/dist-packages/flask/app.py", line 1612, in full_dispatch_request
+  File "/usr/local/lib/python3.6/dist-packages/flask/app.py", line 1612, in full_dispatch_request
     rv = self.dispatch_request()
-  File "/usr/local/lib/python2.7/dist-packages/flask/app.py", line 1598, in dispatch_request
+  File "/usr/local/lib/python3.6/dist-packages/flask/app.py", line 1598, in dispatch_request
     return self.view_functions[rule.endpoint](**req.view_args)
   File "/opt/workspace/burp-ui/burpui/routes.py", line 409, in login
     user = bui.uhandler.user(form.username.data, refresh)
@@ -96,29 +94,29 @@ Traceback (most recent call last):
     return self.session_expired_by_id(self.get_session_id())
   File "/opt/workspace/burp-ui/burpui/sessions.py", line 47, in session_expired_by_id
     store = Session.query.filter_by(uuid=id).first()
-  File "/usr/local/lib/python2.7/dist-packages/sqlalchemy/orm/query.py", line 2697, in first
+  File "/usr/local/lib/python3.6/dist-packages/sqlalchemy/orm/query.py", line 2697, in first
     ret = list(self[0:1])
-  File "/usr/local/lib/python2.7/dist-packages/sqlalchemy/orm/query.py", line 2489, in __getitem__
+  File "/usr/local/lib/python3.6/dist-packages/sqlalchemy/orm/query.py", line 2489, in __getitem__
     return list(res)
-  File "/usr/local/lib/python2.7/dist-packages/sqlalchemy/orm/query.py", line 2797, in __iter__
+  File "/usr/local/lib/python3.6/dist-packages/sqlalchemy/orm/query.py", line 2797, in __iter__
     return self._execute_and_instances(context)
-  File "/usr/local/lib/python2.7/dist-packages/sqlalchemy/orm/query.py", line 2820, in _execute_and_instances
+  File "/usr/local/lib/python3.6/dist-packages/sqlalchemy/orm/query.py", line 2820, in _execute_and_instances
     result = conn.execute(querycontext.statement, self._params)
-  File "/usr/local/lib/python2.7/dist-packages/sqlalchemy/engine/base.py", line 945, in execute
+  File "/usr/local/lib/python3.6/dist-packages/sqlalchemy/engine/base.py", line 945, in execute
     return meth(self, multiparams, params)
-  File "/usr/local/lib/python2.7/dist-packages/sqlalchemy/sql/elements.py", line 263, in _execute_on_connection
+  File "/usr/local/lib/python3.6/dist-packages/sqlalchemy/sql/elements.py", line 263, in _execute_on_connection
     return connection._execute_clauseelement(self, multiparams, params)
-  File "/usr/local/lib/python2.7/dist-packages/sqlalchemy/engine/base.py", line 1053, in _execute_clauseelement
+  File "/usr/local/lib/python3.6/dist-packages/sqlalchemy/engine/base.py", line 1053, in _execute_clauseelement
     compiled_sql, distilled_params
-  File "/usr/local/lib/python2.7/dist-packages/sqlalchemy/engine/base.py", line 1189, in _execute_context
+  File "/usr/local/lib/python3.6/dist-packages/sqlalchemy/engine/base.py", line 1189, in _execute_context
     context)
-  File "/usr/local/lib/python2.7/dist-packages/sqlalchemy/engine/base.py", line 1393, in _handle_dbapi_exception
+  File "/usr/local/lib/python3.6/dist-packages/sqlalchemy/engine/base.py", line 1393, in _handle_dbapi_exception
     exc_info
-  File "/usr/local/lib/python2.7/dist-packages/sqlalchemy/util/compat.py", line 202, in raise_from_cause
+  File "/usr/local/lib/python3.6/dist-packages/sqlalchemy/util/compat.py", line 202, in raise_from_cause
     reraise(type(exception), exception, tb=exc_tb, cause=cause)
-  File "/usr/local/lib/python2.7/dist-packages/sqlalchemy/engine/base.py", line 1182, in _execute_context
+  File "/usr/local/lib/python3.6/dist-packages/sqlalchemy/engine/base.py", line 1182, in _execute_context
     context)
-  File "/usr/local/lib/python2.7/dist-packages/sqlalchemy/engine/default.py", line 469, in do_execute
+  File "/usr/local/lib/python3.6/dist-packages/sqlalchemy/engine/default.py", line 469, in do_execute
     cursor.execute(statement, parameters)
 OperationalError: (sqlite3.OperationalError) no such table: session [SQL: u'SELECT session.id AS session_id, session.uuid AS session_uuid, session.user AS session_user, session.ip AS session_ip, session.ua AS session_ua, session.timestamp AS session_timestamp, session.expire AS session_expire, session.permanent AS session_permanent, session.api AS session_api \nFROM session \nWHERE session.uuid = ?\n LIMIT ? OFFSET ?'] [parameters: (u'ae350427-99f4-4592-94ec-6f6a27aee59f', 1, 0)]
 ```
@@ -132,7 +130,7 @@ version = 1
 # Handle multiple bui-servers or not
 # If set to 'false', you will need to declare at least one 'Agent' section (see
 # bellow)
-single = false
+single = true
 # authentication plugin (mandatory)
 # list the misc/auth directory to see the available backends
 # to disable authentication you can set "auth: none"

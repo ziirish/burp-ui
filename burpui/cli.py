@@ -17,8 +17,7 @@ from .app import create_app
 
 ROOT = os.path.dirname(os.path.realpath(__file__))
 DEBUG = os.environ.get('BUI_DEBUG') or os.environ.get('FLASK_DEBUG') or False
-if DEBUG and DEBUG.lower() in ['true', 'yes', '1']:
-    DEBUG = True
+DEBUG = DEBUG and DEBUG.lower() in ['true', 'yes', '1']
 
 VERBOSE = os.environ.get('BUI_VERBOSE') or 0
 if VERBOSE:
@@ -616,3 +615,295 @@ password = abcdefgh
                     fg='yellow'
                 )
             )
+
+
+@app.cli.command()
+@click.option('-c', '--client', default='bui',
+              help='Name of the burp client that will be used by Burp-UI '
+                   '(defaults to "bui")')
+@click.option('-h', '--host', default='::1',
+              help='Address of the status server (defaults to "::1")')
+@click.option('-t', '--tips', is_flag=True,
+              help='Show you some tips')
+def diag(client, host, tips):
+    """Check Burp-UI is correctly setup"""
+    if app.vers != 2:
+        click.echo(
+            click.style(
+                'Sorry, you can only setup the Burp 2 client',
+                fg='red'
+            ),
+            err=True
+        )
+        sys.exit(1)
+
+    if not app.standalone:
+        click.echo(
+            click.style(
+                'Sorry, only the standalone mode is supported',
+                fg='red'
+            ),
+            err=True
+        )
+        sys.exit(1)
+
+    app.load_modules(False)
+
+    from .misc.parser.utils import Config
+    from .app import get_redis_server
+
+    if 'Production' in app.conf.options and \
+            'redis' in app.conf.options['Production']:
+        try:
+            # detect missing modules
+            import redis as redis_client  # noqa
+            import celery  # noqa
+            import socket
+
+            rhost, rport, _ = get_redis_server(app)
+            ret = -1
+            for res in socket.getaddrinfo(rhost, rport, socket.AF_UNSPEC, socket.SOCK_STREAM):
+                if ret == 0:
+                    break
+                af, socktype, proto, _, sa = res
+                try:
+                    s = socket.socket(af, socktype, proto)
+                except socket.error:
+                    continue
+                try:
+                    ret = s.connect_ex(sa)
+                except:
+                    continue
+
+            if ret != 0:
+                click.echo(
+                    click.style(
+                        'Unable to contact the redis server, disabling it',
+                        fg='yellow'
+                    )
+                )
+
+        except ImportError:
+            click.echo(
+                click.style(
+                    'Unable to activate redis & celery. Did you ran the '
+                    '\'pip install burp-ui[celery]\' and '
+                    '\'pip install burp-ui[gunicorn-extra]\' commands first?',
+                    fg='yellow'
+                )
+            )
+
+    if 'Production' in app.conf.options and \
+            'database' in app.conf.options['Production']:
+        try:
+            from .ext.sql import db  # noqa
+        except ImportError:
+            click.echo(
+                click.style(
+                    'It looks like some dependencies are missing. Did you ran '
+                    'the \'pip install "burp-ui[sql]"\' command first?',
+                    fg='yellow'
+                )
+            )
+
+    bconfcli = app.conf.options.get('Burp2', {}).get('bconfcli') or \
+        getattr(app.client, 'burpconfcli')
+    bconfsrv = app.conf.options.get('Burp2', {}).get('bconfsrv') or \
+        getattr(app.client, 'burpconfsrv')
+
+    errors = False
+    if os.path.exists(bconfcli):
+        parser = app.client.get_parser()
+
+        confcli = Config(bconfcli, parser, 'srv')
+        confcli.set_default(bconfcli)
+        confcli.parse()
+
+        if confcli.get('cname') != client:
+            click.echo(
+                click.style(
+                    'The cname of your burp client does not match: '
+                    '{} != {}'.format(confcli.get('cname'), client),
+                    fg='yellow'
+                )
+            )
+            errors = True
+        if confcli.get('server') != host:
+            click.echo(
+                click.style(
+                    'The burp server address does not match: '
+                    '{} != {}'.format(confcli.get('server'), host),
+                    fg='yellow'
+                )
+            )
+            errors = True
+
+    else:
+        click.echo(
+            click.style(
+                'No client conf file found: {} does not exist'.format(bconfcli),
+                fg='red'
+            ),
+            err=True
+        )
+        errors = True
+
+    if os.path.exists(bconfsrv):
+        confsrv = Config(bconfsrv, parser, 'srv')
+        confsrv.set_default(bconfsrv)
+        confsrv.parse()
+
+        if host not in ['::1', '127.0.0.1']:
+            bind = confsrv.get('status_address')
+            if (bind and bind not in [host, '::', '0.0.0.0']) or not bind:
+                click.echo(
+                    click.style(
+                        'It looks like your burp server is not exposing it\'s '
+                        'status port in a way that is reachable by Burp-UI!',
+                        fg='yellow'
+                    )
+                )
+                click.echo(
+                    click.style(
+                        'You may want to set the \'status_address\' setting with '
+                        'either \'{}\', \'::\' or \'0.0.0.0\' in the {} file '
+                        'in order to make Burp-UI work'.format(host, bconfsrv),
+                        fg='blue'
+                    )
+                )
+
+        max_status_children = confsrv.get('max_status_children', -1)
+        if 'max_status_children' not in confsrv or max_status_children < 15:
+            click.echo(
+                click.style(
+                    '\'max_status_children\' is to low, you need to set it to '
+                    '15 or more. Please edit your {} file'.format(bconfsrv),
+                    fg='blue'
+                )
+            )
+            errors = True
+
+        restore = []
+        if 'restore_client' in confsrv:
+            restore = confsrv.getlist('restore_client')
+
+        if client not in restore:
+            click.echo(
+                click.style(
+                    'Your burp client is not listed as a \'restore_client\'. '
+                    'You won\'t be able to view other clients stats!',
+                    fg='yellow'
+                )
+            )
+            errors = True
+
+        if 'monitor_browse_cache' not in confsrv or not \
+                confsrv.get('monitor_browse_cache'):
+            click.echo(
+                click.style(
+                    'For performance reasons, it is recommanded to enable the '
+                    '\'monitor_browse_cache\'',
+                    fg='yellow'
+                )
+            )
+            errors = True
+
+        ca_client_dir = confsrv.get('ca_csr_dir')
+        if ca_client_dir and not os.path.exists(ca_client_dir):
+            try:
+                os.makedirs(ca_client_dir)
+            except IOError as exp:
+                click.echo(
+                    click.style(
+                        'Unable to create "{}" dir: {}'.format(ca_client_dir, exp),
+                        fg='yellow'
+                    ),
+                    err=True
+                )
+
+        if confsrv.get('clientconfdir'):
+            bconfagent = os.path.join(confsrv.get('clientconfdir'), client)
+        else:
+            click.echo(
+                click.style(
+                    'Unable to find "clientconfdir" option. Something is wrong '
+                    'with your setup',
+                    fg='yellow'
+                )
+            )
+            bconfagent = 'ihopethisfiledoesnotexistbecauseitisrelatedtoburpui'
+
+        if not os.path.exists(bconfagent) and bconfagent.startswith('/'):
+            click.echo(
+                click.style(
+                    'Unable to find the {} file'.format(bconfagent),
+                    fg='yellow'
+                )
+            )
+            errors = True
+        else:
+            confagent = Config(bconfagent, parser, 'cli')
+            confagent.set_default(bconfagent)
+            confagent.parse()
+
+            if confagent.get('password') != confcli.get('password'):
+                click.echo(
+                    click.style(
+                        'It looks like the passwords in the {} and the {} files '
+                        'mismatch. Burp-UI will not work properly until you fix '
+                        'this'.format(bconfcli, bconfagent),
+                        fg='yellow'
+                    )
+                )
+    else:
+        click.echo(
+            click.style(
+                'Unable to locate burp-server configuration: {} does not '
+                'exist'.format(bconfsrv),
+                fg='red'
+            ),
+            err=True
+        )
+        errors = True
+
+    if errors:
+        if not tips:
+            click.echo(
+                click.style(
+                    'Some errors have been found in your configuration. '
+                    'Please make sure you ran this command with the right flags! '
+                    '(see --help for details)'.format(sys.argv[0], sys.argv[1]),
+                    fg='red'
+                ),
+                err=True
+            )
+        else:
+            click.echo(
+                click.style(
+                    'Well, if you are sure about your settings, you can run the '
+                    'following command to help you setup your Burp-UI agent. '
+                    '(Note, the \'--dry\' flag is here to show you the '
+                    'modifications that will be applied. Once you are OK with '
+                    'those, you can re-run the command without the \'--dry\' flag):',
+                    fg='blue'
+                )
+            )
+            click.echo('    > bui-manage setup_burp --host="{}" --client="{}" --dry'.format(host, client))
+    else:
+        click.echo(
+            click.style(
+                'Congratulations! It seems everything is alright. Burp-UI '
+                'should run without any issue now.',
+                fg='green'
+            )
+        )
+
+
+@app.cli.command()
+def sysinfo():
+    """Returns a couple of system informations to help debugging"""
+    from .app import __release__, __version__
+    click.echo('Python version:  {}.{}.{}'.format(sys.version_info[0], sys.version_info[1], sys.version_info[2]))
+    click.echo('Burp-UI version: {} ({})'.format(__version__, __release__))
+    click.echo('Single mode:     {}'.format(app.standalone))
+    click.echo('Backend version: {}'.format(app.vers))
