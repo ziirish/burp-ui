@@ -10,6 +10,7 @@
 """
 import re
 import datetime
+import inspect
 import arrow
 import fnmatch
 
@@ -115,10 +116,7 @@ class Wildcard(fields.List):
         if isinstance(obj, dict):
             self._flat = obj.items()
         else:
-            self._flat = []
-            for attr in dir(obj):
-                if attr not in self._exclude:
-                    self._flat.append((attr, getattr(obj, attr)))
+            self._flat.extend(inspect.getmembers(obj, match_attributes))
 
         self._idx = 0
         self._cache = []
@@ -152,3 +150,9 @@ class Wildcard(fields.List):
             return None
 
         return self.container.format(value)
+
+
+def match_attribute(attr):
+    return not(inspect.isroutine(attr) or
+               (attr.__name__.startswith('__') and
+                attr.__name__.endswith('__')))

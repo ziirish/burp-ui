@@ -21,6 +21,7 @@ from importlib import import_module
 from functools import wraps
 
 from .custom.namespace import Namespace
+from .._compat import to_bytes
 from ..server import BUIServer  # noqa
 from ..exceptions import BUIserverException
 from ..config import config
@@ -38,7 +39,7 @@ def cache_key():
         request.headers.get('X-Session-Tag', ''),
         session.get('language', '')
     )
-    key = hashlib.sha256(key).hexdigest()
+    key = hashlib.sha256(to_bytes(key)).hexdigest()
     return key
 
 

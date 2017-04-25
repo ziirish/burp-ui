@@ -823,7 +823,7 @@ class Burp(Burp1):
                         ret = 'Windows'
                     else:
                         ret = 'Unix/Linux'
-                except (KeyError, BUIserverException):
+                except (IndexError, KeyError, BUIserverException):
                     pass
 
         self._os_cache[name] = ret

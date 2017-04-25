@@ -57,7 +57,7 @@ BEAT_SCHEDULE = {
     },
     'backup-running-minutely': {
         'task': '{}.backup_running'.format(ME),
-        'schedule': crontab(),  # run every minute
+        'schedule': 30.0,  # run every 30 seconds
     },
     'get-all-backups-every-twenty-minutes': {
         'task': '{}.get_all_backups'.format(ME),
@@ -67,9 +67,9 @@ BEAT_SCHEDULE = {
         'task': '{}.get_all_clients_reports'.format(ME),
         'schedule': crontab(minute='*/20'),  # every 20 minutes
     },
-    'cleanup-expired-sessions-daily': {
+    'cleanup-expired-sessions-every-four-hours': {
         'task': '{}.cleanup_expired_sessions'.format(ME),
-        'schedule': crontab(hour='1'),  # every day at 1
+        'schedule': crontab(hour='*/4'),  # every four hours
     },
 }
 

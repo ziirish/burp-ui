@@ -104,7 +104,7 @@ var _clients_table = $('#table-clients').dataTable( {
 				var label = '';
 				if (__date[data.last] == 'now' && __status[data.state] != 'idle') {
 					cls = 'blink';
-					link_start = '<a href="{{ url_for("view.live_monitor", server=server) }}?name='+data.name+'">';
+					link_start = '<a href="{{ url_for("view.live_monitor", server=server) }}/'+data.name+'">';
 					link_end = '</a>';
 					label = '&nbsp;{{ _("view") }}';
 				}

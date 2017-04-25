@@ -256,7 +256,10 @@ class Burp(BUIbackend):
 
         for name, serv in iteritems(self.servers):
             func = getattr(serv, method)
-            r[name] = func()
+            try:
+                r[name] = func()
+            except BUIserverException:
+                r[name] = 'Unknown'
 
         return r
 
