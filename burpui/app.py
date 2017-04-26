@@ -296,7 +296,9 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
         )
     else:
         LOG_FORMAT = (
-            '-' * 80 + '\n' +
+            '-' * 27 +
+            '[%(asctime)s]' +
+            '-' * 28 + '\n' +
             '%(levelname)s in %(module)s.%(funcName)s ' +
             '[%(pathname)s:%(lineno)d]:\n' +
             '%(message)s\n' +
@@ -467,7 +469,7 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
             cache.init_app(app)
         try:
             # Limiter setup
-            if app.limiter or str(app.limiter).lower() not \
+            if app.limiter and str(app.limiter).lower() not \
                     in ['none', 'false']:  # pragma: no cover
                 from .ext.limit import limiter
                 app.config['RATELIMIT_HEADERS_ENABLED'] = True

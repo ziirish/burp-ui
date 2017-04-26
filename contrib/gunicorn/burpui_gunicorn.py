@@ -149,9 +149,9 @@ tmp_upload_dir = None
 #       A string of "debug", "info", "warning", "error", "critical"
 #
 
-errorlog = '/var/log/gunicorn/burp-ui_access.log'
+errorlog = '/var/log/gunicorn/burp-ui_error.log'
 loglevel = 'error'
-accesslog = '/var/log/gunicorn/burp-ui_error.log'
+accesslog = '/var/log/gunicorn/burp-ui_access.log'
 access_log_format = '%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"'
 
 #

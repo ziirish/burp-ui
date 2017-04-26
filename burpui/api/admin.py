@@ -78,9 +78,9 @@ class AuthUsers(Resource):
     parser_add.add_argument('backend', required=True, help='Backend', location='values')
 
     parser_mod = ns.parser()
-    parser_mod.add_argument('password', required=True, help='Password', location=('values', 'json'))
-    parser_mod.add_argument('backend', required=True, help='Backend', location=('values', 'json'))
-    parser_mod.add_argument('old_password', required=False, help='Old password', location=('values', 'json'))
+    parser_mod.add_argument('password', required=True, help='Password', location='values')
+    parser_mod.add_argument('backend', required=True, help='Backend', location='values')
+    parser_mod.add_argument('old_password', required=False, help='Old password', location='values')
 
     parser_del = ns.parser()
     parser_del.add_argument('backend', required=True, help='Backend', location='values')

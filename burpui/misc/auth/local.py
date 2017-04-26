@@ -1,5 +1,6 @@
 # -*- coding: utf8 -*-
 import os
+import pwd
 import sys
 
 from .interface import BUIhandler, BUIuser, BUIloader
@@ -21,6 +22,7 @@ class LocalLoader(BUIloader):
         self.app = app
         self.users = None
         handler.name = self.name
+        limit = 1000
         conf = self.app.conf
         if self.section in conf.options:
             # Maybe the handler argument is None, maybe the 'priority'
@@ -38,8 +40,21 @@ class LocalLoader(BUIloader):
                 cast='force_list',
                 section=self.section
             )
+            limit = conf.safe_get(
+                'limit',
+                cast='integer',
+                section=self.section,
+                defaults={self.section: {'limit': limit}}
+            )
             if users != [None]:
                 self.users = users
+
+        if self.users is None:
+            self.users = []
+            for user in pwd.getpwall():
+                if user[2] >= limit:
+                    self.users.append(user[0])
+
         self.logger.debug('Local users: ' + str(self.users))
 
     def fetch(self, uid=None):

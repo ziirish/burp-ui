@@ -554,9 +554,11 @@ Now you can add *local* specific options:
     [LOCAL]
     # Backend priority. Higher is first
     priority = 3
-    # List of local users allowed to login. If you don't set this setting, every
-    # local user will be able to login
+    # List of local users allowed to login. If you don't set this setting, users
+    # with uid greater than limit will be able to login
     users = user1,user2
+    # Minimum uid that will be allowed to login
+    limit = 1000
 
 
 ACL

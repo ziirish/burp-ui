@@ -90,6 +90,7 @@ class LdapLoader(BUIloader):
         self.version = get_ssl_version(self.version)
         if not self.version:
             self.logger.warning('No SSL version chosen')
+        self.users = []
         self.tls = None
         self.ssl = False
         self.auto_bind = AUTO_BIND_NONE
@@ -121,12 +122,16 @@ class LdapLoader(BUIloader):
                 self.ldap = Connection(self.server, user=self.binddn, password=self.bindpw, raise_exceptions=True, client_strategy=RESTARTABLE, auto_bind=self.auto_bind, authentication=SIMPLE)
             else:
                 self.ldap = Connection(self.server, raise_exceptions=True, client_strategy=RESTARTABLE, auto_bind=self.auto_bind)
+            okay = False
             with self.ldap:
                 self.logger.debug('LDAP Connection = {0}'.format(str(self.ldap)))
                 self.logger.info('OK, connected to LDAP')
-                return
+                okay = True
 
-            raise Exception('Not connected')
+            if not okay:
+                raise Exception('Not connected')
+
+            self._prefetch()
         except Exception as e:
             self.logger.error('Could not connect to LDAP: {0}'.format(str(e)))
             self.server = None
@@ -139,12 +144,15 @@ class LdapLoader(BUIloader):
         if self.ldap and self.ldap.bound:
             self.ldap.unbind()
 
-    def fetch(self, searchval=None):
+    def fetch(self, searchval=None, uniq=True):
         """:func:`burpui.misc.auth.ldap.LdapLoader.fetch` searches for a user
         object in the LDAP server.
 
         :param searchval: attribute value to search for
         :type searchval: str
+
+        :param uniq: only return one result
+        :type uniq: bool
 
         :returns: dictionary of `distinguishedName` and `commonName` attributes for the
         user if found, otherwise None.
@@ -166,11 +174,23 @@ class LdapLoader(BUIloader):
             self.logger.error('Ooops, LDAP lookup failed: {0}'.format(str(e)))
             return None
 
+        if not uniq:
+            return r
+
         for record in r:
             attrs = record['attributes']
             if self.attr in attrs and searchval in attrs[self.attr]:
                 self.logger.info('Found DN: {0}'.format(record['dn']))
                 return {'dn': record['dn'], 'cn': attrs['cn'][0]}
+
+    def _prefetch(self):
+        """Prefetch all users that match the filter/base"""
+        self.users = []
+        results = self.fetch('*', False) or []
+        for record in results:
+            attrs = record['attributes']
+            if self.attr in attrs:
+                self.users.append(attrs[self.attr][0])
 
     def check(self, dn=None, passwd=None):
         """:func:`burpui.misc.auth.ldap.LdapLoader.check` authenticates a user

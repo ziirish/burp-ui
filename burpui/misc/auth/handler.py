@@ -2,6 +2,7 @@
 import os
 
 from ...sessions import session_manager
+from ...utils import is_uuid
 from .interface import BUIhandler, BUIuser
 
 from importlib import import_module
@@ -79,8 +80,11 @@ class UserHandler(BUIuser):
         self.language = session.get('language', None)
         self.backends = backends
         self.back = None
-        self.name = session_manager.get_session_username() or \
-            session.get('login') or name
+        if not is_uuid(name):
+            self.name = name
+        else:
+            self.name = session_manager.get_session_username() or \
+                session.get('login')
         self.real = None
         self.admin = not self.app.acl
 
