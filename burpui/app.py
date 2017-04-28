@@ -86,9 +86,9 @@ def create_db(myapp, cli=False, unittest=False, create=True):
                     upgd = subprocess.Popen(
                         cmd,
                         stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE
+                        stderr=subprocess.STDOUT
                     )
-                    (out, err) = upgd.communicate()
+                    (out, _) = upgd.communicate()
                     if upgd.returncode != 0:
                         myapp.logger.error(
                             'Disabling SQL support because '
@@ -116,16 +116,75 @@ def create_db(myapp, cli=False, unittest=False, create=True):
             if not cli and not unittest:  # pragma: no cover
                 with myapp.app_context():
                     try:
-                        test_database()
-                    except OperationalError as exp:
-                        if 'no such table' in str(exp):
+                        import subprocess
+
+                        # get the current revision from alembic_version
+                        res = db.engine.execute(
+                            'select version_num from alembic_version'
+                        )
+                        current = res[0][0]
+
+                        # get current head using alembic/FLask-Migrate
+                        local = os.path.join(
+                            os.getcwd(),
+                            '..',
+                            'bui-manage'
+                        )
+                        buimanage = local if os.path.exists(local) \
+                                else 'bui-manage'
+                        cmd = [
+                            buimanage,
+                            '-c',
+                            myapp.config['CFG'],
+                            'db',
+                            'heads'
+                        ]
+                        rev = subprocess.Popen(
+                            cmd,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.STDOUT
+                        )
+                        (out, _) = rev.communicate()
+                        if rev.returncode != 0:
+                            myapp.logger.error(
+                                'Disabling SQL support because '
+                                'something went wrong while setting up the '
+                                'database:\n{}'.format(out)
+                            )
+                            myapp.config['WITH_SQL'] = False
+                            return None
+
+                        latest = out.split()[0]
+
+                        # now we compare the revision numbers
+                        if latest != current:
                             myapp.logger.critical(
                                 'Your database seem out of sync, you may want '
-                                'to run \'bui-manage db upgrade\'.\n'
+                                'to run \'bui-manage db upgrade\'.'
+                            )
+                            myapp.logger.critical(
                                 'Disabling SQL support for now.'
                             )
                             myapp.config['WITH_SQL'] = False
                             return None
+
+                    except (OperationalError, IndexError) as exp:
+                        err = str(exp)
+                        if 'no such table' in err:
+                            myapp.logger.critical(
+                                'Your database seem out of sync, you may want '
+                                'to run \'bui-manage db upgrade\'.'
+                            )
+                        else:
+                            myapp.logger.critical(
+                                'Something seems to be wrong with your setup: '
+                                '{}'.format(err)
+
+                        myapp.logger.critical('Disabling SQL support for now.')
+                        myapp.config['WITH_SQL'] = False
+                        return None
+
+            # If we are here, it means everything is alright
             return db
         except ImportError:  # pragma: no cover
             myapp.logger.critical(

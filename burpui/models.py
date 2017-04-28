@@ -95,10 +95,3 @@ class Pref(db.Model):
             self.key,
             self.value
         )
-
-
-def test_database():
-    # This is probably not optimal on huge databases
-    Task.query.first()
-    Session.query.first()
-    Pref.query.first()
