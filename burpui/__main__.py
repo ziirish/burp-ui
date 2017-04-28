@@ -186,11 +186,14 @@ def manage():
     parser.add_argument('-c', '--config', dest='config', help='burp-ui configuration file', metavar='<CONFIG>')
     parser.add_argument('-i', '--migrations', dest='migrations', help='migrations directory', metavar='<MIGRATIONSDIR>')
     parser.add_argument('-m', '--mode', dest='mode', help='application mode', metavar='<agent|server|worker|manage|legacy>')
+    parser.add_argument('-l', '--logfile', dest='logfile', help='output logs in defined file', metavar='<FILE>')
     parser.add_argument('remaining', nargs=REMAINDER)
 
     options, unknown = parser.parse_known_args()
     env = os.environ
 
+    if options.logfile:
+        env['BUI_LOGFILE'] = options.logfile
     if options.config:
         conf = lookup_file(options.config, guess=False)
     else:

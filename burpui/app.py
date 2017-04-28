@@ -73,12 +73,14 @@ def create_db(myapp, cli=False, unittest=False, create=True):
                     not cli and not unittest:
                 if create:  # pragma: no cover
                     import subprocess
-                    local = os.path.join(os.getcwd(), '..', 'bui-manage')
+                    local = os.path.join(os.getcwd(), '..', 'tools', 'bui-manage')
                     buimanage = local if os.path.exists(local) else 'bui-manage'
                     cmd = [
                         buimanage,
                         '-c',
                         myapp.config['CFG'],
+                        '-l',
+                        os.devnull,
                         'db',
                         'upgrade'
                     ]
@@ -121,12 +123,19 @@ def create_db(myapp, cli=False, unittest=False, create=True):
                         res = db.engine.execute(
                             'select version_num from alembic_version'
                         )
-                        current = res[0][0]
+                        if not res:
+                            raise Exception(
+                                'Alembic does not seem to be setup'
+                            )
+                        current = None
+                        for row in res:
+                            current = row['version_num']
+                            break
 
                         # get current head using alembic/FLask-Migrate
                         local = os.path.join(
                             os.getcwd(),
-                            '..',
+                            'tools',
                             'bui-manage'
                         )
                         buimanage = local if os.path.exists(local) \
@@ -135,6 +144,8 @@ def create_db(myapp, cli=False, unittest=False, create=True):
                             buimanage,
                             '-c',
                             myapp.config['CFG'],
+                            '-l',
+                            os.devnull,
                             'db',
                             'heads'
                         ]
@@ -145,21 +156,19 @@ def create_db(myapp, cli=False, unittest=False, create=True):
                         )
                         (out, _) = rev.communicate()
                         if rev.returncode != 0:
-                            myapp.logger.error(
-                                'Disabling SQL support because '
+                            raise Exception(
                                 'something went wrong while setting up the '
                                 'database:\n{}'.format(out)
                             )
-                            myapp.config['WITH_SQL'] = False
-                            return None
 
                         latest = out.split()[0]
 
                         # now we compare the revision numbers
                         if latest != current:
                             myapp.logger.critical(
-                                'Your database seem out of sync, you may want '
-                                'to run \'bui-manage db upgrade\'.'
+                                'Your database seems out of sync ({} != {}), '
+                                'you may want to run \'bui-manage db '
+                                'upgrade\'.'.format(latest, current)
                             )
                             myapp.logger.critical(
                                 'Disabling SQL support for now.'
@@ -167,7 +176,7 @@ def create_db(myapp, cli=False, unittest=False, create=True):
                             myapp.config['WITH_SQL'] = False
                             return None
 
-                    except (OperationalError, IndexError) as exp:
+                    except (OperationalError, Exception) as exp:
                         err = str(exp)
                         if 'no such table' in err:
                             myapp.logger.critical(
