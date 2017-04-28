@@ -66,7 +66,6 @@ def create_db(myapp, cli=False, unittest=False, create=True):
     if myapp.config['WITH_SQL']:
         try:
             from .ext.sql import db
-            from .models import test_database
             from sqlalchemy.exc import OperationalError
             from sqlalchemy_utils.functions import database_exists
             myapp.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -131,7 +130,7 @@ def create_db(myapp, cli=False, unittest=False, create=True):
                             'bui-manage'
                         )
                         buimanage = local if os.path.exists(local) \
-                                else 'bui-manage'
+                            else 'bui-manage'
                         cmd = [
                             buimanage,
                             '-c',
@@ -179,6 +178,7 @@ def create_db(myapp, cli=False, unittest=False, create=True):
                             myapp.logger.critical(
                                 'Something seems to be wrong with your setup: '
                                 '{}'.format(err)
+                            )
 
                         myapp.logger.critical('Disabling SQL support for now.')
                         myapp.config['WITH_SQL'] = False
@@ -186,6 +186,7 @@ def create_db(myapp, cli=False, unittest=False, create=True):
 
             # If we are here, it means everything is alright
             return db
+
         except ImportError:  # pragma: no cover
             myapp.logger.critical(
                 'Unable to load requirements, you may want to run \'pip '
