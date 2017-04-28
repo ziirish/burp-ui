@@ -69,6 +69,17 @@ except ImportError:
     pass
 
 
+def _die(error):
+    click.echo(
+        click.style(
+            'Unable to initialize the application: {}'.format(error),
+            fg='red'
+        ),
+        err=True
+    )
+    sys.exit(2)
+
+
 @app.cli.command()
 def legacy():
     """Legacy server for backward compatibility"""
@@ -96,7 +107,13 @@ def legacy():
 @click.argument('name')
 def create_user(backend, password, ask, verbose, name):
     """Create a new user."""
-    app.load_modules(False)
+    try:
+        msg = app.load_modules(False)
+    except Exception as e:
+        msg = str(e)
+
+    if msg:
+        _die(msg)
 
     click.echo(click.style('[*] Adding \'{}\' user...'.format(name), fg='blue'))
     try:
@@ -237,7 +254,13 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database, dry):
         )
         sys.exit(1)
 
-    app.load_modules(False)
+    try:
+        msg = app.load_modules(False)
+    except Exception as e:
+        msg = str(e)
+
+    if msg:
+        _die(msg)
 
     from .misc.parser.utils import Config
     from .app import get_redis_server
@@ -647,7 +670,13 @@ def diag(client, host, tips):
         )
         sys.exit(1)
 
-    app.load_modules(False)
+    try:
+        msg = app.load_modules(False)
+    except Exception as e:
+        msg = str(e)
+
+    if msg:
+        _die(msg)
 
     from .misc.parser.utils import Config
     from .app import get_redis_server

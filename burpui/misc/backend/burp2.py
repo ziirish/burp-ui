@@ -206,6 +206,8 @@ class Burp(Burp1):
         # check the burp version because this backend only supports clients
         # newer than BURP_MINIMAL_VERSION
         try:
+            if not self.burpbin:
+                raise Exception('No Burp binary found!')
             cmd = [self.burpbin, '-v']
             version = subprocess.check_output(
                 cmd,

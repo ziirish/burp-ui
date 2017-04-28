@@ -385,14 +385,15 @@ class BUIServer(Flask):
             Client = mod.Burp
             self.client = Client(self, conf=self.conf)
         except Exception as e:
-            self.logger.critical(traceback.format_exc())
-            self.logger.critical(
-                'Failed loading backend for Burp version {0}: {1}'.format(
-                    self.vers,
-                    str(e)
-                )
+            msg = 'Failed loading backend for Burp version {0}: {1}'.format(
+                self.vers,
+                str(e)
             )
-            sys.exit(2)
+            if not strict:
+                self.logger.critical(traceback.format_exc())
+                self.logger.critical(msg)
+                sys.exit(2)
+            return msg
 
     @property
     def acl(self):
