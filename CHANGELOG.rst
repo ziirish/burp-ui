@@ -12,6 +12,8 @@ Current
 - Add: `customizable reports <https://git.ziirish.me/ziirish/burp-ui/issues/187>`_
 - Add: persistent storage for user preferences if SQL storage enabled
 - Add: rate-limiting of the API
+- Add: new ``diag`` and ``sysinfo`` commands to help you diagnose issues
+- Improvement: the SQL storage will detect out-of-sync schemas and disable itself if needed (with a log message)
 - Improvement: speedup the calendar view
 - Improvement: more complete user panel (`#185 <https://git.ziirish.me/ziirish/burp-ui/issues/185>`_, `#184 <https://git.ziirish.me/ziirish/burp-ui/issues/184>`_, `#182 <https://git.ziirish.me/ziirish/burp-ui/issues/182>`_, `#132 <https://git.ziirish.me/ziirish/burp-ui/issues/132>`_)
 - Fix: issue `#186 <https://git.ziirish.me/ziirish/burp-ui/issues/186>`_

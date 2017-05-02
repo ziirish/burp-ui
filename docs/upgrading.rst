@@ -20,6 +20,9 @@ v0.5.0
   order to apply these modifications, you **MUST** run the
   ``bui-manage db upgrade`` command before restarting your `Burp-UI`_
   application (if you are using celery, you must restart it too).
+- **New** - The `bui-manage <manage.html>`__ tool brings two new commands:
+  - ``diag`` whose documentation is available `here <manage.html#diag>`__
+  - ``sysinfo`` whose documentation is available `here <manage.html#sysinfo>`__
 
   More details on the `Manage <manage.html>`__ and `Celery <celery.html>`__
   pages.
@@ -49,7 +52,7 @@ v0.4.0
   burp-ui configuration anymore with ``login = password`` but you should now use
   the `bui-manage <manage.html>`__ command instead.
 - **Breaking** - The default *version* setting has been set to ``2`` instead of
-  ``1`` since burp-2.0.52 is now the stable release.
+  ``1`` since burp-2.0.54 is now the stable release.
 - **New** - The ``bui-manage`` tool can now help you setup both `Burp`_ and
   `Burp-UI`_.
 - **New** - The SQL requirements have evolved, you **MUST** run

@@ -16,7 +16,7 @@ import warnings
 
 from logging import Formatter
 
-from ._compat import PY3
+from ._compat import PY3, to_unicode
 from .desc import __url__, __doc__, __version__, __release__
 
 if PY3:  # pragma: no cover
@@ -129,7 +129,7 @@ def create_db(myapp, cli=False, unittest=False, create=True):
                             )
                         current = None
                         for row in res:
-                            current = row['version_num']
+                            current = to_unicode(row['version_num'])
                             break
 
                         # get current head using alembic/FLask-Migrate
@@ -161,7 +161,7 @@ def create_db(myapp, cli=False, unittest=False, create=True):
                                 'database:\n{}'.format(out)
                             )
 
-                        latest = out.split()[0]
+                        latest = to_unicode(out).split()[0]
 
                         # now we compare the revision numbers
                         if latest != current:
@@ -180,7 +180,7 @@ def create_db(myapp, cli=False, unittest=False, create=True):
                         err = str(exp)
                         if 'no such table' in err:
                             myapp.logger.critical(
-                                'Your database seem out of sync, you may want '
+                                'Your database seems out of sync, you may want '
                                 'to run \'bui-manage db upgrade\'.'
                             )
                         else:
