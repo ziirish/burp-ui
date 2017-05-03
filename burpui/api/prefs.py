@@ -78,7 +78,7 @@ class PrefsUI(Resource):
     def _update_prefs(self):
         """update prefs"""
         args = self.parser.parse_args()
-        sess = session
+        sess = session._get_current_object()
         ret = {}
         req = MultiDict()
         for loc in ['values', 'json']:
@@ -89,9 +89,9 @@ class PrefsUI(Resource):
             if key not in req:
                 continue
             temp = args.get(key)
-            if key == 'language':
-                self._user_language(temp)
             if temp:
+                if key == 'language':
+                    self._user_language(temp)
                 sess[key] = temp
             elif key in sess:
                 del sess[key]

@@ -30,4 +30,6 @@ def get_locale():
         locale = getattr(current_user, 'language', None)
     elif 'language' in session:
         locale = session.get('language', None)
+    if locale not in LANGUAGES:
+        locale = None
     return locale or request.accept_languages.best_match(config['LANGUAGES'].keys())

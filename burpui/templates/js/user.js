@@ -184,24 +184,35 @@ var _sessions_table = $('#table-sessions').dataTable( {
 		"<'row'<'col-sm-5'i>>" +
 		"<'row'B>",
 	buttons: [
-		'selectAll',
 		{
-			text: '{{ _("Select all filtered") }}&nbsp;<i class="fa fa-filter" aria-hidden="true"></i>&nbsp;<i class="fa fa-check-square-o" aria-hidden="true"></i>',
+			text: '<i class="fa fa-check-square-o" aria-hidden="true"></i>',
+			titleAttr: '{{ _("Select all") }}',
+			extend: 'selectAll',
+		},
+		{
+			text: '<i class="fa fa-filter" aria-hidden="true"></i>&nbsp;<i class="fa fa-check-square-o" aria-hidden="true"></i>',
+			titleAttr: '{{ _("Select all filtered") }}',
 			extend: 'selectAll',
 			action: function ( e, dt, node, config ) {
 				dt.rows( { search: 'applied' } ).select();
 			}
 		},
-		'selectNone',
 		{
-			text : '{{ _("Deselect all filtered") }}&nbsp;<i class="fa fa-filter" aria-hidden="true"></i>&nbsp;<i class="fa fa-square-o" aria-hidden="true"></i>',
+			text: '<i class="fa fa-square-o" aria-hidden="true"></i>',
+			titleAttr: '{{ _("Deselect all") }}',
+			extend: 'selectNone',
+		},
+		{
+			text : '<i class="fa fa-filter" aria-hidden="true"></i>&nbsp;<i class="fa fa-square-o" aria-hidden="true"></i>',
+			titleAttr: '{{ _("Deselect all filtered") }}',
 			extend: 'selectNone',
 			action: function ( e, dt, node, config ) {
 				dt.rows( { search: 'applied' } ).deselect();
 			}
 		},
 		{
-			text: '{{ _("Revoke selected") }}&nbsp;<span class="glyphicon glyphicon-trash"></span>',
+			text: '<span class="glyphicon glyphicon-trash"></span>',
+			titleAttr: '{{ _("Revoke selected") }}',
 			className: 'btn-danger',
 			action: function ( e, dt, node, config ) {
 				var rows = dt.rows( { selected: true } ).data();

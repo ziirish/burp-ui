@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2017-04-20 08:39+0200\n"
+"POT-Creation-Date: 2017-05-03 16:19+0200\n"
 "PO-Revision-Date: 2017-03-07 12:04-0300\n"
 "Last-Translator: Pablo Estigarribia <pablodav@gmail.com>\n"
 "Language: es\n"
@@ -17,13 +17,13 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.3.4\n"
+"Generated-By: Babel 2.4.0\n"
 
-#: burpui/app.py:537
+#: burpui/app.py:608
 msgid "Please log in to access this page."
 msgstr "Por favor inicia sesión para acceder a la página."
 
-#: burpui/app.py:540
+#: burpui/app.py:611
 msgid "Please reauthenticate to access this page."
 msgstr "Por favor, vuelve a iniciar sesión para acceder a esta página."
 
@@ -32,11 +32,11 @@ msgid "Username"
 msgstr "Usuario"
 
 #: burpui/forms.py:19 burpui/templates/login.html:9
-#: burpui/templates/user.html:34
+#: burpui/templates/user.html:33
 msgid "Password"
 msgstr "Contraseña"
 
-#: burpui/forms.py:20 burpui/templates/user.html:74
+#: burpui/forms.py:20 burpui/templates/user.html:73
 msgid "Language"
 msgstr "Idiomas"
 
@@ -52,15 +52,15 @@ msgstr "Lo sentimos, no hay respaldos en progreso."
 msgid "Sorry, there are no restore file found for this client"
 msgstr "Lo sentimos, no hay archivo de restore encontrado para este cliente"
 
-#: burpui/routes.py:417
+#: burpui/routes.py:412
 msgid "Logged in successfully"
 msgstr "Sesión iniciada con éxito"
 
-#: burpui/routes.py:427
+#: burpui/routes.py:422
 msgid "Wrong username or password"
 msgstr "El nombre de usuario o la contraseña son incorrectos."
 
-#: burpui/routes.py:429
+#: burpui/routes.py:424
 msgid "Wrong CSRF token, please try again"
 msgstr "Token CSRF incorrecto, por favor intente de nuevo"
 
@@ -1517,8 +1517,8 @@ msgstr "GID"
 msgid "Size"
 msgstr "Tamaño"
 
-#: burpui/templates/client-browse.html:58 burpui/templates/client.html:22
-#: burpui/templates/client.html:33
+#: burpui/templates/client-browse.html:58 burpui/templates/client.html:23
+#: burpui/templates/client.html:34
 msgid "Date"
 msgstr "Fecha"
 
@@ -1576,7 +1576,7 @@ msgstr "ninguno"
 msgid "Whether to overwrite existing files"
 msgstr "Sobrescribir los archivos existentes"
 
-#: burpui/templates/client-browse.html:119 burpui/templates/client.html:58
+#: burpui/templates/client-browse.html:119 burpui/templates/client.html:59
 msgid "Cancel restore"
 msgstr "Cancelar la restauración"
 
@@ -1613,41 +1613,45 @@ msgstr "Estadísticas"
 msgid "Backups"
 msgstr "Respaldos"
 
-#: burpui/templates/client.html:21 burpui/templates/client.html:32
+#: burpui/templates/client.html:21
+msgid "Toggle column:"
+msgstr "Fijar columna:"
+
+#: burpui/templates/client.html:22 burpui/templates/client.html:33
 msgid "Number"
 msgstr "Número "
 
-#: burpui/templates/client.html:23 burpui/templates/client.html:34
+#: burpui/templates/client.html:24 burpui/templates/client.html:35
 #: burpui/templates/live-monitor.html:56 burpui/templates/live-monitor.html:62
 msgid "Bytes received"
 msgstr "bytes recibidos"
 
-#: burpui/templates/client.html:24 burpui/templates/client.html:35
+#: burpui/templates/client.html:25 burpui/templates/client.html:36
 msgid "Estimated size"
 msgstr "tamaño estimado"
 
-#: burpui/templates/client.html:25 burpui/templates/client.html:36
+#: burpui/templates/client.html:26 burpui/templates/client.html:37
 msgid "Deletable"
 msgstr "Eliminable"
 
-#: burpui/templates/client.html:26 burpui/templates/client.html:37
+#: burpui/templates/client.html:27 burpui/templates/client.html:38
 #: burpui/templates/clients.html:17 burpui/templates/servers.html:18
 msgid "Status"
 msgstr "Estados"
 
-#: burpui/templates/client.html:44
+#: burpui/templates/client.html:45
 msgid "<strong>Sorry!</strong> There are no backups for this client."
 msgstr "<strong>¡Lo siento!</strong> No hay respaldo para este cliente."
 
-#: burpui/templates/client.html:50
+#: burpui/templates/client.html:51
 msgid "Edit restore"
 msgstr "Editar restaurar"
 
-#: burpui/templates/client.html:53
+#: burpui/templates/client.html:54
 msgid "Schedule backup"
 msgstr "Programar respaldo"
 
-#: burpui/templates/client.html:61
+#: burpui/templates/client.html:62
 msgid "Cancel backup"
 msgstr "Cancelar respaldo"
 
@@ -1699,6 +1703,7 @@ msgid "Number of backups"
 msgstr "Número de respaldos"
 
 #: burpui/templates/clients.html:15 burpui/templates/servers.html:17
+#: burpui/templates/topbar.html:29 burpui/templates/topbar.html:36
 msgid "Clients"
 msgstr "Clientes"
 
@@ -1769,11 +1774,11 @@ msgstr ""
 msgid "You have selected 1 row"
 msgstr "Seleccionaste 1 fila"
 
-#: burpui/templates/macros.html:131
+#: burpui/templates/js/user.js:189 burpui/templates/macros.html:131
 msgid "Select all"
 msgstr "Seleccionar todo"
 
-#: burpui/templates/macros.html:132
+#: burpui/templates/js/user.js:202 burpui/templates/macros.html:132
 msgid "Deselect all"
 msgstr "Quitar selección"
 
@@ -1841,8 +1846,8 @@ msgstr "Archivos de configuración fuente externos"
 msgid "source config"
 msgstr "configuración fuente"
 
-#: burpui/templates/settings.html:229 burpui/templates/user.html:59
-#: burpui/templates/user.html:93
+#: burpui/templates/settings.html:229 burpui/templates/user.html:58
+#: burpui/templates/user.html:92
 msgid "Submit"
 msgstr "Ingresar"
 
@@ -1876,7 +1881,7 @@ msgid "Settings"
 msgstr "Ajustes"
 
 #: burpui/templates/sideadmin.html:7 burpui/templates/sideuser.html:7
-#: burpui/templates/user.html:101
+#: burpui/templates/user.html:100
 msgid "ACL"
 msgstr "ACL"
 
@@ -1928,7 +1933,7 @@ msgstr "Ajustes de usuario"
 msgid "Sessions"
 msgstr "Sesiones"
 
-#: burpui/templates/sideuser.html:6 burpui/templates/user.html:31
+#: burpui/templates/sideuser.html:6 burpui/templates/user.html:30
 msgid "Preferences"
 msgstr "Preferencias"
 
@@ -1948,7 +1953,7 @@ msgstr "Ajustes de usuario"
 msgid "Logout"
 msgstr "Cerrar sesión"
 
-#: burpui/templates/topbar.html:75
+#: burpui/templates/topbar.html:74 burpui/templates/topbar.html:75
 msgid "Refresh"
 msgstr "Refrescar"
 
@@ -1980,73 +1985,69 @@ msgstr "Sesión actual"
 msgid "Expire"
 msgstr "Expirar"
 
-#: burpui/templates/user.html:22
-msgid "Revoke"
-msgstr "Revocar"
-
-#: burpui/templates/user.html:36 burpui/templates/user.html:38
+#: burpui/templates/user.html:35 burpui/templates/user.html:37
 msgid "Current password"
 msgstr "Contraseña actual"
 
-#: burpui/templates/user.html:40 burpui/templates/user.html:47
+#: burpui/templates/user.html:39 burpui/templates/user.html:46
 msgid "Required"
 msgstr "Requerido"
 
-#: burpui/templates/user.html:43 burpui/templates/user.html:45
+#: burpui/templates/user.html:42 burpui/templates/user.html:44
 msgid "New password"
 msgstr "Nueva contraseña"
 
-#: burpui/templates/user.html:50
+#: burpui/templates/user.html:49
 msgid "Confirm password"
 msgstr "Confirmar contraseña"
 
-#: burpui/templates/user.html:52
+#: burpui/templates/user.html:51
 msgid "New password (confirm)"
 msgstr "Nueva contraseña (confirmar):"
 
-#: burpui/templates/user.html:54
+#: burpui/templates/user.html:53
 msgid "Passwords mismatch"
 msgstr "Passwords mismatch"
 
-#: burpui/templates/user.html:58 burpui/templates/user.html:92
-#: burpui/templates/user.html:122
+#: burpui/templates/user.html:57 burpui/templates/user.html:91
+#: burpui/templates/user.html:121
 msgid "Cancel"
 msgstr "Cancelar"
 
-#: burpui/templates/user.html:66
+#: burpui/templates/user.html:65
 msgid "UI Settings"
 msgstr "Configuraciones de UI"
 
-#: burpui/templates/user.html:68
+#: burpui/templates/user.html:67
 msgid "Items per page"
 msgstr "Ítems por página"
 
-#: burpui/templates/user.html:84
+#: burpui/templates/user.html:83
 msgid "Date format"
 msgstr "Formato de Fecha"
 
-#: burpui/templates/user.html:86
+#: burpui/templates/user.html:85
 msgid "Defaults to 'llll'"
 msgstr "Por defecto 'III'"
 
-#: burpui/templates/user.html:88
+#: burpui/templates/user.html:87
 #, python-format
 msgid "See <a href=\"%(url)s\">here</a> for available formats"
 msgstr "Ver <a href=\"%(url)s\">aquí</a> por formatos disponibles"
 
-#: burpui/templates/user.html:114
+#: burpui/templates/user.html:113
 msgid "You are about to revoke a session, are you sure?"
 msgstr "Usted está a punto de revocar una sesión, ¿está seguro?"
 
-#: burpui/templates/user.html:118
+#: burpui/templates/user.html:117
 msgid "Warning!"
 msgstr "¡Advertencia!"
 
-#: burpui/templates/user.html:118
+#: burpui/templates/user.html:117
 msgid "You are about to revoke your <strong>current</strong> session."
 msgstr "Vas a revocar su <strong> actual </ strong> sesión."
 
-#: burpui/templates/user.html:123
+#: burpui/templates/user.html:122
 msgid "Confirm"
 msgstr "Confirmar"
 
@@ -2094,7 +2095,7 @@ msgstr "nunca"
 msgid "now"
 msgstr "ahora"
 
-#: burpui/templates/js/clients.js:110
+#: burpui/templates/js/clients.js:109
 msgid "view"
 msgstr ""
 
@@ -2106,23 +2107,23 @@ msgstr "Guardando..."
 msgid "Preferences successfuly saved"
 msgstr "Configuraciones guardadas correctamente"
 
-#: burpui/templates/js/user.js:189
+#: burpui/templates/js/user.js:194
 msgid "Select all filtered"
 msgstr "Seleccionar todos filtrados"
 
-#: burpui/templates/js/user.js:197
+#: burpui/templates/js/user.js:207
 msgid "Deselect all filtered"
 msgstr "Quitar selección de todos filtrados"
 
-#: burpui/templates/js/user.js:204
+#: burpui/templates/js/user.js:215
 msgid "Revoke selected"
 msgstr "Revocar seleccionado"
 
-#: burpui/templates/js/user.js:526 burpui/templates/js/user.js:539
+#: burpui/templates/js/user.js:531 burpui/templates/js/user.js:544
 msgid "clients"
 msgstr "clientes"
 
-#: burpui/templates/js/user.js:528 burpui/templates/js/user.js:546
+#: burpui/templates/js/user.js:533 burpui/templates/js/user.js:551
 msgid "servers"
 msgstr "servidores"
 
@@ -2134,4 +2135,7 @@ msgstr "servidores"
 
 #~ msgid "There are no backups for this client."
 #~ msgstr "No hay respaldo para este cliente."
+
+#~ msgid "Revoke"
+#~ msgstr "Revocar"
 

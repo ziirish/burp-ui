@@ -264,7 +264,7 @@ Examples:
         > bui-manage setup_burp --host="127.0.0.1" --client="hydrogen" --dry
 
 
-When you configuration is OK, you should see this message:
+When your configuration is OK, you should see this message:
 
 ::
 
