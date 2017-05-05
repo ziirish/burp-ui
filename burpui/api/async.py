@@ -21,6 +21,7 @@ from ..server import BUIServer  # noqa
 from ..sessions import session_manager
 from ..ext.async import celery
 from ..ext.cache import cache
+from ..ext.limit import limiter
 from ..config import config
 from .._compat import PY3
 from ..decorators import browser_cache
@@ -372,6 +373,7 @@ class AsyncRestoreStatus(Resource):
 
     This resource is part of the :mod:`burpui.api.async` module.
     """
+    decorators = [limiter.exempt]
     @ns.doc(
         responses={
             200: 'Success',
