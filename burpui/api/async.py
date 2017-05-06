@@ -374,6 +374,7 @@ class AsyncRestoreStatus(Resource):
     This resource is part of the :mod:`burpui.api.async` module.
     """
     decorators = [limiter.exempt]
+
     @ns.doc(
         responses={
             200: 'Success',
