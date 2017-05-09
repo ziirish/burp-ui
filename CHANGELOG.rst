@@ -1,8 +1,8 @@
 Changelog
 =========
 
-Current
--------
+0.5.0 (09/05/2017)
+------------------
 
 - **BREAKING**: the *standalone* option has been renamed to *single* for less confusion
 - **BREAKING**: the ``bui-agent`` has now its own independent package to reduce dependencies

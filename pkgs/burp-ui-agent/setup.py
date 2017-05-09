@@ -99,13 +99,13 @@ setup(
     ],
     install_requires=[
         'gevent',
-        'arrow==0.7.0',
-        'tzlocal==1.2',
+        'arrow==0.10.0',
+        'tzlocal==1.4',
         'six==1.10.0',
-        'pyOpenSSL==16.0.0',
+        'pyOpenSSL==17.0.0',
         'configobj==5.0.6',
-        'pyasn1==0.1.9',
-        'cffi==1.7.0',
+        'pyasn1==0.2.3',
+        'cffi==1.10.0',
     ],
     classifiers=[
         'Framework :: Flask',

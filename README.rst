@@ -1,16 +1,16 @@
 Burp-UI
 =======
 
-.. image:: https://git.ziirish.me/ziirish/burp-ui/badges/master/build.svg
+.. image:: https://git.ziirish.me/ziirish/burp-ui/badges/stable/build.svg
     :target: https://git.ziirish.me/ziirish/burp-ui/pipelines
     :alt: Build Status
 
-.. image:: https://git.ziirish.me/ziirish/burp-ui/badges/master/coverage.svg
+.. image:: https://git.ziirish.me/ziirish/burp-ui/badges/stable/coverage.svg
     :target: https://git.ziirish.me/ziirish/burp-ui/pipelines
     :alt: Test coverage
 
-.. image:: https://readthedocs.org/projects/burp-ui/badge/?version=latest
-    :target: https://readthedocs.org/projects/burp-ui/?badge=latest
+.. image:: https://readthedocs.org/projects/burp-ui/badge/?version=stable
+    :target: https://readthedocs.org/projects/burp-ui/?badge=stable
     :alt: Documentation Status
 
 .. contents::
@@ -21,8 +21,8 @@ Introduction
 Screenshots
 ^^^^^^^^^^^
 
-.. image:: https://git.ziirish.me/ziirish/burp-ui/raw/master/docs/_static/burp-ui.gif
-    :target: https://git.ziirish.me/ziirish/burp-ui/blob/master/docs/_static/burp-ui.gif
+.. image:: https://git.ziirish.me/ziirish/burp-ui/raw/stable/docs/_static/burp-ui.gif
+    :target: https://git.ziirish.me/ziirish/burp-ui/blob/stable/docs/_static/burp-ui.gif
 
 Demo
 ^^^^
@@ -118,7 +118,7 @@ But this project is built on top of other tools. Here is a non exhaustive list:
 - `AngularStrap <http://mgcrea.github.io/angular-strap/>`_
 - `lodash <https://github.com/lodash/lodash>`_
 - `DataTables <http://datatables.net/>`_
-- Home-made `favicon <https://git.ziirish.me/ziirish/burp-ui/blob/master/burpui/static/images/favicon.ico>`_ based on pictures from `simpsoncrazy <http://www.simpsoncrazy.com/pictures/homer>`_
+- Home-made `favicon <https://git.ziirish.me/ziirish/burp-ui/blob/stable/burpui/static/images/favicon.ico>`_ based on pictures from `simpsoncrazy <http://www.simpsoncrazy.com/pictures/homer>`_
 
 Also note that this project is made with the Awesome `Flask`_ micro-framework.
 
@@ -135,9 +135,9 @@ would not exist without `Burp`_.
 
 
 .. _Flask: http://flask.pocoo.org/
-.. _License: https://git.ziirish.me/ziirish/burp-ui/blob/master/LICENSE
+.. _License: https://git.ziirish.me/ziirish/burp-ui/blob/stable/LICENSE
 .. _Burp: http://burp.grke.org/
-.. _burpui.cfg: https://git.ziirish.me/ziirish/burp-ui/blob/master/share/burpui/etc/burpui.sample.cfg
-.. _burp-ui.readthedocs.io: https://burp-ui.readthedocs.io/en/latest/
-.. _FAQ: https://burp-ui.readthedocs.io/en/latest/faq.html
-.. _Contributing: https://burp-ui.readthedocs.io/en/latest/contributing.html
+.. _burpui.cfg: https://git.ziirish.me/ziirish/burp-ui/blob/stable/share/burpui/etc/burpui.sample.cfg
+.. _burp-ui.readthedocs.io: https://burp-ui.readthedocs.io/en/stable/
+.. _FAQ: https://burp-ui.readthedocs.io/en/stable/faq.html
+.. _Contributing: https://burp-ui.readthedocs.io/en/stable/contributing.html
