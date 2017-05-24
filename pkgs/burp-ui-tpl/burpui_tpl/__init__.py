@@ -24,4 +24,4 @@ ROOT = os.path.join(os.path.dirname(os.path.realpath(__file__)))
 if os.path.exists(os.path.join(ROOT, 'VERSION')):
     __version__ = open(os.path.join(ROOT, 'VERSION')).read().rstrip()
 else:
-    __version__ = '0.5.0'
+    __version__ = '0.5.1'

@@ -234,8 +234,10 @@ def sanitize_string(string, strict=True):
     :param string: String to escape
     :type string: str
     """
+    if not string:
+        return ""
     if strict:
-        return to_unicode(string.encode('unicode_escape'))
+        return to_unicode(string).split('\n')[0]  # .encode('unicode_escape'))
     else:
         import re
         ret = repr(string).replace('\\\\', '\\')

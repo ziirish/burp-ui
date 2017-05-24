@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Current
+-------
+
+- Fix: handle non ascii chars in the browser view
+
 0.5.0 (09/05/2017)
 ------------------
 

@@ -716,8 +716,8 @@ def diag(client, host, tips):
             click.echo(
                 click.style(
                     'Unable to activate redis & celery. Did you ran the '
-                    '\'pip install burp-ui[celery]\' and '
-                    '\'pip install burp-ui[gunicorn-extra]\' commands first?',
+                    '\'pip install "burp-ui[celery]"\' and '
+                    '\'pip install "burp-ui[gunicorn-extra]"\' commands first?',
                     fg='yellow'
                 )
             )

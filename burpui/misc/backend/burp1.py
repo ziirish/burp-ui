@@ -219,18 +219,6 @@ class Burp(BUIbackend):
             self.burpconfcli = confcli
             self.burpconfsrv = confsrv
 
-        if tmpdir and os.path.exists(tmpdir) and not os.path.isdir(tmpdir):
-            self.logger.warning("'%s' is not a directory", tmpdir)
-            if tmpdir == G_TMPDIR:
-                raise IOError("Cannot use '{}' as tmpdir".format(tmpdir))
-            tmpdir = G_TMPDIR
-            if os.path.exists(tmpdir) and not os.path.isdir(tmpdir):
-                raise IOError("Cannot use '{}' as tmpdir".format(tmpdir))
-        if tmpdir and not os.path.exists(tmpdir):
-            os.makedirs(tmpdir)
-
-        self.tmpdir = tmpdir
-
         self.parser = Parser(self)
 
         self.family = Burp._get_inet_family(self.host)
@@ -253,6 +241,18 @@ class Burp(BUIbackend):
                     break
         except:
             pass
+
+        if tmpdir and os.path.exists(tmpdir) and not os.path.isdir(tmpdir):
+            self.logger.warning("'%s' is not a directory", tmpdir)
+            if tmpdir == G_TMPDIR:
+                raise IOError("Cannot use '{}' as tmpdir".format(tmpdir))
+            tmpdir = G_TMPDIR
+            if os.path.exists(tmpdir) and not os.path.isdir(tmpdir):
+                raise IOError("Cannot use '{}' as tmpdir".format(tmpdir))
+        if tmpdir and not os.path.exists(tmpdir):
+            os.makedirs(tmpdir)
+
+        self.tmpdir = tmpdir
 
         self.logger.info('burp port: {}'.format(self.port))
         self.logger.info('burp host: {}'.format(self.host))
