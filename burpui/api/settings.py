@@ -15,7 +15,7 @@ from .._compat import unquote
 from ..utils import NOTIF_INFO
 
 from six import iteritems
-from flask_babel import gettext as _
+from flask_babel import gettext as _, refresh
 from flask import jsonify, request, url_for, current_app
 from ..datastructures import ImmutableMultiDict
 
@@ -199,11 +199,12 @@ class ServerSettings(Resource):
         except:
             pass
         r = bui.client.read_conf_srv(conf, server)
+        refresh()
         # Translate the doc and placeholder API side
-        doc = bui.client.get_parser_attr('doc', server)
+        doc = bui.client.get_parser_attr('doc', server).copy()
+        placeholders = bui.client.get_parser_attr('placeholders', server).copy()
         for key, val in iteritems(doc):
             doc[key] = _(val)
-        placeholders = bui.client.get_parser_attr('placeholders', server)
         for key, val in iteritems(placeholders):
             placeholders[key] = _(val)
         return jsonify(results=r,
@@ -339,15 +340,23 @@ class ClientSettings(Resource):
         except:
             pass
         r = bui.client.read_conf_cli(client, conf, server)
+        refresh()
+        # Translate the doc and placeholder API side
+        doc = bui.client.get_parser_attr('doc', server).copy()
+        placeholders = bui.client.get_parser_attr('placeholders', server).copy()
+        for key, val in iteritems(doc):
+            doc[key] = _(val)
+        for key, val in iteritems(placeholders):
+            placeholders[key] = _(val)
         return jsonify(
             results=r,
             boolean=bui.client.get_parser_attr('boolean_cli', server),
             string=bui.client.get_parser_attr('string_cli', server),
             integer=bui.client.get_parser_attr('integer_cli', server),
             multi=bui.client.get_parser_attr('multi_cli', server),
-            server_doc=bui.client.get_parser_attr('doc', server),
+            server_doc=doc,
             suggest=bui.client.get_parser_attr('values', server),
-            placeholders=bui.client.get_parser_attr('placeholders', server),
+            placeholders=placeholders,
             defaults=bui.client.get_parser_attr('defaults', server)
         )
 
