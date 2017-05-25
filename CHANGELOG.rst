@@ -6,6 +6,7 @@ Current
 
 - Fix: handle non ascii chars in the browser view
 - Fix: issue `#215 <https://git.ziirish.me/ziirish/burp-ui/issues/215>`_
+- Fix: issue `#218 <https://git.ziirish.me/ziirish/burp-ui/issues/218>`_
 
 0.5.0 (09/05/2017)
 ------------------
