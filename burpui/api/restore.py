@@ -411,7 +411,7 @@ class DoServerRestore(Resource):
         json = []
 
         if not bui.client.get_parser(agent=server).param('server_can_restore',
-                                                         'client_conf') or \
+                                                         'client_conf') and \
                 bui.noserverrestore:
             self.abort(
                 428,
