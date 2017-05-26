@@ -227,7 +227,7 @@ class BUIcompress():
             self.arch.add(path, arcname=arcname, recursive=False)
 
 
-def sanitize_string(string, strict=True):
+def sanitize_string(string, strict=True, paranoid=False):
     """Return a 'safe' version of the string (ie. remove malicious chars like
     '\n')
 
@@ -236,8 +236,10 @@ def sanitize_string(string, strict=True):
     """
     if not string:
         return ""
-    if strict:
-        return to_unicode(string).split('\n')[0]  # .encode('unicode_escape'))
+    if paranoid:
+        return to_unicode(string.encode('unicode_escape'))
+    elif strict:
+        return to_unicode(string).split('\n')[0]
     else:
         import re
         ret = repr(string).replace('\\\\', '\\')
