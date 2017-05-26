@@ -4,6 +4,7 @@ Changelog
 Current
 -------
 
+- Add: `support new burp counters <https://git.ziirish.me/ziirish/burp-ui/issues/219>`_
 - Add: `record login failure attempt <https://git.ziirish.me/ziirish/burp-ui/issues/214>`_
 
 0.5.1 (05/26/2017)
