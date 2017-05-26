@@ -1,14 +1,14 @@
 Changelog
 =========
 
-Current
--------
+0.5.1 (05/26/2017)
+------------------
 
 - Fix: handle non ascii chars in the browser view
 - Fix: issue `#215 <https://git.ziirish.me/ziirish/burp-ui/issues/215>`_
 - Fix: issue `#218 <https://git.ziirish.me/ziirish/burp-ui/issues/218>`_
 
-0.5.0 (09/05/2017)
+0.5.0 (05/09/2017)
 ------------------
 
 - **BREAKING**: the *standalone* option has been renamed to *single* for less confusion
