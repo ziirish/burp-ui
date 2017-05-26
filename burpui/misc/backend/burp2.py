@@ -28,6 +28,7 @@ if sys.version_info < (3, 3):
 
 BURP_MINIMAL_VERSION = 'burp-2.0.18'
 BURP_LIST_BATCH = '2.0.48'
+BURP_STATUS_FORMAT_V2 = '2.1.10'
 
 G_BURPBIN = u'/usr/sbin/burp'
 G_STRIPBIN = u'/usr/bin/vss_strip'
@@ -303,6 +304,12 @@ class Burp(Burp1):
         jso = self._read_proc_stdout(self.timeout)
         if self._is_warning(jso):
             self.logger.info(jso['warning'])
+        # try to switch to new JSON status
+        if self.client_version < BURP_STATUS_FORMAT_V2:
+            self.proc.write(to_bytes('j:peer_version=2.1.10\n'))
+            jso = self._read_proc_stdout(self.timeout)
+            if self._is_warning(jso):
+                self.logger.info(jso['warning'])
 
     def _proc_is_alive(self):
         """Check if the burp client process is still alive"""
@@ -646,10 +653,16 @@ class Burp(Burp1):
 
         backup = None
         phases = ['working', 'finishing']
-        for back in client['backups']:
-            if 'flags' in back and any([x in back['flags'] for x in phases]):
-                backup = back
-                break
+        try:
+            for child in client['children']:
+                if 'action' in child and child['action'] == 'backup':
+                    backup = child
+                    break
+        except IndexError:
+            for back in client['backups']:
+                if 'flags' in back and any([x in back['flags'] for x in phases]):
+                    backup = back
+                    break
         # check we found a working backup
         if not backup:
             return ret
@@ -687,10 +700,13 @@ class Burp(Burp1):
             else:
                 ret[name] = counter['count']
 
-        for phase in phases:
-            if phase in backup['flags']:
-                ret['phase'] = phase
-                break
+        if 'phase' in backup:
+            ret['phase'] = backup['phase']
+        else:
+            for phase in phases:
+                if phase in backup['flags']:
+                    ret['phase'] = phase
+                    break
 
         if 'bytes' not in ret:
             ret['bytes'] = 0
