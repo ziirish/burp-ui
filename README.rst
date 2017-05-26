@@ -97,6 +97,11 @@ deployments through Ansible:
 - `burpui_server <https://galaxy.ansible.com/CoffeeITWorks/burpui_server/>`_
 - `burp2_server <https://galaxy.ansible.com/CoffeeITWorks/burp2_server/>`_
 
+@qm2k contributed some scripts/config to tweak your setup. You can found them here:
+
+- `burp-ui_integration <https://github.com/qm2k/burp-ui_integration>`_
+- `burp_integration <https://github.com/qm2k/burp_integration>`_
+
 Licenses
 --------
 
