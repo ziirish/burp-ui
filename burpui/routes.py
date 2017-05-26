@@ -13,14 +13,14 @@ import uuid
 from flask import request, render_template, redirect, url_for, abort, \
     flash, Blueprint as FlaskBlueprint, session, current_app
 from flask_login import login_user, login_required, logout_user, current_user
-from flask_babel import gettext as _, force_locale
+from flask_babel import gettext as _, refresh as refresh_babel
 
 from .server import BUIServer  # noqa
 from .sessions import session_manager
 from ._compat import quote
 from .forms import LoginForm
 from .exceptions import BUIserverException
-from .utils import human_readable as _hr
+from .utils import human_readable as _hr, sanitize_string
 
 
 class Blueprint(FlaskBlueprint):
@@ -405,11 +405,11 @@ def login():
         session['tag_id'] = uuid.uuid4()
         session['language'] = form.language.data
         user = bui.uhandler.user(form.username.data, refresh)
+        # at the time the context is loaded, the locale is not set
+        refresh_babel()
         if user.is_active and user.login(form.password.data):
             login_user(user, remember=form.remember.data)
-            # at the time the context is loaded, the locale is not set
-            with force_locale(user.language):
-                flash(_('Logged in successfully'), 'success')
+            flash(_('Logged in successfully'), 'success')
             session_manager.store_session(
                 form.username.data,
                 request.remote_addr,
@@ -418,8 +418,13 @@ def login():
             )
             return redirect(request.args.get("next") or url_for('.home'))
         else:
-            with force_locale(user.language):
-                flash(_('Wrong username or password'), 'danger')
+            flash(_('Wrong username or password'), 'danger')
+            bui.logger.critical(
+                'Wrong username or password attempted by {} at {}'.format(
+                    repr(sanitize_string(form.username.data, paranoid=True)),
+                    request.remote_addr
+                )
+            )
     elif form.is_submitted():
         flash(_('Wrong CSRF token, please try again'), 'warning')
     return render_template('login.html', form=form, login=True)
