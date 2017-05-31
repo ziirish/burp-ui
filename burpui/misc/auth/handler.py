@@ -34,11 +34,22 @@ class UserAuthHandler(BUIhandler):
                 except:
                     import traceback
                     self.errors[au] = traceback.format_exc()
+        for name, plugin in iteritems(self.app.plugin_manager.get_plugins_by_type('auth')):
+            try:
+                obj = plugin.UserHandler(self.app)
+                backends.append(obj)
+            except:
+                import traceback
+                self.errors[name] = traceback.format_exc()
         backends.sort(key=lambda x: x.priority, reverse=True)
         if not backends:
             raise ImportError(
                 'No backend found for \'{}\':\n{}'.format(self.app.auth,
                                                           self.errors)
+            )
+        for name, err in iteritems(self.errors):
+            self.app.logger.error(
+                'Unable to load module {}:\n{}'.format(repr(name), err)
             )
         self.backends = OrderedDict()
         for obj in backends:

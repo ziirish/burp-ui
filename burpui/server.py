@@ -14,6 +14,7 @@ import traceback
 
 from .misc.auth.handler import UserAuthHandler
 from .config import config
+from .plugins import PluginManager
 
 from datetime import timedelta
 from flask import Flask
@@ -45,6 +46,7 @@ G_COOKIETIME = 14
 G_SESSIONTIME = 5
 G_DATABASE = u''
 G_PREFIX = u''
+G_PLUGINS = []
 G_NO_SERVER_RESTORE = False
 
 
@@ -67,6 +69,7 @@ class BUIServer(Flask):
             'auth': G_AUTH,
             'acl': G_ACL,
             'prefix': G_PREFIX,
+            'plugins': G_PLUGINS,
             'demo': G_DEMO,
         },
         'UI': {
@@ -181,6 +184,13 @@ class BUIServer(Flask):
             if self.prefix.lower() != 'none':
                 self.logger.warning("'prefix' must start with a '/'!")
             self.prefix = self.config['BUI_PREFIX'] = ''
+
+        self.plugins = self.config['BUI_PLUGINS'] = self.conf.safe_get(
+            'plugins',
+            'string_lower_list'
+        )
+        if len(self.plugins) == 1 and self.plugins[0] == 'none':
+            self.plugins = self.config['BUI_PLUGINS'] = []
 
         self.auth = self.config['BUI_AUTH'] = self.conf.safe_get(
             'auth',
@@ -313,6 +323,9 @@ class BUIServer(Flask):
 
     def load_modules(self, strict=True):
         """Load the extensions"""
+        self.plugin_manager = PluginManager(self, self.plugins)
+        self.plugin_manager.load_all()
+
         if self.auth and 'none' not in self.auth:
             try:
                 self.uhandler = UserAuthHandler(self)

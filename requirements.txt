@@ -7,6 +7,7 @@ flask-restplus==0.10.1
 Flask-Cache==0.13.1
 WTForms==2.1
 arrow==0.10.0
+pluginbase==0.5
 tzlocal==1.4
 six==1.10.0
 pyOpenSSL==17.0.0

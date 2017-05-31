@@ -4,6 +4,7 @@ Changelog
 Current
 -------
 
+- Add: new plugins system to allow users to write their own modules
 - Add: `support new burp counters <https://git.ziirish.me/ziirish/burp-ui/issues/219>`_
 - Add: `record login failure attempt <https://git.ziirish.me/ziirish/burp-ui/issues/214>`_
 

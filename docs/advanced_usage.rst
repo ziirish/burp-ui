@@ -53,6 +53,8 @@ The `burpui.cfg`_ configuration file contains a ``[Global]`` section as follow:
     # 'X-Script-Name' header. In this case, the bellow prefix will be ignored in
     # favour of the one announced by your reverse-proxy
     prefix = none
+    # list of paths to look for external plugins
+    plugins = none
 
 
 Each option is commented, but here is a more detailed documentation:
@@ -77,6 +79,8 @@ Each option is commented, but here is a more detailed documentation:
 - *acl*: What `ACL`_ module to use.
 - *prefix*: You can host `Burp-UI`_ behind a sub-root path. See the `gunicorn
   <gunicorn.html#sub-root-path>`__ page for details.
+- *plugins*: Specify a list of paths to look for external plugins. See the
+  `Plugins <plugins.html>`_ page for details on how to write plugins.
 
 
 There is also a ``[UI]`` section in which you can configure some *UI*
