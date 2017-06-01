@@ -324,7 +324,8 @@ class BUIServer(Flask):
     def load_modules(self, strict=True):
         """Load the extensions"""
         self.plugin_manager = PluginManager(self, self.plugins)
-        self.plugin_manager.load_all()
+        if self.plugins:
+            self.plugin_manager.load_all()
 
         if self.auth and 'none' not in self.auth:
             try:

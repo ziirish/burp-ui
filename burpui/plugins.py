@@ -23,13 +23,20 @@ class PluginManager(object):
 
     def __init__(self, app, searchpath):
         self.app = app
-        self.plugin_base = PluginBase(package='burpui.plugins.ext')
-        self.plugin_source = self.plugin_base.make_plugin_source(
-            searchpath=searchpath
-        )
+        self.searchpath = searchpath
+        self.init = False
         self.plugins = {}
 
+    def _init_manager(self):
+        if self.init:
+            return
+        self.plugin_base = PluginBase(package='burpui.plugins.ext')
+        self.plugin_source = self.plugin_base.make_plugin_source(
+            searchpath=self.searchpath
+        )
+
     def load_all(self):
+        self._init_manager()
         for plugin_name in self.plugin_source.list_plugins():
             if plugin_name not in self.plugins:
                 try:
