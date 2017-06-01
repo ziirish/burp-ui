@@ -51,6 +51,7 @@ Python version:  3.6.1
 Burp-UI version: 0.5.0 (stable)
 Single mode:     True
 Backend version: 2
+Config file:     share/burpui/etc/burpui.sample.cfg
 ```
 
 # Steps to reproduce

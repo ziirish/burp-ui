@@ -14,6 +14,7 @@ import sys
 import click
 
 from .app import create_app
+from six import iteritems
 
 ROOT = os.path.dirname(os.path.realpath(__file__))
 DEBUG = os.environ.get('BUI_DEBUG') or os.environ.get('FLASK_DEBUG') or False
@@ -929,10 +930,32 @@ def diag(client, host, tips):
 
 
 @app.cli.command()
-def sysinfo():
+@click.option('-v', '--verbose', is_flag=True,
+              help='Dump parts of the config (Please double check no sensitive'
+              ' data leaked)')
+def sysinfo(verbose):
     """Returns a couple of system informations to help debugging"""
-    from .app import __release__, __version__
+    from .desc import __release__, __version__
     click.echo('Python version:  {}.{}.{}'.format(sys.version_info[0], sys.version_info[1], sys.version_info[2]))
     click.echo('Burp-UI version: {} ({})'.format(__version__, __release__))
     click.echo('Single mode:     {}'.format(app.standalone))
     click.echo('Backend version: {}'.format(app.vers))
+    click.echo('Config file:     {}'.format(app.config.conffile))
+    if verbose:
+        click.echo('>>>>> Extra verbose informations:')
+        click.echo(click.style(
+            '!!! PLEASE MAKE SURE NO SENSITIVE DATA GET EXPOSED !!!',
+            fg='red'
+        ))
+        sections = [
+            'Burp{}'.format(app.vers),
+            'Production',
+            'Global',
+        ]
+        for section in sections:
+            click.echo()
+            click.echo('    [{}] section:'.format(section))
+            click.echo('    8<{}BEGIN'.format('-'*69))
+            for key, val in iteritems(app.config.options.get(section, {})):
+                click.echo('    {} = {}'.format(key, val))
+            click.echo('    8<{}END'.format('-'*71))

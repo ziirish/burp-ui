@@ -209,9 +209,53 @@ Example:
     bui-manage sysinfo
 
     Python version:  2.7.9
-    Burp-UI version: 0.5.0 (stable)
+    Burp-UI version: 0.6.0 (stable)
     Single mode:     True
     Backend version: 2
+    Config file:     share/burpui/etc/burpui.sample.cfg
+
+
+You can also add the ``-v`` flag while running ``sysinfo`` but please **MAKE
+SURE NO SENSITIVE DATA GET EXPOSED**.
+
+Example:
+
+::
+
+    bui-manage sysinfo -v
+    Python version:  2.7.9
+    Burp-UI version: 0.6.0 (stable)
+    Single mode:     True
+    Backend version: 2
+    Config file:     share/burpui/etc/burpui.sample.cfg
+    >>>>> Extra verbose informations:
+    !!! PLEASE MAKE SURE NO SENSITIVE DATA GET EXPOSED !!!
+
+        [Burp2] section:
+        8<---------------------------------------------------------------------BEGIN
+        8<-----------------------------------------------------------------------END
+
+        [Production] section:
+        8<---------------------------------------------------------------------BEGIN
+        storage = default
+        session = default
+        cache = default
+        redis = localhost:6379
+        celery = false
+        database = none
+        limiter = false
+        ratio = 60/minute
+        8<-----------------------------------------------------------------------END
+
+        [Global] section:
+        8<---------------------------------------------------------------------BEGIN
+        version = 2
+        single = true
+        auth = basic
+        acl = basic
+        prefix = none
+        plugins = none
+        8<-----------------------------------------------------------------------END
 
 
 Diag
