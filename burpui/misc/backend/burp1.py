@@ -21,8 +21,8 @@ from six import iteritems, viewkeys
 
 from .interface import BUIbackend
 from ..parser.burp1 import Parser
-from ...utils import human_readable as _hr, BUIcompress, sanitize_string, \
-    utc_to_local
+from ...utils import human_readable as _hr, BUIcompress, utc_to_local
+from ...security import sanitize_string
 from ...exceptions import BUIserverException
 from ..._compat import unquote, PY3, to_unicode, to_bytes
 

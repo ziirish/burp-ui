@@ -306,7 +306,7 @@ class Languages(Resource):
         '*': wild,
     })
 
-    @api.cache.cached(timeout=3600, key_prefix=cache_key)
+    @cache.cached(timeout=3600, key_prefix=cache_key)
     @ns.marshal_with(languages_fields, code=200, description='Success')
     @browser_cache(3600)
     def get(self):

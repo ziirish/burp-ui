@@ -18,7 +18,7 @@ import logging
 
 from uuid import UUID
 from inspect import currentframe, getouterframes
-from ._compat import PY3, to_unicode
+from ._compat import PY3
 
 NOTIF_OK = 0
 NOTIF_WARN = 1
@@ -227,26 +227,6 @@ class BUIcompress():
             self.arch.add(path, arcname=arcname, recursive=False)
 
 
-def sanitize_string(string, strict=True, paranoid=False):
-    """Return a 'safe' version of the string (ie. remove malicious chars like
-    '\n')
-
-    :param string: String to escape
-    :type string: str
-    """
-    if not string:
-        return ""
-    if paranoid:
-        return to_unicode(string.encode('unicode_escape'))
-    elif strict:
-        return to_unicode(string).split('\n')[0]
-    else:
-        import re
-        ret = repr(string).replace('\\\\', '\\')
-        ret = re.sub(r"^u?'(.*)'$", r"\1", ret)
-        return to_unicode(ret)
-
-
 def is_uuid(string):
     """Tells if a given string is a UUID"""
     try:
@@ -319,49 +299,6 @@ def utc_to_local(timestamp):
         return local.timestamp
     except (TypeError, arrow.parser.ParserError, ImportError):
         return timestamp
-
-
-def basic_login_from_request(request, app):
-    """Check 'Authorization' headers and log the user in if possible.
-
-    :param request: The input request
-    :type request: :class:`flask.Request`
-
-    :param app: The application context
-    :type app: :class:`burpui.server.BUIServer`
-    """
-    if app.auth != 'none':
-        if request.headers.get('X-From-UI', False):
-            return None
-        auth = request.authorization
-        if auth:
-            from flask import session, g
-            app.logger.debug('Found Basic user: {}'.format(auth.username))
-            refresh = False
-            if 'login' in session and session['login'] != auth.username:
-                refresh = True
-                session.clear()
-                session['login'] = auth.username
-            session['language'] = request.headers.get('X-Language', 'en')
-            user = app.uhandler.user(auth.username, refresh)
-            if user.active and user.login(auth.password):
-                from flask_login import login_user
-                from .sessions import session_manager
-                login_user(user)
-                if request.headers.get('X-Reuse-Session', False):
-                    session_manager.store_session(
-                        auth.username,
-                        request.remote_addr,
-                        request.headers.get('User-Agent'),
-                        remember=False,
-                        api=True
-                    )
-                else:
-                    g.basic_session = True
-                app.logger.debug('Successfully logged in')
-                return user
-            app.logger.warning('Failed to log-in')
-    return None
 
 
 class ReverseProxied(object):

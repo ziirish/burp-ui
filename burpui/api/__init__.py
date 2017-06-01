@@ -22,10 +22,10 @@ from functools import wraps
 
 from .custom.namespace import Namespace
 from .._compat import to_bytes
+from ..desc import __version__, __release__, __url__, __doc__
 from ..server import BUIServer  # noqa
 from ..exceptions import BUIserverException
 from ..config import config
-from ..ext.cache import cache
 
 bui = current_app  # type: BUIServer
 EXEMPT_METHODS = set(['OPTIONS'])
@@ -74,11 +74,10 @@ class Api(ApiPlus):
     """Wrapper class around :class:`flask_restplus.Api`"""
     logger = logging.getLogger('burp-ui')
     # TODO: should use global object instead of reference
-    cache = cache
     loaded = False
-    release = None
-    __doc__ = None
-    __url__ = None
+    release = __release__
+    __doc__ = __doc__
+    __url__ = __url__
     CELERY_REQUIRED = ['async']
 
     def load_all(self):
@@ -163,6 +162,7 @@ api = Api(
     apibp,
     title='Burp-UI API',
     description='Burp-UI API to interact with burp',
+    version=__version__,
     doc='/doc',
     decorators=[api_login_required]
 )

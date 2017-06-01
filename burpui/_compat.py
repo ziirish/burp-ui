@@ -17,7 +17,7 @@ except ImportError:
 
 if sys.version_info[0] >= 3:
     PY3 = True
-    from urllib.parse import unquote, quote  # noqa
+    from urllib.parse import unquote, quote, urlparse, urljoin  # noqa
     text_type = str
     string_types = (str,)
 
@@ -39,6 +39,7 @@ if sys.version_info[0] >= 3:
 else:
     PY3 = False
     from urllib import unquote, quote  # noqa
+    from urlparse import urlparse, urljoin  # noqa
     text_type = unicode
     string_types = (str, unicode)
 

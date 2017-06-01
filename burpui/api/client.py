@@ -13,6 +13,7 @@ from . import api, cache_key
 from ..server import BUIServer  # noqa
 from .custom import fields, Resource
 from .custom.inputs import boolean
+from ..ext.cache import cache
 from ..exceptions import BUIserverException
 from ..utils import NOTIF_ERROR
 
@@ -153,7 +154,7 @@ class ClientTree(Resource):
         default=False
     )
 
-    @api.cache.cached(timeout=3600, key_prefix=cache_key)
+    @cache.cached(timeout=3600, key_prefix=cache_key)
     @ns.marshal_list_with(node_fields, code=200, description='Success')
     @ns.expect(parser)
     @ns.doc(
@@ -357,7 +358,7 @@ class ClientTreeAll(Resource):
         help='Which server to collect data from when in multi-agent mode'
     )
 
-    @api.cache.cached(timeout=3600, key_prefix=cache_key)
+    @cache.cached(timeout=3600, key_prefix=cache_key)
     @ns.marshal_list_with(node_fields, code=200, description='Success')
     @ns.expect(parser)
     @ns.doc(
@@ -627,7 +628,7 @@ class ClientReport(Resource):
         ),
     })
 
-    @api.cache.cached(timeout=1800, key_prefix=cache_key)
+    @cache.cached(timeout=1800, key_prefix=cache_key)
     @ns.marshal_with(report_fields, code=200, description='Success')
     @ns.expect(parser)
     @ns.doc(
@@ -865,7 +866,7 @@ class ClientStats(Resource):
         ),
     })
 
-    @api.cache.cached(timeout=1800, key_prefix=cache_key)
+    @cache.cached(timeout=1800, key_prefix=cache_key)
     @ns.marshal_list_with(client_fields, code=200, description='Success')
     @ns.expect(parser)
     @ns.doc(

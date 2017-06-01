@@ -17,7 +17,7 @@ import warnings
 from logging import Formatter
 
 from ._compat import PY3, to_unicode
-from .desc import __url__, __doc__, __version__, __release__
+from .desc import __version__, __release__
 
 if PY3:  # pragma: no cover
     basestring = str
@@ -310,8 +310,8 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
     from flask_login import LoginManager
     from flask_bower import Bower
     from flask_babel import gettext
-    from .utils import basic_login_from_request, ReverseProxied, lookup_file, \
-        is_uuid
+    from .utils import ReverseProxied, lookup_file, is_uuid
+    from .security import basic_login_from_request
     from .server import BUIServer as BurpUI
     from .sessions import session_manager
     from .routes import view, mypad
@@ -587,16 +587,10 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
     create_db(app, cli, unittest)
 
     # We initialize the API
-    api.version = __version__
-    api.release = __release__
-    api.__url__ = __url__
-    api.__doc__ = __doc__
     api.load_all()
     app.register_blueprint(apibp)
 
     # Then we load our routes
-    view.__url__ = __url__
-    view.__doc__ = __doc__
     app.register_blueprint(view)
 
     # And the login_manager

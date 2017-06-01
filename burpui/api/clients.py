@@ -10,6 +10,7 @@
 from . import api, cache_key
 from ..server import BUIServer  # noqa
 from .custom import fields, Resource
+from ..ext.cache import cache
 from ..exceptions import BUIserverException
 from ..decorators import browser_cache
 
@@ -118,7 +119,7 @@ class RunningBackup(Resource):
         'running': fields.Boolean(required=True, description='Is there a backup running right now'),
     })
 
-    @api.cache.cached(timeout=60, key_prefix=cache_key)
+    @cache.cached(timeout=60, key_prefix=cache_key)
     @ns.marshal_with(running_fields, code=200, description='Success')
     def get(self, server=None):
         """Tells if a backup is running right now
@@ -219,7 +220,7 @@ class ClientsReport(Resource):
         'clients': fields.Nested(client_fields, as_list=True, required=True),
     })
 
-    @api.cache.cached(timeout=1800, key_prefix=cache_key)
+    @cache.cached(timeout=1800, key_prefix=cache_key)
     @ns.marshal_with(report_fields, code=200, description='Success')
     @ns.expect(parser)
     @ns.doc(
@@ -408,7 +409,7 @@ class ClientsStats(Resource):
         'percent': fields.Integer(description='Percentage done', default=0),
     })
 
-    @api.cache.cached(timeout=1800, key_prefix=cache_key)
+    @cache.cached(timeout=1800, key_prefix=cache_key)
     @ns.marshal_list_with(client_fields, code=200, description='Success')
     @ns.expect(parser)
     @ns.doc(
@@ -493,7 +494,7 @@ class AllClients(Resource):
         'agent': fields.String(required=False, default=None, description='Associated Agent name'),
     })
 
-    @api.cache.cached(timeout=1800, key_prefix=cache_key)
+    @cache.cached(timeout=1800, key_prefix=cache_key)
     @ns.marshal_list_with(client_fields, code=200, description='Success')
     @ns.expect(parser)
     @ns.doc(

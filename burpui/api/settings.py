@@ -9,6 +9,7 @@
 """
 from . import api
 from ..server import BUIServer  # noqa
+from ..ext.cache import cache
 from .custom import Resource
 from .custom.inputs import boolean
 from .._compat import unquote
@@ -285,7 +286,7 @@ class NewClientSettings(Resource):
         else:
             noti.append([NOTIF_INFO, '<a href="{}">Click here</a> to edit \'{}\' configuration'.format(url_for('view.cli_settings', client=newclient), newclient)])
         # clear the cache when we add a new client
-        api.cache.clear()
+        cache.clear()
         if bui.config['WITH_CELERY']:
             from .async import force_scheduling_now
             force_scheduling_now()
@@ -379,7 +380,7 @@ class ClientSettings(Resource):
 
         if not keepconf:
             # clear the cache when we remove a client
-            api.cache.clear()
+            cache.clear()
             if bui.config['WITH_CELERY']:
                 from .async import force_scheduling_now
                 force_scheduling_now()

@@ -19,7 +19,8 @@ from six import iteritems, viewkeys
 
 from .burp1 import Burp as Burp1
 from ..parser.burp2 import Parser
-from ...utils import human_readable as _hr, utc_to_local, sanitize_string
+from ...utils import human_readable as _hr, utc_to_local
+from ...security import sanitize_string
 from ...exceptions import BUIserverException
 from ..._compat import to_bytes, to_unicode
 

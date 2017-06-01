@@ -17,7 +17,8 @@ from collections import OrderedDict
 from glob import glob
 from six import iteritems, viewkeys
 
-from ...utils import NOTIF_ERROR, NOTIF_OK, NOTIF_WARN, sanitize_string
+from ...utils import NOTIF_ERROR, NOTIF_OK, NOTIF_WARN
+from ...security import sanitize_string
 from ...datastructures import MultiDict
 
 

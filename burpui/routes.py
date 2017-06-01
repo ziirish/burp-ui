@@ -11,21 +11,18 @@ import math
 import uuid
 
 from flask import request, render_template, redirect, url_for, abort, \
-    flash, Blueprint as FlaskBlueprint, session, current_app
+    flash, Blueprint, session, current_app
 from flask_login import login_user, login_required, logout_user, current_user
 from flask_babel import gettext as _, refresh as refresh_babel
 
+from .desc import __url__, __doc__
 from .server import BUIServer  # noqa
 from .sessions import session_manager
 from ._compat import quote
 from .forms import LoginForm
 from .exceptions import BUIserverException
-from .utils import human_readable as _hr, sanitize_string
-
-
-class Blueprint(FlaskBlueprint):
-    __url__ = None
-    __doc__ = None
+from .utils import human_readable as _hr
+from .security import sanitize_string, is_safe_url
 
 
 bui = current_app  # type: BUIServer
@@ -416,7 +413,10 @@ def login():
                 request.headers.get('User-Agent'),
                 form.remember.data
             )
-            return redirect(request.args.get("next") or url_for('.home'))
+            next_hop = request.args.get("next") or url_for('.home')
+            if is_safe_url(next_hop):
+                return redirect(next_hop)
+            return abort(400)
         else:
             flash(_('Wrong username or password'), 'danger')
             bui.logger.critical(
@@ -447,8 +447,8 @@ def about():
         'about.html',
         about=True,
         login=(not current_user.is_authenticated),
-        doc=view.__doc__,
-        url=view.__url__
+        doc=__doc__,
+        url=__url__
     )
 
 

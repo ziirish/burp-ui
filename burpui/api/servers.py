@@ -4,6 +4,7 @@
 from . import api, cache_key
 from ..server import BUIServer  # noqa
 from .custom import fields, Resource
+from ..ext.cache import cache
 from ..exceptions import BUIserverException
 
 from flask import current_app
@@ -26,7 +27,7 @@ class ServersStats(Resource):
         'name': fields.String(required=True, description='Server name'),
     })
 
-    @api.cache.cached(timeout=1800, key_prefix=cache_key)
+    @cache.cached(timeout=1800, key_prefix=cache_key)
     @ns.marshal_list_with(servers_fields, code=200, description='Success')
     @ns.doc(
         responses={
@@ -125,7 +126,7 @@ class ServersReport(Resource):
         'servers': fields.Nested(server_fields, as_list=True, required=True),
     })
 
-    @api.cache.cached(timeout=1800, key_prefix=cache_key)
+    @cache.cached(timeout=1800, key_prefix=cache_key)
     @ns.marshal_with(report_fields, code=200, description='Success')
     @ns.doc(
         responses={

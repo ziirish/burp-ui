@@ -37,7 +37,6 @@ class Resource(ResourcePlus):
         self.is_admin = True
         if bui.acl:
             self.is_admin = bui.acl.is_admin(self.username)
-        self.cache = api.cache
         ResourcePlus.__init__(self, api, *args, **kwargs)
 
     def abort(self, code=500, message=None, **kwargs):

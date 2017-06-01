@@ -683,7 +683,7 @@ class AsyncRunningBackup(RunningBackup):
     This resource is part of the :mod:`burpui.api.async` module.
     """
 
-    @api.cache.cached(timeout=60, key_prefix=cache_key)
+    @cache.cached(timeout=60, key_prefix=cache_key)
     @ns.marshal_with(
         RunningBackup.running_fields,
         code=200,
@@ -870,7 +870,7 @@ class AsyncClientsReport(ClientsReport):
     running in multi-agent mode.
     """
 
-    @api.cache.cached(timeout=1800, key_prefix=cache_key)
+    @cache.cached(timeout=1800, key_prefix=cache_key)
     @ns.marshal_with(
         ClientsReport.report_fields,
         code=200,
