@@ -75,47 +75,6 @@ def to_unicode(input_bytes, encoding='utf-8'):
     return input_bytes
 
 
-try:
-    from pluginbase import PluginBase as PluginBaseOrig, \
-        PluginSource as PluginSourceOrig, _internalspace, _shutdown_module
-
-    class PluginSource(PluginSourceOrig):
-        def __cleanup(self, _sys=sys, _shutdown_module=_shutdown_module):
-            # The default parameters are necessary because this can be fired
-            # from the destructor and so late when the interpreter shuts down
-            # that these functions and modules might be gone.
-            if self.mod is None or self.mod.__name__ is None:
-                return
-            modname = self.mod.__name__
-            self.mod.__pluginbase_state__ = None
-            self.mod = None
-            try:
-                delattr(_internalspace, self.spaceid)
-            except AttributeError:
-                pass
-            prefix = modname + '.'
-            # avoid the bug described in issue #6
-            if modname in _sys.modules:
-                del _sys.modules[modname]
-            for key, value in list(_sys.modules.copy().items()):
-                if not key.startswith(prefix):
-                    continue
-                mod = _sys.modules.pop(key, None)
-                if mod is None:
-                    continue
-                _shutdown_module(mod)
-
-    class PluginBase(PluginBaseOrig):
-        def make_plugin_source(self, *args, **kwargs):
-            """Creates a plugin source for this plugin base and returns it.
-            All parameters are forwarded to :class:`PluginSource`.
-            """
-            return PluginSource(self, *args, **kwargs)
-
-except ImportError:
-    PluginBase = object
-
-
 # maps module name -> attribute name -> original item
 # e.g. "time" -> "sleep" -> built-in function sleep
 saved = {}

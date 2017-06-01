@@ -7,7 +7,7 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
-from ._compat import PluginBase
+from pluginbase import PluginBase
 from six import iteritems
 
 
