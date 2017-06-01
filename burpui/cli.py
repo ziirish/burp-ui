@@ -955,7 +955,7 @@ def sysinfo(verbose):
         for section in sections:
             click.echo()
             click.echo('    [{}] section:'.format(section))
-            click.echo('    8<{}BEGIN'.format('-'*69))
+            click.echo('    8<{}BEGIN'.format('-' * 69))
             for key, val in iteritems(app.config.options.get(section, {})):
                 click.echo('    {} = {}'.format(key, val))
-            click.echo('    8<{}END'.format('-'*71))
+            click.echo('    8<{}END'.format('-' * 71))
