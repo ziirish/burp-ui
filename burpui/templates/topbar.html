@@ -30,14 +30,14 @@
               </a>
             </li>
                 {% endif -%}
-        {% else -%}
+              {% else -%}
             <li class="detail {% if clients %}active{% endif %}">
               <a href="{{ url_for('view.home') }}">
                 <i class="fa fa-tasks" aria-hidden="true"></i><span class="dtl">&nbsp;{{ _('Clients') }}</span>
               </a>
             </li>
-        {% endif -%}
-        {% if config.STANDALONE or server or me -%}
+              {% endif -%}
+              {% if config.STANDALONE or server or me -%}
             <li class="detail {% if settings %}active{% endif %}">
               <a href="{{ url_for('view.settings', server=server) }}">
                 <i class="fa fa-wrench" aria-hidden="true"></i><span class="dtl">&nbsp;{{ _('Settings') }}</span>
@@ -66,7 +66,7 @@
             </li>
             <li class="detail">
               <a href="{{ url_for('view.logout') }}">
-                <i class="fa fa-sign-out" aria-hidden="true"></i><span class="dtl">&nbsp;{{ _('Logout') }}{% if 'login' in session %}&nbsp;<small>({{ session['login'] }})</small>{% endif %}</span>
+                <i class="fa fa-sign-out" aria-hidden="true"></i><span class="dtl">&nbsp;{{ _('Logout') }}&nbsp;<small>({{ current_user.name }})</small></span>
               </a>
             </li>
               {% endif -%}

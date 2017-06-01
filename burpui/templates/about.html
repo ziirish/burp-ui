@@ -18,7 +18,9 @@
 					</p>
 					<p>
 					{% endraw %}
+          {% if current_user.is_authenticated -%}
           {{ _('Browse the ') }}<a ng-href="{{ '{{' }} api {{ '}}' }}">API</a>&nbsp;<i class="fa fa-flask" aria-hidden="true"></i>
+          {% endif -%}
 					</p>
 				</div>
 {% endblock %}
