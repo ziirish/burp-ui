@@ -10,6 +10,7 @@ appStart () {
   BURPUI_VERBOSE=${BURPUI_VERBOSE:-0}
   BURPUI_UID=${BURPUI_UID:-5337}
   BURPUI_GID=${BURPUI_GID:-5337}
+  BURPUI_PLUGINS=${BURPUI_PLUGINS:-none}
   BURP_CLIENT_CONFIG=${BURP_CLIENT_CONFIG:-/tmp/burp.conf}
   BURP_SERVER_CONFIG=${BURP_SERVER_CONFIG:-/etc/burp/burp-server.conf}
   BURP_SERVER_ADDR=${BURP_SERVER_ADDR:-auto}
@@ -47,7 +48,7 @@ appStart () {
   LOGFILE=$(mktemp)
   bui-manage -c $BURPUI_CONFIG setup_burp -b $BURP_CLIENT_CONFIG \
     -s $BURP_SERVER_CONFIG -h $BURP_SERVER_ADDR -c $BURPUI_CLIENT_NAME \
-    -r $REDIS_SERVER -d $DATABASE_URL 2>&1 | tee $LOGFILE
+    -r $REDIS_SERVER -d $DATABASE_URL -p $BURPUI_PLUGINS 2>&1 | tee $LOGFILE
 
   CELERY="True"
   grep -q "Unable to contact the redis server" $LOGFILE && CELERY=""
@@ -146,7 +147,7 @@ case "$1" in
       prog=$(which $1)
       if [ -n "${prog}" ] ; then
         shift 1
-        $prog $@
+        su -l burpui -c "$prog $@"
       else
         appHelp
       fi

@@ -39,6 +39,7 @@ burpui:
 #    - BURPUI_CLIENT_NAME=bui
 #    - BURPUI_UID=5337
 #    - BURPUI_GID=5337
+#    - BURPUI_PLUGINS=none
 #    - BURP_CLIENT_CONFIG=/tmp/burp.conf
 #    - BURP_SERVER_CONFIG=/etc/burp/burp-server.conf
 #    - DATABASE_URL=postgresql://burpui:burpui@pgsql/burpuidb

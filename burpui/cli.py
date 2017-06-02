@@ -231,9 +231,11 @@ def compile_translation():
               help='Redis URL to connect to')
 @click.option('-d', '--database', default=None,
               help='Database to connect to for persistent storage')
+@click.option('-p', '--plugins', default=None,
+              help='Plugins location')
 @click.option('-n', '--dry', is_flag=True,
               help='Dry mode. Do not edit the files but display changes')
-def setup_burp(bconfcli, bconfsrv, client, host, redis, database, dry):
+def setup_burp(bconfcli, bconfsrv, client, host, redis, database, plugins, dry):
     """Setup burp client for burp-ui."""
     if app.vers != 2:
         click.echo(
@@ -283,15 +285,17 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database, dry):
 
     if not app.conf.lookup_section('Burp2', source):
         app.conf._refresh(True)
+    if not app.conf.lookup_section('Global', source):
+        app.conf._refresh(True)
     if (database or redis) and not app.conf.lookup_section('Production', source):
         app.conf._refresh(True)
 
-    def _edit_conf(key, val, attr):
-        if val and (((key not in app.conf.options['Burp2']) or
-                    (key in app.conf.options['Burp2'] and
-                    val != app.conf.options['Burp2'][key])) and
+    def _edit_conf(key, val, attr, section='Burp2'):
+        if val and (((key not in app.conf.options[section]) or
+                    (key in app.conf.options[section] and
+                    val != app.conf.options[section][key])) and
                     getattr(app.client, attr) != val):
-            app.conf.options['Burp2'][key] = val
+            app.conf.options[section][key] = val
             app.conf.options.write()
             app.conf._refresh(True)
 
@@ -306,6 +310,7 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database, dry):
 
     _edit_conf('bconfcli', bconfcli, 'burpconfcli')
     _edit_conf('bconfsrv', bconfsrv, 'burpconfsrv')
+    _edit_conf('plugins', plugins, 'plugins', 'Global')
 
     if redis:
         try:
