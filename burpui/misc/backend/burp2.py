@@ -554,7 +554,7 @@ class Burp(Burp1):
         }
         # Prior burp-2.1.6 some counters are reversed
         # See https://github.com/grke/burp/commit/adeb3ad68477303991a393fa7cd36bc94ff6b429
-        if self.client_version and self.client_version < BURP_REVERSE_COUNTERS:
+        if self.server_version and self.server_version < BURP_REVERSE_COUNTERS:
             counts['changed'] = 'same'
             counts['unchanged'] = 'changed'
         single = [
