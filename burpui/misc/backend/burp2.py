@@ -30,6 +30,7 @@ if sys.version_info < (3, 3):
 BURP_MINIMAL_VERSION = 'burp-2.0.18'
 BURP_LIST_BATCH = '2.0.48'
 BURP_STATUS_FORMAT_V2 = '2.1.10'
+BURP_REVERSE_COUNTERS = '2.1.6'
 
 G_BURPBIN = u'/usr/sbin/burp'
 G_STRIPBIN = u'/usr/bin/vss_strip'
@@ -307,7 +308,7 @@ class Burp(Burp1):
             self.logger.info(jso['warning'])
         # try to switch to new JSON status
         if self.client_version < BURP_STATUS_FORMAT_V2:
-            self.proc.write(to_bytes('j:peer_version=2.1.10\n'))
+            self.proc.stdin.write(to_bytes('j:peer_version=2.1.10\n'))
             jso = self._read_proc_stdout(self.timeout)
             if self._is_warning(jso):
                 self.logger.info(jso['warning'])
@@ -551,6 +552,11 @@ class Burp(Burp1):
             'total': 'scanned',
             'scanned': 'scanned',
         }
+        # Prior burp-2.1.6 some counters are reversed
+        # See https://github.com/grke/burp/commit/adeb3ad68477303991a393fa7cd36bc94ff6b429
+        if self.client_version and self.client_version < BURP_REVERSE_COUNTERS:
+            counts['changed'] = 'same'
+            counts['unchanged'] = 'changed'
         single = [
             'time_start',
             'time_end',
@@ -659,7 +665,7 @@ class Burp(Burp1):
                 if 'action' in child and child['action'] == 'backup':
                     backup = child
                     break
-        except IndexError:
+        except KeyError:
             for back in client['backups']:
                 if 'flags' in back and any([x in back['flags'] for x in phases]):
                     backup = back

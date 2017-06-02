@@ -41,6 +41,20 @@ class PluginManager(object):
             if plugin_name not in self.plugins:
                 try:
                     plugin = self.plugin_source.load_plugin(plugin_name)
+                    current_type = getattr(plugin, '__type__', None)
+                    if not current_type:
+                        self.app.logger.warning(
+                            'No __type__ for {}. Ignoring it'.format(
+                                repr(plugin_name)
+                            )
+                        )
+                        continue
+                    self.app.logger.info(
+                        'Loading plugin {} ({})'.format(
+                            repr(plugin_name),
+                            current_type
+                        )
+                    )
                     self.plugins[plugin_name] = plugin
                 except Exception as exp:
                     self.app.logger.error(

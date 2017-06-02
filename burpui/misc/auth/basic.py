@@ -69,6 +69,7 @@ class BasicLoader(BUIloader):
                     try:
                         self.handler.priority = self.conf.safe_get(
                             opt,
+                            'integer',
                             section=self.section
                         ) or 0
                     except:

@@ -290,11 +290,11 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database, plugins, dry):
     if (database or redis) and not app.conf.lookup_section('Production', source):
         app.conf._refresh(True)
 
-    def _edit_conf(key, val, attr, section='Burp2'):
+    def _edit_conf(key, val, attr, section='Burp2', obj=app.client):
         if val and (((key not in app.conf.options[section]) or
                     (key in app.conf.options[section] and
                     val != app.conf.options[section][key])) and
-                    getattr(app.client, attr) != val):
+                    getattr(obj, attr) != val):
             app.conf.options[section][key] = val
             app.conf.options.write()
             app.conf._refresh(True)
@@ -310,7 +310,7 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database, plugins, dry):
 
     _edit_conf('bconfcli', bconfcli, 'burpconfcli')
     _edit_conf('bconfsrv', bconfsrv, 'burpconfsrv')
-    _edit_conf('plugins', plugins, 'plugins', 'Global')
+    _edit_conf('plugins', plugins, 'plugins', 'Global', app)
 
     if redis:
         try:
