@@ -321,7 +321,7 @@ class BUIServer(Flask):
         if not cli:
             self.load_modules()
 
-    def load_modules(self, strict=True):
+    def load_modules(self, strict=False):
         """Load the extensions"""
         self.plugin_manager = PluginManager(self, self.plugins)
         if self.plugins:
@@ -403,11 +403,12 @@ class BUIServer(Flask):
                 self.vers,
                 str(e)
             )
-            if not strict:
+            if strict:
                 self.logger.critical(traceback.format_exc())
                 self.logger.critical(msg)
                 sys.exit(2)
-            return msg
+            else:
+                raise Exception(msg)
 
     @property
     def acl(self):

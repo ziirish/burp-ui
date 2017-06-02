@@ -109,7 +109,7 @@ def legacy():
 def create_user(backend, password, ask, verbose, name):
     """Create a new user."""
     try:
-        msg = app.load_modules(False)
+        msg = app.load_modules(True)
     except Exception as e:
         msg = str(e)
 
@@ -258,7 +258,7 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database, plugins, dry):
         sys.exit(1)
 
     try:
-        msg = app.load_modules(False)
+        msg = app.load_modules(True)
     except Exception as e:
         msg = str(e)
 
@@ -677,7 +677,7 @@ def diag(client, host, tips):
         sys.exit(1)
 
     try:
-        msg = app.load_modules(False)
+        msg = app.load_modules(True)
     except Exception as e:
         msg = str(e)
 
