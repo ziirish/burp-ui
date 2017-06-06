@@ -4,7 +4,6 @@ set -e
 
 SETUP_DIR="/app/setup"
 CONFIG_DIR="${SETUP_DIR}/config"
-BURPUI="https://burpui.ziirish.me/builds/burp-ui.dev.tar.gz"
 
 apt-get update
 DEBIAN_FRONTEND=noninteractive apt-get install -y wget python2.7-dev git python-pip libffi-dev libmysqlclient-dev libpq-dev libpq5

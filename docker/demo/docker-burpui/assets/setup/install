@@ -4,7 +4,6 @@ set -e
 
 SETUP_DIR="/app/setup"
 CONFIG_DIR="${SETUP_DIR}/config"
-#BURPUI="https://burpui.ziirish.me/builds/burp-ui.dev.tar.gz"
 BURPUI="/tmp/burpui.dev.tar.gz"
 
 cd

@@ -13,7 +13,7 @@ automatically!
 
 Feel free to use it and post your tips and remarks.
 
-The address is: `https://burpui.ziirish.me/ <https://burpui.ziirish.me/>`__
+The address is: `https://forum.burp-ui.org/ <https://forum.burp-ui.org/>`__
 
 You can financially support the project if you find it useful or if you would
 like to sponsor a feature. Details on my `website <https://ziirish.info/>`__.
