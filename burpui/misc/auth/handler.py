@@ -19,7 +19,7 @@ class UserAuthHandler(BUIhandler):
         self.users = {}
         backends = []
         self.errors = {}
-        if self.app.auth:
+        if self.app.auth and 'none' not in self.app.auth:
             me, _ = os.path.splitext(os.path.basename(__file__))
             back = self.app.auth
             for au in back:

@@ -13,6 +13,7 @@ import logging
 import traceback
 
 from .misc.auth.handler import UserAuthHandler
+from .misc.acl.handler import ACLloader
 from .config import config
 from .plugins import PluginManager
 
@@ -344,30 +345,18 @@ class BUIServer(Flask):
                 )
                 raise e
             self.acl_engine = self.config['BUI_ACL'] = self.conf.safe_get(
-                'acl'
+                'acl',
+                'string_lower_list'
             )
             self.config['LOGIN_DISABLED'] = False
         else:
             self.config['LOGIN_DISABLED'] = True
             # No login => no ACL
-            self.acl_engine = self.config['BUI_ACL'] = 'none'
+            self.acl_engine = self.config['BUI_ACL'] = ['none']
             self.auth = self.config['BUI_AUTH'] = 'none'
 
-        if self.acl_engine and self.acl_engine.lower() != 'none':
+        if self.acl_engine and 'none' not in self.acl_engine:
             try:
-                # Try to load submodules from our current environment
-                # first
-                sys.path.insert(
-                    0,
-                    os.path.dirname(os.path.abspath(__file__))
-                )
-                mod = __import__(
-                    'burpui.misc.acl.{0}'.format(
-                        self.acl_engine.lower()
-                    ),
-                    fromlist=['ACLloader']
-                )
-                ACLloader = mod.ACLloader
                 self.acl_handler = ACLloader(self)
             except Exception as e:
                 self.logger.critical(
@@ -416,7 +405,7 @@ class BUIServer(Flask):
 
         :returns: :class:`burpui.misc.acl.interface.BUIacl`
         """
-        if self.acl_engine and self.acl_engine.lower() != 'none':
+        if self.acl_engine and 'none' not in self.acl_engine:
             # refresh acl to detect config changes
             from .misc.acl.interface import BUIacl  # noqa
             acl = self.acl_handler.acl  # type: BUIacl
