@@ -116,7 +116,8 @@ class Api(ApiPlus):
         def decorator(func):
             @wraps(func)
             def decorated(resource, *args, **kwargs):
-                if not resource.is_admin:
+                if not hasattr(current_user, 'acl') or \
+                        not current_user.acl.is_admin():
                     resource.abort(code, message)
                 return func(resource, *args, **kwargs)
             return decorated
@@ -128,7 +129,10 @@ class Api(ApiPlus):
             def decorated(resource, *args, **kwargs):
                 if key not in kwargs:  # pragma: no cover
                     resource.abort(500, "key '{}' not found".format(key))
-                if kwargs[key] != resource.username and not resource.is_admin:
+                if (kwargs[key] != current_user.name and
+                    hasattr(current_user, 'acl') and
+                    not current_user.acl.is_admin()) or \
+                        not hasattr(current_user, 'acl'):
                     resource.abort(code, message)
                 return func(resource, *args, **kwargs)
             return decorated

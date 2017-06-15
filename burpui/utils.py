@@ -351,3 +351,15 @@ class ReverseProxied(object):
                 self.app.warning("'prefix' must start with a '/'!")
 
         return self.wsgi_app(environ, start_response)
+
+
+def make_list(data):
+    """Ensure data is a list
+
+    :param data: data to check
+
+    :returns: data as list
+    """
+    if isinstance(data, list):
+        return data
+    return [data]

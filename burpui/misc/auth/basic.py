@@ -71,7 +71,7 @@ class BasicLoader(BUIloader):
                             opt,
                             'integer',
                             section=self.section
-                        ) or 0
+                        ) or self.handler.priority
                     except:
                         pass
                     continue  # pragma: no cover
@@ -221,6 +221,8 @@ class BasicLoader(BUIloader):
 
 
 class UserHandler(BUIhandler):
+    priority = 100
+
     """See :class:`burpui.misc.auth.interface.BUIhandler`"""
     def __init__(self, app=None):
         """See :func:`burpui.misc.auth.interface.BUIhandler.__init__`"""

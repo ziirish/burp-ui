@@ -32,7 +32,7 @@ class LocalLoader(BUIloader):
                     'priority',
                     'integer',
                     section=self.section
-                ) or 0
+                ) or handler.priority
             except:
                 pass
             users = conf.safe_get(
@@ -90,6 +90,8 @@ class LocalLoader(BUIloader):
 
 
 class UserHandler(BUIhandler):
+    priority = 0
+
     """See :class:`burpui.misc.auth.interface.BUIhandler`"""
     def __init__(self, app=None, auth=None):
         """See :func:`burpui.misc.auth.interface.BUIhandler.__init__`"""

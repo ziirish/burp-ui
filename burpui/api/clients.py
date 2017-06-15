@@ -16,6 +16,7 @@ from ..decorators import browser_cache
 
 from six import iteritems
 from flask import current_app
+from flask_login import current_user
 
 bui = current_app  # type: BUIServer
 ns = api.namespace('clients', 'Clients methods')
@@ -59,7 +60,7 @@ class RunningClients(Resource):
 
 
         The output is filtered by the :mod:`burpui.misc.acl` module so that you
-        only see stats about the clients you are authorized to.
+        only see stats about the clients you are authorized to see.
 
         :param server: Which server to collect data from when in multi-agent mode
         :type server: str
@@ -71,33 +72,39 @@ class RunningClients(Resource):
         """
         server = server or self.parser.parse_args()['serverName']
         if client:
-            if bui.acl:
-                if (not self.is_admin and not
-                        bui.acl.is_client_allowed(self.username,
-                                                  client,
-                                                  server)):
-                    r = []
-                    return r
+            if hasattr(current_user, 'acl') and \
+                    not current_user.acl.is_admin() and \
+                    not current_user.acl.is_client_allowed(client, server):
+                running = []
+                return running
             if bui.client.is_backup_running(client, server):
-                r = [client]
-                return r
+                running = [client]
+                return running
             else:
-                r = []
-                return r
+                running = []
+                return running
 
-        r = bui.client.is_one_backup_running(server)
+        running = bui.client.is_one_backup_running(server)
         # Manage ACL
-        if bui.acl and not self.is_admin:
-            if isinstance(r, dict):
+        if hasattr(current_user, 'acl') and not current_user.acl.is_admin():
+            if isinstance(running, dict):
                 new = {}
-                for serv in bui.acl.servers(self.username):
-                    allowed = bui.acl.clients(self.username, serv)
-                    new[serv] = [x for x in r[serv] if x in allowed]
-                r = new
+                for serv in bui.client.servers:
+                    try:
+                        clients = [x['name'] for x in bui.client.get_all_clients(serv)]
+                    except BUIserverException:
+                        clients = []
+                    allowed = [x for x in clients if current_user.acl.is_client_allowed(x, serv)]
+                    new[serv] = [x for x in running[serv] if x in allowed]
+                running = new
             else:
-                allowed = bui.acl.clients(self.username, server)
-                r = [x for x in r if x in allowed]
-        return r
+                try:
+                    clients = [x['name'] for x in bui.client.get_all_clients(server)]
+                except BUIserverException:
+                    clients = []
+                allowed = [x for x in clients if current_user.acl.is_client_allowed(x, server)]
+                running = [x for x in running if x in allowed]
+        return running
 
 
 @ns.route('/backup-running',
@@ -152,15 +159,23 @@ class RunningBackup(Resource):
     def _is_one_backup_running(self, res, server):
         """Check if a backup is running"""
         # Manage ACL
-        if bui.acl and not self.is_admin:
+        if hasattr(current_user, 'acl') and not current_user.acl.is_admin():
             if isinstance(res, dict):
                 new = {}
-                for serv in bui.acl.servers(self.username):
-                    allowed = bui.acl.clients(self.username, serv)
+                for serv in bui.client.servers:
+                    try:
+                        clients = [x['name'] for x in bui.client.get_all_clients(serv)]
+                    except BUIserverException:
+                        clients = []
+                    allowed = [x for x in clients if current_user.acl.is_client_allowed(x, serv)]
                     new[serv] = [x for x in res[serv] if x in allowed]
                 res = new
             else:
-                allowed = bui.acl.clients(self.username, server)
+                try:
+                    clients = [x['name'] for x in bui.client.get_all_clients(server)]
+                except BUIserverException:
+                    clients = []
+                allowed = [x for x in clients if current_user.acl.is_client_allowed(x, server)]
                 res = [x for x in res if x in allowed]
         running = False
         if isinstance(res, dict):
@@ -284,10 +299,9 @@ class ClientsReport(Resource):
 
     def _check_acl(self, server):
         # Manage ACL
-        if (not bui.standalone and bui.acl and
-                (not self.is_admin and
-                 server not in
-                 bui.acl.servers(self.username))):
+        if (not bui.standalone and hasattr(current_user, 'acl') and
+                (not current_user.acl.is_admin() and
+                 not current_user.acl.is_server_allowed(server))):
             self.abort(403, 'Sorry, you don\'t have any rights on this server')
 
     def _get_clients_reports(self, res=None, server=None):
@@ -362,22 +376,20 @@ class ClientsReport(Resource):
 
     def _parse_clients_reports(self, res=None, server=None):
         if not res:
-            clients = []
-            if bui.acl and not self.is_admin:
-                clients = [{'name': x} for x in bui.acl.clients(self.username, server)]
-            else:
-                try:
-                    clients = bui.client.get_all_clients(agent=server)
-                except BUIserverException as e:
-                    self.abort(500, str(e))
+            try:
+                clients = bui.client.get_all_clients(agent=server)
+            except BUIserverException as e:
+                self.abort(500, str(e))
+            if hasattr(current_user, 'acl') and not current_user.acl.is_admin():
+                clients = [x for x in clients if current_user.acl.is_client_allowed(x['name'], server)]
             return bui.client.get_clients_report(clients, server)
         if bui.standalone:
             ret = res
         else:
             ret = res.get(server, {})
-        if bui.acl and not self.is_admin:
-            ret['backups'] = [x for x in ret.get('backups', []) if bui.acl.is_client_allowed(self.username, x.get('name'), server)]
-            ret['clients'] = [x for x in ret.get('clients', []) if bui.acl.is_client_allowed(self.username, x.get('name'), server)]
+        if hasattr(current_user, 'acl') and not current_user.acl.is_admin():
+            ret['backups'] = [x for x in ret.get('backups', []) if current_user.acl.is_client_allowed(x.get('name'), server)]
+            ret['clients'] = [x for x in ret.get('clients', []) if current_user.acl.is_client_allowed(x.get('name'), server)]
         return ret
 
 
@@ -458,14 +470,13 @@ class ClientsStats(Resource):
         server = server or self.parser.parse_args()['serverName']
         try:
             if (not bui.standalone and
-                    bui.acl and
-                    (not self.is_admin and
-                     server not in
-                     bui.acl.servers(self.username))):
+                    hasattr(current_user, 'acl') and
+                    (not current_user.acl.is_admin() and
+                     not current_user.acl.is_server_allowed(server))):
                 self.abort(403, 'Sorry, you don\'t have any rights on this server')
             jso = bui.client.get_all_clients(agent=server)
-            if bui.acl and not self.is_admin:
-                jso = [x for x in jso if x['name'] in bui.acl.clients(self.username, server)]
+            if hasattr(current_user, 'acl') and not current_user.acl.is_admin():
+                jso = [x for x in jso if current_user.acl.is_client_allowed(x['name'], server)]
         except BUIserverException as e:
             self.abort(500, str(e))
         return jso
@@ -538,46 +549,66 @@ class AllClients(Resource):
         :returns: The *JSON* described above
         """
         ret = []
+        is_admin = True
+        has_acl = hasattr(current_user, 'acl')
         args = self.parser.parse_args()
         server = server or args['serverName']
-        user = (args.get('user', self.username) or self.username) if \
-            self.is_admin else self.username
+
+        if has_acl:
+            is_admin = current_user.acl.is_admin()
+
+        user = (args.get('user', current_user.name) or current_user.name) if \
+            is_admin \
+            else current_user.name
 
         # drop privileges when switching user
-        if user != self.username:
-            self.is_admin = False
+        if user != current_user.name:
+            is_admin = False
 
-        if (server and bui.acl and not self.is_admin and
-                server not in bui.acl.servers(user)):
+        if (server and has_acl and
+                not is_admin and
+                not current_user.acl.is_server_allowed(server)):
             self.abort(403, "You are not allowed to view this server infos")
 
         if server:
-            clients = bui.client.get_all_clients(agent=server)
-            if bui.acl and not self.is_admin:
-                ret = [{'name': x, 'agent': server} for x in bui.acl.clients(user, server)]
+            try:
+                clients = [x['name'] for x in bui.client.get_all_clients(agent=server)]
+            except BUIserverException:
+                clients = []
+            if hasattr(current_user, 'acl') and not is_admin:
+                # use the bui.acl module since we impersonalized the user
+                ret = [{'name': x, 'agent': server} for x in clients if bui.acl.is_client_allowed(user, x, server)]
             else:
-                ret = [{'name': x['name'], 'agent': server} for x in clients]
+                ret = [{'name': x, 'agent': server} for x in clients]
             return ret
 
         if bui.standalone:
-            if bui.acl and not self.is_admin:
-                ret = [{'name': x} for x in bui.acl.clients(user)]
+            try:
+                clients = [x['name'] for x in bui.client.get_all_clients()]
+            except BUIserverException:
+                clients = []
+            if has_acl and not is_admin:
+                ret = [{'name': x} for x in clients if bui.acl.is_client_allowed(user, x)]
             else:
-                ret = [{'name': x['name']} for x in bui.client.get_all_clients()]
+                ret = [{'name': x} for x in clients]
         else:
             grants = {}
-            if bui.acl and not self.is_admin:
-                for serv in bui.acl.servers(user):
-                    grants[serv] = bui.acl.clients(user, serv)
+            clients_cache = {}
+            for serv in bui.client.servers:
+                try:
+                    clients = [x['name'] for x in bui.client.get_all_clients(serv)]
+                    clients_cache[serv] = clients
+                except BUIserverException:
+                    clients = []
+            if has_acl and not is_admin:
+                for serv in bui.client.servers:
+                    grants[serv] = [x for x in clients_cache.get(serv, []) if bui.acl.is_client_allowed(user, x, serv)]
             else:
                 for serv in bui.client.servers:
                     grants[serv] = 'all'
             for (serv, clients) in iteritems(grants):
                 if not isinstance(clients, list):
-                    try:
-                        clients = [x['name'] for x in bui.client.get_all_clients(agent=serv)]
-                    except BUIserverException:
-                        clients = []
+                    clients = clients_cache.get(serv, [])
                 ret += [{'name': x, 'agent': serv} for x in clients]
 
         return ret

@@ -13,8 +13,6 @@ import json
 
 from flask_restplus import Resource as ResourcePlus
 from flask_restplus.errors import abort
-from flask_login import current_user
-from flask import current_app as bui
 from ..._compat import PY3
 
 if PY3:
@@ -28,16 +26,6 @@ class Resource(ResourcePlus):
     login_required = True
 
     logger = logging.getLogger('burp-ui')
-
-    def __init__(self, api=None, *args, **kwargs):
-        """Constructor"""
-        curr = current_user._get_current_object()
-        self.username = getattr(curr, 'name', None)
-        # if there is no ACL, assume everybody is admin
-        self.is_admin = True
-        if bui.acl:
-            self.is_admin = bui.acl.is_admin(self.username)
-        ResourcePlus.__init__(self, api, *args, **kwargs)
 
     def abort(self, code=500, message=None, **kwargs):
         """

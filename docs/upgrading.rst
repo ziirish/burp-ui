@@ -7,6 +7,17 @@ Each section presents major/breaking changes, new requirements and new options.
 For a complete list of changes, you may refer to the
 `CHANGELOG <changelog.html>`_ page.
 
+v0.6.0
+------
+
+- **Breaking** - The *BASIC* `ACL` engine will now grant users on all agents if
+  they are not explicitly defined. It means that if you have a user called
+  `example1` with two agents (burp servers in multi-agent mode) on which you
+  have respectively two clients called `example1`, the user `example1` will be
+  granted on both clients on the two agents. You can disable this behavior with
+  the `legacy` option. See the `BASIC ACL <advanced_usage.html#basic-acl>`_
+  documentation for details.
+
 v0.5.0
 ------
 

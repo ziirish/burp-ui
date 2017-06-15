@@ -30,6 +30,7 @@ from six import iteritems
 from zlib import adler32
 from flask import url_for, Response, current_app, after_this_request, \
     send_file, redirect
+from flask_login import current_user
 from time import gmtime, strftime, time, sleep
 from datetime import timedelta, datetime
 from werkzeug.datastructures import Headers
@@ -451,7 +452,7 @@ class AsyncGetFile(Resource):
         dst_server = task.result.get('server')
         filename = task.result.get('filename')
 
-        if self.username != user or (dst_server and dst_server != server):
+        if current_user.name != user or (dst_server and dst_server != server):
             self.abort(403, 'Unauthorized access')
 
         if db:
@@ -628,11 +629,9 @@ class AsyncRestore(Resource):
         if not files or not name or not backup:
             self.abort(400, 'missing arguments')
         # Manage ACL
-        if (bui.acl and
-                (not bui.acl.is_client_allowed(self.username,
-                                               name,
-                                               server) and not
-                 self.is_admin)):
+        if hasattr(current_user, 'acl') and \
+                not current_user.acl.is_admin() and \
+                not current_user.acl.is_client_allowed(name, server):
             self.abort(
                 403,
                 'You are not allowed to perform a restoration for this client'
@@ -646,14 +645,14 @@ class AsyncRestore(Resource):
                 fmt,
                 passwd,
                 server,
-                self.username
+                current_user.name
             ]
         )
         if db:
             db_task = Task(
                 task.id,
                 'perform_restore',
-                self.username,
+                current_user.name,
                 timedelta(minutes=60)
             )
             try:
@@ -1008,11 +1007,9 @@ class AsyncClientTreeAll(Resource):
             )
 
         # Manage ACL
-        if (bui.acl and
-                (not bui.acl.is_client_allowed(self.username,
-                                               name,
-                                               server) and not
-                 self.is_admin)):
+        if hasattr(current_user, 'acl') and \
+                not current_user.acl.is_admin() and \
+                not current_user.acl.is_client_allowed(name, server):
             self.abort(403, 'Sorry, you are not allowed to view this client')
 
         task = load_all_tree.apply_async(
@@ -1020,7 +1017,7 @@ class AsyncClientTreeAll(Resource):
                 name,
                 backup,
                 server,
-                self.username
+                current_user.name
             ]
         )
         return {'id': task.id, 'name': 'load_all_tree'}, 202
@@ -1104,7 +1101,7 @@ class AsyncDoBrowseAll(Resource):
         dst_server = task.result.get('server')
         resp = task.result.get('tree')
 
-        if self.username != user or (dst_server and dst_server != server):
+        if current_user.name != user or (dst_server and dst_server != server):
             self.abort(403, 'Unauthorized access')
 
         task.revoke()

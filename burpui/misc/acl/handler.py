@@ -85,14 +85,9 @@ class ACLhandler(BUIacl):
         ret = self._iterate_through_loader('is_admin', username) or False
         return ret
 
-    def clients(self, username=None, server=None):
-        """See :func:`burpui.misc.acl.interface.BUIacl.clients`"""
-        ret = self._iterate_through_loader('clients', username, server) or []
-        return ret
-
-    def servers(self, username=None):
-        """See :func:`burpui.misc.acl.interface.BUIacl.servers`"""
-        ret = self._iterate_through_loader('servers', username) or []
+    def is_moderator(self, username=None):
+        """See :func:`burpui.misc.acl.interface.BUIacl.is_moderator`"""
+        ret = self._iterate_through_loader('is_moderator', username) or False
         return ret
 
     def is_client_allowed(self, username=None, client=None, server=None):
@@ -101,6 +96,15 @@ class ACLhandler(BUIacl):
             'is_client_allowed',
             username,
             client,
+            server
+        ) or False
+        return ret
+
+    def is_server_allowed(self, username=None, server=None):
+        """See :func:`burpui.misc.acl.interface.BUIacl.is_server_allowed`"""
+        ret = self._iterate_through_loader(
+            'is_server_allowed',
+            username,
             server
         ) or False
         return ret
