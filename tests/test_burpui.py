@@ -110,9 +110,17 @@ class BurpuiAPITestCase(TestCase):
         bui.config['TESTING'] = True
         bui.config['LOGIN_DISABLED'] = True
         bui.config['CFG'] = conf
+        bui.config['SECRET_KEY'] = 'nyan'
         bui.login_manager.init_app(bui)
         self.bui = bui
         return bui
+
+    def login(self, username, password):
+        return self.client.post(url_for('view.login'), data=dict(
+            username=username,
+            password=password,
+            language='en'
+        ), follow_redirects=True)
 
     def test_no_clients(self):
         response = self.client.get(url_for('api.clients_stats'))
@@ -120,6 +128,7 @@ class BurpuiAPITestCase(TestCase):
         self.assert500(response)
 
     def test_server_config_parsing(self):
+        rv = self.login('admin', 'admin')
         response = self.client.get(url_for('api.server_settings'))
         asse = dict((
                     (
@@ -145,6 +154,7 @@ class BurpuiAPITestCase(TestCase):
         self.assertEquals(response.json, asse)
 
     def test_client_config_parsing(self):
+        rv = self.login('admin', 'admin')
         response = self.client.get(url_for('api.client_settings', client='toto'))
         asse = dict((
                     (
