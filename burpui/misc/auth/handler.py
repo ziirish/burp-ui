@@ -4,6 +4,7 @@ import os
 from ...sessions import session_manager
 from ...utils import is_uuid
 from .interface import BUIhandler, BUIuser
+from ..acl.interface import BUIacl
 
 from importlib import import_module
 from flask import session
@@ -77,6 +78,32 @@ class UserAuthHandler(BUIhandler):
             del self.users[name]
 
 
+class ACLproxy(BUIacl):
+    def __init__(self, acl, username):
+        self.acl = acl
+        self.username = username
+
+    def is_admin(self):
+        if not self.acl:
+            return True
+        return self.acl.is_admin(self.username)
+
+    def is_moderator(self):
+        if not self.acl:
+            return True
+        return self.acl.is_moderator(self.username)
+
+    def is_client_allowed(self, client, server=None):
+        if not self.acl:
+            return True
+        return self.acl.is_client_allowed(self.username, client, server)
+
+    def is_server_allowed(self, server):
+        if not self.acl:
+            return True
+        return self.acl.is_server_allowed(self.username, server)
+
+
 class UserHandler(BUIuser):
     """See :class:`burpui.misc.auth.interface.BUIuser`"""
     def __init__(self, app, backends=None, name=None, id=None):
@@ -97,7 +124,6 @@ class UserHandler(BUIuser):
             self.name = session_manager.get_session_username() or \
                 session.get('login')
         self.real = None
-        self.admin = not self.app.acl
 
         for _, back in iteritems(self.backends):
             user = back.user(self.name)
@@ -106,13 +132,17 @@ class UserHandler(BUIuser):
                 self.active = True
                 self.name = res
                 self.back = back
-                if self.app.acl:
-                    self.admin = self.app.acl.is_admin(self.name)
                 break
+
+        self._acl = ACLproxy(self.app.acl, self.name)
         # language may change upon login
         self._store_lang()
         # now load the available prefs
         self._load_prefs()
+
+    @property
+    def acl(self):
+        return self._acl
 
     def _load_prefs(self):
         session['login'] = self.name
@@ -156,14 +186,12 @@ class UserHandler(BUIuser):
                     self.real = u
                     self.back = back
                     self.name = res
-                    if self.app.acl:
-                        self.admin = self.app.acl.is_admin(self.name)
+                    self._acl.username = res
                     break
         elif self.real:  # pragma: no cover
             if self.back and getattr(self.back, 'changed', False):
                 self.real = None
                 self.back = None
-                self.admin = not self.app.acl
                 return self.login(passwd)
             self.authenticated = self.real.login(passwd)
         session['authenticated'] = self.authenticated

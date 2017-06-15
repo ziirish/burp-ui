@@ -77,7 +77,7 @@ class LdapLoader(BUIloader):
                 'priority',
                 'integer',
                 section=self.section
-            ) or 0
+            ) or handler.priority
         except:
             pass
         for (opt, key) in viewitems(mapping):
@@ -217,6 +217,8 @@ class LdapLoader(BUIloader):
 
 
 class UserHandler(BUIhandler):
+    priority = 50
+
     """The :class:`burpui.misc.auth.ldap.UserHandler` class maintains a list of
     ``Burp-UI`` users.
     """
