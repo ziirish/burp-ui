@@ -20,6 +20,7 @@ from ..utils import NOTIF_ERROR
 from six import iteritems
 from flask_restplus.marshalling import marshal
 from flask import current_app
+from flask_login import current_user
 
 bui = current_app  # type: BUIServer
 ns = api.namespace('client', 'Client methods')
@@ -218,11 +219,9 @@ class ClientTree(Resource):
         paths_loaded = []
         to_select_list = []
 
-        if (bui.acl and
-                (not self.is_admin and not
-                 bui.acl.is_client_allowed(self.username,
-                                           name,
-                                           server))):
+        if hasattr(current_user, 'acl') and \
+                not current_user.acl.is_admin() and \
+                not current_user.acl.is_client_allowed(name, server):
             self.abort(403, 'Sorry, you are not allowed to view this client')
 
         try:
@@ -421,11 +420,9 @@ class ClientTreeAll(Resource):
                 'Sorry, the requested backend does not support this method'
             )
 
-        if (bui.acl and
-                (not self.is_admin and not
-                 bui.acl.is_client_allowed(self.username,
-                                           name,
-                                           server))):
+        if hasattr(current_user, 'acl') and \
+                not current_user.acl.is_admin() and \
+                not current_user.acl.is_client_allowed(name, server):
             self.abort(403, 'Sorry, you are not allowed to view this client')
 
         try:
@@ -789,10 +786,10 @@ class ClientReport(Resource):
         if not name:
             err = [[1, 'No client defined']]
             self.abort(400, err)
-        if (bui.acl and not
-                bui.acl.is_client_allowed(self.username,
-                                          name,
-                                          server)):
+
+        if hasattr(current_user, 'acl') and \
+                not current_user.acl.is_admin() and \
+                not current_user.acl.is_client_allowed(name, server):
             self.abort(403, 'You don\'t have rights to view this client report')
         if backup:
             try:
@@ -908,11 +905,9 @@ class ClientStats(Resource):
         """
         server = server or self.parser.parse_args()['serverName']
         try:
-            if (bui.acl and (
-                    not self.is_admin and
-                    not bui.acl.is_client_allowed(self.username,
-                                                  name,
-                                                  server))):
+            if hasattr(current_user, 'acl') and \
+                    not current_user.acl.is_admin() and \
+                    not current_user.acl.is_client_allowed(name, server):
                 self.abort(403, 'Sorry, you cannot access this client')
             j = bui.client.get_client(name, agent=server)
         except BUIserverException as e:

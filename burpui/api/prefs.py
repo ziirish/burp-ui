@@ -61,14 +61,14 @@ class PrefsUI(Resource):
         if bui.config['WITH_SQL'] and not bui.config['BUI_DEMO']:
             from ..ext.sql import db
             from ..models import Pref
-            pref = Pref.query.filter_by(user=self.username, key=key).first()
+            pref = Pref.query.filter_by(user=current_user.name, key=key).first()
             if pref:
                 if val:
                     pref.value = val
                 else:
                     db.session.delete(pref)
             elif val:
-                pref = Pref(self.username, key, val)
+                pref = Pref(current_user.name, key, val)
                 db.session.add(pref)
             try:
                 db.session.commit()
@@ -159,7 +159,7 @@ class PrefsUI(Resource):
                     from ..models import Pref
                     try:
                         Pref.query.filter_by(
-                            user=self.username,
+                            user=current_user.name,
                             key=key
                         ).delete()
                         db.session.commit()

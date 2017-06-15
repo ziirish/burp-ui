@@ -13,6 +13,7 @@ from .custom import Resource
 from ..exceptions import BUIserverException
 
 from flask import current_app
+from flask_login import current_user
 
 bui = current_app  # type: BUIServer
 ns = api.namespace('backup', 'Backup methods')
@@ -63,11 +64,9 @@ class ServerBackup(Resource):
         if not name:
             self.abort(400, 'Missing options')
         # Manage ACL
-        if (bui.acl and
-                (not bui.acl.is_client_allowed(self.username,
-                                               name,
-                                               server) and not
-                 self.is_admin)):
+        if hasattr(current_user, 'acl') and \
+                not current_user.acl.is_admin() and \
+                not current_user.acl.is_client_allowed(name, server):
             self.abort(403, 'You are not allowed to access this client')
         try:
             return {'is_server_backup': bui.client.is_server_backup(name, server)}
@@ -99,11 +98,9 @@ class ServerBackup(Resource):
         if not name:
             self.abort(400, 'Missing options')
         # Manage ACL
-        if (bui.acl and
-                (not bui.acl.is_client_allowed(self.username,
-                                               name,
-                                               server) and not
-                 self.is_admin)):
+        if hasattr(current_user, 'acl') and \
+                not current_user.acl.is_admin() and \
+                not current_user.acl.is_client_allowed(name, server):
             self.abort(403, 'You are not allowed to cancel a backup for this client')
         try:
             return bui.client.cancel_server_backup(name, server)
@@ -137,11 +134,9 @@ class ServerBackup(Resource):
         if not name:
             self.abort(400, 'Missing options')
         # Manage ACL
-        if (bui.acl and
-                (not bui.acl.is_client_allowed(self.username,
-                                               name,
-                                               server) and not
-                 self.is_admin)):
+        if hasattr(current_user, 'acl') and \
+                not current_user.acl.is_admin() and \
+                not current_user.acl.is_client_allowed(name, server):
             self.abort(
                 403,
                 'You are not allowed to schedule a backup for this client'

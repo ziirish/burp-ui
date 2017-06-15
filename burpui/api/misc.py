@@ -17,6 +17,7 @@ from ..ext.i18n import LANGUAGES
 
 from six import iteritems
 from flask import flash, url_for, current_app, session
+from flask_login import current_user
 
 import random
 import re
@@ -110,9 +111,9 @@ class Counters(Resource):
         if not client:
             self.abort(400, 'No client name provided')
         # Manage ACL
-        if (bui.acl and
-            not (bui.acl.is_client_allowed(self.username, client, server) or
-                 self.is_admin)):
+        if hasattr(current_user, 'acl') and \
+                not current_user.acl.is_admin() and \
+                not current_user.acl.is_client_allowed(client, server):
             self.abort(403, "Not allowed to view '{}' counters".format(client))
         bui.client.is_one_backup_running()
         if isinstance(bui.client.running, dict):
@@ -205,50 +206,50 @@ class Live(Resource):
 
         args = self.parser.parse_args()
         server = server or args['serverName']
-        r = []
+        res = []
+        is_admin = True
+        has_acl = hasattr(current_user, 'acl')
+
+        if has_acl:
+            is_admin = current_user.acl.is_admin()
+
         # ACL
-        if (bui.acl and
-                not self.is_admin and
-                server and
-                server not in bui.acl.servers(self.username)):
+        if has_acl and \
+                not is_admin and \
+                server and not current_user.acl.is_server_allowed(server):
             self.abort(403, 'You are not allowed to view stats of this server')
         if server:
-            l = bui.client.is_one_backup_running(server)
+            running = bui.client.is_one_backup_running(server)
             # ACL
-            if bui.acl and not self.is_admin:
-                allowed = bui.acl.clients(self.username, server)
-                l = [x for x in l if x in allowed]
+            if has_acl and not is_admin:
+                running = [x for x in running if current_user.acl.is_client_allowed(x, server)]
         else:
-            l = bui.client.is_one_backup_running()
-        if isinstance(l, dict):
-            for (k, a) in iteritems(l):
-                for c in a:
+            running = bui.client.is_one_backup_running()
+        if isinstance(running, dict):
+            for (serv, clients) in iteritems(running):
+                for client in clients:
                     # ACL
-                    if (bui.acl and
-                            not self.is_admin and
-                            not bui.acl.is_client_allowed(
-                                self.username,
-                                c,
-                                k)):
+                    if has_acl and not is_admin and \
+                            not current_user.acl.is_client_allowed(client, serv):
                         continue
-                    s = {}
-                    s['client'] = c
-                    s['agent'] = k
+                    data = {}
+                    data['client'] = client
+                    data['agent'] = serv
                     try:
-                        s['counters'] = bui.client.get_counters(c, agent=k)
+                        data['counters'] = bui.client.get_counters(client, agent=serv)
                     except BUIserverException:
-                        s['counters'] = {}
-                    r.append(s)
+                        data['counters'] = {}
+                    res.append(data)
         else:
-            for c in l:
-                s = {}
-                s['client'] = c
+            for client in running:
+                data = {}
+                data['client'] = client
                 try:
-                    s['counters'] = bui.client.get_counters(c, agent=server)
+                    data['counters'] = bui.client.get_counters(client, agent=server)
                 except BUIserverException:
-                    s['counters'] = {}
-                r.append(s)
-        return r
+                    data['counters'] = {}
+                res.append(data)
+        return res
 
 
 @ns.route('/alert', endpoint='alert')
@@ -521,25 +522,36 @@ class History(Resource):
         args = self.parser.parse_args()
         client = client or args['clientName']
         server = server or args['serverName']
+        is_admin = True
+        has_acl = hasattr(current_user, 'acl')
 
-        if (server and bui.acl and not self.is_admin and
-                server not in bui.acl.servers(self.username)):
+        if has_acl:
+            is_admin = current_user.acl.is_admin()
+
+        if server and has_acl and not is_admin and \
+                not current_user.acl.is_server_allowed(server):
             self.abort(403, "You are not allowed to view this server infos")
 
-        if (client and bui.acl and not self.is_admin and not
-                bui.acl.is_client_allowed(self.username, client, server)):
+        if client and has_acl and not is_admin and \
+                not current_user.acl.is_client_allowed(client, server):
             self.abort(403, "You are not allowed to view this client infos")
 
     def _get_backup_history(self, client=None, server=None, data=None):
         import arrow
         ret = []
         args = self.parser.parse_args()
+        is_admin = True
         client = client or args['clientName']
         server = server or args['serverName']
         moments = {
             'start': None,
             'end': None
         }
+        has_acl = hasattr(current_user, 'acl')
+
+        if has_acl:
+            is_admin = current_user.acl.is_admin()
+
         for moment in moments.keys():
             if moment in args:
                 try:
@@ -567,8 +579,8 @@ class History(Resource):
             else:
                 clients = bui.client.get_all_clients(agent=server)
             # manage ACL
-            if bui.acl and not self.is_admin:
-                clients = [x for x in clients if x['name'] in bui.acl.clients(self.username, server)]
+            if has_acl and not is_admin:
+                clients = [x for x in clients if current_user.acl.is_client_allowed(x['name'], server)]
             for cl in clients:
                 (color, text) = self.gen_colors(cl['name'], server)
                 feed = {
@@ -581,12 +593,15 @@ class History(Resource):
             return ret
 
         if bui.standalone:
-            if bui.acl and not self.is_admin:
-                clients_list = bui.acl.clients(self.username)
-            elif data:
+            if data:
                 clients_list = data.keys()
             else:
-                clients_list = [x['name'] for x in bui.client.get_all_clients()]
+                try:
+                    clients_list = [x['name'] for x in bui.client.get_all_clients()]
+                except BUIserverException:
+                    clients_list = []
+                if has_acl and not is_admin:
+                    clients_list = [x for x in clients_list if current_user.acl.is_client_allowed(x)]
             for cl in clients_list:
                 (color, text) = self.gen_colors(cl)
                 feed = {
@@ -599,11 +614,14 @@ class History(Resource):
             return ret
         else:
             grants = {}
-            if bui.acl and not self.is_admin:
-                for serv in bui.acl.servers(self.username):
-                    grants[serv] = bui.acl.clients(self.username, serv)
-            else:
-                for serv in bui.client.servers:
+            for serv in bui.client.servers:
+                if has_acl and not is_admin:
+                    try:
+                        all_clients = [x['name'] for x in bui.client.get_all_clients(serv)]
+                    except BUIserverException:
+                        all_clients = []
+                    grants[serv] = [x for x in all_clients if current_user.acl.is_client_allowed(x, serv)]
+                else:
                     grants[serv] = 'all'
             for (serv, clients) in iteritems(grants):
                 if not isinstance(clients, list):

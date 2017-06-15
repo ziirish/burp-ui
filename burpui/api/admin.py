@@ -230,8 +230,12 @@ class AuthUsers(Resource):
     def post(self, name):
         """Change user password"""
         args = self.parser_mod.parse_args()
+        is_admin = True
 
-        if not self.is_admin and not args['old_password']:
+        if hasattr(current_user, 'acl'):
+            is_admin = current_user.acl.is_admin()
+
+        if not is_admin and not args['old_password']:
             self.abort(400, "Old password required")
 
         try:
