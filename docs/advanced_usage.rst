@@ -458,7 +458,7 @@ Now you can add *ldap* specific options:
     # ldapauth specific options
     [LDAP]
     # Backend priority. Higher is first
-    priority = 1
+    priority = 50
     # LDAP host
     host = 127.0.0.1
     # LDAP port
@@ -522,7 +522,7 @@ Now you can add *basic* specific options:
     # is admin/admin
     [BASIC]
     # Backend priority. Higher is first
-    priority = 2
+    priority = 100
     admin = pbkdf2:sha1:1000$12345678$password
     user1 = pbkdf2:sha1:1000$87654321$otherpassword
 
@@ -557,7 +557,7 @@ Now you can add *local* specific options:
     # allow PAM to work
     [LOCAL]
     # Backend priority. Higher is first
-    priority = 3
+    priority = 0
     # List of local users allowed to login. If you don't set this setting, users
     # with uid greater than limit will be able to login
     users = user1,user2
@@ -605,15 +605,39 @@ Now you can add *basic acl* specific options:
     # access to all clients whereas other users will only see the client that have
     # the same name
     [BASIC:ACL]
+    # Backend priority. Higher is first
+    priority = 100
+    # Enable extended matching rules
+    # If the rule is a string like 'user1 = desk*', it will match any client that
+    # matches 'desk*' no mater what agent it is attached to.
+    # If it is a coma separated list of strings like 'user1 = desk*,laptop*' it
+    # will match the first matching rule no mater what agent it is attached to.
+    # If it is a dict like:
+    # user1 = '{"agents": ["srv*", "www*"], "clients": ["desk*", "laptop*"]}'
+    # It will also validate against the agent name.
+    extended = false
+    # Enable 'legacy' behavior
+    # Since v0.6.0, if you don't specify the agents name explicitly, users will be
+    # granted on every agents where a client matches user's ACL. If you enable the
+    # 'legacy' behavior, you will need to specify the agents explicitly.
+    # Note: enabling this option will also disable the extended mode
+    legacy = false
+    # List of administrators
     admin = user1,user2
+    # List of moderators. Users listed here will inherit the grants of the
+    # 'virtual' user 'moderator'
+    moderators = user5,user6
     # Please note the double-quotes and single-quotes on the following lines are
     # mandatory!
     # You can also overwrite the default behavior by specifying which clients a
     # user can access
+    moderator = '{"agents":{"ro":["agent1"]}}'
     user3 = '["client4", "client5"]'
     # In case you are not in a single mode, you can also specify which clients
     # a user can access on a specific Agent
     user4 = '{"agent1": ["client6", "client7"], "agent2": ["client8"]}'
+    # You can define read-only and/or read-write grants for moderators using:
+    user5 = '{"agents": ["www*"], "clients": {"ro": ["desk*"], "rw": ["desk1"]}}'
 
 
 .. warning:: The double-quotes and single-quotes are **MANDATORY**
