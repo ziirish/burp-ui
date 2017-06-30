@@ -952,6 +952,19 @@ class Burp(Burp1):
         ret.reverse()
         return ret
 
+    def is_backup_deletable(self, name=None, backup=None, agent=None):
+        """Check if a given backup is deletable"""
+        if not name or not backup:
+            return False
+        query = self.status('c:{0}:b:{1}\n'.format(name, backup))
+        if not query:
+            return False
+        try:
+            flags = query['clients'][0]['backups'][0]['flags']
+            return 'deletable' in flags
+        except KeyError:
+            return False
+
     def get_tree(self, name=None, backup=None, root=None, level=-1, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_tree`"""
         ret = []

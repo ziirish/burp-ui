@@ -865,6 +865,12 @@ class Burp(BUIbackend):
         res.reverse()
         return res
 
+    def is_backup_deletable(self, name=None, backup=None, agent=None):
+        """Check if a given backup is deletable"""
+        # This feature won't be available in the burp 1 backend so we always
+        # return False
+        return False
+
     def get_tree(self, name=None, backup=None, root=None, level=-1, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_tree`"""
         res = []
@@ -939,6 +945,27 @@ class Burp(BUIbackend):
     def server_backup(self, client=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.server_backup`"""
         return self.parser.server_initiated_backup(client)
+
+    def delete_backup(self, name=None, backup=None, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.delete_backup`"""
+        if self._vers == 1:
+            return 'Sorry, this feature is not available'
+        if not name or not backup:
+            return 'At least one argument is missing'
+        if not self.burpbin:
+            return 'Missing \'burp\' binary'
+        if not self.is_backup_deletable(name, backup):
+            return 'Sorry, this backup is not deletable'
+        cmd = [self.burpbin, '-C', quote(name), '-a', 'delete', '-b', quote(str(backup)), '-c', self.burpconfcli]
+        self.logger.debug(cmd)
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        out, _ = proc.communicate()
+        status = proc.wait()
+        self.logger.debug(out)
+        self.logger.debug('command returned: %d', status)
+        if status != 0:
+            return 'The command failed with status {}: {}'.format(status, out)
+        return None
 
     def restore_files(self, name=None, backup=None, files=None, strip=None, archive='zip', password=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.restore_files`"""

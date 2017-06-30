@@ -24,11 +24,6 @@ class ACLloader(BUIaclLoader):
         ]
         self.moderators = []
         self.grants = {}
-        self.clients = {}
-        self.servers = {}
-        self.read_only = {}
-        self.read_write = {}
-        self.raw_servers = {}
         self.standalone = self.app.standalone
         self.extended = False
         self.legacy = False
@@ -42,6 +37,12 @@ class ACLloader(BUIaclLoader):
         if not force and self.conf_id:
             if not self.conf.changed(self.conf_id):
                 return False
+
+        self.admins = [
+            'admin'
+        ]
+        self.moderators = []
+        self.grants = {}
 
         adms = []
         mods = []

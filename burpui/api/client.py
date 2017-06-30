@@ -782,7 +782,7 @@ class ClientReport(Resource):
         :returns: The *JSON* described above.
         """
         server = server or self.parser.parse_args()['serverName']
-        j = []
+        json = []
         if not name:
             err = [[1, 'No client defined']]
             self.abort(400, err)
@@ -793,31 +793,74 @@ class ClientReport(Resource):
             self.abort(403, 'You don\'t have rights to view this client report')
         if backup:
             try:
-                j = bui.client.get_backup_logs(backup, name, agent=server)
-            except BUIserverException as e:
-                self.abort(500, str(e))
+                json = bui.client.get_backup_logs(backup, name, agent=server)
+            except BUIserverException as exp:
+                self.abort(500, str(exp))
         else:
             try:
-                cl = bui.client.get_client(name, agent=server)
-            except BUIserverException as e:
-                self.abort(500, str(e))
+                client = bui.client.get_client(name, agent=server)
+            except BUIserverException as exp:
+                self.abort(500, str(exp))
             err = []
-            for c in cl:
+            for back in client:
                 try:
-                    j.append(
+                    json.append(
                         bui.client.get_backup_logs(
-                            c['number'],
+                            back['number'],
                             name,
                             agent=server
                         )
                     )
-                except BUIserverException as e:
-                    temp = [NOTIF_ERROR, str(e)]
+                except BUIserverException as exp:
+                    temp = [NOTIF_ERROR, str(exp)]
                     if temp not in err:
                         err.append(temp)
             if err:
                 self.abort(500, err)
-        return j
+        return json
+
+    @api.disabled_on_demo()
+    @ns.marshal_with(report_fields, code=202, description='Success')
+    @ns.expect(parser)
+    @ns.doc(
+        responses={
+            '400': 'Missing arguments',
+            '403': 'Insufficient permissions',
+            '500': 'Internal failure',
+        },
+    )
+    def delete(self, name, backup, server=None):
+        """Deletes a given backup from the server
+
+        **DELETE** method provided by the webservice.
+
+        The access is filtered by the :mod:`burpui.misc.acl` module so that you
+        can only delete backups you have access to.
+
+        :param server: Which server to collect data from when in multi-agent
+                       mode
+        :type server: str
+
+        :param name: The client we are working on
+        :type name: str
+
+        :param backup: The backup we are working on
+        :type backup: int
+        """
+        server = server or self.parser.parse_args()['serverName']
+        if not name:
+            err = [[1, 'No client defined']]
+            self.abort(400, err)
+
+        if hasattr(current_user, 'acl') and \
+                not current_user.acl.is_admin() and \
+                not current_user.acl.is_client_allowed(name, server):
+            self.abort(403, 'You don\'t have rights on this client')
+
+        msg = bui.client.delete_backup(name, backup, server)
+        if msg:
+            self.abort(500, msg)
+        return 202, ''
 
 
 @ns.route('/stats/<name>',
@@ -909,7 +952,7 @@ class ClientStats(Resource):
                     not current_user.acl.is_admin() and \
                     not current_user.acl.is_client_allowed(name, server):
                 self.abort(403, 'Sorry, you cannot access this client')
-            j = bui.client.get_client(name, agent=server)
-        except BUIserverException as e:
-            self.abort(500, str(e))
-        return j
+            json = bui.client.get_client(name, agent=server)
+        except BUIserverException as exp:
+            self.abort(500, str(exp))
+        return json

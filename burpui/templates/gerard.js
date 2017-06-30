@@ -404,12 +404,20 @@ $(function() {
 	/***
 	 * add a listener to the '.clickable' element dynamically added in the document (see _client and _clients function)
 	 */
-	$( document ).on('click', '.clickable', function() {
+	$( document ).on('click', '.clickable', function(e) {
+		var that = e.target;
+		if ($(that).hasClass('no-link')) {
+			return;
+		}
 		if (!$(this).closest('table').hasClass('collapsed')) {
 			window.location = $(this).find('a').attr('href');
 		}
 	});
-	$( document ).on('click', 'td.child', function() {
+	$( document ).on('click', 'td.child', function(e) {
+		var that = e.target
+		if ($(that).hasClass('no-link')) {
+			return;
+		}
 		$before = $(this).parent().prev();
 		if ($before.hasClass('clickable')) {
 			window.location = $before.find('a').attr('href');
