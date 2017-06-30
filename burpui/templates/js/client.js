@@ -96,6 +96,16 @@ var _client_table = $('#table-client').dataTable( {
 			render: function ( data, type, row ) {
 				return '<span class="glyphicon glyphicon-'+(data.encrypted?'lock':'globe')+'"></span>&nbsp;'+(data.encrypted?"{{ _('Encrypted backup') }}":"{{ _('Unencrypted backup') }}");
 			}
+		},
+		{
+			data: null,
+			render: function ( data, type, row ) {
+				var disable = '';
+				if (!data.deletable) {
+					disable = 'disabled="disabled"';
+				}
+				return '<button class="btn btn-danger btn-xs btn-delete-backup no-link" data-backup="' + data.number + '" ' + disable + '><i class="fa fa-trash" aria-hidden="true"></i>&nbsp;{{ _("Delete") }}</button>';
+			}
 		}
 	]
 });
@@ -135,7 +145,7 @@ var _client = function() {
 
 {{ macros.page_length('#table-client') }}
 
-$(document).ready(function() {
+$( document ).ready(function() {
 	$('a.toggle-vis').on('click', function(e) {
 		e.preventDefault();
 
@@ -198,4 +208,19 @@ $(document).ready(function() {
 
 _client_table.on('draw.dt', function() {
 	$('[data-toggle="tooltip"]').tooltip();
+});
+
+/* this one is outside because the buttons are dynamically added after the
+ * document gets loaded
+ */
+$( document ).on('click', '.btn-delete-backup', function(e) {
+	$.ajax({
+		url: '{{ url_for("api.client_report", name=cname, server=server) }}/' + $(this).attr('data-backup'),
+		headers: { 'X-From-UI': true },
+		type: 'DELETE'
+	}).done(function(data) {
+		notif(NOTIF_SUCCESS, '{{ _("Delete task launched") }}');
+		/* refresh backups list now */
+		_client();
+	}).fail(myFail);
 });

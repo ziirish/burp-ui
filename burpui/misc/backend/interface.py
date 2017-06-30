@@ -424,6 +424,25 @@ class BUIbackend(with_metaclass(ABCMeta, object)):
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
     @abstractmethod
+    def delete_backup(self, name=None, backup=None, agent=None):
+        """The :func:`burpui.misc.backend.interface.BUIbackend.delete_backup`
+        function performs a backup deletion and returns an error message if
+        the command failed.
+
+        :param name: Client name
+        :type name: str
+
+        :param backup: Backup number
+        :type backup: int
+
+        :param agent: What server to ask (only in multi-agent mode)
+        :type agent: str
+
+        :returns: An error message if the command failed
+        """
+        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+
+    @abstractmethod
     def restore_files(self, name=None, backup=None, files=None, strip=None, archive='zip', password=None, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.restore_files`
         function performs a restoration and returns a tuple containing the path
