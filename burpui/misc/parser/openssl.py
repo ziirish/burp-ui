@@ -86,7 +86,8 @@ class OSSLAuth(object):
             self.logger.warning(str(err))
             return False
 
-        for rvk in self.crl.get_revoked():
+        revoked = self.crl.get_revoked() or []
+        for rvk in revoked:
             if client_crt.get_serial_number() == long(rvk.get_serial(), 16):
                 return True
 
@@ -108,21 +109,11 @@ class OSSLAuth(object):
         c_cert = self._get_crt_path(client)
         try:
             DEVNULL = open(os.devnull, 'w')
-            openssl = to_unicode(subprocess.check_output([
-                'which',
-                'openssl'],
-                stderr=DEVNULL
-            )).rstrip('\n')
-            # FIXME: Don't know why pyOpenssl does not return the hex serial :-/
-            _, serial = to_unicode(subprocess.check_output([
-                openssl,
-                'x509',
-                '-serial',
-                '-noout',
-                '-in',
-                c_cert],
-                stderr=DEVNULL
-            )).rstrip('\n').split('=')
+            serial = ''
+            with open(c_cert) as c_file:
+                cert = crypto.load_certificate(crypto.FILETYPE_PEM, c_file.read())
+                serial = '{0:x}'.format(cert.get_serial_number())
+
             self.logger.debug('{} serial: {}'.format(client, serial))
             subprocess.check_call([
                 self.global_conf.get('ca_burp_ca'),
@@ -151,7 +142,7 @@ class OSSLAuth(object):
                     stdout=DEVNULL
                 )
                 self._load_crl()
-        except subprocess.CalledProcessError as err:
+        except (subprocess.CalledProcessError, IOError) as err:
             self.logger.warning(str(err))
             return False
         return True
@@ -218,21 +209,19 @@ class OSSLConf(object):
         res = val
         dic = temp
         env = self._is_env(res)
-        if env:
-            for match in env:
-                res = dic[key] = self._translate_env(
-                    dic,
-                    match,
-                    res
-                )
+        for match in env:
+            res = dic[key] = self._translate_env(
+                dic,
+                match,
+                res
+            )
         lcl = self._is_local(res)
-        if lcl:
-            for match in lcl:
-                res = dic[key] = self._translate_local(
-                    dic,
-                    match,
-                    res
-                )
+        for match in lcl:
+            res = dic[key] = self._translate_local(
+                dic,
+                match,
+                res
+            )
         if not lcl and not env:
             return res
         return self._translate(dic, key, res)
@@ -242,7 +231,7 @@ class OSSLConf(object):
         """Look for 'local' variables (ie. $dir)"""
         lcl = re.compile(r'\${?(\w+)}?')
         res = [x for x in lcl.findall(val) if x.lower() != 'env']
-        return res if res else False
+        return res
 
     def _translate_local(self, temp, pattern, val):
         """Translate 'local' variables (ie. $dir is replaced by the content of
@@ -256,7 +245,7 @@ class OSSLConf(object):
         """Look for 'global' variables (ie. $ENV::HOME)"""
         env = re.compile(r'\${?ENV::(\w+)}?')
         res = env.findall(val)
-        return res if res else False
+        return res if res else []
 
     def _translate_env(self, temp, pattern, val):
         """Translate 'global' variables (ie. $ENV::HOME is replace by the
