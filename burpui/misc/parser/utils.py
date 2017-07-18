@@ -33,21 +33,37 @@ class Option(object):
     """
     type = None
     delim = '='
+    reset_delim = ':='
     _dirty = False
 
     def __init__(self, name, value=None):
         self.name = name
         self.value = value
         self._dirty = True
+        # is there a special := syntax for this option
+        self._is_reset = []
 
     @property
     def dirty(self):
         return self._dirty
 
+    def is_reset(self, value, pop=False):
+        """ Check if a special ':=' syntax is required based on the value """
+        if value not in self._is_reset:
+            return False
+        if pop:
+            _ = self._is_reset.pop(self._is_reset.index(value))
+        return True
+
+    def set_reset(self, value):
+        """ Mark this value as requiring a special ':=' syntax """
+        self._is_reset.append(value)
+
     def update(self, value):
         """Change the option value"""
         self._dirty = True
         self.value = value
+        self._is_reset = []
 
     def clean(self):
         """Mark the option as clean"""
@@ -59,7 +75,10 @@ class Option(object):
 
     def dump(self):
         """Return the option representation to store in configuration file"""
-        return "{} {} {}".format(self.name, self.delim, self.value)
+        delim = self.delim
+        if self.is_reset(self.value):
+            delim = self.reset_delim
+        return "{} {} {}".format(self.name, delim, self.value)
 
     def __repr__(self):
         """Option representation"""
@@ -104,11 +123,13 @@ class OptionBool(Option):
         self.name = name
         self.value = self._format_value(value)
         self._dirty = True
+        self._is_reset = []
 
     def update(self, value):
         """Change the option value"""
         self._dirty = True
         self.value = self._format_value(value)
+        self._is_reset = []
 
     def _format_value(self, value):
         if self._parse(value):
@@ -118,8 +139,13 @@ class OptionBool(Option):
     @staticmethod
     def _parse(value):
         try:
-            if value is True:
+            if not value:
+                return False
+            elif value is True:
                 return True
+            elif '{}'.format(value).lower() == 'true':
+                return True
+            # any string will raise the ValueError
             return int(value) == 1
         except ValueError:
             return False
@@ -141,8 +167,12 @@ class OptionMulti(Option):
     def __init__(self, name, value=None):
         self.name = name
         self._dirty = True
+        self._is_reset = []
         if value:
-            self.value = [value]
+            if not isinstance(value, list):
+                self.value = [value]
+            else:
+                self.value = value
         else:
             self.value = []
 
@@ -159,12 +189,40 @@ class OptionMulti(Option):
     def index(self, value):
         return self.value.index(value)
 
-    def dump(self):
+    def len(self):
+        return len(self.value)
+
+    def dump_init(self):
+        """Initialize the dump"""
+        if not hasattr(self, '_is_reset_sav') or not self._is_reset_sav:
+            self._is_reset_sav = list(self._is_reset)
+
+    def dump_end(self):
+        """Finalize the dump"""
+        if hasattr(self, '_is_reset_sav'):
+            self._is_reset = self._is_reset_sav
+            self._is_reset_sav = []
+
+    def dump(self, start=0):
         """Return the option representation to store in configuration file"""
+        self.dump_init()
         ret = u''
-        for val in self.value:
-            ret += '{} {} {}\n'.format(self.name, self.delim, val)
+        if start > len(self.value):
+            return ret
+        for idx in range(start, len(self.value)):
+            ret += '{}\n'.format(self.dump_index(idx))
+        # reset the list since the dump is complete
+        self.dump_end()
         return ret.rstrip('\n')
+
+    def dump_index(self, index, pop=True):
+        if index > len(self.value):
+            index = len(self.value) - 1
+        val = self.value[index]
+        delim = self.delim
+        if self.is_reset(val, pop):
+            delim = self.reset_delim
+        return '{} {} {}'.format(self.name, delim, val)
 
 
 class OptionInc(Option):
@@ -185,6 +243,7 @@ class OptionInc(Option):
         self.parser = parser
         self.mode = mode
         self.extended = []
+        self._is_reset = []
         self._dirty = True
         self._glob = False
         self._glob_dir = None
@@ -567,25 +626,41 @@ class File(dict):
         self.md5 = self._md5
         return self._raw
 
-    def _write_key(self, fil, key, data):
-        self._changed = True
+    def _write_key(self, fil, key, data, index=None, dry=False):
+        if not dry:
+            self._changed = True
+
+        # special case
+        if key == '.':
+            val = sanitize_string(data)
+            fil.write('. {}\n'.format(val))
+            return val
+        # don't need to parse data again if index > 0
+        if index is not None and index > 0:
+            fil.write('{}\n'.format(self[key].dump_index(index)))
+            return None
 
         strict = 'regex' not in key
         if key in self.parser.boolean_srv or key in self.parser.boolean_cli:
-            val = 0
-            obj = data.get(key)
-            if obj == 'true' or (isinstance(obj, bool) and obj):
-                val = 1
-            fil.write('{} = {}\n'.format(key, val))
-        elif key == '.':
-            val = sanitize_string(data)
-            fil.write('. {}\n'.format(val))
+            val = data.get(key)
         elif key in self.parser.multi_srv or key in self.parser.multi_cli:
-            for val in [sanitize_string(x, strict) for x in data.getlist(key)]:
-                fil.write('{} = {}\n'.format(key, val))
+            val = [sanitize_string(x, strict) for x in data.getlist(key)]
         else:
             val = sanitize_string(str(data.get(key)), strict)
-            fil.write('{} = {}\n'.format(key, val))
+        if key in self:
+            self[key].update(val)
+        else:
+            self[key] = val
+        if dry:
+            ret = self[key].parse()
+            if index is not None:
+                return ret[index]
+            return ret
+        if index is not None:
+            self[key].dump_init()
+            fil.write('{}\n'.format(self[key].dump_index(index)))
+        else:
+            fil.write('{}\n'.format(self[key]))
 
     def parse(self, force=False):
         """Parse the current config"""
@@ -596,15 +671,18 @@ class File(dict):
         for line in self.raw:
             if re.match(r'^\s*#', line):
                 continue
-            res = re.search(r'\s*([^=\s]+)\s*=?\s*(.*)$', line)
+            res = re.search(r'\s*([^=\s]+)\s*(:)?=?\s*(.*)$', line)
             if res:
                 key = res.group(1)
-                val = res.group(2)
+                reset = res.group(2)
+                val = res.group(3)
                 if key == u'compression':
                     val = val.replace('zlib', 'gzip')
                 elif key == u'ssl_compression':
                     val = val.replace('gzip', 'zlib')
                 self[key] = val
+                if reset:
+                    self[key].set_reset(val)
 
         self._dirty = False
 
@@ -665,32 +743,46 @@ class File(dict):
         oldkeys = [self._get_line_key(x) for x in orig]
         newkeys = list(set(viewkeys(data)) - set(oldkeys))
 
+        multi_index_map = {}
         already_multi = []
         already_file = []
         written = []
-        skip = []
 
-        # def lookup_option(key, val, strict=True):
-        #    """returns a list of tuples (idx, line)"""
-        #    if strict:
-        #        reg = r'^\s*{}\s*=?\s*{}$'.format(key, val)
-        #    else:
-        #        reg = r'^\s*{}\s*=?'.format(key)
-        #    ret = []
-        #    for idx, line in enumerate(orig):
-        #        if idx in skip:
-        #            continue
-        #        if re.match(reg, line):
-        #            return idx, line
-        #    return -1, None
+        def _lookup_option(key, val, start=0, strict=True, comment=True):
+            """returns a list of tuples (idx, line)"""
+            # re.match implies /^.../
+            reg = r'\s*{}\s*:?=?'.format(key)
+            if comment:
+                reg = r'\s*#*{}'.format(reg)
+            if strict:
+                reg = r'{}\s*{}$'.format(reg, val)
+            start = min(start, len(orig))
+            for idx, line in enumerate(orig[start:], start):
+                if re.match(reg, line.rstrip('\n')):
+                    return idx, line
+            return -1, None
+
+        def _is_key_after(key, start=0):
+            """checks if a key is present in the following lines"""
+            idx, _ = _lookup_option(key, None, start, False)
+            return idx != -1
+
+        def _dump(line, comment=None, raw=False):
+            if raw:
+                fil.write('{}\n'.format(line))
+                return
+            lead = ''
+            if comment:
+                lead = '#'
+            fil.write('{}{}\n'.format(lead, line))
 
         try:
             with codecs.open(dest, 'w', 'utf-8', errors='ignore') as fil:
                 # f.write('# Auto-generated configuration using Burp-UI\n')
+                data_keys = data.keys()
                 for idx, line in enumerate(orig):
-                    if idx in skip:
-                        continue
-                    if (self._line_removed(line, data.keys()) and
+                    key = self._get_line_key(line, False)
+                    if (self._line_removed(line, data_keys) and
                             not self._line_is_comment(line) and
                             not self._line_is_file_include(line)):
                         # The line was removed, we comment it
@@ -705,33 +797,74 @@ class File(dict):
                             self._write_key(fil, '.', inc)
                             already_file.append(inc)
                         else:
-                            lead = ''
-                            if not self._line_is_comment(line):
-                                lead = '#'
-                            fil.write('{}{}\n'.format(lead, line))
+                            comment = not self._line_is_comment(line)
+                            _dump(line, comment=comment)
 
-                    elif self._get_line_key(line, False) in data.keys():
+                    elif key in data_keys:
                         # The line is still present or has been un-commented,
                         # rewrite it with eventual changes
-                        key = self._get_line_key(line, False)
+                        multi = key in getattr(self.parser, 'multi_{}'.format(self.mode))
+                        if multi and key not in multi_index_map:
+                            multi_index_map[key] = 0
                         if key in written:
-                            fil.write('#{}\n'.format(line))
+                            _dump(line, comment=(not self._line_is_comment(line)))
                         else:
-                            if key not in already_multi:
-                                self._write_key(
+                            if multi:
+                                if key not in already_multi and \
+                                        (key not in self or
+                                         (key in self and
+                                          self[key].len() > multi_index_map[key])):
+                                    self._write_key(
+                                        fil,
+                                        key,
+                                        data,
+                                        multi_index_map[key]
+                                    )
+                                    multi_index_map[key] += 1
+                                else:
+                                    _dump(line, comment=(not self._line_is_comment(line)))
+                                    continue
+                                # dump the rest of the multi if there are no
+                                # more keys in the conf
+                                if not _is_key_after(key, idx + 1):
+                                    rest = self[key].dump(multi_index_map[key])
+                                    if rest:
+                                        fil.write('{}\n'.format(rest))
+                                    self[key].dump_end()
+                                    multi_index_map[key] = self[key].len()
+                                    if key not in already_multi:
+                                        already_multi.append(key)
+                            else:
+                                # The line was a comment and there was a further
+                                # matching setting, so we just jump to the
+                                # following
+                                if self._line_is_comment(line) and \
+                                        _lookup_option(key, None, idx + 1, False):
+                                    _dump(line, raw=True)
+                                    continue
+
+                                val = self._write_key(
                                     fil,
                                     key,
                                     data,
+                                    dry=True
                                 )
-                            if key in getattr(self.parser, 'multi_{}'.format(self.mode)):
-                                already_multi.append(key)
-                            else:
+                                lookup, _ = _lookup_option(key, val, idx + 1)
+                                # The same option is here later, skip the
+                                # current one
+                                if lookup != -1:
+                                    _dump(line, raw=True)
+                                    continue
+
                                 written.append(key)
+                                self._write_key(
+                                    fil,
+                                    key,
+                                    data
+                                )
                     else:
-                        lead = ''
-                        if self._get_line_key(line, False) in written:
-                            lead = '#'
-                        fil.write('{}{}\n'.format(lead, line))
+                        _dump(line, comment=(key in written and not self._line_is_comment(line)))
+
                 # Write the new keys
                 for key in newkeys:
                     if (key not in written and key not in already_multi and
@@ -741,11 +874,16 @@ class File(dict):
                             key,
                             data,
                         )
+                # write the rest of the multi settings
+                for key, idx in iteritems(multi_index_map):
+                    if idx < self[key].len():
+                        fil.write('{}\n'.format(self[key].dump(idx)))
                 # Write the rest of file inclusions
                 if 'includes' in data:
                     for inc in data.getlist('includes'):
                         if inc not in already_file:
                             self._write_key(fil, '.', inc)
+
         except Exception as exp:
             return [[NOTIF_ERROR, str(exp)]]
 
@@ -791,7 +929,7 @@ class File(dict):
             return ''
         if '=' not in line:
             return line
-        (key, _) = re.split(r'\s*=\s*', line, 1)
+        (key, _) = re.split(r'\s*:?=\s*', line, 1)
         if not ignore_comments:
             key = key.strip('# ')
         return key.strip()
@@ -801,7 +939,7 @@ class File(dict):
         """Check whether a given line has been removed in the updated version"""
         if not line:
             return False
-        (key, _) = re.split(r'\s+|=', line, 1)
+        (key, _) = re.split(r'\s+|:?=', line, 1)
         key = key.strip()
         return key not in keys
 
