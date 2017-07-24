@@ -4,11 +4,14 @@ Changelog
 Current
 -------
 
-- **Breaking**: the *BASIC* `ACL` engine will now grant users on all agents if they are not explicitly defined
+- **BREAKING**: the *BASIC* `ACL` engine will now grant users on all agents if they are not explicitly defined
 - Add: new plugins system to allow users to write their own modules
+- Add: `Italian translation <https://git.ziirish.me/ziirish/burp-ui/merge_requests/74>`_ thanks to Enrico
 - Add: `backups deletion <https://git.ziirish.me/ziirish/burp-ui/issues/203>`_
 - Add: `record login failure attempt <https://git.ziirish.me/ziirish/burp-ui/issues/214>`_
 - Add: `support new burp counters <https://git.ziirish.me/ziirish/burp-ui/issues/219>`_
+- Add: `support new reset list (:=) syntax <https://git.ziirish.me/ziirish/burp-ui/issues/223>`_
+- `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/v0.5.0...master>`__
 
 0.5.1 (05/26/2017)
 ------------------
