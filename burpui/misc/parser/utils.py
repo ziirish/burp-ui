@@ -22,6 +22,9 @@ from ...security import sanitize_string
 from ...datastructures import MultiDict
 
 
+RESET_IDENTIFIER = '_reset_bui_CUSTOM'
+
+
 class Option(object):
     """Object representing an option
 
@@ -35,6 +38,7 @@ class Option(object):
     delim = '='
     reset_delim = ':='
     _dirty = False
+    idx = -1
 
     def __init__(self, name, value=None):
         self.name = name
@@ -47,17 +51,25 @@ class Option(object):
     def dirty(self):
         return self._dirty
 
-    def is_reset(self, value, pop=False):
-        """ Check if a special ':=' syntax is required based on the value """
-        if value not in self._is_reset:
+    def is_reset(self):
+        """Check if a special ':=' syntax is required based on the value"""
+        if self.idx < 0 or not self._is_reset:
             return False
-        if pop:
-            _ = self._is_reset.pop(self._is_reset.index(value))
-        return True
+        if self.idx >= len(self._is_reset):
+            self.idx = len(self._is_reset) - 1
+        return self._is_reset[self.idx]
 
-    def set_reset(self, value):
-        """ Mark this value as requiring a special ':=' syntax """
-        self._is_reset.append(value)
+    def set_reset(self, value=False):
+        """Mark this value as requiring a special ':=' syntax"""
+        self._is_reset.append('{}'.format(value).lower() == 'true')
+        self.idx += 1
+
+    def set_resets(self, resets):
+        self._is_reset = resets
+
+    def get_reset(self):
+        """Return the reset list/flag"""
+        return self.is_reset()
 
     def update(self, value):
         """Change the option value"""
@@ -76,7 +88,7 @@ class Option(object):
     def dump(self):
         """Return the option representation to store in configuration file"""
         delim = self.delim
-        if self.is_reset(self.value):
+        if self.is_reset():
             delim = self.reset_delim
         return "{} {} {}".format(self.name, delim, self.value)
 
@@ -175,10 +187,13 @@ class OptionMulti(Option):
                 self.value = value
         else:
             self.value = []
+        self.idx = len(self.value) - 1
 
-    def append(self, value):
+    def append(self, value, reset=None):
         self._dirty = True
         self.value.append(value)
+        if reset is not None:
+            self.set_reset(reset)
         return self.value
 
     def remove(self, value):
@@ -192,37 +207,32 @@ class OptionMulti(Option):
     def len(self):
         return len(self.value)
 
-    def dump_init(self):
+    def dump_init(self, start=0):
         """Initialize the dump"""
-        if not hasattr(self, '_is_reset_sav') or not self._is_reset_sav:
-            self._is_reset_sav = list(self._is_reset)
-
-    def dump_end(self):
-        """Finalize the dump"""
-        if hasattr(self, '_is_reset_sav'):
-            self._is_reset = self._is_reset_sav
-            self._is_reset_sav = []
+        self.dump_idx = start
 
     def dump(self, start=0):
         """Return the option representation to store in configuration file"""
-        self.dump_init()
+        self.dump_init(start)
         ret = u''
         if start > len(self.value):
             return ret
         for idx in range(start, len(self.value)):
             ret += '{}\n'.format(self.dump_index(idx))
-        # reset the list since the dump is complete
-        self.dump_end()
         return ret.rstrip('\n')
 
-    def dump_index(self, index, pop=True):
+    def dump_index(self, index):
         if index > len(self.value):
             index = len(self.value) - 1
         val = self.value[index]
         delim = self.delim
-        if self.is_reset(val, pop):
+        self.idx = index
+        if self.is_reset():
             delim = self.reset_delim
         return '{} {} {}'.format(self.name, delim, val)
+
+    def get_reset(self):
+        return self._is_reset
 
 
 class OptionInc(Option):
@@ -340,6 +350,8 @@ class File(dict):
         self.mode = mode
         self.name = name
         self.parent = parent
+        self.updated = []
+        self.reset = {}
         self.options = OrderedDict()
         self.types = {
             'boolean': OrderedDict(),
@@ -419,14 +431,15 @@ class File(dict):
             return [
                 {
                     'name': key,
-                    'value': val.parse() if parse else val
+                    'value': opt.parse() if parse else opt,
+                    'reset': opt.get_reset()
                 }
-                for key, val in iteritems(self.types[typ])
+                for key, opt in iteritems(self.types[typ])
             ]
         ret = OrderedDict()
         if typ in self.types:
-            for key, val in iteritems(self.types[typ]):
-                ret[key] = val.parse() if parse else val
+            for key, opt in iteritems(self.types[typ]):
+                ret[key] = opt.parse() if parse else opt
         return ret
 
     @property
@@ -641,16 +654,20 @@ class File(dict):
             return None
 
         strict = 'regex' not in key
-        if key in self.parser.boolean_srv or key in self.parser.boolean_cli:
-            val = data.get(key)
-        elif key in self.parser.multi_srv or key in self.parser.multi_cli:
-            val = [sanitize_string(x, strict) for x in data.getlist(key)]
-        else:
-            val = sanitize_string(str(data.get(key)), strict)
-        if key in self:
-            self[key].update(val)
-        else:
-            self[key] = val
+        if key not in self.updated:
+            if key in self.parser.boolean_srv or key in self.parser.boolean_cli:
+                val = data.get(key)
+            elif key in self.parser.multi_srv or key in self.parser.multi_cli:
+                val = [sanitize_string(x, strict) for x in data.getlist(key)]
+            else:
+                val = sanitize_string(str(data.get(key)), strict)
+            if key in self:
+                self[key].update(val)
+            else:
+                self[key] = val
+            self.updated.append(key)
+            if key in self.reset:
+                self[key].set_resets(self.reset[key])
         if dry:
             ret = self[key].parse()
             if index is not None:
@@ -681,8 +698,8 @@ class File(dict):
                 elif key == u'ssl_compression':
                     val = val.replace('gzip', 'zlib')
                 self[key] = val
-                if reset:
-                    self[key].set_reset(val)
+                if key in self:
+                    self[key].set_reset(reset is not None)
 
         self._dirty = False
 
@@ -715,7 +732,11 @@ class File(dict):
                 except IOError as exp:
                     return [[NOTIF_ERROR, str(exp)]]
 
+        def _make_it_bool(array):
+            return ['{}'.format(x).lower() == 'true' for x in array]
+
         errs = []
+        self.reset = {}
 
         for key in data.keys():
             if key in self.parser.files:
@@ -735,6 +756,12 @@ class File(dict):
                         key,
                         typ
                     ])
+            elif key.endswith(RESET_IDENTIFIER):
+                target = key.replace(RESET_IDENTIFIER, '')
+                if target in getattr(self.parser, 'multi_{}'.format(self.mode)):
+                    self.reset[target] = _make_it_bool(data.getlist(key))
+                else:
+                    self.reset[target] = data.get(key)
 
         if errs and not insecure:
             return errs
@@ -747,6 +774,7 @@ class File(dict):
         already_multi = []
         already_file = []
         written = []
+        self.updated = []
 
         def _lookup_option(key, val, start=0, strict=True, comment=True):
             """returns a list of tuples (idx, line)"""
@@ -830,7 +858,6 @@ class File(dict):
                                     rest = self[key].dump(multi_index_map[key])
                                     if rest:
                                         fil.write('{}\n'.format(rest))
-                                    self[key].dump_end()
                                     multi_index_map[key] = self[key].len()
                                     if key not in already_multi:
                                         already_multi.append(key)
@@ -867,6 +894,8 @@ class File(dict):
 
                 # Write the new keys
                 for key in newkeys:
+                    if key.endswith(RESET_IDENTIFIER):
+                        continue
                     if (key not in written and key not in already_multi and
                             key not in ['includes', 'includes_ori']):
                         self._write_key(
