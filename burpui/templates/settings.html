@@ -158,8 +158,12 @@
                       <button type="button" class="btn btn-danger" ng-click="removeMulti($parent.$index, $index)"><span class="glyphicon glyphicon-minus"></span></button>
                       <button type="button" class="btn btn-success btn-primary" ng-click="addMulti($parent.$parent.$index)" ng-if="$last"><span class="glyphicon glyphicon-plus"></span></button>
                     </div>
-                    <div class="col-lg-6">
+                    <div class="col-lg-5">
                       <div ng-if="$first" ng-bind-html="::server_doc[$parent.multi.name]"></div>
+                    </div>
+                    <div class="col-lg-1">
+                      <input type="checkbox" id="{{ ::$parent.multi.name }}_reset_bui_CUSTOM_view-{{ i }}" title="{{ _('Reset list') }}" ng-model="$parent.multi.reset[i]">
+                      <input type="hidden" name="{{ ::$parent.multi.name }}_reset_bui_CUSTOM" id="{{ ::$parent.multi.name }}_reset_bui_CUSTOM-{{ i }}">
                     </div>
                   </div>
                 </div>
