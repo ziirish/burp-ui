@@ -59,12 +59,16 @@ class UserAuthHandler(BUIhandler):
     def user(self, name=None, refresh=False):
         """See :func:`burpui.misc.auth.interface.BUIhandler.user`"""
         key = session_manager.get_session_id() or name
+        if not key:
+            return None
         if refresh and key in self.users:
             del self.users[key]
         if session_manager.session_managed():
             session_manager.session_expired()
         if key not in self.users:
             ret = UserHandler(self.app, self.backends, name, key)
+            if not ret.name:
+                return None
             self.users[key] = ret
             return ret
         ret = self.users[key]
@@ -124,6 +128,8 @@ class UserHandler(BUIuser):
             self.name = session_manager.get_session_username() or \
                 session.get('login')
         self.real = None
+        if not self.name:
+            return
 
         for _, back in iteritems(self.backends):
             user = back.user(self.name)
