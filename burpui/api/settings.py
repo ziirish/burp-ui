@@ -111,11 +111,13 @@ class ServerSettings(Resource):
                 "boolean": [
                   {
                     "name": "hardlinked_archive",
-                    "value": false
+                    "value": false,
+                    "reset": false
                   },
                   {
                     "name": "syslog",
-                    "value": true
+                    "value": true,
+                    "reset": false
                   },
                   { "...": "..." }
                 ],
@@ -128,11 +130,13 @@ class ServerSettings(Resource):
                 "common": [
                   {
                     "name": "mode",
-                    "value": "server"
+                    "value": "server",
+                    "reset": false
                   },
                   {
                     "name": "directory",
-                    "value": "/var/spool/burp"
+                    "value": "/var/spool/burp",
+                    "reset": false
                   },
                   { "...": "..." }
                 ],
@@ -141,11 +145,13 @@ class ServerSettings(Resource):
                 "integer": [
                   {
                     "name": "port",
-                    "value": 4971
+                    "value": 4971,
+                    "reset": false
                   },
                   {
                     "name": "status_port",
-                    "value": 4972
+                    "value": 4972,
+                    "reset": false
                   },
                   { "...": "..." }
                 ],
@@ -155,6 +161,10 @@ class ServerSettings(Resource):
                     "value": [
                       "7",
                       "4"
+                    ],
+                    "reset": [
+                      false,
+                      true
                     ]
                   },
                   { "...": "..." }
@@ -199,7 +209,7 @@ class ServerSettings(Resource):
             conf = unquote(conf)
         except:
             pass
-        r = bui.client.read_conf_srv(conf, server)
+        res = bui.client.read_conf_srv(conf, server)
         refresh()
         # Translate the doc and placeholder API side
         doc = bui.client.get_parser_attr('doc', server).copy()
@@ -208,7 +218,7 @@ class ServerSettings(Resource):
             doc[key] = _(val)
         for key, val in iteritems(placeholders):
             placeholders[key] = _(val)
-        return jsonify(results=r,
+        return jsonify(results=res,
                        boolean=bui.client.get_parser_attr('boolean_srv', server),
                        string=bui.client.get_parser_attr('string_srv', server),
                        integer=bui.client.get_parser_attr('integer_srv', server),
@@ -340,7 +350,7 @@ class ClientSettings(Resource):
             conf = unquote(conf)
         except:
             pass
-        r = bui.client.read_conf_cli(client, conf, server)
+        res = bui.client.read_conf_cli(client, conf, server)
         refresh()
         # Translate the doc and placeholder API side
         doc = bui.client.get_parser_attr('doc', server).copy()
@@ -350,7 +360,7 @@ class ClientSettings(Resource):
         for key, val in iteritems(placeholders):
             placeholders[key] = _(val)
         return jsonify(
-            results=r,
+            results=res,
             boolean=bui.client.get_parser_attr('boolean_cli', server),
             string=bui.client.get_parser_attr('string_cli', server),
             integer=bui.client.get_parser_attr('integer_cli', server),

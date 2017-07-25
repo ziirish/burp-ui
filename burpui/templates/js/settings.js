@@ -196,6 +196,12 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', function($scope, 
 				form.find('#'+value.name).val(value.value);
 				form.find('#'+value.name+'_view').attr('disabled', true);
 			});
+			angular.forEach($scope.multis, function(value, key) {
+				angular.forEach(value.reset, function(val, i) {
+					form.find('#'+value.name+'_reset_bui_CUSTOM-'+i).val(val);
+					form.find('#'+value.name+'_reset_bui_CUSTOM_view-'+i).attr('disabled', true);
+				});
+			});
 			$scope.invalid = {};
 			/* UX tweak: disable the submit button + change text */
 			submit = form.find('button[type="submit"]');
@@ -230,6 +236,11 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', function($scope, 
 			/* re-enable the checkboxes */
 			angular.forEach($scope.bools, function(value, key) {
 				form.find('#'+value.name+'_view').attr('disabled', false);
+			});
+			angular.forEach($scope.multis, function(value, key) {
+				angular.forEach(value.reset, function(val, i) {
+					form.find('#'+value.name+'_reset_bui_CUSTOM_view-'+i).attr('disabled', false);
+				});
 			});
 		}
 	};
