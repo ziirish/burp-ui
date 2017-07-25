@@ -11,7 +11,7 @@ import codecs
 import logging
 import subprocess
 
-from ..._compat import PY3, to_unicode
+from ..._compat import PY3
 
 from hashlib import md5
 from six import iteritems
