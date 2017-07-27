@@ -9,16 +9,7 @@
 """
 import warnings
 
-from flask_cache import Cache as CacheOrig
-from flask.exthook import ExtDeprecationWarning
-
-
-class Cache(CacheOrig):
-    def init_app(self, app, config=None):
-        # suppress warnings since upstream did not fix it yet
-        with warnings.catch_warnings():
-            warnings.simplefilter('ignore', ExtDeprecationWarning)
-            super(Cache, self).init_app(app, config)
+from flask_caching import Cache
 
 
 cache = Cache(config={'CACHE_TYPE': 'null', 'CACHE_NO_NULL_WARNING': True})
