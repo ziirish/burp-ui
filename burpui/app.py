@@ -249,6 +249,8 @@ def create_websocket(myapp, websocket_server=False, celery_worker=False, gunicor
                 redis_url = 'redis://{}:{}/{}'.format(host, port, db)
             myapp.config['WS_MESSAGE_QUEUE'] = redis_url
         myapp.config['WS_MANAGE_SESSION'] = not myapp.config.get('WITH_SRV_SESSION', False)
+        if os.getenv('BUI_MODE') == 'celery':
+            myapp.config['WS_ASYNC_MODE'] = 'threading'
         # myapp.config['WS_ASYNC_MODE'] = 'threading' if not gunicorn else None
 
     if celery_worker:
@@ -257,7 +259,11 @@ def create_websocket(myapp, websocket_server=False, celery_worker=False, gunicor
     # if you are not a celery worker, we can patch the flask server
     try:
         from .ext.ws import socketio
-        socketio.init_app(myapp)
+        socketio.init_app(
+            myapp,
+            message_queue=myapp.config.get('WS_MESSAGE_QUEUE'),
+            manage_session=myapp.config.get('WS_MANAGE_SESSION', False)
+        )
     except ImportError:
         pass
 
@@ -663,22 +669,6 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
         # Then we load our routes
         app.register_blueprint(view)
 
-        # And the login_manager
-        app.login_manager = LoginManager()
-        app.login_manager.login_view = 'view.login'
-        app.login_manager.login_message_category = 'info'
-        app.login_manager.session_protection = 'strong'
-        # This is just to have the strings in the .po files
-        app.login_manager.login_message = gettext(
-            'Please log in to access this page.'
-        )
-        app.login_manager.needs_refresh_message = gettext(
-            'Please reauthenticate to access this page.'
-        )
-        # This will be called at runtime and will then translate the strings
-        app.login_manager.localize_callback = gettext
-        app.login_manager.init_app(app)
-
         # Initialize Bower ext
         app.config.setdefault(
             'BOWER_COMPONENTS_ROOT',
@@ -688,83 +678,99 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
         bower = Bower()
         bower.init_app(app)
 
-        def _check_session(user, request, api=False):
-            """Check if the session is in the db"""
-            if user and not session_manager.session_in_db():  # pragma: no cover
-                login = getattr(user, 'name', None)
-                if login and not is_uuid(login):
-                    remember = session.get('persistent', False)
-                    if not remember:
-                        from flask_login import decode_cookie
-                        remember_cookie = request.cookies.get(
-                            app.config.get('REMEMBER_COOKIE_NAME'),
-                            False
-                        )
-                        # check if the remember_cookie is legit
-                        if remember_cookie and decode_cookie(remember_cookie):
-                            remember = True
-                    session_manager.store_session(
-                        login,
-                        request.remote_addr,
-                        request.headers.get('User-Agent'),
-                        remember,
-                        api
-                    )
-                elif login:
-                    app.uhandler.remove(login)
-
-        @app.before_request
-        def setup_request():
-            g.locale = get_locale()
-            g.date_format = session.get('dateFormat', 'llll')
-            # make sure to store secure cookie if required
-            if app.scookie:
-                criteria = [
-                    request.is_secure,
-                    request.headers.get('X-Forwarded-Proto', 'http') == 'https'
-                ]
-                app.config['SESSION_COOKIE_SECURE'] = \
-                    app.config['REMEMBER_COOKIE_SECURE'] = any(criteria)
-
-        @app.login_manager.user_loader
-        def load_user(userid):
-            """User loader callback"""
-            if app.auth != 'none':
-                user = app.uhandler.user(userid)
-                if 'X-Language' in request.headers:
-                    language = request.headers.get('X-Language')
-                    user.language = language
-                    session['language'] = language
-                _check_session(user, request)
-                return user
-            return None
-
-        @app.login_manager.request_loader
-        def load_user_from_request(request):
-            """User loader from request callback"""
-            if app.auth != 'none':
-                user = basic_login_from_request(request, app)
-                _check_session(user, request, True)
-                return user
-
-        @app.after_request
-        def after_request(response):
-            if getattr(g, 'basic_session', False):
-                if session_manager.invalidate_current_session():
-                    session_manager.delete_session()
-            return response
-
     # Order of the initialization matters!
     # The websocket must be configured prior to the celery worker for instance
 
     # Initialize Session Manager
     session_manager.init_app(app)
 
+    # And the login_manager
+    app.login_manager = LoginManager()
+    app.login_manager.login_view = 'view.login'
+    app.login_manager.login_message_category = 'info'
+    app.login_manager.session_protection = 'strong'
+    # This is just to have the strings in the .po files
+    app.login_manager.login_message = gettext(
+        'Please log in to access this page.'
+    )
+    app.login_manager.needs_refresh_message = gettext(
+        'Please reauthenticate to access this page.'
+    )
+    # This will be called at runtime and will then translate the strings
+    app.login_manager.localize_callback = gettext
+    app.login_manager.init_app(app)
+
     # Create WebSocket server
     create_websocket(app, websocket_server, celery_worker, gunicorn)
 
     # Create celery app if enabled
     create_celery(app, warn=False)
+
+    def _check_session(user, request, api=False):
+        """Check if the session is in the db"""
+        if user and not session_manager.session_in_db():  # pragma: no cover
+            login = getattr(user, 'name', None)
+            if login and not is_uuid(login):
+                remember = session.get('persistent', False)
+                if not remember:
+                    from flask_login import decode_cookie
+                    remember_cookie = request.cookies.get(
+                        app.config.get('REMEMBER_COOKIE_NAME'),
+                        False
+                    )
+                    # check if the remember_cookie is legit
+                    if remember_cookie and decode_cookie(remember_cookie):
+                        remember = True
+                session_manager.store_session(
+                    login,
+                    request.remote_addr,
+                    request.headers.get('User-Agent'),
+                    remember,
+                    api
+                )
+            elif login:
+                app.uhandler.remove(login)
+
+    @app.before_request
+    def setup_request():
+        g.locale = get_locale()
+        g.date_format = session.get('dateFormat', 'llll')
+        # make sure to store secure cookie if required
+        if app.scookie:
+            criteria = [
+                request.is_secure,
+                request.headers.get('X-Forwarded-Proto', 'http') == 'https'
+            ]
+            app.config['SESSION_COOKIE_SECURE'] = \
+                app.config['REMEMBER_COOKIE_SECURE'] = any(criteria)
+
+    @app.login_manager.user_loader
+    def load_user(userid):
+        """User loader callback"""
+        if app.auth != 'none':
+            user = app.uhandler.user(userid)
+            if 'X-Language' in request.headers:
+                language = request.headers.get('X-Language')
+                user.language = language
+                session['language'] = language
+            _check_session(user, request)
+            return user
+        return None
+
+    @app.login_manager.request_loader
+    def load_user_from_request(request):
+        """User loader from request callback"""
+        if app.auth != 'none':
+            user = basic_login_from_request(request, app)
+            _check_session(user, request, True)
+            return user
+
+    @app.after_request
+    def after_request(response):
+        if getattr(g, 'basic_session', False):
+            if session_manager.invalidate_current_session():
+                session_manager.delete_session()
+        return response
 
     return app
 

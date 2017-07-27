@@ -162,7 +162,7 @@ def backup_running(self):
         )
         if WS_AVAILABLE:
             running = len(res) > 0
-            socketio.emit('backup_running', running, namespace='/ws', broadcast=True)
+            socketio.emit('backup_running', running, namespace='/ws')
     finally:
         release_lock(self.name)
 
