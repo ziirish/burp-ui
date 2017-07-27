@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..
 def init_app(conf):
     from burpui import create_app
     from burpui.ext.async import celery
-    app = create_app(conf)
+    app = create_app(conf, celery_worker=True)
     return app, celery
 
 
