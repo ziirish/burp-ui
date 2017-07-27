@@ -20,8 +20,8 @@ if os.getenv('BUI_MODE') in ['server', 'ws'] or 'websocket' in sys.argv:
     except ImportError:
         pass
 
-from .app import create_app
-from six import iteritems
+from .app import create_app  # noqa
+from six import iteritems  # noqa
 
 ROOT = os.path.dirname(os.path.realpath(__file__))
 DEBUG = os.getenv('BUI_DEBUG') or os.getenv('FLASK_DEBUG') or False

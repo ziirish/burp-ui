@@ -14,30 +14,26 @@ import struct
 from . import api, cache_key
 from .misc import History
 from .custom import Resource
-from .client import ClientTreeAll, node_fields
+from .client import node_fields
 from .clients import RunningBackup, ClientsReport
-from ..exceptions import BUIserverException
 from ..server import BUIServer  # noqa
-from ..sessions import session_manager
 from ..ext.cache import cache
 from ..ext.limit import limiter
 from ..config import config
-from .._compat import PY3
 from ..decorators import browser_cache
+from ..tasks import perform_restore, load_all_tree
 
-from six import iteritems
+from time import time
 from zlib import adler32
 from flask import url_for, Response, current_app, after_this_request, \
     send_file, redirect
 from flask_login import current_user
-from time import gmtime, strftime, time, sleep
+from datetime import timedelta
 from werkzeug.datastructures import Headers
-
-if not PY3:
-    from itertools import imap as map
 
 if config.get('WITH_SQL'):
     from ..ext.sql import db
+    from ..models import Task
 else:
     db = None
 

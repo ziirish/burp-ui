@@ -7,8 +7,6 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
-import warnings
-
 from flask_caching import Cache
 
 

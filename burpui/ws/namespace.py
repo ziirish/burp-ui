@@ -16,6 +16,7 @@ from ..ext.ws import socketio
 
 bui = current_app  # type: BUIServer
 
+
 class BUINamespace(Namespace):
     def on_connect(self):
         sid = request.sid
@@ -31,6 +32,6 @@ class BUINamespace(Namespace):
         bui.logger.debug('Someone just disconnected! {}'.format(sid))
 
     def on_echo(self, data):
-        emit('reply', data, room=request.sid)
+        emit('reply', data, namespace='/ws')
         socketio.sleep(0)
         bui.logger.debug('Got message: {}'.format(data))
