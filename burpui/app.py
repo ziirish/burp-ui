@@ -57,7 +57,7 @@ def get_redis_server(myapp):
     return host, port, pwd
 
 
-def create_db(myapp, cli=False, unittest=False, create=True):
+def create_db(myapp, cli=False, unittest=False, create=True, celery_worker=False):
     """Create the SQLAlchemy instance if possible
 
     :param myapp: Application context
@@ -70,7 +70,7 @@ def create_db(myapp, cli=False, unittest=False, create=True):
             from sqlalchemy_utils.functions import database_exists
             myapp.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
             if not database_exists(myapp.config['SQLALCHEMY_DATABASE_URI']) and \
-                    not cli and not unittest:
+                    not cli and not unittest and not celery_worker:
                 if create:  # pragma: no cover
                     import subprocess
                     local = os.path.join(os.getcwd(), '..', 'tools', 'bui-manage')
@@ -114,7 +114,7 @@ def create_db(myapp, cli=False, unittest=False, create=True):
                 myapp.config['SQLALCHEMY_POOL_RECYCLE'] = 600
 
             db.init_app(myapp)
-            if not cli and not unittest:  # pragma: no cover
+            if not cli and not unittest and not celery_worker:  # pragma: no cover
                 with myapp.app_context():
                     try:
                         import subprocess
@@ -212,6 +212,61 @@ def create_db(myapp, cli=False, unittest=False, create=True):
     return None
 
 
+def create_websocket(myapp, websocket_server=False, celery_worker=False, gunicorn=False):
+    """Create the websocket server if possible
+
+    :param myapp: Application context
+    :type myapp: :class:`burpui.server.BUIServer`
+    """
+    if myapp.config['WITH_WS'] or websocket_server:
+        broker = myapp.ws_broker
+        if broker is not False:
+            if not broker or broker is True:
+                broker = 'redis'
+        if broker and broker.lower() != 'none':
+            host, oport, pwd = get_redis_server(myapp)
+            odb = 4
+            if broker.lower() not in ['default', 'redis']:
+                try:
+                    (_, _, pwd, host, port, db) = parse_db_setting(myapp.use_celery)
+                    if not port:
+                        port = oport
+                    if not db:
+                        db = odb
+                    else:
+                        try:
+                            db = int(db)
+                        except ValueError:
+                            db = odb
+                except ValueError:
+                    pass
+            else:
+                port = oport
+                db = odb
+            if pwd:
+                redis_url = 'redis://:{}@{}:{}/{}'.format(pwd, host, port, db)
+            else:
+                redis_url = 'redis://{}:{}/{}'.format(host, port, db)
+            myapp.config['WS_MESSAGE_QUEUE'] = redis_url
+        myapp.config['WS_MANAGE_SESSION'] = not myapp.config.get('WITH_SRV_SESSION', False)
+        # myapp.config['WS_ASYNC_MODE'] = 'threading' if not gunicorn else None
+
+    if celery_worker:
+        return
+
+    # if you are not a celery worker, we can patch the flask server
+    try:
+        from .ext.ws import socketio
+        socketio.init_app(myapp)
+    except ImportError:
+        pass
+
+    # Now load the namespaces
+    if myapp.config['WITH_WS'] or websocket_server:
+        from .ws.namespace import BUINamespace
+        socketio.on_namespace(BUINamespace('/ws'))
+
+
 def create_celery(myapp, warn=True):
     """Create the Celery app if possible
 
@@ -219,7 +274,6 @@ def create_celery(myapp, warn=True):
     :type myapp: :class:`burpui.server.BUIServer`
     """
     if myapp.config['WITH_CELERY']:  # pragma: no cover
-        from .ext.async import celery
         from .exceptions import BUIserverException
         host, oport, pwd = get_redis_server(myapp)
         odb = 2
@@ -247,6 +301,8 @@ def create_celery(myapp, warn=True):
         myapp.config['CELERY_BROKER_URL'] = myapp.config['BROKER_URL'] = \
             redis_url
         myapp.config['CELERY_RESULT_BACKEND'] = redis_url
+
+        from .ext.async import celery
         celery.conf.update(myapp.config)
 
         if not hasattr(celery, 'flask_app'):
@@ -266,6 +322,14 @@ def create_celery(myapp, warn=True):
                         pass
 
         celery.Task = ContextTask
+
+        # may fail in case redis is not running (this can happen while running
+        # the bui-manage script)
+        try:
+            from .tasks import force_scheduling_now
+            force_scheduling_now()
+        except:  # pragma: no cover
+            pass
 
         return celery
 
@@ -314,8 +378,6 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
     from .security import basic_login_from_request
     from .server import BUIServer as BurpUI
     from .sessions import session_manager
-    from .routes import view, mypad
-    from .api import api, apibp
     from .ext.cache import cache
     from .ext.i18n import babel, get_locale
 
@@ -326,6 +388,8 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
     debug = kwargs.get('debug', False)
     cli = kwargs.get('cli', False)
     reverse_proxy = kwargs.get('reverse_proxy', gunicorn)
+    celery_worker = kwargs.get('celery_worker', False)
+    websocket_server = kwargs.get('websocket_server', False)
 
     # The debug argument used to be a boolean so we keep supporting this format
     if isinstance(verbose, bool):
@@ -432,13 +496,6 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
         app.config['TEMPLATES_AUTO_RELOAD'] = True
         app.config['DEBUG'] = True
 
-    app.jinja_env.globals.update(
-        isinstance=isinstance,
-        list=list,
-        mypad=mypad,
-        version_id='{}-{}'.format(__version__, __release__),
-    )
-
     # manage application secret key
     if app.secret_key and \
             (app.secret_key.lower() == 'none' or
@@ -487,6 +544,7 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
                         db)
                 )
                 red = Redis(host=host, port=port, db=db, password=pwd)
+                app.config['WITH_SRV_SESSION'] = True
                 app.config['SESSION_TYPE'] = 'redis'
                 app.config['SESSION_REDIS'] = red
                 app.config['SESSION_USE_SIGNER'] = app.secret_key is not None
@@ -495,6 +553,7 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
                 session_manager.backend = red
         except Exception as exp:  # pragma: no cover
             logger.warning('Unable to initialize session: {}'.format(str(exp)))
+            app.config['WITH_SRV_SESSION'] = False
         try:
             # Cache setup
             if not app.cache_db or \
@@ -584,119 +643,128 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
     babel.init_app(app)
 
     # Create SQLAlchemy if enabled
-    create_db(app, cli, unittest)
+    create_db(app, cli, unittest, celery_worker=celery_worker)
 
-    # We initialize the API
-    api.load_all()
-    app.register_blueprint(apibp)
+    if not celery_worker:
+        from .api import api, apibp
+        from .routes import view, mypad
 
-    # Then we load our routes
-    app.register_blueprint(view)
+        app.jinja_env.globals.update(
+            isinstance=isinstance,
+            list=list,
+            mypad=mypad,
+            version_id='{}-{}'.format(__version__, __release__),
+        )
 
-    # And the login_manager
-    app.login_manager = LoginManager()
-    app.login_manager.login_view = 'view.login'
-    app.login_manager.login_message_category = 'info'
-    app.login_manager.session_protection = 'strong'
-    # This is just to have the strings in the .po files
-    app.login_manager.login_message = gettext(
-        'Please log in to access this page.'
-    )
-    app.login_manager.needs_refresh_message = gettext(
-        'Please reauthenticate to access this page.'
-    )
-    # This will be called at runtime and will then translate the strings
-    app.login_manager.localize_callback = gettext
-    app.login_manager.init_app(app)
+        # We initialize the API
+        api.load_all()
+        app.register_blueprint(apibp)
+
+        # Then we load our routes
+        app.register_blueprint(view)
+
+        # And the login_manager
+        app.login_manager = LoginManager()
+        app.login_manager.login_view = 'view.login'
+        app.login_manager.login_message_category = 'info'
+        app.login_manager.session_protection = 'strong'
+        # This is just to have the strings in the .po files
+        app.login_manager.login_message = gettext(
+            'Please log in to access this page.'
+        )
+        app.login_manager.needs_refresh_message = gettext(
+            'Please reauthenticate to access this page.'
+        )
+        # This will be called at runtime and will then translate the strings
+        app.login_manager.localize_callback = gettext
+        app.login_manager.init_app(app)
+
+        # Initialize Bower ext
+        app.config.setdefault(
+            'BOWER_COMPONENTS_ROOT',
+            os.path.join('static', 'vendor')
+        )
+        app.config.setdefault('BOWER_REPLACE_URL_FOR', True)
+        bower = Bower()
+        bower.init_app(app)
+
+        def _check_session(user, request, api=False):
+            """Check if the session is in the db"""
+            if user and not session_manager.session_in_db():  # pragma: no cover
+                login = getattr(user, 'name', None)
+                if login and not is_uuid(login):
+                    remember = session.get('persistent', False)
+                    if not remember:
+                        from flask_login import decode_cookie
+                        remember_cookie = request.cookies.get(
+                            app.config.get('REMEMBER_COOKIE_NAME'),
+                            False
+                        )
+                        # check if the remember_cookie is legit
+                        if remember_cookie and decode_cookie(remember_cookie):
+                            remember = True
+                    session_manager.store_session(
+                        login,
+                        request.remote_addr,
+                        request.headers.get('User-Agent'),
+                        remember,
+                        api
+                    )
+                elif login:
+                    app.uhandler.remove(login)
+
+        @app.before_request
+        def setup_request():
+            g.locale = get_locale()
+            g.date_format = session.get('dateFormat', 'llll')
+            # make sure to store secure cookie if required
+            if app.scookie:
+                criteria = [
+                    request.is_secure,
+                    request.headers.get('X-Forwarded-Proto', 'http') == 'https'
+                ]
+                app.config['SESSION_COOKIE_SECURE'] = \
+                    app.config['REMEMBER_COOKIE_SECURE'] = any(criteria)
+
+        @app.login_manager.user_loader
+        def load_user(userid):
+            """User loader callback"""
+            if app.auth != 'none':
+                user = app.uhandler.user(userid)
+                if 'X-Language' in request.headers:
+                    language = request.headers.get('X-Language')
+                    user.language = language
+                    session['language'] = language
+                _check_session(user, request)
+                return user
+            return None
+
+        @app.login_manager.request_loader
+        def load_user_from_request(request):
+            """User loader from request callback"""
+            if app.auth != 'none':
+                user = basic_login_from_request(request, app)
+                _check_session(user, request, True)
+                return user
+
+        @app.after_request
+        def after_request(response):
+            if getattr(g, 'basic_session', False):
+                if session_manager.invalidate_current_session():
+                    session_manager.delete_session()
+            return response
+
+    # Order of the initialization matters!
+    # The websocket must be configured prior to the celery worker for instance
 
     # Initialize Session Manager
     session_manager.init_app(app)
 
-    # Initialize Bower ext
-    app.config.setdefault(
-        'BOWER_COMPONENTS_ROOT',
-        os.path.join('static', 'vendor')
-    )
-    app.config.setdefault('BOWER_REPLACE_URL_FOR', True)
-    bower = Bower()
-    bower.init_app(app)
+    # Create WebSocket server
+    create_websocket(app, websocket_server, celery_worker, gunicorn)
 
     # Create celery app if enabled
     create_celery(app, warn=False)
-    if app.config['WITH_CELERY']:
-        # may fail in case redis is not running (this can happen while running
-        # the bui-manage script)
-        try:
-            from .api.async import force_scheduling_now
-            force_scheduling_now()
-        except:  # pragma: no cover
-            pass
-
-    def _check_session(user, request, api=False):
-        """Check if the session is in the db"""
-        if user and not session_manager.session_in_db():  # pragma: no cover
-            login = getattr(user, 'name', None)
-            if login and not is_uuid(login):
-                remember = session.get('persistent', False)
-                if not remember:
-                    from flask_login import decode_cookie
-                    remember_cookie = request.cookies.get(
-                        app.config.get('REMEMBER_COOKIE_NAME'),
-                        False
-                    )
-                    # check if the remember_cookie is legit
-                    if remember_cookie and decode_cookie(remember_cookie):
-                        remember = True
-                session_manager.store_session(
-                    login,
-                    request.remote_addr,
-                    request.headers.get('User-Agent'),
-                    remember,
-                    api
-                )
-            elif login:
-                app.uhandler.remove(login)
-
-    @app.before_request
-    def setup_request():
-        g.locale = get_locale()
-        g.date_format = session.get('dateFormat', 'llll')
-        # make sure to store secure cookie if required
-        if app.scookie:
-            criteria = [
-                request.is_secure,
-                request.headers.get('X-Forwarded-Proto', 'http') == 'https'
-            ]
-            app.config['SESSION_COOKIE_SECURE'] = \
-                app.config['REMEMBER_COOKIE_SECURE'] = any(criteria)
-
-    @app.login_manager.user_loader
-    def load_user(userid):
-        """User loader callback"""
-        if app.auth != 'none':
-            user = app.uhandler.user(userid)
-            if 'X-Language' in request.headers:
-                language = request.headers.get('X-Language')
-                user.language = language
-                session['language'] = language
-            _check_session(user, request)
-            return user
-        return None
-
-    @app.login_manager.request_loader
-    def load_user_from_request(request):
-        """User loader from request callback"""
-        if app.auth != 'none':
-            user = basic_login_from_request(request, app)
-            _check_session(user, request, True)
-            return user
-
-    @app.after_request
-    def after_request(response):
-        if getattr(g, 'basic_session', False):
-            if session_manager.invalidate_current_session():
-                session_manager.delete_session()
-        return response
 
     return app
 

@@ -4,6 +4,7 @@ var NOTIF_ERROR   = 2;
 var NOTIF_INFO    = 3;
 
 var SESSION_TAG = $('meta[name=session]').attr("content");
+var socket;
 
 var _ajax_setup = function() {
 	$.ajaxSetup({
@@ -467,4 +468,15 @@ $(function() {
 		_check_running();
 	}, {{ config.LIVEREFRESH * 1000 }});
 	{% endif -%}
+
+	/***
+	 * Websocket
+	 */
+	socket = io('/ws');
+	socket.on('backup_running', function(message) {
+		console.log('got something!');
+	});
+	socket.on('reply', function(message) {
+		console.log('message: '+message);
+	});
 });

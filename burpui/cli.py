@@ -13,14 +13,21 @@ import os
 import sys
 import click
 
+if os.getenv('BUI_MODE') in ['server', 'ws'] or 'websocket' in sys.argv:
+    try:
+        import eventlet
+        eventlet.monkey_patch(socket=True)
+    except ImportError:
+        pass
+
 from .app import create_app
 from six import iteritems
 
 ROOT = os.path.dirname(os.path.realpath(__file__))
-DEBUG = os.environ.get('BUI_DEBUG') or os.environ.get('FLASK_DEBUG') or False
-DEBUG = DEBUG and DEBUG.lower() in ['true', 'yes', '1']
+DEBUG = os.getenv('BUI_DEBUG') or os.getenv('FLASK_DEBUG') or False
+DEBUG = DEBUG and DEBUG.lower() not in ['false', 'no', '0']
 
-VERBOSE = os.environ.get('BUI_VERBOSE') or 0
+VERBOSE = os.getenv('BUI_VERBOSE') or 0
 if VERBOSE:
     try:
         VERBOSE = int(VERBOSE)
@@ -28,8 +35,8 @@ if VERBOSE:
         VERBOSE = 0
 
 # UNITTEST is used to skip the burp-2 requirements for modes != server
-UNITTEST = os.environ.get('BUI_MODE') not in ['server', 'manage', 'celery', 'legacy']
-CLI = os.environ.get('BUI_MODE') not in ['server', 'legacy']
+UNITTEST = os.getenv('BUI_MODE') not in ['server', 'manage', 'celery', 'legacy', 'ws']
+CLI = os.getenv('BUI_MODE') not in ['server', 'legacy', 'ws']
 
 try:
     app = create_app(
@@ -39,7 +46,8 @@ try:
         debug=DEBUG,
         gunicorn=False,
         unittest=UNITTEST,
-        cli=CLI
+        cli=CLI,
+        websocket_server=(os.getenv('BUI_MODE') == 'ws' or 'websocket' in sys.argv)
     )
 except:
     import traceback
@@ -70,10 +78,11 @@ except ImportError:
     pass
 
 
-def _die(error):
+def _die(error, appli=None):
+    appli = " '{}'".format(appli) if appli else ''
     click.echo(
         click.style(
-            'Unable to initialize the application: {}'.format(error),
+            'Unable to initialize the application{}: {}'.format(appli, error),
             fg='red'
         ),
         err=True
@@ -92,6 +101,23 @@ def legacy():
         )
     )
     app.manual_run()
+
+
+@app.cli.command()
+@click.option('-b', '--bind', default='127.0.0.1',
+              help='Which address to bind to for the websocket server')
+@click.option('-p', '--port', default=5001,
+              help='Which port to listen on for the websocket server')
+@click.option('-d', '--debug', default=False, is_flag=True,
+              help='Whether to start the websocket server in debug mode')
+def websocket(bind, port, debug):
+    """Start a new websocket server"""
+    try:
+        from .ext.ws import socketio
+    except ImportError:
+        _die('Missing requirement, did you ran \'pip install'
+             ' "burp-ui[websocket]"\'?', 'websocket')
+    socketio.run(app, host=bind, port=port, debug=debug)
 
 
 @app.cli.command()
@@ -114,7 +140,7 @@ def create_user(backend, password, ask, verbose, name):
         msg = str(e)
 
     if msg:
-        _die(msg)
+        _die(msg, 'create_user')
 
     click.echo(click.style('[*] Adding \'{}\' user...'.format(name), fg='blue'))
     try:
@@ -263,7 +289,7 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database, plugins, dry):
         msg = str(e)
 
     if msg:
-        _die(msg)
+        _die(msg, 'setup_burp')
 
     from .misc.parser.utils import Config
     from .app import get_redis_server
@@ -682,7 +708,7 @@ def diag(client, host, tips):
         msg = str(e)
 
     if msg:
-        _die(msg)
+        _die(msg, 'diag')
 
     from .misc.parser.utils import Config
     from .app import get_redis_server

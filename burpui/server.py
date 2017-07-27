@@ -49,6 +49,8 @@ G_DATABASE = u''
 G_PREFIX = u''
 G_PLUGINS = []
 G_NO_SERVER_RESTORE = False
+G_WS_EMBEDDED = False
+G_WS_BROKER = u''
 
 
 class BUIServer(Flask):
@@ -92,6 +94,10 @@ class BUIServer(Flask):
             'database': G_DATABASE,
             'limiter': G_LIMITER,
             'ratio': G_RATIO,
+        },
+        'WebSocket': {
+            'embedded': G_WS_EMBEDDED,
+            'broker': G_WS_BROKER,
         },
         'Experimental': {
             'noserverrestore': G_NO_SERVER_RESTORE,
@@ -261,6 +267,18 @@ class BUIServer(Flask):
             self.config['WITH_CELERY'] = self.use_celery and \
                 self.use_celery.lower() != 'none'
 
+        # WebSocket options
+        self.websocket = self.config['WITH_WS'] = self.conf.safe_get(
+            'embedded',
+            'boolean',
+            section='WebSocket'
+        )
+        self.ws_broker = self.config['BUI_WS_BROKER'] = self.conf.safe_get(
+            'broker',
+            'boolean_or_string',
+            section='WebSocket'
+        )
+
         # Experimental options
         self.noserverrestore = self.conf.safe_get(
             'noserverrestore',
@@ -316,6 +334,7 @@ class BUIServer(Flask):
         self.logger.info('database: {}'.format(self.database))
         self.logger.info('with SQL: {}'.format(self.config['WITH_SQL']))
         self.logger.info('with Celery: {}'.format(self.config['WITH_CELERY']))
+        self.logger.info('with WebSocket: {}'.format(self.config['WITH_WS']))
         self.logger.info('demo: {}'.format(self.config['BUI_DEMO']))
 
         self.init = True
