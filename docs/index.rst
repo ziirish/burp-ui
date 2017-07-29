@@ -27,6 +27,7 @@ Documentation
    advanced_usage
    manage
    celery
+   websocket
    gunicorn
    docker
    buiagent
