@@ -1,0 +1,10 @@
+[Unit]
+Description=Burp-UI WebSocket service
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/bui-manage websocket --bind 0.0.0.0
+User=burpui
+
+[Install]
+WantedBy=multi-user.target

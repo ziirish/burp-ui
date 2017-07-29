@@ -17,6 +17,6 @@ if config.get('WS_ASYNC_MODE'):
 socketio = SocketIO(
     message_queue=config.get('WS_MESSAGE_QUEUE'),
     manage_session=config.get('WS_MANAGE_SESSION', False),
-    engineio_logger=True,
+    engineio_logger=config.get('WS_DEBUG', False),
     **options
 )

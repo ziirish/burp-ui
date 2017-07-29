@@ -11,6 +11,7 @@ Current
 - Add: `record login failure attempt <https://git.ziirish.me/ziirish/burp-ui/issues/214>`_
 - Add: `support new burp counters <https://git.ziirish.me/ziirish/burp-ui/issues/219>`_
 - Add: `support new reset list (:=) syntax <https://git.ziirish.me/ziirish/burp-ui/issues/223>`_
+- Add: `new websocket server <https://git.ziirish.me/ziirish/burp-ui/issues/224>`_
 - `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/v0.5.0...master>`__
 
 0.5.1 (05/26/2017)

@@ -284,7 +284,7 @@ setup(
         'celery': ['Celery', 'redis'],
         'sql': ['Flask-SQLAlchemy', 'Flask-Migrate>=2.0.3', 'sqlalchemy-utils'],
         'limit': ['Flask-Limiter', 'redis'],
-        'websocket': ['flask-socketio'],
+        'websocket': ['flask-socketio', 'redis'],
     },
     tests_require=test_requires,
     classifiers=[

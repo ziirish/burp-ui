@@ -92,7 +92,7 @@ def _die(error, appli=None):
 
 @app.cli.command()
 def legacy():
-    """Legacy server for backward compatibility"""
+    """Legacy server for backward compatibility."""
     click.echo(
         click.style(
             'If you want to pass options, you should run \'python -m burpui '
@@ -111,7 +111,7 @@ def legacy():
 @click.option('-d', '--debug', default=False, is_flag=True,
               help='Whether to start the websocket server in debug mode')
 def websocket(bind, port, debug):
-    """Start a new websocket server"""
+    """Start a new websocket server."""
     try:
         from .ext.ws import socketio
     except ImportError:
@@ -681,7 +681,7 @@ password = abcdefgh
 @click.option('-t', '--tips', is_flag=True,
               help='Show you some tips')
 def diag(client, host, tips):
-    """Check Burp-UI is correctly setup"""
+    """Check Burp-UI is correctly setup."""
     if app.vers != 2:
         click.echo(
             click.style(
@@ -965,7 +965,7 @@ def diag(client, host, tips):
               help='Dump parts of the config (Please double check no sensitive'
               ' data leaked)')
 def sysinfo(verbose):
-    """Returns a couple of system informations to help debugging"""
+    """Returns a couple of system informations to help debugging."""
     from .desc import __release__, __version__
     click.echo('Python version:  {}.{}.{}'.format(sys.version_info[0], sys.version_info[1], sys.version_info[2]))
     click.echo('Burp-UI version: {} ({})'.format(__version__, __release__))

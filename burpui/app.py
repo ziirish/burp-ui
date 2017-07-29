@@ -44,6 +44,7 @@ def parse_db_setting(string):
 def get_redis_server(myapp):
     host = 'localhost'
     port = 6379
+    pwd = None
     if myapp.redis and myapp.redis.lower() != 'none':
         try:
             back, user, pwd, host, port, db = parse_db_setting(myapp.redis)
@@ -218,40 +219,39 @@ def create_websocket(myapp, websocket_server=False, celery_worker=False, gunicor
     :param myapp: Application context
     :type myapp: :class:`burpui.server.BUIServer`
     """
-    if myapp.config['WITH_WS'] or websocket_server:
-        broker = myapp.ws_broker
-        if broker is not False:
-            if not broker or broker is True:
-                broker = 'redis'
-        if broker and broker.lower() != 'none':
-            host, oport, pwd = get_redis_server(myapp)
-            odb = 4
-            if broker.lower() not in ['default', 'redis']:
-                try:
-                    (_, _, pwd, host, port, db) = parse_db_setting(myapp.use_celery)
-                    if not port:
-                        port = oport
-                    if not db:
+    broker = myapp.ws_broker
+    if broker is not False:
+        if not broker or broker is True:
+            broker = 'redis'
+    if broker and broker.lower() != 'none':
+        host, oport, pwd = get_redis_server(myapp)
+        odb = 4
+        if broker.lower() not in ['default', 'redis']:
+            try:
+                (_, _, pwd, host, port, db) = parse_db_setting(myapp.use_celery)
+                if not port:
+                    port = oport
+                if not db:
+                    db = odb
+                else:
+                    try:
+                        db = int(db)
+                    except ValueError:
                         db = odb
-                    else:
-                        try:
-                            db = int(db)
-                        except ValueError:
-                            db = odb
-                except ValueError:
-                    pass
-            else:
-                port = oport
-                db = odb
-            if pwd:
-                redis_url = 'redis://:{}@{}:{}/{}'.format(pwd, host, port, db)
-            else:
-                redis_url = 'redis://{}:{}/{}'.format(host, port, db)
-            myapp.config['WS_MESSAGE_QUEUE'] = redis_url
-        myapp.config['WS_MANAGE_SESSION'] = not myapp.config.get('WITH_SRV_SESSION', False)
-        if os.getenv('BUI_MODE') == 'celery':
-            myapp.config['WS_ASYNC_MODE'] = 'threading'
-        # myapp.config['WS_ASYNC_MODE'] = 'threading' if not gunicorn else None
+            except ValueError:
+                pass
+        else:
+            port = oport
+            db = odb
+        if pwd:
+            redis_url = 'redis://:{}@{}:{}/{}'.format(pwd, host, port, db)
+        else:
+            redis_url = 'redis://{}:{}/{}'.format(host, port, db)
+        myapp.config['WS_MESSAGE_QUEUE'] = redis_url
+    myapp.config['WS_MANAGE_SESSION'] = not myapp.config.get('WITH_SRV_SESSION', False)
+    if os.getenv('BUI_MODE') == 'celery':
+        myapp.config['WS_ASYNC_MODE'] = 'threading'
+    # myapp.config['WS_ASYNC_MODE'] = 'threading' if not gunicorn else None
 
     if celery_worker:
         return
@@ -264,8 +264,9 @@ def create_websocket(myapp, websocket_server=False, celery_worker=False, gunicor
             message_queue=myapp.config.get('WS_MESSAGE_QUEUE'),
             manage_session=myapp.config.get('WS_MANAGE_SESSION', False)
         )
+        myapp.config['WS_AVAILABLE'] = True
     except ImportError:
-        pass
+        myapp.config['WS_AVAILABLE'] = False
 
     # Now load the namespaces
     if myapp.config['WITH_WS'] or websocket_server:

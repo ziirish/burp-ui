@@ -50,7 +50,9 @@ G_PREFIX = u''
 G_PLUGINS = []
 G_NO_SERVER_RESTORE = False
 G_WS_EMBEDDED = False
-G_WS_BROKER = u''
+G_WS_BROKER = u'redis'
+G_WS_URL = u''
+G_WS_DEBUG = False
 
 
 class BUIServer(Flask):
@@ -98,6 +100,8 @@ class BUIServer(Flask):
         'WebSocket': {
             'embedded': G_WS_EMBEDDED,
             'broker': G_WS_BROKER,
+            'url': G_WS_URL,
+            'debug': G_WS_DEBUG,
         },
         'Experimental': {
             'noserverrestore': G_NO_SERVER_RESTORE,
@@ -278,6 +282,17 @@ class BUIServer(Flask):
             'boolean_or_string',
             section='WebSocket'
         )
+        self.config['WS_DEBUG'] = self.conf.safe_get(
+            'debug',
+            'boolean',
+            section='WebSocket'
+        )
+        self.config['WS_URL'] = self.conf.safe_get(
+            'url',
+            section='WebSocket'
+        )
+        if self.config.get('WS_URL', '').lower() == 'none' or self.websocket:
+            self.config['WS_URL'] = None
 
         # Experimental options
         self.noserverrestore = self.conf.safe_get(

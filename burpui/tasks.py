@@ -161,7 +161,14 @@ def backup_running(self):
             120
         )
         if WS_AVAILABLE:
-            running = len(res) > 0
+            running = False
+            if isinstance(res, dict):
+                for _, run in iteritems(res):
+                    if len(run) > 0:
+                        running = True
+                        break
+            elif len(res) > 0:
+                running = True
             socketio.emit('backup_running', running, namespace='/ws')
     finally:
         release_lock(self.name)
