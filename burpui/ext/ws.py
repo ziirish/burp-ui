@@ -7,8 +7,18 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
+import os
+import sys
+
 from ..config import config
 from flask_socketio import SocketIO
+
+_stdout = sys.stdout
+_stderr = sys.stderr
+null = open(os.devnull, 'wb')
+
+# hide stdout and stderr messages
+sys.stdout = sys.stderr = null
 
 options = {}
 if config.get('WS_ASYNC_MODE'):
@@ -20,3 +30,8 @@ socketio = SocketIO(
     engineio_logger=config.get('WS_DEBUG', False),
     **options
 )
+
+# revert stdout and stderr
+sys.stdout = _stdout
+sys.stderr = _stderr
+null.close()

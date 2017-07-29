@@ -213,12 +213,15 @@ def create_db(myapp, cli=False, unittest=False, create=True, celery_worker=False
     return None
 
 
-def create_websocket(myapp, websocket_server=False, celery_worker=False, gunicorn=False):
+def create_websocket(myapp, websocket_server=False, celery_worker=False,
+                     gunicorn=False, cli=False):
     """Create the websocket server if possible
 
     :param myapp: Application context
     :type myapp: :class:`burpui.server.BUIServer`
     """
+    if cli and not websocket_server:
+        return
     broker = myapp.ws_broker
     if broker is not False:
         if not broker or broker is True:
@@ -702,7 +705,7 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
     app.login_manager.init_app(app)
 
     # Create WebSocket server
-    create_websocket(app, websocket_server, celery_worker, gunicorn)
+    create_websocket(app, websocket_server, celery_worker, gunicorn, cli)
 
     # Create celery app if enabled
     create_celery(app, warn=False)
