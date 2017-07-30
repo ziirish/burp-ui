@@ -23,6 +23,12 @@ if os.getenv('BUI_MODE') in ['server', 'ws'] or 'websocket' in sys.argv:
 from .app import create_app  # noqa
 from six import iteritems  # noqa
 
+try:
+    from flask_socketio import SocketIO  # noqa
+    WS_AVAILABLE = True
+except ImportError:
+    WS_AVAILABLE = False
+
 ROOT = os.path.dirname(os.path.realpath(__file__))
 DEBUG = os.getenv('BUI_DEBUG') or os.getenv('FLASK_DEBUG') or False
 DEBUG = DEBUG and DEBUG.lower() not in ['false', 'no', '0']
@@ -967,11 +973,13 @@ def diag(client, host, tips):
 def sysinfo(verbose):
     """Returns a couple of system informations to help debugging."""
     from .desc import __release__, __version__
-    click.echo('Python version:  {}.{}.{}'.format(sys.version_info[0], sys.version_info[1], sys.version_info[2]))
-    click.echo('Burp-UI version: {} ({})'.format(__version__, __release__))
-    click.echo('Single mode:     {}'.format(app.standalone))
-    click.echo('Backend version: {}'.format(app.vers))
-    click.echo('Config file:     {}'.format(app.config.conffile))
+    click.echo('Python version:      {}.{}.{}'.format(sys.version_info[0], sys.version_info[1], sys.version_info[2]))
+    click.echo('Burp-UI version:     {} ({})'.format(__version__, __release__))
+    click.echo('Single mode:         {}'.format(app.standalone))
+    click.echo('Backend version:     {}'.format(app.vers))
+    click.echo('WebSocket embedded:  {}'.format(app.websocket))
+    click.echo('WebSocket available: {}'.format(WS_AVAILABLE))
+    click.echo('Config file:         {}'.format(app.config.conffile))
     if verbose:
         click.echo('>>>>> Extra verbose informations:')
         click.echo(click.style(
@@ -979,14 +987,16 @@ def sysinfo(verbose):
             fg='red'
         ))
         sections = [
+            'WebSocket',
             'Burp{}'.format(app.vers),
             'Production',
             'Global',
         ]
+        sections.reverse()
         for section in sections:
-            click.echo()
-            click.echo('    [{}] section:'.format(section))
-            click.echo('    8<{}BEGIN'.format('-' * 69))
-            for key, val in iteritems(app.config.options.get(section, {})):
-                click.echo('    {} = {}'.format(key, val))
-            click.echo('    8<{}END'.format('-' * 71))
+            if section in app.config.options:
+                click.echo()
+                click.echo('    8<{}BEGIN[{}]'.format('-' * (67 - len(section)), section))
+                for key, val in iteritems(app.config.options.get(section, {})):
+                    click.echo('    {} = {}'.format(key, val))
+                click.echo('    8<{}END[{}]'.format('-' * (69 - len(section)), section))

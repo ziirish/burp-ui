@@ -28,7 +28,7 @@ burpui:
     - redis
     - pgsql
   ports:
-    - 127.0.0.1:5000:5000
+    - 127.0.0.1:5000:8000
   volumes:
     - /etc/burp:/etc/burp
     - /var/spool/burp:/var/spool/burp
@@ -40,6 +40,8 @@ burpui:
 #    - BURPUI_UID=5337
 #    - BURPUI_GID=5337
 #    - BURPUI_PLUGINS=none
+#    - BURPUI_WS_WORKERS=2
+#    - BURPUI_RP_SCHEME=https
 #    - BURP_CLIENT_CONFIG=/tmp/burp.conf
 #    - BURP_SERVER_CONFIG=/etc/burp/burp-server.conf
 #    - DATABASE_URL=postgresql://burpui:burpui@pgsql/burpuidb

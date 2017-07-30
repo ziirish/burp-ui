@@ -22,6 +22,13 @@ provided. There are a few variables supported to setup your system:
    defaults to 5337.
  - **BURPUI_GID** - gid of the *burpui* group you want to map in your host. It
    defaults to 5337.
+ - **BURPUI_PLUGINS** - Directory where to look for plugins. It defaults to none
+   which means no plugins will be loaded.
+ - **BURPUI_WS_WORKERS** - How many WebSocket servers to spawn. Defaults to the
+   number of CPU cores/sockets/threads found.
+ - **BURPUI_RP_SCHEME** - HTTP Scheme to set for the reverse-proxy. If you are
+   behind a reverse-proxy that provides SSL, you should set this to *https*
+   which is the default value.
  - **BURP_CLIENT_CONFIG** - Specify the path of the burp client configuration
    file to use for the `Burp-UI`_ client. It defaults to "/tmp/burp.conf". It
    means you won't have access to it outside of the container. It is intended
