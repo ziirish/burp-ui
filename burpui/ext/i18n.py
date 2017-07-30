@@ -19,6 +19,7 @@ LANGUAGES = {
     'en': to_unicode('English'),
     'fr': to_unicode('Français'),
     'es': to_unicode('Español'),
+    'it': to_unicode('Italiano'),
 }
 config['LANGUAGES'] = LANGUAGES
 
