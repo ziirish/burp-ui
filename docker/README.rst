@@ -9,23 +9,19 @@ It is organized like this:
 - `demo/ <demo/>`_ contains the images used to build the demo.
 - `docker-alpine/ <docker-alpine/>`_ contains a small but complete image based
   on `alpine`_ and python 3.6.
-- `docker-release/ <docker-release/>`_ contains a complete image based on
-  `debian`_ and python 2.7.
 
 Usage
 -----
 
-Two Dockerfiles are provided in order to help you build those images.
+A Dockerfile is provided in order to help you build the release image.
 
-Here is how to build them:
+Here is how to build it:
 
 ::
 
     cd ..
-    # build the debian-based docker image:
-    docker build -t $USER/burp-ui:latest -f docker/Dockerfile .
-    # if you prefer the alpine-based docker image:
-    docker build -t $USER/burp-ui:alpine -f docker/Dockerfile-py3.6 .
+    # alpine-based docker image:
+    docker build -t $USER/burp-ui:alpine -f docker/Dockerfile .
 
 
 Alternatively, images are built by the CI and you can freely use them thanks to
@@ -40,4 +36,3 @@ the provided `docker-compose`_ config:
 .. _docker-compose: https://docs.docker.com/compose/
 .. _Burp-UI: https://git.ziirish.me/ziirish/burp-ui
 .. _alpine: https://alpinelinux.org/
-.. _debian: https://www.debian.org/

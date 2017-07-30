@@ -1,20 +1,62 @@
-FROM debian:jessie
+FROM python:3.6-alpine
 MAINTAINER hi+burpui@ziirish.me
 
-RUN apt-get update \
- && DEBIAN_FRONTEND=noninteractive apt-get install -y supervisor logrotate locales gunicorn cron netcat openssl \
- && update-locale LANG=C.UTF-8 LC_MESSAGES=POSIX \
- && locale-gen en_US.UTF-8 \
- && dpkg-reconfigure -f noninteractive locales \
- && echo "Europe/Paris" >/etc/timezone \
- && dpkg-reconfigure -f noninteractive tzdata \
- && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache supervisor logrotate librsync openssl tzdata nginx \
+	&& apk add --no-cache --virtual .fetch-deps \
+		tar \
+	\
+	&& wget -O burp.tar.gz https://github.com/grke/burp/archive/2.0.54.tar.gz \
+	&& wget -O uthash.tar.gz https://github.com/troydhanson/uthash/archive/v2.0.1.tar.gz \
+	&& mkdir -p /usr/src/burp /usr/src/uthash \
+	&& tar -xC /usr/src/burp --strip-components=1 -f burp.tar.gz \
+	&& tar -xC /usr/src/uthash --strip-components=1 -f uthash.tar.gz \
+	&& rm burp.tar.gz uthash.tar.gz \
+	\
+	&& apk add --no-cache --virtual .build-deps \
+		g++ \
+		libc-dev \
+		make \
+		openssl-dev \
+		zlib-dev \
+		librsync-dev \
+		pkgconfig \
+		yajl-dev \
+		autoconf \
+		automake \
+		libtool \
+	\
+# add build deps before removing fetch deps in case there's overlap
+	&& apk del .fetch-deps \
+	\
+	&& cd /usr/src/burp \
+	&& autoreconf -vif \
+	&& CPPFLAGS="-I../uthash/src" ./configure \
+		--prefix=/usr \
+		--sysconfdir=/etc/burp \
+		--localstatedir=/var \
+	&& make -j$(getconf _NPROCESSORS_ONLN) \
+	&& make install \
+	&& make install-configs \
+	\
+	&& runDeps="$( \
+		scanelf --needed --nobanner --recursive /usr/local \
+			| awk '{ gsub(/,/, "\nso:", $2); print "so:" $2 }' \
+			| sort -u \
+			| xargs -r apk info --installed \
+			| sort -u \
+	)" \
+	&& apk add --virtual .python-rundeps $runDeps \
+	&& apk del .build-deps \
+# needed for the bui-cli tool
+	&& ln -sf /usr/bin/nc /bin/nc \
+# do some cleanup
+	&& rm -rf /usr/src/burp /usr/src/uthash ~/.cache
 
 ADD . /burp-ui
 
-ADD docker/docker-release/assets/setup/ /app/setup/
-ADD docker/docker-release/assets/config/ /app/setup/config/
-ADD docker/docker-release/assets/init /app/init
+ADD docker/docker-alpine/assets/setup/ /app/setup/
+ADD docker/docker-alpine/assets/config/ /app/setup/config/
+ADD docker/docker-alpine/assets/init /app/init
 
 RUN chmod 755 /app/init
 RUN chmod 755 /app/setup/install

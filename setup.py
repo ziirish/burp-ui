@@ -275,8 +275,8 @@ setup(
     extras_require={
         'ldap_authentication': ['ldap3'],
         'extra': ['ujson'],
-        'gunicorn': ['gevent', 'gunicorn'],
-        'gunicorn-extra': ['redis', 'Flask-Session==0.3.0'],
+        'gunicorn': ['eventlet', 'gunicorn'],
+        'gunicorn-extra': ['redis', 'Flask-Session==0.3.1'],
         'agent': ['gevent'],
         'ci': test_requires,
         'dev': dev_requires,

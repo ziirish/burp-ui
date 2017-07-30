@@ -7,7 +7,7 @@ CONFIG = {
         '--group=burpui',
         '--workers=5',
         '--timeout=300',
-        '--worker-class=gevent',
+        '--worker-class=eventlet',
         '--access-logfile=/var/log/gunicorn/burp-ui_access.log',
         '--error-logfile=/var/log/gunicorn/burp-ui_error.log',
         'burpui:create_app(conf="/etc/burp/burpui.cfg",logfile="/var/log/gunicorn/burp-ui_info.log")',

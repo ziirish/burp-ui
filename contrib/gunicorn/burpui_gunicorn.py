@@ -74,7 +74,7 @@ backlog = 2048
 #
 
 workers = 5
-worker_class = 'gevent'
+worker_class = 'eventlet'
 worker_connections = 1000
 timeout = 300
 keepalive = 2
