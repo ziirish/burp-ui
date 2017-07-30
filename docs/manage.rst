@@ -59,14 +59,18 @@ The tool provides some inline help too:
       --help  Show this message and exit.
 
     Commands:
-      compile_translation  Compile translations.
+    compile_translation  Compile translations.
       create_user          Create a new user.
       db                   Perform database migrations.
+      diag                 Check Burp-UI is correctly setup.
       init_translation     Initialize a new translation for the given...
-      run                  Runs a development server.
+      legacy               Legacy server for backward compatibility.
+      run                  Runs a local development server for the...
       setup_burp           Setup burp client for burp-ui.
       shell                Runs a shell in the app context.
+      sysinfo              Returns a couple of system informations to...
       update_translation   Update translation files.
+      websocket            Start a new websocket server.
 
 
 Database
@@ -193,11 +197,36 @@ The docker image uses this script like this:
         -r $REDIS_SERVER -d $DATABASE_URL
 
 
+WebSocket
+---------
+
+.. note::
+    This tool first appeared with `Burp-UI`_ *v0.6.0*.
+
+Launch a dedicated websocket server so you can have more than one worker.
+You may need a dedicated reverse-proxy though.
+
+Example:
+
+::
+
+	bui-manage websocket --help
+	Usage: flask websocket [OPTIONS]
+
+	  Start a new websocket server.
+
+	Options:
+	  -b, --bind TEXT     Which address to bind to for the websocket server
+	  -p, --port INTEGER  Which port to listen on for the websocket server
+	  -d, --debug         Whether to start the websocket server in debug mode
+	  --help              Show this message and exit.
+
+
 Sysinfo
 -------
 
 .. note::
-    This tool first appeard with `Burp-UI`_ *v0.5.0*.
+    This tool first appeared with `Burp-UI`_ *v0.5.0*.
 
 This tool will help you to gather system informations in order to make a
 detailed bug report.

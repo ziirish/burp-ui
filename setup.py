@@ -80,6 +80,7 @@ VENDOR_TO_KEEP = [
     'burpui/static/vendor/components-font-awesome/fonts/fontawesome-webfont.ttf',
     'burpui/static/vendor/components-font-awesome/fonts/fontawesome-webfont.woff',
     'burpui/static/vendor/components-font-awesome/fonts/fontawesome-webfont.woff2',
+    'burpui/static/vendor/socket.io-client/dist/socket.io.js',
 ]
 
 for p in VENDOR_TO_KEEP:
@@ -281,8 +282,9 @@ setup(
         'dev': dev_requires,
         'debian_wheezy': ['functools32'],
         'celery': ['Celery', 'redis'],
-        'sql': ['Flask-SQLAlchemy', 'Flask-Migrate>=2.0.3', 'sqlalchemy-utils'],
+        'sql': ['Flask-SQLAlchemy', 'Flask-Migrate>=2.1.0', 'sqlalchemy-utils'],
         'limit': ['Flask-Limiter', 'redis'],
+        'websocket': ['flask-socketio', 'redis'],
     },
     tests_require=test_requires,
     classifiers=[

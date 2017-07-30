@@ -298,7 +298,7 @@ class NewClientSettings(Resource):
         # clear the cache when we add a new client
         cache.clear()
         if bui.config['WITH_CELERY']:
-            from .async import force_scheduling_now
+            from ..tasks import force_scheduling_now
             force_scheduling_now()
         return {'notif': noti}, 201
 
@@ -392,7 +392,7 @@ class ClientSettings(Resource):
             # clear the cache when we remove a client
             cache.clear()
             if bui.config['WITH_CELERY']:
-                from .async import force_scheduling_now
+                from ..tasks import force_scheduling_now
                 force_scheduling_now()
         return bui.client.delete_client(client, keepconf=keepconf, delcert=delcert, revoke=revoke, agent=server), 200
 

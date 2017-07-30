@@ -25,7 +25,7 @@ pip install -r requirements.txt
 python setup.py sdist
 pip install ujson
 pip install gunicorn
-pip install gevent
+pip install eventlet
 pip install redis
 pip install mysqlclient
 pip install psycopg2
@@ -35,6 +35,7 @@ pip install Flask-SQLAlchemy
 pip install Flask-Migrate
 pip install sqlalchemy-utils
 pip install celery
+pip install Flask-SocketIO
 pip install dist/*.tar.gz
 
 cd
@@ -82,12 +83,12 @@ stdout_logfile=/var/log/supervisor/%(program_name)s.log
 stderr_logfile=/var/log/supervisor/%(program_name)s.log
 EOF
 
-# configure celery worker                                                       
-cat > /etc/supervisor.d/bui-celery.ini <<EOF
+# configure celery worker template
+cat > /etc/supervisor.d/bui-celery.ini.sample <<EOF
 [program:bui-celery]
 priority=20
 directory=/tmp
-command=/usr/local/bin/bui-celery --beat -s /var/lib/burpui/celerybeat-schedule
+command=/usr/local/bin/bui-celery -c @BURPUI_CONFIG@ --beat -s /var/lib/burpui/celerybeat-schedule
 user=burpui
 autostart=false
 autorestart=true
@@ -95,10 +96,30 @@ stdout_logfile=/var/log/supervisor/%(program_name)s.log
 stderr_logfile=/var/log/supervisor/%(program_name)s.log
 EOF
 
-# configure gunicorn worker
+# configure gunicorn worker template
 cat > /etc/supervisor.d/gunicorn.ini.sample <<EOF
 [program:gunicorn]
 command=/usr/local/bin/gunicorn -c /usr/local/share/burpui/contrib/gunicorn/burpui_gunicorn.py 'burpui.app:create_app("@BURPUI_CONFIG@",logfile="/var/log/gunicorn/burp-ui_info.log",verbose=@BURPUI_VERBOSE@)'
+autostart=false
+autorestart=true
+stdout_logfile=/var/log/supervisor/%(program_name)s.log
+stderr_logfile=/var/log/supervisor/%(program_name)s.log
+EOF
+
+# configure websocket worker template
+cat > /etc/supervisor.d/websocket.ini.sample <<EOF
+[program:websocket-@WORKER_ID@]
+command=/usr/local/bin/bui-manage -c @BURPUI_CONFIG@ websocket -p @WORKER_PORT@
+autostart=false
+autorestart=true
+stdout_logfile=/var/log/supervisor/%(program_name)s.log
+stderr_logfile=/var/log/supervisor/%(program_name)s.log
+EOF
+
+# configure nginx
+cat >/etc/supervisor.d/websocket.ini <<EOF
+[program:nginx]
+command=/usr/sbin/nginx
 autostart=false
 autorestart=true
 stdout_logfile=/var/log/supervisor/%(program_name)s.log

@@ -13,14 +13,27 @@ import os
 import sys
 import click
 
-from .app import create_app
-from six import iteritems
+if os.getenv('BUI_MODE') in ['server', 'ws'] or 'websocket' in sys.argv:
+    try:
+        import eventlet
+        eventlet.monkey_patch(socket=True)
+    except ImportError:
+        pass
+
+from .app import create_app  # noqa
+from six import iteritems  # noqa
+
+try:
+    from flask_socketio import SocketIO  # noqa
+    WS_AVAILABLE = True
+except ImportError:
+    WS_AVAILABLE = False
 
 ROOT = os.path.dirname(os.path.realpath(__file__))
-DEBUG = os.environ.get('BUI_DEBUG') or os.environ.get('FLASK_DEBUG') or False
-DEBUG = DEBUG and DEBUG.lower() in ['true', 'yes', '1']
+DEBUG = os.getenv('BUI_DEBUG') or os.getenv('FLASK_DEBUG') or False
+DEBUG = DEBUG and DEBUG.lower() not in ['false', 'no', '0']
 
-VERBOSE = os.environ.get('BUI_VERBOSE') or 0
+VERBOSE = os.getenv('BUI_VERBOSE') or 0
 if VERBOSE:
     try:
         VERBOSE = int(VERBOSE)
@@ -28,8 +41,8 @@ if VERBOSE:
         VERBOSE = 0
 
 # UNITTEST is used to skip the burp-2 requirements for modes != server
-UNITTEST = os.environ.get('BUI_MODE') not in ['server', 'manage', 'celery', 'legacy']
-CLI = os.environ.get('BUI_MODE') not in ['server', 'legacy']
+UNITTEST = os.getenv('BUI_MODE') not in ['server', 'manage', 'celery', 'legacy', 'ws']
+CLI = os.getenv('BUI_MODE') not in ['server', 'legacy', 'ws']
 
 try:
     app = create_app(
@@ -39,7 +52,8 @@ try:
         debug=DEBUG,
         gunicorn=False,
         unittest=UNITTEST,
-        cli=CLI
+        cli=CLI,
+        websocket_server=(os.getenv('BUI_MODE') == 'ws' or 'websocket' in sys.argv)
     )
 except:
     import traceback
@@ -70,10 +84,11 @@ except ImportError:
     pass
 
 
-def _die(error):
+def _die(error, appli=None):
+    appli = " '{}'".format(appli) if appli else ''
     click.echo(
         click.style(
-            'Unable to initialize the application: {}'.format(error),
+            'Unable to initialize the application{}: {}'.format(appli, error),
             fg='red'
         ),
         err=True
@@ -83,7 +98,7 @@ def _die(error):
 
 @app.cli.command()
 def legacy():
-    """Legacy server for backward compatibility"""
+    """Legacy server for backward compatibility."""
     click.echo(
         click.style(
             'If you want to pass options, you should run \'python -m burpui '
@@ -92,6 +107,23 @@ def legacy():
         )
     )
     app.manual_run()
+
+
+@app.cli.command()
+@click.option('-b', '--bind', default='127.0.0.1',
+              help='Which address to bind to for the websocket server')
+@click.option('-p', '--port', default=5001,
+              help='Which port to listen on for the websocket server')
+@click.option('-d', '--debug', default=False, is_flag=True,
+              help='Whether to start the websocket server in debug mode')
+def websocket(bind, port, debug):
+    """Start a new websocket server."""
+    try:
+        from .ext.ws import socketio
+    except ImportError:
+        _die('Missing requirement, did you ran \'pip install'
+             ' "burp-ui[websocket]"\'?', 'websocket')
+    socketio.run(app, host=bind, port=port, debug=debug)
 
 
 @app.cli.command()
@@ -114,7 +146,7 @@ def create_user(backend, password, ask, verbose, name):
         msg = str(e)
 
     if msg:
-        _die(msg)
+        _die(msg, 'create_user')
 
     click.echo(click.style('[*] Adding \'{}\' user...'.format(name), fg='blue'))
     try:
@@ -263,7 +295,7 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database, plugins, dry):
         msg = str(e)
 
     if msg:
-        _die(msg)
+        _die(msg, 'setup_burp')
 
     from .misc.parser.utils import Config
     from .app import get_redis_server
@@ -655,7 +687,7 @@ password = abcdefgh
 @click.option('-t', '--tips', is_flag=True,
               help='Show you some tips')
 def diag(client, host, tips):
-    """Check Burp-UI is correctly setup"""
+    """Check Burp-UI is correctly setup."""
     if app.vers != 2:
         click.echo(
             click.style(
@@ -682,7 +714,7 @@ def diag(client, host, tips):
         msg = str(e)
 
     if msg:
-        _die(msg)
+        _die(msg, 'diag')
 
     from .misc.parser.utils import Config
     from .app import get_redis_server
@@ -939,13 +971,15 @@ def diag(client, host, tips):
               help='Dump parts of the config (Please double check no sensitive'
               ' data leaked)')
 def sysinfo(verbose):
-    """Returns a couple of system informations to help debugging"""
+    """Returns a couple of system informations to help debugging."""
     from .desc import __release__, __version__
-    click.echo('Python version:  {}.{}.{}'.format(sys.version_info[0], sys.version_info[1], sys.version_info[2]))
-    click.echo('Burp-UI version: {} ({})'.format(__version__, __release__))
-    click.echo('Single mode:     {}'.format(app.standalone))
-    click.echo('Backend version: {}'.format(app.vers))
-    click.echo('Config file:     {}'.format(app.config.conffile))
+    click.echo('Python version:      {}.{}.{}'.format(sys.version_info[0], sys.version_info[1], sys.version_info[2]))
+    click.echo('Burp-UI version:     {} ({})'.format(__version__, __release__))
+    click.echo('Single mode:         {}'.format(app.standalone))
+    click.echo('Backend version:     {}'.format(app.vers))
+    click.echo('WebSocket embedded:  {}'.format(app.websocket))
+    click.echo('WebSocket available: {}'.format(WS_AVAILABLE))
+    click.echo('Config file:         {}'.format(app.config.conffile))
     if verbose:
         click.echo('>>>>> Extra verbose informations:')
         click.echo(click.style(
@@ -953,14 +987,16 @@ def sysinfo(verbose):
             fg='red'
         ))
         sections = [
+            'WebSocket',
             'Burp{}'.format(app.vers),
             'Production',
             'Global',
         ]
+        sections.reverse()
         for section in sections:
-            click.echo()
-            click.echo('    [{}] section:'.format(section))
-            click.echo('    8<{}BEGIN'.format('-' * 69))
-            for key, val in iteritems(app.config.options.get(section, {})):
-                click.echo('    {} = {}'.format(key, val))
-            click.echo('    8<{}END'.format('-' * 71))
+            if section in app.config.options:
+                click.echo()
+                click.echo('    8<{}BEGIN[{}]'.format('-' * (67 - len(section)), section))
+                for key, val in iteritems(app.config.options.get(section, {})):
+                    click.echo('    {} = {}'.format(key, val))
+                click.echo('    8<{}END[{}]'.format('-' * (69 - len(section)), section))

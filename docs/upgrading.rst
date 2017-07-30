@@ -17,6 +17,7 @@ v0.6.0
   granted on both clients on the two agents. You can disable this behavior with
   the `legacy` option. See the `BASIC ACL <advanced_usage.html#basic-acl>`_
   documentation for details.
+- **New** - WebSocket support for better/smarter notifications.
 
 v0.5.0
 ------

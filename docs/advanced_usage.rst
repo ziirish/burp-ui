@@ -153,6 +153,40 @@ follow:
     ratio = 60/minute
 
 
+WebSocket
+---------
+
+The ``[WebSocket]`` section defines specific options for the WebSocket server.
+You will find details on how to use this feature in the
+`WebSocket <websocket.html>`_ page.
+
+::
+
+    [WebSocket]
+    ## This section contains WebSocket server specific options.
+    # whether to embed the websocket server or not
+    # if set to "true", you should have only *one* gunicorn worker
+    # see here for details:
+    # https://flask-socketio.readthedocs.io/en/latest/#gunicorn-web-server
+    embedded = false
+    # what broker to use to interact between websocket servers
+    # may be a redis url like: redis://localhost:6379/0
+    # if set to "true" or "redis" or "default", the url defaults to:
+    # redis://<redis_host>:<redis_port>/4
+    # where <redis_host> is the host part, and <redis_port> is the port part of
+    # the above "redis" setting
+    # set this to none to disable the broker
+    broker = redis
+    # if you choose to run a dedicated websocket server (with embedded = false)
+    # you can specify here the websocket url. You'll need to double quote your
+    # string though.
+    # example:
+    # url = "document.domain + ':5001'"
+    url = none
+    # whether to enable verbose websocket server logs or not (for development)
+    debug = false
+
+
 Experimental
 ------------
 
