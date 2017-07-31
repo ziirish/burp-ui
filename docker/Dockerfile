@@ -1,4 +1,4 @@
-FROM python:3.6-alpine
+FROM python:3.6-alpine3.6
 MAINTAINER hi+burpui@ziirish.me
 
 RUN apk add --no-cache supervisor logrotate librsync openssl tzdata nginx \
