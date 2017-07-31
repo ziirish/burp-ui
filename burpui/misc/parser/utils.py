@@ -67,6 +67,9 @@ class Option(object):
     def set_resets(self, resets):
         self._is_reset = resets
 
+    def get_resets(self):
+        return self._is_reset
+
     def get_reset(self):
         """Return the reset list/flag"""
         return self.is_reset()
@@ -639,6 +642,14 @@ class File(dict):
         self.md5 = self._md5
         return self._raw
 
+    def _dump_resets(self):
+        ret = {}
+        for key, val in iteritems(self.options):
+            resets = val.get_resets()
+            if resets:
+                ret[key] = resets
+        return ret
+
     def _write_key(self, fil, key, data, index=None, dry=False):
         if not dry:
             self._changed = True
@@ -718,6 +729,7 @@ class File(dict):
                 return [[NOTIF_WARN, str(exp)]]
 
         if not insecure:
+            self.reset = {}
             ref = os.path.join(dirname, '.{}.bui.init.back~'.format(filename))
             bak = os.path.join(dirname, '.{}.back~'.format(filename))
 
@@ -731,12 +743,13 @@ class File(dict):
                     shutil.copy(dest, bak)
                 except IOError as exp:
                     return [[NOTIF_ERROR, str(exp)]]
+        else:
+            self.reset = self._dump_resets()
 
         def _make_it_bool(array):
             return ['{}'.format(x).lower() == 'true' for x in array]
 
         errs = []
-        self.reset = {}
 
         for key in data.keys():
             if key in self.parser.files:
@@ -825,8 +838,11 @@ class File(dict):
                             self._write_key(fil, '.', inc)
                             already_file.append(inc)
                         else:
-                            comment = not self._line_is_comment(line)
-                            _dump(line, comment=comment)
+                            if not insecure:
+                                comment = not self._line_is_comment(line)
+                                _dump(line, comment=comment)
+                            else:
+                                _dump(line)
 
                     elif key in data_keys:
                         # The line is still present or has been un-commented,
@@ -851,6 +867,10 @@ class File(dict):
                                     multi_index_map[key] += 1
                                 else:
                                     _dump(line, comment=(not self._line_is_comment(line)))
+                                    continue
+                                if self[key].len() == multi_index_map[key]:
+                                    if key not in already_multi:
+                                        already_multi.append(key)
                                     continue
                                 # dump the rest of the multi if there are no
                                 # more keys in the conf
@@ -905,7 +925,7 @@ class File(dict):
                         )
                 # write the rest of the multi settings
                 for key, idx in iteritems(multi_index_map):
-                    if idx < self[key].len():
+                    if key not in already_multi and idx < self[key].len():
                         fil.write('{}\n'.format(self[key].dump(idx)))
                 # Write the rest of file inclusions
                 if 'includes' in data:

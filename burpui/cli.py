@@ -499,7 +499,7 @@ exclude_comp=gz
         else:
             dstfile = bconfcli
 
-        confcli.store(dest=dstfile, insecure=True)
+        confcli.store(conf=bconfcli, dest=dstfile, insecure=True)
         if dry:
             before = []
             after = []
@@ -609,7 +609,7 @@ exclude_comp=gz
         else:
             dstfile = bconfsrv
 
-        confsrv.store(dest=dstfile, insecure=True)
+        confsrv.store(conf=bconfsrv, dest=dstfile, insecure=True)
         if dry:
             before = []
             after = []
