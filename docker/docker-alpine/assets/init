@@ -106,7 +106,7 @@ EOF
 
   sed -r "s'@BURPUI_CONFIG@'$BURPUI_CONFIG'" /etc/supervisor.d/bui-celery.ini.sample >/etc/supervisor.d/bui-celery.ini
 
-  sed -r "s'@HTTP_SCHEME@'$BURPUI_RP_SCHEME'" ${CONFIG_DIR}/nginx.conf >/etc/nginx/nginx.conf
+  sed -r "s'@HTTP_SCHEME@'$BURPUI_RP_SCHEME'" ${CONFIG_DIR}/nginx/nginx.conf >/etc/nginx/nginx.conf
 
   ssl_cert_ca=$(grep -E "^\s*ssl_cert_ca\s*=" $BURP_CLIENT_CONFIG | cut -d= -f2 | sed -e "s/\s*//g")
   ssl_cert=$(grep -E "^\s*ssl_cert\s*=" $BURP_CLIENT_CONFIG | cut -d= -f2 | sed -e "s/\s*//g")
