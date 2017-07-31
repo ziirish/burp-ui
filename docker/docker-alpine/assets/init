@@ -82,7 +82,7 @@ appStart () {
   }
 
   # Setup nginx workers
-  cat ${CONFIG_DIR}/nginx/worker_header.conf >/etc/nginx/workers.conf
+  cat ${CONFIG_DIR}/nginx/workers_header.conf >/etc/nginx/workers.conf
 
   [ "$WEBSOCKET" == "True" ] && {
     for i in $(seq $BURPUI_WS_WORKERS)
