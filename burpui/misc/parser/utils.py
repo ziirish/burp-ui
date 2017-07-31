@@ -820,7 +820,7 @@ class File(dict):
         try:
             with codecs.open(dest, 'w', 'utf-8', errors='ignore') as fil:
                 # f.write('# Auto-generated configuration using Burp-UI\n')
-                data_keys = data.keys()
+                data_keys = list(data.keys())
                 for idx, line in enumerate(orig):
                     key = self._get_line_key(line, False)
                     if (self._line_removed(line, data_keys) and
