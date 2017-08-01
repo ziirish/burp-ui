@@ -7,11 +7,25 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
+import os
 import logging
 
 from abc import ABCMeta, abstractmethod
 
 from six import with_metaclass
+
+G_BURPPORT = 4972
+G_BURPHOST = u'::1'
+G_BURPBIN = u'/usr/sbin/burp'
+G_STRIPBIN = u'/usr/sbin/vss_strip'
+G_BURPCONFCLI = u'/etc/burp/burp.conf'
+G_BURPCONFSRV = u'/etc/burp/burp-server.conf'
+G_TMPDIR = u'/tmp/bui'
+G_TIMEOUT = 15
+G_ZIP64 = False
+G_INCLUDES = [u'/etc/burp']
+G_ENFORCE = False
+G_REVOKE = True
 
 
 class BUIbackend(with_metaclass(ABCMeta, object)):
@@ -41,6 +55,137 @@ class BUIbackend(with_metaclass(ABCMeta, object)):
         :type server: :class:`burpui.server.BUIServer`
         """
         self.app = server
+        self.zip64 = G_ZIP64
+        self.timeout = G_TIMEOUT
+        self.host = G_BURPHOST
+        self.port = G_BURPPORT
+        self.burpbin = G_BURPBIN
+        self.stripbin = G_STRIPBIN
+        self.burpconfcli = G_BURPCONFCLI
+        self.burpconfsrv = G_BURPCONFSRV
+        self.includes = G_INCLUDES
+        self.revoke = G_REVOKE
+        self.enforce = G_ENFORCE
+        self.running = []
+        self.defaults = {
+            'Burp': {
+                'bport': G_BURPPORT,
+                'bhost': G_BURPHOST,
+                'burpbin': G_BURPBIN,
+                'stripbin': G_STRIPBIN,
+                'bconfcli': G_BURPCONFCLI,
+                'bconfsrv': G_BURPCONFSRV,
+                'timeout': G_TIMEOUT,
+                'tmpdir': G_TMPDIR,
+            },
+            'Experimental': {
+                'zip64': G_ZIP64,
+            },
+            'Security': {
+                'includes': G_INCLUDES,
+                'revoke': G_REVOKE,
+                'enforce': G_ENFORCE,
+            },
+        }
+        tmpdir = G_TMPDIR
+        if conf is not None:
+            conf.update_defaults(self.defaults)
+            section = 'Burp'
+            if section not in conf.options:
+                section = 'Burp{}'.format(self._vers)
+                if section in conf.options:
+                    # TODO: remove the compatibility
+                    self.logger.warning(
+                        'The "[{}]" section is DEPRECATED and will be removed '
+                        'in v0.7.0. Please use the "[Burp]" section '
+                        'instead.'.format(section)
+                    )
+            conf.default_section(section)
+            self.port = conf.safe_get('bport', 'integer')
+            self.host = conf.safe_get('bhost')
+            self.burpbin = self._get_binary_path(
+                conf,
+                'burpbin',
+                G_BURPBIN
+            )
+            self.stripbin = self._get_binary_path(
+                conf,
+                'stripbin',
+                G_STRIPBIN
+            )
+            confcli = conf.safe_get('bconfcli')
+            confsrv = conf.safe_get('bconfsrv')
+            tmpdir = conf.safe_get('tmpdir')
+            self.timeout = conf.safe_get(
+                'timeout',
+                'integer'
+            )
+
+            # Experimental options
+            self.zip64 = conf.safe_get(
+                'zip64',
+                'boolean',
+                section='Experimental'
+            )
+
+            # Security options
+            self.includes = conf.safe_get(
+                'includes',
+                'force_list',
+                section='Security'
+            )
+            self.enforce = conf.safe_get(
+                'enforce',
+                'boolean',
+                section='Security'
+            )
+            self.revoke = conf.safe_get(
+                'revoke',
+                'boolean',
+                section='Security'
+            )
+
+            if confcli and not os.path.isfile(confcli):
+                self.logger.warning("The file '%s' does not exist", confcli)
+
+            if confsrv and not os.path.isfile(confsrv):
+                self.logger.warning("The file '%s' does not exist", confsrv)
+
+            if not self.burpbin and self._vers == 2 and \
+                    getattr(self.app, 'strict', True):
+                # The burp binary is mandatory for this backend
+                raise Exception(
+                    'This backend *CAN NOT* work without a burp binary'
+                )
+
+            if self.host not in ['127.0.0.1', '::1'] and self._vers == 1:
+                self.logger.warning("Invalid value for 'bhost'. Must be '127.0.0.1' or '::1'. Falling back to '%s'", G_BURPHOST)
+                self.host = G_BURPHOST
+
+            self.burpconfcli = confcli
+            self.burpconfsrv = confsrv
+
+        if (tmpdir and os.path.exists(tmpdir) and
+                not os.path.isdir(tmpdir)):
+            self.logger.warning(
+                "'%s' is not a directory",
+                tmpdir
+            )
+            if tmpdir == G_TMPDIR and \
+                    getattr(self.app, 'strict', True):
+                raise IOError(
+                    "Cannot use '{}' as tmpdir".format(tmpdir)
+                )
+            tmpdir = G_TMPDIR
+            if os.path.exists(tmpdir) and not os.path.isdir(tmpdir) and \
+                    getattr(self.app, 'strict', True):
+                raise IOError(
+                    "Cannot use '{}' as tmpdir".format(tmpdir)
+                )
+        if tmpdir and not os.path.exists(tmpdir):
+            os.makedirs(tmpdir)
+
+        self.tmpdir = tmpdir
 
     """
     Utilities functions
