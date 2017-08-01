@@ -5,6 +5,7 @@ Current
 -------
 
 - **BREAKING**: the *BASIC* `ACL` engine will now grant users on all agents if they are not explicitly defined
+- **BREAKING**: the *Burp1* and *Burp2* configuration sections have been merged into one single *Burp* section
 - Add: new plugins system to allow users to write their own modules
 - Add: `Italian translation <https://git.ziirish.me/ziirish/burp-ui/merge_requests/74>`_ thanks to Enrico
 - Add: `backups deletion <https://git.ziirish.me/ziirish/burp-ui/issues/203>`_
