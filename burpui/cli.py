@@ -315,14 +315,14 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database, plugins, dry):
         (_, temp) = tempfile.mkstemp()
         app.conf.options.filename = temp
 
-    if not app.conf.lookup_section('Burp2', source):
+    if not app.conf.lookup_section('Burp', source):
         app.conf._refresh(True)
     if not app.conf.lookup_section('Global', source):
         app.conf._refresh(True)
     if (database or redis) and not app.conf.lookup_section('Production', source):
         app.conf._refresh(True)
 
-    def _edit_conf(key, val, attr, section='Burp2', obj=app.client):
+    def _edit_conf(key, val, attr, section='Burp', obj=app.client):
         if val and (((key not in app.conf.options[section]) or
                     (key in app.conf.options[section] and
                     val != app.conf.options[section][key])) and
@@ -440,9 +440,9 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database, plugins, dry):
         if out:
             click.echo_via_pager(out)
 
-    bconfcli = bconfcli or app.conf.options['Burp2'].get('bconfcli') or \
+    bconfcli = bconfcli or app.conf.options['Burp'].get('bconfcli') or \
         getattr(app.client, 'burpconfcli')
-    bconfsrv = bconfsrv or app.conf.options['Burp2'].get('bconfsrv') or \
+    bconfsrv = bconfsrv or app.conf.options['Burp'].get('bconfsrv') or \
         getattr(app.client, 'burpconfsrv')
     dest_bconfcli = bconfcli
 
@@ -773,9 +773,9 @@ def diag(client, host, tips):
                 )
             )
 
-    bconfcli = app.conf.options.get('Burp2', {}).get('bconfcli') or \
+    bconfcli = app.conf.options.get('Burp', {}).get('bconfcli') or \
         getattr(app.client, 'burpconfcli')
-    bconfsrv = app.conf.options.get('Burp2', {}).get('bconfsrv') or \
+    bconfsrv = app.conf.options.get('Burp', {}).get('bconfsrv') or \
         getattr(app.client, 'burpconfsrv')
 
     errors = False
@@ -988,7 +988,7 @@ def sysinfo(verbose):
         ))
         sections = [
             'WebSocket',
-            'Burp{}'.format(app.vers),
+            'Burp',
             'Production',
             'Global',
         ]

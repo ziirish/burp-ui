@@ -260,7 +260,7 @@ Example:
     >>>>> Extra verbose informations:
     !!! PLEASE MAKE SURE NO SENSITIVE DATA GET EXPOSED !!!
 
-        [Burp2] section:
+        [Burp] section:
         8<---------------------------------------------------------------------BEGIN
         8<-----------------------------------------------------------------------END
 

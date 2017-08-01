@@ -187,6 +187,34 @@ class BUIbackend(with_metaclass(ABCMeta, object)):
 
         self.tmpdir = tmpdir
 
+    # Utilities functions
+    def _get_binary_path(self, config, field, default=None, sect='Burp'):
+        """Helper function to retrieve a binary path from the configuration
+
+        :param field: Field name to look for
+        :type field: str
+
+        :param default: Default value in case the retrieved value is not correct
+        :type default: str
+        """
+        temp = config.safe_get(field, section=sect) or default
+
+        if temp and not temp.startswith('/'):
+            self.logger.warning("Please provide an absolute path for the '{}' option. Fallback to '{}'".format(field, default))
+            temp = default
+        elif temp and not re.match(r'^\S+$', temp):
+            self.logger.warning("Incorrect value for the '{}' option. Fallback to '{}'".format(field, default))
+            temp = default
+        elif temp and (not os.path.isfile(temp) or not os.access(temp, os.X_OK)):
+            self.logger.warning("'{}' does not exist or is not executable. Fallback to '{}'".format(temp, default))
+            temp = default
+
+        if temp and (not os.path.isfile(temp) or not os.access(temp, os.X_OK)):  # pragma: no cover
+            self.logger.error("Ooops, '{}' not found or is not executable".format(temp))
+            temp = None
+
+        return temp
+
     """
     Utilities functions
     """
