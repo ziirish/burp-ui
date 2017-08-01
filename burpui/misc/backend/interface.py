@@ -8,6 +8,7 @@
 
 """
 import os
+import re
 import logging
 
 from abc import ABCMeta, abstractmethod
