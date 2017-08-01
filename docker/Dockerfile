@@ -1,7 +1,7 @@
 FROM python:3.6-alpine3.6
 MAINTAINER hi+burpui@ziirish.me
 
-RUN apk add --no-cache supervisor logrotate librsync openssl tzdata nginx \
+RUN apk add --no-cache supervisor logrotate librsync libressl tzdata nginx \
 	&& apk add --no-cache --virtual .fetch-deps \
 		tar \
 	\
@@ -16,7 +16,7 @@ RUN apk add --no-cache supervisor logrotate librsync openssl tzdata nginx \
 		g++ \
 		libc-dev \
 		make \
-		openssl-dev \
+		libressl-dev \
 		zlib-dev \
 		librsync-dev \
 		pkgconfig \

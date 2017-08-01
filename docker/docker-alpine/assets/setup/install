@@ -8,7 +8,7 @@ CONFIG_DIR="${SETUP_DIR}/config"
 apk add --no-cache --virtual .build-deps \
   python3-dev \
 	mariadb-dev \
-	openssl-dev \
+	libressl-dev \
 	libffi-dev \
 	git \
 	gcc \
