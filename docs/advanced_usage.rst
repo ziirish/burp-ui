@@ -352,39 +352,7 @@ the ``[Global]`` section of your `burpui.cfg`_ file:
     version = 1
 
 
-Now you can add *burp-1* backend specific options:
-
-::
-
-    # burp1 backend specific options
-    [Burp1]
-    # burp status address (can only be '127.0.0.1' or '::1')
-    bhost = ::1
-    # burp status port
-    bport = 4972
-    # burp binary
-    burpbin = /usr/sbin/burp
-    # vss_strip binary
-    stripbin = /usr/sbin/vss_strip
-    # burp client configuration file used for the restoration (Default: None)
-    bconfcli = /etc/burp/burp.conf
-    # burp server configuration file used for the setting page
-    bconfsrv = /etc/burp/burp-server.conf
-    # temporary directory to use for restoration
-    tmpdir = /tmp
-
-
-Each option is commented, but here is a more detailed documentation:
-
-- *bhost*: The address of the `Burp`_ server. In burp-1.x.x, it can only be
-  *127.0.0.1* or *::1*
-- *bport*: The port of `Burp`_'s status port.
-- *burpbin*: Path to the `Burp`_ binary (used for restorations).
-- *stripbin*: Path to the `Burp`_ *vss_strip* binary (used for restorations).
-- *bconfcli*: Path to the `Burp`_ client configuration file (see 
-  `restoration <installation.html#restoration>`__).
-- *bconfsrv*: Path to the `Burp`_ server configuration file.
-- *tmpdir*: Path to a temporary directory where to perform restorations.
+Now you can refer to the `Options`_ section for further setup.
 
 
 Burp2
@@ -407,16 +375,24 @@ the ``[Global]`` section of your `burpui.cfg`_ file:
     version = 2
 
 
-Now you can add *burp-2* backend specific options:
+Now you can refer to the `Options`_ section for further setup.
+
+
+Options
+^^^^^^^
 
 ::
 
-    # burp2 backend specific options
-    [Burp2]
+    # burp backend specific options
+    [Burp]
+    # burp status address (can only be '127.0.0.1' or '::1')
+    bhost = ::1
+    # burp status port
+    bport = 4972
     # burp binary
     burpbin = /usr/sbin/burp
     # vss_strip binary
-    stripbin = /usr/bin/vss_strip
+    stripbin = /usr/sbin/vss_strip
     # burp client configuration file used for the restoration (Default: None)
     bconfcli = /etc/burp/burp.conf
     # burp server configuration file used for the setting page
@@ -429,6 +405,9 @@ Now you can add *burp-2* backend specific options:
 
 Each option is commented, but here is a more detailed documentation:
 
+- *bhost*: The address of the `Burp`_ server. In burp-1.x.x, it can only be
+  *127.0.0.1* or *::1*
+- *bport*: The port of `Burp`_'s status port.
 - *burpbin*: Path to the `Burp`_ binary (used for restorations).
 - *stripbin*: Path to the `Burp`_ *vss_strip* binary (used for restorations).
 - *bconfcli*: Path to the `Burp`_ client configuration file (see

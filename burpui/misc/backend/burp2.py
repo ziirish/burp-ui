@@ -18,6 +18,7 @@ from select import select
 from six import iteritems, viewkeys
 
 from .burp1 import Burp as Burp1
+from .interface import BUIbackend
 from ..parser.burp2 import Parser
 from ...utils import human_readable as _hr, utc_to_local
 from ...security import sanitize_string
@@ -31,17 +32,6 @@ BURP_MINIMAL_VERSION = 'burp-2.0.18'
 BURP_LIST_BATCH = '2.0.48'
 BURP_STATUS_FORMAT_V2 = '2.1.10'
 BURP_REVERSE_COUNTERS = '2.1.6'
-
-G_BURPBIN = u'/usr/sbin/burp'
-G_STRIPBIN = u'/usr/bin/vss_strip'
-G_BURPCONFCLI = u'/etc/burp/burp.conf'
-G_BURPCONFSRV = u'/etc/burp/burp-server.conf'
-G_TMPDIR = u'/tmp/bui'
-G_TIMEOUT = 15
-G_ZIP64 = False
-G_INCLUDES = [u'/etc/burp']
-G_ENFORCE = False
-G_REVOKE = True
 
 
 # Some functions are the same as in Burp1 backend
@@ -75,136 +65,11 @@ class Burp(Burp1):
         :type conf: :class:`burpui.config.BUIConfig`
         """
         self.proc = None
-        self.app = server
         self.client_version = None
         self.server_version = None
         self.batch_list_supported = False
-        self.zip64 = G_ZIP64
-        self.timeout = G_TIMEOUT
-        self.burpbin = G_BURPBIN
-        self.stripbin = G_STRIPBIN
-        self.burpconfcli = G_BURPCONFCLI
-        self.burpconfsrv = G_BURPCONFSRV
-        self.includes = G_INCLUDES
-        self.revoke = G_REVOKE
-        self.enforce = G_ENFORCE
-        self.defaults = {
-            'Burp2': {
-                'burpbin': G_BURPBIN,
-                'stripbin': G_STRIPBIN,
-                'bconfcli': G_BURPCONFCLI,
-                'bconfsrv': G_BURPCONFSRV,
-                'timeout': G_TIMEOUT,
-                'tmpdir': G_TMPDIR,
-            },
-            'Experimental': {
-                'zip64': G_ZIP64,
-            },
-            'Security': {
-                'includes': G_INCLUDES,
-                'revoke': G_REVOKE,
-                'enforce': G_ENFORCE,
-            },
-        }
-        tmpdir = G_TMPDIR
-        self.running = []
-        version = ''
-        if conf is not None:
-            conf.update_defaults(self.defaults)
-            conf.default_section('Burp2')
-            self.burpbin = self._get_binary_path(
-                conf,
-                'burpbin',
-                G_BURPBIN,
-                sect='Burp2'
-            )
-            self.stripbin = self._get_binary_path(
-                conf,
-                'stripbin',
-                G_STRIPBIN,
-                sect='Burp2'
-            )
-            confcli = conf.safe_get(
-                'bconfcli'
-            )
-            confsrv = conf.safe_get(
-                'bconfsrv'
-            )
-            self.timeout = conf.safe_get(
-                'timeout',
-                'integer'
-            )
-            tmpdir = conf.safe_get(
-                'tmpdir'
-            )
 
-            # Experimental options
-            self.zip64 = conf.safe_get(
-                'zip64',
-                'boolean',
-                section='Experimental'
-            )
-
-            # Security options
-            self.includes = conf.safe_get(
-                'includes',
-                'force_list',
-                section='Security'
-            )
-            self.enforce = conf.safe_get(
-                'enforce',
-                'boolean',
-                section='Security'
-            )
-            self.revoke = conf.safe_get(
-                'revoke',
-                'boolean',
-                section='Security'
-            )
-
-            if confcli and not os.path.isfile(confcli):
-                self.logger.warning(
-                    "The file '%s' does not exist",
-                    confcli
-                )
-                confcli = G_BURPCONFCLI
-
-            if confsrv and not os.path.isfile(confsrv):
-                self.logger.warning(
-                    "The file '%s' does not exist",
-                    confsrv
-                )
-                confsrv = G_BURPCONFSRV
-
-            if not self.burpbin and getattr(self.app, 'strict', True):
-                # The burp binary is mandatory for this backend
-                raise Exception(
-                    'This backend *CAN NOT* work without a burp binary'
-                )
-
-            self.burpconfcli = confcli
-            self.burpconfsrv = confsrv
-
-        if (tmpdir and os.path.exists(tmpdir) and
-                not os.path.isdir(tmpdir)):
-            self.logger.warning(
-                "'%s' is not a directory",
-                tmpdir
-            )
-            if tmpdir == G_TMPDIR and getattr(self.app, 'strict', True):
-                raise IOError(
-                    "Cannot use '{}' as tmpdir".format(tmpdir)
-                )
-            tmpdir = G_TMPDIR
-            if os.path.exists(tmpdir) and not os.path.isdir(tmpdir) and \
-                    getattr(self.app, 'strict', True):
-                raise IOError(
-                    "Cannot use '{}' as tmpdir".format(tmpdir)
-                )
-        if tmpdir and not os.path.exists(tmpdir):
-            os.makedirs(tmpdir)
-
-        self.tmpdir = tmpdir
+        BUIbackend.__init__(self, server, conf)
 
         # check the burp version because this backend only supports clients
         # newer than BURP_MINIMAL_VERSION

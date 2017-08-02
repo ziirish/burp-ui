@@ -15,8 +15,11 @@ v0.6.0
   `example1` with two agents (burp servers in multi-agent mode) on which you
   have respectively two clients called `example1`, the user `example1` will be
   granted on both clients on the two agents. You can disable this behavior with
-  the `legacy` option. See the `BASIC ACL <advanced_usage.html#basic-acl>`_
+  the `legacy` option. See the `BASIC ACL <advanced_usage.html#basic-acl>`__
   documentation for details.
+- **Breaking**: the *Burp1* and *Burp2* configuration sections have been merged
+  into one single *Burp* section. See the
+  `Versions <advanced_usage.html#versions>`__ documentation for details.
 - **New** - WebSocket support for better/smarter notifications.
 
 v0.5.0

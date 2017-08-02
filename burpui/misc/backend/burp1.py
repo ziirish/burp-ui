@@ -129,95 +129,8 @@ class Burp(BUIbackend):
             return
         self.client_version = None
         self.server_version = None
-        self.app = None
-        self.zip64 = G_ZIP64
-        self.host = G_BURPHOST
-        self.port = G_BURPPORT
-        self.burpbin = G_BURPBIN
-        self.stripbin = G_STRIPBIN
-        self.burpconfcli = G_BURPCONFCLI
-        self.burpconfsrv = G_BURPCONFSRV
-        self.includes = G_INCLUDES
-        self.revoke = G_REVOKE
-        self.enforce = G_ENFORCE
-        self.running = []
-        self.defaults = {
-            'Burp1': {
-                'bport': G_BURPPORT,
-                'bhost': G_BURPHOST,
-                'burpbin': G_BURPBIN,
-                'stripbin': G_STRIPBIN,
-                'bconfcli': G_BURPCONFCLI,
-                'bconfsrv': G_BURPCONFSRV,
-                'tmpdir': G_TMPDIR,
-            },
-            'Experimental': {
-                'zip64': G_ZIP64,
-            },
-            'Security': {
-                'includes': G_INCLUDES,
-                'revoke': G_REVOKE,
-                'enforce': G_ENFORCE,
-            },
-        }
-        tmpdir = G_TMPDIR
-        if conf is not None:
-            conf.update_defaults(self.defaults)
-            conf.default_section('Burp1')
-            self.port = conf.safe_get('bport', 'integer')
-            self.host = conf.safe_get('bhost')
-            self.burpbin = self._get_binary_path(
-                conf,
-                'burpbin',
-                G_BURPBIN
-            )
-            self.stripbin = self._get_binary_path(
-                conf,
-                'stripbin',
-                G_STRIPBIN
-            )
-            confcli = conf.safe_get('bconfcli')
-            confsrv = conf.safe_get('bconfsrv')
-            tmpdir = conf.safe_get('tmpdir')
 
-            # Experimental options
-            self.zip64 = conf.safe_get(
-                'zip64',
-                'boolean',
-                section='Experimental'
-            )
-
-            # Security options
-            self.includes = conf.safe_get(
-                'includes',
-                'force_list',
-                section='Security'
-            )
-            self.enforce = conf.safe_get(
-                'enforce',
-                'boolean',
-                section='Security'
-            )
-            self.revoke = conf.safe_get(
-                'revoke',
-                'boolean',
-                section='Security'
-            )
-
-            if confcli and not os.path.isfile(confcli):
-                self.logger.warning("The file '%s' does not exist", confcli)
-                confcli = None
-
-            if confsrv and not os.path.isfile(confsrv):
-                self.logger.warning("The file '%s' does not exist", confsrv)
-                confsrv = None
-
-            if self.host not in ['127.0.0.1', '::1']:
-                self.logger.warning("Invalid value for 'bhost'. Must be '127.0.0.1' or '::1'. Falling back to '%s'", G_BURPHOST)
-                self.host = G_BURPHOST
-
-            self.burpconfcli = confcli
-            self.burpconfsrv = confsrv
+        super(Burp, self).__init__(server, conf)
 
         self.parser = Parser(self)
 
@@ -242,18 +155,6 @@ class Burp(BUIbackend):
         except:
             pass
 
-        if tmpdir and os.path.exists(tmpdir) and not os.path.isdir(tmpdir):
-            self.logger.warning("'%s' is not a directory", tmpdir)
-            if tmpdir == G_TMPDIR:
-                raise IOError("Cannot use '{}' as tmpdir".format(tmpdir))
-            tmpdir = G_TMPDIR
-            if os.path.exists(tmpdir) and not os.path.isdir(tmpdir):
-                raise IOError("Cannot use '{}' as tmpdir".format(tmpdir))
-        if tmpdir and not os.path.exists(tmpdir):
-            os.makedirs(tmpdir)
-
-        self.tmpdir = tmpdir
-
         self.logger.info('burp port: {}'.format(self.port))
         self.logger.info('burp host: {}'.format(self.host))
         self.logger.info('burp binary: {}'.format(self.burpbin))
@@ -270,34 +171,6 @@ class Burp(BUIbackend):
             self.status()
         except BUIserverException:
             pass
-
-    # Utilities functions
-    def _get_binary_path(self, config, field, default=None, sect='Burp1'):
-        """Helper function to retrieve a binary path from the configuration
-
-        :param field: Field name to look for
-        :type field: str
-
-        :param default: Default value in case the retrieved value is not correct
-        :type default: str
-        """
-        temp = config.safe_get(field, section=sect) or default
-
-        if temp and not temp.startswith('/'):
-            self.logger.warning("Please provide an absolute path for the '{}' option. Fallback to '{}'".format(field, default))
-            temp = default
-        elif temp and not re.match(r'^\S+$', temp):
-            self.logger.warning("Incorrect value for the '{}' option. Fallback to '{}'".format(field, default))
-            temp = default
-        elif temp and (not os.path.isfile(temp) or not os.access(temp, os.X_OK)):
-            self.logger.warning("'{}' does not exist or is not executable. Fallback to '{}'".format(temp, default))
-            temp = default
-
-        if temp and (not os.path.isfile(temp) or not os.access(temp, os.X_OK)):  # pragma: no cover
-            self.logger.error("Ooops, '{}' not found or is not executable".format(temp))
-            temp = None
-
-        return temp
 
     @staticmethod
     def _get_inet_family(addr):
