@@ -68,17 +68,21 @@ class BUIbackend(with_metaclass(ABCMeta, object)):
         self.revoke = G_REVOKE
         self.enforce = G_ENFORCE
         self.running = []
+        burp_opts = {
+            'bport': G_BURPPORT,
+            'bhost': G_BURPHOST,
+            'burpbin': G_BURPBIN,
+            'stripbin': G_STRIPBIN,
+            'bconfcli': G_BURPCONFCLI,
+            'bconfsrv': G_BURPCONFSRV,
+            'timeout': G_TIMEOUT,
+            'tmpdir': G_TMPDIR,
+        }
         self.defaults = {
-            'Burp': {
-                'bport': G_BURPPORT,
-                'bhost': G_BURPHOST,
-                'burpbin': G_BURPBIN,
-                'stripbin': G_STRIPBIN,
-                'bconfcli': G_BURPCONFCLI,
-                'bconfsrv': G_BURPCONFSRV,
-                'timeout': G_TIMEOUT,
-                'tmpdir': G_TMPDIR,
-            },
+            'Burp': burp_opts,
+            # TODO: remove this when we drop the compatibility
+            'Burp1': burp_opts,
+            'Burp2': burp_opts,
             'Experimental': {
                 'zip64': G_ZIP64,
             },
