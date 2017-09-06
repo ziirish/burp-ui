@@ -67,7 +67,7 @@ class UserAuthHandler(BUIhandler):
             session_manager.session_expired()
         if key not in self.users:
             ret = UserHandler(self.app, self.backends, name, key)
-            if not ret.name:
+            if not ret.name or not ret.active:
                 return None
             self.users[key] = ret
             return ret
@@ -133,6 +133,8 @@ class UserHandler(BUIuser):
 
         for _, back in iteritems(self.backends):
             user = back.user(self.name)
+            if not user:
+                continue
             res = user.get_id()
             if res:
                 self.active = True
