@@ -404,7 +404,7 @@ def login():
         user = bui.uhandler.user(form.username.data, refresh)
         # at the time the context is loaded, the locale is not set
         refresh_babel()
-        if user.is_active and user.login(form.password.data):
+        if user and user.is_active and user.login(form.password.data):
             login_user(user, remember=form.remember.data)
             flash(_('Logged in successfully'), 'success')
             session_manager.store_session(
