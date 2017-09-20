@@ -385,7 +385,10 @@ $('#perform-revoke').on('click', function(e) {
 				window.location = '{{ url_for("view.logout") }}';
 				return;
 			});
-			_sessions();
+		} else {
+			$.when(requests).done(function() {
+				_sessions();
+			});
 		}
 		return;
 	}
