@@ -137,6 +137,7 @@ class ACLanon(BUIacl):
 
 class BUIanon(AnonymousUserMixin):
     _acl = ACLanon()
+    name = 'Unknown'
 
     def login(self, passwd=None):
         return False

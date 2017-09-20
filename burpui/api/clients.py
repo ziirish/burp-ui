@@ -72,7 +72,7 @@ class RunningClients(Resource):
         """
         server = server or self.parser.parse_args()['serverName']
         if client:
-            if hasattr(current_user, 'acl') and \
+            if not current_user.is_anonymous and \
                     not current_user.acl.is_admin() and \
                     not current_user.acl.is_client_allowed(client, server):
                 running = []
@@ -86,7 +86,7 @@ class RunningClients(Resource):
 
         running = bui.client.is_one_backup_running(server)
         # Manage ACL
-        if hasattr(current_user, 'acl') and not current_user.acl.is_admin():
+        if not current_user.is_anonymous and not current_user.acl.is_admin():
             if isinstance(running, dict):
                 new = {}
                 for serv in bui.client.servers:
@@ -159,7 +159,7 @@ class RunningBackup(Resource):
     def _is_one_backup_running(self, res, server):
         """Check if a backup is running"""
         # Manage ACL
-        if hasattr(current_user, 'acl') and not current_user.acl.is_admin():
+        if not current_user.is_anonymous and not current_user.acl.is_admin():
             if isinstance(res, dict):
                 new = {}
                 for serv in bui.client.servers:
@@ -299,7 +299,7 @@ class ClientsReport(Resource):
 
     def _check_acl(self, server):
         # Manage ACL
-        if (not bui.standalone and hasattr(current_user, 'acl') and
+        if (not bui.standalone and not current_user.is_anonymous and
                 (not current_user.acl.is_admin() and
                  not current_user.acl.is_server_allowed(server))):
             self.abort(403, 'Sorry, you don\'t have any rights on this server')
@@ -380,14 +380,14 @@ class ClientsReport(Resource):
                 clients = bui.client.get_all_clients(agent=server)
             except BUIserverException as e:
                 self.abort(500, str(e))
-            if hasattr(current_user, 'acl') and not current_user.acl.is_admin():
+            if not current_user.is_anonymous and not current_user.acl.is_admin():
                 clients = [x for x in clients if current_user.acl.is_client_allowed(x['name'], server)]
             return bui.client.get_clients_report(clients, server)
         if bui.standalone:
             ret = res
         else:
             ret = res.get(server, {})
-        if hasattr(current_user, 'acl') and not current_user.acl.is_admin():
+        if not current_user.is_anonymous and not current_user.acl.is_admin():
             ret['backups'] = [x for x in ret.get('backups', []) if current_user.acl.is_client_allowed(x.get('name'), server)]
             ret['clients'] = [x for x in ret.get('clients', []) if current_user.acl.is_client_allowed(x.get('name'), server)]
         return ret
@@ -469,13 +469,12 @@ class ClientsStats(Resource):
 
         server = server or self.parser.parse_args()['serverName']
         try:
-            if (not bui.standalone and
-                    hasattr(current_user, 'acl') and
+            if (not bui.standalone and not current_user.is_anonymous and
                     (not current_user.acl.is_admin() and
                      not current_user.acl.is_server_allowed(server))):
                 self.abort(403, 'Sorry, you don\'t have any rights on this server')
             jso = bui.client.get_all_clients(agent=server)
-            if hasattr(current_user, 'acl') and not current_user.acl.is_admin():
+            if not current_user.is_anonymous and not current_user.acl.is_admin():
                 jso = [x for x in jso if current_user.acl.is_client_allowed(x['name'], server)]
         except BUIserverException as e:
             self.abort(500, str(e))
@@ -550,12 +549,10 @@ class AllClients(Resource):
         """
         ret = []
         is_admin = True
-        has_acl = hasattr(current_user, 'acl')
         args = self.parser.parse_args()
         server = server or args['serverName']
 
-        if has_acl:
-            is_admin = current_user.acl.is_admin()
+        is_admin = current_user.is_anonymous or current_user.acl.is_admin()
 
         user = (args.get('user', current_user.name) or current_user.name) if \
             is_admin \
@@ -565,7 +562,7 @@ class AllClients(Resource):
         if user != current_user.name:
             is_admin = False
 
-        if (server and has_acl and
+        if (server and
                 not is_admin and
                 not current_user.acl.is_server_allowed(server)):
             self.abort(403, "You are not allowed to view this server infos")
@@ -575,7 +572,7 @@ class AllClients(Resource):
                 clients = [x['name'] for x in bui.client.get_all_clients(agent=server)]
             except BUIserverException:
                 clients = []
-            if hasattr(current_user, 'acl') and not is_admin:
+            if not is_admin:
                 # use the bui.acl module since we impersonalized the user
                 ret = [{'name': x, 'agent': server} for x in clients if bui.acl.is_client_allowed(user, x, server)]
             else:
@@ -587,7 +584,7 @@ class AllClients(Resource):
                 clients = [x['name'] for x in bui.client.get_all_clients()]
             except BUIserverException:
                 clients = []
-            if has_acl and not is_admin:
+            if not is_admin:
                 ret = [{'name': x} for x in clients if bui.acl.is_client_allowed(user, x)]
             else:
                 ret = [{'name': x} for x in clients]
@@ -600,7 +597,7 @@ class AllClients(Resource):
                     clients_cache[serv] = clients
                 except BUIserverException:
                     clients = []
-            if has_acl and not is_admin:
+            if not is_admin:
                 for serv in bui.client.servers:
                     grants[serv] = [x for x in clients_cache.get(serv, []) if bui.acl.is_client_allowed(user, x, serv)]
             else:

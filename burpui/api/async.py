@@ -308,7 +308,7 @@ class AsyncRestore(Resource):
         if not files or not name or not backup:
             self.abort(400, 'missing arguments')
         # Manage ACL
-        if hasattr(current_user, 'acl') and \
+        if not current_user.is_anonymous and \
                 not current_user.acl.is_admin() and \
                 not current_user.acl.is_client_allowed(name, server):
             self.abort(
@@ -686,7 +686,7 @@ class AsyncClientTreeAll(Resource):
             )
 
         # Manage ACL
-        if hasattr(current_user, 'acl') and \
+        if not current_user.is_anonymous and \
                 not current_user.acl.is_admin() and \
                 not current_user.acl.is_client_allowed(name, server):
             self.abort(403, 'Sorry, you are not allowed to view this client')

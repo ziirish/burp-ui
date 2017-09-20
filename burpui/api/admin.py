@@ -232,7 +232,7 @@ class AuthUsers(Resource):
         args = self.parser_mod.parse_args()
         is_admin = True
 
-        if hasattr(current_user, 'acl'):
+        if not current_user.is_anonymous:
             is_admin = current_user.acl.is_admin()
 
         if not is_admin and not args['old_password']:

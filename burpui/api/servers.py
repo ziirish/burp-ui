@@ -66,7 +66,7 @@ class ServersStats(Resource):
         if bui.standalone:
             return r
 
-        if hasattr(current_user, 'acl') and not current_user.acl.is_admin():
+        if not current_user.is_anonymous and not current_user.acl.is_admin():
             check = True
 
         for serv in bui.client.servers:
@@ -170,7 +170,7 @@ class ServersReport(Resource):
         """
         r = {}
         check = False
-        if hasattr(current_user, 'acl') and not current_user.acl.is_admin():
+        if not current_user.is_anonymous and not current_user.acl.is_admin():
             check = True
 
         backups = []
@@ -189,7 +189,7 @@ class ServersReport(Resource):
                 if check and not current_user.acl.is_server_allowed(serv):
                     continue
                 clients = bui.client.get_all_clients(agent=serv)
-                if hasattr(current_user, 'acl') and not current_user.acl.is_admin():
+                if check:
                     clients = [x for x in clients if current_user.acl.is_client_allowed(x['name'], serv)]
 
                 j = bui.client.get_clients_report(clients, serv)
