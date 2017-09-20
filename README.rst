@@ -40,7 +40,7 @@ Credentials:
 What's that?
 ^^^^^^^^^^^^
 
-Let me introduce you ``Burp-UI``. It is a web-based UI to manage your
+Let me introduce you ``Burp-UI``. It is a web-based UI to manage your 
 burp-servers.
 You can view different reports about burp-servers, burp-clients, backups, etc.
 ``Burp-UI`` allows you to perform *online* restorations and to edit/manage
