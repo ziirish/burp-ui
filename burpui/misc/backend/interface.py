@@ -19,6 +19,7 @@ G_BURPPORT = 4972
 G_BURPHOST = u'::1'
 G_BURPBIN = u'/usr/sbin/burp'
 G_STRIPBIN = u'/usr/sbin/vss_strip'
+G_STRIPBIN2 = u'/usr/bin/vss_strip'
 G_BURPCONFCLI = u'/etc/burp/burp.conf'
 G_BURPCONFSRV = u'/etc/burp/burp-server.conf'
 G_TMPDIR = u'/tmp/bui'
@@ -92,6 +93,7 @@ class BUIbackend(with_metaclass(ABCMeta, object)):
                 'enforce': G_ENFORCE,
             },
         }
+        self.defaults['Burp2']['stripbin'] = G_STRIPBIN2
         tmpdir = G_TMPDIR
         if conf is not None:
             conf.update_defaults(self.defaults)
@@ -100,7 +102,7 @@ class BUIbackend(with_metaclass(ABCMeta, object)):
                 section = 'Burp{}'.format(self._vers)
                 if section in conf.options:
                     # TODO: remove the compatibility
-                    self.logger.warning(
+                    self.logger.critical(
                         'The "[{}]" section is DEPRECATED and will be removed '
                         'in v0.7.0. Please use the "[Burp]" section '
                         'instead.'.format(section)
@@ -111,12 +113,17 @@ class BUIbackend(with_metaclass(ABCMeta, object)):
             self.burpbin = self._get_binary_path(
                 conf,
                 'burpbin',
-                G_BURPBIN
+                G_BURPBIN,
+                sect=section
             )
+            STRIPBIN_DEFAULT = G_STRIPBIN
+            if self._vers == 2:
+                STRIPBIN_DEFAULT = G_STRIPBIN2
             self.stripbin = self._get_binary_path(
                 conf,
                 'stripbin',
-                G_STRIPBIN
+                STRIPBIN_DEFAULT,
+                sect=section
             )
             confcli = conf.safe_get('bconfcli')
             confsrv = conf.safe_get('bconfsrv')
@@ -472,19 +479,39 @@ class BUIbackend(with_metaclass(ABCMeta, object)):
                     "last": "2015-10-02 08:20:03",
                     "name": "client1",
                     "state": "idle",
-                    "percent": null,
-                    "phase": null,
                 },
                 {
                     "last": "2015-01-25 13:32:00",
                     "name": "client2",
                     "state": "idle"
-                    "percent": null,
-                    "phase": null,
                 },
             ]
         """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+
+#    @abstractmethod
+#    def get_client_status(self, client=None, agent=None):
+#        """The :func:`burpui.misc.backend.interface.BUIbackend.get_client_status`
+#        function returns the status of a given client with its last stats.
+#
+#        :param client: What client status do we want
+#        :type client: str
+#        :param agent: What server to ask (only in multi-agent mode)
+#        :type agent: str
+#
+#        :returns: The last status of a given client
+#
+#        Example::
+#
+#            {
+#                "name": "client1",
+#                "state": "idle",
+#                "percent": null,
+#                "phase": null,
+#            }
+#
+#        """
+#        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
     @abstractmethod
     def get_client(self, name=None, agent=None):

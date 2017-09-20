@@ -111,7 +111,7 @@ class Counters(Resource):
         if not client:
             self.abort(400, 'No client name provided')
         # Manage ACL
-        if hasattr(current_user, 'acl') and \
+        if not current_user.is_anonymous and \
                 not current_user.acl.is_admin() and \
                 not current_user.acl.is_client_allowed(client, server):
             self.abort(403, "Not allowed to view '{}' counters".format(client))
@@ -208,7 +208,7 @@ class Live(Resource):
         server = server or args['serverName']
         res = []
         is_admin = True
-        has_acl = hasattr(current_user, 'acl')
+        has_acl = not current_user.is_anonymous
 
         if has_acl:
             is_admin = current_user.acl.is_admin()
@@ -523,7 +523,7 @@ class History(Resource):
         client = client or args['clientName']
         server = server or args['serverName']
         is_admin = True
-        has_acl = hasattr(current_user, 'acl')
+        has_acl = not current_user.is_anonymous
 
         if has_acl:
             is_admin = current_user.acl.is_admin()
@@ -547,7 +547,7 @@ class History(Resource):
             'start': None,
             'end': None
         }
-        has_acl = hasattr(current_user, 'acl')
+        has_acl = not current_user.is_anonymous
 
         if has_acl:
             is_admin = current_user.acl.is_admin()

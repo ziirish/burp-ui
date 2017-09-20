@@ -64,7 +64,7 @@ class ServerBackup(Resource):
         if not name:
             self.abort(400, 'Missing options')
         # Manage ACL
-        if hasattr(current_user, 'acl') and \
+        if not current_user.is_anonymous and \
                 not current_user.acl.is_admin() and \
                 not current_user.acl.is_client_allowed(name, server):
             self.abort(403, 'You are not allowed to access this client')
@@ -98,7 +98,7 @@ class ServerBackup(Resource):
         if not name:
             self.abort(400, 'Missing options')
         # Manage ACL
-        if hasattr(current_user, 'acl') and \
+        if not current_user.is_anonymous and \
                 not current_user.acl.is_admin() and \
                 not current_user.acl.is_client_allowed(name, server):
             self.abort(403, 'You are not allowed to cancel a backup for this client')
@@ -134,7 +134,7 @@ class ServerBackup(Resource):
         if not name:
             self.abort(400, 'Missing options')
         # Manage ACL
-        if hasattr(current_user, 'acl') and \
+        if not current_user.is_anonymous and \
                 not current_user.acl.is_admin() and \
                 not current_user.acl.is_client_allowed(name, server):
             self.abort(
