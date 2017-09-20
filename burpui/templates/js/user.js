@@ -370,6 +370,7 @@ $('#perform-revoke').on('click', function(e) {
 	if ($me.data('multi')) {
 		var rows = _sessions_table.api().rows( { selected: true } ).data();
 		var current = undefined;
+		var requests = [];
 		var last;
 		$.each(rows, function(i, row) {
 			if (row.current) {
@@ -377,12 +378,15 @@ $('#perform-revoke').on('click', function(e) {
 				return;
 			}
 			last = revoke_session(row.uuid, false);
+			requests.push(last);
 		});
 		if (current) {
-			window.location = '{{ url_for("view.logout") }}';
-			return;
+			$.when(requests).done(function() {
+				window.location = '{{ url_for("view.logout") }}';
+				return;
+			});
+			_sessions();
 		}
-		last.done(function() { _sessions(); });
 		return;
 	}
 	if ($me.data('current')) {
