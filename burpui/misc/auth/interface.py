@@ -105,3 +105,13 @@ class BUIuser(with_metaclass(ABCMeta, UserMixin)):
         :returns: True if the user is admin, otherwise False
         """
         return self.admin
+
+    def __str__(self):
+        msg = UserMixin.__str__(self)
+        return '{} (id: {}, admin: {}, authenticated: {}, active: {})'.format(
+            msg,
+            self.get_id(),
+            self.is_admin,
+            self.is_authenticated,
+            self.is_active
+        )
