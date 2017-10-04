@@ -956,3 +956,87 @@ class ClientStats(Resource):
         except BUIserverException as exp:
             self.abort(500, str(exp))
         return json
+
+
+@ns.route('/running/<name>',
+          '/<server>/running/<name>',
+          endpoint='client_running_status')
+@ns.doc(
+    params={
+        'server': 'Which server to collect data from when in multi-agent' +
+                  ' mode',
+        'name': 'Client name',
+    },
+)
+class ClientRunningStatus(Resource):
+    """The :class:`burpui.api.client.ClientRunningStatus` resource allows you to
+    retrieve the running status of a given client.
+
+    This resource is part of the :mod:`burpui.api.client` module.
+
+    An optional ``GET`` parameter called ``serverName`` is supported when
+    running in multi-agent mode.
+    """
+    parser = ns.parser()
+    parser.add_argument(
+        'serverName',
+        help='Which server to collect data from when in multi-agent mode'
+    )
+    running_fields = ns.model('ClientRunningStatus', {
+        'state': fields.String(required=True, description='Running state'),
+        'percent': fields.Integer(
+            required=False,
+            description='Backup progress in percent',
+            default=-1
+        ),
+        'phase': fields.String(
+            required=False,
+            description='Backup phase',
+            default=None
+        )
+    })
+
+    @ns.marshal_list_with(running_fields, code=200, description='Success')
+    @ns.expect(parser)
+    @ns.doc(
+        responses={
+            '403': 'Insufficient permissions',
+            '500': 'Internal failure',
+        },
+    )
+    def get(self, server=None, name=None):
+        """Returns the running status of a given client
+
+        **GET** method provided by the webservice.
+
+        The *JSON* returned is:
+        ::
+
+            {
+              "state": "running",
+              "percent": 42,
+              "phase": "2"
+            }
+
+        The output is filtered by the :mod:`burpui.misc.acl` module so that you
+        only see stats about the clients you are authorized to.
+
+        :param server: Which server to collect data from when in multi-agent
+                       mode
+        :type server: str
+
+        :param name: The client we are working on
+        :type name: str
+
+        :returns: The *JSON* described above.
+        """
+        server = server or self.parser.parse_args()['serverName']
+        try:
+            if not current_user.is_anonymous and \
+                     not current_user.acl.is_admin() and \
+                     not current_user.acl.is_client_allowed(name, server):
+                self.abort(403, 'Sorry, you cannot access this client')
+            json = bui.client.get_client_status(name, agent=server)
+        except BUIserverException as exp:
+            self.abort(500, str(exp))
+        return json
