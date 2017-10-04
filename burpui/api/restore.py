@@ -94,7 +94,7 @@ class Restore(Resource):
         if not l or not name or not backup:
             self.abort(400, 'missing arguments')
         # Manage ACL
-        if hasattr(current_user, 'acl') and \
+        if not current_user.is_anonymous and \
                 not current_user.acl.is_admin() and \
                 not current_user.acl.is_client_allowed(name, server):
             self.abort(403, 'You are not allowed to perform a restoration for this client')
@@ -296,7 +296,7 @@ class ServerRestore(Resource):
         if not name:
             self.abort(400, 'Missing options')
         # Manage ACL
-        if hasattr(current_user, 'acl') and \
+        if not current_user.is_anonymous and \
                 not current_user.acl.is_admin() and \
                 not current_user.acl.is_client_allowed(name, server):
             self.abort(403, 'You are not allowed to edit a restoration for this client')
@@ -330,7 +330,7 @@ class ServerRestore(Resource):
         if not name:
             self.abort(400, 'Missing options')
         # Manage ACL
-        if hasattr(current_user, 'acl') and \
+        if not current_user.is_anonymous and \
                 not current_user.acl.is_admin() and \
                 not current_user.acl.is_client_allowed(name, server):
             self.abort(403, 'You are not allowed to cancel a restoration for this client')
@@ -418,7 +418,7 @@ class DoServerRestore(Resource):
         if not files_list or not name or not backup:
             self.abort(400, 'Missing options')
         # Manage ACL
-        if hasattr(current_user, 'acl') and \
+        if not current_user.is_anonymous and \
                 not current_user.acl.is_admin() and \
                 not current_user.acl.is_client_allowed(name, server) and \
                 not current_user.acl.is_client_allowed(to, server):

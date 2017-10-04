@@ -1214,7 +1214,7 @@ msgstr "Réstaurer sur un autre client "
 #: burpui/templates/client-browse.html:109
 #: burpui/templates/clients-report.html:35
 msgid "none"
-msgstr "néan"
+msgstr "néant"
 
 #: burpui/templates/client-browse.html:115
 msgid "Whether to overwrite existing files"

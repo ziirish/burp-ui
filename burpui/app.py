@@ -390,6 +390,7 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
     from .sessions import session_manager
     from .ext.cache import cache
     from .ext.i18n import babel, get_locale
+    from .misc.auth.handler import BUIanon
 
     logger = logging.getLogger('burp-ui')
 
@@ -690,6 +691,7 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
 
     # And the login_manager
     app.login_manager = LoginManager()
+    app.login_manager.anonymous_user = BUIanon
     app.login_manager.login_view = 'view.login'
     app.login_manager.login_message_category = 'info'
     app.login_manager.session_protection = 'strong'
@@ -753,10 +755,17 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
         """User loader callback"""
         if app.auth != 'none':
             user = app.uhandler.user(userid)
+            if not user:
+                return None
             if 'X-Language' in request.headers:
                 language = request.headers.get('X-Language')
                 user.language = language
                 session['language'] = language
+            if '_id' not in session:
+                from flask_login import login_user
+                # if _id is not in session, it means we loaded the user from
+                # cache/db using the remember cookie so we need to login it
+                login_user(user, remember=user.is_authenticated, fresh=False)
             _check_session(user, request)
             return user
         return None

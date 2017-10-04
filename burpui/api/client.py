@@ -219,7 +219,7 @@ class ClientTree(Resource):
         paths_loaded = []
         to_select_list = []
 
-        if hasattr(current_user, 'acl') and \
+        if not current_user.is_anonymous and \
                 not current_user.acl.is_admin() and \
                 not current_user.acl.is_client_allowed(name, server):
             self.abort(403, 'Sorry, you are not allowed to view this client')
@@ -420,7 +420,7 @@ class ClientTreeAll(Resource):
                 'Sorry, the requested backend does not support this method'
             )
 
-        if hasattr(current_user, 'acl') and \
+        if not current_user.is_anonymous and \
                 not current_user.acl.is_admin() and \
                 not current_user.acl.is_client_allowed(name, server):
             self.abort(403, 'Sorry, you are not allowed to view this client')
@@ -787,7 +787,7 @@ class ClientReport(Resource):
             err = [[1, 'No client defined']]
             self.abort(400, err)
 
-        if hasattr(current_user, 'acl') and \
+        if not current_user.is_anonymous and \
                 not current_user.acl.is_admin() and \
                 not current_user.acl.is_client_allowed(name, server):
             self.abort(403, 'You don\'t have rights to view this client report')
@@ -852,7 +852,7 @@ class ClientReport(Resource):
             err = [[1, 'No client defined']]
             self.abort(400, err)
 
-        if hasattr(current_user, 'acl') and \
+        if not current_user.is_anonymous and \
                 not current_user.acl.is_admin() and \
                 not current_user.acl.is_client_allowed(name, server):
             self.abort(403, 'You don\'t have rights on this client')
@@ -948,7 +948,7 @@ class ClientStats(Resource):
         """
         server = server or self.parser.parse_args()['serverName']
         try:
-            if hasattr(current_user, 'acl') and \
+            if not current_user.is_anonymous and \
                     not current_user.acl.is_admin() and \
                     not current_user.acl.is_client_allowed(name, server):
                 self.abort(403, 'Sorry, you cannot access this client')

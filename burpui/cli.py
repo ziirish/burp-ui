@@ -778,6 +778,30 @@ def diag(client, host, tips):
     bconfsrv = app.conf.options.get('Burp', {}).get('bconfsrv') or \
         getattr(app.client, 'burpconfsrv')
 
+    try:
+        app.client.status()
+    except Exception as e:
+        if 'Unable to spawn burp process' in str(e):
+            try:
+                app.client._spawn_burp(verbose=True)
+            except Exception as e:
+                msg = str(e)
+        else:
+            msg = str(e)
+
+    if msg:
+        click.echo(click.style(msg, fg='red'))
+        if 'could not connect' in msg:
+            click.echo(
+                click.style(
+                    'It looks like your burp-client can not reach your '
+                    'burp-server. Please check both your \'server\' setting in '
+                    'your \'{}\' file and \'status_address\' in your \'{}\' '
+                    'file.'.format(bconfcli, bconfsrv),
+                    fg='yellow'
+                )
+            )
+
     errors = False
     if os.path.exists(bconfcli):
         parser = app.client.get_parser()
@@ -844,7 +868,7 @@ def diag(client, host, tips):
             click.echo(
                 click.style(
                     '\'max_status_children\' is to low, you need to set it to '
-                    '15 or more. Please edit your {} file'.format(bconfsrv),
+                    '15 or more. Please edit your {} file.'.format(bconfsrv),
                     fg='blue'
                 )
             )
@@ -868,8 +892,8 @@ def diag(client, host, tips):
                 confsrv.get('monitor_browse_cache'):
             click.echo(
                 click.style(
-                    'For performance reasons, it is recommanded to enable the '
-                    '\'monitor_browse_cache\'',
+                    'For performance reasons, it is recommended to enable the '
+                    '\'monitor_browse_cache\'.',
                     fg='yellow'
                 )
             )
@@ -894,7 +918,7 @@ def diag(client, host, tips):
             click.echo(
                 click.style(
                     'Unable to find "clientconfdir" option. Something is wrong '
-                    'with your setup',
+                    'with your setup.',
                     fg='yellow'
                 )
             )
@@ -903,7 +927,7 @@ def diag(client, host, tips):
         if not os.path.exists(bconfagent) and bconfagent.startswith('/'):
             click.echo(
                 click.style(
-                    'Unable to find the {} file'.format(bconfagent),
+                    'Unable to find the {} file.'.format(bconfagent),
                     fg='yellow'
                 )
             )
@@ -918,7 +942,7 @@ def diag(client, host, tips):
                     click.style(
                         'It looks like the passwords in the {} and the {} files '
                         'mismatch. Burp-UI will not work properly until you fix '
-                        'this'.format(bconfcli, bconfagent),
+                        'this.'.format(bconfcli, bconfagent),
                         fg='yellow'
                     )
                 )
@@ -926,7 +950,7 @@ def diag(client, host, tips):
         click.echo(
             click.style(
                 'Unable to locate burp-server configuration: {} does not '
-                'exist'.format(bconfsrv),
+                'exist.'.format(bconfsrv),
                 fg='red'
             ),
             err=True
@@ -939,7 +963,7 @@ def diag(client, host, tips):
                 click.style(
                     'Some errors have been found in your configuration. '
                     'Please make sure you ran this command with the right flags! '
-                    '(see --help for details)'.format(sys.argv[0], sys.argv[1]),
+                    '(see --help for details).'.format(sys.argv[0], sys.argv[1]),
                     fg='red'
                 ),
                 err=True
@@ -947,6 +971,7 @@ def diag(client, host, tips):
         else:
             click.echo(
                 click.style(
+                    '\n'
                     'Well, if you are sure about your settings, you can run the '
                     'following command to help you setup your Burp-UI agent. '
                     '(Note, the \'--dry\' flag is here to show you the '

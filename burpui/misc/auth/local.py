@@ -102,7 +102,10 @@ class UserHandler(BUIhandler):
         """See :func:`burpui.misc.auth.interface.BUIhandler.user`"""
         if name not in self.users:
             self.users[name] = LocalUser(self.local, name)
-        return self.users[name]
+        ret = self.users[name]
+        if not ret.active:
+            return None
+        return ret
 
     @property
     def loader(self):

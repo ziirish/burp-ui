@@ -10,12 +10,17 @@ from importlib import import_module
 from flask import session
 from six import iteritems
 from collections import OrderedDict
+from flask_login import AnonymousUserMixin
 
 
 class UserAuthHandler(BUIhandler):
     """See :class:`burpui.misc.auth.interface.BUIhandler`"""
     def __init__(self, app=None):
-        """See :func:`burpui.misc.auth.interface.BUIhandler.__init__`"""
+        """See :func:`burpui.misc.auth.interface.BUIhandler.__init__`
+
+        :param app: Instance of the app we are running in
+        :type app: :class:`burpui.server.BUIServer`
+        """
         self.app = app
         self.users = {}
         backends = []
@@ -59,6 +64,14 @@ class UserAuthHandler(BUIhandler):
     def user(self, name=None, refresh=False):
         """See :func:`burpui.misc.auth.interface.BUIhandler.user`"""
         key = session_manager.get_session_id() or name
+        if key != name and is_uuid(name) and name in self.users and \
+                not session_manager.session_expired_by_id(name):
+            usr = self.users[name]
+            usr.id = key
+            self.users[key] = usr
+            del self.users[name]
+            session_manager.session_import_from(name)
+            session['authenticated'] = True
         if not key:
             return None
         if refresh and key in self.users:
@@ -67,7 +80,7 @@ class UserAuthHandler(BUIhandler):
             session_manager.session_expired()
         if key not in self.users:
             ret = UserHandler(self.app, self.backends, name, key)
-            if not ret.name:
+            if not ret.name or not ret.active:
                 return None
             self.users[key] = ret
             return ret
@@ -108,6 +121,36 @@ class ACLproxy(BUIacl):
         return self.acl.is_server_allowed(self.username, server)
 
 
+class ACLanon(BUIacl):
+    def is_admin(self):
+        return False
+
+    def is_moderator(self):
+        return False
+
+    def is_client_allowed(self, client, server=None):
+        return False
+
+    def is_server_allowed(self, server):
+        return False
+
+
+class BUIanon(AnonymousUserMixin):
+    _acl = ACLanon()
+    name = 'Unknown'
+
+    def login(self, passwd=None):
+        return False
+
+    @property
+    def acl(self):
+        return self._acl
+
+    @property
+    def is_admin(self):
+        return False
+
+
 class UserHandler(BUIuser):
     """See :class:`burpui.misc.auth.interface.BUIuser`"""
     def __init__(self, app, backends=None, name=None, id=None):
@@ -133,6 +176,8 @@ class UserHandler(BUIuser):
 
         for _, back in iteritems(self.backends):
             user = back.user(self.name)
+            if not user:
+                continue
             res = user.get_id()
             if res:
                 self.active = True
@@ -186,6 +231,8 @@ class UserHandler(BUIuser):
             self.authenticated = False
             for name, back in iteritems(self.backends):
                 u = back.user(self.name)
+                if not u:
+                    continue
                 res = u.get_id()
                 if u.login(passwd):
                     self.authenticated = True

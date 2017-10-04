@@ -130,6 +130,9 @@ class BUIServer(Flask):
 
     @property
     def logger(self):
+        """
+        :rtype: :class:`logging.Logger`
+        """
         return self._logger
 
     def setup(self, conf=None, unittest=False, cli=False):

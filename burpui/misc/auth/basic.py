@@ -235,7 +235,10 @@ class UserHandler(BUIhandler):
         if name not in self.users:
             self.change = self.basic.load_users()
             self.users[name] = BasicUser(self.basic, name)
-        return self.users[name]
+        ret = self.users[name]
+        if not ret.active:
+            return None
+        return ret
 
     @property
     def changed(self):

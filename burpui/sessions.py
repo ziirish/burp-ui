@@ -108,6 +108,24 @@ class SessionManager(object):
                 db.session.rollback()
             session['persistent'] = remember
 
+    def session_import_from(self, old_id):
+        """Import session from a given id"""
+        self.session_update_id(old_id, self.get_session_id())
+
+    def session_update_id(self, old_id, new_id):
+        """Import session from a given id"""
+        if self.session_managed():
+            from .ext.sql import db
+            from .models import Session
+            old_session = Session.query.filter_by(uuid=old_id).first()
+            if old_session:
+                old_session.uuid = new_id
+                try:
+                    db.session.commit()
+                except:
+                    db.session.rollback()
+                session['persistent'] = old_session.permanent
+
     def session_in_db(self):
         """Tell if the current session exists in db"""
         if self.session_managed():
@@ -209,8 +227,6 @@ class SessionManager(object):
 
     def invalidate_current_session(self):
         """Ivalidate current session"""
-        if 'authenticated' in session:
-            session.pop('authenticated')
         id = getattr(session, 'sid', None)
         session.clear()
         # simulate a logout to clear cookies

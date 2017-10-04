@@ -34,4 +34,5 @@ socketio = SocketIO(
 # revert stdout and stderr
 sys.stdout = _stdout
 sys.stderr = _stderr
-null.close()
+# null.flush()
+# null.close()
