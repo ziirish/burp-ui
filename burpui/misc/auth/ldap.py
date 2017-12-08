@@ -205,10 +205,10 @@ class LdapLoader(BUIloader):
         :returns: True if bind was successful, otherwise False
         """
         try:
-            with Connection(self.server, user='{0}'.format(dn), password=passwd, raise_exceptions=True, auto_bind=self.auto_bind, authentication=SIMPLE) as l:
-                self.logger.debug('LDAP Connection = {0}'.format(str(l)))
+            with Connection(self.server, user='{0}'.format(dn), password=passwd, raise_exceptions=True, auto_bind=self.auto_bind, authentication=SIMPLE) as con:
+                self.logger.debug('LDAP Connection = {0}'.format(str(con)))
                 self.logger.info('Bound as user: {0}'.format(dn))
-                return l.bind()
+                return con.bind()
         except Exception as e:
             self.logger.error('Failed to authenticate user: {0}, {1}'.format(dn, str(e)))
 
