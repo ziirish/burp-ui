@@ -1,5 +1,7 @@
 before_script:
   - git submodule update --init
+  - docker pull python:2.7
+  - docker pull python:3.6
 
 stages:
   - test
