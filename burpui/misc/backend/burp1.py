@@ -687,14 +687,13 @@ class Burp(BUIbackend):
 
     def get_client_status(self, name=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_client_status`"""
-        ret = {}
+        cli = {}
         filemap = self.status('c:{0}\n'.format(name))
         for line in filemap:
             if not re.match('^{0}\t'.format(name)):
                 continue
             regex = re.compile(r'\s*(\S+)\s+\d\s+(\S)\s+(.+)')
             match = regex.search(line)
-            cli = {}
             cli['state'] = self.states[match.group(2)]
             infos = match.group(3)
             if cli['state'] in ['running']:
@@ -705,13 +704,23 @@ class Burp(BUIbackend):
                     cli['phase'] = self.states[phase]
                 else:
                     cli['phase'] = 'unknown'
+                cli['last'] = 'now'
                 counters = self.get_counters(cli['name'])
                 if 'percent' in counters:
                     cli['percent'] = counters['percent']
                 else:
                     cli['percent'] = 0
+            elif infos == "0":
+                cli['last'] = 'never'
+            elif re.match(r'^\d+\s\d+\s\d+$', infos):
+                spl = infos.split()
+                cli['last'] = int(spl[2])
+            else:
+                spl = infos.split('\t')
+                cli['last'] = int(spl[len(spl) - 2])
+            cli['last'] = utc_to_local(cli['last'])
             break
-        return ret
+        return cli
 
     def get_client(self, name=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_client`"""

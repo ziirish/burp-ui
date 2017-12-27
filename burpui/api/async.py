@@ -15,7 +15,7 @@ from . import api, cache_key
 from .misc import History
 from .custom import Resource
 from .client import node_fields
-from .clients import RunningBackup, ClientsReport
+from .clients import RunningBackup, ClientsReport, RunningClients
 from ..server import BUIServer  # noqa
 from ..ext.cache import cache
 from ..ext.limit import limiter
@@ -342,6 +342,61 @@ class AsyncRestore(Resource):
         return {'id': task.id, 'name': 'perform_restore'}, 202
 
 
+@ns.route('/running',
+          '/<server>/running',
+          '/running/<client>',
+          '/<server>/running/<client>',
+          endpoint='async_running_clients')
+@ns.doc(
+    params={
+        'server': 'Which server to collect data from when in multi-agent mode',
+        'client': 'Client name',
+    },
+)
+class AsyncRunningClients(RunningClients):
+    """The :class:`burpui.api.async.AsyncRunningClients` resource allows you
+    to retrieve a list of clients that are currently running a backup.
+
+    This resource is part of the :mod:`burpui.api.async` module.
+
+    This resource is backed by a periodic task. If the periodic task fail or is
+    not running, we fallback to the "synchronous" API call.
+
+    An optional ``GET`` parameter called ``serverName`` is supported when running
+    in multi-agent mode.
+
+    .. seealso:: :class:`burpui.api.clients.RunningClients`
+    """
+
+    def get(self, client=None, server=None):
+        """Returns a list of clients currently running a backup
+
+        **GET** method provided by the webservice.
+
+        The *JSON* returned is:
+        ::
+
+            [ 'client1', 'client2' ]
+
+
+        The output is filtered by the :mod:`burpui.misc.acl` module so that you
+        only see stats about the clients you are authorized to see.
+
+        :param server: Which server to collect data from when in multi-agent mode
+        :type server: str
+
+        :param client: Ask a specific client in order to know if it is running a backup
+        :type client: str
+
+        :returns: The *JSON* described above.
+        """
+        server = server or self.parser.parse_args()['serverName']
+        res = cache.cache.get('backup_running_result')
+        if res is None:
+            res = bui.client.is_one_backup_running(server)
+        return self._running_clients(res, client, server)
+
+
 @ns.route('/backup-running',
           '/<server>/backup-running',
           endpoint='async_running_backup')
@@ -356,12 +411,11 @@ class AsyncRunningBackup(RunningBackup):
     backup currently.
 
     This resource is backed by a periodic task. If the periodic task fail or is
-    not running, we redirect to the "synchronous" API call.
+    not running, we fallback to the "synchronous" API call.
 
     This resource is part of the :mod:`burpui.api.async` module.
     """
 
-    @cache.cached(timeout=60, key_prefix=cache_key)
     @ns.marshal_with(
         RunningBackup.running_fields,
         code=200,
@@ -392,10 +446,7 @@ class AsyncRunningBackup(RunningBackup):
         """
         res = cache.cache.get('backup_running_result')
         if res is None:
-            # redirect to synchronous API call
-            # FIXME: Since we subclass the original code, we don't need the
-            # redirect anymore if the redirection is problematic
-            return redirect(url_for('api.running_backup', server=server))
+            res = bui.client.is_one_backup_running(server)
         return {'running': self._is_one_backup_running(res, server)}
 
 

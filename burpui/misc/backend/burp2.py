@@ -757,13 +757,26 @@ class Burp(Burp1):
             self.logger.warning('Client not found')
             return ret
         ret['state'] = self._status_human_readable(client['run_status'])
+        infos = client['backups']
         if ret['state'] in ['running']:
-            ret['phase'] = client['phase']
-            counters = self.get_counters(ret['name'])
+            try:
+                ret['phase'] = client['phase']
+            except KeyError:
+                for child in client.get('children', []):
+                    if 'action' in child and child['action'] == 'backup':
+                        ret['phase'] = child['phase']
+                        break
+            counters = self.get_counters(name)
             if 'percent' in counters:
                 ret['percent'] = counters['percent']
             else:
                 ret['percent'] = 0
+            ret['last'] = 'now'
+        elif not infos:
+            ret['last'] = 'never'
+        else:
+            infos = infos[0]
+            ret['last'] = infos['timestamp']
         return ret
 
     def get_client(self, name=None, agent=None):

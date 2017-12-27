@@ -22,8 +22,6 @@ bui = current_app  # type: BUIServer
 ns = api.namespace('clients', 'Clients methods')
 
 
-# Seem to not be used anymore
-# TODO: we can probably remove this someday
 @ns.route('/running',
           '/<server>/running',
           '/running/<client>',
@@ -71,20 +69,20 @@ class RunningClients(Resource):
         :returns: The *JSON* described above.
         """
         server = server or self.parser.parse_args()['serverName']
+        return self._running_clients(None, client, server)
+
+    def _running_clients(self, res, client, server):
         if client:
             if not current_user.is_anonymous and \
                     not current_user.acl.is_admin() and \
                     not current_user.acl.is_client_allowed(client, server):
-                running = []
-                return running
+                return []
             if bui.client.is_backup_running(client, server):
-                running = [client]
-                return running
+                return [client]
             else:
-                running = []
-                return running
+                return []
 
-        running = bui.client.is_one_backup_running(server)
+        running = res or bui.client.is_one_backup_running(server)
         # Manage ACL
         if not current_user.is_anonymous and not current_user.acl.is_admin():
             if isinstance(running, dict):
@@ -126,7 +124,6 @@ class RunningBackup(Resource):
         'running': fields.Boolean(required=True, description='Is there a backup running right now'),
     })
 
-    @cache.cached(timeout=60, key_prefix=cache_key)
     @ns.marshal_with(running_fields, code=200, description='Success')
     def get(self, server=None):
         """Tells if a backup is running right now
@@ -414,7 +411,6 @@ class ClientsStats(Resource):
     parser.add_argument('serverName', help='Which server to collect data from when in multi-agent mode')
     client_fields = ns.model('ClientsStatsSingle', {
         'last': fields.DateTime(required=True, dt_format='iso8601', description='Date of last backup'),
-        'human': fields.DateTimeHuman(required=True, attribute='last', description='Human readable date of the last backup'),
         'name': fields.String(required=True, description='Client name'),
         'state': fields.LocalizedString(required=True, description='Current state of the client (idle, backup, etc.)'),
         'phase': fields.String(description='Phase of the current running backup'),

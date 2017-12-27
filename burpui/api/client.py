@@ -958,7 +958,8 @@ class ClientStats(Resource):
         return json
 
 
-@ns.route('/running/<name>',
+@ns.route('/running',
+          '/running/<name>',
           '/<server>/running/<name>',
           endpoint='client_running_status')
 @ns.doc(
@@ -982,6 +983,7 @@ class ClientRunningStatus(Resource):
         'serverName',
         help='Which server to collect data from when in multi-agent mode'
     )
+    parser.add_argument('clientName', help='Client name')
     running_fields = ns.model('ClientRunningStatus', {
         'state': fields.String(required=True, description='Running state'),
         'percent': fields.Integer(
@@ -993,7 +995,12 @@ class ClientRunningStatus(Resource):
             required=False,
             description='Backup phase',
             default=None
-        )
+        ),
+        'last': fields.DateTime(
+            required=False,
+            dt_format='iso8601',
+            description='Date of last backup'
+        ),
     })
 
     @ns.marshal_list_with(running_fields, code=200, description='Success')
@@ -1015,7 +1022,8 @@ class ClientRunningStatus(Resource):
             {
               "state": "running",
               "percent": 42,
-              "phase": "2"
+              "phase": "2",
+              "last": "now"
             }
 
         The output is filtered by the :mod:`burpui.misc.acl` module so that you
@@ -1030,11 +1038,13 @@ class ClientRunningStatus(Resource):
 
         :returns: The *JSON* described above.
         """
-        server = server or self.parser.parse_args()['serverName']
+        args = self.parser.parse_args()
+        server = server or args['serverName']
+        name = name or args['clientName']
         try:
             if not current_user.is_anonymous and \
-                     not current_user.acl.is_admin() and \
-                     not current_user.acl.is_client_allowed(name, server):
+                    not current_user.acl.is_admin() and \
+                    not current_user.acl.is_client_allowed(name, server):
                 self.abort(403, 'Sorry, you cannot access this client')
             json = bui.client.get_client_status(name, agent=server)
         except BUIserverException as exp:

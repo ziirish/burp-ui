@@ -251,7 +251,7 @@ class BUIbackend(with_metaclass(ABCMeta, object)):
 
             [
                 "client1\t2\ti\t576 0 1443766803",
-                "client2\t2\ti\t1 0 1422189120",
+                "client2\t2\ti\t1 0 1422189120"
             ]
         """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
@@ -484,34 +484,10 @@ class BUIbackend(with_metaclass(ABCMeta, object)):
                     "last": "2015-01-25 13:32:00",
                     "name": "client2",
                     "state": "idle"
-                },
+                }
             ]
         """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
-
-#    @abstractmethod
-#    def get_client_status(self, client=None, agent=None):
-#        """The :func:`burpui.misc.backend.interface.BUIbackend.get_client_status`
-#        function returns the status of a given client with its last stats.
-#
-#        :param client: What client status do we want
-#        :type client: str
-#        :param agent: What server to ask (only in multi-agent mode)
-#        :type agent: str
-#
-#        :returns: The last status of a given client
-#
-#        Example::
-#
-#            {
-#                "name": "client1",
-#                "state": "idle",
-#                "percent": null,
-#                "phase": null,
-#            }
-#
-#        """
-#        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
     @abstractmethod
     def get_client_status(self, client=None, agent=None):
@@ -531,6 +507,7 @@ class BUIbackend(with_metaclass(ABCMeta, object)):
                 "state": "idle",
                 "percent": null,
                 "phase": null,
+                "last": "never"
             }
 
         """
@@ -559,7 +536,7 @@ class BUIbackend(with_metaclass(ABCMeta, object)):
                     "encrypted": true,
                     "number": "1",
                     "received": 889818873,
-                    "size": 35612321050,
+                    "size": 35612321050
                 }
             ]
         """
@@ -600,7 +577,7 @@ class BUIbackend(with_metaclass(ABCMeta, object)):
                     "encrypted": true,
                     "number": "1",
                     "received": 889818873,
-                    "size": 35612321050,
+                    "size": 35612321050
                 }
             ]
         """
@@ -790,8 +767,8 @@ class BUIbackend(with_metaclass(ABCMeta, object)):
                             "Mon,Tue,Thu,Fri,17,18,19,20,21,22,23",
                             "Wed,Sat,Sun,06,07,08,09,10,11,12,13,14,15,16,17,18,19,20,21,22,23"
                         ]
-                    },
-                ],
+                    }
+                ]
             }
         """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
