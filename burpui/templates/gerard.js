@@ -177,21 +177,31 @@ var myFail = function(xhr, stat, err) {
 {% set api_running_backup = "api.running_backup" %}
 {% endif %}
 {% if not login %}
+var _last_running_status = undefined;
+var _last_call = 0;
 var _check_running = function() {
 	{% if server %}
-	url = '{{ url_for(api_running_backup, server=server) }}';
+	var url = '{{ url_for(api_running_backup, server=server) }}';
 	{% else %}
-	url = '{{ url_for(api_running_backup) }}';
+	var url = '{{ url_for(api_running_backup) }}';
 	{% endif %}
+	var now = Date.now();
+	if ((now - _last_call) < 5*1000) {
+		return;
+	}
+	_last_call = now;
 	$.getJSON(url, function(data) {
+		{% if clients %}
+		if (_last_running_status != data.running) {
+			$( document ).trigger('refreshClientsStatesEvent', data.running);
+		}
+		{% endif %}
 		if (data.running) {
 			$('#toblink').addClass('blink');
-			{% if clients %}
-			_clients();
-			{% endif %}
 		} else {
 			$('#toblink').removeClass('blink');
 		}
+		_last_running_status = data.running;
 	});
 };
 {% endif %}
