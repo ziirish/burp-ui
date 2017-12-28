@@ -26,6 +26,7 @@ pip install Flask-SQLAlchemy
 pip install Flask-Migrate
 pip install sqlalchemy-utils
 pip install celery
+pip install "raven[flask]"
 
 # Create burp-ui User
 useradd -r -m -d /var/lib/burpui -c 'Burp-UI daemon user' -u 5337 burpui
@@ -91,6 +92,7 @@ mkdir -p /etc/burp
 cp ${CONFIG_DIR}/burp-ui/burpui.cfg /etc/burp/burpui.cfg
 rand=$(dd if=/dev/urandom bs=256 count=1 2>/dev/null | base64 | sed ':a;N;$!ba;s/\n//g')
 perl -i -pe "s#\@RANDOM\@#$rand#" /etc/burp/burpui.cfg
+perl -i -pe "s#\@DSN\@#$SENTRY_DSN#" /etc/burp/burpui.cfg
 
 # patch demo with piwik
 REP=$(cat ${CONFIG_DIR}/patch/piwik.patch)
