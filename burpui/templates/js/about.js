@@ -18,7 +18,7 @@ var app = angular.module('MainApp', ['ngSanitize']);
 app.controller('AboutCtrl', function($scope, $http) {
 	$scope.version = '';
 	$scope.api = '';
-	$scope.burp = Array();
+	$scope.burp = [];
 
 	$http.get('{{ url_for("api.about") }}', { headers: { 'X-From-UI': true } })
 		.success(function(data, status, headers, config) {

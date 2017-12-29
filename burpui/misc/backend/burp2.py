@@ -559,7 +559,7 @@ class Burp(Burp1):
             except KeyError:
                 return cntr
 
-        for counter in backup['counters']:
+        for counter in backup.get('counters', {}):
             name = translate(counter['name'])
             if counter['name'] not in single:
                 ret[name] = [
@@ -576,7 +576,7 @@ class Burp(Burp1):
             ret['phase'] = backup['phase']
         else:
             for phase in phases:
-                if phase in backup['flags']:
+                if phase in backup.get('flags', []):
                     ret['phase'] = phase
                     break
 
@@ -734,19 +734,51 @@ class Burp(Burp1):
             cli['state'] = self._status_human_readable(client['run_status'])
             infos = client['backups']
             if cli['state'] in ['running']:
-                cli['phase'] = client['phase']
                 cli['last'] = 'now'
-                counters = self.get_counters(cli['name'])
-                if 'percent' in counters:
-                    cli['percent'] = counters['percent']
-                else:
-                    cli['percent'] = 0
             elif not infos:
                 cli['last'] = 'never'
             else:
                 infos = infos[0]
                 cli['last'] = infos['timestamp']
             ret.append(cli)
+        return ret
+
+    def get_client_status(self, name=None, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.get_client_status`"""
+        ret = {}
+        if not name:
+            return ret
+        query = self.status('c:{0}\n'.format(name))
+        if not query:
+            return ret
+        try:
+            client = query['clients'][0]
+        except (KeyError, IndexError):
+            self.logger.warning('Client not found')
+            return ret
+        ret['state'] = self._status_human_readable(client['run_status'])
+        infos = client['backups']
+        if ret['state'] in ['running']:
+            try:
+                ret['phase'] = client['phase']
+            except KeyError:
+                for child in client.get('children', []):
+                    if 'action' in child and child['action'] == 'backup':
+                        ret['phase'] = child['phase']
+                        break
+            if name not in self.running:
+                self.is_one_backup_running()
+            counters = self.get_counters(name)
+            if 'percent' in counters:
+                ret['percent'] = counters['percent']
+            else:
+                ret['percent'] = 0
+            ret['last'] = 'now'
+        elif not infos:
+            ret['last'] = 'never'
+        else:
+            infos = infos[0]
+            ret['last'] = infos['timestamp']
         return ret
 
     def get_client(self, name=None, agent=None):
@@ -763,7 +795,7 @@ class Burp(Burp1):
             return ret
         try:
             backups = query['clients'][0]['backups']
-        except KeyError:
+        except (KeyError, IndexError):
             self.logger.warning('Client not found')
             return ret
         for cpt, backup in enumerate(backups):

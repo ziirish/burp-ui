@@ -9,7 +9,7 @@
  *  The JSON is then parsed into a table
  */
 {% import 'macros.html' as macros %}
-var _servers_table = $('#table-servers').dataTable( {
+var _servers_table = $('#table-servers').DataTable( {
 	{{ macros.translate_datatable() }}
 	{{ macros.get_page_length() }}
 	responsive: true,
@@ -53,7 +53,7 @@ var _servers = function() {
 	if (first) {
 		first = false;
 	} else {
-		_servers_table.api().ajax.reload( null, false );
+		_servers_table.ajax.reload( null, false );
 	}
 };
 

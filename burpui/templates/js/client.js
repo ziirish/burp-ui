@@ -5,6 +5,26 @@
  */
 
 /***
+ * First we map some burp status with some style
+ */
+var __status = {
+	"{{ _('client crashed') }}": 'label-danger',
+	"{{ _('server crashed') }}": 'label-danger',
+	"{{ _('running') }}": 'label-success',
+	"{{ _('idle') }}": 'label-default',  // hack to manage translation
+};
+
+/***
+ * Icons for <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+ */
+var __icons = {
+	"{{ _('client crashed') }}": 'glyphicon glyphicon-exclamation-sign',
+	"{{ _('server crashed') }}": 'glyphicon glyphicon-exclamation-sign',
+	"{{ _('running') }}": 'glyphicon glyphicon-play',
+	"{{ _('idle') }}": 'glyphicon glyphicon-pause',
+};
+
+/***
  * _client: function that retrieve up-to-date informations from the burp server about a specific client
  * JSON format:
  * [
@@ -31,7 +51,7 @@
 
 {{ macros.timestamp_filter() }}
 
-var _client_table = $('#table-client').dataTable( {
+var _client_table = $('#table-client').DataTable( {
 	{{ macros.translate_datatable() }}
 	{{ macros.get_page_length() }}
 	responsive: true,
@@ -54,8 +74,8 @@ var _client_table = $('#table-client').dataTable( {
 			$('#client-alert').show();
 		}
 	},
+	rawId: 'number',
 	order: [[0, 'desc']],
-	destroy: true,
 	rowCallback: function( row, data ) {
 		row.className += ' clickable';
 	},
@@ -114,8 +134,10 @@ var first = true;
 var _client = function() {
 	if (first) {
 		first = false;
+		_check_running();
+		refresh_status(false);
 	} else {
-		_client_table.api().ajax.reload( null, false );
+		_client_table.ajax.reload( null, false );
 	}
 
 	url_restore = '{{ url_for("api.is_server_restore", name=cname, server=server) }}';
@@ -128,7 +150,9 @@ var _client = function() {
 			$('.edit-restore').hide();
 			$('.scheduled-backup').show();
 		}
-	}).fail(myFail);
+	}).fail(function() {
+		$('#controls').hide();
+	});
 
 	url_backup = '{{ url_for("api.is_server_backup", name=cname, server=server) }}';
 	$.getJSON(url_backup, function(d) {
@@ -140,19 +164,86 @@ var _client = function() {
 			$('.scheduled-backup').show();
 			$('.cancel-backup').hide();
 		}
-	}).fail(myFail);
+	}).fail(function() {
+		$('#controls').hide();
+	});
 };
 
 {{ macros.page_length('#table-client') }}
+
+var __refresh_running = undefined;
+var refresh_status = function( is_running ) {
+	{% if config.WITH_CELERY %}
+	{% set api_running_clients = "api.async_running_clients" %}
+	{% else %}
+	{% set api_running_clients = "api.running_clients" %}
+	{% endif %}
+	var url = '{{ url_for(api_running_clients, client=cname, server=server) }}';
+	var client_status_url = '{{ url_for("api.client_running_status", name=cname, server=server) }}';
+	var _get_running = undefined;
+	var _get_status = undefined;
+	var _client_running = false;
+	var _span = $('#running-status');
+	var _inner_format_status = function(status) {
+		var _content = '<span class="'+__icons[status.state]+'" aria-hidden="true"></span> ';
+		if (status.state == '{{ _("running") }}') {
+			_client_running = true;
+			_content += status.state+' - '+status.phase+' ('+status.percent+'%)';
+		} else {
+			_content += status.state;
+		}
+		return _content;
+	};
+	var _inner_get_status = function() {
+		return $.getJSON(client_status_url, function(_status) {
+			_span.html(_inner_format_status(_status));
+			_span.removeClass();
+			_span.addClass('label pull-right');
+			_span.addClass(__status[_status.state]);
+		});
+	};
+	if (is_running) {
+		_get_running = $.getJSON(url, function(running) {
+			if (_.indexOf(running, '{{ cname }}') != -1) {
+				_get_status = _inner_get_status();
+				return;
+			}
+		});
+	} else {
+		_get_running = _inner_get_status();
+	}
+	var _inner_callback_setup = function() {
+		if (__refresh_running && !(is_running || _client_running)) {
+			clearInterval(__refresh_running);
+			__refresh_running = undefined;
+		} else if (!__refresh_running && _client_running) {
+			__refresh_running = setInterval(function() {
+				refresh_status(true);
+			}, {{ config.LIVEREFRESH * 1000 }});
+		}
+	};
+	if (_get_running) {
+		$.when( _get_running ).done( function() {
+			if (_get_status) {
+				$.when( _get_status ).done(_inner_callback_setup);
+			} else {
+				_inner_callback_setup();
+			}
+		});
+	} else {
+		_inner_callback_setup();
+	}
+};
 
 $( document ).ready(function() {
 	$('a.toggle-vis').on('click', function(e) {
 		e.preventDefault();
 
 		// Get the column API object
-		var column = _client_table.api().column( $(this).attr('data-column') );
+		var column = _client_table.column( $(this).attr('data-column') );
 		var vis = column.visible();
 
+		// add glyphicon someday: glyphicon glyphicon-eye-close
 		if (vis) {
 			$(this).addClass('italic');
 		} else {
@@ -160,7 +251,7 @@ $( document ).ready(function() {
 		}
 
 		// Toggle the visibility
-		column.visible( ! vis );
+		column.visible( !vis );
 	});
 
 	$('#btn-cancel-restore').on('click', function(e) {
@@ -208,6 +299,9 @@ $( document ).ready(function() {
 
 _client_table.on('draw.dt', function() {
 	$('[data-toggle="tooltip"]').tooltip();
+});
+$( document ).on('refreshClientStatusEvent', function( event, is_running ) {
+	refresh_status(is_running);
 });
 
 /* this one is outside because the buttons are dynamically added after the

@@ -55,9 +55,9 @@ BEAT_SCHEDULE = {
         'task': '{}.ping_backend'.format(ME),
         'schedule': crontab(minute='15'),  # run every hour
     },
-    'backup-running-minutely': {
+    'backup-running-4-minutely': {
         'task': '{}.backup_running'.format(ME),
-        'schedule': timedelta(seconds=30),  # run every 30 seconds
+        'schedule': timedelta(seconds=15),  # run every 15 seconds
     },
     'get-all-backups-every-twenty-minutes': {
         'task': '{}.get_all_backups'.format(ME),

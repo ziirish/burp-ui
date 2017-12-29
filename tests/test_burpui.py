@@ -265,7 +265,7 @@ class BurpuiRoutesTestCase(TestCase):
     def test_get_clients(self):
         with patch('burpui.misc.backend.burp1.Burp.status', side_effect=mock_status):
             response = self.client.get(url_for('api.clients_stats'))
-            self.assertEqual(sorted(response.json, key=lambda k: k['name']), sorted([{u'state': u'idle', u'last': u'never', u'human': u'never', u'name': u'testclient', u'phase': None, u'percent': 0}], key=lambda k: k['name']))
+            self.assertEqual(sorted(response.json, key=lambda k: k['name']), sorted([{u'state': u'idle', u'last': u'never', u'name': u'testclient', u'phase': None, u'percent': 0}], key=lambda k: k['name']))
 
 
 class BurpuiLoginTestCase(TestCase):

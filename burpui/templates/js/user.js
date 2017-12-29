@@ -163,7 +163,7 @@ app.controller('UserCtrl', function($timeout, $scope, $http, $scrollspy) {
 
 {{ macros.timestamp_filter() }}
 
-var _sessions_table = $('#table-sessions').dataTable( {
+var _sessions_table = $('#table-sessions').DataTable( {
 	{{ macros.translate_datatable() }}
 	{{ macros.get_page_length() }}
 	responsive: true,
@@ -319,7 +319,7 @@ var _sessions = function() {
 	if (first) {
 		first = false;
 	} else {
-		_sessions_table.api().ajax.reload( null, false );
+		_sessions_table.ajax.reload( null, false );
 	}
 };
 
@@ -340,8 +340,8 @@ var _events_callback = function() {
 };
 
 var select_event = function( e, dt, type, indexes ) {
-	var selectedRows = _sessions_table.api().rows( { selected: true } ).count();
-	_sessions_table.api().buttons( [3, 4] ).enable( selectedRows > 0 );
+	var selectedRows = _sessions_table.rows( { selected: true } ).count();
+	_sessions_table.buttons( [3, 4] ).enable( selectedRows > 0 );
 };
 
 _sessions_table.on('select.dt', select_event);
@@ -368,7 +368,7 @@ var revoke_session = function(id, refresh) {
 $('#perform-revoke').on('click', function(e) {
 	$me = $(this);
 	if ($me.data('multi')) {
-		var rows = _sessions_table.api().rows( { selected: true } ).data();
+		var rows = _sessions_table.rows( { selected: true } ).data();
 		var current = undefined;
 		var requests = [];
 		var last;

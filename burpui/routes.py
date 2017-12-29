@@ -290,15 +290,15 @@ def client_report(server=None, name=None):
     """Specific client report"""
     server = server or request.args.get('serverName')
     try:
-        l = bui.client.get_client(name, agent=server)
+        res = bui.client.get_client(name, agent=server)
     except BUIserverException:
-        l = []
-    if len(l) == 1:
+        res = []
+    if len(res) == 1:
         return redirect(
             url_for(
                 '.backup_report',
                 name=name,
-                backup=l[0]['number'],
+                backup=res[0]['number'],
                 server=server
             )
         )
