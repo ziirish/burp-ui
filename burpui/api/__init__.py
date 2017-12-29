@@ -186,7 +186,7 @@ api = Api(
     description='Burp-UI API to interact with burp',
     version=__version__,
     doc='/doc',
-    decorators=[api_login_required, check_acl]
+    decorators=[api_login_required]
 )
 
 
