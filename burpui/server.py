@@ -42,6 +42,7 @@ G_RATIO = u'60/minute'
 G_CELERY = False
 G_SCOOKIE = True
 G_DEMO = False
+G_DSN = u''
 G_APPSECRET = u'random'
 G_COOKIETIME = 14
 G_SESSIONTIME = 5
@@ -76,6 +77,7 @@ class BUIServer(Flask):
             'prefix': G_PREFIX,
             'plugins': G_PLUGINS,
             'demo': G_DEMO,
+            'dsn': G_DSN,
         },
         'UI': {
             'refresh': G_REFRESH,
@@ -169,6 +171,7 @@ class BUIServer(Flask):
             'demo',
             'boolean'
         )
+        self.config['BUI_DSN'] = self.conf.safe_get('dsn')
         self.bind = self.config['BUI_BIND'] = self.conf.safe_get('bind')
         version = self.conf.safe_get('version', 'integer')
         if unittest and version != 1:

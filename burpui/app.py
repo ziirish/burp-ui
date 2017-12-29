@@ -380,7 +380,7 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
 
     :returns: A :class:`burpui.server.BUIServer` object
     """
-    from flask import g, request, session
+    from flask import g, request, session, render_template
     from flask_login import LoginManager
     from flask_bower import Bower
     from flask_babel import gettext
@@ -506,6 +506,15 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
         app.config.setdefault('TEMPLATES_AUTO_RELOAD', True)
         app.config['TEMPLATES_AUTO_RELOAD'] = True
         app.config['DEBUG'] = True
+
+    SENTRY_AVAILABLE = False
+    if app.demo:
+        try:
+            from .ext.sentry import sentry
+            sentry.init_app(app, dsn=app.config['BUI_DSN'])
+            SENTRY_AVAILABLE = True
+        except ImportError:
+            pass
 
     # manage application secret key
     if app.secret_key and \
@@ -786,6 +795,16 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
         return response
 
     return app
+
+    if app.demo and SENTRY_AVAILABLE:
+        @app.errorhandler(500)
+        def internal_server_error(error):
+            from .ext.sentry import sentry
+            return render_template(
+                '500_sentry.html',
+                event_id=g.sentry_event_id,
+                public_dsn=sentry.client.get_public_dsn('https')
+            )
 
 
 init = create_app
