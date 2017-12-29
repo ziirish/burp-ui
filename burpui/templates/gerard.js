@@ -191,9 +191,14 @@ var _check_running = function() {
 	}
 	_last_call = now;
 	$.getJSON(url, function(data) {
-		{% if clients %}
+		{% if clients and overview %}
 		if (_last_running_status != data.running) {
 			$( document ).trigger('refreshClientsStatesEvent', data.running);
+		}
+		{% endif %}
+		{% if client and overview %}
+		if (_last_running_status != data.running) {
+			$( document ).trigger('refreshClientStatusEvent', data.running);
 		}
 		{% endif %}
 		if (data.running) {

@@ -135,6 +135,7 @@ var _client = function() {
 	if (first) {
 		first = false;
 		_check_running();
+		refresh_status(false);
 	} else {
 		_client_table.ajax.reload( null, false );
 	}
@@ -169,6 +170,70 @@ var _client = function() {
 };
 
 {{ macros.page_length('#table-client') }}
+
+var __refresh_running = undefined;
+var refresh_status = function( is_running ) {
+	{% if config.WITH_CELERY %}
+	{% set api_running_clients = "api.async_running_clients" %}
+	{% else %}
+	{% set api_running_clients = "api.running_clients" %}
+	{% endif %}
+	var url = '{{ url_for(api_running_clients, client=cname, server=server) }}';
+	var client_status_url = '{{ url_for("api.client_running_status", name=cname, server=server) }}';
+	var _get_running = undefined;
+	var _get_status = undefined;
+	var _client_running = false;
+	var _span = $('#running-status');
+	var _inner_format_status = function(status) {
+		var _content = '<span class="'+__icons[status.state]+'" aria-hidden="true"></span> ';
+		if (status.state == '{{ _("running") }}') {
+			_client_running = true;
+			_content += status.state+' - '+status.phase+' ('+status.percent+'%)';
+		} else {
+			_content += status.state;
+		}
+		return _content;
+	};
+	var _inner_get_status = function() {
+		return $.getJSON(client_status_url, function(_status) {
+			_span.html(_inner_format_status(_status));
+			_span.removeClass();
+			_span.addClass('label pull-right');
+			_span.addClass(__status[_status.state]);
+		});
+	};
+	if (is_running) {
+		_get_running = $.getJSON(url, function(running) {
+			if (_.indexOf(running, '{{ cname }}') != -1) {
+				_get_status = _inner_get_status();
+				return;
+			}
+		});
+	} else {
+		_get_running = _inner_get_status();
+	}
+	var _inner_callback_setup = function() {
+		if (__refresh_running && !(is_running || _client_running)) {
+			clearInterval(__refresh_running);
+			__refresh_running = undefined;
+		} else if (!__refresh_running && _client_running) {
+			__refresh_running = setInterval(function() {
+				refresh_status(true);
+			}, {{ config.LIVEREFRESH * 1000 }});
+		}
+	};
+	if (_get_running) {
+		$.when( _get_running ).done( function() {
+			if (_get_status) {
+				$.when( _get_status ).done(_inner_callback_setup);
+			} else {
+				_inner_callback_setup();
+			}
+		});
+	} else {
+		_inner_callback_setup();
+	}
+};
 
 $( document ).ready(function() {
 	$('a.toggle-vis').on('click', function(e) {
@@ -234,6 +299,9 @@ $( document ).ready(function() {
 
 _client_table.on('draw.dt', function() {
 	$('[data-toggle="tooltip"]').tooltip();
+});
+$( document ).on('refreshClientStatusEvent', function( event, is_running ) {
+	refresh_status(is_running);
 });
 
 /* this one is outside because the buttons are dynamically added after the

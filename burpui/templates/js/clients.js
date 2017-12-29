@@ -10,7 +10,7 @@
 var __status = {
 	"{{ _('client crashed') }}": 'danger',
 	"{{ _('server crashed') }}": 'danger',
-	"{{ _('running') }}": 'info',
+	"{{ _('running') }}": 'success',
 	"{{ _('idle') }}": 'idle',  // hack to manage translation
 };
 
@@ -61,7 +61,6 @@ var _clients_table = $('#table-clients').DataTable( {
 	},
 	rowId: 'name',
 	order: [[2, 'desc']],
-	destroy: true,
 	rowCallback: function( row, data, index ) {
 		var classes = row.className.split(' ');
 		_.each(classes, function(cl) {
@@ -138,7 +137,7 @@ var _clients = function() {
 {{ macros.page_length('#table-clients') }}
 
 var __refresh_running = undefined;
-var __last_clients_running = Array();
+var __last_clients_running = [];
 var refresh_status = function( is_running ) {
 	{% if config.WITH_CELERY %}
 	{% set api_running_clients = "api.async_running_clients" %}
@@ -150,8 +149,8 @@ var refresh_status = function( is_running ) {
 	{% else %}
 	var url = '{{ url_for(api_running_clients) }}';
 	{% endif %}
-	var _promises = Array();
-	var _clients_running = Array();
+	var _promises = [];
+	var _clients_running = [];
 	var _get_running = undefined;
 	if (is_running) {
 		_get_running = $.getJSON(url, function(running) {
@@ -181,7 +180,7 @@ var refresh_status = function( is_running ) {
 			var _row = _clients_table.row('#'+name);
 			var _content = _row.data();
 			var _p = $.get({
-				url: '{{ url_for("api.client_running_status") }}?clientName='+name,
+				url: '{{ url_for("api.client_running_status", server=server) }}?clientName='+name,
 			}).done(function(_status) {
 				_status.static = false;
 				var _new_content = _.merge(_content, _status);
@@ -193,13 +192,12 @@ var refresh_status = function( is_running ) {
 			// stop loop if no more clients are running
 			clearInterval(__refresh_running);
 			__refresh_running = undefined;
-		} else if (!__refresh_running && is_running) {
+		} else if (!__refresh_running && _clients_running.length > 0) {
 			__refresh_running = setInterval(function() {
 				refresh_status(true);
 			}, {{ config.LIVEREFRESH * 1000 }});
 		}
 		$.when.apply( $, _promises ).done( function() {
-			console.log('redraw!');
 			_clients_table.draw(false);
 		});
 	};

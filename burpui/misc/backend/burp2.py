@@ -559,7 +559,7 @@ class Burp(Burp1):
             except KeyError:
                 return cntr
 
-        for counter in backup['counters']:
+        for counter in backup.get('counters', {}):
             name = translate(counter['name'])
             if counter['name'] not in single:
                 ret[name] = [
@@ -576,7 +576,7 @@ class Burp(Burp1):
             ret['phase'] = backup['phase']
         else:
             for phase in phases:
-                if phase in backup['flags']:
+                if phase in backup.get('flags', []):
                     ret['phase'] = phase
                     break
 
@@ -766,6 +766,8 @@ class Burp(Burp1):
                     if 'action' in child and child['action'] == 'backup':
                         ret['phase'] = child['phase']
                         break
+            if name not in self.running:
+                self.is_one_backup_running()
             counters = self.get_counters(name)
             if 'percent' in counters:
                 ret['percent'] = counters['percent']
