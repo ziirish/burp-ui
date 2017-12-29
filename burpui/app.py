@@ -380,7 +380,7 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
 
     :returns: A :class:`burpui.server.BUIServer` object
     """
-    from flask import g, request, session
+    from flask import g, request, session, render_template
     from flask_login import LoginManager
     from flask_bower import Bower
     from flask_babel import gettext
@@ -800,7 +800,8 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
         @app.errorhandler(500)
         def internal_server_error(error):
             from .ext.sentry import sentry
-            return render_template('500_sentry.html',
+            return render_template(
+                '500_sentry.html',
                 event_id=g.sentry_event_id,
                 public_dsn=sentry.client.get_public_dsn('https')
             )
