@@ -5,6 +5,26 @@
  */
 
 /***
+ * First we map some burp status with some style
+ */
+var __status = {
+	"{{ _('client crashed') }}": 'label-danger',
+	"{{ _('server crashed') }}": 'label-danger',
+	"{{ _('running') }}": 'label-success',
+	"{{ _('idle') }}": 'label-default',  // hack to manage translation
+};
+
+/***
+ * Icons for <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+ */
+var __icons = {
+	"{{ _('client crashed') }}": 'glyphicon glyphicon-exclamation-sign',
+	"{{ _('server crashed') }}": 'glyphicon glyphicon-exclamation-sign',
+	"{{ _('running') }}": 'glyphicon glyphicon-play',
+	"{{ _('idle') }}": 'glyphicon glyphicon-pause',
+};
+
+/***
  * _client: function that retrieve up-to-date informations from the burp server about a specific client
  * JSON format:
  * [
@@ -31,7 +51,7 @@
 
 {{ macros.timestamp_filter() }}
 
-var _client_table = $('#table-client').dataTable( {
+var _client_table = $('#table-client').DataTable( {
 	{{ macros.translate_datatable() }}
 	{{ macros.get_page_length() }}
 	responsive: true,
@@ -54,8 +74,8 @@ var _client_table = $('#table-client').dataTable( {
 			$('#client-alert').show();
 		}
 	},
+	rawId: 'number',
 	order: [[0, 'desc']],
-	destroy: true,
 	rowCallback: function( row, data ) {
 		row.className += ' clickable';
 	},
@@ -114,8 +134,9 @@ var first = true;
 var _client = function() {
 	if (first) {
 		first = false;
+		_check_running();
 	} else {
-		_client_table.api().ajax.reload( null, false );
+		_client_table.ajax.reload( null, false );
 	}
 
 	url_restore = '{{ url_for("api.is_server_restore", name=cname, server=server) }}';
@@ -128,7 +149,9 @@ var _client = function() {
 			$('.edit-restore').hide();
 			$('.scheduled-backup').show();
 		}
-	}).fail(myFail);
+	}).fail(function() {
+		$('#controls').hide();
+	});
 
 	url_backup = '{{ url_for("api.is_server_backup", name=cname, server=server) }}';
 	$.getJSON(url_backup, function(d) {
@@ -140,7 +163,9 @@ var _client = function() {
 			$('.scheduled-backup').show();
 			$('.cancel-backup').hide();
 		}
-	}).fail(myFail);
+	}).fail(function() {
+		$('#controls').hide();
+	});
 };
 
 {{ macros.page_length('#table-client') }}
@@ -150,9 +175,10 @@ $( document ).ready(function() {
 		e.preventDefault();
 
 		// Get the column API object
-		var column = _client_table.api().column( $(this).attr('data-column') );
+		var column = _client_table.column( $(this).attr('data-column') );
 		var vis = column.visible();
 
+		// add glyphicon someday: glyphicon glyphicon-eye-close
 		if (vis) {
 			$(this).addClass('italic');
 		} else {
@@ -160,7 +186,7 @@ $( document ).ready(function() {
 		}
 
 		// Toggle the visibility
-		column.visible( ! vis );
+		column.visible( !vis );
 	});
 
 	$('#btn-cancel-restore').on('click', function(e) {
