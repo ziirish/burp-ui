@@ -242,6 +242,7 @@ class Live(Resource):
                     res.append(data)
         else:
             for client in running:
+                # TODO: fix #242 / add ACL test
                 data = {}
                 data['client'] = client
                 try:

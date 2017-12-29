@@ -17,9 +17,13 @@ v0.6.0
   granted on both clients on the two agents. You can disable this behavior with
   the `legacy` option. See the `BASIC ACL <advanced_usage.html#basic-acl>`__
   documentation for details.
-- **Breaking**: the *Burp1* and *Burp2* configuration sections have been merged
+- **Breaking** - The *Burp1* and *Burp2* configuration sections have been merged
   into one single *Burp* section. See the
   `Versions <advanced_usage.html#versions>`__ documentation for details.
+- **Breaking** - The *running* backups are now displayed in `green` instead of
+  `blue`.
+- **New** - Plugin system to enhance ACL and Authentication backends. See the
+  `Plugins <plugins.html>`__ documentation for details.
 - **New** - WebSocket support for better/smarter notifications.
 
 v0.5.0
