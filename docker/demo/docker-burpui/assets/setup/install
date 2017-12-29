@@ -14,6 +14,7 @@ apt-get install -y libssl-dev libmysqlclient-dev libpq-dev
 
 # Install burp-ui
 pip install --upgrade pip
+pip install --upgrade setuptools
 pip install --upgrade $BURPUI
 pip install ujson
 pip install gevent
