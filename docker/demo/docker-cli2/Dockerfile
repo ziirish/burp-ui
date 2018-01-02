@@ -1,4 +1,4 @@
-FROM debian:jessie
+FROM debian:stretch
 MAINTAINER hi+burpui@ziirish.me
 
 RUN apt-get update \

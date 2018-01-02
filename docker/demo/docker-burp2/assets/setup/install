@@ -16,6 +16,7 @@ cd
 
 # Install burp-ui
 pip install --upgrade pip
+pip install --upgrade setuptools
 pip install gevent
 pip install "requests[security]"
 pip install --upgrade cffi

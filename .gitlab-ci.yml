@@ -121,7 +121,7 @@ deploy:demo:
   - test -d /srv/demo/docker && rm -rf /srv/demo/docker
   - cp -r docker/demo/ /srv/demo/docker
   - cd /srv/demo/docker/
-  - docker-compose build
+  - docker-compose build --pull
   - docker-compose stop
   - docker-compose rm -f
   - docker-compose up -d
