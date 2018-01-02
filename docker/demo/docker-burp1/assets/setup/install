@@ -16,6 +16,10 @@ git checkout tags/$BURP_VERSION
 make -j4
 make install
 
+apt-get remove -y python-cffi
+apt-get update
+apt-get install -y libssl-dev
+
 cd
 
 # Install burp-ui

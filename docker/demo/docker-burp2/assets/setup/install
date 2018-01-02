@@ -9,8 +9,9 @@ BURPUI="/tmp/burp-ui-agent.dev.tar.gz"
 echo "deb http://ziirish.info/repos/debian/stretch zi-stable main" >/etc/apt/sources.list.d/ziirish.list
 wget https://ziirish.info/repos/debian.gpg -O- | apt-key add -
 
+apt-get remove -y python-cffi
 apt-get update
-apt-get install -y burp-server burp-client
+apt-get install -y burp-server burp-client libssl-dev
 
 cd
 
