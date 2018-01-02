@@ -144,7 +144,9 @@ class BuildStatic(Command):
         call('{} ./burpui -m manage compile_translation'.format(sys.executable).split(), stderr=DEVNULL)
         log.info('getting revision number')
         rev = 'stable'
-        if os.path.exists('.git') and call("which git", shell=True, stderr=STDOUT, stdout=DEVNULL) == 0:
+        ci = os.getenv('CI')
+        commit = os.getenv('CI_COMMIT_SHA')
+        if not ci and os.path.exists('.git') and call("which git", shell=True, stderr=STDOUT, stdout=DEVNULL) == 0:
             try:
                 branch = check_output('git rev-parse HEAD', shell=True).rstrip()
                 ver = open(os.path.join('burpui', 'VERSION')).read().rstrip()
@@ -157,6 +159,18 @@ class BuildStatic(Command):
                         f.write(rev)
                 except:
                     log.error('Unable to create release file')
+            except:
+                pass
+        elif ci:
+            try:
+                ver = open(os.path.join('burpui', 'VERSION')).read().rstrip()
+                if 'dev' in ver:
+                    rev = commit
+                try:
+                    with open('burpui/RELEASE', 'wb') as f:
+                        f.write(rev)
+                except:
+                    pass
             except:
                 pass
         else:
