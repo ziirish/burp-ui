@@ -6,7 +6,7 @@ SETUP_DIR="/app/setup"
 CONFIG_DIR="${SETUP_DIR}/config"
 BURPUI="/tmp/burp-ui-agent.dev.tar.gz"
 
-echo "deb http://ziirish.info/repos/debian/jessie zi-stable main" >/etc/apt/sources.list.d/ziirish.list
+echo "deb http://ziirish.info/repos/debian/stretch zi-stable main" >/etc/apt/sources.list.d/ziirish.list
 wget https://ziirish.info/repos/debian.gpg -O- | apt-key add -
 
 apt-get update
