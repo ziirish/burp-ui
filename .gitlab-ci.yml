@@ -54,6 +54,7 @@ test:py3.6:
 
 build:py2:
   stage: build
+  image: python:2.7
   script:
   - /bin/bash tests/run_build.sh
   tags:
@@ -65,6 +66,7 @@ build:py2:
     paths:
     - dist/
     - meta/
+    expire_in: 2 mos
 
 build:py3:
   stage: build
@@ -79,6 +81,7 @@ build:py3:
     paths:
     - dist/
     - meta/
+    expire_in: 2 mos
 
 build:docker:latest:
   stage: build
