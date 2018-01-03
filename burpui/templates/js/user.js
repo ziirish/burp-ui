@@ -381,12 +381,12 @@ $('#perform-revoke').on('click', function(e) {
 			requests.push(last);
 		});
 		if (current) {
-			$.when(requests).done(function() {
+			$.when.apply( $, requests ).done(function() {
 				window.location = '{{ url_for("view.logout") }}';
 				return;
 			});
 		} else {
-			$.when(requests).done(function() {
+			$.when.apply( $, requests ).done(function() {
 				_sessions();
 			});
 		}
