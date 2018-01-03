@@ -28,6 +28,8 @@ appStart () {
     echo "$TIMEZONE" >/etc/timezone
   }
 
+  pip install "raven[flask]"
+
   cp ${CONFIG_DIR}/burp-ui/burpui.cfg /etc/burp/burpui.cfg
   rand=$(dd if=/dev/urandom bs=256 count=1 2>/dev/null | base64 | sed ':a;N;$!ba;s/\n//g')
   sed -i -r "s'@RANDOM@'$rand'" /etc/burp/burpui.cfg
