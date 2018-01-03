@@ -1,26 +1,141 @@
-#!/bin/bash
+#!/bin/ash
 set -e
+
+SETUP_DIR="/app/setup"
+CONFIG_DIR="${SETUP_DIR}/config"
 
 trap appStop SIGINT SIGTERM
 
-appStart () {
-  # wait for mysql to be ready
-  sleep 2
+doas() {
+  user=$1
+  shift
+  su -l $user -c "$@"
+}
 
-  # setup database
-  su -l burpui -c "/usr/local/bin/bui-manage db upgrade"
+appStart () {
+
+  BURPUI_CONFIG=/etc/burp/burpui.cfg
+  BURPUI_VERBOSE=${BURPUI_VERBOSE:-0}
+  BURPUI_UID=${BURPUI_UID:-5337}
+  BURPUI_GID=${BURPUI_GID:-5337}
+  BURPUI_WS_WORKERS=${BURPUI_WS_WORKERS:-$(getconf _NPROCESSORS_ONLN)}
+  BURPUI_RP_SSL=${BURPUI_RP_SCHEME:-https}
+  GUNICORN_WORKERS=${GUNICORN_WORKERS:-$(getconf _NPROCESSORS_ONLN)}
+  TIMEZONE=${TIMEZONE:-Europe/Paris}
+
+  [ -e /usr/share/zoneinfo/$TIMEZONE ] && {
+    cp /usr/share/zoneinfo/$TIMEZONE /etc/localtime
+    echo "$TIMEZONE" >/etc/timezone
+  }
+
+  cp ${CONFIG_DIR}/burp-ui/burpui.cfg /etc/burp/burpui.cfg
+  rand=$(dd if=/dev/urandom bs=256 count=1 2>/dev/null | base64 | sed ':a;N;$!ba;s/\n//g')
+  sed -i -r "s'@RANDOM@'$rand'" /etc/burp/burpui.cfg
+  sed -i -r "s'@DSN@'$SENTRY_DSN'" /etc/burp/burpui.cfg
+
+  # patch demo with piwik
+  REP=$(cat ${CONFIG_DIR}/patch/piwik.patch | tr '\n' "\\n")
+  sed -i -r "s#^.*@DEMO@.*\$#$REP#" /usr/local/lib/python3.6/site-packages/burpui/templates/layout.html
+
+  # Create burp-ui User
+  getent group | grep -q burpui || addgroup -g $BURPUI_GID burpui
+  getent passwd | grep -q burpui || adduser -h /var/lib/burpui -D -s /bin/ash -u $BURPUI_UID -G burpui burpui
+  chown -R burpui: /var/log/gunicorn
+
+  [ -e /etc/burp/this_is_a_decoy_file_to_know_if_we_can_chown ] && {
+    chown -R burpui: /etc/burp
+    rm /etc/burp/this_is_a_decoy_file_to_know_if_we_can_chown
+  }
+
+  # wait for redis to be up
+  sleep 3
+
+  doas burpui "/usr/local/bin/bui-manage -c $BURPUI_CONFIG db upgrade"
+
+  WEBSOCKET="True"
+  [ "$BURPUI_WS_WORKERS" == "0" ] && {
+    WEBSOCKET=""
+  } || {
+    WS_EMBEDDED=$(doas burpui "/usr/local/bin/bui-manage -c $BURPUI_CONFIG sysinfo | grep 'WebSocket embedded' | tr -s ' ' | cut -d' ' -f3")
+    WS_AVAILABLE=$(doas burpui "/usr/local/bin/bui-manage -c $BURPUI_CONFIG sysinfo | grep 'WebSocket available' | tr -s ' ' | cut -d' ' -f3")
+    [ "$WS_EMBEDDED" == "True" ] && WEBSOCKET="" || {
+      [ "$WS_AVAILABLE" != "True" ] && WEBSOCKET=""
+    }
+  }
+
+  # Setup nginx workers
+  cat ${CONFIG_DIR}/nginx/workers_header.conf >/etc/nginx/workers.conf
+
+  [ "$WEBSOCKET" == "True" ] && {
+    for i in $(seq $BURPUI_WS_WORKERS)
+    do
+      WORKER_ID=$i
+      WORKER_PORT=$(( 5000 + $i ))
+      sed -r "s'@BURPUI_CONFIG@'$BURPUI_CONFIG';s'@WORKER_ID@'$WORKER_ID';s'@WORKER_PORT@'$WORKER_PORT'" /etc/supervisor.d/websocket.ini.sample > /etc/supervisor.d/websocket-$WORKER_ID.ini
+      echo "    server 127.0.0.1:$WORKER_PORT;" >>/etc/nginx/workers.conf
+    done
+    echo "}" >>/etc/nginx/workers.conf
+  } || {
+    cat >>/etc/nginx/workers.conf<<EOF
+    server 127.0.0.1:5000;
+}
+EOF
+  }
+
+  # You can change log verbosity at runtime
+  sed -r "s'@BURPUI_CONFIG@'$BURPUI_CONFIG'" /etc/supervisor.d/gunicorn.ini.sample >/etc/supervisor.d/gunicorn.ini
+  sed -i -r "s'@BURPUI_VERBOSE@'$BURPUI_VERBOSE'" /etc/supervisor.d/gunicorn.ini
+
+  sed -r "s'@BURPUI_CONFIG@'$BURPUI_CONFIG'" /etc/supervisor.d/bui-celery.ini.sample >/etc/supervisor.d/bui-celery.ini
+
+  sed -r "s'@GUNICORN_WORKERS@'$GUNICORN_WORKERS'" /etc/burp-ui/burpui_gunicorn.py.sample >/etc/burp-ui/burpui_gunicorn.py
+
+  sed -r "s'@HTTP_SCHEME@'$BURPUI_RP_SCHEME'" ${CONFIG_DIR}/nginx/nginx.conf >/etc/nginx/nginx.conf
+
+  #ssl_cert_ca=$(grep -E "^\s*ssl_cert_ca\s*=" $BURP_CLIENT_CONFIG | cut -d= -f2 | sed -e "s/\s*//g")
+  #ssl_cert=$(grep -E "^\s*ssl_cert\s*=" $BURP_CLIENT_CONFIG | cut -d= -f2 | sed -e "s/\s*//g")
+  #ssl_key=$(grep -E "^\s*ssl_key\s*=" $BURP_CLIENT_CONFIG | cut -d= -f2 | sed -e "s/\s*//g")
+
+  #[ -z "$ssl_cert_ca" ] && {
+  #  echo "Unable to locate ssl_cert_ca in $BURP_CLIENT_CONFIG"
+  #  exit 1
+  #}
+  #[ -z "$ssl_cert" ] && {
+  #  echo "Unable to locate ssl_cert in $BURP_CLIENT_CONFIG"
+  #  exit 1
+  #}
+  #[ -z "$ssl_key" ] && {
+  #  echo "Unable to locate ssl_key in $BURP_CLIENT_CONFIG"
+  #  exit 1
+  #}
 
   # start supervisord
-  /usr/bin/supervisord -c /etc/supervisor/supervisord.conf
+  /usr/bin/supervisord -c /etc/supervisord.conf
 
   echo "Starting crond..."
   supervisorctl start cron >/dev/null
 
-  echo "Starting celery worker..."
-  supervisorctl start bui-celery >/dev/null
+  [ -n "$CELERY" ] && {
+    echo "Starting bui-celery..."
+    supervisorctl start bui-celery >/dev/null
+  }
 
   echo "Starting gunicorn..."
-  /etc/init.d/gunicorn restart >/dev/null
+  supervisorctl start gunicorn >/dev/null
+
+  [ "$WEBSOCKET" == "True" ] && {
+    for i in $(seq $BURPUI_WS_WORKERS)
+    do
+      echo "Starting websocket worker $i..."
+      supervisorctl start websocket-$i
+    done
+  }
+
+  echo "Starting nginx..."
+  supervisorctl start nginx >/dev/null
+
+  # wait a bit for the logs to be populated
+  sleep 2
 
   # watch the access logs
   tail -F /var/log/gunicorn/burp-ui_info.log
@@ -28,10 +143,17 @@ appStart () {
 
 appStop() {
   echo ""
+  echo "Stopping nginx..."
+  supervisorctl stop nginx >/dev/null
+  [ "$WEBSOCKET" == "True" ] && {
+    for i in $(seq $BURPUI_WS_WORKERS)
+    do
+      echo "Stopping websocket worker $i..."
+      supervisorctl stop websocket-$i
+    done
+  }
   echo "Stopping gunicorn..."
-  /etc/init.d/gunicorn stop >/dev/null
-  echo "Stopping celery worker..."
-  supervisorctl stop bui-celery >/dev/null
+  supervisorctl stop gunicorn >/dev/null
   echo "Stopping crond..."
   supervisorctl stop cron >/dev/null
   echo "Stopping supervisord..."
@@ -57,7 +179,7 @@ case "$1" in
       prog=$(which $1)
       if [ -n "${prog}" ] ; then
         shift 1
-        $prog $@
+        su -l burpui -c "$prog $@"
       else
         appHelp
       fi

@@ -99,7 +99,7 @@ EOF
 # configure gunicorn worker template
 cat > /etc/supervisor.d/gunicorn.ini.sample <<EOF
 [program:gunicorn]
-command=/usr/local/bin/gunicorn -c /usr/local/share/burpui/contrib/gunicorn/burpui_gunicorn.py 'burpui.app:create_app("@BURPUI_CONFIG@",logfile="/var/log/gunicorn/burp-ui_info.log",verbose=@BURPUI_VERBOSE@)'
+command=/usr/local/bin/gunicorn -c /etc/burp-ui/burpui_gunicorn.py 'burpui.app:create_app("@BURPUI_CONFIG@",logfile="/var/log/gunicorn/burp-ui_info.log",verbose=@BURPUI_VERBOSE@)'
 autostart=false
 autorestart=true
 stdout_logfile=/var/log/supervisor/%(program_name)s.log
@@ -125,6 +125,9 @@ autorestart=true
 stdout_logfile=/var/log/supervisor/%(program_name)s.log
 stderr_logfile=/var/log/supervisor/%(program_name)s.log
 EOF
+
+mkdir -p /etc/burp-ui
+cp ${CONFIG_DIR}/burp-ui/burpui_gunicorn.py /etc/burp-ui/burpui_gunicorn.py.sample
 
 # this is used in case nothing is monted on /etc/burp
 mkdir -p /etc/burp/clientconfdir

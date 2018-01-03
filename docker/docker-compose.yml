@@ -45,6 +45,7 @@ burpui:
 #    - BURP_CLIENT_CONFIG=/tmp/burp.conf
 #    - BURP_SERVER_CONFIG=/etc/burp/burp-server.conf
 #    - DATABASE_URL=postgresql://burpui:burpui@pgsql/burpuidb
+#    - GUNICORN_WORKERS=2
 #    - REDIS_SERVER=redis:6379
 #    - BURP_SERVER_ADDR=auto
 #    - TIMEZONE=Europe/Paris
