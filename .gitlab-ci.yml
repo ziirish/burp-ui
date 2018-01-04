@@ -134,7 +134,8 @@ deploy:demo:
   - test -d /srv/demo/docker && rm -rf /srv/demo/docker
   - cp -r docker/demo/ /srv/demo/docker
   - cd /srv/demo/docker/
-  - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+# old docker client, we need the "-e" flag
+  - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN -e $DUMMY_EMAIL $CI_REGISTRY
   - docker-compose build --pull
   - docker-compose stop
   - docker-compose rm -f
