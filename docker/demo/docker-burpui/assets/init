@@ -37,8 +37,10 @@ appStart () {
   sed -i -r "s'@DSN@'$SENTRY_DSN'" /etc/burp/burpui.cfg
 
   # patch demo with piwik
-  REP=$(cat ${CONFIG_DIR}/patch/piwik.patch | tr '\n' "\\n")
-  sed -i -r "s#^.*@DEMO@.*\$#$REP#" /usr/local/lib/python3.6/site-packages/burpui/templates/layout.html
+  REP=$(cat ${CONFIG_DIR}/patch/piwik.patch)
+  awk -v r="$REP" '{gsub(/^.*@DEMO@.*$/,r)}1' /usr/local/lib/python3.6/site-packages/burpui/templates/layout.html >/tmp/layout.html
+  cat /tmp/layout.html >/usr/local/lib/python3.6/site-packages/burpui/templates/layout.html
+  rm /tmp/layout.html
 
   # Create burp-ui User
   getent group | grep -q burpui || addgroup -g $BURPUI_GID burpui

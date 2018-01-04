@@ -128,7 +128,7 @@ build:docker:demo:
 deploy:demo:
   stage: deploy
   script:
-  - find docker/demo/ -name "install" | xargs sed -i "s/@build@/$CI_COMMIT_SHA/"
+  - find docker/demo/ -name "install" -o -name "init" | xargs sed -i "s/@build@/$CI_COMMIT_SHA/"
   - cd docker/demo/ && find . -maxdepth 1 -type d -a ! -name dist -exec cp -r ../../dist "{}/" \; -exec cp -r ../../meta "{}/" \; && cd ../..
   - find docker/demo/ -name "Dockerfile" | xargs sed -i "s,^.*@ARTIFACTS@.*$,COPY dist/*.tar.gz /tmp/burpui.dev.tar.gz,;s,^.*@BUIAGENT_ARTIFACTS@.*$,COPY meta/burp-ui-agent*.tar.gz /tmp/burp-ui-agent.dev.tar.gz,"
   - test -d /srv/demo/docker && rm -rf /srv/demo/docker
