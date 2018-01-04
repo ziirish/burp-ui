@@ -490,12 +490,12 @@ class BUIbackend(with_metaclass(ABCMeta, object)):
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
     @abstractmethod
-    def get_client_status(self, client=None, agent=None):
+    def get_client_status(self, name=None, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.get_client_status`
         function returns the status of a given client with its last stats.
 
-        :param client: What client status do we want
-        :type client: str
+        :param name: What client status do we want
+        :type name: str
         :param agent: What server to ask (only in multi-agent mode)
         :type agent: str
 
