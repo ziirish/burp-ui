@@ -7,6 +7,7 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
+import re
 import math
 import uuid
 
@@ -61,6 +62,11 @@ def bytes_human(value):
     """Convert the input value to human readable bytes"""
     return '{0:.1eM}'.format(_hr(value))
 
+
+@view.app_template_filter()
+def regex_replace(value, regex, replace):
+    """Replace every string matching the given regex with the replacement"""
+    return re.sub(regex, replace, value, flags=re.IGNORECASE)
 
 """
 And here is the main site

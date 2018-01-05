@@ -263,7 +263,7 @@ $.get("{{ url_for('api.clients_all') }}")
 
 		{% for srv in config.SERVERS %}
 
-var _clients_{{ srv }} = [];
+var _clients_{{ srv|regex_replace("[^a-z0-9_]", "_") }} = [];
 
 		{% endfor %}
 
@@ -283,7 +283,7 @@ $('#input-client').typeahead({
 {
 	name: '{{ srv }}',
 	displayKey: 'name',
-	source: substringMatcher(_clients_{{ srv }}),
+	source: substringMatcher(_clients_{{ srv|regex_replace("[^a-z0-9_]", "_") }}),
 	templates: {
 		header: '<h3 class="server-name">{{ srv }}</h3>'
 	}
