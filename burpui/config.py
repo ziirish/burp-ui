@@ -314,7 +314,7 @@ class BUIConfig(dict):
             )
         except validate.ValidateError as exp:
             ret = default
-            self.logger.warning(
+            self.logger.info(
                 '{}\n[{}]:{} - found: {}, default: {} -> {}'.format(
                     str(exp),
                     section,
