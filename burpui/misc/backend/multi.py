@@ -517,7 +517,7 @@ class NClient(BUIbackend):
         import hmac
         import hashlib
         from base64 import b64encode
-        if not isinstance(data, _ImmutableMultiDict):
+        if not isinstance(data, (_ImmutableMultiDict, ImmutableMultiDict)):
             msg = 'Wrong data type'
             self.logger.warning(msg)
             raise BUIserverException(msg)
@@ -540,7 +540,7 @@ class NClient(BUIbackend):
         import hmac
         import hashlib
         from base64 import b64encode
-        if not isinstance(data, _ImmutableMultiDict):
+        if not isinstance(data, (_ImmutableMultiDict, ImmutableMultiDict)):
             msg = 'Wrong data type'
             self.logger.warning(msg)
             raise BUIserverException(msg)
