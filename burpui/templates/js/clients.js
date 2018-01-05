@@ -144,11 +144,7 @@ var refresh_status = function( is_running ) {
 	{% else %}
 	{% set api_running_clients = "api.running_clients" %}
 	{% endif %}
-	{% if server %}
 	var url = '{{ url_for(api_running_clients, server=server) }}';
-	{% else %}
-	var url = '{{ url_for(api_running_clients) }}';
-	{% endif %}
 	var _promises = [];
 	var _clients_running = [];
 	var _get_running = undefined;
@@ -158,7 +154,7 @@ var refresh_status = function( is_running ) {
 				var _row = _clients_table.row('#'+name);
 				var _content = _row.data();
 				var _p = $.get({
-					url: '{{ url_for("api.client_running_status") }}?clientName='+name, 
+					url: '{{ url_for("api.client_running_status", server=server) }}?clientName='+name,
 				}).done(function(_status) {
 					_status.static = true;
 					var _new_content = _.merge(_content, _status);

@@ -86,15 +86,19 @@ class RunningClients(Resource):
         # Manage ACL
         if not current_user.is_anonymous and not current_user.acl.is_admin():
             if isinstance(running, dict):
-                new = {}
-                for serv in bui.client.servers:
+                ret = {}
+                def __extract_running_clients(serv):
                     try:
                         clients = [x['name'] for x in bui.client.get_all_clients(serv)]
                     except BUIserverException:
                         clients = []
                     allowed = [x for x in clients if current_user.acl.is_client_allowed(x, serv)]
-                    new[serv] = [x for x in running[serv] if x in allowed]
-                running = new
+                    return [x for x in running[serv] if x in allowed]
+                if server:
+                    return __extract_running_clients(server)
+                for serv in bui.client.servers:
+                    ret[serv] = __extract_running_clients(serv)
+                return ret
             else:
                 try:
                     clients = [x['name'] for x in bui.client.get_all_clients(server)]
@@ -102,6 +106,8 @@ class RunningClients(Resource):
                     clients = []
                 allowed = [x for x in clients if current_user.acl.is_client_allowed(x, server)]
                 running = [x for x in running if x in allowed]
+        elif server and isinstance(running, dict):
+            return running.get(server, [])
         return running
 
 
