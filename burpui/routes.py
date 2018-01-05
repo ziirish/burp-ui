@@ -68,6 +68,7 @@ def regex_replace(value, regex, replace):
     """Replace every string matching the given regex with the replacement"""
     return re.sub(regex, replace, value, flags=re.IGNORECASE)
 
+
 """
 And here is the main site
 """
