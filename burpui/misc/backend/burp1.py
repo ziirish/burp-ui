@@ -680,7 +680,7 @@ class Burp(BUIbackend):
                 cli['last'] = int(spl[2])
             else:
                 spl = infos.split('\t')
-                cli['last'] = int(spl[len(spl) - 2])
+                cli['last'] = int((spl[-1].split())[-1])
             cli['last'] = utc_to_local(cli['last'])
             res.append(cli)
         return res
@@ -690,7 +690,7 @@ class Burp(BUIbackend):
         cli = {}
         filemap = self.status('c:{0}\n'.format(name))
         for line in filemap:
-            if not re.match('^{0}\t'.format(name)):
+            if not re.match('^{0}\t'.format(name), line):
                 continue
             regex = re.compile(r'\s*(\S+)\s+\d\s+(\S)\s+(.+)')
             match = regex.search(line)
@@ -705,7 +705,7 @@ class Burp(BUIbackend):
                 else:
                     cli['phase'] = 'unknown'
                 cli['last'] = 'now'
-                counters = self.get_counters(cli['name'])
+                counters = self.get_counters(name)
                 if 'percent' in counters:
                     cli['percent'] = counters['percent']
                 else:
@@ -717,7 +717,7 @@ class Burp(BUIbackend):
                 cli['last'] = int(spl[2])
             else:
                 spl = infos.split('\t')
-                cli['last'] = int(spl[len(spl) - 2])
+                cli['last'] = int((spl[-1].split())[-1])
             cli['last'] = utc_to_local(cli['last'])
             break
         return cli
