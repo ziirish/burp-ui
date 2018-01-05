@@ -77,6 +77,7 @@ class RunningClients(Resource):
                     not current_user.acl.is_admin() and \
                     not current_user.acl.is_client_allowed(client, server):
                 return []
+
             if bui.client.is_backup_running(client, server):
                 return [client]
             else:
@@ -87,6 +88,7 @@ class RunningClients(Resource):
         if not current_user.is_anonymous and not current_user.acl.is_admin():
             if isinstance(running, dict):
                 ret = {}
+
                 def __extract_running_clients(serv):
                     try:
                         clients = [x['name'] for x in bui.client.get_all_clients(serv)]
@@ -94,8 +96,10 @@ class RunningClients(Resource):
                         clients = []
                     allowed = [x for x in clients if current_user.acl.is_client_allowed(x, serv)]
                     return [x for x in running[serv] if x in allowed]
+
                 if server:
                     return __extract_running_clients(server)
+
                 for serv in bui.client.servers:
                     ret[serv] = __extract_running_clients(serv)
                 return ret
