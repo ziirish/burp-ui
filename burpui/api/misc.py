@@ -242,7 +242,10 @@ class Live(Resource):
                     res.append(data)
         else:
             for client in running:
-                # TODO: fix #242 / add ACL test
+                # ACL
+                if has_acl and not is_admin and \
+                        not current_user.acl.is_client_allowed(client, server):
+                    continue
                 data = {}
                 data['client'] = client
                 try:
