@@ -960,6 +960,7 @@ class ClientStats(Resource):
 
 @ns.route('/running',
           '/running/<name>',
+          '/<server>/running',
           '/<server>/running/<name>',
           endpoint='client_running_status')
 @ns.doc(
