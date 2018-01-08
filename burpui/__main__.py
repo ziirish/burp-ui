@@ -141,6 +141,7 @@ def celery():
 
     parser = ArgumentParser('bui-celery')
     parser.add_argument('-c', '--config', dest='config', help='burp-ui configuration file', metavar='<CONFIG>')
+    parser.add_argument('-t', '--type', dest='type', help='celery mode', metavar='<worker|beat|flower>')
     parser.add_argument('-m', '--mode', dest='mode', help='application mode', metavar='<agent|server|worker|manage|legacy>')
     parser.add_argument('remaining', nargs=REMAINDER)
 
@@ -154,6 +155,11 @@ def celery():
             conf = env['BUI_CONFIG']
         else:
             conf = lookup_file()
+
+    if options.type:
+        celery_mode = options.type
+    else:
+        celery_mode = 'worker'
 
     # make conf path absolute
     if not conf.startswith('/'):
@@ -169,7 +175,7 @@ def celery():
 
     args = [
         'celery',
-        'worker',
+        celery_mode,
         '-A',
         'worker.celery'
     ]
