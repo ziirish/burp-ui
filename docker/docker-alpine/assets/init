@@ -58,12 +58,23 @@ appStart () {
   sleep 3
 
   LOGFILE=$(mktemp)
+  echo "Setting up burp & burp-ui:"
+  echo "bui-manage -c $BURPUI_CONFIG setup_burp -b $BURP_CLIENT_CONFIG -s $BURP_SERVER_CONFIG -h $BURP_SERVER_ADDR -c $BURPUI_CLIENT_NAME -r $REDIS_SERVER -d $DATABASE_URL -p $BURPUI_PLUGINS"
   bui-manage -c $BURPUI_CONFIG setup_burp -b $BURP_CLIENT_CONFIG \
     -s $BURP_SERVER_CONFIG -h $BURP_SERVER_ADDR -c $BURPUI_CLIENT_NAME \
     -r $REDIS_SERVER -d $DATABASE_URL -p $BURPUI_PLUGINS 2>&1 | tee $LOGFILE
+  ret=$?
 
   CELERY="True"
   grep -q "Unable to contact the redis server" $LOGFILE && CELERY=""
+
+  [ "$ret" != "0" ] && {
+    echo
+    echo "Something went wrong while setting up burp & burp-ui!"
+    echo "8<---------------------------------------------------"
+    cat $LOGFILE
+    echo "8<---------------------------------------------------"
+  }
   rm $LOGFILE
 
   [ "$DATABASE_URL" != "none" ] && {

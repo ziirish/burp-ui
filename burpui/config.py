@@ -130,7 +130,7 @@ class BUIConfig(dict):
         conf.
         """
         ret = True
-        if section not in self.options:
+        if not self.section_exists(section):
             # look for the section in the comments
             conffile = self.options.filename
             source = source or conffile
@@ -152,6 +152,30 @@ class BUIConfig(dict):
                     if not found:
                         config.write('[{}]\n'.format(section))
                 ret = False
+        return ret
+
+    def section_exists(self, section):
+        """Check whether a section exists or not"""
+        return section in self.options
+
+    def rename_section(self, old_section, new_section, source=None):
+        """Rename a given section"""
+        ret = False
+        if not self.section_exists(old_section):
+            return ret
+        conffile = self.options.filename
+        source = source or conffile
+        ori = []
+        with codecs.open(source, 'r', 'utf-8', errors='ignore') as config:
+            ori = [x.rstrip('\n') for x in config.readlines()]
+        if ori:
+            with codecs.open(conffile, 'w', 'utf-8', errors='ignore') as config:
+                for line in ori:
+                    if re.match(r'^\s*(#|;)+\s*\[{}\]'.format(old_section), line):
+                        config.write('{}\n'.format(line.replace(old_section, new_section)))
+                        ret = True
+                    else:
+                        config.write('{}\n'.format(line))
         return ret
 
     def changed(self, id):

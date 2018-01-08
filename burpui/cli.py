@@ -315,11 +315,26 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database, plugins, dry):
         (_, temp) = tempfile.mkstemp()
         app.conf.options.filename = temp
 
+    # handle migration of old config files
+    if app.conf.section_exists('Burp2'):
+        if app.conf.rename_section('Burp2', 'Burp', source):
+            click.echo(
+                click.style(
+                    'Renaming old [Burp2] section',
+                    fg='blue'
+                )
+            )
+            app.conf._refresh(True)
+
+    refresh = False
     if not app.conf.lookup_section('Burp', source):
-        app.conf._refresh(True)
+        refresh = True
     if not app.conf.lookup_section('Global', source):
-        app.conf._refresh(True)
+        refresh = True
     if (database or redis) and not app.conf.lookup_section('Production', source):
+        refresh = True
+
+    if refresh:
         app.conf._refresh(True)
 
     def _edit_conf(key, val, attr, section='Burp', obj=app.client):
@@ -329,7 +344,18 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database, plugins, dry):
                     getattr(obj, attr) != val):
             app.conf.options[section][key] = val
             app.conf.options.write()
-            app.conf._refresh(True)
+            click.echo(
+                click.style(
+                    'Adding new option: "{}={}" to section [{}]'.format(
+                        key,
+                        val,
+                        section
+                    ),
+                    fg='blue'
+                )
+            )
+            return True
+        return False
 
     def _color_diff(line):
         if line.startswith('+'):
@@ -340,9 +366,13 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database, plugins, dry):
             return click.style(line, fg='blue')
         return line
 
-    _edit_conf('bconfcli', bconfcli, 'burpconfcli')
-    _edit_conf('bconfsrv', bconfsrv, 'burpconfsrv')
-    _edit_conf('plugins', plugins, 'plugins', 'Global', app)
+    refresh = False
+    refresh |= _edit_conf('bconfcli', bconfcli, 'burpconfcli')
+    refresh |= _edit_conf('bconfsrv', bconfsrv, 'burpconfsrv')
+    refresh |= _edit_conf('plugins', plugins, 'plugins', 'Global', app)
+
+    if refresh:
+        app.conf._refresh(True)
 
     if redis:
         try:
@@ -773,9 +803,28 @@ def diag(client, host, tips):
                 )
             )
 
-    bconfcli = app.conf.options.get('Burp', {}).get('bconfcli') or \
+    section = 'Burp'
+    if not app.conf.section_exists(section):
+        click.echo(
+            click.style(
+                'Section [Burp] not found, looking for the old [Burp2] section '
+                'instead.',
+                fg='yellow'
+            )
+        )
+        section = 'Burp2'
+        if not app.conf.section_exists(section):
+            click.echo(
+                click.style(
+                    'No [Burp*] section found at all!',
+                    fg='red'
+                )
+            )
+            section = 'Burp'
+
+    bconfcli = app.conf.options.get(section, {}).get('bconfcli') or \
         getattr(app.client, 'burpconfcli')
-    bconfsrv = app.conf.options.get('Burp', {}).get('bconfsrv') or \
+    bconfsrv = app.conf.options.get(section, {}).get('bconfsrv') or \
         getattr(app.client, 'burpconfsrv')
 
     try:
@@ -840,6 +889,8 @@ def diag(client, host, tips):
         errors = True
 
     if os.path.exists(bconfsrv):
+        parser = app.client.get_parser()
+
         confsrv = Config(bconfsrv, parser, 'srv')
         confsrv.set_default(bconfsrv)
         confsrv.parse()
