@@ -110,6 +110,7 @@ EOF
 cat > /etc/supervisor.d/websocket.ini.sample <<EOF
 [program:websocket-@WORKER_ID@]
 command=/usr/local/bin/bui-manage -c @BURPUI_CONFIG@ websocket -p @WORKER_PORT@
+user=burpui
 autostart=false
 autorestart=true
 stdout_logfile=/var/log/supervisor/%(program_name)s.log
