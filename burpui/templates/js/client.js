@@ -11,7 +11,14 @@ var __status = {
 	"{{ _('client crashed') }}": 'label-danger',
 	"{{ _('server crashed') }}": 'label-danger',
 	"{{ _('running') }}": 'label-success',
-	"{{ _('idle') }}": 'label-default',  // hack to manage translation
+	"{{ _('idle') }}": 'label-default',
+};
+
+var __translate = {
+	"client crashed": "{{ _('client crashed') }}",
+	"server crashed": "{{ _('server crashed') }}",
+	"running": "{{ _('running') }}",
+	"idle": "{{ _('idle') }}",
 };
 
 /***
@@ -186,11 +193,16 @@ var refresh_status = function( is_running ) {
 	var _span = $('#running-status');
 	var _inner_format_status = function(status) {
 		var _content = '<span class="'+__icons[status.state]+'" aria-hidden="true"></span> ';
-		if (status.state == '{{ _("running") }}') {
+		if (status.state == 'running') {
 			_client_running = true;
-			_content += status.state+' - '+status.phase+' ('+status.percent+'%)';
-		} else {
+			_content += __translate[status.state]+' - '+status.phase;
+			if (status.percent > 0) {
+				_content += ' ('+status.percent+'%)';
+			}
+		} else if (status.state) {
 			_content += status.state;
+		} else {
+			_content = '';
 		}
 		return _content;
 	};

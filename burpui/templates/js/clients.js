@@ -11,7 +11,13 @@ var __status = {
 	"{{ _('client crashed') }}": 'danger',
 	"{{ _('server crashed') }}": 'danger',
 	"{{ _('running') }}": 'success',
-	"{{ _('idle') }}": 'idle',  // hack to manage translation
+};
+
+var __translate = {
+	"client crashed": "{{ _('client crashed') }}",
+	"server crashed": "{{ _('server crashed') }}",
+	"running": "{{ _('running') }}",
+	"idle": "{{ _('idle') }}",
 };
 
 /***
@@ -19,7 +25,7 @@ var __status = {
  */
 var __date = {
 	"{{ _('never') }}": 'warning',
-	"{{ _('now') }}": 'now',  // hack to manage translation
+	"{{ _('now') }}": 'now',
 };
 
 /***
@@ -89,7 +95,10 @@ var _clients_table = $('#table-clients').DataTable( {
 			render: function ( data, type, row ) {
 				var result = data.state;
 				if (data.state == "{{ _('running') }}" && data.static) {
-					result = data.state+' - '+data.phase+' ('+data.percent+'%)';
+					result = __translate[data.state]+' - '+data.phase;
+					if (data.percent > 0) {
+						result += ' ('+data.percent+'%)';
+					}
 				}
 				return result;
 			}
