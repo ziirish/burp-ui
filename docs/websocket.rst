@@ -22,7 +22,7 @@ Dedicated Server
 
 You can choose to either run an embedded WebSocket server though this is not
 recommended in production or you can run one or several dedicated WebSocket
- servers through the ``bui-manage`` command like this:
+servers through the ``bui-manage`` command like this:
 
 ::
 

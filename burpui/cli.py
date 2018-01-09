@@ -15,8 +15,8 @@ import click
 
 if os.getenv('BUI_MODE') in ['server', 'ws'] or 'websocket' in sys.argv:
     try:
-        import eventlet
-        eventlet.monkey_patch(socket=True)
+        from gevent import monkey
+        monkey.patch_socket()
     except ImportError:
         pass
 

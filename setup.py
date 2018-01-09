@@ -289,7 +289,7 @@ setup(
     extras_require={
         'ldap_authentication': ['ldap3'],
         'extra': ['ujson'],
-        'gunicorn': ['eventlet', 'gunicorn'],
+        'gunicorn': ['gevent', 'gunicorn'],
         'gunicorn-extra': ['redis', 'Flask-Session==0.3.1'],
         'agent': ['gevent'],
         'ci': test_requires,
@@ -298,7 +298,7 @@ setup(
         'celery': ['Celery', 'redis'],
         'sql': ['Flask-SQLAlchemy', 'Flask-Migrate>=2.1.0', 'sqlalchemy-utils'],
         'limit': ['Flask-Limiter', 'redis'],
-        'websocket': ['flask-socketio', 'redis'],
+        'websocket': ['flask-socketio', 'redis', 'gevent-websocket'],
     },
     tests_require=test_requires,
     classifiers=[

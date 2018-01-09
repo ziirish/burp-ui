@@ -74,7 +74,7 @@ backlog = 2048
 #
 
 workers = @GUNICORN_WORKERS@
-worker_class = 'eventlet'
+worker_class = 'gevent'
 worker_connections = 1000
 timeout = 300
 keepalive = 2

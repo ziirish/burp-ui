@@ -73,8 +73,11 @@ backlog = 2048
 #       A positive integer. Generally set in the 1-5 seconds range.
 #
 
+# IF YOU DECIDE TO USE EMBEDDED WEBSOCKET, YOU NEED TO SET 'worker_class' TO
+# 'geventwebsocket.gunicorn.workers.GeventWebSocketWorker'
+
 workers = 5
-worker_class = 'eventlet'
+worker_class = 'gevent'
 worker_connections = 1000
 timeout = 300
 keepalive = 2
