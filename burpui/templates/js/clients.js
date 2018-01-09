@@ -18,6 +18,8 @@ var __translate = {
 	"server crashed": "{{ _('server crashed') }}",
 	"running": "{{ _('running') }}",
 	"idle": "{{ _('idle') }}",
+	"never": "{{ _('never') }}",
+	"now": "{{ _('now') }}",
 };
 
 /***
@@ -95,7 +97,7 @@ var _clients_table = $('#table-clients').DataTable( {
 			render: function ( data, type, row ) {
 				var result = data.state;
 				if (data.state == "{{ _('running') }}" && data.static) {
-					result = __translate[data.state]+' - '+data.phase;
+					result = data.state+' - '+data.phase;
 					if (data.percent > 0) {
 						result += ' ('+data.percent+'%)';
 					}

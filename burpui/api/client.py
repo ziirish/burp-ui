@@ -986,7 +986,7 @@ class ClientRunningStatus(Resource):
     )
     parser.add_argument('clientName', help='Client name')
     running_fields = ns.model('ClientRunningStatus', {
-        'state': fields.String(required=True, description='Running state'),
+        'state': fields.LocalizedString(required=True, description='Running state'),
         'percent': fields.Integer(
             required=False,
             description='Backup progress in percent',

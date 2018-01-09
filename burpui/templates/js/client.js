@@ -195,7 +195,7 @@ var refresh_status = function( is_running ) {
 		var _content = '<span class="'+__icons[status.state]+'" aria-hidden="true"></span> ';
 		if (status.state == 'running') {
 			_client_running = true;
-			_content += __translate[status.state]+' - '+status.phase;
+			_content += status.state+' - '+status.phase;
 			if (status.percent > 0) {
 				_content += ' ('+status.percent+'%)';
 			}
