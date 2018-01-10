@@ -10,7 +10,7 @@
             <li><a href="{{ url_for('view.client', name=cname, server=server) }}">{{ _('%(client)s overview', client=cname) }}</a></li>
             <li class="active">{{ _('Backup n°%(number)s overview', number=mypad(nbackup)) }}</li>
             {% else -%}
-            <li><a href="{{ url_for('view.home') }}">Home</a></li>
+            <li><a href="{{ url_for('view.home') }}">{{ _('Home') }}</a></li>
             <li><a href="{{ url_for('view.client', name=cname) }}">{{ _('%(client)s overview', client=cname) }}</a></li>
             <li class="active">{{ _('Backup n°%(number)s overview', number=mypad(nbackup)) }}</li>
             {% endif -%}

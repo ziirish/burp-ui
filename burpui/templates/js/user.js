@@ -167,6 +167,7 @@ var _sessions_table = $('#table-sessions').DataTable( {
 	{{ macros.translate_datatable() }}
 	{{ macros.get_page_length() }}
 	responsive: true,
+	processing: true,
 	select: {
 		style: 'os',
 	},
@@ -237,7 +238,7 @@ var _sessions_table = $('#table-sessions').DataTable( {
 		}
 	],
 	order: [[1, 'desc']],
-	destroy: true,
+	rowId: 'uuid',
 	columns: [
 		{ data: 'ip' },
 		{

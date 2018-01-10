@@ -62,6 +62,7 @@ var _client_table = $('#table-client').DataTable( {
 	{{ macros.translate_datatable() }}
 	{{ macros.get_page_length() }}
 	responsive: true,
+	processing: true,
 	ajax: {
 		url: '{{ url_for("api.client_stats", name=cname, server=server) }}',
 		headers: { 'X-From-UI': true },

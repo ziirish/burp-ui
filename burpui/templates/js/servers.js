@@ -13,6 +13,7 @@ var _servers_table = $('#table-servers').DataTable( {
 	{{ macros.translate_datatable() }}
 	{{ macros.get_page_length() }}
 	responsive: true,
+	processing: true,
 	ajax: {
 		url: '{{ url_for("api.servers_stats") }}',
 		dataSrc: function (data) {
@@ -20,7 +21,7 @@ var _servers_table = $('#table-servers').DataTable( {
 		},
 		error: myFail,
 	},
-	destroy: true,
+	rowId: 'name',
 	rowCallback: function( row, data ) {
 		if (!data.alive) {
 			row.className += ' danger';

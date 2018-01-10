@@ -43,6 +43,7 @@ $( document ).ready(function() {
 		selectMode: 3,
 		extensions: ["glyph", "table", "gridnav", "filter"],
 		glyph: {
+		  preset: "bootstrap3",
 			map: {
 				doc: "glyphicon glyphicon-file",
 				docOpen: "glyphicon glyphicon-file",
@@ -61,6 +62,14 @@ $( document ).ready(function() {
 				folderOpen: "glyphicon glyphicon-folder-open",
 				loading: "glyphicon glyphicon-refresh glyphicon-spin"
 			}
+		},
+		persist: {
+			expandLazy: false,
+			overrideSource: false,
+			store: "cookie",
+			cookie: {
+				path: '{{ url_for("api.client_tree", name=cname, backup=nbackup, server=server) }}',
+			},
 		},
 		source: function() { 
 			{% if edit and edit.found -%}
@@ -81,7 +90,7 @@ $( document ).ready(function() {
 			p = node.key;
 			if (p !== "/") p += '/';
 			p = encodeURIComponent(p);
-			data.result = { url: '{{ url_for("api.client_tree", name=cname, backup=nbackup, server=server) }}?root='+p, debugDelay: 500 };
+			data.result = $.getJSON('{{ url_for("api.client_tree", name=cname, backup=nbackup, server=server) }}?root='+p);
 		},
 		loadChildren: function(event, data) {
 			// This is a hack to select all children of a selected node after

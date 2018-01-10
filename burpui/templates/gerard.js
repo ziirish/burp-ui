@@ -171,36 +171,36 @@ var myFail = function(xhr, stat, err) {
 	notif(NOTIF_ERROR, msg);
 };
 
-{% if config.WITH_CELERY %}
+{% if config.WITH_CELERY -%}
 {% set api_running_backup = "api.async_running_backup" %}
-{% else %}
+{% else -%}
 {% set api_running_backup = "api.running_backup" %}
-{% endif %}
-{% if not login %}
+{% endif -%}
+{% if not login -%}
 var _last_running_status = undefined;
 var _last_call = 0;
 var _check_running = function() {
-	{% if server %}
+	{% if server -%}
 	var url = '{{ url_for(api_running_backup, server=server) }}';
-	{% else %}
+	{% else -%}
 	var url = '{{ url_for(api_running_backup) }}';
-	{% endif %}
+	{% endif -%}
 	var now = Date.now();
 	if ((now - _last_call) < 5*1000) {
 		return;
 	}
 	_last_call = now;
 	$.getJSON(url, function(data) {
-		{% if clients and overview %}
+		{% if clients and overview -%}
 		if (_last_running_status != data.running) {
 			$( document ).trigger('refreshClientsStatesEvent', data.running);
 		}
-		{% endif %}
-		{% if client and overview %}
+		{% endif -%}
+		{% if client and overview -%}
 		if (_last_running_status != data.running) {
 			$( document ).trigger('refreshClientStatusEvent', data.running);
 		}
-		{% endif %}
+		{% endif -%}
 		if (data.running) {
 			$('#toblink').addClass('blink');
 		} else {
@@ -209,9 +209,9 @@ var _check_running = function() {
 		_last_running_status = data.running;
 	});
 };
-{% endif %}
+{% endif -%}
 
-{% if not login %}
+{% if not login -%}
 
 var substringMatcher = function(objs) {
 	return function findMatches(q, cb) {
@@ -237,7 +237,7 @@ var substringMatcher = function(objs) {
 
 var _clients_all = [];
 
-	{% if config.STANDALONE %}
+	{% if config.STANDALONE -%}
 
 $.get("{{ url_for('api.clients_all') }}")
 	.done(function (data) {
@@ -259,13 +259,13 @@ $.get("{{ url_for('api.clients_all') }}")
 
 	});
 
-	{% else %}
+	{% else -%}
 
-		{% for srv in config.SERVERS %}
+		{% for srv in config.SERVERS -%}
 
 var _clients_{{ srv|regex_replace("[^a-z0-9_]", "_") }} = [];
 
-		{% endfor %}
+		{% endfor -%}
 
 $.get("{{ url_for('api.clients_all') }}")
 	.done(function (data) {
@@ -279,7 +279,7 @@ $.get("{{ url_for('api.clients_all') }}")
 $('#input-client').typeahead({
 	highlight: true
 },
-		{% for srv in config.SERVERS %}
+		{% for srv in config.SERVERS -%}
 {
 	name: '{{ srv }}',
 	displayKey: 'name',
@@ -287,74 +287,74 @@ $('#input-client').typeahead({
 	templates: {
 		header: '<h3 class="server-name">{{ srv }}</h3>'
 	}
-			{% if loop.last %}
+			{% if loop.last -%}
 
 }
-			{% else %}
+			{% else -%}
 },
-			{% endif %}
-		{% endfor %}
+			{% endif -%}
+		{% endfor -%}
 ).on('typeahead:selected', function(obj, datum) {
 	window.location = '{{ url_for("view.client") }}?name='+datum.name+'&serverName='+datum.agent;
 });
-	{% endif %}
-{% endif %}
+	{% endif -%}
+{% endif -%}
 
 
-{% if servers and overview %}
+{% if servers and overview -%}
 {% include "js/servers.js" %}
-{% endif %}
+{% endif -%}
 
-{% if servers and report %}
+{% if servers and report -%}
 {% include "js/servers-report.js" %}
-{% endif %}
+{% endif -%}
 
-{% if clients and overview %}
+{% if clients and overview -%}
 {% include "js/clients.js" %}
-{% endif %}
+{% endif -%}
 
-{% if clients and report %}
+{% if clients and report -%}
 {% include "js/clients-report.js" %}
-{% endif %}
+{% endif -%}
 
-{% if client and overview %}
+{% if client and overview -%}
 {% include "js/client.js" %}
-{% set is_client_func = True %}
-{% endif %}
+{% set is_client_func = True -%}
+{% endif -%}
 
-{% if backup and report and client %}
+{% if backup and report and client -%}
 {% include "js/backup-report.js" %}
-{% set is_client_func = True %}
-{% endif %}
+{% set is_client_func = True -%}
+{% endif -%}
 
-{% if not backup and report and client %}
+{% if not backup and report and client -%}
 {% include "js/client-report.js" %}
-{% set is_client_func = True %}
-{% endif %}
+{% set is_client_func = True -%}
+{% endif -%}
 
-{% if live %}
+{% if live -%}
 {% include "js/live-monitor.js" %}
-{% endif %}
+{% endif -%}
 
-{% if settings %}
+{% if settings -%}
 {% include "js/settings.js" %}
-{% endif %}
+{% endif -%}
 
-{% if about %}
+{% if about -%}
 {% include "js/about.js" %}
-{% endif %}
+{% endif -%}
 
-{% if calendar %}
+{% if calendar -%}
 {% include "js/calendar.js" %}
-{% endif %}
+{% endif -%}
 
-{% if tree %}
+{% if tree -%}
 {% include "js/client-browse.js" %}
-{% endif %}
+{% endif -%}
 
-{% if me %}
+{% if me -%}
 {% include "js/user.js" %}
-{% endif %}
+{% endif -%}
 
 var _fit_menu = function() {
 	size = $(window).width();
@@ -400,21 +400,21 @@ $(function() {
 	 */
 	$('#refresh').on('click', function(e) {
 		e.preventDefault();
-		{% if clients %}
+		{% if clients -%}
 		_clients();
-		{% endif %}
-		{% if client and is_client_func %}
+		{% endif -%}
+		{% if client and is_client_func -%}
 		_client();
-		{% endif %}
-		{% if not login %}
+		{% endif -%}
+		{% if not login -%}
 		_check_running();
-		{% endif %}
-		{% if servers %}
+		{% endif -%}
+		{% if servers -%}
 		_servers();
-		{% endif %}
-		{% if me %}
+		{% endif -%}
+		{% if me -%}
 		_sessions();
-		{% endif %}
+		{% endif -%}
 	});
 
 	/***
@@ -443,53 +443,53 @@ $(function() {
 	/***
 	 * initialize our page if needed
 	 */
-	{% if not login %}
+	{% if not login -%}
 	_check_running();
-	{% endif %}
-	{% if clients %}
+	{% endif -%}
+	{% if clients -%}
 	_clients();
-	{% endif %}
-	{% if client and is_client_func %}
+	{% endif -%}
+	{% if client and is_client_func -%}
 	_client();
-	{% endif %}
-	{% if servers %}
+	{% endif -%}
+	{% if servers -%}
 	_servers();
-	{% endif %}
-	{% if me %}
+	{% endif -%}
+	{% if me -%}
 	_sessions();
-	{% endif %}
+	{% endif -%}
 
-	{% if not report and not login %}
+	{% if not report and not login -%}
 	/***
 	 * auto-refresh our page if needed
 	 */
-	{% set autorefresh = config.REFRESH %}
+	{% set autorefresh = config.REFRESH -%}
 	var auto_refresh = setInterval(function() {
-		{% if clients %}
+		{% if clients -%}
 		_clients();
-		{% endif %}
-		{% if client and not settings %}
+		{% endif -%}
+		{% if client and not settings -%}
 		_client();
-		{% endif %}
-		{% if servers and overview %}
+		{% endif -%}
+		{% if servers and overview -%}
 		_servers();
-		{% endif %}
+		{% endif -%}
 		return;
 	}, {{ autorefresh * 1000 }});
-	{% endif %}
+	{% endif -%}
 
-	{% if not login %}
-		{% if not config.WS_AVAILABLE or not config.WITH_CELERY %}
+	{% if not login -%}
+		{% if not config.WS_AVAILABLE or not config.WITH_CELERY -%}
 	/***
 	 * Javascript Loop
 	 */
 	var refresh_running = setInterval(function () {
 		_check_running();
 	}, {{ config.LIVEREFRESH * 1000 }});
-		{% endif %}
-	{% endif %}
+		{% endif -%}
+	{% endif -%}
 });
 
-{% if not login and config.WS_AVAILABLE %}
+{% if not login and config.WS_AVAILABLE -%}
 {% include "js/websocket.js" %}
-{% endif %}
+{% endif -%}
