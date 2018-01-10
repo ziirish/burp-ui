@@ -32,11 +32,12 @@ EXEMPT_METHODS = set(['OPTIONS'])
 
 
 def cache_key():
-    key = '{}-{}-{}-{}-{}'.format(
+    key = '{}-{}-{}-{}-{}-{}'.format(
         session.get('login', uuid.uuid4()),
         request.path,
         request.values,
         request.headers.get('X-Session-Tag', ''),
+        request.cookies,
         session.get('language', '')
     )
     key = hashlib.sha256(to_bytes(key)).hexdigest()

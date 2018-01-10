@@ -13,13 +13,14 @@ from . import api, cache_key
 from ..server import BUIServer  # noqa
 from .custom import fields, Resource
 from .custom.inputs import boolean
+from ..decorators import browser_cache
 from ..ext.cache import cache
 from ..exceptions import BUIserverException
 from ..utils import NOTIF_ERROR
 
 from six import iteritems
 from flask_restplus.marshalling import marshal
-from flask import current_app
+from flask import current_app, request
 from flask_login import current_user
 
 bui = current_app  # type: BUIServer
@@ -154,9 +155,18 @@ class ClientTree(Resource):
         required=False,
         default=False
     )
+    parser.add_argument(
+        'init',
+        type=boolean,
+        help='First call to load the root of the tree',
+        nullable=True,
+        required=False,
+        default=False
+    )
 
     @cache.cached(timeout=3600, key_prefix=cache_key)
     @ns.marshal_list_with(node_fields, code=200, description='Success')
+    @browser_cache(3600)
     @ns.expect(parser)
     @ns.doc(
         responses={
@@ -223,6 +233,20 @@ class ClientTree(Resource):
                 not current_user.acl.is_admin() and \
                 not current_user.acl.is_client_allowed(name, server):
             self.abort(403, 'Sorry, you are not allowed to view this client')
+
+        from_cookie = None
+        if args['init'] and not root_list:
+            from_cookie = request.cookies.get('fancytree-1-expanded', '')
+            if from_cookie:
+                args['recursive'] = True
+                _root = bui.client.get_tree(name, backup, agent=server)
+                root_list = [x['name'] for x in _root]
+                for path in from_cookie.split('~'):
+                    if not path.endswith('/'):
+                        path += '/'
+                    if path not in root_list:
+                        root_list.append(path)
+                root_list = sorted(root_list)
 
         try:
             root_list_clean = []
