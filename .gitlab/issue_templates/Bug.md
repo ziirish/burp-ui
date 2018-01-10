@@ -40,18 +40,22 @@ Unable to login: SQL error
 
 ```
 $ burp -v
-burp-2.0.54
+burp-2.1.18
 ```
 
 # Sysinfo
 
 ```
 $ bui-manage sysinfo
-Python version:  3.6.1
-Burp-UI version: 0.5.0 (stable)
-Single mode:     True
-Backend version: 2
-Config file:     share/burpui/etc/burpui.sample.cfg
+Python version:      3.6.1
+Burp-UI version:     0.5.0 (stable)
+Single mode:         True
+Backend version:     2
+WebSocket embedded:  False
+WebSocket available: True
+Config file:         share/burpui/etc/burpui.sample.cfg
+Burp client version: 2.1.18
+Burp server version: 2.1.18
 ```
 
 # Steps to reproduce

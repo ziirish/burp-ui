@@ -21,6 +21,7 @@ if os.getenv('BUI_MODE') in ['server', 'ws'] or 'websocket' in sys.argv:
         pass
 
 from .app import create_app  # noqa
+from .exceptions import BUIserverException  # noqa
 from six import iteritems  # noqa
 
 try:
@@ -1049,13 +1050,57 @@ def diag(client, host, tips):
 def sysinfo(verbose):
     """Returns a couple of system informations to help debugging."""
     from .desc import __release__, __version__
+
+    try:
+        msg = app.load_modules(True)
+    except Exception as e:
+        msg = str(e)
+
+    backend_version = app.vers
+    if not app.standalone:
+        backend_version = 'multi'
+
+    colors = {
+        'True': 'green',
+        'False': 'red',
+    }
+    embedded_ws = str(app.websocket)
+    available_ws = str(WS_AVAILABLE)
+
     click.echo('Python version:      {}.{}.{}'.format(sys.version_info[0], sys.version_info[1], sys.version_info[2]))
     click.echo('Burp-UI version:     {} ({})'.format(__version__, __release__))
     click.echo('Single mode:         {}'.format(app.standalone))
-    click.echo('Backend version:     {}'.format(app.vers))
-    click.echo('WebSocket embedded:  {}'.format(app.websocket))
-    click.echo('WebSocket available: {}'.format(WS_AVAILABLE))
+    click.echo('Backend version:     {}'.format(backend_version))
+    click.echo('WebSocket embedded:  {}'.format(click.style(embedded_ws, fg=colors[embedded_ws])))
+    click.echo('WebSocket available: {}'.format(click.style(available_ws, colors[available_ws])))
     click.echo('Config file:         {}'.format(app.config.conffile))
+    if not app.standalone and not msg:
+        click.echo('Agents:')
+        for agent, obj in iteritems(app.client.servers):
+            client_version = server_version = 'unknown'
+            try:
+                app.client.status(agent=agent)
+                client_version = app.client.get_client_version(agent=agent)
+                server_version = app.client.get_server_version(agent=agent)
+            except BUIserverException:
+                pass
+            alive = obj.ping()
+            if alive:
+                status = click.style('ALIVE', fg='green')
+            else:
+                status = click.style('DISCONNECTED', fg='red')
+            click.echo(' - {} ({})'.format(agent, status))
+            click.echo('   * client version: {}'.format(client_version))
+            click.echo('   * server version: {}'.format(server_version))
+    elif not msg:
+        server_version = 'unknown'
+        try:
+            app.client.status()
+            server_version = app.client.get_server_version()
+        except BUIserverException:
+            pass
+        click.echo('Burp client version: {}'.format(app.client.client_version))
+        click.echo('Burp server version: {}'.format(server_version))
     if verbose:
         click.echo('>>>>> Extra verbose informations:')
         click.echo(click.style(
@@ -1076,3 +1121,6 @@ def sysinfo(verbose):
                 for key, val in iteritems(app.config.options.get(section, {})):
                     click.echo('    {} = {}'.format(key, val))
                 click.echo('    8<{}END[{}]'.format('-' * (69 - len(section)), section))
+
+    if msg:
+        _die(msg, 'sysinfo')
