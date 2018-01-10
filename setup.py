@@ -81,6 +81,7 @@ VENDOR_TO_KEEP = [
     'burpui/static/vendor/components-font-awesome/fonts/fontawesome-webfont.woff',
     'burpui/static/vendor/components-font-awesome/fonts/fontawesome-webfont.woff2',
     'burpui/static/vendor/socket.io-client/dist/socket.io.js',
+    'burpui/static/vendor/js-cookie/src/js.cookie.js',
 ]
 
 for p in VENDOR_TO_KEEP:
