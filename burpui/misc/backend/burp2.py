@@ -191,7 +191,7 @@ class Burp(Burp1):
         if not self.server_version:
             if 'logline' in jso:
                 ret = re.search(
-                    r'^Server version: (\d+\.\d+\.\d+)$',
+                    r'^Server version: (\d+\.\d+\.\d+).*$',
                     jso['logline']
                 )
                 if ret:
