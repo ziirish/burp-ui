@@ -263,7 +263,7 @@ def cleanup_restore():
 @celery.task(bind=True)
 def perform_restore(self, client, backup,
                     files, strip, fmt, passwd, server=None, user=None,
-                    expire=timedelta(minutes=60)):
+                    admin=False, room=None, expire=timedelta(minutes=60)):
     ret = None
     lock_name = '{}-{}'.format(self.name, server)
 
@@ -305,7 +305,8 @@ def perform_restore(self, client, backup,
                 'filename': filename,
                 'path': archive,
                 'user': user,
-                'server': server
+                'server': server,
+                'admin': admin
             }
             logger.debug(ret)
 

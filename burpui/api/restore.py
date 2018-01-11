@@ -115,8 +115,14 @@ class Restore(Resource):
         archive, err = bui.client.restore_files(name, backup, lst, stp, fmt, pwd, server)
         if not archive:
             if err:
+                if (not current_user.is_anonymous and
+                        not current_user.acl.is_admin() or
+                        bui.demo) and err != 'encrypted':
+                    err = 'An error occurred while performing the ' \
+                          'restoration. Please contact your administrator ' \
+                          'for further details'
                 return make_response(err, 500)
-            self.abort(500)
+            return make_response(err, 500)
 
         if not server:
             try:
@@ -126,7 +132,7 @@ class Restore(Resource):
                 # ended. Because the fh is open, the file will be actually removed
                 # when the transfer is done and the send_file method has closed
                 # the fh. Only tested on Linux systems.
-                fh = open(archive, 'r')
+                fh = open(archive, 'rb')
 
                 @after_this_request
                 def remove_file(response):

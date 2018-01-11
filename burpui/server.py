@@ -185,7 +185,7 @@ class BUIServer(Flask):
         key = 'standalone' if 'standalone' in \
             self.conf.conf.get(self.conf.section, {}) else 'single'
         if key == 'standalone':
-            # TODO: remove the conpatibility in v0.7.0
+            # TODO: remove the compatibility in v0.7.0
             self.logger.warning(
                 'The "standalone" option is DEPRECATED and has been replaced '
                 'by the "single" option. Please update your conf before we '

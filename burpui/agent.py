@@ -28,6 +28,12 @@ from .utils import BUIlogging
 from .config import config
 from .desc import __version__
 
+try:
+    from sendfile import sendfile
+    USE_SENDFILE = True
+except ImportError:
+    USE_SENDFILE = False
+
 G_PORT = 10000
 G_BIND = u'::'
 G_SSL = False
@@ -219,11 +225,20 @@ class BUIAgent(BUIbackend, BUIlogging):
                         self.request.sendall(b'OK')
                         self.request.sendall(struct.pack('!Q', size))
                         with open(path, 'rb') as f:
-                            buf = f.read(1024)
-                            while buf:
-                                self._logger('info', 'sending {} Bytes'.format(len(buf)))
-                                self.request.sendall(buf)
-                                buf = f.read(1024)
+                            if not USE_SENDFILE:
+                                while True:
+                                    buf = f.read(1024)
+                                    if not buf:
+                                        break
+                                    self._logger('info', 'sending {} Bytes'.format(len(buf)))
+                                    self.request.sendall(buf)
+                            else:
+                                offset = 0
+                                while True:
+                                    sent = sendfile(self.request.fileno(), f.fileno(), offset, size)
+                                    if sent == 0:
+                                        break
+                                    offset += sent
                         os.unlink(path)
                         lengthbuf = self.request.recv(8)
                         length, = struct.unpack('!Q', lengthbuf)

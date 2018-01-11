@@ -26,10 +26,15 @@ from ..tasks import perform_restore, load_all_tree
 from time import time
 from zlib import adler32
 from flask import url_for, Response, current_app, after_this_request, \
-    send_file, redirect
+    send_file, redirect, request
 from flask_login import current_user
 from datetime import timedelta
 from werkzeug.datastructures import Headers
+try:
+    from .ext.ws import socketio  # noqa
+    WS_AVAILABLE = True
+except ImportError:
+    WS_AVAILABLE = False
 
 if config.get('WITH_SQL'):
     from ..ext.sql import db
@@ -120,9 +125,14 @@ class AsyncGetFile(Resource):
         task = perform_restore.AsyncResult(task_id)
         if task.state != 'SUCCESS':
             if task.state == 'FAILURE':
+                err = task.result.get('error')
+                if err != 'encrypted' and not task.result.get('admin'):
+                    err = 'An error occurred while performing the ' \
+                          'restoration. Please contact your administrator ' \
+                          'for further details'
                 self.abort(
                     500,
-                    'Unsuccessful task: {}'.format(task.result.get('error'))
+                    'Unsuccessful task:\n{}'.format(err)
                 )
             self.abort(400, 'Task not processed yet: {}'.format(task.state))
 
@@ -154,7 +164,7 @@ class AsyncGetFile(Resource):
             # ended. Because the fh is open, the file will be actually removed
             # when the transfer is done and the send_file method has closed
             # the fh. Only tested on Linux systems.
-            fh = open(path, 'r')
+            fh = open(path, 'rb')
 
             @after_this_request
             def remove_file(response):
@@ -305,6 +315,9 @@ class AsyncRestore(Resource):
         strip = args['strip']
         fmt = args['format'] or 'zip'
         passwd = args['pass']
+        room = None
+        if WS_AVAILABLE:
+            room = request.sid
         if not files or not name or not backup:
             self.abort(400, 'missing arguments')
         # Manage ACL
@@ -324,7 +337,9 @@ class AsyncRestore(Resource):
                 fmt,
                 passwd,
                 server,
-                current_user.name
+                current_user.name,
+                not current_user.is_anonymous and current_user.acl.is_admin(),
+                room
             ]
         )
         if db:

@@ -894,23 +894,27 @@ class Burp(BUIbackend):
         if os.path.isdir(tmpdir):
             shutil.rmtree(tmpdir)
         full_reg = u''
+
+        def _escape(s):
+            return re.sub(r"[(){}\[\].*?|^$\\+-]", r"\\\g<0>", s)
+
         for restore in flist['restore']:
             reg = u''
             if restore['folder'] and restore['key'] != '/':
-                reg += '^' + re.escape(restore['key']) + '/|'
+                reg += '^' + _escape(restore['key']) + '/|'
             else:
-                reg += '^' + re.escape(restore['key']) + '$|'
-            full_reg += reg
+                reg += '^' + _escape(restore['key']) + '$|'
+            full_reg += to_unicode(reg)
 
-        cmd = [self.burpbin, '-C', quote(name), '-a', 'r', '-b', quote(str(backup)), '-r', full_reg.rstrip('|'), '-d', tmpdir]
+        cmd = [self.burpbin, '-C', quote(name), '-a', 'r', '-b', quote(str(backup)), '-r', full_reg.rstrip('|').replace(r"\n", r"\\n"), '-d', tmpdir]
         if password:
             if not self.burpconfcli:
                 return None, 'No client configuration file specified'
             tmpdesc = os.fdopen(tmphandler, 'wb+')
-            with open(self.burpconfcli) as fileobj:
+            with open(self.burpconfcli, 'rb') as fileobj:
                 shutil.copyfileobj(fileobj, tmpdesc)
 
-            tmpdesc.write('encryption_password = {}\n'.format(sanitize_string(password)))
+            tmpdesc.write(to_bytes('encryption_password = {}\n'.format(sanitize_string(password))))
             tmpdesc.close()
             cmd.append('-c')
             cmd.append(tmpfile)

@@ -295,7 +295,6 @@ setup(
         'agent': ['gevent'],
         'ci': test_requires,
         'dev': dev_requires,
-        'debian_wheezy': ['functools32'],
         'celery': ['Celery', 'redis'],
         'sql': ['Flask-SQLAlchemy', 'Flask-Migrate>=2.1.0', 'sqlalchemy-utils'],
         'limit': ['Flask-Limiter', 'redis'],

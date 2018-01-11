@@ -220,7 +220,7 @@ $( document ).ready(function() {
 							failCallback: function (responseHtml, url) {
 								$preparingFileModal.modal('hide');
 								if (responseHtml == 'encrypted') {
-									msg = 'The backup seems encrypted, please provide the encryption key in the \'Download options\' form.';
+									msg = '{{ _("The backup seems encrypted, please provide the encryption key in the \'Download options\' form.") }}';
 								} else {
 									msg = responseHtml;
 								}
@@ -243,7 +243,7 @@ $( document ).ready(function() {
 						return false;
 					}
 					if (resp == 'encrypted') {
-						msg = 'The backup seems encrypted, please provide the encryption key in the \'Download options\' form.';
+						msg = '{{ _("The backup seems encrypted, please provide the encryption key in the \'Download options\' form.") }}';
 					} else {
 						msg = resp;
 					}
