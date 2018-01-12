@@ -84,7 +84,7 @@ build:py3:
 
 build:doc:
   stage: build
-  image: python3.6
+  image: python:3.6
   script:
   - sed -e "s,^#\(.*\)@AUTOFLASK@\(.*\)$,\1sphinxcontrib.autohttp.flask\2," docs/conf.py
   - apt-get update && apt-get install -y unzip
