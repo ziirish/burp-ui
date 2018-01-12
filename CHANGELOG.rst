@@ -10,10 +10,21 @@ Current
 - Add: new plugins system to allow users to write their own modules
 - Add: `Italian translation <https://git.ziirish.me/ziirish/burp-ui/merge_requests/74>`_ thanks to Enrico
 - Add: `backups deletion <https://git.ziirish.me/ziirish/burp-ui/issues/203>`_
+- Add: `show last client status in client view <https://git.ziirish.me/ziirish/burp-ui/issues/212>`_
 - Add: `record login failure attempt <https://git.ziirish.me/ziirish/burp-ui/issues/214>`_
 - Add: `support new burp counters <https://git.ziirish.me/ziirish/burp-ui/issues/219>`_
 - Add: `support new reset list (:=) syntax <https://git.ziirish.me/ziirish/burp-ui/issues/223>`_
 - Add: `new websocket server <https://git.ziirish.me/ziirish/burp-ui/issues/224>`_
+- Improvement: `better ACL engine <https://git.ziirish.me/ziirish/burp-ui/issues/221>`_
+- Fix: issue `#213 <https://git.ziirish.me/ziirish/burp-ui/issues/213>`_
+- Fix: issue `#225 <https://git.ziirish.me/ziirish/burp-ui/issues/225>`_
+- Fix: issue `#226 <https://git.ziirish.me/ziirish/burp-ui/issues/226>`_
+- Fix: issue `#227 <https://git.ziirish.me/ziirish/burp-ui/issues/227>`_
+- Fix: issue `#234 <https://git.ziirish.me/ziirish/burp-ui/issues/234>`_
+- Fix: issue `#235 <https://git.ziirish.me/ziirish/burp-ui/issues/235>`_
+- Fix: issue `#236 <https://git.ziirish.me/ziirish/burp-ui/issues/236>`_
+- Fix: issue `#242 <https://git.ziirish.me/ziirish/burp-ui/issues/242>`_
+- Fix: issue `#245 <https://git.ziirish.me/ziirish/burp-ui/issues/245>`_
 - `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/v0.5.0...master>`__
 
 0.5.1 (05/26/2017)
