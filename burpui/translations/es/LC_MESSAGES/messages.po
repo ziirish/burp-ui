@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2018-01-12 14:15+0100\n"
+"POT-Creation-Date: 2018-01-12 16:15+0100\n"
 "PO-Revision-Date: 2017-03-07 12:04-0300\n"
 "Last-Translator: Pablo Estigarribia <pablodav@gmail.com>\n"
 "Language: es\n"
@@ -2065,7 +2065,7 @@ msgstr "Colapsar árbol"
 #: burpui/templates/js/client-browse.js:246
 msgid ""
 "The backup seems encrypted, please provide the encryption key in the "
-"'Download options' form."
+"\\'Download options\\' form."
 msgstr ""
 
 #: burpui/templates/js/client-browse.js:307
@@ -2163,4 +2163,10 @@ msgstr "servidores"
 
 #~ msgid "Revoke"
 #~ msgstr "Revocar"
+
+#~ msgid ""
+#~ "The backup seems encrypted, please "
+#~ "provide the encryption key in the "
+#~ "'Download options' form."
+#~ msgstr ""
 

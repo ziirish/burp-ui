@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2018-01-12 14:15+0100\n"
+"POT-Creation-Date: 2018-01-12 16:15+0100\n"
 "PO-Revision-Date: 2017-07-16 10:36+0100\n"
 "Last-Translator: Enrico204 <enrico204@gmail.com>\n"
 "Language: it\n"
@@ -2006,7 +2006,7 @@ msgstr "Comprimi albero"
 #: burpui/templates/js/client-browse.js:246
 msgid ""
 "The backup seems encrypted, please provide the encryption key in the "
-"'Download options' form."
+"\\'Download options\\' form."
 msgstr ""
 
 #: burpui/templates/js/client-browse.js:307
@@ -2092,4 +2092,10 @@ msgstr "clients"
 #: burpui/templates/js/user.js:541 burpui/templates/js/user.js:559
 msgid "servers"
 msgstr "servers"
+
+#~ msgid ""
+#~ "The backup seems encrypted, please "
+#~ "provide the encryption key in the "
+#~ "'Download options' form."
+#~ msgstr ""
 
