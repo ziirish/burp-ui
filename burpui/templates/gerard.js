@@ -179,25 +179,25 @@ var myFail = function(xhr, stat, err) {
 {% if not login -%}
 var _last_running_status = undefined;
 var _last_call = 0;
-var _check_running = function() {
+var _check_running = function(force) {
 	{% if server -%}
 	var url = '{{ url_for(api_running_backup, server=server) }}';
 	{% else -%}
 	var url = '{{ url_for(api_running_backup) }}';
 	{% endif -%}
 	var now = Date.now();
-	if ((now - _last_call) < 5*1000) {
+	if ((now - _last_call) < 5*1000 && !force) {
 		return;
 	}
 	_last_call = now;
 	$.getJSON(url, function(data) {
 		{% if clients and overview -%}
-		if (_last_running_status != data.running) {
+		if (_last_running_status != data.running || force) {
 			$( document ).trigger('refreshClientsStatesEvent', data.running);
 		}
 		{% endif -%}
 		{% if client and overview -%}
-		if (_last_running_status != data.running) {
+		if (_last_running_status != data.running || force) {
 			$( document ).trigger('refreshClientStatusEvent', data.running);
 		}
 		{% endif -%}

@@ -73,8 +73,8 @@ var _client_table = $('#table-client').DataTable( {
 			} else {
 				$('#client-alert').hide();
 				$('#table-client').show();
-				return data;
 			}
+			return data;
 		},
 		error: function(xhr, stat, err) {
 			myFail(xhr, stat, err);
@@ -142,8 +142,6 @@ var first = true;
 var _client = function() {
 	if (first) {
 		first = false;
-		_check_running();
-		refresh_status(false);
 	} else {
 		_client_table.ajax.reload( null, false );
 	}
@@ -312,6 +310,10 @@ $( document ).ready(function() {
 
 _client_table.on('draw.dt', function() {
 	$('[data-toggle="tooltip"]').tooltip();
+});
+_client_table.on('init.dt', function() {
+	_check_running(true);
+	refresh_status(false);
 });
 $( document ).on('refreshClientStatusEvent', function( event, is_running ) {
 	refresh_status(is_running);

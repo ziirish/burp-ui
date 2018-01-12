@@ -101,6 +101,7 @@ build:doc:
     paths:
     - docs/_build/html
     expire_in: 2 mos
+  allow_failure: true
 
 build:docker:latest:
   stage: build

@@ -140,7 +140,6 @@ var first = true;
 var _clients = function() {
 	if (first) {
 		first = false;
-		_check_running();
 	} else {
 		_clients_table.ajax.reload( null, false );
 	}
@@ -165,9 +164,7 @@ var refresh_status = function( is_running ) {
 			_.each(running, function(name) {
 				var _row = _clients_table.row('#'+name);
 				var _content = _row.data();
-				var _p = $.get({
-					url: '{{ url_for("api.client_running_status", server=server) }}?clientName='+name,
-				}).done(function(_status) {
+				var _p = $.getJSON('{{ url_for("api.client_running_status", server=server) }}?clientName='+name, function(_status) {
 					_status.static = true;
 					var _new_content = _.merge(_content, _status);
 					_row.data( _new_content );
@@ -218,6 +215,9 @@ var refresh_status = function( is_running ) {
 
 _clients_table.on('draw.dt', function() {
 	$('[data-toggle="tooltip"]').tooltip();
+});
+_clients_table.on('init.dt', function() {
+	_check_running(true);
 });
 $( document ).on('refreshClientsStatesEvent', function( event, is_running ) {
 	refresh_status(is_running);

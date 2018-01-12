@@ -18,7 +18,6 @@ from .client import node_fields
 from .clients import RunningBackup, ClientsReport, RunningClients
 from ..server import BUIServer  # noqa
 from ..ext.cache import cache
-from ..ext.limit import limiter
 from ..config import config
 from ..decorators import browser_cache
 from ..tasks import perform_restore, load_all_tree
@@ -58,7 +57,12 @@ class AsyncRestoreStatus(Resource):
 
     This resource is part of the :mod:`burpui.api.async` module.
     """
-    decorators = [limiter.exempt]
+    if config['WITH_LIMIT']:
+        try:
+            from ..ext.limit import limiter
+            decorators = [limiter.exempt]
+        except ImportError:
+            pass
 
     @ns.doc(
         responses={
