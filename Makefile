@@ -22,6 +22,7 @@ clean:
 	@find . -type d -name "__pycache__" -exec rm -rf "{}" \; || true
 	@find . -type f -name "*.pyc" -delete || true
 	@rm -rf build dist burp_ui.egg-info docs/_build || true
+	@cd docs && make clean
 
 clean_coverage:
 	@rm -f .coverage

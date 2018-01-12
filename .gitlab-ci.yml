@@ -82,6 +82,26 @@ build:py3:
     - meta/
     expire_in: 2 mos
 
+build:doc:
+  stage: build
+  image: python3.6
+  script:
+  - sed -e "s,^#\(.*\)@AUTOFLASK@\(.*\)$,\1sphinxcontrib.autohttp.flask\2," docs/conf.py
+  - apt-get update && apt-get install -y unzip
+  - wget https://bitbucket.org/birkenfeld/sphinx-contrib/get/8e295053a27d.zip
+  - unzip 8e295053a27d.zip
+  - (cd birkenfeld-sphinx-contrib-8e295053a27d/httpdomain/ && python setup.py build && python setup.py install)
+  - pip install -r docs/requirements.txt
+  - make doc
+  tags:
+  - build
+  only:
+  - master
+  artifacts:
+    paths:
+    - docs/_build/html
+    expire_in: 2 mos
+
 build:docker:latest:
   stage: build
   script:
