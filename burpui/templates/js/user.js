@@ -168,6 +168,7 @@ var _sessions_table = $('#table-sessions').DataTable( {
 	{{ macros.get_page_length() }}
 	responsive: true,
 	processing: true,
+	fixedHeader: true,
 	select: {
 		style: 'os',
 	},

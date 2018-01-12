@@ -80,6 +80,7 @@ $( document ).ready(function() {
 			return $.getJSON(url, function(data) {
 				$("#waiting-container").hide();
 				$("#tree-container").show();
+
 				return data;
 			})
 			.fail(myFail);
@@ -100,6 +101,13 @@ $( document ).ready(function() {
 			if (fixNeeded) {
 				data.node.fixSelection3AfterClick();
 			}
+		},
+		init: function() {
+			$('#tree').floatThead({
+				position: 'auto',
+				autoReflow: true,
+				top: $('.navbar').height(),
+			});
 		},
 		scrollParent: $(window),
 		renderColumns: function(event, data) {

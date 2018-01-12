@@ -60,6 +60,7 @@ var _clients_table = $('#table-clients').DataTable( {
 	{{ macros.get_page_length() }}
 	responsive: true,
 	processing: true,
+	fixedHeader: true,
 	ajax: {
 		url: '{{ url_for("api.clients_stats", server=server) }}',
 		dataSrc: function (data) {

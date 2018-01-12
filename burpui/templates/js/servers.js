@@ -14,6 +14,7 @@ var _servers_table = $('#table-servers').DataTable( {
 	{{ macros.get_page_length() }}
 	responsive: true,
 	processing: true,
+	fixedHeader: true,
 	ajax: {
 		url: '{{ url_for("api.servers_stats") }}',
 		dataSrc: function (data) {

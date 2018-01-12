@@ -19,6 +19,7 @@
     {% if not report -%}
     <link href="{{ url_for('bower.static', filename='datatables.net-bs/css/dataTables.bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ url_for('bower.static', filename='datatables.net-responsive-bs/css/responsive.bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('bower.static', filename='datatables.net-fixedheader-bs/css/fixedHeader.bootstrap.min.css') }}" rel="stylesheet">
       {% if me -%}
     <link href="{{ url_for('bower.static', filename='datatables.net-select-bs/css/select.bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ url_for('bower.static', filename='datatables.net-buttons-bs/css/buttons.bootstrap.min.css') }}" rel="stylesheet">
@@ -85,6 +86,7 @@
     <script src="{{ url_for('bower.static', filename='datatables.net-bs/js/dataTables.bootstrap.min.js') }}"></script>
     <script src="{{ url_for('bower.static', filename='datatables.net-responsive/js/dataTables.responsive.min.js') }}"></script>
     <script src="{{ url_for('bower.static', filename='datatables.net-responsive-bs/js/responsive.bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='datatables.net-fixedheader/js/dataTables.fixedHeader.min.js') }}"></script>
       {% if me -%}
     <script src="{{ url_for('bower.static', filename='datatables.net-select/js/dataTables.select.min.js') }}"></script>
     <script src="{{ url_for('bower.static', filename='datatables.net-buttons/js/dataTables.buttons.min.js') }}"></script>
@@ -104,6 +106,7 @@
     <!-- Fancytree Javascript
     ================================================== -->
     {# <script src="{{ url_for('bower.static', filename='js-cookie/src/js.cookie.js') }}"></script> -#}
+    <script src="{{ url_for('bower.static', filename='jquery.floatThead/dist/jquery.floatThead.min.js') }}"></script>
     <script src="{{ url_for('bower.static', filename='jquery.fancytree/dist/jquery.fancytree-all.min.js') }}"></script>
     <!-- FileDownload Javascript
     ================================================== -->
