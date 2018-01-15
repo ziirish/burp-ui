@@ -30,7 +30,8 @@ servers through the ``bui-manage`` command like this:
 
 
 If you are running the above command, you'll need to set the ``url`` option
-under the ``[WebSocket]`` section to ``"document.domain + ':5001'"``.
+under the ``[WebSocket]`` section to ``"document.domain + ':5001'"`` (unless you
+use a reverse-proxy, see bellow).
 
 .. warning:: The quotes are **MANDATORY** in this case.
 

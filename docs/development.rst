@@ -18,7 +18,9 @@ To do so, run the following commands:
     # the .tar.gz works with both python 2 and python 3
     wget https://git.ziirish.me/ziirish/burp-ui/builds/artifacts/master/download?job=build:py2 -O burp-ui_build.zip
     unzip burp-ui_build.zip
-    pip install --upgrade dist/burp-ui.*.tar.gz
+    pip install --upgrade dist/burp-ui-*.tar.gz
+    # Now if you want to test the latest bui-agent run this command:
+    #pip install --upgrade meta/burp-ui-agent-*.tar.gz
 
 
 You can uninstall/disable this `Burp-UI`_ setup by typing ``deactivate`` and
