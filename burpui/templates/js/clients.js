@@ -68,6 +68,7 @@ var _clients_table = $('#table-clients').DataTable( {
 		},
 		error: myFail,
 		headers: { 'X-From-UI': true },
+		cache: AJAX_CACHE,
 	},
 	rowId: 'name',
 	order: [[2, 'desc']],
@@ -143,6 +144,7 @@ var _clients = function() {
 		first = false;
 	} else {
 		_clients_table.ajax.reload( null, false );
+		AJAX_CACHE = true;
 	}
 };
 

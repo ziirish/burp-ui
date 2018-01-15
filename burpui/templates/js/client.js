@@ -67,6 +67,7 @@ var _client_table = $('#table-client').DataTable( {
 	ajax: {
 		url: '{{ url_for("api.client_stats", name=cname, server=server) }}',
 		headers: { 'X-From-UI': true },
+		cache: AJAX_CACHE,
 		dataSrc: function (data) {
 			if (data.length == 0) {
 				$('#table-client').hide();
@@ -145,6 +146,7 @@ var _client = function() {
 		first = false;
 	} else {
 		_client_table.ajax.reload( null, false );
+		AJAX_CACHE = true;
 	}
 
 	url_restore = '{{ url_for("api.is_server_restore", name=cname, server=server) }}';

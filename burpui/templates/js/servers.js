@@ -21,6 +21,8 @@ var _servers_table = $('#table-servers').DataTable( {
 			return data;
 		},
 		error: myFail,
+		headers: { 'X-From-UI': true },
+		cache: AJAX_CACHE,
 	},
 	rowId: 'name',
 	rowCallback: function( row, data ) {
@@ -56,6 +58,7 @@ var _servers = function() {
 		first = false;
 	} else {
 		_servers_table.ajax.reload( null, false );
+		AJAX_CACHE = true;
 	}
 };
 

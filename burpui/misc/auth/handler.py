@@ -47,7 +47,7 @@ class UserAuthHandler(BUIhandler):
             except:
                 import traceback
                 self.errors[name] = traceback.format_exc()
-        backends.sort(key=lambda x: x.priority, reverse=True)
+        backends.sort(key=lambda x: getattr(x, 'priority', -1), reverse=True)
         if not backends:
             raise ImportError(
                 'No backend found for \'{}\':\n{}'.format(self.app.auth,

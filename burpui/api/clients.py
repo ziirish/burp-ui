@@ -251,6 +251,7 @@ class ClientsReport(Resource):
             500: 'Internal failure',
         },
     )
+    @browser_cache(1800)
     def get(self, server=None):
         """Returns a global report about all the clients of a given server
 
@@ -436,6 +437,7 @@ class ClientsStats(Resource):
             500: 'Internal failure',
         },
     )
+    @browser_cache(1800)
     def get(self, server=None):
         """Returns a list of clients with their states
 

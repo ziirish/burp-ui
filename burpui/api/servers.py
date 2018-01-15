@@ -5,6 +5,7 @@ from . import api, cache_key
 from ..server import BUIServer  # noqa
 from .custom import fields, Resource
 from ..ext.cache import cache
+from ..decorators import browser_cache
 from ..exceptions import BUIserverException
 
 from flask import current_app
@@ -35,6 +36,7 @@ class ServersStats(Resource):
             500: 'Internal failure',
         },
     )
+    @browser_cache(1800)
     def get(self):
         """Returns a list of servers (agents) with basic stats
 
@@ -134,6 +136,7 @@ class ServersReport(Resource):
             500: 'Internal failure',
         },
     )
+    @browser_cache(1800)
     def get(self):
         """Returns a global report about all the servers managed by Burp-UI
 

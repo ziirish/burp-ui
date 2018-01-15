@@ -166,7 +166,6 @@ class ClientTree(Resource):
 
     @cache.cached(timeout=3600, key_prefix=cache_key)
     @ns.marshal_list_with(node_fields, code=200, description='Success')
-    @browser_cache(3600)
     @ns.expect(parser)
     @ns.doc(
         responses={
@@ -174,6 +173,7 @@ class ClientTree(Resource):
             '500': 'Internal failure',
         },
     )
+    @browser_cache(3600)
     def get(self, server=None, name=None, backup=None):
         """Returns a list of 'nodes' under a given path
 
@@ -391,6 +391,7 @@ class ClientTreeAll(Resource):
             '500': 'Internal failure',
         },
     )
+    @browser_cache(3600)
     def get(self, server=None, name=None, backup=None):
         """Returns a list of all 'nodes' of a given backup
 
@@ -658,6 +659,7 @@ class ClientReport(Resource):
             '500': 'Internal failure',
         },
     )
+    @browser_cache(1800)
     def get(self, server=None, name=None, backup=None):
         """Returns a global report of a given backup/client
 
@@ -939,6 +941,7 @@ class ClientStats(Resource):
             '500': 'Internal failure',
         },
     )
+    @browser_cache(1800)
     def get(self, server=None, name=None):
         """Returns a list of backups for a given client
 

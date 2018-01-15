@@ -175,6 +175,7 @@ var _sessions_table = $('#table-sessions').DataTable( {
 	ajax: {
 		url: '{{ url_for("api.user_sessions") }}',
 		headers: { 'X-From-UI': true },
+		cache: AJAX_CACHE,
 		error: myFail,
 		dataSrc: function (data) {
 			return data;
@@ -322,6 +323,7 @@ var _sessions = function() {
 		first = false;
 	} else {
 		_sessions_table.ajax.reload( null, false );
+		AJAX_CACHE = true;
 	}
 };
 

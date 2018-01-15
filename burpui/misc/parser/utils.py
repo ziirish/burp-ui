@@ -1092,6 +1092,8 @@ class Config(File):
         for idx, (top, conf) in enumerate(iteritems(self.files)):
             if idx < offset:
                 continue
+            if idx > offset:
+                break
             node = __new_node(conf.name)
             for key, val in iteritems(conf.flatten('include', False)):
                 for path in val:

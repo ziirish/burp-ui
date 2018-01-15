@@ -10,6 +10,7 @@
 from . import api
 from ..server import BUIServer  # noqa
 from ..sessions import session_manager
+from ..decorators import browser_cache
 from ..utils import NOTIF_OK
 from .custom import fields, Resource
 #  from ..exceptions import BUIserverException
@@ -336,6 +337,7 @@ class MySessions(Resource):
             404: 'User not found',
         },
     )
+    @browser_cache(600)
     def get(self, id=None):
         """Returns a list of sessions
 

@@ -4,6 +4,7 @@ var NOTIF_ERROR   = 2;
 var NOTIF_INFO    = 3;
 
 var SESSION_TAG = $('meta[name=session]').attr("content");
+var AJAX_CACHE = true;
 
 var _ajax_setup = function() {
 	$.ajaxSetup({
@@ -401,18 +402,22 @@ $(function() {
 	$('#refresh').on('click', function(e) {
 		e.preventDefault();
 		{% if clients -%}
+		AJAX_CACHE = false;
 		_clients();
 		{% endif -%}
 		{% if client and is_client_func -%}
+		AJAX_CACHE = false;
 		_client();
 		{% endif -%}
 		{% if not login -%}
 		_check_running();
 		{% endif -%}
 		{% if servers -%}
+		AJAX_CACHE = false;
 		_servers();
 		{% endif -%}
 		{% if me -%}
+		AJAX_CACHE = false;
 		_sessions();
 		{% endif -%}
 	});
