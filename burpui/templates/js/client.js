@@ -195,7 +195,7 @@ var refresh_status = function( is_running ) {
 	var _span = $('#running-status');
 	var _inner_format_status = function(status) {
 		var _content = '<span class="'+__icons[status.state]+'" aria-hidden="true"></span> ';
-		if (status.state == 'running') {
+		if (status.state == '{{ _("running") }}') {
 			_client_running = true;
 			_content += status.state+' - '+status.phase;
 			if (status.percent > 0) {
@@ -227,11 +227,11 @@ var refresh_status = function( is_running ) {
 		_get_running = _inner_get_status();
 	}
 	var _inner_callback_setup = function() {
-		if (__refresh_running && !(is_running || _client_running)) {
-			clearInterval(__refresh_running);
-			__refresh_running = undefined;
-		} else if (!__refresh_running && _client_running) {
-			__refresh_running = setInterval(function() {
+		if (__refresh_running) {
+			clearTimeout(__refresh_running);
+		}
+		if (_client_running) {
+			__refresh_running = setTimeout(function() {
 				refresh_status(true);
 			}, {{ config.LIVEREFRESH * 1000 }});
 		}

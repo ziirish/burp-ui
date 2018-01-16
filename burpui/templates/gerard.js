@@ -469,7 +469,8 @@ $(function() {
 	 * auto-refresh our page if needed
 	 */
 	{% set autorefresh = config.REFRESH -%}
-	var auto_refresh = setInterval(function() {
+	var auto_refresh = undefined;
+	var auto_refresh_function = function() {
 		{% if clients -%}
 		_clients();
 		{% endif -%}
@@ -479,8 +480,12 @@ $(function() {
 		{% if servers and overview -%}
 		_servers();
 		{% endif -%}
-		return;
-	}, {{ autorefresh * 1000 }});
+		if (auto_refresh) {
+			clearTimeout(auto_refresh);
+		}
+		auto_refresh = setTimeout(auto_refresh_function, {{ autorefresh * 1000 }});
+	};
+	auto_refresh = setTimeout(auto_refresh_function, {{ autorefresh * 1000 }});
 	{% endif -%}
 
 	{% if not login -%}
@@ -488,9 +493,15 @@ $(function() {
 	/***
 	 * Javascript Loop
 	 */
-	var refresh_running = setInterval(function () {
+	var refresh_running = undefined;
+	var refresh_function = function() {
 		_check_running();
-	}, {{ config.LIVEREFRESH * 1000 }});
+		if (refresh_running) {
+			clearTimeout(refresh_running);
+		}
+		refresh_running = setTimeout(refresh_function, {{ config.LIVEREFRESH * 1000 }});
+	};
+	refresh_running = setTimeout(refresh_function, {{ config.LIVEREFRESH * 1000 }});
 		{% endif -%}
 	{% endif -%}
 });

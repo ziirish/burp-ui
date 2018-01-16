@@ -196,17 +196,16 @@ var refresh_status = function( is_running ) {
 			});
 			_promises.push(_p);
 		});
-		if (__refresh_running && (!is_running || _clients_running.length == 0)) {
-			// stop loop if no more clients are running
-			clearInterval(__refresh_running);
-			__refresh_running = undefined;
-		} else if (!__refresh_running && _clients_running.length > 0) {
-			__refresh_running = setInterval(function() {
-				refresh_status(true);
-			}, {{ config.LIVEREFRESH * 1000 }});
-		}
 		$.when.apply( $, _promises ).done( function() {
 			_clients_table.draw(false);
+			if (_clients_running.length > 0) {
+				if (__refresh_running) {
+					clearTimeout(__refresh_running);
+				}
+				__refresh_running = setTimeout(function() {
+					refresh_status(true);
+				}, {{ config.LIVEREFRESH * 1000 }});
+			}
 		});
 	};
 	if (_get_running) {
