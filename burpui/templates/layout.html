@@ -7,6 +7,7 @@
     <meta name="description" content="Burp-UI is a web-ui for burp backup written in python with Flask and jQuery/Bootstrap">
     <meta name="author" content="Ziirish">
     <meta name="session" content="{% if 'tag_id' in session %}{{ session['tag_id'] }}{% endif %}">
+    <meta name="_extra" content="{{ g._extra }}">
     <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
 
     <title>Burp-UI</title>

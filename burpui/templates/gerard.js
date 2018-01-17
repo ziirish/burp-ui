@@ -4,6 +4,7 @@ var NOTIF_ERROR   = 2;
 var NOTIF_INFO    = 3;
 
 var SESSION_TAG = $('meta[name=session]').attr("content");
+var _EXTRA = $('meta[name=_extra]').attr('content');
 var AJAX_CACHE = true;
 
 var _ajax_setup = function() {
