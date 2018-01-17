@@ -73,13 +73,13 @@ backlog = 2048
 #       A positive integer. Generally set in the 1-5 seconds range.
 #
 
-workers = @GUNICORN_WORKERS@
+workers = @GUNICORN_WORKERS@ * 2
 worker_class = 'gevent'
 worker_connections = 1000
 timeout = 300
 keepalive = 2
 
-preload = False
+preload = True
 
 #
 #   spew - Install a trace function that spews every line of Python
@@ -186,3 +186,7 @@ proc_name = None
 #
 #       A callable that takes a server instance as the sole argument.
 #
+
+def post_fork(server, worker):
+    from psycogreen.gevent import patch_psycopg
+    patch_psycopg()
