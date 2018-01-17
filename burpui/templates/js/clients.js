@@ -202,6 +202,9 @@ var refresh_status = function( is_running ) {
 			var _p = $.get({
 				url: '{{ url_for("api.client_running_status", server=server) }}?clientName='+name,
 			}).done(function(_status) {
+				if (!_status.last || !_status.state) {
+					return;
+				}
 				_status.static = false;
 				var _new_content = _.merge(_content, _status);
 				_row.data( _new_content );

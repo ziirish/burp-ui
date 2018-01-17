@@ -272,7 +272,7 @@ class Burp(Burp1):
                 # the os throws an exception if there is no data or timeout
                 self.logger.warning(str(exp))
                 self._kill_burp()
-                break
+                return None
         return jso
 
     def status(self, query='c:\n', timeout=None, agent=None):
