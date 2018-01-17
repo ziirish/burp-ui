@@ -758,6 +758,9 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
             ]
             app.config['SESSION_COOKIE_SECURE'] = \
                 app.config['REMEMBER_COOKIE_SECURE'] = any(criteria)
+        if '_extra' in request.args:
+            session['_extra'] = request.args.get('_extra')
+        g._extra = session.get('_extra', '')
 
     @app.login_manager.user_loader
     def load_user(userid):

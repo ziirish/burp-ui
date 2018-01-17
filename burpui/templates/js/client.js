@@ -4,6 +4,8 @@
  * It is available on the 'specific' client view
  */
 
+var _cache_id = _EXTRA;
+
 /***
  * First we map some burp status with some style
  */
@@ -68,6 +70,9 @@ var _client_table = $('#table-client').DataTable( {
 		url: '{{ url_for("api.client_stats", name=cname, server=server) }}',
 		headers: { 'X-From-UI': true },
 		cache: AJAX_CACHE,
+		data: function (request) {
+			request._extra = _cache_id;
+		},
 		dataSrc: function (data) {
 			if (data.length == 0) {
 				$('#table-client').hide();
@@ -145,6 +150,9 @@ var _client = function() {
 	if (first) {
 		first = false;
 	} else {
+		if (!AJAX_CACHE) {
+			_cache_id = new Date().getTime();
+		}
 		_client_table.ajax.reload( null, false );
 		AJAX_CACHE = true;
 	}

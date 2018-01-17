@@ -30,6 +30,9 @@ var __date = {
 	"{{ _('now') }}": 'now',
 };
 
+var _some_clients_running = false;
+var _cache_id = _EXTRA;
+
 /***
  * _clients: function that retrieve up-to-date informations from the burp server
  * JSON format:
@@ -63,12 +66,16 @@ var _clients_table = $('#table-clients').DataTable( {
 	fixedHeader: true,
 	ajax: {
 		url: '{{ url_for("api.clients_stats", server=server) }}',
+		data: function (request) {
+			request._extra = _cache_id;
+		},
 		dataSrc: function (data) {
+			_some_clients_running = false;
 			return data;
 		},
 		error: myFail,
 		headers: { 'X-From-UI': true },
-		cache: AJAX_CACHE,
+		cache: AJAX_CACHE && !_some_clients_running,
 	},
 	rowId: 'name',
 	order: [[2, 'desc']],
@@ -104,11 +111,13 @@ var _clients_table = $('#table-clients').DataTable( {
 					if (data.percent > 0) {
 						result += ' ('+data.percent+'%)';
 					}
+				} else if (!data.static && data.state == "{{ _('running') }}") {
+					_some_clients_running = true;
 				}
 				return result;
 			}
 		},
-		{ 
+		{
 			data: null,
 			type: 'timestamp',
 			render: function (data, type, row ) {
@@ -143,6 +152,9 @@ var _clients = function() {
 	if (first) {
 		first = false;
 	} else {
+		if (!AJAX_CACHE || _some_clients_running) {
+			_cache_id = new Date().getTime();
+		}
 		_clients_table.ajax.reload( null, false );
 		AJAX_CACHE = true;
 	}

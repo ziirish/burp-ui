@@ -4,6 +4,8 @@
  * It is available on the global clients view
  */
 
+var _cache_id = _EXTRA;
+
 /***
  * _servers: function that retrieve up-to-date informations from the burp server
  *  The JSON is then parsed into a table
@@ -17,6 +19,9 @@ var _servers_table = $('#table-servers').DataTable( {
 	fixedHeader: true,
 	ajax: {
 		url: '{{ url_for("api.servers_stats") }}',
+		data: function (request) {
+			request._extra = _cache_id;
+		},
 		dataSrc: function (data) {
 			return data;
 		},
@@ -57,6 +62,9 @@ var _servers = function() {
 	if (first) {
 		first = false;
 	} else {
+		if (!AJAX_CACHE) {
+			_cache_id = new Date().getTime();
+		}
 		_servers_table.ajax.reload( null, false );
 		AJAX_CACHE = true;
 	}

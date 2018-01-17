@@ -161,6 +161,8 @@ app.controller('UserCtrl', function($timeout, $scope, $http, $scrollspy) {
  */
 {% import 'macros.html' as macros %}
 
+var _cache_id = _EXTRA;
+
 {{ macros.timestamp_filter() }}
 
 var _sessions_table = $('#table-sessions').DataTable( {
@@ -177,6 +179,9 @@ var _sessions_table = $('#table-sessions').DataTable( {
 		headers: { 'X-From-UI': true },
 		cache: AJAX_CACHE,
 		error: myFail,
+		data: function (request) {
+			request._extra = _cache_id;
+		},
 		dataSrc: function (data) {
 			return data;
 		}
@@ -322,6 +327,9 @@ var _sessions = function() {
 	if (first) {
 		first = false;
 	} else {
+		if (!AJAX_CACHE) {
+			_cache_id = new Date().getTime();
+		}
 		_sessions_table.ajax.reload( null, false );
 		AJAX_CACHE = true;
 	}
@@ -364,6 +372,7 @@ var revoke_session = function(id, refresh) {
 	}).done(function(data) {
 		notifAll(data);
 		if (refresh && data[0] == NOTIF_SUCCESS) {
+			AJAX_CACHE = false;
 			_sessions();
 		}
 	}).fail(myFail);
@@ -391,6 +400,7 @@ $('#perform-revoke').on('click', function(e) {
 			});
 		} else {
 			$.when.apply( $, requests ).done(function() {
+				AJAX_CACHE = false;
 				_sessions();
 			});
 		}
