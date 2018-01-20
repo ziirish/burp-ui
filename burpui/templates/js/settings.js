@@ -455,3 +455,10 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', function($scope, 
 
 {% import 'macros.html' as macros %}
 {{ macros.smooth_scrolling() }}
+
+$(document).ready(function () {
+	$('#config-nav a').click(function (e) {
+		e.preventDefault();
+		$(this).tab('show');
+	});
+});

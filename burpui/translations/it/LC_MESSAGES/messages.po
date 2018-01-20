@@ -1824,8 +1824,8 @@ msgid "Users"
 msgstr "Utenti"
 
 #: burpui/templates/sideadmin.html:6 burpui/templates/topbar.html:43
-msgid "Settings"
-msgstr "Impostazioni"
+msgid "Burp Settings"
+msgstr "Burp Impostazioni"
 
 #: burpui/templates/sideadmin.html:7 burpui/templates/sideuser.html:7
 #: burpui/templates/user.html:100
