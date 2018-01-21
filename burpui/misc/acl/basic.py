@@ -78,12 +78,12 @@ class ACLloader(BUIaclLoader):
                 section=self.section
             )
             self.moderator = self.conf.safe_get(
-                'moderator',
+                '@moderator',
                 'force_string',
                 section=self.section
             ) or {}
             for opt in self.conf.options.get(self.section).keys():
-                if opt in ['admin', 'moderators', 'extended', 'priority', 'moderator', 'legacy']:
+                if opt in ['admin', 'moderators', 'extended', 'priority', '@moderator', 'legacy']:
                     continue
                 record = self.conf.safe_get(
                     opt,
@@ -160,7 +160,7 @@ class BasicACL(BUIacl):
     def _extract_grants(self, username):
         if username not in self._parsed_grants:
 
-            if username == 'moderator':
+            if username == '@moderator':
                 grants = self.moderator
             else:
                 grants = self.grants.get(username, '')
@@ -178,19 +178,19 @@ class BasicACL(BUIacl):
             self._advanced_cache[username] = advanced
 
             if self.is_moderator(username):
-                if 'moderator' not in self._parsed_grants:
-                    self._extract_grants('moderator')
+                if '@moderator' not in self._parsed_grants:
+                    self._extract_grants('@moderator')
                 self._clients_cache[username] = self._merge_data(
                     self._clients_cache[username],
-                    self._clients_cache.get('moderator', [])
+                    self._clients_cache.get('@moderator', [])
                 )
                 self._agents_cache[username] = self._merge_data(
                     self._agents_cache[username],
-                    self._agents_cache.get('moderator', [])
+                    self._agents_cache.get('@moderator', [])
                 )
                 self._advanced_cache[username] = self._merge_data(
                     self._advanced_cache[username],
-                    self._advanced_cache.get('moderator', [])
+                    self._advanced_cache.get('@moderator', [])
                 )
 
             self._parsed_grants.append(username)
