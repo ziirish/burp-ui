@@ -10,20 +10,20 @@ For a complete list of changes, you may refer to the
 v0.6.0
 ------
 
-- **Breaking** - The *BASIC* `ACL` engine will now grant users on all agents if
-  they are not explicitly defined. It means that if you have a user called
-  `example1` with two agents (burp servers in multi-agent mode) on which you
-  have respectively two clients called `example1`, the user `example1` will be
-  granted on both clients on the two agents. You can disable this behavior with
-  the `legacy` option. See the `BASIC ACL <advanced_usage.html#basic-acl>`__
-  documentation for details.
+- **Breaking** - The *BASIC* ``ACL`` engine will now grant users on all agents
+  if they are not explicitly defined. It means that if you have a user called
+  ``example1`` with two agents (burp servers in multi-agent mode) on which you
+  have respectively two clients called ``example1``, the user ``example1`` will
+  be granted on both clients on the two agents. You can disable this behavior
+  with the ``legacy`` option. See the
+  `BASIC ACL <advanced_usage.html#basic-acl>`__ documentation for details.
 
 - **Breaking** - The *Burp1* and *Burp2* configuration sections have been merged
   into one single *Burp* section. See the
   `Versions <advanced_usage.html#versions>`__ documentation for details.
 
-- **Breaking** - The *running* backups are now displayed in `green` instead of
-  `blue`.
+- **Breaking** - The *running* backups are now displayed in ``green`` instead of
+  ``blue``.
 
 - **New** - Plugin system to enhance ACL and Authentication backends. See the
   `Plugins <plugins.html>`__ documentation for details.
