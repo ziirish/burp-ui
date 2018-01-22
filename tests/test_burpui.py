@@ -152,6 +152,7 @@ class BurpuiAPITestCase(TestCase):
                     (u'suggest', self.bui.client.get_parser_attr('values')),
                     (u'placeholders', self.bui.client.get_parser_attr('placeholders')),
                     (u'defaults', self.bui.client.get_parser_attr('defaults'))))
+        print(response.json['hierarchy'])
         self.assertEquals(response.json, asse)
 
     def test_client_config_parsing(self):
