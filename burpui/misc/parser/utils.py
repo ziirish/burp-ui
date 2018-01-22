@@ -1072,6 +1072,7 @@ class Config(File):
             basename = os.path.basename(name)
             return {
                 'name': basename,
+                'title': basename,
                 'full': name,
                 'dir': dirname,
                 'parent': parent,

@@ -108,6 +108,7 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', function($scope, 
 	$scope.bools = [];
 	$scope.strings = [];
 	$scope.clients = [];
+	$scope.hierarchy = [];
 	$scope.client = {};
 	$scope.defaults = {};
 	$scope.placeholders = {};
@@ -161,6 +162,7 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', function($scope, 
 			$scope.includes = data.results.includes;
 			$scope.includes_ori = angular.copy($scope.includes);
 			$scope.includes_ext = data.results.includes_ext;
+			$scope.hierarchy = data.results.hierarchy;
 			$scope.refreshScrollspy();
 			$('#waiting-container').hide();
 			$('#settings-panel').show();

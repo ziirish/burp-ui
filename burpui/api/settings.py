@@ -168,6 +168,30 @@ class ServerSettings(Resource):
                     ]
                   },
                   { "...": "..." }
+                ],
+                "hierarchy": [
+                  {
+                    "children": [
+                      {
+                        "children": [],
+                        "dir": "/tmp/burp/conf.d",
+                        "full": "/tmp/burp/conf.d/empty.conf",
+                        "name": "empty.conf",
+                        "parent": "/tmp/burp/burp-server.conf"
+                      },
+                      {
+                        "children": [],
+                        "dir": "/tmp/burp/conf.d",
+                        "full": "/tmp/burp/conf.d/ipv4.conf",
+                        "name": "ipv4.conf",
+                        "parent": "/tmp/burp/burp-server.conf"
+                      }
+                    ],
+                    "dir": "/tmp/burp",
+                    "full": "/tmp/burp/burp-server.conf",
+                    "name": "burp-server.conf",
+                    "parent": null
+                  }
                 ]
               },
               "server_doc": {
