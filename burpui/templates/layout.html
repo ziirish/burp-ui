@@ -53,6 +53,7 @@
         {% if not live and not login and not about -%}
         {% include "sidebar.html" %}
         {% endif -%}
+        <span id="_top"></span>
         {% block body %}{% endblock %}
       </div>
     </div>

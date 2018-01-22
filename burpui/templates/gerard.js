@@ -507,6 +507,17 @@ $(function() {
 	{% endif -%}
 });
 
+$(window).scroll(function() {
+	if ($(this).scrollTop() >= 50 && $('.sidebar').height() >= 400) {    // If page is scrolled more than 50px
+		$('#back-to-top').fadeIn(200);    // Fade in the arrow
+	} else {
+		$('#back-to-top').fadeOut(200);   // Else fade out the arrow
+	}
+});
+
 {% if not login and config.WS_AVAILABLE -%}
 {% include "js/websocket.js" %}
 {% endif -%}
+
+{% import 'macros.html' as macros %}
+{{ macros.smooth_scrolling() }}

@@ -133,6 +133,11 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', function($scope, 
 			'multis': false
 		};
 	$scope.changed = false;
+	$scope.checkbox_translation = {
+			'yes':   "{{ _('yes') }}",
+			'no':    "{{ _('no') }}",
+			'reset': "{{ _('Reset list') }}",
+		};
 	{% if client -%}
 	$http.get('{{ url_for("api.client_settings", client=client, conf=conf, server=server) }}', { headers: { 'X-From-UI': true } })
 	{% else -%}
@@ -442,6 +447,8 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', function($scope, 
 		el.next('div').hide();
 		/* Hide the legend */
 		el.next('div').next('div').hide();
+		/* Hide the reset button */
+		el.next('div').next('div').next('div').hide();
 		/* Expand the input */
 		el.removeClass('col-lg-2').addClass('col-lg-9');
 	};
@@ -449,12 +456,10 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', function($scope, 
 		el = $( ev.target ).parent();
 		el.next('div').show();
 		el.next('div').next('div').show();
+		el.next('div').next('div').next('div').show();
 		el.removeClass('col-lg-9').addClass('col-lg-2');
 	};
 }]);
-
-{% import 'macros.html' as macros %}
-{{ macros.smooth_scrolling() }}
 
 $(document).ready(function () {
 	$('#config-nav a').click(function (e) {

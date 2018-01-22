@@ -292,9 +292,9 @@ class NewClientSettings(Resource):
         #    return redirect(request.referrer)
         noti = bui.client.store_conf_cli(ImmutableMultiDict(), newclient, None, server)
         if server:
-            noti.append([NOTIF_INFO, '<a href="{}">Click here</a> to edit \'{}\' configuration'.format(url_for('view.cli_settings', server=server, client=newclient), newclient)])
+            noti.append([NOTIF_INFO, _('<a href="%(url)s">Click here</a> to edit \'%(client)s\' configuration', url=url_for('view.cli_settings', server=server, client=newclient), client=newclient)])
         else:
-            noti.append([NOTIF_INFO, '<a href="{}">Click here</a> to edit \'{}\' configuration'.format(url_for('view.cli_settings', client=newclient), newclient)])
+            noti.append([NOTIF_INFO, _('<a href="%(url)s">Click here</a> to edit \'%(client)s\' configuration', url=url_for('view.cli_settings', client=newclient), client=newclient)])
         # clear the cache when we add a new client
         cache.clear()
         if bui.config['WITH_CELERY']:
@@ -323,7 +323,7 @@ class ClientSettings(Resource):
     parser_delete.add_argument('keepconf', type=boolean, help='Whether to keep the conf or not', default=False, nullable=True)
 
     @api.disabled_on_demo()
-    @api.acl_admin_required(message='Sorry, you don\'t have rights to access the setting panel')
+    @api.acl_admin_required(message=_('Sorry, you don\'t have rights to access the setting panel'))
     @ns.doc(
         responses={
             200: 'Success',
@@ -336,7 +336,7 @@ class ClientSettings(Resource):
         noti = bui.client.store_conf_cli(request.form, client, conf, server)
         return {'notif': noti}
 
-    @api.acl_admin_required(message='Sorry, you don\'t have rights to access the setting panel')
+    @api.acl_admin_required(message=_('Sorry, you don\'t have rights to access the setting panel'))
     @ns.doc(
         responses={
             200: 'Success',
@@ -372,7 +372,7 @@ class ClientSettings(Resource):
         )
 
     @api.disabled_on_demo()
-    @api.acl_admin_required(message='Sorry, you don\'t have rights to access the setting panel')
+    @api.acl_admin_required(message=_('Sorry, you don\'t have rights to access the setting panel'))
     @ns.expect(parser_delete)
     @ns.doc(
         responses={
@@ -414,7 +414,7 @@ class PathExpander(Resource):
     parser.add_argument('path', required=True, help="No 'path' provided")
     parser.add_argument('source', required=False, help="Which file is it included in")
 
-    @api.acl_admin_required(message='Sorry, you don\'t have rights to access the setting panel')
+    @api.acl_admin_required(message=_('Sorry, you don\'t have rights to access the setting panel'))
     @ns.doc(
         responses={
             200: 'Success',

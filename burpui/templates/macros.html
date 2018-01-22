@@ -101,7 +101,7 @@
 {% macro smooth_scrolling() -%}
 // Add a smooth scrolling to anchor
 $(document).ready(function() {
-	$('a[href^="#"]').click(function() {
+	$('a.scroll').click(function() {
 		var target = $(this.hash);
 		if (target.length == 0) target = $('a[name="' + this.hash.substr(1) + '"]');
 		if (target.length == 0) target = $('html');

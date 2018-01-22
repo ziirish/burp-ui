@@ -177,11 +177,11 @@
                           <button type="button" class="btn btn-danger" ng-click="removeMulti($parent.$index, $index)"><span class="glyphicon glyphicon-minus"></span></button>
                           <button type="button" class="btn btn-success btn-primary" ng-click="addMulti($parent.$parent.$index)" ng-if="$last"><span class="glyphicon glyphicon-plus"></span></button>
                         </div>
-                        <div class="col-lg-5">
+                        <div class="col-lg-4">
                           <div ng-if="$first" ng-bind-html="::server_doc[$parent.multi.name]"></div>
                         </div>
-                        <div class="col-lg-1">
-                          <input type="checkbox" id="{{ ::$parent.multi.name }}_reset_bui_CUSTOM_view-{{ i }}" title="{{ _('Reset list') }}" ng-model="$parent.multi.reset[i]">
+                        <div class="col-lg-2">
+                          <input bs-switch switch-size="mini" switch-on-text="{{ checkbox_translation.yes }}" switch-off-text="{{ checkbox_translation.no }}" switch-label="{{ checkbox_translation.reset }}" type="checkbox" id="{{ ::$parent.multi.name }}_reset_bui_CUSTOM_view-{{ i }}" title="{{ checkbox_translation.reset }}" ng-model="$parent.multi.reset[i]">
                           <input type="hidden" name="{{ ::$parent.multi.name }}_reset_bui_CUSTOM" id="{{ ::$parent.multi.name }}_reset_bui_CUSTOM-{{ i }}">
                         </div>
                       </div>
@@ -249,7 +249,7 @@
                   </fieldset>
                   <div class="btn-toolbar">
                     <div class="col-lg-3 col-lg-offset-3">
-                      <button type="submit" class="btn btn-primary" ng-disabled="!setSettings.$valid">{{ _('Submit') }}</button>
+                      <button type="submit" class="btn btn-primary" ng-disabled="!setSettings.$valid">{{ _('Save') }}</button>
                     </div>
                     <div class="col-lg-6">
                       {% if client and not conf -%}
