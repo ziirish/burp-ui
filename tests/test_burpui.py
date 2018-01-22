@@ -141,7 +141,7 @@ class BurpuiAPITestCase(TestCase):
                             u'includes': [],
                             u'includes_ext': [],
                             u'clients': [],
-                            u'hierarchy': [{'children': [], 'dir': '/dev', 'full': '/dev/null', 'name': 'null', 'parent': None}],
+                            u'hierarchy': [{u'children': [], u'title': u'null', u'dir': u'/dev', u'full': u'/dev/null', u'name': u'null', u'parent': None}],
                         }
                     ),
                     (u'boolean', self.bui.client.get_parser_attr('boolean_srv')),
@@ -152,7 +152,6 @@ class BurpuiAPITestCase(TestCase):
                     (u'suggest', self.bui.client.get_parser_attr('values')),
                     (u'placeholders', self.bui.client.get_parser_attr('placeholders')),
                     (u'defaults', self.bui.client.get_parser_attr('defaults'))))
-        print(response.json['results']['hierarchy'])
         self.assertEquals(response.json, asse)
 
     def test_client_config_parsing(self):
