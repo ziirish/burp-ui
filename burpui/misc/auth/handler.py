@@ -150,6 +150,10 @@ class BUIanon(AnonymousUserMixin):
     def is_admin(self):
         return False
 
+    @property
+    def is_moderator(self):
+        return False
+
 
 class UserHandler(BUIuser):
     """See :class:`burpui.misc.auth.interface.BUIuser`"""
@@ -194,6 +198,14 @@ class UserHandler(BUIuser):
     @property
     def acl(self):
         return self._acl
+
+    @property
+    def is_admin(self):
+        return self.acl.is_admin()
+
+    @property
+    def is_moderator(self):
+        return self.acl.is_moderator()
 
     def _load_prefs(self):
         session['login'] = self.name

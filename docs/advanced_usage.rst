@@ -638,13 +638,13 @@ Now you can add *basic acl* specific options:
     # List of administrators
     admin = user1,user2
     # List of moderators. Users listed here will inherit the grants of the
-    # 'virtual' user 'moderator'
+    # 'virtual' user '@moderator'
     moderators = user5,user6
     # Please note the double-quotes and single-quotes on the following lines are
     # mandatory!
     # You can also overwrite the default behavior by specifying which clients a
     # user can access
-    moderator = '{"agents":{"ro":["agent1"]}}'
+    @moderator = '{"agents":{"ro":["agent1"]}}'
     user3 = '["client4", "client5"]'
     # In case you are not in a single mode, you can also specify which clients
     # a user can access on a specific Agent
@@ -660,12 +660,15 @@ By default, if a user is named ``admin`` it will be granted the admin role.
 Here are the default grants:
 
 
-1. admin => you can do anything
-2. non admin => you can only see the client that matches your username
-3. custom => you can manually assign username to clients using the syntax
+1. *admin* => you can do anything
+2. *non admin* => you can only see the client that matches your username
+3. *custom* => you can manually assign username to clients using the syntax
    ``username = client1,client2`` or
    ``username = '{"agent1": ["client1-1"], "agent2": ["client2-3", "client2-4"]}'``
    (if you are running a multi-agent setup)
+4. *moderators* => can edit the Burp server configurations of any agent unless
+   told other wise (with ``ro`` rights), but cannot restore files unless told
+   otherwise (with ``rw`` rights). Besides, moderators can create new users.
 
 
 .. _Burp: http://burp.grke.org/

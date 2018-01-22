@@ -38,11 +38,13 @@
             </li>
               {% endif -%}
               {% if config.STANDALONE or server or me -%}
+                {% if current_user and current_user.is_authenticated and (current_user.is_admin or current_user.is_moderator) -%}
             <li class="detail {% if settings %}active{% endif %}">
               <a href="{{ url_for('view.settings', server=server) }}">
-                <i class="fa fa-wrench" aria-hidden="true"></i><span class="dtl">&nbsp;{{ _('Settings') }}</span>
+                <i class="fa fa-wrench" aria-hidden="true"></i><span class="dtl">&nbsp;{{ _('Burp Settings') }}</span>
               </a>
             </li>
+                {% endif -%}
               {% endif -%}
             <li class="detail {% if live %}active{% endif %}">
               <a href="{{ url_for('view.live_monitor', server=server) }}">

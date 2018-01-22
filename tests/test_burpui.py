@@ -295,7 +295,7 @@ class BurpuiLoginTestCase(TestCase):
     def test_config_render(self):
         rv = self.login('admin', 'admin')
         response = self.client.get(url_for('view.settings'))
-        assert 'Burp Configuration' in response.data.decode('utf-8')
+        assert 'Burp Server Configuration' in response.data.decode('utf-8')
 
     def test_login_ok(self):
         rv = self.login('admin', 'admin')
@@ -347,7 +347,7 @@ class BurpuiACLTestCase(TestCase):
         with self.client:
             rv = self.login('admin', 'admin')
             response = self.client.get(url_for('view.settings'))
-            assert 'Burp Configuration' in response.data.decode('utf-8')
+            assert 'Burp Server Configuration' in response.data.decode('utf-8')
             self.logout()
 
     def test_admin_api(self):
