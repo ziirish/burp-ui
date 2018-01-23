@@ -163,6 +163,7 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', function($scope, 
 			$scope.includes_ori = angular.copy($scope.includes);
 			$scope.includes_ext = data.results.includes_ext;
 			$scope.hierarchy = data.results.hierarchy;
+			$scope.refreshHierarchy();
 			$scope.refreshScrollspy();
 			$('#waiting-container').hide();
 			$('#settings-panel').show();
@@ -248,6 +249,60 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', function($scope, 
 				angular.forEach(value.reset, function(val, i) {
 					form.find('#'+value.name+'_reset_bui_CUSTOM_view-'+i).attr('disabled', false);
 				});
+			});
+		}
+	};
+	$scope.refreshHierarchy = function() {
+		if ($scope.hierarchy) {
+			$('#tree-hierarchy').fancytree({
+				extensions: ["glyph", "table"],
+				glyph: {
+					preset: "bootstrap3",
+					map: {
+						doc: "glyphicon glyphicon-file",
+						docOpen: "glyphicon glyphicon-file",
+						checkbox: "glyphicon glyphicon-unchecked",
+						checkboxSelected: "glyphicon glyphicon-check",
+						checkboxUnknown: "glyphicon glyphicon-share",
+						dragHelper: "glyphicon glyphicon-play",
+						dropMarker: "glyphicon glyphicon-arrow-right",
+						error: "glyphicon glyphicon-warning-sign",
+						expanderClosed: "glyphicon glyphicon-plus-sign",
+						expanderLazy: "glyphicon glyphicon-plus-sign",
+						// expanderLazy: "glyphicon glyphicon-expand",
+						expanderOpen: "glyphicon glyphicon-minus-sign",
+						// expanderOpen: "glyphicon glyphicon-collapse-down",
+						folder: "glyphicon glyphicon-folder-close",
+						folderOpen: "glyphicon glyphicon-folder-open",
+						loading: "glyphicon glyphicon-refresh glyphicon-spin"
+					}
+				},
+				source: $scope.hierarchy,
+				init: function() {
+					$('#tree-hierarchy').floatThead({
+						position: 'auto',
+						autoReflow: true,
+						top: $('.navbar').height(),
+					});
+				},
+				scrollParent: $(window),
+				renderColumns: function(event, data) {
+					var node = data.node;
+					$tdList = $(node.tr).find(">td");
+
+					{% if client -%}
+					var URL = '{{ url_for("view.cli_settings", client=client, server=server) }}?conf='+encodeURIComponent(node.data.full);
+					{% else -%}
+					var URL = '{{ url_for("view.settings", server=server) }}?conf='+encodeURIComponent(node.data.full);
+					{% endif -%}
+
+					$tdList.eq(1).html('<a href="'+URL+'" class="btn btn-info btn-xs no-link pull-right"><span class="glyphicon glyphicon-pencil" aria-hidden="true">&nbsp;{{ _("Edit") }}</a>');
+				},
+			});
+			var tree = $('#tree-hierarchy').fancytree('getTree');
+
+			tree.getRootNode().visit(function(node) {
+				node.setExpanded(true);
 			});
 		}
 	};
@@ -370,11 +425,11 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', function($scope, 
 		{% endif -%}
 		$scope.inc_invalid = {};
 		$http.get(
-				api,
-				{
-					headers: { 'X-From-UI': true },
-					params: { 'path': path },
-				}
+			api,
+			{
+				headers: { 'X-From-UI': true },
+				params: { 'path': path },
+			}
 		).then(
 			function(response) {
 				data = response.data;

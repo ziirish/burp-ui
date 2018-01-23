@@ -748,6 +748,7 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
 
     @app.before_request
     def setup_request():
+        g.version = '{}-{}'.format(__version__, __release__)
         g.locale = get_locale()
         g.date_format = session.get('dateFormat', 'llll')
         # make sure to store secure cookie if required

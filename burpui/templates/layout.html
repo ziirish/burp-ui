@@ -8,7 +8,7 @@
     <meta name="author" content="Ziirish">
     <meta name="session" content="{% if 'tag_id' in session %}{{ session['tag_id'] }}{% endif %}">
     <meta name="_extra" content="{{ g._extra }}">
-    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}?_ver={{ g.version }}">
 
     <title>Burp-UI</title>
 
@@ -40,7 +40,7 @@
     <link href="{{ url_for('bower.static', filename='components-font-awesome/css/font-awesome.min.css') }}" rel="stylesheet">
 
     <!-- Custom styles for this template -->
-    <link href="{{ url_for('static', filename='dashboard.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='dashboard.css') }}?_ver={{ g.version }}" rel="stylesheet">
 
   </head>
 

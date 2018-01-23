@@ -56,11 +56,15 @@ class Parser(Burp1):
         u'manual_delete': __(u"path"),
         u'label': __(u"some informations"),
         u'server_can_override_includes': u"0|1",
+        u'status_address': __(u"address|localhost"),
         u'glob_after_script_pre': u"0|1",
         u'enabled': u"0|1",
         u'cname_fqdn': u"0|1",
         u'cname_lowercase': u"0|1",
     })
+    values = Burp1.values
+    # status_address can now listen on any address
+    del values['status_address']
     defaults = Burp1.defaults
     defaults.update({
         u'acl': True,
@@ -109,6 +113,11 @@ class Parser(Burp1):
                                             " able to override your local"
                                             " include/exclude list, set this"
                                             " to 0. The default is 1."),
+        u'status_address': __(u"Defines the main TCP address that the server "
+                              "listens on for status requests. The default  "
+                              "is  special  value  'localhost'  that includes "
+                              "both '::1' (if available) and '127.0.0.1' "
+                              "(always)."),
         u'glob_after_script_pre': __(u"Set this to 0 if you do not want"
                                      " include_glob settings to be evaluated"
                                      " after the pre script is run. The"
