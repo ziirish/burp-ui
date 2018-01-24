@@ -98,13 +98,13 @@
  * The JSON is then split-ed out into several dict/arrays to build our form.
  */
 
-var app = angular.module('MainApp', ['ngSanitize', 'frapontillo.bootstrap-switch', 'ui.select', 'mgcrea.ngStrap', 'angular-onbeforeunload']);
+var app = angular.module('MainApp', ['ngSanitize', 'frapontillo.bootstrap-switch', 'ui.select', 'mgcrea.ngStrap', 'angular-onbeforeunload', 'datatables']);
 
 app.config(function(uiSelectConfig) {
 	uiSelectConfig.theme = 'bootstrap';
 });
 
-app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', function($scope, $http, $scrollspy) {
+app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', function($scope, $http, $scrollspy, DTOptionsBuilder, DTColumnDefBuilder) {
 	$scope.bools = [];
 	$scope.strings = [];
 	$scope.clients = [];
@@ -139,6 +139,12 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', function($scope, 
 			'no':    "{{ _('no') }}",
 			'reset': "{{ _('Reset list') }}",
 		};
+	$scope.dtOptions = DTOptionsBuilder.newOptions();
+	$scope.dtColumnDefs = [
+			DTColumnDefBuilder.newColumnDef(0),
+			DTColumnDefBuilder.newColumnDef(1),
+			DTColumnDefBuilder.newColumnDef(2).notSortable(),
+		];
 	{% if client -%}
 	$http.get('{{ url_for("api.client_settings", client=client, conf=conf, server=server) }}', { headers: { 'X-From-UI': true } })
 	{% else -%}
