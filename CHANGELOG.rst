@@ -4,11 +4,12 @@ Changelog
 Current
 -------
 
-- **BREAKING**: the *BASIC* `ACL` engine will now grant users on all agents if they are not explicitly defined
+- **BREAKING**: the *BASIC* ``ACL`` engine will now grant users on all agents if they are not explicitly defined
 - **BREAKING**: the *Burp1* and *Burp2* configuration sections have been merged into one single *Burp* section
-- **BREAKING**: the *running* backups are now displayed in `green` instead of `blue`
+- **BREAKING**: the *running* backups are now displayed in ``green`` instead of ``blue``
 - Add: new plugins system to allow users to write their own modules
 - Add: `Italian translation <https://git.ziirish.me/ziirish/burp-ui/merge_requests/74>`_ thanks to Enrico
+- Add: new `client configuration templates <https://git.ziirish.me/ziirish/burp-ui/issues/155>`_
 - Add: `backups deletion <https://git.ziirish.me/ziirish/burp-ui/issues/203>`_
 - Add: `show last client status in client view <https://git.ziirish.me/ziirish/burp-ui/issues/212>`_
 - Add: `record login failure attempt <https://git.ziirish.me/ziirish/burp-ui/issues/214>`_

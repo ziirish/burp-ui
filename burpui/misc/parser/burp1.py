@@ -41,8 +41,12 @@ class Parser(Doc):
         self._server_conf = {}
         self._client_conf = {}
         self._clients_conf = {}
+        self._templates_conf = {}
         self.clientconfdir = None
         self.clientconfdir_mtime = None
+        self.templates = []
+        self.templates_dir = '.buitemplates'
+        self.templates_path = None
         self.filescache = {}
         self._configs = {}
         self.root = None
@@ -89,6 +93,7 @@ class Parser(Doc):
             self._server_conf.clear()
             self._client_conf.clear()
             self._clients_conf.clear()
+        self._list_templates(True)
         self._list_clients(True)
 
     def _load_conf_srv(self):
@@ -96,6 +101,7 @@ class Parser(Doc):
         self._server_conf = Config(self.conf, self, 'srv')
         self._server_conf.parse()
         self.clientconfdir = self._server_conf.get('clientconfdir')
+        self.templates_path = os.path.join(self.clientconfdir, self.templates_dir)
 
     def _load_conf_cli(self):
         """Load the client configuration file"""
@@ -120,11 +126,25 @@ class Parser(Doc):
                 conf.parse()
                 self._clients_conf[cli['name']] = conf
 
+    def _load_conf_templates(self):
+        """Load all templates configuration"""
+        templates = self._list_templates(True)
+
+        for template in templates:
+            conf = self.server_conf.clone()
+            path = os.path.join(self.templates_path, template['name'])
+            if template['name'] not in self._templates_conf:
+                conf.add_file(path)
+                conf.set_default(path)
+                conf.parse()
+                self._templates_conf[template['name']] = conf
+
     def _load_all_conf(self):
         """Load all configurations"""
         self._load_conf_srv()
         self._load_conf_cli()
         self._load_conf_clients()
+        self._load_conf_templates()
 
     def _new_client_conf(self, name, path):
         """Create new client conf"""
@@ -152,6 +172,17 @@ class Parser(Doc):
         if self._clients_conf[name].changed:
             self._clients_conf[name].parse()
         return self._clients_conf[name]
+
+    def _get_template(self, name):
+        """Return template conf and refresh it if necessary"""
+        if self._clientconfdir_changed() and name not in self._templates_conf:
+            self._templates_conf.clear()
+            self._load_conf_templates()
+        if name not in self._templates_conf:
+            return None
+        if self._templates_conf[name].changed:
+            self._templates_conf[name].parse()
+        return self._templates_conf[name]
 
     def _get_config(self, path, mode='cli'):
         """Return conf by it's path"""
@@ -197,6 +228,27 @@ class Parser(Doc):
                 })
 
         self.clients = res
+        self.clientconfdir_mtime = os.path.getmtime(self.clientconfdir)
+        return res
+
+    def _list_templates(self, force=False):
+        if not self.clientconfdir:
+            return []
+
+        if self.templates and not force and not self._clientconfdir_changed():
+            return self.templates
+
+        res = []
+        for tpl in os.listdir(self.templates_path):
+            full_file = os.path.join(self.templates_path, tpl)
+            if (os.path.isfile(full_file) and not tpl.startswith('.') and
+                    not tpl.endswith('~')):
+                res.append({
+                    'name': tpl,
+                    'value': os.path.join(self.templates_dir, tpl)
+                })
+
+        self.templates = res
         self.clientconfdir_mtime = os.path.getmtime(self.clientconfdir)
         return res
 
@@ -256,7 +308,7 @@ class Parser(Doc):
             return False
         return self.openssl_auth.check_client_revoked(client)
 
-    def remove_client(self, client=None, keepconf=False, delcert=False, revoke=False):
+    def remove_client(self, client=None, keepconf=False, delcert=False, revoke=False, template=False):
         """See :func:`burpui.misc.parser.interface.BUIparser.remove_client`"""
         res = []
         revoked = False
@@ -265,12 +317,15 @@ class Parser(Doc):
             return [[NOTIF_ERROR, "No client provided"]]
         try:
             if not keepconf:
-                path = os.path.join(self.clientconfdir, client)
+                if template:
+                    path = os.path.join(self.templates_path, client)
+                else:
+                    path = os.path.join(self.clientconfdir, client)
                 os.unlink(path)
                 res.append([NOTIF_OK, "'{}' successfully removed".format(client)])
                 removed = True
 
-                if client in self._clients_conf:
+                if client in self._clients_conf and not template:
                     del self._clients_conf[client]
 
                 self._refresh_cache()
@@ -302,7 +357,7 @@ class Parser(Doc):
 
         return res
 
-    def read_client_conf(self, client=None, conf=None):
+    def read_client_conf(self, client=None, conf=None, template=False):
         """
         See :func:`burpui.misc.parser.interface.BUIparser.read_client_conf`
         """
@@ -313,7 +368,8 @@ class Parser(Doc):
             u'multi': [],
             u'includes': [],
             u'includes_ext': [],
-            u'clients': self._list_clients(),
+            u'templates': [],
+            u'hierarchy': [],
         }
         if not client and not conf:
             return res
@@ -322,8 +378,12 @@ class Parser(Doc):
         if not mconf:
             if not self.clientconfdir:
                 return res
-            mconf = os.path.join(self.clientconfdir, client)
-            config = self._get_client(client, mconf)
+            if template:
+                mconf = os.path.join(self.templates_path, client)
+                config = self._get_template(client)
+            else:
+                mconf = os.path.join(self.clientconfdir, client)
+                config = self._get_client(client, mconf)
         else:
             config = self._get_config(mconf)
 
@@ -336,11 +396,13 @@ class Parser(Doc):
         res2[u'boolean'] = parsed.boolean
         res2[u'integer'] = parsed.integer
         res2[u'multi'] = parsed.multi
+        res2[u'templates'] = parsed.template
         res2[u'includes'] = [
             x
             for x in parsed.flatten('include', False).keys()
         ]
         res2[u'includes_ext'] = parsed.include
+        res2[u'hierarchy'] = config.tree
 
         res.update(res2)
         self.filescache[mconf] = {
@@ -361,7 +423,7 @@ class Parser(Doc):
             u'multi': [],
             u'includes': [],
             u'includes_ext': [],
-            u'clients': self._list_clients(),
+            u'hierarchy': [],
         }
         if not conf:
             mconf = self.conf
@@ -374,12 +436,6 @@ class Parser(Doc):
         if mconf in self.filescache and self.filescache[mconf]['md5'] == parsed.md5:
             return self.filescache[mconf]['dict']
 
-        clientconfdir = parsed.get('clientconfdir')
-        if clientconfdir and clientconfdir.parse() != self.clientconfdir:
-            self.clientconfdir = clientconfdir.parse()
-            self.clientconfdir_mtime = -1
-            res['clients'] = self._list_clients()
-
         res2 = {}
         res2[u'common'] = parsed.string
         res2[u'boolean'] = parsed.boolean
@@ -390,6 +446,7 @@ class Parser(Doc):
             for x in parsed.flatten('include', False).keys()
         ]
         res2[u'includes_ext'] = parsed.include
+        res2[u'hierarchy'] = self.server_conf.tree
 
         res.update(res2)
         self.filescache[mconf] = {
@@ -401,34 +458,43 @@ class Parser(Doc):
     def list_clients(self):
         """See :func:`burpui.misc.parser.interface.BUIparser.list_clients`"""
         self.read_server_conf()
-        if not self.clientconfdir:
-            return []
-
         return self._list_clients()
 
-    def store_client_conf(self, data, client=None, conf=None):
+    def list_templates(self):
+        """See :func:`burpui.misc.parser.interface.BUIparser.list_templates`"""
+        self.read_server_conf()
+        return self._list_templates()
+
+    def store_client_conf(self, data, client=None, conf=None, template=False):
         """
         See :func:`burpui.misc.parser.interface.BUIparser.store_client_conf`
         """
         if conf and not os.path.isabs(conf):
             conf = os.path.join(self.clientconfdir, conf)
         if not conf and not client:
+            if template:
+                return [[NOTIF_ERROR, 'Sorry, no template defined']]
             return [[NOTIF_ERROR, 'Sorry, no client defined']]
         elif client and not conf:
-            conf = os.path.join(self.clientconfdir, client)
+            if template:
+                if not self.templates_path:
+                    return [[NOTIF_ERROR, 'Sorry, no template directory found']]
+                conf = os.path.join(self.templates_path, client)
+            else:
+                conf = os.path.join(self.clientconfdir, client)
         ret = self.store_conf(data, conf, client, mode='cli')
         self._refresh_cache()  # refresh client list
         return ret
 
     def store_conf(self, data, conf=None, client=None, mode='srv',
-                   insecure=False):
+                   insecure=False, template=False):
         """See :func:`burpui.misc.parser.interface.BUIparser.store_conf`"""
         mconf = None
         if not conf:
             mconf = self.conf
         else:
             mconf = conf
-            if mconf != self.conf and not mconf.startswith('/'):
+            if mconf != self.conf and not os.path.isabs(mconf):
                 mconf = os.path.join(self.root, mconf)
         if not mconf:
             return [[NOTIF_WARN, 'Sorry, no configuration file defined']]
@@ -443,7 +509,9 @@ class Parser(Doc):
             ]
 
         check = False
-        if client:
+        if template:
+            conffile = self._get_template(client, mconf).get_file(mconf)
+        elif client:
             conffile = self._get_client(client, mconf).get_file(mconf)
         else:
             conffile = self.server_conf.get_file(mconf)

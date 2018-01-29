@@ -1000,7 +1000,7 @@ class Burp(BUIbackend):
             return []
         return self.parser.read_server_conf(conf)
 
-    def store_conf_cli(self, data, client=None, conf=None, agent=None):
+    def store_conf_cli(self, data, client=None, conf=None, template=False, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.store_conf_cli`"""
         if not self.parser:
             return []
@@ -1008,7 +1008,7 @@ class Burp(BUIbackend):
             conf = unquote(conf)
         except:
             pass
-        return self.parser.store_client_conf(data, client, conf)
+        return self.parser.store_client_conf(data, client, conf, template)
 
     def store_conf_srv(self, data, conf=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.store_conf_srv`"""

@@ -64,6 +64,7 @@ VENDOR_TO_KEEP = [
     'burpui/static/vendor/angular-strap/dist/angular-strap.min.js',
     'burpui/static/vendor/angular-strap/dist/angular-strap.tpl.min.js',
     'burpui/static/vendor/angular-onbeforeunload/build/angular-onbeforeunload.js',
+    'burpui/static/vendor/angular-datatables-0.6.2/dist/angular-datatables.min.js',
     'burpui/static/vendor/moment/min/moment.min.js',
     'burpui/static/vendor/moment/locale/fr.js',
     'burpui/static/vendor/moment/locale/es.js',

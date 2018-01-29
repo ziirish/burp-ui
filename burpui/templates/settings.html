@@ -4,22 +4,45 @@
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
           {% include "small_topbar.html" %}
           <ul class="breadcrumb" style="margin-bottom: 5px;">
+            {% if conf -%}
+            {% set conf=conf|replace("%2F", "/")|escape -%}
+            {% endif -%}
             {% if server -%}
             <li><a href="{{ url_for('view.home') }}">{{ _('Home') }}</a></li>
             <li><a href="{{ url_for('view.clients', server=server) }}">{{ _('%(server)s clients', server=server) }}</a></li>
               {% if client -%}
             <li><a href="{{ url_for('view.settings', server=server) }}">{{ _('Burp Server Configuration of %(server)s', server=server) }}</a></li>
-            <li class="active">{{ _('Burp Server Configuration of %(client)s client on %(server)s', client=client, server=server) }}</li>
+                {% if conf -%}
+            <li><a href="{{ url_for('view.cli_settings', server=server, client=client) }}">{{ _('%(client)s on %(server)s', client=client, server=server) }}</a></li>
+            <li class="active">{{ conf|replace("%2F", "/")|escape }}</li>
+                {% else -%}
+            <li class="active">{{ _('%(client)s on %(server)s', client=client, server=server) }}</li>
+                {% endif -%}
               {% else -%}
+                {% if conf -%}
+            <li><a href="{{ url_for('view.settings', server=server) }}">{{ _('Burp Server Configuration of %(server)s', server=server) }}</a></li>
+            <li class="active">{{ conf|replace("%2F", "/")|escape }}</li>
+                {% else -%}
             <li class="active">{{ _('Burp Server Configuration of %(server)s', server=server) }}</li>
+                {% endif -%}
               {% endif -%}
             {% else -%}
             <li><a href="{{ url_for('view.home') }}">{{ _('Home') }}</a></li>
               {% if client -%}
             <li><a href="{{ url_for('view.settings', server=server) }}">{{ _('Burp Server Configuration') }}</a></li>
-            <li class="active">{{ _('Burp Server Configuration of %(client)s client', client=client) }}</li>
+                {% if conf -%}
+            <li><a href="{{ url_for('view.cli_settings', server=server, client=client) }}">{{ client }}</a></li>
+            <li class="active">{{ conf|replace("%2F", "/")|escape }}</li>
+                {% else -%}
+            <li class="active">{{ client }}</li>
+                {% endif -%}
               {% else -%}
+                {% if conf -%}
+            <li><a href="{{ url_for('view.settings', server=server) }}">{{ _('Burp Server Configuration') }}</a></li>
+            <li class="active">{{ conf|replace("%2F", "/")|escape }}</li>
+                {% else -%}
             <li class="active">{{ _('Burp Server Configuration') }}</li>
+                {% endif -%}
               {% endif -%}
             {% endif -%}
           </ul>
@@ -29,6 +52,7 @@
             <li class="active"><a href="#config" data-toggle="tab" aria-expanded="true">{{ _('Config') }}</a></li>
             <li><a href="#hierarchy" data-toggle="tab" aria-expanded="false">{{ _('Hierarchy') }}</a></li>
             <li><a href="#clients" data-toggle="tab" aria-expanded="false">{{ _('Clients') }}</a></li>
+            <li><a href="#list-templates" data-toggle="tab" aria-expanded="false">{{ _('Templates') }}</a></li>
           </ul>
           <div id="config-tab-content" class="tab-content">
             <div class="tab-pane fade active in" id="config">
@@ -42,7 +66,11 @@
 
               <div id="settings-panel" class="form-container" style="display:none;" ng-cloak>
                 {% if client -%}
+                  {% if template -%}
+                <form class="form-horizontal" action="{{ url_for('api.client_settings', client=client, conf=conf, template=template, server=server) }}" method="POST" ng-submit="submit($event)" name="setSettings" onbeforeunload>
+                  {% else -%}
                 <form class="form-horizontal" action="{{ url_for('api.client_settings', client=client, conf=conf, server=server) }}" method="POST" ng-submit="submit($event)" name="setSettings" onbeforeunload>
+                  {% endif -%}
                 {% else -%}
                 <form class="form-horizontal" action="{{ url_for('api.server_settings', conf=conf, server=server) }}" method="POST" ng-submit="submit($event)" name="setSettings" onbeforeunload>
                 {% endif -%}
@@ -240,13 +268,59 @@
                       </div>
                       <div class="form-group">
                   {% endraw %}
-                        <label for="btn-add-include" class="col-lg-3 control-label">{{ _('source config') }}</label>
+                        <label for="btn-add-include" class="col-lg-3 control-label">{{ _('source now config') }}</label>
                         <div class="col-lg-9">
                           <button type="button" class="btn btn-success btn-primary" ng-click="clickAddIncludes()"><span class="glyphicon glyphicon-plus"></span></button>
                         </div>
                       </div>
                     </div>
                   </fieldset>
+                  {% if client -%}
+                  <fieldset>
+                    <legend id="templates">{{ _('Templates') }}</legend>
+                  {% raw %}
+                    <div class="well">
+                      <div class="form-group" ng-repeat="template in templates track by $index" ng-class="{'has-error': inc_invalid[$index] }">
+                        <label for="template-{{ $index }}" class="col-lg-3 control-label">
+                  {% endraw %}
+                          {{ _('template') }}
+                  {% raw %}
+                        </label>
+                        <div class="col-lg-2">
+                          <input class="form-control" type="text" id="template-{{ $index }}" ng-model="template.name" ng-focus="focusIn($event)" ng-blur="focusOut($event)" placeholder="{{ ::placeholders['.'] }}" readonly>
+                          <input type="hidden" name="templates" id="template-hidden-{{ $index }}" value="{{ template.value }}">
+                        </div>
+                        <div class="col-lg-2 btn-toolbar">
+                          <button type="button" class="btn btn-danger" ng-click="remove('templates', $index)"><span class="glyphicon glyphicon-minus"></span></button>
+                        </div>
+                        <div class="col-lg-5" ng-if="$first" ng-bind-html="::server_doc['.']"></div>
+                      </div>
+                      <div class="form-group" ng-hide="!add.templates">
+                        <div class="col-lg-3">
+                          <ui-select ng-model="new.templates" ng-disabled="!add.templates" style="width: 100%;" on-select="select($item, $select, 'templates')">
+                    {% endraw %}
+                          <ui-select-match placeholder="{{ _('Select a template') }}">
+                    {% raw %}
+                              {{ $select.selected.name }}
+                    {% endraw %}
+                            </ui-select-match>
+                            <ui-select-choices repeat="value.name as value in avail.templates | filter: $select.search">
+                              <div ng-bind-html="value.name | highlight: $select.search"></div>
+                            </ui-select-choices>
+                          </ui-select>
+                        </div>
+                        <div class="col-lg-9">
+                          <button type="button" class="btn btn-danger" ng-click="undoAdd('templates')"><span class="glyphicon glyphicon-remove"></span></button>
+                        </div>
+                      </div>
+                      <div class="form-group" ng-hide="templates.length >= raw.templates.length || add.templates">
+                        <div class="col-lg-3 col-lg-offset-3">
+                          <button type="button" class="btn btn-success btn-primary" ng-click="clickAdd('templates')"><span class="glyphicon glyphicon-plus"></span></button>
+                        </div>
+                      </div>
+                    </div>
+                  </fieldset>
+                  {% endif -%}
                   <div class="btn-toolbar">
                     <div class="col-lg-3 col-lg-offset-3">
                       <button type="submit" class="btn btn-primary" ng-disabled="!setSettings.$valid">{{ _('Save') }}</button>
@@ -255,11 +329,14 @@
                       {% if client and not conf -%}
                       <div class="btn-group dropupi text-right">
                         <button type="button" class="btn btn-danger" ng-click="deleteClient()">{{ _("Remove '%(client)s'", client=client) }}</button>
+                        {% if not template -%}
                         <button class="btn btn-danger dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
                         <ul class="dropdown-menu browse">
                           <li><label for="keepconf">{{ _('Do not remove the configuration:') }}&nbsp;</label><input type="checkbox" id="keepconf" name="keepconf"></li>
                           <li><label for="delcert">{{ _('Remove associated certificate:') }}&nbsp;</label><input type="checkbox" id="delcert" name="delcert"></li>
                           <li><label for="revoke">{{ _('Revoke associated certificate:') }}&nbsp;</label><input type="checkbox" id="revoke" name="revoke" ng-disabled="!revokeEnabled"></li>
+                        </ul>
+                        {% endif -%}
                       </div>
                       {% endif -%}
                     </div>
@@ -268,8 +345,84 @@
               </div>
             </div>
             <div class="tab-pane fade" id="hierarchy">
+              <div style="padding-top: 80px; margin-top: -45px;"></div>
+              <div id="tree-container" class="table-responsive row">
+                <table id="tree-hierarchy" class="table">
+                  <thead>
+                    <tr>
+                      <th>{{ _('File') }}</th><th></th>
+                    </tr>
+                  </thead>
+                </table>
+              </div>
             </div>
             <div class="tab-pane fade" id="clients">
+              <div style="padding-top: 80px; margin-top: -45px;"></div>
+              <div id="table-clients" class="table-responsive row">
+                <table class="table table-striped table-hover nowrap" width="100%" datatable="ng" dt-options="dtOptions" dt-column-defs="dtColumnDefs" id="table-list-clients">
+                  <thead>
+                    <tr>
+                      <th>{{ _('Name') }}</th><th>{{ _('Path') }}</th><th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr ng-repeat="client in clients">
+                      {% raw -%}
+                      <td>{{ client.name }}</td>
+                      <td>{{ client.value }}</td>
+                      {% endraw -%}
+                      <td><a href="{{ url_for("view.cli_settings", server=server) }}?client={{ '{{' }} client.name {{ '}}' }}" class="btn btn-info btn-xs no-link pull-right"><span class="glyphicon glyphicon-pencil" aria-hidden="true"> {{ _('edit') }}</a></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="row well">
+                <form action="{{ url_for('api.new_client', server=server) }}" method="POST" ng-submit="createClient($event)">
+                  <fieldset>
+                    <Legend>{{ _('Create new client') }}</Legend>
+                    <div class="input-group col-lg-3">
+                      <input class="form-control" type="text" name="newclient" id="newclient" placeholder="{{ _('Create new client') }}">
+                      <span class="input-group-btn">
+                        <button class="btn btn-success" type="submit"><span class="glyphicon glyphicon-plus"></span></button>
+                      </span>
+                    </div>
+                  </fieldset>
+                </form>
+              </div>
+            </div>
+            <div class="tab-pane fade" id="list-templates">
+              <div style="padding-top: 80px; margin-top: -45px;"></div>
+              <div id="table-templates" class="table-responsive row">
+                <table class="table table-striped table-hover nowrap" width="100%" datatable="ng" dt-options="dtOptions" dt-column-defs="dtColumnDefs" id="table-list-templates">
+                  <thead>
+                    <tr>
+                      <th>{{ _('Name') }}</th><th>{{ _('Path') }}</th><th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr ng-repeat="template in raw.templates">
+                      {% raw -%}
+                      <td>{{ template.name }}</td>
+                      <td>{{ template.value }}</td>
+                      {% endraw -%}
+                      <td><a href="{{ url_for("view.cli_settings", server=server) }}?client={{ '{{' }} template.name {{ '}}' }}&template=true" class="btn btn-info btn-xs no-link pull-right"><span class="glyphicon glyphicon-pencil" aria-hidden="true"> {{ _('edit') }}</a></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="row well">
+                <form action="{{ url_for('api.new_template', server=server) }}" method="POST" ng-submit="createTemplate($event)">
+                  <fieldset>
+                    <Legend>{{ _('Create new template') }}</Legend>
+                    <div class="input-group col-lg-3">
+                      <input class="form-control" type="text" name="newtemplate" id="newtemplate" placeholder="{{ _('Create new template') }}">
+                      <span class="input-group-btn">
+                        <button class="btn btn-success" type="submit"><span class="glyphicon glyphicon-plus"></span></button>
+                      </span>
+                    </div>
+                  </fieldset>
+                </form>
+              </div>
             </div>
           </div>
         </div>

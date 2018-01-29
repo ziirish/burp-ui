@@ -7,35 +7,8 @@
               <li data-target="#integer"><a class="scroll" href="#integer">{{ _('Integers') }}</a></li>
               <li data-target="#multi"><a class="scroll" href="#multi">{{ _('Multi') }}</a></li>
               <li data-target="#includes_source"><a class="scroll" href="#includes_source">{{ _('Source files') }}</a></li>
-            </ul>
-            <h4>{{ _('Client to configure') }}</h4>
-            <ul class="nav nav-sidebar" ng-cloak>
-              <li>
-                <ui-select ng-model="client.selected" style="width: 100%;" on-select="selectClient($item, $select)">
-                  <ui-select-match placeholder="{{ _('Select a client') }}">
-              {% raw -%}
-                    {{ $select.selected.name }}
-                  </ui-select-match>
-                  <ui-select-choices repeat="client in clients | filter: {name: $select.search}">
-                    <div ng-bind-html="client.name | highlight: $select.search"></div>
-                    <small>
-              {% endraw -%}
-                      {{ _('config:') }} <span ng-bind-html="''+client.value | highlight: $select.search"></span>
-                    </small>
-                  </ui-select-choices>
-                </ui-select>
-              </li>
-            </ul>
-            <ul class="nav nav-sidebar">
-              <li>
-                <form action="{{ url_for('api.new_client', server=server) }}" method="POST" ng-submit="createClient($event)">
-                  <div class="input-group">
-                    <input class="form-control" type="text" name="newclient" id="newclient" placeholder="{{ _('Create new client') }}">
-                    <span class="input-group-btn">
-                      <button class="btn btn-success" type="submit"><span class="glyphicon glyphicon-plus"></span></button>
-                    </span>
-                  </div>
-                </form>
-              </li>
+              {% if client and not template -%}
+              <li data-target="#templates"><a class="scroll" href="#templates">{{ _('Templates') }}</a></li>
+              {% endif -%}
             </ul>
           </div>

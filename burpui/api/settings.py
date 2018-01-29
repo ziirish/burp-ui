@@ -17,7 +17,7 @@ from ..utils import NOTIF_INFO
 
 from six import iteritems
 from flask_babel import gettext as _, refresh
-from flask import jsonify, request, url_for, current_app
+from flask import jsonify, request, url_for, current_app, g
 from ..datastructures import ImmutableMultiDict
 
 bui = current_app  # type: BUIServer
@@ -168,6 +168,30 @@ class ServerSettings(Resource):
                     ]
                   },
                   { "...": "..." }
+                ],
+                "hierarchy": [
+                  {
+                    "children": [
+                      {
+                        "children": [],
+                        "dir": "/tmp/burp/conf.d",
+                        "full": "/tmp/burp/conf.d/empty.conf",
+                        "name": "empty.conf",
+                        "parent": "/tmp/burp/burp-server.conf"
+                      },
+                      {
+                        "children": [],
+                        "dir": "/tmp/burp/conf.d",
+                        "full": "/tmp/burp/conf.d/ipv4.conf",
+                        "name": "ipv4.conf",
+                        "parent": "/tmp/burp/burp-server.conf"
+                      }
+                    ],
+                    "dir": "/tmp/burp",
+                    "full": "/tmp/burp/burp-server.conf",
+                    "name": "burp-server.conf",
+                    "parent": null
+                  }
                 ]
               },
               "server_doc": {
@@ -212,21 +236,40 @@ class ServerSettings(Resource):
         res = bui.client.read_conf_srv(conf, server)
         refresh()
         # Translate the doc and placeholder API side
-        doc = bui.client.get_parser_attr('doc', server).copy()
-        placeholders = bui.client.get_parser_attr('placeholders', server).copy()
-        for key, val in iteritems(doc):
-            doc[key] = _(val)
-        for key, val in iteritems(placeholders):
-            placeholders[key] = _(val)
+        cache_keys = {
+            'doc': '_doc_parser_{}-{}'.format(server, g.locale),
+            'placeholders': '_placeholders_parser_{}-{}'.format(server, g.locale),
+            'boolean_srv': '_boolean_srv_parser_{}'.format(server),
+            'string_srv': '_string_srv_parser_{}'.format(server),
+            'integer_srv': '_integer_srv_parser_{}'.format(server),
+            'multi_srv': '_multi_srv_parser_{}'.format(server),
+            'values': '_suggest_parser_{}'.format(server),
+            'defaults': '_defaults_parser_{}'.format(server),
+        }
+        cache_results = {}
+        for name, key in iteritems(cache_keys):
+            if not cache.cache.has(key):
+                if name in ['doc', 'placeholders']:
+                    _tmp = bui.client.get_parser_attr(name, server).copy()
+                    _tmp2 = {}
+                    for k, v in iteritems(_tmp):
+                        _tmp2[k] = _(v)
+                    cache_results[name] = _tmp2
+                else:
+                    cache_results[name] = bui.client.get_parser_attr(name, server)
+                cache.cache.set(key, cache_results[name], 3600)
+            else:
+                cache_results[name] = cache.cache.get(key)
+
         return jsonify(results=res,
-                       boolean=bui.client.get_parser_attr('boolean_srv', server),
-                       string=bui.client.get_parser_attr('string_srv', server),
-                       integer=bui.client.get_parser_attr('integer_srv', server),
-                       multi=bui.client.get_parser_attr('multi_srv', server),
-                       server_doc=doc,
-                       suggest=bui.client.get_parser_attr('values', server),
-                       placeholders=placeholders,
-                       defaults=bui.client.get_parser_attr('defaults', server))
+                       boolean=cache_results['boolean_srv'],
+                       string=cache_results['string_srv'],
+                       integer=cache_results['integer_srv'],
+                       multi=cache_results['multi_srv'],
+                       server_doc=cache_results['doc'],
+                       suggest=cache_results['values'],
+                       placeholders=cache_results['placeholders'],
+                       defaults=cache_results['defaults'])
 
 
 @ns.route('/clients',
@@ -249,8 +292,82 @@ class ClientsList(Resource):
     )
     def get(self, server=None):
         """Returns a list of clients"""
-        res = bui.client.clients_list(server)
+        parser = bui.client.get_parser(agent=server)
+        res = parser.list_clients()
         return jsonify(result=res)
+
+
+@ns.route('/templates',
+          '/<server>/templates',
+          endpoint='templates_list')
+@ns.doc(
+    params={
+        'server': 'Which server to collect data from when in multi-agent mode',
+    },
+)
+class TemplatesList(Resource):
+
+    @api.acl_admin_required(message='Sorry, you don\'t have rights to access the setting panel')
+    @ns.doc(
+        responses={
+            200: 'Success',
+            403: 'Insufficient permissions',
+            500: 'Internal failure',
+        }
+    )
+    def get(self, server=None):
+        """Returns a list of clients"""
+        parser = bui.client.get_parser(agent=server)
+        res = parser.list_templates()
+        return jsonify(result=res)
+
+
+@ns.route('/template',
+          '/<server>/template',
+          endpoint='new_template',
+          methods=['PUT'])
+@ns.doc(
+    params={
+        'server': 'Which server to collect data from when in multi-agent mode',
+    },
+)
+class NewTemplateSettings(Resource):
+    parser = ns.parser()
+    parser.add_argument('newtemplate', required=True, help="No 'newclient' provided")
+
+    @api.disabled_on_demo()
+    @api.acl_admin_required(message='Sorry, you don\'t have rights to access the setting panel')
+    @ns.expect(parser)
+    @ns.doc(
+        responses={
+            200: 'Success',
+            400: 'Missing parameter',
+            403: 'Insufficient permissions',
+            500: 'Internal failure',
+        }
+    )
+    def put(self, server=None):
+        """Creates a new client"""
+        newtemplate = self.parser.parse_args()['newtemplate']
+        if not newtemplate:
+            self.abort(400, 'No template name provided')
+        parser = bui.client.get_parser(agent=server)
+        templates = parser.list_templates()
+        for tpl in templates:
+            if tpl['name'] == newtemplate:
+                self.abort(409, "Template '{}' already exists".format(newtemplate))
+        # clientconfdir = bui.client.get_parser_attr('clientconfdir', server)
+        # if not clientconfdir:
+        #    flash('Could not proceed, no \'clientconfdir\' find', 'warning')
+        #    return redirect(request.referrer)
+        noti = bui.client.store_conf_cli(ImmutableMultiDict(), newtemplate, None, True, server)
+        if server:
+            noti.append([NOTIF_INFO, _('<a href="%(url)s">Click here</a> to edit \'%(template)s\' configuration', url=url_for('view.cli_settings', server=server, client=newtemplate, template=True), template=newtemplate)])
+        else:
+            noti.append([NOTIF_INFO, _('<a href="%(url)s">Click here</a> to edit \'%(template)s\' configuration', url=url_for('view.cli_settings', client=newtemplate, template=True), template=newtemplate)])
+        # clear the cache when we add a new client
+        cache.clear()
+        return {'notif': noti}, 201
 
 
 @ns.route('/config',
@@ -282,7 +399,8 @@ class NewClientSettings(Resource):
         newclient = self.parser.parse_args()['newclient']
         if not newclient:
             self.abort(400, 'No client name provided')
-        clients = bui.client.clients_list(server)
+        parser = bui.client.get_parser(agent=server)
+        clients = parser.list_clients()
         for cl in clients:
             if cl['name'] == newclient:
                 self.abort(409, "Client '{}' already exists".format(newclient))
@@ -321,9 +439,15 @@ class ClientSettings(Resource):
     parser_delete.add_argument('revoke', type=boolean, help='Whether to revoke the certificate or not', default=False, nullable=True)
     parser_delete.add_argument('delcert', type=boolean, help='Whether to delete the certificate or not', default=False, nullable=True)
     parser_delete.add_argument('keepconf', type=boolean, help='Whether to keep the conf or not', default=False, nullable=True)
+    parser_delete.add_argument('template', type=boolean, help='Whether we work on a template or not', default=False, nullable=True)
+    parser_post = ns.parser()
+    parser_post.add_argument('template', type=boolean, help='Whether we work on a template or not', default=False, nullable=True)
+    parser_get = ns.parser()
+    parser_get.add_argument('template', type=boolean, help='Whether we work on a template or not', default=False, nullable=True)
 
     @api.disabled_on_demo()
     @api.acl_admin_required(message=_('Sorry, you don\'t have rights to access the setting panel'))
+    @ns.expect(parser_post)
     @ns.doc(
         responses={
             200: 'Success',
@@ -333,10 +457,13 @@ class ClientSettings(Resource):
     )
     def post(self, server=None, client=None, conf=None):
         """Saves a given client configuration"""
-        noti = bui.client.store_conf_cli(request.form, client, conf, server)
+        args = self.parser_post.parse_args()
+        template = args.get('template', False)
+        noti = bui.client.store_conf_cli(request.form, client, conf, template, server)
         return {'notif': noti}
 
     @api.acl_admin_required(message=_('Sorry, you don\'t have rights to access the setting panel'))
+    @ns.expect(parser_get)
     @ns.doc(
         responses={
             200: 'Success',
@@ -350,25 +477,47 @@ class ClientSettings(Resource):
             conf = unquote(conf)
         except:
             pass
-        res = bui.client.read_conf_cli(client, conf, server)
+        args = self.parser_get.parse_args()
+        template = args.get('template', False)
+        parser = bui.client.get_parser()
+        res = parser.read_client_conf(client, conf, template)
         refresh()
         # Translate the doc and placeholder API side
-        doc = bui.client.get_parser_attr('doc', server).copy()
-        placeholders = bui.client.get_parser_attr('placeholders', server).copy()
-        for key, val in iteritems(doc):
-            doc[key] = _(val)
-        for key, val in iteritems(placeholders):
-            placeholders[key] = _(val)
+        cache_keys = {
+            'doc': '_doc_parser_{}-{}'.format(server, g.locale),
+            'placeholders': '_placeholders_parser_{}-{}'.format(server, g.locale),
+            'boolean_cli': '_boolean_cli_parser_{}'.format(server),
+            'string_cli': '_string_cli_parser_{}'.format(server),
+            'integer_cli': '_integer_cli_parser_{}'.format(server),
+            'multi_cli': '_multi_cli_parser_{}'.format(server),
+            'values': '_suggest_parser_{}'.format(server),
+            'defaults': '_defaults_parser_{}'.format(server),
+        }
+        cache_results = {}
+        for name, key in iteritems(cache_keys):
+            if not cache.cache.has(key):
+                if name in ['doc', 'placeholders']:
+                    _tmp = bui.client.get_parser_attr(name, server).copy()
+                    _tmp2 = {}
+                    for k, v in iteritems(_tmp):
+                        _tmp2[k] = _(v)
+                    cache_results[name] = _tmp2
+                else:
+                    cache_results[name] = bui.client.get_parser_attr(name, server)
+                cache.cache.set(key, cache_results[name], 3600)
+            else:
+                cache_results[name] = cache.cache.get(key)
+
         return jsonify(
             results=res,
-            boolean=bui.client.get_parser_attr('boolean_cli', server),
-            string=bui.client.get_parser_attr('string_cli', server),
-            integer=bui.client.get_parser_attr('integer_cli', server),
-            multi=bui.client.get_parser_attr('multi_cli', server),
-            server_doc=doc,
-            suggest=bui.client.get_parser_attr('values', server),
-            placeholders=placeholders,
-            defaults=bui.client.get_parser_attr('defaults', server)
+            boolean=cache_results['boolean_cli'],
+            string=cache_results['string_cli'],
+            integer=cache_results['integer_cli'],
+            multi=cache_results['multi_cli'],
+            server_doc=cache_results['doc'],
+            suggest=cache_results['values'],
+            placeholders=cache_results['placeholders'],
+            defaults=cache_results['defaults']
         )
 
     @api.disabled_on_demo()
@@ -387,6 +536,7 @@ class ClientSettings(Resource):
         delcert = args.get('delcert', False)
         revoke = args.get('revoke', False)
         keepconf = args.get('keepconf', False)
+        template = args.get('template', False)
 
         if not keepconf:
             # clear the cache when we remove a client
@@ -394,7 +544,8 @@ class ClientSettings(Resource):
             if bui.config['WITH_CELERY']:
                 from ..tasks import force_scheduling_now
                 force_scheduling_now()
-        return bui.client.delete_client(client, keepconf=keepconf, delcert=delcert, revoke=revoke, agent=server), 200
+        parser = bui.client.get_parser()
+        return parser.remove_client(client, keepconf, delcert, revoke, template), 200
 
 
 @ns.route('/path-expander',
@@ -435,7 +586,8 @@ class PathExpander(Resource):
             path = unquote(path)
         if source:
             source = unquote(source)
-        paths = bui.client.expand_path(path, source, client, server)
+        parser = bui.client.get_parser(agent=server)
+        paths = parser.path_expander(path, source, client)
         if not paths:
             self.abort(403, 'Path not found')
         return {'result': paths}

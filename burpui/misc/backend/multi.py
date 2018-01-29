@@ -511,7 +511,7 @@ class NClient(BUIbackend):
     """
 
     @implement
-    def store_conf_cli(self, data, client=None, conf=None, agent=None):
+    def store_conf_cli(self, data, client=None, conf=None, template=False, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.store_conf_cli`"""
         # serialize data as it is a nested dict
         import hmac
@@ -527,7 +527,7 @@ class NClient(BUIbackend):
             data = ImmutableMultiDict(data.to_dict(False))
         key = '{}{}'.format(self.password, 'store_conf_cli')
         key = to_bytes(key)
-        pickles = b64encode(pickle.dumps({'data': data, 'conf': conf, 'client': client}, 2))
+        pickles = b64encode(pickle.dumps({'data': data, 'conf': conf, 'client': client, 'template': template}, 2))
         bytes_pickles = to_bytes(pickles)
         digest = hmac.new(key, bytes_pickles, hashlib.sha1).hexdigest()
         data = {'func': 'store_conf_cli', 'args': pickles, 'pickled': True, 'digest': digest}
