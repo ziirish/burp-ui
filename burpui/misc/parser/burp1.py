@@ -126,7 +126,6 @@ class Parser(Doc):
                 conf.parse()
                 self._clients_conf[cli['name']] = conf
 
-
     def _load_conf_templates(self):
         """Load all templates configuration"""
         templates = self._list_templates(True)
@@ -436,8 +435,6 @@ class Parser(Doc):
         parsed = self.server_conf.get_file(mconf)
         if mconf in self.filescache and self.filescache[mconf]['md5'] == parsed.md5:
             return self.filescache[mconf]['dict']
-
-        clientconfdir = parsed.get('clientconfdir')
 
         res2 = {}
         res2[u'common'] = parsed.string
