@@ -23,6 +23,8 @@ from ...datastructures import MultiDict
 
 
 RESET_IDENTIFIER = '_reset_bui_CUSTOM'
+BEGIN_TEMPLATES = 'BURP-UI TEMPLATES'
+END_TEMPLATES = 'END TEMPLATES'
 
 
 class Option(object):
@@ -272,7 +274,7 @@ class OptionInc(Option):
 
     def _path_absolute(self, path):
         absolute = path
-        if not path.startswith('/'):
+        if not os.path.isabs(path):
             if self.root:
                 absolute = os.path.join(self.root, path)
             elif self.mode == 'srv':
@@ -321,6 +323,60 @@ class OptionInc(Option):
         return ''
 
 
+class OptionTpl(Option):
+    """Option type Template
+
+    Example:
+        . .buitemplates/windows
+    """
+    type = 'template'
+    delim = ""
+
+    def __init__(self, parser, name, value=None):
+        """
+        :param parser: Parser instance
+        :type parser: :class:`burpui.misc.parser.burp1.Parser`
+        """
+        super(OptionTpl, self).__init__(name, value)
+        self.parser = parser
+        self.extended = False
+        self._dirty = True
+        if name:
+            self._id = name.split(os.path.sep)[-1]
+        else:
+            self._id = ''
+
+    @property
+    def dirty(self):
+        return self._dirty
+
+    def _path_absolute(self, path):
+        absolute = path
+        if not os.path.isabs(path):
+            absolute = os.path.join(self.parser.clientconfdir, path)
+        return absolute
+
+    def extend(self):
+        """Helper function for the parsing"""
+        if not self._dirty and self.extended:
+            return self.extended
+        path = self._path_absolute(self.value)
+        self.clean()
+        self.extended = path
+        return path
+
+    def parse(self):
+        """Parse the option value"""
+        return self.extend()
+
+    def dump(self):
+        """Return the option representation to store in configuration file"""
+        if self.extend() and not self.parser.backend.enforce:
+            return '. {}'.format(self.name)
+        # if the include did not match anything, we can safely remove it
+        return ''
+
+
 class File(dict):
     """Object representing a configuration file
 
@@ -345,6 +401,8 @@ class File(dict):
         self._dirty = False
         # _changed is used to know if the file changed since last read
         self._changed = True
+        # _parsing_templates is used to know if we are currently parsing templates
+        self._parsing_templates = False
         # cache the content of the file
         self._raw = []
         self._raw_data = MultiDict()
@@ -362,6 +420,7 @@ class File(dict):
             'include': OrderedDict(),
             'multi': OrderedDict(),
             'string': OrderedDict(),
+            'template': OrderedDict(),
         }
         if self.name:
             self.parse()
@@ -369,6 +428,10 @@ class File(dict):
     @property
     def changed(self):
         for key, val in iteritems(self.types['include']):
+            if val.dirty:
+                self._changed = True
+                return self._changed
+        for key, val in iteritems(self.types['template']):
             if val.dirty:
                 self._changed = True
                 return self._changed
@@ -464,6 +527,16 @@ class File(dict):
         return self.flatten('include')
 
     @property
+    def template(self):
+        ret = []
+        for tpl in self.flatten('template', parse=False):
+            ret.append({
+                'value': tpl['name'],
+                'name': tpl['value']._id,
+            })
+        return ret
+
+    @property
     def multi(self):
         return self.flatten('multi')
 
@@ -506,7 +579,7 @@ class File(dict):
             return opt
         if typ == 'include':
             key = value
-            opt = OptionInc(
+            return OptionInc(
                 self.parser,
                 key,
                 value,
@@ -548,13 +621,16 @@ class File(dict):
             opt.append(value)
         elif key == u'.':
             key = value
-            opt = OptionInc(
-                self.parser,
-                key,
-                value,
-                root=self.name,
-                mode=self.mode
-            )
+            if self._parsing_templates:
+                opt = OptionTpl(self.parser, key, value)
+            else:
+                opt = OptionInc(
+                    self.parser,
+                    key,
+                    value,
+                    root=self.name,
+                    mode=self.mode
+                )
         else:
             opt = OptionStr(key, value)
         self.options[key] = opt
@@ -698,6 +774,10 @@ class File(dict):
         self.clear()
         for line in self.raw:
             if re.match(r'^\s*#', line):
+                if BEGIN_TEMPLATES in line:
+                    self._parsing_templates = True
+                if END_TEMPLATES in line:
+                    self._parsing_templates = False
                 continue
             res = re.search(r'\s*([^=\s]+)\s*(:)?=?\s*(.*)$', line)
             if res:
@@ -821,7 +901,21 @@ class File(dict):
             with codecs.open(dest, 'w', 'utf-8', errors='ignore') as fil:
                 # f.write('# Auto-generated configuration using Burp-UI\n')
                 data_keys = list(data.keys())
+                if len(self.template) > 0 or 'templates' in data:
+                    _dump(' {}'.format(BEGIN_TEMPLATES), True)
+                    tpls = data.getlist('templates') or [x['value'] for x in self.template]
+                    for tpl in tpls:
+                        self._write_key(fil, '.', tpl)
+                    _dump(' {}'.format(END_TEMPLATES), True)
+                skip_line = False
                 for idx, line in enumerate(orig):
+                    if self._line_is_comment(line) and BEGIN_TEMPLATES in line:
+                        skip_line = True
+                    if self._line_is_comment(line) and END_TEMPLATES in line:
+                        skip_line = False
+                        continue
+                    if skip_line:
+                        continue
                     key = self._get_line_key(line, False)
                     if (self._line_removed(line, data_keys) and
                             not self._line_is_comment(line) and
@@ -917,7 +1011,7 @@ class File(dict):
                     if key.endswith(RESET_IDENTIFIER):
                         continue
                     if (key not in written and key not in already_multi and
-                            key not in ['includes', 'includes_ori']):
+                            key not in ['includes', 'includes_ori', 'templates']):
                         self._write_key(
                             fil,
                             key,
@@ -1016,6 +1110,7 @@ class Config(File):
         self.default = path
         self.name = path
         self._includes = []
+        self._templates = []
         self._dirty = True
         if path:
             self.files[path] = File(parser, path, mode=mode)
@@ -1039,6 +1134,11 @@ class Config(File):
                         path = os.path.join(os.path.dirname(root), path)
                     self.add_file(path, root)
                     self._includes.append(path)
+            for key, path in iteritems(conf.flatten('template', False)):
+                if not os.path.isabs(path):
+                    path = os.path.join(os.path.dirname(root), path)
+                self.add_file(path, root)
+                self._templates.append(path)
 
         # recursively parse the conf
         if orig != self.files:
@@ -1049,13 +1149,14 @@ class Config(File):
             return
 
         del self._includes[:]
+        del self._templates[:]
         self._parse()
 
         removed = []
         orig = self.files
         for path, conf in iteritems(orig):
-            if conf.parent and (conf.name not in self._includes or
-               conf.name in removed):
+            if conf.parent and ((conf.name not in self._includes and
+               conf.name not in self._templates) or conf.name in removed):
                 removed.append(path)
                 self.del_file(path)
 
@@ -1110,7 +1211,7 @@ class Config(File):
         if conf and conf in self.files:
             return self.files[conf].store(dest, insecure)
         for name, conf in iteritems(self.files):
-            ret += conf.store(dest, insecure)
+            ret += conf.store(insecure=insecure)
         return ret
 
     def store_data(self, conf, data, insecure=False):

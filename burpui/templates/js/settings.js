@@ -97,6 +97,7 @@
  * }
  * The JSON is then split-ed out into several dict/arrays to build our form.
  */
+{% import 'macros.html' as macros %}
 
 var app = angular.module('MainApp', ['ngSanitize', 'frapontillo.bootstrap-switch', 'ui.select', 'mgcrea.ngStrap', 'angular-onbeforeunload', 'datatables']);
 
@@ -104,7 +105,7 @@ app.config(function(uiSelectConfig) {
 	uiSelectConfig.theme = 'bootstrap';
 });
 
-app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', function($scope, $http, $scrollspy, DTOptionsBuilder, DTColumnDefBuilder) {
+app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', 'DTOptionsBuilder', 'DTColumnDefBuilder', function($scope, $http, $scrollspy, DTOptionsBuilder, DTColumnDefBuilder) {
 	$scope.bools = [];
 	$scope.strings = [];
 	$scope.clients = [];
@@ -120,63 +121,75 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', function($scope, 
 	$scope.revokeEnabled = false;
 	$scope.inc_invalid = {};
 	$scope.old = {};
+	$scope.raw = {};
 	$scope.spy = {};
 	$scope.new = {
 			'bools': undefined,
 			'integers': undefined,
 			'strings': undefined,
-			'multis': undefined
+			'multis': undefined,
+			'templates': undefined
 		};
 	$scope.add = {
 			'bools': false,
 			'integers': false,
 			'strings': false,
-			'multis': false
+			'multis': false,
+			'templates': false
 		};
 	$scope.changed = false;
 	$scope.checkbox_translation = {
 			'yes':   "{{ _('yes') }}",
 			'no':    "{{ _('no') }}",
-			'reset': "{{ _('Reset list') }}",
+			'reset': "{{ _('reset list') }}",
 		};
-	$scope.dtOptions = DTOptionsBuilder.newOptions();
+	$scope.dtOptions = {
+			{{ macros.translate_datatable() }}
+			{{ macros.get_page_length() }}
+		};
 	$scope.dtColumnDefs = [
 			DTColumnDefBuilder.newColumnDef(0),
 			DTColumnDefBuilder.newColumnDef(1),
 			DTColumnDefBuilder.newColumnDef(2).notSortable(),
 		];
-	{% if client -%}
-	$http.get('{{ url_for("api.client_settings", client=client, conf=conf, server=server) }}', { headers: { 'X-From-UI': true } })
-	{% else -%}
-	$http.get('{{ url_for("api.server_settings", conf=conf, server=server) }}', { headers: { 'X-From-UI': true } })
-	{% endif -%}
-	  .then(function(response) {
-			data = response.data;
-			$scope.bools = data.results.boolean;
-			$scope.all.bools = data.boolean;
-			$scope.strings = data.results.common;
-			$scope.all.strings = data.string;
-			$scope.integers = data.results.integer;
-			$scope.all.integers = data.integer;
-			$scope.multis = data.results.multi;
-			$scope.all.multis = data.multi;
-			$scope.clients = data.results.clients;
-			$scope.server_doc = data.server_doc;
-			$scope.suggest = data.suggest;
-			$scope.placeholders = data.placeholders;
-			$scope.defaults = data.defaults;
-			$scope.includes = data.results.includes;
-			$scope.includes_ori = angular.copy($scope.includes);
-			$scope.includes_ext = data.results.includes_ext;
-			$scope.hierarchy = data.results.hierarchy;
-			$scope.refreshHierarchy();
-			$scope.refreshScrollspy();
-			$('#waiting-container').hide();
-			$('#settings-panel').show();
-		}, function(response) {
-			notifAll(response.data);
-			$('#waiting-container').hide();
-		});
+	$scope.loadConfig = function() {
+		{% if client -%}
+			{% if template -%}
+		$http.get('{{ url_for("api.client_settings", client=client, conf=conf, template=True, server=server) }}', { headers: { 'X-From-UI': true } })
+			{% else -%}
+		$http.get('{{ url_for("api.client_settings", client=client, conf=conf, server=server) }}', { headers: { 'X-From-UI': true } })
+			{% endif -%}
+		{% else -%}
+		$http.get('{{ url_for("api.server_settings", conf=conf, server=server) }}', { headers: { 'X-From-UI': true } })
+		{% endif -%}
+			.then(function(response) {
+				data = response.data;
+				$scope.bools = data.results.boolean;
+				$scope.all.bools = data.boolean;
+				$scope.strings = data.results.common;
+				$scope.all.strings = data.string;
+				$scope.integers = data.results.integer;
+				$scope.all.integers = data.integer;
+				$scope.multis = data.results.multi;
+				$scope.all.multis = data.multi;
+				$scope.server_doc = data.server_doc;
+				$scope.suggest = data.suggest;
+				$scope.placeholders = data.placeholders;
+				$scope.defaults = data.defaults;
+				$scope.includes = data.results.includes;
+				$scope.includes_ori = angular.copy($scope.includes);
+				$scope.includes_ext = data.results.includes_ext;
+				$scope.templates = data.results.templates;
+				$scope.hierarchy = data.results.hierarchy;
+				$scope.refreshHierarchy();
+				$scope.refreshScrollspy();
+				$('#waiting-container').hide();
+				$('#settings-panel').show();
+			}, function(response) {
+				notifAll(response.data);
+				$('#waiting-container').hide();
+			});
+	};
 	$http.get('{{ url_for("api.setting_options", server=server) }}', { headers: { 'X-From-UI': true } })
 		.then(function(response) {
 			$scope.revokeEnabled = response.data.is_revocation_enabled;
@@ -345,13 +358,23 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', function($scope, 
 			$scope.new[type] = undefined;
 		}
 		$scope.add[type] = true;
+		all = $scope.all[type];
+		if (type === 'templates') {
+			all = [];
+			_($scope.all[type]).forEach(function(value, name) {
+				all.push(name);
+			});
+		}
 		keys = _.map($scope[type], 'name');
-		diff = _.difference($scope.all[type], keys);
+		diff = _.difference(all, keys);
 		$scope.avail[type] = [];
 		_(diff).forEach(function(n) {
 			v = $scope.defaults[n];
-			if (!v && type == 'multis') {
+			if (!v && type === 'multis') {
 				v = [''];
+			}
+			if (!v && type === 'templates') {
+				v = $scope.all[type][n];
 			}
 			$scope.avail[type].push({'name': n, 'value': v});
 		});
@@ -367,6 +390,7 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', function($scope, 
 		$scope.add.multis = false;
 		$scope.new.multis = false;
 		$scope.changed = true;
+		$scope.refreshScrollspy();
 	};
 	$scope.addMulti = function(pindex) {
 		$scope.multis[pindex].value.push('');
@@ -386,6 +410,8 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', function($scope, 
 		$scope.old.includes_ori.push($scope.includes_ori[index]);
 		$scope.includes.splice(index, 1);
 		$scope.includes_ori.splice(index, 1);
+		$scope.changed = true;
+		$scope.refreshScrollspy();
 	};
 	$scope.clickAddIncludes = function() {
 		val = '';
@@ -398,6 +424,8 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', function($scope, 
 		}
 		$scope.includes.push(val);
 		$scope.includes_ori.push(val2);
+		$scope.changed = true;
+		$scope.refreshScrollspy();
 	};
 	$scope.select = function(selected, select, type) {
 		select.search = undefined;
@@ -405,6 +433,8 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', function($scope, 
 			selected.value = $scope.old[type][selected.name];
 		}
 		$scope[type].push(selected);
+		console.log(selected);
+		console.log($scope[type]);
 		$scope.add[type] = false;
 		$scope.changed = true;
 	};
@@ -458,19 +488,46 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', function($scope, 
 	};
 	$scope.getClientsList = function() {
 		api = '{{ url_for("api.clients_list", server=server) }}';
-		$.ajax({
-			url: api,
-			type: 'GET'
-		}).done(function(data) {
-			$scope.clients = data.result;
-		});
+		$http.get(
+			api,
+			{
+				headers: { 'X-From-UI': true },
+			}
+		).then(
+			function(response) {
+				var data = response.data;
+				$scope.clients = data.result;
+			}
+		);
+	};
+	$scope.getTemplatesList = function() {
+		api = '{{ url_for("api.templates_list", server=server) }}';
+		$http.get(
+			api,
+			{
+				headers: { 'X-From-UI': true },
+			}
+		).then(
+			function(response) {
+				var data = response.data;
+				$scope.raw.templates = data.result;
+				$scope.all.templates = {};
+				_(data.result).forEach(function(r) {
+					$scope.all.templates[r.name] = r.value;
+				});
+			}
+		);
 	};
 	$scope.deleteClient = function() {
 		api = '{{ url_for("api.client_settings", client=client, server=server) }}';
 		$.ajax({
 			url: api,
 			type: 'DELETE',
+			{% if template -%}
+			data: { template: true }
+			{% else -%}
 			data: { delcert: $('#delcert').is(':checked'), revoke: $('#revoke').is(':checked'), keepconf: $('#keepconf').is(':checked') }
+			{% endif -%}
 		})
 		.fail(myFail)
 		.done(function(data) {
@@ -503,6 +560,28 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', function($scope, 
 			}
 		});
 	};
+	$scope.createTemplate = function(e) {
+		/* we disable the 'real' form submission */
+		e.preventDefault();
+		var form = $(e.target);
+		$.ajax({
+			url: form.attr('action'),
+			type: 'PUT',
+			data: form.serialize()
+		})
+		.fail(myFail)
+		.done(function(data) {
+			/* The server answered correctly but some errors may have occurred server
+			 * side so we display them */
+			if (data.notif) {
+				notif(data.notif[0][0], data.notif[0][1]);
+				if (data.notif[0][0] == NOTIF_SUCCESS) {
+					$scope.getTemplatesList();
+					notif(data.notif[1][0], data.notif[1][1], 20000);
+				}
+			}
+		});
+	};
 	/* These callbacks expand/reduce the input for a better readability */
 	$scope.focusIn = function(ev) {
 		el = $( ev.target ).parent();
@@ -522,7 +601,13 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', function($scope, 
 		el.next('div').next('div').next('div').show();
 		el.removeClass('col-lg-9').addClass('col-lg-2');
 	};
+	$scope.loadConfig();
+	$scope.getClientsList();
+	$scope.getTemplatesList();
 }]);
+
+{{ macros.page_length('#table-list-clients') }}
+{{ macros.page_length('#table-list-templates') }}
 
 $(document).ready(function () {
 	$('#config-nav a').click(function (e) {

@@ -806,7 +806,7 @@ class BUIbackend(with_metaclass(ABCMeta, object)):
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
     @abstractmethod
-    def store_conf_cli(self, data, client=None, conf=None, agent=None):
+    def store_conf_cli(self, data, client=None, conf=None, template=False, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.store_conf_cli`
         function works the same way as the
         :func:`burpui.misc.backend.interface.BUIbackend.store_conf_srv` function

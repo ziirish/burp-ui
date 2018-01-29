@@ -30,6 +30,8 @@ v0.6.0
 
 - **New** - WebSocket support for better/smarter notifications.
 
+- **New** - Client configuration templates.
+
 v0.5.0
 ------
 
