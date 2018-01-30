@@ -804,7 +804,7 @@ class File(dict):
         filename = os.path.basename(dest)
         if dirname and not os.path.exists(dirname):
             try:
-                os.makedirs(dirname)
+                os.makedirs(dirname, 0o755)
             except OSError as exp:
                 return [[NOTIF_WARN, str(exp)]]
 

@@ -102,6 +102,8 @@ class Parser(Doc):
         self._server_conf.parse()
         self.clientconfdir = self._server_conf.get('clientconfdir')
         self.templates_path = os.path.join(self.clientconfdir, self.templates_dir)
+        if not os.path.exists(self.templates_path):
+            os.makedirs(self.templates_path, 0o755)
 
     def _load_conf_cli(self):
         """Load the client configuration file"""
