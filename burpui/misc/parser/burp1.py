@@ -128,9 +128,12 @@ class Parser(Doc):
                 conf.parse()
                 self._clients_conf[cli['name']] = conf
 
-    def _load_conf_templates(self):
+    def _load_conf_templates(self, name=None, in_path=None):
         """Load all templates configuration"""
-        templates = self._list_templates(True)
+        if name:
+            templates = [{'name': name, 'value': in_path}]
+        else:
+            templates = self._list_templates(True)
 
         for template in templates:
             conf = self.server_conf.clone()
@@ -152,6 +155,11 @@ class Parser(Doc):
         """Create new client conf"""
         self._load_conf_clients(name, path)
         return self.clients_conf[name]
+
+    def _new_template_conf(self, name, path):
+        """Create new template conf"""
+        self._load_conf_templates(name, path)
+        return self._templates_conf[name]
 
     def _clientconfdir_changed(self):
         """Detect changes in clientconfdir"""
@@ -175,13 +183,13 @@ class Parser(Doc):
             self._clients_conf[name].parse()
         return self._clients_conf[name]
 
-    def _get_template(self, name):
+    def _get_template(self, name, path=None):
         """Return template conf and refresh it if necessary"""
         if self._clientconfdir_changed() and name not in self._templates_conf:
             self._templates_conf.clear()
             self._load_conf_templates()
         if name not in self._templates_conf:
-            return None
+            return self._new_template_conf(name, path)
         if self._templates_conf[name].changed:
             self._templates_conf[name].parse()
         return self._templates_conf[name]
@@ -382,7 +390,7 @@ class Parser(Doc):
                 return res
             if template:
                 mconf = os.path.join(self.templates_path, client)
-                config = self._get_template(client)
+                config = self._get_template(client, mconf)
             else:
                 mconf = os.path.join(self.clientconfdir, client)
                 config = self._get_client(client, mconf)
