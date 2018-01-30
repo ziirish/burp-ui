@@ -18,6 +18,13 @@ class Parser(Burp1):
     """Extends :class:`burpui.misc.parser.burp1.Parser`"""
     pver = 2
 
+    pairs_srv = [
+        (u'port', u'max_children'),
+        (u'status_port', u'max_status_children'),
+    ]
+    integer_srv = Burp1.integer_srv
+    for rem in ['port', 'max_children', 'status_port', 'max_status_children']:
+        integer_srv.remove(rem)
     multi_srv = Burp1.multi_srv + [
         u'label',
     ]
@@ -27,7 +34,6 @@ class Parser(Burp1):
     boolean_add = [
         u'acl',
         u'xattr',
-        u'server_can_override_includes',
         u'glob_after_script_pre',
         u'cname_fqdn',
         u'cname_lowercase',
@@ -55,7 +61,6 @@ class Parser(Burp1):
         u'randomise': __(u"max secs"),
         u'manual_delete': __(u"path"),
         u'label': __(u"some informations"),
-        u'server_can_override_includes': u"0|1",
         u'status_address': __(u"address|localhost"),
         u'glob_after_script_pre': u"0|1",
         u'enabled': u"0|1",
@@ -69,7 +74,6 @@ class Parser(Burp1):
     defaults.update({
         u'acl': True,
         u'xattr': True,
-        u'server_can_override_includes': True,
         u'glob_after_script_pre': True,
         u'randomise': 0,
         u'manual_delete': u'',
@@ -109,10 +113,6 @@ class Parser(Burp1):
                      " output. The idea is to provide a mechanism for"
                      " arbitrary values to be passed to clients of the server"
                      " status monitor."),
-        u'server_can_override_includes': __(u"To prevent the server from being"
-                                            " able to override your local"
-                                            " include/exclude list, set this"
-                                            " to 0. The default is 1."),
         u'status_address': __(u"Defines the main TCP address that the server "
                               "listens on for status requests. The default  "
                               "is  special  value  'localhost'  that includes "
@@ -141,4 +141,26 @@ class Parser(Burp1):
                                " The default is 0. When set to 1 the name"
                                " provided by the client while authenticating"
                                " will be lowercased."),
+        u'port': __(u"Defines the main TCP port that the server listens on. "
+                    "Specify multiple 'port' entries on separate lines in "
+                    "order to listen on multiple ports. Each port can be "
+                    "configured with its own 'max_children' value."),
+        u'max_children': __(u"Defines the number of child processes to fork "
+                            "(the number of clients that can simultaneously "
+                            "connect. The default is 5. Specify multiple "
+                            "'max_children' entries on separate lines if you "
+                            "have configured multiple port entries."),
+        u'status_port': __(u"Defines the TCP port that the server listens on "
+                           "for status requests. Comment this out to have no "
+                           "status server. Specify multiple 'status_port' "
+                           "entries on separate lines in order to listen on "
+                           "multiple ports. Each port can be configured with "
+                           "its own 'max_status_children' value."),
+        u'max_status_children': __(u"Defines the number of status child "
+                                   "processes to fork (the number of status "
+                                   "clients that can simultaneously connect. "
+                                   "The default is 5. Specify multiple "
+                                   "'max_status_children' entries on separate "
+                                   "lines if you have configured multiple "
+                                   "status_port entries."),
     })
