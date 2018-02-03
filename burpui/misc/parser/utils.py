@@ -105,6 +105,11 @@ class Option(object):
         """Option to string"""
         return self.dump()
 
+    def __eq__(self, other):
+        other_name = getattr(other, 'name', None)
+        other_value = getattr(other, 'value', None)
+        return self.name == other_name and self.value == other_value
+
 
 class OptionStr(Option):
     """Option type String
@@ -125,7 +130,10 @@ class OptionInt(Option):
 
     def parse(self):
         """Parse the option value"""
-        return int(self.value)
+        try:
+            return int(self.value)
+        except (ValueError, TypeError):
+            return 0
 
 
 class OptionBool(Option):
@@ -170,74 +178,6 @@ class OptionBool(Option):
     def parse(self):
         """Parse the option value"""
         return self._parse(self.value)
-
-
-class OptionMulti(Option):
-    """Option type Multi
-
-    Example:
-        keep = 7
-        keep = 4
-    """
-    type = 'multi'
-
-    def __init__(self, name, value=None):
-        self.name = name
-        self._dirty = True
-        self._is_reset = []
-        if value:
-            if not isinstance(value, list):
-                self.value = [value]
-            else:
-                self.value = value
-        else:
-            self.value = []
-        self.idx = len(self.value) - 1
-
-    def append(self, value, reset=None):
-        self._dirty = True
-        self.value.append(value)
-        if reset is not None:
-            self.set_reset(reset)
-        return self.value
-
-    def remove(self, value):
-        self._dirty = True
-        self.value.remove(value)
-        return self.value
-
-    def index(self, value):
-        return self.value.index(value)
-
-    def len(self):
-        return len(self.value)
-
-    def dump_init(self, start=0):
-        """Initialize the dump"""
-        self.dump_idx = start
-
-    def dump(self, start=0):
-        """Return the option representation to store in configuration file"""
-        self.dump_init(start)
-        ret = u''
-        if start > len(self.value):
-            return ret
-        for idx in range(start, len(self.value)):
-            ret += '{}\n'.format(self.dump_index(idx))
-        return ret.rstrip('\n')
-
-    def dump_index(self, index):
-        if index > len(self.value):
-            index = len(self.value) - 1
-        val = self.value[index]
-        delim = self.delim
-        self.idx = index
-        if self.is_reset():
-            delim = self.reset_delim
-        return '{} {} {}'.format(self.name, delim, val)
-
-    def get_reset(self):
-        return self._is_reset
 
 
 class OptionInc(Option):
@@ -377,6 +317,256 @@ class OptionTpl(Option):
         return ''
 
 
+option_for_type = {
+    'integer': OptionInt,
+    'string': OptionStr,
+    'boolean': OptionBool,
+    'include': OptionInc,
+}
+
+
+class OptionMulti(Option):
+    """Option type Multi
+
+    Example:
+        keep = 7
+        keep = 4
+    """
+    type = 'multi'
+
+    def __init__(self, parser, name, value=None):
+        self.parser = parser
+        self.name = name
+        self._dirty = True
+        self._is_reset = []
+        self.content_type = self.parser.advanced_type.get(name, 'string')
+        self.associate = getattr(self.parser, 'pair_associations', {}).get(self.name)
+        if value:
+            container = self._obj_for_type()
+            value = container(name, value)
+            if not isinstance(value, list):
+                self.value = [value]
+            else:
+                self.value = value
+        else:
+            self.value = []
+        self.idx = len(self.value) - 1
+
+    def _obj_for_type(self):
+        return option_for_type.get(self.content_type, OptionStr)
+
+    def _wrap_object(self, value):
+        container = self._obj_for_type()
+        return container(self.name, value)
+
+    def append(self, value, reset=None):
+        self._dirty = True
+        self.value.append(self._wrap_object(value))
+        if reset is not None:
+            self.set_reset(reset)
+        return self.value
+
+    def remove(self, value):
+        idx = self.value(value)
+        del self.value[idx]
+        self._dirty = True
+        return self.value
+
+    def index(self, value):
+        for i, x in enumerate(self):
+            if x == value:
+                return i
+        raise ValueError('{} is not in list'.format(value))
+
+    def len(self):
+        return len(self.value)
+
+    def dump(self, start=0, strict=True):
+        """Return the option representation to store in configuration file"""
+        ret = u''
+        if start > len(self.value):
+            return ret
+        for idx in range(start, len(self.value)):
+            ret += '{}\n'.format(self.dump_index(idx, True))
+        return ret.rstrip('\n')
+
+    def dump_index(self, index, strict=True):
+        if index >= len(self.value):
+            return ''
+        val = self.value[index]
+        delim = self.delim
+        self.idx = index
+        if self.is_reset():
+            delim = self.reset_delim
+        return '{} {} {}'.format(self.name, delim, sanitize_string('{}'.format(val.parse()), strict))
+
+    def parse(self):
+        return [x.parse() for x in self.value]
+
+    def get_reset(self):
+        return self._is_reset
+
+    def __len__(self):
+        return len(self.value)
+
+    def __getitem__(self, ii):
+        return self.value[ii].parse()
+
+    def __delitem__(self, ii):
+        del self.value[ii]
+        self._dirty = True
+
+    def __setitem__(self, ii, val):
+        self.value[ii] = self._wrap_object(val)
+        self._dirty = True
+
+    def insert(self, ii, val):
+        self.value.insert(ii, self._wrap_object(val))
+
+    def __iter__(self):
+        for x in self.value:
+            yield x.parse()
+
+
+class OptionPair(Option, dict):
+    """Option type Pair
+
+    Example:
+        port = 4971
+        max_children = 5
+    """
+    type = 'pair'
+
+    def __init__(self, parser, name, value=None):
+        self.parser = parser
+        self.name = name
+        self.association = getattr(self.parser, 'pair_associations', {}).get(self.name)
+        self._dirty = True
+        self.value = {}
+        if value:
+            value = OptionMulti(self.parser, self.name, value)
+            self.value[self.name] = value
+        # is there a special := syntax for this option
+        self._is_reset = []
+
+    def append(self, name, value):
+        self._dirty = True
+        if name != self.name:
+            self.association = name
+        if name in self.value:
+            self.value[name].append(value)
+        else:
+            self.value[name] = OptionMulti(self.parser, name, value)
+        return self.value
+
+    def remove(self, name, value):
+        self._dirty = True
+        try:
+            self.value.get(name, []).remove(value)
+        except ValueError:
+            pass
+        return self.value
+
+    def index(self, name, value):
+        try:
+            return self.value.get(name, []).index(value)
+        except ValueError:
+            return -1
+
+    def len(self, name):
+        if name in self.value:
+            return self.value[name].len()
+        return -1
+
+    def dump(self, start=0, strict=True):
+        """Return the option representation to store in configuration file"""
+        ret = u''
+        try:
+            self_length = len(self.value[self.name])
+        except KeyError:
+            self_length = -1
+        try:
+            associate_length = len(self.value[self.association])
+        except KeyError:
+            associate_length = -1
+        if start >= self_length and start >= associate_length:
+            return ret
+        for idx in range(start, max(self_length, associate_length)):
+            v1 = self.dump_index(self.name, idx, strict)
+            v2 = self.dump_index(self.association, idx, strict)
+            if v1:
+                ret += '{}\n'.format(v1)
+            if v2:
+                ret += '{}\n'.format(v2)
+        return ret.rstrip('\n')
+
+    def dump_index(self, name, index, strict):
+        length = self.len(name)
+        try:
+            length = len(self.value[name])
+        except KeyError:
+            length = -1
+        if index >= length:
+            return u''
+        return self.value.get(name).dump_index(index, strict)
+
+    def parse(self):
+        ret = {}
+        for key, opts in iteritems(self.value):
+            ret[key] = opts.parse()
+        return ret
+
+    def __setitem__(self, key, item):
+        self.append(key, item)
+
+    def __getitem__(self, key):
+        return self.value.get(key, OptionMulti(self.parser, key))
+
+    def get(self, key, default=None):
+        try:
+            return self.value[key]
+        except KeyError:
+            if default:
+                return default
+            return OptionMulti(self.parser, key)
+
+    def __len__(self):
+        return len(self.value)
+
+    def __delitem__(self, key):
+        del self.value[key]
+
+    def clear(self):
+        self.value.clear()
+
+    def copy(self):
+        return self.value.copy()
+
+    def has_key(self, key):
+        return key in self.value
+
+    def update(self, *args, **kwargs):
+        return self.value.update(*args, **kwargs)
+
+    def keys(self):
+        return self.value.keys()
+
+    def values(self):
+        return self.value.values()
+
+    def items(self):
+        return self.value.items()
+
+    def pop(self, *args):
+        return self.value.pop(*args)
+
+    def __contains__(self, item):
+        return item in self.value
+
+    def __iter__(self):
+        return iter(self.value)
+
+
 class File(dict):
     """Object representing a configuration file
 
@@ -412,6 +602,7 @@ class File(dict):
         self.name = name
         self.parent = parent
         self.updated = []
+        self.associations = set()
         self.reset = {}
         self.options = OrderedDict()
         self.types = {
@@ -419,6 +610,7 @@ class File(dict):
             'integer': OrderedDict(),
             'include': OrderedDict(),
             'multi': OrderedDict(),
+            'pair': OrderedDict(),
             'string': OrderedDict(),
             'template': OrderedDict(),
         }
@@ -508,6 +700,13 @@ class File(dict):
                 ret[key] = opt.parse() if parse else opt
         return ret
 
+    def flatten_obj(self, name, obj, parse=True):
+        return {
+            'name': name,
+            'value': obj.parse() if parse else obj,
+            'reset': obj.get_reset()
+        }
+
     @property
     def dirty(self):
         if not self._dirty:
@@ -521,6 +720,10 @@ class File(dict):
     @property
     def integer(self):
         return self.flatten('integer')
+
+    @property
+    def pair(self):
+        return self.flatten('pair')
 
     @property
     def include(self):
@@ -561,7 +764,7 @@ class File(dict):
         if opt == u'.':
             return 'include'
 
-        for typ in ['boolean', 'integer', 'multi', 'string']:
+        for typ in ['boolean', 'integer', 'multi', 'string', 'pair']:
             if opt in self._options_for_type(typ):
                 return typ
         return None
@@ -574,9 +777,11 @@ class File(dict):
         if typ == 'integer':
             return OptionInt(key, value)
         if typ == 'multi':
-            opt = self.options.get(key, OptionMulti(key))
+            opt = self.options.get(key, OptionMulti(self.parser, key))
             opt.append(value)
             return opt
+        if typ == 'pair':
+            return OptionPair(self.parser, key, value)
         if typ == 'include':
             key = value
             return OptionInc(
@@ -603,11 +808,15 @@ class File(dict):
 
     def get(self, key, default=None):
         try:
+            if key in self._options_for_type('pair'):
+                return self.options[key].get(key)
             return self.options[key]
         except KeyError:
             return default
 
     def __getitem__(self, key):
+        if key in self._options_for_type('pair'):
+            return self.options[key].get(key)
         return self.options[key]
 
     def __setitem__(self, key, value):
@@ -617,8 +826,18 @@ class File(dict):
         elif key in self._options_for_type('integer'):
             opt = OptionInt(key, value)
         elif key in self._options_for_type('multi'):
-            opt = self.options.get(key, OptionMulti(key))
+            opt = self.options.get(key, OptionMulti(self.parser, key))
             opt.append(value)
+        elif key in self._options_for_type('pair'):
+            association = self.parser.pair_associations.get(key)
+            if key not in self.options and association not in self.options:
+                self.associations.add(association)
+                opt = OptionPair(self.parser, key)
+            elif association in self.options:
+                opt = self.options.get(association)
+            else:
+                opt = self.options.get(key)
+            opt.append(key, value)
         elif key == u'.':
             key = value
             if self._parsing_templates:
@@ -641,13 +860,17 @@ class File(dict):
         ret = u''
         for key, opts in iteritems(self.types):
             ret += '{} =>\n'.format(key)
-            for _, opt in iteritems(opts):
+            for key2, opt in iteritems(opts):
+                if key2 in self.associations:
+                    continue
                 ret += '\t' + repr(opt) + '\n'
         return ret.rstrip('\n')
 
     def __str__(self):
         ret = u''
-        for _, val in iteritems(self.options):
+        for key, val in iteritems(self.options):
+            if key in self.associations:
+                continue
             tmp = str(val)
             if tmp:
                 ret += tmp + '\n'
@@ -727,6 +950,7 @@ class File(dict):
         return ret
 
     def _write_key(self, fil, key, data, index=None, dry=False):
+        strict = 'regex' not in key
         if not dry:
             self._changed = True
 
@@ -736,16 +960,13 @@ class File(dict):
             fil.write('. {}\n'.format(val))
             return val
         # don't need to parse data again if index > 0
-        if index is not None and index > 0:
-            fil.write('{}\n'.format(self[key].dump_index(index)))
+        if index is not None and index >= 0:
+            fil.write('{}\n'.format(self[key].dump_index(index, strict)))
             return None
 
-        strict = 'regex' not in key
         if key not in self.updated:
             if key in self.parser.boolean_srv or key in self.parser.boolean_cli:
                 val = data.get(key)
-            elif key in self.parser.multi_srv or key in self.parser.multi_cli:
-                val = [sanitize_string(x, strict) for x in data.getlist(key)]
             else:
                 val = sanitize_string(str(data.get(key)), strict)
             if key in self:
@@ -760,11 +981,7 @@ class File(dict):
             if index is not None:
                 return ret[index]
             return ret
-        if index is not None:
-            self[key].dump_init()
-            fil.write('{}\n'.format(self[key].dump_index(index)))
-        else:
-            fil.write('{}\n'.format(self[key]))
+        fil.write('{}\n'.format(self[key]))
 
     def parse(self, force=False):
         """Parse the current config"""
@@ -790,7 +1007,10 @@ class File(dict):
                     val = val.replace('gzip', 'zlib')
                 self[key] = val
                 if key in self:
-                    self[key].set_reset(reset is not None)
+                    try:
+                        self[key].set_reset(reset is not None)
+                    except AttributeError:
+                        pass
 
         self._dirty = False
 
@@ -864,7 +1084,9 @@ class File(dict):
         newkeys = list(set(viewkeys(data)) - set(oldkeys))
 
         multi_index_map = {}
-        already_multi = []
+        pair_index_map = {}
+        already_multi = set()
+        already_pair = set()
         already_file = []
         written = []
         self.updated = []
@@ -942,16 +1164,20 @@ class File(dict):
                         # The line is still present or has been un-commented,
                         # rewrite it with eventual changes
                         multi = key in getattr(self.parser, 'multi_{}'.format(self.mode))
+                        pair = key in getattr(self.parser, 'pair_{}'.format(self.mode), [])
+                        if pair and key not in pair_index_map:
+                            pair_index_map[key] = 0
                         if multi and key not in multi_index_map:
                             multi_index_map[key] = 0
                         if key in written:
                             _dump(line, comment=(not self._line_is_comment(line)))
                         else:
                             if multi:
+                                length = len(self[key])
                                 if key not in already_multi and \
                                         (key not in self or
                                          (key in self and
-                                          self[key].len() > multi_index_map[key])):
+                                          length > multi_index_map[key])):
                                     self._write_key(
                                         fil,
                                         key,
@@ -962,9 +1188,8 @@ class File(dict):
                                 else:
                                     _dump(line, comment=(not self._line_is_comment(line)))
                                     continue
-                                if self[key].len() == multi_index_map[key]:
-                                    if key not in already_multi:
-                                        already_multi.append(key)
+                                if length == multi_index_map[key]:
+                                    already_multi.add(key)
                                     continue
                                 # dump the rest of the multi if there are no
                                 # more keys in the conf
@@ -972,9 +1197,35 @@ class File(dict):
                                     rest = self[key].dump(multi_index_map[key])
                                     if rest:
                                         fil.write('{}\n'.format(rest))
-                                    multi_index_map[key] = self[key].len()
-                                    if key not in already_multi:
-                                        already_multi.append(key)
+                                    multi_index_map[key] = length
+                                    already_multi.add(key)
+                            elif pair:
+                                length = len(self[key])
+                                if key not in already_pair and \
+                                        (key not in self or
+                                         (key in self and
+                                          length > pair_index_map[key])):
+                                    self._write_key(
+                                        fil,
+                                        key,
+                                        data,
+                                        pair_index_map[key]
+                                    )
+                                    pair_index_map[key] += 1
+                                else:
+                                    _dump(line, comment=(not self._line_is_comment(line)))
+                                    continue
+                                if length == pair_index_map[key]:
+                                    already_pair.add(key)
+                                    continue
+                                # dump the rest of the pair if there are no more
+                                # keys in the conf
+                                if not _is_key_after(key, idx + 1):
+                                    rest = self[key].dump(pair_index_map[key])
+                                    if rest:
+                                        fil.write('{}\n'.format(rest))
+                                    pair_index_map[key] = length
+                                    already_pair.add(key)
                             else:
                                 # The line was a comment and there was a further
                                 # matching setting, so we just jump to the
@@ -1006,6 +1257,7 @@ class File(dict):
                     else:
                         _dump(line, comment=(key in written and not self._line_is_comment(line)))
 
+                return [[NOTIF_OK, 'Configuration successfully saved.']]
                 # Write the new keys
                 for key in newkeys:
                     if key.endswith(RESET_IDENTIFIER):
@@ -1021,6 +1273,10 @@ class File(dict):
                 for key, idx in iteritems(multi_index_map):
                     if key not in already_multi and idx < self[key].len():
                         fil.write('{}\n'.format(self[key].dump(idx)))
+                # write the rest of the pair settings
+                for key, idx in iteritems(pair_index_map):
+                    if key not in already_pair and idx < self[key].len():
+                        fil.wrrite('{}\n'.format(self[key].dump(idx)))
                 # Write the rest of file inclusions
                 if 'includes' in data:
                     for inc in data.getlist('includes'):
@@ -1028,6 +1284,8 @@ class File(dict):
                             self._write_key(fil, '.', inc)
 
         except Exception as exp:
+            import traceback
+            traceback.print_exc()
             return [[NOTIF_ERROR, str(exp)]]
 
         self.parse(True)
@@ -1279,6 +1537,7 @@ class Config(File):
             # now update caches with new values
             for _, fil in iteritems(self.files):
                 self.options.update(fil.options)
+                self.associations.update(fil.associations)
                 # FIXME: find a way to cache efficiently
                 # fil.clean()
 
@@ -1290,12 +1549,17 @@ class Config(File):
     def _get(self, key, default=None, raw=False):
         self._refresh()
         try:
-            obj = self.options[key]
+            if key in self._options_for_type('pair'):
+                obj = self.options[key].get(key)
+            else:
+                obj = self.options[key]
         except KeyError:
+            if default:
+                return default
             if self.parser and key in self.parser.defaults:
                 obj = self._new_opt(key, self.parser.defaults[key])
             else:
-                return default
+                return None
         return obj if raw else obj.parse()
 
     def get_raw(self, key, default=None):
@@ -1315,6 +1579,8 @@ class Config(File):
 
     def __getitem__(self, key):
         self._refresh()
+        if key in self._options_for_type('pair'):
+            return self.options[key].get(key)
         return self.options[key]
 
     def __setitem__(self, key, value):

@@ -18,13 +18,28 @@ class Parser(Burp1):
     """Extends :class:`burpui.misc.parser.burp1.Parser`"""
     pver = 2
 
-    pairs_srv = [
-        (u'port', u'max_children'),
-        (u'status_port', u'max_status_children'),
+    pair_srv = [
+        u'port',
+        u'max_children',
+        u'status_port',
+        u'max_status_children',
     ]
+    pair_associations = {
+        u'port': u'max_children',
+        u'max_children': u'port',
+        u'status_port': u'max_status_children',
+        u'max_status_children': u'status_port',
+    }
     integer_srv = Burp1.integer_srv
     for rem in ['port', 'max_children', 'status_port', 'max_status_children']:
         integer_srv.remove(rem)
+    advanced_type = Burp1.advanced_type
+    advanced_type.update({
+        u'port': u'integer',
+        u'max_children': u'integer',
+        u'status_port': u'integer',
+        u'max_status_children': u'integer',
+    })
     multi_srv = Burp1.multi_srv + [
         u'label',
     ]

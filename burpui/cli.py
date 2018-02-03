@@ -303,6 +303,7 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database, plugins, dry):
     import difflib
     import tempfile
 
+    parser = app.client.get_parser()
     orig = source = None
     conf_orig = []
     if dry:
@@ -477,87 +478,6 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database, plugins, dry):
         getattr(app.client, 'burpconfsrv')
     dest_bconfcli = bconfcli
 
-    if not os.path.exists(bconfcli):
-        clitpl = """
-mode = client
-port = 4971
-status_port = 4972
-server = ::1
-password = abcdefgh
-cname = {0}
-protocol = 1
-pidfile = /tmp/burp.client.pid
-syslog = 0
-stdout = 1
-progress_counter = 1
-network_timeout = 72000
-server_can_restore = 0
-cross_all_filesystems=0
-ca_burp_ca = /usr/sbin/burp_ca
-ca_csr_dir = /etc/burp/CA-client
-ssl_cert_ca = /etc/burp/ssl_cert_ca-client-{0}.pem
-ssl_cert = /etc/burp/ssl_cert-bui-client.pem
-ssl_key = /etc/burp/ssl_cert-bui-client.key
-ssl_key_password = password
-ssl_peer_cn = burpserver
-include = /home
-exclude_fs = sysfs
-exclude_fs = tmpfs
-nobackup = .nobackup
-exclude_comp=bz2
-exclude_comp=gz
-""".format(client)
-
-        if dry:
-            (_, dest_bconfcli) = tempfile.mkstemp()
-        with open(dest_bconfcli, 'w') as confcli:
-            confcli.write(clitpl)
-
-    parser = app.client.get_parser()
-
-    confcli = Config(dest_bconfcli, parser, 'srv')
-    confcli.set_default(dest_bconfcli)
-    confcli.parse()
-
-    if confcli.get('cname') != client:
-        confcli['cname'] = client
-    if confcli.get('server') != host:
-        confcli['server'] = host
-
-    if confcli.dirty:
-        if dry:
-            (_, dstfile) = tempfile.mkstemp()
-        else:
-            dstfile = bconfcli
-
-        confcli.store(conf=bconfcli, dest=dstfile, insecure=True)
-        if dry:
-            before = []
-            after = []
-            try:
-                with open(bconfcli) as fil:
-                    before = fil.readlines()
-            except:
-                pass
-            try:
-                with open(dstfile) as fil:
-                    after = fil.readlines()
-                os.unlink(dstfile)
-            except:
-                pass
-
-            if dest_bconfcli != bconfcli:
-                # the file did not exist
-                os.unlink(dest_bconfcli)
-                before = []
-
-            diff = difflib.unified_diff(before, after, fromfile=bconfcli, tofile='{}.new'.format(bconfcli))
-            out = ''
-            for line in diff:
-                out += _color_diff(line)
-            if out:
-                click.echo_via_pager(out)
-
     if not os.path.exists(bconfsrv):
         click.echo(
             click.style(
@@ -591,8 +511,8 @@ exclude_comp=gz
                 )
             )
 
+    status_port = confsrv.get('status_port', [4972])
     if 'max_status_children' not in confsrv:
-        confsrv['max_status_children'] = 15
         click.echo(
             click.style(
                 'We need to set the number of \'max_status_children\'. '
@@ -600,9 +520,20 @@ exclude_comp=gz
                 fg='blue'
             )
         )
+        confsrv['max_status_children'] = 15
+        status_port = status_port[0]
     else:
         max_status_children = confsrv.get('max_status_children')
-        if max_status_children < 15:
+        found = False
+        for idx, value in enumerate(max_status_children):
+            if value >= 15:
+                found = True
+                if idx >= len(status_port):
+                    status_port = status_port[-1]
+                else:
+                    status_port = status_port[idx]
+                break
+        if not found:
             click.echo(
                 click.style(
                     'We need to raise the number of \'max_status_children\'. '
@@ -610,7 +541,8 @@ exclude_comp=gz
                     fg='yellow'
                 )
             )
-            confsrv['max_status_children'] = 15
+            confsrv['max_status_children'][-1] = 15
+            status_port = status_port[-1]
 
     if 'restore_client' not in confsrv:
         confsrv['restore_client'] = client
@@ -673,6 +605,90 @@ exclude_comp=gz
             )
         )
         bconfagent = os.devnull
+
+    if not os.path.exists(bconfcli):
+        clitpl = """
+mode = client
+port = 4971
+status_port = 4972
+server = ::1
+password = abcdefgh
+cname = {0}
+protocol = 1
+pidfile = /tmp/burp.client.pid
+syslog = 0
+stdout = 1
+progress_counter = 1
+network_timeout = 72000
+server_can_restore = 0
+cross_all_filesystems=0
+ca_burp_ca = /usr/sbin/burp_ca
+ca_csr_dir = /etc/burp/CA-client
+ssl_cert_ca = /etc/burp/ssl_cert_ca-client-{0}.pem
+ssl_cert = /etc/burp/ssl_cert-bui-client.pem
+ssl_key = /etc/burp/ssl_cert-bui-client.key
+ssl_key_password = password
+ssl_peer_cn = burpserver
+include = /home
+exclude_fs = sysfs
+exclude_fs = tmpfs
+nobackup = .nobackup
+exclude_comp=bz2
+exclude_comp=gz
+""".format(client)
+
+        if dry:
+            (_, dest_bconfcli) = tempfile.mkstemp()
+        with open(dest_bconfcli, 'w') as confcli:
+            confcli.write(clitpl)
+
+    parser = app.client.get_parser()
+
+    confcli = Config(dest_bconfcli, parser, 'srv')
+    confcli.set_default(dest_bconfcli)
+    confcli.parse()
+
+    if confcli.get('cname') != client:
+        confcli['cname'] = client
+    if confcli.get('server') != host:
+        confcli['server'] = host
+    if confcli.get('status_port')[0] != status_port:
+        c_status_port = confcli.get_raw('status_port')
+        c_status_port[0] = status_port
+
+    if confcli.dirty:
+        if dry:
+            (_, dstfile) = tempfile.mkstemp()
+        else:
+            dstfile = bconfcli
+
+        confcli.store(conf=bconfcli, dest=dstfile, insecure=True)
+        if dry:
+            before = []
+            after = []
+            try:
+                with open(bconfcli) as fil:
+                    before = fil.readlines()
+            except:
+                pass
+            try:
+                with open(dstfile) as fil:
+                    after = fil.readlines()
+                os.unlink(dstfile)
+            except:
+                pass
+
+            if dest_bconfcli != bconfcli:
+                # the file did not exist
+                os.unlink(dest_bconfcli)
+                before = []
+
+            diff = difflib.unified_diff(before, after, fromfile=bconfcli, tofile='{}.new'.format(bconfcli))
+            out = ''
+            for line in diff:
+                out += _color_diff(line)
+            if out:
+                click.echo_via_pager(out)
 
     if not os.path.exists(bconfagent):
 
@@ -915,8 +931,8 @@ def diag(client, host, tips):
                     )
                 )
 
-        max_status_children = confsrv.get('max_status_children', -1)
-        if 'max_status_children' not in confsrv or max_status_children < 15:
+        max_status_children = confsrv.get('max_status_children', [-1])
+        if all([x < 15 for x in max_status_children]):
             click.echo(
                 click.style(
                     '\'max_status_children\' is to low, you need to set it to '
@@ -1047,14 +1063,17 @@ def diag(client, host, tips):
 @click.option('-v', '--verbose', is_flag=True,
               help='Dump parts of the config (Please double check no sensitive'
               ' data leaked)')
-def sysinfo(verbose):
+@click.option('-l', '--load', is_flag=True,
+              help='Load all configured modules for full summary')
+def sysinfo(verbose, load):
     """Returns a couple of system informations to help debugging."""
     from .desc import __release__, __version__
 
-    try:
-        msg = app.load_modules(True)
-    except Exception as e:
-        msg = str(e)
+    if load:
+        try:
+            msg = app.load_modules(True)
+        except Exception as e:
+            msg = str(e)
 
     backend_version = app.vers
     if not app.standalone:
@@ -1074,33 +1093,34 @@ def sysinfo(verbose):
     click.echo('WebSocket embedded:  {}'.format(click.style(embedded_ws, fg=colors[embedded_ws])))
     click.echo('WebSocket available: {}'.format(click.style(available_ws, colors[available_ws])))
     click.echo('Config file:         {}'.format(app.config.conffile))
-    if not app.standalone and not msg:
-        click.echo('Agents:')
-        for agent, obj in iteritems(app.client.servers):
-            client_version = server_version = 'unknown'
+    if load:
+        if not app.standalone and not msg:
+            click.echo('Agents:')
+            for agent, obj in iteritems(app.client.servers):
+                client_version = server_version = 'unknown'
+                try:
+                    app.client.status(agent=agent)
+                    client_version = app.client.get_client_version(agent=agent)
+                    server_version = app.client.get_server_version(agent=agent)
+                except BUIserverException:
+                    pass
+                alive = obj.ping()
+                if alive:
+                    status = click.style('ALIVE', fg='green')
+                else:
+                    status = click.style('DISCONNECTED', fg='red')
+                click.echo(' - {} ({})'.format(agent, status))
+                click.echo('   * client version: {}'.format(client_version))
+                click.echo('   * server version: {}'.format(server_version))
+        elif not msg:
+            server_version = 'unknown'
             try:
-                app.client.status(agent=agent)
-                client_version = app.client.get_client_version(agent=agent)
-                server_version = app.client.get_server_version(agent=agent)
+                app.client.status()
+                server_version = app.client.get_server_version()
             except BUIserverException:
                 pass
-            alive = obj.ping()
-            if alive:
-                status = click.style('ALIVE', fg='green')
-            else:
-                status = click.style('DISCONNECTED', fg='red')
-            click.echo(' - {} ({})'.format(agent, status))
-            click.echo('   * client version: {}'.format(client_version))
-            click.echo('   * server version: {}'.format(server_version))
-    elif not msg:
-        server_version = 'unknown'
-        try:
-            app.client.status()
-            server_version = app.client.get_server_version()
-        except BUIserverException:
-            pass
-        click.echo('Burp client version: {}'.format(app.client.client_version))
-        click.echo('Burp server version: {}'.format(server_version))
+            click.echo('Burp client version: {}'.format(app.client.client_version))
+            click.echo('Burp server version: {}'.format(server_version))
     if verbose:
         click.echo('>>>>> Extra verbose informations:')
         click.echo(click.style(
