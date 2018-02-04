@@ -2058,7 +2058,7 @@ msgid "Confirm"
 msgstr "Confirmar"
 
 #: burpui/templates/js/client-browse.js:127
-msgid "Colapse tree"
+msgid "Collapse tree"
 msgstr "Colapsar árbol"
 
 #: burpui/templates/js/client-browse.js:223
