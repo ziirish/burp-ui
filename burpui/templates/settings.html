@@ -191,15 +191,71 @@
                       </div>
                     </div>
                   </fieldset>
-                  <fieldset>
                   {% endraw %}
+                  {% if not client -%}
+                  <fieldset>
+                    <legend id="pair">{{ _('Pairs') }}</legend>
+                  {% raw %}
+                    <div class="well" ng-repeat="pair in pairs">
+                      <div class="row" ng-repeat="(id, values) in pair.value track by $index">
+                        <div class="form-group" ng-repeat="(i, val) in values track by $index">
+                          <label class="col-lg-3 control-label" for="{{ $parent.id }}-{{ $index }}">{{ $parent.id }}</label>
+                          <div class="col-lg-2">
+                            <input class="form-control" type="text" ng-if="!isNumber($parent.id)" name="{{ $parent.id }}" id="{{ $parent.id }}-{{ $index }}" ng-model="$parent.pair.value[id][i]" ng-focus="focusIn($event)" ng-blur="focusOut($event)" placeholder="{{ ::placeholders[$parent.id] }}">
+                            <input class="form-control" type="number" ng-if="isNumber($parent.id)" name="{{ $parent.id }}" id="{{ $parent.id }}-{{ $index }}" ng-model="$parent.pair.value[id][i]" ng-focus="focusIn($event)" ng-blur="focusOut($event)" placeholder="{{ ::placeholders[$parent.id] }}">
+                          </div>
+                          <div class="col-lg-1">
+                            <button type="button" class="btn btn-danger" ng-click="removePairElement($parent.$parent.$index, $parent.id, $index)"><span class="glyphicon glyphicon-minus"></span></button>
+                            <button type="button" class="btn btn-success btn-primary" ng-click="addPairElement($parent.$parent.$parent.$index, $parent.id)" ng-if="$last"><span class="glyphicon glyphicon-plus"></span></button>
+                          </div>
+                          <div class="col-lg-6">
+                            <div ng-if="$first" ng-bind-html="::server_doc[$parent.id]"></div>
+                          </div>
+                        </div>
+                        <div class="form-group" ng-if="!pair.value[$parent.pair_associations[id]] || pair.value[$parent.pair_associations[id]].length <= 0">
+                  {% endraw %}
+                        <label for="btn-add-include" class="col-lg-3 control-label">{{ _('add {{ $parent.pair_associations[id] }}') }}</label>
+                  {% raw %}
+                          <div class="col-lg-9">
+                            <button type="button" class="btn btn-success btn-primary" ng-click="addPairElement($parent.$parent.$index, $parent.pair_associations[id])"><span class="glyphicon glyphicon-plus"></span></button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group" ng-hide="!add.pairs">
+                      <div class="col-lg-3">
+                        <ui-select ng-model="new.pairs" ng-disabled="!add.pairs" style="width: 100%;" on-select="select($item, $select, 'pairs')">
+                  {% endraw %}
+                          <ui-select-match placeholder="{{ _('Select a pair member') }}">
+                  {% raw %}
+                            {{ $select.selected.name }}
+                          </ui-select-match>
+                          <ui-select-choices repeat="value.name as value in avail.pairs | filter: $select.search">
+                            <div ng-bind-html="value.name | highlight: $select.search"></div>
+                          </ui-select-choices>
+                        </ui-select>
+                      </div>
+                      <div class="col-lg-9">
+                        <button type="button" class="btn btn-danger" ng-click="undoAdd('pairs')"><span class="glyphicon glyphicon-remove"></span></button>
+                      </div>
+                    </div>
+                    <div class="form-group" ng-hide="pairs.length >= all.pairs.length / 2 || add.pairs">
+                      <div class="col-lg-3 col-lg-offset-3">
+                        <button type="button" class="btn btn-success btn-primary" ng-click="clickAdd('pairs')"><span class="glyphicon glyphicon-plus"></span></button>
+                      </div>
+                    </div>
+                  </fieldset>
+                  {% endraw %}
+                  {% endif -%}
+                  <fieldset>
                     <legend id="multi">{{ _('Multi') }}</legend>
                   {% raw %}
                     <div class="well" ng-repeat="multi in multis">
                       <div class="form-group" ng-repeat="(i, val) in multi.value track by $index">
                         <label class="col-lg-3 control-label" for="{{ ::$parent.multi.name }}-{{ $index }}">{{ ::$parent.multi.name }}</label>
                         <div class="col-lg-2">
-                          <input class="form-control" type="text" name="{{ ::$parent.multi.name }}" id="{{ ::$parent.multi.name }}-{{ $index }}" ng-model="$parent.multi.value[i]" ng-focus="focusIn($event)" ng-blur="focusOut($event)" placeholder="{{ ::placeholders[$parent.multi.name] }}">
+                          <input class="form-control" type="text" ng-if="!isNumber($parent.multi.name)" name="{{ ::$parent.multi.name }}" id="{{ ::$parent.multi.name }}-{{ $index }}" ng-model="$parent.multi.value[i]" ng-focus="focusIn($event)" ng-blur="focusOut($event)" placeholder="{{ ::placeholders[$parent.multi.name] }}">
+                          <input class="form-control" type="number" ng-if="isNumber($parent.multi.name)" name="{{ ::$parent.multi.name }}" id="{{ ::$parent.multi.name }}-{{ $index }}" ng-model="$parent.multi.value[i]" ng-focus="focusIn($event)" ng-blur="focusOut($event)" placeholder="{{ ::placeholders[$parent.multi.name] }}">
                         </div>
                         <div class="col-lg-1">
                           <button type="button" class="btn btn-danger" ng-click="removeMulti($parent.$index, $index)"><span class="glyphicon glyphicon-minus"></span></button>
@@ -268,7 +324,7 @@
                       </div>
                       <div class="form-group">
                   {% endraw %}
-                        <label for="btn-add-include" class="col-lg-3 control-label">{{ _('source now config') }}</label>
+                        <label for="btn-add-include" class="col-lg-3 control-label">{{ _('source new config') }}</label>
                         <div class="col-lg-9">
                           <button type="button" class="btn btn-success btn-primary" ng-click="clickAddIncludes()"><span class="glyphicon glyphicon-plus"></span></button>
                         </div>

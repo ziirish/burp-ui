@@ -241,6 +241,11 @@ class Doc(BUIparser):
         u'ssl_key',
         u'timer_script',
     ]
+    advanced_type = {
+        u'keep': u'integer',
+    }
+    pair_srv = []
+    pair_associations = {}
     multi_srv = [
         u'exclude_comp',
         u'exclude_ext',

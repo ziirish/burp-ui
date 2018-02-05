@@ -434,6 +434,7 @@ class Parser(Doc):
             u'boolean': [],
             u'integer': [],
             u'multi': [],
+            u'pair': [],
             u'includes': [],
             u'includes_ext': [],
             u'hierarchy': [],
@@ -454,6 +455,7 @@ class Parser(Doc):
         res2[u'boolean'] = parsed.boolean
         res2[u'integer'] = parsed.integer
         res2[u'multi'] = parsed.multi
+        res2[u'pair'] = parsed.pair
         res2[u'includes'] = [
             x
             for x in parsed.flatten('include', False).keys()

@@ -5,6 +5,9 @@
               <li class="active" data-target="#boolean"><a class="scroll" href="#boolean">{{ _('Booleans') }}</a></li>
               <li data-target="#string"><a class="scroll" href="#string">{{ _('Strings') }}</a></li>
               <li data-target="#integer"><a class="scroll" href="#integer">{{ _('Integers') }}</a></li>
+              {% if not client -%}
+              <li data-target="#pair"><a class="scroll" href="#pair">{{ _('Pairs') }}</a></li>
+              {% endif -%}
               <li data-target="#multi"><a class="scroll" href="#multi">{{ _('Multi') }}</a></li>
               <li data-target="#includes_source"><a class="scroll" href="#includes_source">{{ _('Source files') }}</a></li>
               {% if client and not template -%}

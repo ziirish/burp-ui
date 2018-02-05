@@ -108,6 +108,9 @@ app.config(function(uiSelectConfig) {
 app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', 'DTOptionsBuilder', 'DTColumnDefBuilder', function($scope, $http, $scrollspy, DTOptionsBuilder, DTColumnDefBuilder) {
 	$scope.bools = [];
 	$scope.strings = [];
+	$scope.integers = [];
+	$scope.multis = [];
+	$scope.pairs = [];
 	$scope.clients = [];
 	$scope.hierarchy = [];
 	$scope.client = {};
@@ -128,15 +131,18 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', 'DTOptionsBuilder
 			'integers': undefined,
 			'strings': undefined,
 			'multis': undefined,
-			'templates': undefined
+			'templates': undefined,
+			'pairs': undefined,
 		};
 	$scope.add = {
 			'bools': false,
 			'integers': false,
 			'strings': false,
 			'multis': false,
-			'templates': false
+			'templates': false,
+			'pairs': false
 		};
+	$scope.advanced = {};
 	$scope.changed = false;
 	$scope.checkbox_translation = {
 			'yes':   "{{ _('yes') }}",
@@ -172,6 +178,9 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', 'DTOptionsBuilder
 				$scope.all.integers = data.integer;
 				$scope.multis = data.results.multi;
 				$scope.all.multis = data.multi;
+				$scope.pairs = data.results.pair;
+				$scope.all.pairs = _.keys(data.pair);
+				$scope.pair_associations = data.pair;
 				$scope.server_doc = data.server_doc;
 				$scope.suggest = data.suggest;
 				$scope.placeholders = data.placeholders;
@@ -181,6 +190,7 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', 'DTOptionsBuilder
 				$scope.includes_ext = data.results.includes_ext;
 				$scope.templates = data.results.templates;
 				$scope.hierarchy = data.results.hierarchy;
+				$scope.advanced = data.advanced;
 				$scope.refreshHierarchy();
 				$scope.refreshScrollspy();
 				$('#waiting-container').hide();
@@ -366,6 +376,15 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', 'DTOptionsBuilder
 			});
 		}
 		keys = _.map($scope[type], 'name');
+		if (type === 'pairs') {
+			iter = angular.copy(keys);
+			_(iter).forEach(function(key) {
+				var assoc = $scope.pair_associations[key];
+				if (_.findIndex(keys, key) == -1) {
+					keys.push(assoc);
+				}
+			});
+		}
 		diff = _.difference(all, keys);
 		$scope.avail[type] = [];
 		_(diff).forEach(function(n) {
@@ -396,6 +415,26 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', 'DTOptionsBuilder
 		$scope.multis[pindex].value.push('');
 		$scope.add.multis = false;
 		$scope.new.multis = false;
+		$scope.changed = true;
+		$scope.refreshScrollspy();
+	};
+	$scope.removePairElement = function(pindex, pkey, cindex) {
+		$scope.pairs[pindex].value[pkey].splice(cindex, 1);
+		if ($scope.pairs[pindex].value[pkey].length <= 0 && $scope.pairs[pindex].value[$scope.pair_associations[pkey]].length <= 0) {
+			$scope.pairs.splice(pindex, 1);
+		}
+		$scope.add.pairs = false;
+		$scope.new.pairs = false;
+		$scope.changed = true;
+		$scope.refreshScrollspy();
+	};
+	$scope.addPairElement = function(pindex, pkey) {
+		if (!$scope.pairs[pindex].value[pkey]) {
+		  $scope.pairs[pindex].value[pkey] = [];
+		}
+		$scope.pairs[pindex].value[pkey].push('');
+		$scope.add.pairs = false;
+		$scope.new.pairs = false;
 		$scope.changed = true;
 		$scope.refreshScrollspy();
 	};
@@ -431,10 +470,12 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', 'DTOptionsBuilder
 		select.search = undefined;
 		if ($scope.old[type] && $scope.old[type][selected.name]) {
 			selected.value = $scope.old[type][selected.name];
+		} else if (type === 'pairs') {
+			selected.value = {};
+			selected.value[selected.name] = [''];
+			selected.value[$scope.pair_associations[selected.name]] = [];
 		}
 		$scope[type].push(selected);
-		console.log(selected);
-		console.log($scope[type]);
 		$scope.add[type] = false;
 		$scope.changed = true;
 	};
@@ -581,6 +622,9 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', 'DTOptionsBuilder
 				}
 			}
 		});
+	};
+	$scope.isNumber = function(key) {
+		return $scope.advanced && $scope.advanced[key] === 'integer';
 	};
 	/* These callbacks expand/reduce the input for a better readability */
 	$scope.focusIn = function(ev) {
