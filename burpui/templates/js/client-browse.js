@@ -132,7 +132,7 @@ $( document ).ready(function() {
 			var btn = $("#btn-expand-collapse-tree");
 			if (btn.data('collapsed')) {
 				btn.data('collapsed', false);
-				btn.html('<i class="fa fa-compress" aria-hidden="true"></i>&nbsp;{{ _("Colapse tree") }}');
+				btn.html('<i class="fa fa-compress" aria-hidden="true"></i>&nbsp;{{ _("Collapse tree") }}');
 			}
 		}
 	});

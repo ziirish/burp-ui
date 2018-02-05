@@ -103,7 +103,10 @@ class Parser(Doc):
         self.clientconfdir = self._server_conf.get('clientconfdir')
         self.templates_path = os.path.join(self.clientconfdir, self.templates_dir)
         if not os.path.exists(self.templates_path):
-            os.makedirs(self.templates_path, 0o755)
+            try:
+                os.makedirs(self.templates_path, 0o755)
+            except OSError as exp:
+                self.logger.warning(str(exp))
 
     def _load_conf_cli(self):
         """Load the client configuration file"""
@@ -242,13 +245,13 @@ class Parser(Doc):
         return res
 
     def _list_templates(self, force=False):
-        if not self.clientconfdir:
-            return []
+        res = []
+        if not self.clientconfdir or not os.path.isdir(self.templates_path):
+            return res
 
         if self.templates and not force and not self._clientconfdir_changed():
             return self.templates
 
-        res = []
         for tpl in os.listdir(self.templates_path):
             full_file = os.path.join(self.templates_path, tpl)
             if (os.path.isfile(full_file) and not tpl.startswith('.') and
