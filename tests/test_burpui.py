@@ -148,7 +148,7 @@ class BurpuiAPITestCase(TestCase):
                     (u'string', self.bui.client.get_parser_attr('string_srv')),
                     (u'integer', self.bui.client.get_parser_attr('integer_srv')),
                     (u'multi', self.bui.client.get_parser_attr('multi_srv')),
-                    (u'pair', self.bui.client.get_parser_attr('pair_srv')),
+                    (u'pair', self.bui.client.get_parser_attr('pair_associations')),
                     (u'advanced', self.bui.client.get_parser_attr('advanced_type')),
                     (u'server_doc', self.bui.client.get_parser_attr('doc')),
                     (u'suggest', self.bui.client.get_parser_attr('values')),

@@ -341,16 +341,19 @@ class OptionMulti(Option):
         self._is_reset = []
         self.content_type = self.parser.advanced_type.get(name, 'string')
         self.associate = getattr(self.parser, 'pair_associations', {}).get(self.name)
+        self._init_value(value)
+        self.idx = len(self.value) - 1
+
+    def _init_value(self, value):
         if value:
             container = self._obj_for_type()
-            value = container(name, value)
             if not isinstance(value, list):
+                value = container(self.name, value)
                 self.value = [value]
             else:
-                self.value = value
+                self.value = [container(self.name, x) for x in value]
         else:
             self.value = []
-        self.idx = len(self.value) - 1
 
     def _obj_for_type(self):
         return option_for_type.get(self.content_type, OptionStr)
@@ -365,6 +368,12 @@ class OptionMulti(Option):
         if reset is not None:
             self.set_reset(reset)
         return self.value
+
+    def update(self, value):
+        """Change the option value"""
+        self._dirty = True
+        self._init_value(value)
+        self._is_reset = []
 
     def remove(self, value):
         idx = self.value(value)
@@ -442,12 +451,15 @@ class OptionPair(Option, dict):
         self.name = name
         self.association = getattr(self.parser, 'pair_associations', {}).get(self.name)
         self._dirty = True
-        self.value = {}
-        if value:
-            value = OptionMulti(self.parser, self.name, value)
-            self.value[self.name] = value
+        self._init_value(name, value)
         # is there a special := syntax for this option
         self._is_reset = []
+
+    def _init_value(self, name, value):
+        self.value = {}
+        if value:
+            value = OptionMulti(self.parser, name, value)
+            self.value[name] = value
 
     def append(self, name, value):
         self._dirty = True
@@ -458,6 +470,12 @@ class OptionPair(Option, dict):
         else:
             self.value[name] = OptionMulti(self.parser, name, value)
         return self.value
+
+    def update(self, name, value):
+        """Change the option value"""
+        self._dirty = True
+        self._init_value(name, value)
+        self._is_reset = []
 
     def remove(self, name, value):
         self._dirty = True
@@ -544,9 +562,6 @@ class OptionPair(Option, dict):
 
     def has_key(self, key):
         return key in self.value
-
-    def update(self, *args, **kwargs):
-        return self.value.update(*args, **kwargs)
 
     def keys(self):
         return self.value.keys()
@@ -753,7 +768,8 @@ class File(dict):
                 self.types[key] = OrderedDict()
 
             for key, opt in iteritems(self.options):
-                self.types[opt.type][key] = opt
+                if key not in self.associations:
+                    self.types[opt.type][key] = opt
 
         self._dirty = False
 
@@ -853,7 +869,8 @@ class File(dict):
         else:
             opt = OptionStr(key, value)
         self.options[key] = opt
-        self.types[opt.type][key] = opt
+        if key not in self.associations:
+            self.types[opt.type][key] = opt
 
     def __repr__(self):
         self._refresh_types()
@@ -961,6 +978,12 @@ class File(dict):
             return val
         # don't need to parse data again if index > 0
         if index is not None and index >= 0:
+            if key not in self.updated:
+                val = data.getlist(key)
+                if key in self:
+                    self[key].update(val)
+                else:
+                    self[key] = val
             fil.write('{}\n'.format(self[key].dump_index(index, strict)))
             return None
 
@@ -1173,7 +1196,7 @@ class File(dict):
                             _dump(line, comment=(not self._line_is_comment(line)))
                         else:
                             if multi:
-                                length = len(self[key])
+                                length = len(self[key]) if key in self else -1
                                 if key not in already_multi and \
                                         (key not in self or
                                          (key in self and
@@ -1188,7 +1211,7 @@ class File(dict):
                                 else:
                                     _dump(line, comment=(not self._line_is_comment(line)))
                                     continue
-                                if length == multi_index_map[key]:
+                                if len(self[key]) == multi_index_map[key]:
                                     already_multi.add(key)
                                     continue
                                 # dump the rest of the multi if there are no
@@ -1200,7 +1223,7 @@ class File(dict):
                                     multi_index_map[key] = length
                                     already_multi.add(key)
                             elif pair:
-                                length = len(self[key])
+                                length = len(self[key]) if key in self else -1
                                 if key not in already_pair and \
                                         (key not in self or
                                          (key in self and
@@ -1215,7 +1238,7 @@ class File(dict):
                                 else:
                                     _dump(line, comment=(not self._line_is_comment(line)))
                                     continue
-                                if length == pair_index_map[key]:
+                                if len(self[key]) == pair_index_map[key]:
                                     already_pair.add(key)
                                     continue
                                 # dump the rest of the pair if there are no more
@@ -1284,8 +1307,6 @@ class File(dict):
                             self._write_key(fil, '.', inc)
 
         except Exception as exp:
-            import traceback
-            traceback.print_exc()
             return [[NOTIF_ERROR, str(exp)]]
 
         self.parse(True)
@@ -1537,12 +1558,13 @@ class Config(File):
             # now update caches with new values
             for _, fil in iteritems(self.files):
                 self.options.update(fil.options)
-                self.associations.update(fil.associations)
+                self.associations = self.associations.union(fil.associations)
                 # FIXME: find a way to cache efficiently
                 # fil.clean()
 
             for key, val in iteritems(self.options):
-                self.types[val.type][key] = val
+                if key not in self.associations:
+                    self.types[val.type][key] = val
 
         self._dirty = False
 

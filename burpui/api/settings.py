@@ -246,7 +246,7 @@ class ServerSettings(Resource):
             'values': '_suggest_parser_{}'.format(server),
             'defaults': '_defaults_parser_{}'.format(server),
             'advanced_type': '_advanced_parser_{}'.format(server),
-            'pair_srv': '_pair_srv_parser_{}'.format(server),
+            'pair_associations': '_pair_associations_parser_{}'.format(server),
         }
         cache_results = {}
         for name, key in iteritems(cache_keys):
@@ -268,7 +268,7 @@ class ServerSettings(Resource):
                        string=cache_results['string_srv'],
                        integer=cache_results['integer_srv'],
                        multi=cache_results['multi_srv'],
-                       pair=cache_results['pair_srv'],
+                       pair=cache_results['pair_associations'],
                        advanced=cache_results['advanced_type'],
                        server_doc=cache_results['doc'],
                        suggest=cache_results['values'],
