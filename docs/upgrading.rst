@@ -25,6 +25,10 @@ v0.6.0
 - **Breaking** - The *running* backups are now displayed in ``green`` instead of
   ``blue``.
 
+- **Breaking** - The docker postgresql image was upgraded from 9.6 to 10.1,
+  you'll have to manually upgrade/migrate your data `following this
+  documentation <https://github.com/tianon/docker-postgres-upgrade>`_.
+
 - **New** - Plugin system to enhance ACL and Authentication backends. See the
   `Plugins <plugins.html>`__ documentation for details.
 

@@ -45,4 +45,5 @@ stderr_logfile=/var/log/supervisor/%(program_name)s.log
 EOF
 
 # cleanup
+delgroup ping
 rm -rf ~/.cache
