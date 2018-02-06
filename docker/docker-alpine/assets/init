@@ -24,7 +24,7 @@ appStart () {
   BURPUI_RP_SCHEME=${BURPUI_RP_SCHEME:-https}
   BURP_CLIENT_CONFIG=${BURP_CLIENT_CONFIG:-/tmp/burp.conf}
   BURP_SERVER_CONFIG=${BURP_SERVER_CONFIG:-/etc/burp/burp-server.conf}
-  BURP_SERVER_ADDR=${BURP_SERVER_ADDR:-auto}
+  BURP_SERVER_ADDR=${BURP_SERVER_ADDR:-burp-server}
   REDIS_SERVER=${REDIS_SERVER:-redis:6379}
   DATABASE_URL=${DATABASE_URL:-postgresql://burpui:burpui@pgsql/burpuidb}
   GUNICORN_WORKERS=${GUNICORN_WORKERS:-$(getconf _NPROCESSORS_ONLN)}

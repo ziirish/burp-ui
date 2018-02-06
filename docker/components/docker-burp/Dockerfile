@@ -1,7 +1,7 @@
-FROM python:3.6-alpine3.7
+FROM alpine:3.7
 MAINTAINER hi+burpui@ziirish.me
 
-RUN apk add --no-cache supervisor logrotate librsync libressl tzdata nginx \
+RUN apk add --no-cache supervisor logrotate librsync libressl tzdata \
 	&& apk add --no-cache --virtual .fetch-deps \
 		tar \
 	\
@@ -47,22 +47,18 @@ RUN apk add --no-cache supervisor logrotate librsync libressl tzdata nginx \
 	)" \
 	&& apk add --virtual .python-rundeps $runDeps \
 	&& apk del .build-deps \
-# needed for the bui-cli tool
-	&& ln -sf /usr/bin/nc /bin/nc \
 # do some cleanup
 	&& rm -rf /usr/src/burp /usr/src/uthash ~/.cache
 
-ADD . /burp-ui
-
-ADD docker/docker-alpine/assets/setup/ /app/setup/
-ADD docker/docker-alpine/assets/config/ /app/setup/config/
-ADD docker/docker-alpine/assets/init /app/init
+ADD assets/init /app/init
+ADD assets/setup/ /app/setup/
 
 RUN chmod 755 /app/init
 RUN chmod 755 /app/setup/install
-RUN /app/setup/install
+RUn /app/setup/install
 
-EXPOSE 5000/tcp
+EXPOSE 4971/tcp
+EXPOSE 4972/tcp
 
 VOLUME ["/var/spool/burp"]
 VOLUME ["/etc/burp"]
