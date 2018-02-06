@@ -1069,6 +1069,7 @@ def sysinfo(verbose, load):
     """Returns a couple of system informations to help debugging."""
     from .desc import __release__, __version__
 
+    msg = None
     if load:
         try:
             msg = app.load_modules(True)
@@ -1142,5 +1143,5 @@ def sysinfo(verbose, load):
                     click.echo('    {} = {}'.format(key, val))
                 click.echo('    8<{}END[{}]'.format('-' * (69 - len(section)), section))
 
-    if msg:
+    if load and msg:
         _die(msg, 'sysinfo')

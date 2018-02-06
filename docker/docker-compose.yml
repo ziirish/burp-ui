@@ -1,51 +1,54 @@
-redis:
-  restart: always
-  image: redis
+version: '2'
 
-#mariadb:
-#  restart: always
-#  image: mariadb
-#  environment:
-#    - MYSQL_USER=burpui
-#    - MYSQL_PASSWORD=burpui
-#    - MYSQL_DATABASE=burpuidb
-#    - MYSQL_RANDOM_ROOT_PASSWORD=yes
-## Additionally, you may want to persist data
-## volumes:
-##   - /var/lib/buistore/mariadb:/var/lib/mysql
+services:
+  redis:
+    restart: always
+    image: redis
 
-pgsql:
-  restart: always
-  image: registry.ziirish.me/ziirish/burp-ui/pgsql:0.5.1
-## Additionally, you may want to persist data
-## volumes:
-##   - /var/lib/buistore/pgsql:/var/lib/postgresql/data
+  #mariadb:
+  #  restart: always
+  #  image: mariadb
+  #  environment:
+  #    - MYSQL_USER=burpui
+  #    - MYSQL_PASSWORD=burpui
+  #    - MYSQL_DATABASE=burpuidb
+  #    - MYSQL_RANDOM_ROOT_PASSWORD=yes
+  ## Additionally, you may want to persist data
+  ## volumes:
+  ##   - /var/lib/buistore/mariadb:/var/lib/mysql
 
-burpui:
-  restart: always
-  image: registry.ziirish.me/ziirish/burp-ui:0.5.1-py3.6
-  links:
-    - redis
-    - pgsql
-  ports:
-    - 127.0.0.1:5000:8000
-  volumes:
-    - /etc/burp:/etc/burp
-    - /var/spool/burp:/var/spool/burp
-# Additionally, you can override some default settings
-#  environment:
-#    - BURPUI_CONFIG=/etc/burp/burpui.cfg
-#    - BURPUI_VERBOSE=0
-#    - BURPUI_CLIENT_NAME=bui
-#    - BURPUI_UID=5337
-#    - BURPUI_GID=5337
-#    - BURPUI_PLUGINS=none
-#    - BURPUI_WS_WORKERS=2
-#    - BURPUI_RP_SCHEME=https
-#    - BURP_CLIENT_CONFIG=/tmp/burp.conf
-#    - BURP_SERVER_CONFIG=/etc/burp/burp-server.conf
-#    - DATABASE_URL=postgresql://burpui:burpui@pgsql/burpuidb
-#    - GUNICORN_WORKERS=2
-#    - REDIS_SERVER=redis:6379
-#    - BURP_SERVER_ADDR=auto
-#    - TIMEZONE=Europe/Paris
+  pgsql:
+    restart: always
+    image: registry.ziirish.me/ziirish/burp-ui/pgsql:0.5.1
+  ## Additionally, you may want to persist data
+  ## volumes:
+  ##   - /var/lib/buistore/pgsql:/var/lib/postgresql/data
+
+  burpui:
+    restart: always
+    image: registry.ziirish.me/ziirish/burp-ui:0.5.1-py3.6
+    depends_on:
+      - redis
+      - pgsql
+    ports:
+      - 127.0.0.1:5000:8000
+    volumes:
+      - /etc/burp:/etc/burp
+      - /var/spool/burp:/var/spool/burp
+  # Additionally, you can override some default settings
+  #  environment:
+  #    - BURPUI_CONFIG=/etc/burp/burpui.cfg
+  #    - BURPUI_VERBOSE=0
+  #    - BURPUI_CLIENT_NAME=bui
+  #    - BURPUI_UID=5337
+  #    - BURPUI_GID=5337
+  #    - BURPUI_PLUGINS=none
+  #    - BURPUI_WS_WORKERS=2
+  #    - BURPUI_RP_SCHEME=https
+  #    - BURP_CLIENT_CONFIG=/tmp/burp.conf
+  #    - BURP_SERVER_CONFIG=/etc/burp/burp-server.conf
+  #    - DATABASE_URL=postgresql://burpui:burpui@pgsql/burpuidb
+  #    - GUNICORN_WORKERS=2
+  #    - REDIS_SERVER=redis:6379
+  #    - BURP_SERVER_ADDR=auto
+  #    - TIMEZONE=Europe/Paris
