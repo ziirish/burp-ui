@@ -331,7 +331,7 @@
                       </div>
                     </div>
                   </fieldset>
-                  {% if client -%}
+                  {% if client and not template -%}
                   <fieldset>
                     <legend id="templates">{{ _('Templates') }}</legend>
                   {% raw %}

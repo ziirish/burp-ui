@@ -388,14 +388,17 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', 'DTOptionsBuilder
 		diff = _.difference(all, keys);
 		$scope.avail[type] = [];
 		_(diff).forEach(function(n) {
-			v = $scope.defaults[n];
+			var data = {'name': n};
+			var v = $scope.defaults[n];
 			if (!v && type === 'multis') {
 				v = [''];
+				data['reset'] = [false];
 			}
 			if (!v && type === 'templates') {
 				v = $scope.all[type][n];
 			}
-			$scope.avail[type].push({'name': n, 'value': v});
+			data['value'] = v;
+			$scope.avail[type].push(data);
 		});
 	};
 	$scope.undoAdd = function(type) {
@@ -403,6 +406,7 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', 'DTOptionsBuilder
 	};
 	$scope.removeMulti = function(pindex, cindex) {
 		$scope.multis[pindex].value.splice(cindex, 1);
+		$scope.multis[pindex].reset.splice(cindex, 1);
 		if ($scope.multis[pindex].value.length <= 0) {
 			$scope.multis.splice(pindex, 1);
 		}
@@ -413,6 +417,7 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', 'DTOptionsBuilder
 	};
 	$scope.addMulti = function(pindex) {
 		$scope.multis[pindex].value.push('');
+		$scope.multis[pindex].reset.push(false);
 		$scope.add.multis = false;
 		$scope.new.multis = false;
 		$scope.changed = true;
