@@ -1286,7 +1286,6 @@ class File(dict):
                     else:
                         _dump(line, comment=(key in written and not self._line_is_comment(line)))
 
-                return [[NOTIF_OK, 'Configuration successfully saved.']]
                 # Write the new keys
                 for key in newkeys:
                     if key.endswith(RESET_IDENTIFIER):

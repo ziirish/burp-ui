@@ -497,7 +497,7 @@ class Parser(Doc):
                 conf = os.path.join(self.templates_path, client)
             else:
                 conf = os.path.join(self.clientconfdir, client)
-        ret = self.store_conf(data, conf, client, mode='cli')
+        ret = self.store_conf(data, conf, client, mode='cli', template=template)
         self._refresh_cache()  # refresh client list
         return ret
 
