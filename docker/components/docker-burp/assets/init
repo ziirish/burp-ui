@@ -7,8 +7,8 @@ trap appStop SIGINT SIGTERM
 
 appStart () {
 
-  BURPUI_UID=${BURPUI_UID:-5337}
-  BURPUI_GID=${BURPUI_GID:-5337}
+  BURP_UID=${BURP_UID:-5337}
+  BURP_GID=${BURP_GID:-5337}
   TIMEZONE=${TIMEZONE:-Europe/Paris}
 
   [ -e /usr/share/zoneinfo/$TIMEZONE ] && {
@@ -17,8 +17,11 @@ appStart () {
   }
 
   # Create burp-ui User
-  getent group | grep -q burpui || addgroup -g $BURPUI_GID burpui
-  getent passwd | grep -q burpui || adduser -h /var/lib/burpui -D -s /bin/ash -u $BURPUI_UID -G burpui burpui
+  getent group | grep -q burp || addgroup -g $BURP_GID burp
+  getent passwd | grep -q burp || adduser -h /var/spool/burp -D -s /sbin/nologin -u $BURP_UID -G burp burp
+
+  pidfile=$(grep -E "^pidfile" /etc/burp/burp-server.conf | sed -r "s/^pidfile *= *(.*)$/\1/")
+  [ -n "$pidfile" ] && chown burp: $pidfile
 
   # start supervisord
   /usr/bin/supervisord -c /etc/supervisord.conf

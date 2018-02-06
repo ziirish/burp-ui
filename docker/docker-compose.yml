@@ -28,15 +28,15 @@ services:
     restart: always
     image: registry.ziirish.me/ziirish/burp-ui/burp:latest
     ports:
-      - 127.0.0.1:4971:4971
-      - 127.0.0.1:4972:4972
+      - 0.0.0.0:4971:4971
+      - 0.0.0.0:4972:4972
     volumes:
       - /etc/burp:/etc/burp
       - /var/spool/burp:/var/spool/burp
   # Additionally, you can override some default settings
   #  environment:
-  #    - BURPUI_UID=5337
-  #    - BURPUI_GID=5337
+  #    - BURP_UID=5337
+  #    - BURP_GID=5337
   #    - TIMEZONE=Europe/Paris
 
   burpui:
