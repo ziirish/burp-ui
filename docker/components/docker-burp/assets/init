@@ -21,7 +21,7 @@ appStart () {
   getent passwd | grep -q burp || adduser -h /var/spool/burp -D -s /sbin/nologin -u $BURP_UID -G burp burp
 
   pidfile=$(grep -E "^pidfile" /etc/burp/burp-server.conf | sed -r "s/^pidfile *= *(.*)$/\1/")
-  [ -n "$pidfile" ] && chown burp: $pidfile
+  [ -n "$pidfile" ] && touch $pidfile && chown burp: $pidfile
 
   # start supervisord
   /usr/bin/supervisord -c /etc/supervisord.conf
