@@ -528,7 +528,11 @@ class OptionPair(Option, dict):
             return u''
         return self.value.get(name).dump_index(index, strict)
 
-    def parse(self):
+    def parse(self, key=None):
+        if key:
+            if key not in self.value:
+                return []
+            return self.value[key].parse()
         ret = {}
         for key, opts in iteritems(self.value):
             ret[key] = opts.parse()
@@ -668,6 +672,8 @@ class File(dict):
         for key, val in iteritems(self.options):
             if isinstance(val, OptionMulti) and not raw:
                 ret.setlist(key, val.parse())
+            elif isinstance(val, OptionPair) and not raw:
+                ret.setlist(key, val.parse(key))
             else:
                 ret[key] = val if raw else val.parse()
         return ret

@@ -22,7 +22,7 @@ services:
     image: registry.ziirish.me/ziirish/burp-ui/pgsql:0.5.1
   ## Additionally, you may want to persist data
   ## volumes:
-  ##   - /var/lib/buistore/pgsql:/var/lib/postgresql/data
+  ##   - /var/lib/buistore/pgsql/10/data:/var/lib/postgresql/data
 
   burp-server:
     restart: always
