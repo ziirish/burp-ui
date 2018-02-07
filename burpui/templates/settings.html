@@ -16,7 +16,11 @@
             <li><a href="{{ url_for('view.cli_settings', server=server, client=client) }}">{{ _('%(client)s on %(server)s', client=client, server=server) }}</a></li>
             <li class="active">{{ conf|replace("%2F", "/")|escape }}</li>
                 {% else -%}
+                  {% if template -%}
+            <li class="active">{{ _('Template %(name)s on %(server)s', name=client, server=server) }}</li>
+                  {% else -%}
             <li class="active">{{ _('%(client)s on %(server)s', client=client, server=server) }}</li>
+                  {% endif -%}
                 {% endif -%}
               {% else -%}
                 {% if conf -%}
@@ -34,7 +38,11 @@
             <li><a href="{{ url_for('view.cli_settings', server=server, client=client) }}">{{ client }}</a></li>
             <li class="active">{{ conf|replace("%2F", "/")|escape }}</li>
                 {% else -%}
+                  {% if template -%}
+            <li class="active">{{ _('Template %(name)s', name=client) }}</li>
+                  {% else -%}
             <li class="active">{{ client }}</li>
+                  {% endif -%}
                 {% endif -%}
               {% else -%}
                 {% if conf -%}
@@ -50,6 +58,7 @@
 
           <ul class="nav nav-tabs" id="config-nav">
             <li class="active"><a href="#config" data-toggle="tab" aria-expanded="true">{{ _('Config') }}</a></li>
+            <li><a href="#raw" data-toggle="tab" aria-expanded="false">{{ _('Raw content') }}</a></li>
             <li><a href="#hierarchy" data-toggle="tab" aria-expanded="false">{{ _('Hierarchy') }}</a></li>
             <li><a href="#clients" data-toggle="tab" aria-expanded="false">{{ _('Clients') }}</a></li>
             <li><a href="#list-templates" data-toggle="tab" aria-expanded="false">{{ _('Templates') }}</a></li>
@@ -399,6 +408,9 @@
                   </div>
                 </form>
               </div>
+            </div>
+            <div class="tab-pane fade" id="raw">
+              <pre>{{ '{{ raw_content }}' }}</pre>
             </div>
             <div class="tab-pane fade" id="hierarchy">
               <div style="padding-top: 80px; margin-top: -45px;"></div>

@@ -383,6 +383,7 @@ class Parser(Doc):
             u'includes_ext': [],
             u'templates': [],
             u'hierarchy': [],
+            u'raw': None,
         }
         if not client and not conf:
             return res
@@ -416,6 +417,7 @@ class Parser(Doc):
         ]
         res2[u'includes_ext'] = parsed.include
         res2[u'hierarchy'] = config.tree
+        res2[u'raw'] = str(parsed)
 
         res.update(res2)
         self.filescache[mconf] = {
@@ -438,6 +440,7 @@ class Parser(Doc):
             u'includes': [],
             u'includes_ext': [],
             u'hierarchy': [],
+            u'raw': None,
         }
         if not conf:
             mconf = self.conf
@@ -462,6 +465,7 @@ class Parser(Doc):
         ]
         res2[u'includes_ext'] = parsed.include
         res2[u'hierarchy'] = self.server_conf.tree
+        res2[u'raw'] = str(parsed)
 
         res.update(res2)
         self.filescache[mconf] = {

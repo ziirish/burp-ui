@@ -126,6 +126,7 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', 'DTOptionsBuilder
 	$scope.old = {};
 	$scope.raw = {};
 	$scope.spy = {};
+	$scope.raw_content = '';
 	$scope.new = {
 			'bools': undefined,
 			'integers': undefined,
@@ -190,6 +191,7 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', 'DTOptionsBuilder
 				$scope.includes_ext = data.results.includes_ext;
 				$scope.templates = data.results.templates;
 				$scope.hierarchy = data.results.hierarchy;
+				$scope.raw_content = data.results.raw;
 				$scope.advanced = data.advanced;
 				$scope.refreshHierarchy();
 				$scope.refreshScrollspy();
@@ -265,6 +267,7 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', 'DTOptionsBuilder
 				$scope.setSettings.$setPristine();
 				$scope.changed = false;
 				$scope.getClientsList();
+				$scope.loadConfig();
 			}).always(function() {
 				/* reset the submit button state */
 				submit.text(sav);

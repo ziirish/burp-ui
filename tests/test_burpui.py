@@ -142,6 +142,7 @@ class BurpuiAPITestCase(TestCase):
                             u'includes': [],
                             u'includes_ext': [],
                             u'hierarchy': [{u'children': [], u'title': u'null', u'dir': u'/dev', u'full': u'/dev/null', u'name': u'null', u'parent': None}],
+                            u'raw': '',
                         }
                     ),
                     (u'boolean', self.bui.client.get_parser_attr('boolean_srv')),
@@ -171,6 +172,7 @@ class BurpuiAPITestCase(TestCase):
                             u'includes_ext': [],
                             u'hierarchy': [],
                             u'templates': [],
+                            u'raw': None,
                         }
                     ),
                     (u'boolean', self.bui.client.get_parser_attr('boolean_cli')),
