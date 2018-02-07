@@ -364,7 +364,11 @@ class OptionMulti(Option):
 
     def append(self, value, reset=None):
         self._dirty = True
-        self.value.append(self._wrap_object(value))
+        if isinstance(value, list):
+            for v in value:
+                self.value.append(self._wrap_object(v))
+        else:
+            self.value.append(self._wrap_object(value))
         if reset is not None:
             self.set_reset(reset)
         return self.value
@@ -395,8 +399,8 @@ class OptionMulti(Option):
         ret = u''
         if start > len(self.value):
             return ret
-        for idx in range(start, len(self.value)):
-            ret += '{}\n'.format(self.dump_index(idx, True))
+        res = [self.dump_index(i, strict) for i in range(start, len(self.value))]
+        ret = u'\n'.join(res)
         return ret.rstrip('\n')
 
     def dump_index(self, index, strict=True):
@@ -982,7 +986,7 @@ class File(dict):
             val = sanitize_string(data)
             fil.write('. {}\n'.format(val))
             return val
-        # don't need to parse data again if index > 0
+
         if index is not None and index >= 0:
             if key not in self.updated:
                 val = data.getlist(key)
@@ -990,7 +994,21 @@ class File(dict):
                     self[key].update(val)
                 else:
                     self[key] = val
+                self.updated.append(key)
             fil.write('{}\n'.format(self[key].dump_index(index, strict)))
+            return None
+
+        if key in getattr(self.parser, 'multi_{}'.format(self.mode)) or \
+                key in getattr(self.parser, 'pair_{}'.format(self.mode), []):
+            if key not in self.updated:
+                val = data.getlist(key)
+                if key in self:
+                    self[key].update(val)
+                else:
+                    self[key] = val
+                self.updated.append(key)
+            val = self[key]
+            fil.write('{}\n'.format(self[key].dump(strict=strict)))
             return None
 
         if key not in self.updated:
@@ -1005,6 +1023,7 @@ class File(dict):
             self.updated.append(key)
             if key in self.reset:
                 self[key].set_resets(self.reset[key])
+
         if dry:
             ret = self[key].parse()
             if index is not None:
@@ -1286,17 +1305,6 @@ class File(dict):
                     else:
                         _dump(line, comment=(key in written and not self._line_is_comment(line)))
 
-                # Write the new keys
-                for key in newkeys:
-                    if key.endswith(RESET_IDENTIFIER):
-                        continue
-                    if (key not in written and key not in already_multi and
-                            key not in ['includes', 'includes_ori', 'templates']):
-                        self._write_key(
-                            fil,
-                            key,
-                            data,
-                        )
                 # write the rest of the multi settings
                 for key, idx in iteritems(multi_index_map):
                     if key not in already_multi and idx < self[key].len():
@@ -1310,6 +1318,18 @@ class File(dict):
                     for inc in data.getlist('includes'):
                         if inc not in already_file:
                             self._write_key(fil, '.', inc)
+                # Write the new keys
+                for key in newkeys:
+                    if key.endswith(RESET_IDENTIFIER):
+                        continue
+                    if key not in written and key not in already_multi and \
+                            key not in already_pair and \
+                            key not in ['includes', 'includes_ori', 'templates']:
+                        self._write_key(
+                            fil,
+                            key,
+                            data,
+                        )
 
         except Exception as exp:
             return [[NOTIF_ERROR, str(exp)]]
