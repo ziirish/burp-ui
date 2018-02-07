@@ -13,6 +13,7 @@ import time
 import subprocess
 import sys
 import json
+import datetime
 
 from select import select
 from six import iteritems, viewkeys
@@ -54,6 +55,10 @@ class Burp(Burp1):
     _vers = 2
     # cache to store the guessed OS
     _os_cache = {}
+    # cache status results
+    _status_cache = {}
+    _last_status_cleanup = datetime.datetime.now()
+    _time_to_cache = datetime.timedelta(seconds=3)
 
     def __init__(self, server=None, conf=None):
         """
@@ -275,13 +280,25 @@ class Burp(Burp1):
                 return None
         return jso
 
-    def status(self, query='c:\n', timeout=None, agent=None):
+    def _cleanup_cache(self):
+        now = datetime.datetime.now()
+        if now - self._last_status_cleanup > self._time_to_cache:
+            self._status_cache.clear()
+            self._last_status_cleanup = now
+
+    def status(self, query='c:\n', timeout=None, cache=True, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.status`"""
         try:
+            self._cleanup_cache()
             timeout = timeout or self.timeout
             query = sanitize_string(query.rstrip())
             self.logger.info("query: '{}'".format(query))
             query = '{0}\n'.format(query)
+
+            # return cached results
+            if cache and query in self._status_cache:
+                return self._status_cache[query]
+
             if not self._proc_is_alive():
                 self._spawn_burp()
 
@@ -296,6 +313,10 @@ class Burp(Burp1):
                 return None
 
             self.logger.debug('=> {}'.format(jso))
+
+            if cache:
+                self._status_cache[query] = jso
+
             return jso
         except TimeoutError as exp:
             msg = 'Cannot send command: {}'.format(str(exp))
@@ -508,7 +529,7 @@ class Burp(Burp1):
         else:
             if not name or name not in self.running:
                 return ret
-        query = self.status('c:{0}\n'.format(name))
+        query = self.status('c:{0}\n'.format(name), cache=False)
         # check the status returned something
         if not query:
             return ret
@@ -730,6 +751,7 @@ class Burp(Burp1):
         clients = query['clients']
         for client in clients:
             cli = {}
+            cli['labels'] = self.get_client_labels(client['name'])
             cli['name'] = client['name']
             cli['state'] = self._status_human_readable(client['run_status'])
             infos = client['backups']

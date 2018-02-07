@@ -128,6 +128,20 @@ var _clients_table = $('#table-clients').DataTable( {
 		},
 		{
 			data: null,
+			width: "20%",
+			render: function (data, type, row) {
+				var ret = '';
+				if (!data.labels) {
+					return ret;
+				}
+				$.each(data.labels, function(i, label) {
+					ret += '<span class="label label-primary">'+label+'</span>&nbsp;';
+				});
+				return ret;
+			}
+		},
+		{
+			data: null,
 			render: function (data, type, row ) {
 				var cls = '';
 				var link_start = '';
@@ -180,6 +194,9 @@ var refresh_status = function( is_running ) {
 				var _row = _clients_table.row('#'+name);
 				var _content = _row.data();
 				var _p = $.getJSON('{{ url_for("api.client_running_status", server=server) }}?clientName='+name, function(_status) {
+					if (!_status.last || !_status.state) {
+						return;
+					}
 					_status.static = true;
 					var _new_content = _.merge(_content, _status);
 					_row.data( _new_content );

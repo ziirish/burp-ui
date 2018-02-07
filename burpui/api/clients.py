@@ -426,6 +426,7 @@ class ClientsStats(Resource):
         'state': fields.LocalizedString(required=True, description='Current state of the client (idle, backup, etc.)'),
         'phase': fields.String(description='Phase of the current running backup'),
         'percent': fields.Integer(description='Percentage done', default=0),
+        'labels': fields.List(fields.String, description='List of labels'),
     })
 
     @cache.cached(timeout=1800, key_prefix=cache_key)
@@ -454,6 +455,7 @@ class ClientsStats(Resource):
                   "state": "idle",
                   "phase": "phase1",
                   "percent": 12,
+                  "labels": []
                 },
                 {
                   "last": "never",
@@ -461,6 +463,7 @@ class ClientsStats(Resource):
                   "state": "idle",
                   "phase": "phase2",
                   "percent": 42,
+                  "labels": []
                 }
               ]
             }

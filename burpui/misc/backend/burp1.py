@@ -656,6 +656,7 @@ class Burp(BUIbackend):
             regex = re.compile(r'\s*(\S+)\s+\d\s+(\S)\s+(.+)')
             match = regex.search(line)
             cli = {}
+            cli['labels'] = []
             cli['name'] = match.group(1)
             cli['state'] = self.states[match.group(2)]
             infos = match.group(3)
