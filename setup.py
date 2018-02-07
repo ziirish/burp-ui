@@ -68,6 +68,7 @@ VENDOR_TO_KEEP = [
     'burpui/static/vendor/moment/min/moment.min.js',
     'burpui/static/vendor/moment/locale/fr.js',
     'burpui/static/vendor/moment/locale/es.js',
+    'burpui/static/vendor/moment/locale/it.js',
     'burpui/static/vendor/angular-ui-calendar/src/calendar.js',
     'burpui/static/vendor/fullcalendar/dist/fullcalendar.min.css',
     'burpui/static/vendor/fullcalendar/dist/fullcalendar.print.min.css',
