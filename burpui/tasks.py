@@ -129,15 +129,15 @@ def wait_for(lock_name, value, wait=10, timeout=LOCK_EXPIRE):
     return old_lock
 
 
-@celery.task
+@celery.task(ignore_result=True)
 def ping_backend():
     if bui.standalone:
-        bui.client.status()
+        bui.client.status(sync=True)
     else:
         def __status(server):
             (serv, back) = server
             try:
-                return bui.client.status(agent=serv)
+                return bui.client.status(sync=True, agent=serv)
             except BUIserverException:
                 return False
 
@@ -147,7 +147,7 @@ def ping_backend():
         ))
 
 
-@celery.task(bind=True)
+@celery.task(bind=True, ignore_result=True)
 def backup_running(self):
     # run once at the time, if one task was already running, we just discard
     # the new attempt
@@ -174,7 +174,7 @@ def backup_running(self):
         release_lock(self.name)
 
 
-@celery.task(bind=True)
+@celery.task(bind=True, ignore_result=True)
 def get_all_backups(self):
     # run once at the time, if one task was already running, we just discard
     # the new attempt
@@ -195,7 +195,7 @@ def get_all_backups(self):
         release_lock(self.name)
 
 
-@celery.task(bind=True)
+@celery.task(bind=True, ignore_result=True)
 def get_all_clients_reports(self):
     # run once at the time, if one task was already running, we just discard
     # the new attempt
@@ -213,7 +213,7 @@ def get_all_clients_reports(self):
         release_lock(self.name)
 
 
-@celery.task
+@celery.task(ignore_result=True)
 def cleanup_expired_sessions():
     def expires(sess):
         ret = session_manager.invalidate_session_by_id(sess.uuid)
@@ -223,7 +223,7 @@ def cleanup_expired_sessions():
     list(map(expires, session_manager.get_expired_sessions()))
 
 
-@celery.task
+@celery.task(ignore_result=True)
 def cleanup_restore():
     tasks = db.session.query(Task).filter(Task.task == 'perform_restore').filter(datetime.utcnow() > Task.expire).all()
     # tasks = Task.query.filter_by(task='perform_restore').all()

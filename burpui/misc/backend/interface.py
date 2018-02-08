@@ -99,15 +99,17 @@ class BUIbackend(with_metaclass(ABCMeta, object)):
             conf.update_defaults(self.defaults)
             section = 'Burp'
             if section not in conf.options:
-                section = 'Burp{}'.format(self._vers)
-                if section in conf.options:
+                section_old = 'Burp{}'.format(self._vers)
+                if section_old in conf.options:
                     # TODO: remove the compatibility
                     self.logger.critical(
                         'The "[{}]" section is DEPRECATED and will be removed '
                         'in v0.7.0. Please use the "[Burp]" section '
-                        'instead.'.format(section)
+                        'instead.'.format(section_old)
                     )
+                    section = section_old
             conf.default_section(section)
+            self.with_celery = conf.get('WITH_CELERY', False)
             self.port = conf.safe_get('bport', 'integer')
             self.host = conf.safe_get('bhost')
             self.burpbin = self._get_binary_path(

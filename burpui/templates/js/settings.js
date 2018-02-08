@@ -153,6 +153,7 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', 'DTOptionsBuilder
 	$scope.dtOptions = {
 			{{ macros.translate_datatable() }}
 			{{ macros.get_page_length() }}
+			fixedHeader: true,
 		};
 	$scope.dtColumnDefs = [
 			DTColumnDefBuilder.newColumnDef(0),

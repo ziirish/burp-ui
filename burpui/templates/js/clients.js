@@ -128,14 +128,13 @@ var _clients_table = $('#table-clients').DataTable( {
 		},
 		{
 			data: null,
-			width: "20%",
 			render: function (data, type, row) {
 				var ret = '';
 				if (!data.labels) {
 					return ret;
 				}
 				$.each(data.labels, function(i, label) {
-					ret += '<span class="label label-primary">'+label+'</span>&nbsp;';
+					ret += '<span class="label label-info">'+label+'</span>&nbsp;';
 				});
 				return ret;
 			}
