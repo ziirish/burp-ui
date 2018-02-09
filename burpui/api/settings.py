@@ -56,7 +56,7 @@ class ServerSettings(Resource):
         noti = bui.client.store_conf_srv(request.form, conf, server)
         return {'notif': noti}, 200
 
-    @api.acl_admin_required(message='Sorry, you don\'t have rights to access the setting panel')
+    @api.acl_admin_or_moderator_required(message='Sorry, you don\'t have rights to access the setting panel')
     @ns.doc(
         responses={
             200: 'Success',
@@ -286,7 +286,7 @@ class ServerSettings(Resource):
 )
 class ClientsList(Resource):
 
-    @api.acl_admin_required(message='Sorry, you don\'t have rights to access the setting panel')
+    @api.acl_admin_or_moderator_required(message='Sorry, you don\'t have rights to access the setting panel')
     @ns.doc(
         responses={
             200: 'Success',
@@ -311,7 +311,7 @@ class ClientsList(Resource):
 )
 class TemplatesList(Resource):
 
-    @api.acl_admin_required(message='Sorry, you don\'t have rights to access the setting panel')
+    @api.acl_admin_or_moderator_required(message='Sorry, you don\'t have rights to access the setting panel')
     @ns.doc(
         responses={
             200: 'Success',
@@ -340,7 +340,7 @@ class NewTemplateSettings(Resource):
     parser.add_argument('newtemplate', required=True, help="No 'newclient' provided")
 
     @api.disabled_on_demo()
-    @api.acl_admin_required(message='Sorry, you don\'t have rights to access the setting panel')
+    @api.acl_admin_or_moderator_required(message='Sorry, you don\'t have rights to access the setting panel')
     @ns.expect(parser)
     @ns.doc(
         responses={
@@ -388,7 +388,7 @@ class NewClientSettings(Resource):
     parser.add_argument('newclient', required=True, help="No 'newclient' provided")
 
     @api.disabled_on_demo()
-    @api.acl_admin_required(message='Sorry, you don\'t have rights to access the setting panel')
+    @api.acl_admin_or_moderator_required(message='Sorry, you don\'t have rights to access the setting panel')
     @ns.expect(parser)
     @ns.doc(
         responses={
@@ -450,7 +450,7 @@ class ClientSettings(Resource):
     parser_get.add_argument('template', type=boolean, help='Whether we work on a template or not', default=False, nullable=True)
 
     @api.disabled_on_demo()
-    @api.acl_admin_required(message=_('Sorry, you don\'t have rights to access the setting panel'))
+    @api.acl_admin_or_moderator_required(message=_('Sorry, you don\'t have rights to access the setting panel'))
     @ns.expect(parser_post)
     @ns.doc(
         responses={
@@ -466,7 +466,7 @@ class ClientSettings(Resource):
         noti = bui.client.store_conf_cli(request.form, client, conf, template, server)
         return {'notif': noti}
 
-    @api.acl_admin_required(message=_('Sorry, you don\'t have rights to access the setting panel'))
+    @api.acl_admin_or_moderator_required(message=_('Sorry, you don\'t have rights to access the setting panel'))
     @ns.expect(parser_get)
     @ns.doc(
         responses={
@@ -525,7 +525,7 @@ class ClientSettings(Resource):
         )
 
     @api.disabled_on_demo()
-    @api.acl_admin_required(message=_('Sorry, you don\'t have rights to access the setting panel'))
+    @api.acl_admin_or_moderator_required(message=_('Sorry, you don\'t have rights to access the setting panel'))
     @ns.expect(parser_delete)
     @ns.doc(
         responses={
@@ -569,7 +569,7 @@ class PathExpander(Resource):
     parser.add_argument('path', required=True, help="No 'path' provided")
     parser.add_argument('source', required=False, help="Which file is it included in")
 
-    @api.acl_admin_required(message=_('Sorry, you don\'t have rights to access the setting panel'))
+    @api.acl_admin_or_moderator_required(message=_('Sorry, you don\'t have rights to access the setting panel'))
     @ns.doc(
         responses={
             200: 'Success',

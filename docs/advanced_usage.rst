@@ -629,6 +629,8 @@ Now you can add *basic acl* specific options:
     # user1 = '{"agents": ["srv*", "www*"], "clients": ["desk*", "laptop*"]}'
     # It will also validate against the agent name.
     extended = false
+    # If you don't explicitly specify grants, what should we assume?
+    assume_granted = true
     # Enable 'legacy' behavior
     # Since v0.6.0, if you don't specify the agents name explicitly, users will be
     # granted on every agents where a client matches user's ACL. If you enable the
@@ -638,8 +640,8 @@ Now you can add *basic acl* specific options:
     # List of administrators
     admin = user1,user2
     # List of moderators. Users listed here will inherit the grants of the
-    # 'virtual' user '@moderator'
-    moderators = user5,user6
+    # group '@moderator'
+    +moderator = user5,user6
     # Please note the double-quotes and single-quotes on the following lines are
     # mandatory!
     # You can also overwrite the default behavior by specifying which clients a
@@ -651,6 +653,14 @@ Now you can add *basic acl* specific options:
     user4 = '{"agent1": ["client6", "client7"], "agent2": ["client8"]}'
     # You can define read-only and/or read-write grants for moderators using:
     user5 = '{"agents": ["www*"], "clients": {"ro": ["desk*"], "rw": ["desk1"]}}'
+    # Finally, you can define groups using the syntax "@groupname" and adding
+    # members using "+groupname". Note: groups can inherit groups!
+    @group1 = '{"agents": {"ro": ["*"]}}'
+    @group2 = '{"clients": {"rw": ["dev*"]}}'
+    +group1 = @group2
+    +group2 = user7
+    # As a result, user7 will be granted the following rights:
+    # '{"agents": {"ro": ["*"]}, "clients": {"rw": ["dev*"]}}'
 
 
 .. warning:: The double-quotes and single-quotes are **MANDATORY**
@@ -669,6 +679,7 @@ Here are the default grants:
 4. *moderators* => can edit the Burp server configurations of any agent unless
    told other wise (with ``ro`` rights), but cannot restore files unless told
    otherwise (with ``rw`` rights). Besides, moderators can create new users.
+   They can also delete backups if they have ``rw`` rights on the client.
 
 
 .. _Burp: http://burp.grke.org/

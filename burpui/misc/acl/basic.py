@@ -235,7 +235,7 @@ class BasicACL(BUIacl):
                 __merge_grants_with('@moderator')
 
             for gname, group in iteritems(self.groups):
-                if username in group['members'] and gname != username:
+                if username in group.get('members', []) and gname != username:
                     __merge_grants_with(gname)
 
             self._parsed_grants.append(username)
@@ -317,6 +317,9 @@ class BasicACL(BUIacl):
                     if server_match in advanced.get('rw', {}) or \
                             server_match in advanced.get('rw', {}).get('agents', []):
                         return True
+                    if server in advanced.get('rw', {}) or \
+                            server in advanced.get('rw', {}).get('agents', []):
+                        return True
 
                 if server_match and \
                         (server_match in advanced.get('ro', {}) or
@@ -327,8 +330,13 @@ class BasicACL(BUIacl):
                          client_match not in advanced.get('rw', {}).get('clients', [])):
                         return True
 
+            rw_clients = advanced.get('rw', {}).get('clients', [])
             if client_match and \
-                    client_match in advanced.get('rw', {}).get('clients', []):
+                    client_match in rw_clients:
+                return True
+
+            if client and \
+                    client in rw_clients:
                 return True
 
         if self.legacy:

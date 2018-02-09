@@ -150,6 +150,18 @@ class Api(ApiPlus):
             return decorated
         return decorator
 
+    def acl_admin_or_moderator_required(self, message='Access denied', code=403):
+        def decorator(func):
+            @wraps(func)
+            def decorated(resource, *args, **kwargs):
+                if not current_user.is_anonymous and \
+                        not current_user.acl.is_admin() and \
+                        not current_user.acl.is_moderator():
+                    resource.abort(code, message)
+                return func(resource, *args, **kwargs)
+            return decorated
+        return decorator
+
     def acl_own_or_admin(self, key='name', message='Access denied', code=403):
         def decorator(func):
             @wraps(func)

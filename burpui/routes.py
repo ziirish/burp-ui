@@ -108,7 +108,8 @@ def calendar(server=None, client=None):
 @login_required
 def settings(server=None, conf=None):
     # Only the admin can edit the configuration
-    if not current_user.is_anonymous and not current_user.acl.is_admin():
+    if not current_user.is_anonymous and not current_user.acl.is_admin() and \
+            not current_user.acl.is_moderator():
         abort(403)
     if not conf:
         try:
@@ -131,7 +132,8 @@ def settings(server=None, conf=None):
 @login_required
 def admin():
     # Only the admin can access this page
-    if not current_user.is_anonymous and not current_user.acl.is_admin():
+    if not current_user.is_anonymous and not current_user.acl.is_admin() and \
+            not current_user.acl.is_moderator():
         abort(403)
     return render_template('admin.html', admin=True, ng_controller='AdminCtrl')
 
@@ -151,7 +153,8 @@ def me():
 @login_required
 def cli_settings(server=None, client=None, conf=None):
     # Only the admin can edit the configuration
-    if not current_user.is_anonymous and not current_user.acl.is_admin():
+    if not current_user.is_anonymous and not current_user.acl.is_admin() and \
+            not current_user.acl.is_moderator():
         abort(403)
     if not conf:
         try:

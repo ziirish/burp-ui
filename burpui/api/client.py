@@ -880,11 +880,9 @@ class ClientReport(Resource):
 
         if not current_user.is_anonymous and \
                 not current_user.acl.is_admin() and \
-                not current_user.acl.is_moderator():
-            self.abort(403, 'You don\'t have rights on this client')
-
-        if current_user.acl.is_moderator() and \
-                not current_user.acl.is_client_rw(name, server):
+                (not current_user.acl.is_moderator() or
+                 current_user.acl.is_moderator() and
+                 not current_user.acl.is_client_rw(name, server)):
             self.abort(403, 'You don\'t have rights on this client')
 
         msg = bui.client.delete_backup(name, backup, server)
