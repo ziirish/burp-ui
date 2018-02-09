@@ -110,10 +110,20 @@ class ACLproxy(BUIacl):
             return True
         return self.acl.is_moderator(self.username)
 
+    def is_client_rw(self, client, server=None):
+        if not self.acl:
+            return True
+        return self.acl.is_client_rw(self.username, client, server)
+
     def is_client_allowed(self, client, server=None):
         if not self.acl:
             return True
         return self.acl.is_client_allowed(self.username, client, server)
+
+    def is_server_rw(self, server):
+        if not self.acl:
+            return True
+        return self.acl.is_server_rw(self.username, server)
 
     def is_server_allowed(self, server):
         if not self.acl:
@@ -128,7 +138,13 @@ class ACLanon(BUIacl):
     def is_moderator(self):
         return False
 
+    def is_client_rw(self, client, server=None):
+        return False
+
     def is_client_allowed(self, client, server=None):
+        return False
+
+    def is_server_rw(self, server):
         return False
 
     def is_server_allowed(self, server):

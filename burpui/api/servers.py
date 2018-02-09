@@ -1,7 +1,7 @@
 # -*- coding: utf8 -*-
 
 # This is a submodule we can also use "from ..api import api"
-from . import api, cache_key
+from . import api, cache_key, force_refresh
 from ..server import BUIServer  # noqa
 from .custom import fields, Resource
 from ..ext.cache import cache
@@ -29,7 +29,7 @@ class ServersStats(Resource):
         'name': fields.String(required=True, description='Server name'),
     })
 
-    @cache.cached(timeout=1800, key_prefix=cache_key)
+    @cache.cached(timeout=1800, key_prefix=cache_key, unless=force_refresh)
     @ns.marshal_list_with(servers_fields, code=200, description='Success')
     @ns.doc(
         responses={
@@ -128,7 +128,7 @@ class ServersReport(Resource):
         'servers': fields.Nested(server_fields, as_list=True, required=True),
     })
 
-    @cache.cached(timeout=1800, key_prefix=cache_key)
+    @cache.cached(timeout=1800, key_prefix=cache_key, unless=force_refresh)
     @ns.marshal_with(report_fields, code=200, description='Success')
     @ns.doc(
         responses={

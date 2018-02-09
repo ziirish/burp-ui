@@ -107,6 +107,11 @@ Please refer to the `ACL API <acl.html>`_ page for more details.
                     return False
                 return username == self.loader.admin
 
+            def is_client_rw(self, username=None, client=None, server=None):
+                if not username:
+                    return False
+                return username == self.loader.admin
+
             def is_client_allowed(self, username=None, client=None, server=None):
                 if not username:
                     return False

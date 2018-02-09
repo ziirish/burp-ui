@@ -31,6 +31,10 @@ bui = current_app  # type: BUIServer
 EXEMPT_METHODS = set(['OPTIONS'])
 
 
+def force_refresh():
+    return request.headers.get('X-No-Cache', False) is not False
+
+
 def cache_key():
     key = '{}-{}-{}-{}-{}-{}'.format(
         session.get('login', uuid.uuid4()),

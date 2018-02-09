@@ -11,7 +11,7 @@ import os
 import select
 import struct
 
-from . import api, cache_key
+from . import api, cache_key, force_refresh
 from .misc import History
 from .custom import Resource
 from .client import node_fields
@@ -327,7 +327,7 @@ class AsyncRestore(Resource):
         # Manage ACL
         if not current_user.is_anonymous and \
                 not current_user.acl.is_admin() and \
-                not current_user.acl.is_client_allowed(name, server):
+                not current_user.acl.is_client_rw(name, server):
             self.abort(
                 403,
                 'You are not allowed to perform a restoration for this client'
@@ -526,7 +526,7 @@ class AsyncHistory(History):
 
     """
 
-    @cache.cached(timeout=1800, key_prefix=cache_key)
+    @cache.cached(timeout=1800, key_prefix=cache_key, unless=force_refresh)
     @ns.marshal_with(
         History.history_fields,
         code=200,
@@ -618,7 +618,7 @@ class AsyncClientsReport(ClientsReport):
     running in multi-agent mode.
     """
 
-    @cache.cached(timeout=1800, key_prefix=cache_key)
+    @cache.cached(timeout=1800, key_prefix=cache_key, unless=force_refresh)
     @ns.marshal_with(
         ClientsReport.report_fields,
         code=200,

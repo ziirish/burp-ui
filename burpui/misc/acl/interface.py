@@ -101,6 +101,26 @@ class BUIacl(with_metaclass(ABCMeta, object)):
         return []  # pragma: no cover
 
     @abstractmethod
+    def is_client_rw(self, username=None, client=None, server=None):
+        """:func:`burpui.misc.acl.interface.BUIacl.is_client_rw` tells us
+        if a given user has access to a given client on a given server in RW
+        mode.
+
+        :param username: Username to check
+        :type username: str
+
+        :param client: Client to check
+        :type client: str
+
+        :param server: Server to check
+        :type server: str
+
+        :returns: True if username is granted, otherwise False
+        :rtype: bool
+        """
+        return False  # pragma: no cover
+
+    @abstractmethod
     def is_client_allowed(self, username=None, client=None, server=None):
         """:func:`burpui.misc.acl.interface.BUIacl.is_client_allowed` tells us
         if a given user has access to a given client on a given server.
@@ -110,6 +130,21 @@ class BUIacl(with_metaclass(ABCMeta, object)):
 
         :param client: Client to check
         :type client: str
+
+        :param server: Server to check
+        :type server: str
+
+        :returns: True if username is granted, otherwise False
+        :rtype: bool
+        """
+        return False  # pragma: no cover
+
+    def is_server_rw(self, username=None, server=None):
+        """:func:`burpui.misc.acl.interface.BUIacl.is_server_rw` tells us
+        if a given user has access to a given server in RW mode.
+
+        :param username: Username to check
+        :type username: str
 
         :param server: Server to check
         :type server: str

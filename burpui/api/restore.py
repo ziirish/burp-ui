@@ -96,7 +96,7 @@ class Restore(Resource):
         # Manage ACL
         if not current_user.is_anonymous and \
                 not current_user.acl.is_admin() and \
-                not current_user.acl.is_client_allowed(name, server):
+                not current_user.acl.is_client_rw(name, server):
             self.abort(403, 'You are not allowed to perform a restoration for this client')
         if server:
             filename = 'restoration_%d_%s_on_%s_at_%s.%s' % (
@@ -304,7 +304,7 @@ class ServerRestore(Resource):
         # Manage ACL
         if not current_user.is_anonymous and \
                 not current_user.acl.is_admin() and \
-                not current_user.acl.is_client_allowed(name, server):
+                not current_user.acl.is_client_rw(name, server):
             self.abort(403, 'You are not allowed to edit a restoration for this client')
         try:
             return bui.client.is_server_restore(name, server)
@@ -338,7 +338,7 @@ class ServerRestore(Resource):
         # Manage ACL
         if not current_user.is_anonymous and \
                 not current_user.acl.is_admin() and \
-                not current_user.acl.is_client_allowed(name, server):
+                not current_user.acl.is_client_rw(name, server):
             self.abort(403, 'You are not allowed to cancel a restoration for this client')
         try:
             return bui.client.cancel_server_restore(name, server)
@@ -426,7 +426,7 @@ class DoServerRestore(Resource):
         # Manage ACL
         if not current_user.is_anonymous and \
                 not current_user.acl.is_admin() and \
-                not current_user.acl.is_client_allowed(name, server) and \
+                not current_user.acl.is_client_rw(name, server) and \
                 not current_user.acl.is_client_allowed(to, server):
             self.abort(
                 403,

@@ -236,6 +236,8 @@ var refresh_status = function( is_running ) {
 				__refresh_running = setTimeout(function() {
 					refresh_status(true);
 				}, {{ config.LIVEREFRESH * 1000 }});
+			} else {
+				_cache_id = new Date().getTime();
 			}
 		});
 	};

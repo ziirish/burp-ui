@@ -1,6 +1,7 @@
 # -*- coding: utf8 -*-
 from .interface import BUIacl, BUIaclLoader
 from ...utils import make_list
+from six import iteritems
 
 import re
 import json
@@ -27,6 +28,7 @@ class ACLloader(BUIaclLoader):
         self.standalone = self.app.standalone
         self.extended = False
         self.legacy = False
+        self.assume_granted = True
         self.moderator = {}
         self._acl = None
         self.conf_id = None
@@ -43,6 +45,7 @@ class ACLloader(BUIaclLoader):
         ]
         self.moderators = []
         self.grants = {}
+        self.groups = {}
 
         adms = []
         mods = []
@@ -57,7 +60,7 @@ class ACLloader(BUIaclLoader):
                 section=self.section
             )
             mods = self.conf.safe_get(
-                'moderators',
+                '+moderator',
                 'force_list',
                 section=self.section
             )
@@ -72,6 +75,12 @@ class ACLloader(BUIaclLoader):
                 'boolean',
                 section=self.section
             )
+            self.assume_granted = self.conf.safe_get(
+                'assume_granted',
+                'boolean',
+                section=self.section,
+                defaults={self.section: {'assume_granted': True}}
+            )
             self.legacy = self.conf.safe_get(
                 'legacy',
                 'boolean',
@@ -83,15 +92,39 @@ class ACLloader(BUIaclLoader):
                 section=self.section
             ) or {}
             for opt in self.conf.options.get(self.section).keys():
-                if opt in ['admin', 'moderators', 'extended', 'priority', '@moderator', 'legacy']:
+                if opt in ['admin', '+moderator', 'extended', 'priority', '@moderator', 'legacy', 'assume_granted']:
                     continue
                 record = self.conf.safe_get(
                     opt,
                     'force_string',
                     section=self.section
                 )
+
                 self.logger.debug('record: {} -> {}'.format(opt, record))
-                self.grants[opt] = record
+
+                def _parse_record(key, load=True):
+                    if gname not in self.groups:
+                        self.groups[gname] = {}
+                    if load:
+                        try:
+                            parsed = json.loads(record)
+                        except ValueError:
+                            if ',' in record:
+                                parsed = [x.strip() for x in record.split(',')]
+                            else:
+                                parsed = make_list(record)
+                    else:
+                        parsed = record
+                    self.groups[gname][key] = parsed
+
+                if opt[0] == '+':
+                    gname = '@{}'.format(opt.lstrip('+'))
+                    _parse_record('members')
+                elif opt[0] == '@':
+                    gname = opt
+                    _parse_record('grants', load=False)
+                else:
+                    self.grants[opt] = record
 
         if not is_empty(adms):
             self.admins = adms
@@ -104,6 +137,7 @@ class ACLloader(BUIaclLoader):
         self.logger.debug('admins: {}'.format(self.admins))
         self.logger.debug('moderators: {}'.format(self.moderators))
         self.logger.debug('moderator grants: {}'.format(self.moderator))
+        self.logger.debug('groups: {}'.format(self.groups))
         self.logger.debug('extended: {}'.format(self.extended))
         self.logger.debug('legacy: {}'.format(self.legacy))
 
@@ -138,7 +172,9 @@ class BasicACL(BUIacl):
         self.moderators = loader.moderators
         self.moderator = loader.moderator
         self.grants = loader.grants
+        self.groups = loader.groups
         self.extended = loader.extended
+        self.assume_granted = loader.assume_granted
         self.legacy = loader.legacy
         self._parsed_grants = []
         self._clients_cache = {}
@@ -162,13 +198,15 @@ class BasicACL(BUIacl):
 
             if username == '@moderator':
                 grants = self.moderator
+            elif username[0] == '@':
+                grants = self.groups.get(username, {}).get('grants', '')
             else:
                 grants = self.grants.get(username, '')
             try:
                 grants = json.loads(grants)
-            except:
+            except ValueError:
                 if ',' in grants:
-                    grants = grants.split(',')
+                    grants = [x.strip() for x in grants.split(',')]
                 else:
                     grants = make_list(grants)
 
@@ -177,21 +215,28 @@ class BasicACL(BUIacl):
             self._agents_cache[username] = agents
             self._advanced_cache[username] = advanced
 
-            if self.is_moderator(username):
-                if '@moderator' not in self._parsed_grants:
-                    self._extract_grants('@moderator')
+            def __merge_grants_with(grp):
+                if grp not in self._parsed_grants:
+                    self._extract_grants(grp)
                 self._clients_cache[username] = self._merge_data(
                     self._clients_cache[username],
-                    self._clients_cache.get('@moderator', [])
+                    self._clients_cache.get(grp, [])
                 )
                 self._agents_cache[username] = self._merge_data(
                     self._agents_cache[username],
-                    self._agents_cache.get('@moderator', [])
+                    self._agents_cache.get(grp, [])
                 )
                 self._advanced_cache[username] = self._merge_data(
                     self._advanced_cache[username],
-                    self._advanced_cache.get('@moderator', [])
+                    self._advanced_cache.get(grp, [])
                 )
+
+            if self.is_moderator(username):
+                __merge_grants_with('@moderator')
+
+            for gname, group in iteritems(self.groups):
+                if username in group['members'] and gname != username:
+                    __merge_grants_with(gname)
 
             self._parsed_grants.append(username)
 
@@ -243,6 +288,53 @@ class BasicACL(BUIacl):
         else:
             return server if server in servers else False
 
+    def is_client_rw(self, username=None, client=None, server=None):
+        """See :func:`burpui.misc.acl.interface.BUIacl.is_client_rw`"""
+        if not username or not client:  # pragma: no cover
+            return False
+
+        is_admin = self.is_admin(username)
+
+        if self.is_client_allowed(username, client, server):
+            # legacy mode: assume rw for everyone
+            if self.legacy:
+                return True
+            client_match = self._client_match(username, client)
+            advanced = self._extract_advanced(username)
+
+            if not client_match and username == client:
+                client_match = username
+
+            if server:
+                server_match = self._server_match(username, server)
+
+                if not server_match and not client_match:
+                    return is_admin or self.assume_granted
+
+                # the whole agent is rw and we did not find explicit entry for
+                # client_match
+                if client_match is False:
+                    if server_match in advanced.get('rw', {}) or \
+                            server_match in advanced.get('rw', {}).get('agents', []):
+                        return True
+
+                if server_match and \
+                        (server_match in advanced.get('ro', {}) or
+                         server_match in advanced.get('ro', {}).get('agents', [])):
+                    # the agent is ro, but the client is explicitly defined as rw
+                    if client_match and \
+                        (client_match not in advanced.get('rw', {}).get(server_match, []) or
+                         client_match not in advanced.get('rw', {}).get('clients', [])):
+                        return True
+
+            if client_match and \
+                    client_match in advanced.get('rw', {}).get('clients', []):
+                return True
+
+        if self.legacy:
+            return True
+        return is_admin or self.assume_granted
+
     def is_client_allowed(self, username=None, client=None, server=None):
         """See :func:`burpui.misc.acl.interface.BUIacl.is_client_allowed`"""
         if not username or not client:  # pragma: no cover
@@ -272,6 +364,26 @@ class BasicACL(BUIacl):
                     return is_admin
 
         return client_match is not False or is_admin
+
+    def is_server_rw(self, username=None, server=None):
+        """See :func:`burpui.misc.acl.interface.BUIacl.is_server_rw`"""
+        if not username or not server:  # pragma: no cover
+            return False
+
+        is_admin = self.is_admin(username)
+        if self.is_server_allowed(username, server):
+            server_match = self._server_match(username, server)
+            if not server_match:
+                return self.is_admin or self.assume_granted
+
+            advanced = self._extract_advanced(username)
+
+            if server_match in advanced.get('rw', {}).get('agents', []):
+                return True
+
+        if self.legacy:
+            return True
+        return is_admin or self.assume_granted
 
     def is_server_allowed(self, username=None, server=None):
         """See :func:`burpui.misc.acl.interface.BUIacl.is_server_allowed`"""

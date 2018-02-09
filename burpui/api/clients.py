@@ -7,7 +7,7 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
-from . import api, cache_key
+from . import api, cache_key, force_refresh
 from ..server import BUIServer  # noqa
 from .custom import fields, Resource
 from ..ext.cache import cache
@@ -242,7 +242,7 @@ class ClientsReport(Resource):
         'clients': fields.Nested(client_fields, as_list=True, required=True),
     })
 
-    @cache.cached(timeout=1800, key_prefix=cache_key)
+    @cache.cached(timeout=1800, key_prefix=cache_key, unless=force_refresh)
     @ns.marshal_with(report_fields, code=200, description='Success')
     @ns.expect(parser)
     @ns.doc(
@@ -429,7 +429,7 @@ class ClientsStats(Resource):
         'labels': fields.List(fields.String, description='List of labels'),
     })
 
-    @cache.cached(timeout=1800, key_prefix=cache_key)
+    @cache.cached(timeout=1800, key_prefix=cache_key, unless=force_refresh)
     @ns.marshal_list_with(client_fields, code=200, description='Success')
     @ns.expect(parser)
     @ns.doc(
@@ -515,7 +515,7 @@ class AllClients(Resource):
         'agent': fields.String(required=False, default=None, description='Associated Agent name'),
     })
 
-    @cache.cached(timeout=1800, key_prefix=cache_key)
+    @cache.cached(timeout=1800, key_prefix=cache_key, unless=force_refresh)
     @ns.marshal_list_with(client_fields, code=200, description='Success')
     @ns.expect(parser)
     @ns.doc(

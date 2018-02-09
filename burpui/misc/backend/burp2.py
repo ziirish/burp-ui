@@ -36,8 +36,9 @@ BURP_REVERSE_COUNTERS = '2.1.6'
 
 try:
     import gevent
+    from gevent.lock import RLock
 
-    G_LOCK = gevent.lock.RLock()
+    G_LOCK = RLock()
     WITH_GEVENT = True
 except ImportError:
     class DummyLock(object):

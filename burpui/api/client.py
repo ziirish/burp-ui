@@ -9,7 +9,7 @@
 """
 import os
 
-from . import api, cache_key
+from . import api, cache_key, force_refresh
 from ..server import BUIServer  # noqa
 from .custom import fields, Resource
 from .custom.inputs import boolean
@@ -164,7 +164,7 @@ class ClientTree(Resource):
         default=False
     )
 
-    @cache.cached(timeout=3600, key_prefix=cache_key)
+    @cache.cached(timeout=3600, key_prefix=cache_key, unless=force_refresh)
     @ns.marshal_list_with(node_fields, code=200, description='Success')
     @ns.expect(parser)
     @ns.doc(
@@ -381,7 +381,7 @@ class ClientTreeAll(Resource):
         help='Which server to collect data from when in multi-agent mode'
     )
 
-    @cache.cached(timeout=3600, key_prefix=cache_key)
+    @cache.cached(timeout=3600, key_prefix=cache_key, unless=force_refresh)
     @ns.marshal_list_with(node_fields, code=200, description='Success')
     @ns.expect(parser)
     @ns.doc(
@@ -650,7 +650,7 @@ class ClientReport(Resource):
         ),
     })
 
-    @cache.cached(timeout=1800, key_prefix=cache_key)
+    @cache.cached(timeout=1800, key_prefix=cache_key, unless=force_refresh)
     @ns.marshal_with(report_fields, code=200, description='Success')
     @ns.expect(parser)
     @ns.doc(
@@ -880,7 +880,11 @@ class ClientReport(Resource):
 
         if not current_user.is_anonymous and \
                 not current_user.acl.is_admin() and \
-                not current_user.acl.is_client_allowed(name, server):
+                not current_user.acl.is_moderator():
+            self.abort(403, 'You don\'t have rights on this client')
+
+        if current_user.acl.is_moderator() and \
+                not current_user.acl.is_client_rw(name, server):
             self.abort(403, 'You don\'t have rights on this client')
 
         msg = bui.client.delete_backup(name, backup, server)
@@ -932,7 +936,7 @@ class ClientStats(Resource):
         ),
     })
 
-    @cache.cached(timeout=1800, key_prefix=cache_key)
+    @cache.cached(timeout=1800, key_prefix=cache_key, unless=force_refresh)
     @ns.marshal_list_with(client_fields, code=200, description='Success')
     @ns.expect(parser)
     @ns.doc(
