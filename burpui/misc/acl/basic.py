@@ -1,6 +1,6 @@
 # -*- coding: utf8 -*-
 from .interface import BUIacl, BUIaclLoader
-from ...utils import make_list
+from ...utils import make_list, NOTIF_OK, NOTIF_WARN, NOTIF_ERROR
 from six import iteritems
 
 import re
@@ -145,6 +145,51 @@ class ACLloader(BUIaclLoader):
         self._acl = BasicACL(self)
 
         return True
+
+    def _setup_acl(self):
+        """Setup ACL management"""
+        if not self.conf.lookup_section(self.section):
+            self.conf._refresh()
+
+    def add_grant(self, name, content):
+        """Add a grant"""
+        self._setup_acl()
+        if name in self.conf.options[self.section]:
+            message = "grant '{}' already exists".format(name)
+            self.logger.warning(message)
+            return False, message, NOTIF_WARN
+        self.conf.options[self.section][name] = content
+        self.conf.options.write()
+        self.load_acl(True)
+        message = "grant '{}' successfully added".format(name)
+        return True, message, NOTIF_OK
+
+    def del_grant(self, name):
+        """Delete a grant"""
+        self._setup_acl()
+        self.load_acl(True)
+        if name not in self.conf.options[self.section]:
+            message = "grant '{}' does not exist".format(name)
+            self.logger.error(message)
+            return False, message, NOTIF_ERROR
+        del self.conf.options[self.section][name]
+        self.load_acl(True)
+        message = "grant '{}' successfully removed".format(name)
+        return True, message, NOTIF_OK
+
+    def mod_grant(self, name, content):
+        """Update a grant"""
+        self._setup_acl()
+        self.load_acl(True)
+        if name not in self.conf.options[self.section]:
+            message = "grant '{}' does not exist".format(name)
+            self.logger.error(message)
+            return False, message, NOTIF_WARN
+        self.conf.options[self.section][name] = content
+        self.conf.options.write()
+        self.load_acl(True)
+        message = "grant '{}' successfully modified".format(name)
+        return True, message, NOTIF_OK
 
     @property
     def acl(self):

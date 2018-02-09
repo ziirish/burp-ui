@@ -22,6 +22,10 @@ class BUIaclLoader(with_metaclass(ABCMeta, object)):
     logger = logging.getLogger('burp-ui')
     priority = 0
 
+    add_grant = False
+    del_grant = False
+    mod_grant = False
+
     def __init__(self, app=None):
         """:func:`burpui.misc.acl.interface.BUIaclLoader.__init__` instanciate
         the loader.
