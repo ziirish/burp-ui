@@ -44,7 +44,7 @@ class ACLloader(BUIaclLoader):
         backends.sort(key=lambda x: getattr(x, 'priority', -1), reverse=True)
         if not backends:
             raise ImportError(
-                'No backend found for \'{}\':\n{}'.format(self.app.auth,
+                'No backend found for \'{}\':\n{}'.format(self.app.acl_engine,
                                                           self.errors)
             )
         for name, err in iteritems(self.errors):
@@ -58,6 +58,14 @@ class ACLloader(BUIaclLoader):
     @property
     def acl(self):
         return self._acl
+
+    @property
+    def grants(self):
+        return None
+
+    @property
+    def groups(self):
+        return None
 
 
 class ACLhandler(BUIacl):

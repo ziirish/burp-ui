@@ -26,6 +26,25 @@ class BUIaclLoader(with_metaclass(ABCMeta, object)):
     del_grant = False
     mod_grant = False
 
+    add_group = False
+    del_group = False
+    mod_group = False
+
+    add_group_member = False
+    del_group_member = False
+
+    add_moderator = False
+    del_moderator = False
+    mod_moderator = False
+
+    add_admin = False
+    del_admin = False
+
+    moderator = None
+    moderators = []
+
+    admins = []
+
     def __init__(self, app=None):
         """:func:`burpui.misc.acl.interface.BUIaclLoader.__init__` instanciate
         the loader.
@@ -39,6 +58,18 @@ class BUIaclLoader(with_metaclass(ABCMeta, object)):
     @property
     def acl(self):
         """Property to retrieve the backend"""
+        return None  # pragma: no cover
+
+    @abstractproperty
+    @property
+    def grants(self):
+        """Property to retrieve the list of grants"""
+        return None  # pragma: no cover
+
+    @abstractproperty
+    @property
+    def groups(self):
+        """Property to retrieve the list of groups with their members"""
         return None  # pragma: no cover
 
 

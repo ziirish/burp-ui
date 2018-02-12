@@ -91,6 +91,14 @@ Please refer to the `ACL API <acl.html>`_ page for more details.
             def acl(self):
                 return self._acl
 
+            @property
+            def grants(self):
+                return None
+
+            @property
+            def groups(self):
+                return None
+
 
         class CustomACL(interface.BUIacl):
 
