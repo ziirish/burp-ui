@@ -115,7 +115,7 @@
     ================================================== -->
     <script src="{{ url_for('bower.static', filename='jquery-file-download/src/Scripts/jquery.fileDownload.js') }}"></script>
     {% endif -%}
-    {% if settings or me -%}
+    {% if settings or me or admin -%}
     <!-- configuration panel Javascript
     ================================================== -->
     <script src="{{ url_for('bower.static', filename='bootstrap-switch/dist/js/bootstrap-switch.min.js') }}"></script>

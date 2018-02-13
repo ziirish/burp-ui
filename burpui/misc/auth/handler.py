@@ -200,14 +200,13 @@ class UserHandler(BUIuser):
                 continue
             res = user.get_id()
             if res:
+                self.real = user
                 self.active = True
                 self.name = res
                 self.back = back
                 break
 
         self._acl = ACLproxy(self.app.acl, self.name)
-        # language may change upon login
-        self._store_lang()
         # now load the available prefs
         self._load_prefs()
 
@@ -229,24 +228,11 @@ class UserHandler(BUIuser):
             from ...models import Pref
             prefs = Pref.query.filter_by(user=self.name).all()
             for pref in prefs:
+                if pref.key == 'language':
+                    continue
                 if hasattr(self, pref.key):
                     setattr(self, pref.key, pref.value)
                 session[pref.key] = pref.value
-
-    def _store_lang(self):
-        if self.app.config['WITH_SQL'] and self.language:
-            from ...ext.sql import db
-            from ...models import Pref
-            pref = Pref.query.filter_by(user=self.name, key='language').first()
-            if pref:
-                pref.value = self.language
-            else:
-                pref = Pref(self.name, 'language', self.language)
-                db.session.add(pref)
-            try:
-                db.session.commit()
-            except:
-                db.session.rollback()
 
     def refresh_session(self):
         self.authenticated = session.get('authenticated', False)

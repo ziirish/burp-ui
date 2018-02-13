@@ -564,17 +564,19 @@ class AllClients(Resource):
         server = server or args['serverName']
 
         is_admin = current_user.is_anonymous or current_user.acl.is_admin()
+        is_moderator = current_user.is_anonymous or current_user.acl.is_moderator()
 
         user = (args.get('user', current_user.name) or current_user.name) if \
-            is_admin \
+            is_admin or is_moderator \
             else current_user.name
 
         # drop privileges when switching user
         if user != current_user.name:
             is_admin = False
+            is_moderator = False
 
         if (server and
-                not is_admin and
+                not is_admin and not is_moderator and
                 not current_user.acl.is_server_allowed(server)):
             self.abort(403, "You are not allowed to view this server infos")
 

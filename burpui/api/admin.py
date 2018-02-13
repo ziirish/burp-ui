@@ -10,7 +10,6 @@
 from . import api
 from ..server import BUIServer  # noqa
 from ..sessions import session_manager
-from ..decorators import browser_cache
 from ..utils import NOTIF_OK
 from .custom import fields, Resource
 #  from ..exceptions import BUIserverException
@@ -75,9 +74,10 @@ class AdminMe(Resource):
 
         **GET** method provided by the webservice.
 
-        :returns: Users
+        :returns: User
         """
-        return getattr(current_user, 'real', current_user)
+        ret = getattr(current_user, 'real', current_user)
+        return ret
 
 
 @ns.route('/acl/admin/<backend>',
@@ -1220,8 +1220,45 @@ class AuthBackends(Resource):
         return ret
 
 
+@ns.route('/session/<user>',
+          '/session/<user>/<uuid:id>',
+          endpoint='other_sessions')
+@ns.doc(
+    params={
+        'user': 'User to get sessions from',
+        'id': 'Session id',
+    }
+)
+class OtherSessions(Resource):
+    """The :class:`burpui.api.admin.OtherSessions` resource allows you to
+    retrieve a list of sessions for a given user.
+
+    This resource is part of the :mod:`burpui.api.admin` module.
+    """
+
+    @ns.marshal_list_with(session_fields, code=200, description='Success')
+    @ns.doc(
+        responses={
+            403: 'Insufficient permissions',
+            404: 'User not found',
+        },
+    )
+    def get(self, user=None, id=None):
+        """Returns a list of sessions
+
+        **GET** method provided by the webservice.
+
+        :returns: Sessions
+        """
+        if id:
+            return session_manager.get_session_by_id(str(id))
+        if not user:
+            self.abort(404, 'User not found')
+        return session_manager.get_user_sessions(user)
+
+
 @ns.route('/me/session',
-          '/me/session/<id>',
+          '/me/session/<uuid:id>',
           endpoint='user_sessions')
 @ns.doc(
     params={
@@ -1242,7 +1279,6 @@ class MySessions(Resource):
             404: 'User not found',
         },
     )
-    @browser_cache(600)
     def get(self, id=None):
         """Returns a list of sessions
 
@@ -1251,7 +1287,7 @@ class MySessions(Resource):
         :returns: Sessions
         """
         if id:
-            return session_manager.get_session_by_id(id)
+            return session_manager.get_session_by_id(str(id))
         user = getattr(current_user, 'name', None)
         if not user:
             self.abort(404, 'User not found')
@@ -1276,7 +1312,7 @@ class MySessions(Resource):
         user = getattr(current_user, 'name', None)
         if not user:
             self.abort(404, 'User not found')
-        store = session_manager.get_session_by_id(id)
+        store = session_manager.get_session_by_id(str(id))
         if not store:
             self.abort('Session not found')
         if store.user != user:

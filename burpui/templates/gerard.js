@@ -358,6 +358,10 @@ $('#input-client').typeahead({
 {% include "js/user.js" %}
 {% endif -%}
 
+{% if admin -%}
+{% include "js/admin.js" %}
+{% endif -%}
+
 var _fit_menu = function() {
 	size = $(window).width();
 	target = $('li.detail');
@@ -515,7 +519,7 @@ $(window).scroll(function() {
 	}
 });
 
-{% if not login and config.WS_AVAILABLE -%}
+{% if not login and config.WS_AVAILABLE and config.WS_ENABLED -%}
 {% include "js/websocket.js" %}
 {% endif -%}
 

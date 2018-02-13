@@ -50,6 +50,7 @@ G_DATABASE = u''
 G_PREFIX = u''
 G_PLUGINS = []
 G_NO_SERVER_RESTORE = False
+G_WS_ENABLED = True
 G_WS_EMBEDDED = False
 G_WS_BROKER = u'redis'
 G_WS_URL = u''
@@ -100,6 +101,7 @@ class BUIServer(Flask):
             'ratio': G_RATIO,
         },
         'WebSocket': {
+            'enabled': G_WS_ENABLED,
             'embedded': G_WS_EMBEDDED,
             'broker': G_WS_BROKER,
             'url': G_WS_URL,
@@ -285,6 +287,11 @@ class BUIServer(Flask):
                 self.use_celery.lower() != 'none'
 
         # WebSocket options
+        self.ws_enabled = self.config['WS_ENABLED'] = self.conf.safe_get(
+            'enabled',
+            'boolean',
+            section='WebSocket'
+        )
         self.websocket = self.config['WITH_WS'] = self.conf.safe_get(
             'embedded',
             'boolean',

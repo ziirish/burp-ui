@@ -164,6 +164,8 @@ You will find details on how to use this feature in the
 
     [WebSocket]
     ## This section contains WebSocket server specific options.
+    # whether to enable websocket or not
+    enabled = true
     # whether to embed the websocket server or not
     # if set to "true", you should have only *one* gunicorn worker
     # see here for details:

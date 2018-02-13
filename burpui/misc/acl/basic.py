@@ -368,18 +368,12 @@ class ACLloader(BUIaclLoader):
     @property
     def grants(self):
         """Property to retrieve the list of grants"""
-        if self._acl:
-            self.load_acl()
-            return self._grants
-        return None  # pragma: no cover
+        return self._grants
 
     @property
     def groups(self):
         """Property to retrieve the list of groups with their members"""
-        if self._acl:
-            self.load_acl()
-            return self.groups_def
-        return None  # pragma: no cover
+        return self.groups_def
 
 
 class BasicACL(BUIacl):
