@@ -546,6 +546,53 @@ class Parser(Doc):
 
         return ret
 
+    def remove_conf(self, path=None):
+        """See :func:`burpui.misc.parser.interface.BUIparser.remove_conf`"""
+        if not path:
+            return [
+                [
+                    NOTIF_WARN,
+                    'No file selected for removal'
+                ]
+            ]
+        if path == self.conf:
+            return [
+                [
+                    NOTIF_ERROR,
+                    'Removing the burp-server configuration file is not supported'
+                ]
+            ]
+
+        parsed = self.server_conf.get_file(self.conf)
+        includes = parsed.include
+        if includes:
+            for include in includes:
+                if 'value' in include and path in include['value']:
+                    try:
+                        os.unlink(path)
+                        return [
+                            [
+                                NOTIF_OK,
+                                "File '{}' successfully removed".format(path)
+                            ]
+                        ]
+                    except IOError as exp:
+                        return [
+                            [
+                                NOTIF_ERROR,
+                                "Unable to remove configuration file '{}': {}".format(
+                                    path,
+                                    str(exp)
+                                )
+                            ]
+                        ]
+        return [
+            [
+                NOTIF_ERROR,
+                "No file suited for removal"
+            ]
+        ]
+
     def cancel_restore(self, name=None):
         """See :func:`burpui.misc.parser.interface.BUIparser.cancel_restore`"""
         path = self._get_server_restore_path(name)

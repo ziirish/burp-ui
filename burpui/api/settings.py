@@ -56,6 +56,24 @@ class ServerSettings(Resource):
         noti = bui.client.store_conf_srv(request.form, conf, server)
         return {'notif': noti}, 200
 
+    @api.disabled_on_demo()
+    @api.acl_admin_required(message='Sorry, you don\'t have rights to access the setting panel')
+    @ns.doc(
+        responses={
+            200: 'Success',
+            403: 'Insufficient permissions',
+            500: 'Internal failure',
+        }
+    )
+    def delete(self, conf=None, server=None):
+        """Deletes a configuration file"""
+        try:
+            conf = unquote(conf)
+        except:
+            pass
+        parser = bui.client.get_parser(agent=server)
+        return parser.remove_conf(conf)
+
     @api.acl_admin_or_moderator_required(message='Sorry, you don\'t have rights to access the setting panel')
     @ns.doc(
         responses={
@@ -483,7 +501,7 @@ class ClientSettings(Resource):
             pass
         args = self.parser_get.parse_args()
         template = args.get('template', False)
-        parser = bui.client.get_parser()
+        parser = bui.client.get_parser(agent=server)
         res = parser.read_client_conf(client, conf, template)
         refresh()
         # Translate the doc and placeholder API side
@@ -548,7 +566,7 @@ class ClientSettings(Resource):
             if bui.config['WITH_CELERY']:
                 from ..tasks import force_scheduling_now
                 force_scheduling_now()
-        parser = bui.client.get_parser()
+        parser = bui.client.get_parser(agent=server)
         return parser.remove_client(client, keepconf, delcert, revoke, template), 200
 
 

@@ -5,7 +5,7 @@
           {% include "small_topbar.html" %}
           <ul class="breadcrumb" style="margin-bottom: 5px;">
             {% if conf -%}
-            {% set conf=conf|replace("%2F", "/")|escape -%}
+            {% set conf_read=conf|replace("%2F", "/")|escape -%}
             {% endif -%}
             {% if server -%}
             <li><a href="{{ url_for('view.home') }}">{{ _('Home') }}</a></li>
@@ -14,7 +14,7 @@
             <li><a href="{{ url_for('view.settings', server=server) }}">{{ _('Burp Server Configuration of %(server)s', server=server) }}</a></li>
                 {% if conf -%}
             <li><a href="{{ url_for('view.cli_settings', server=server, client=client) }}">{{ _('%(client)s on %(server)s', client=client, server=server) }}</a></li>
-            <li class="active">{{ conf|replace("%2F", "/")|escape }}</li>
+            <li class="active">{{ conf_read }}</li>
                 {% else -%}
                   {% if template -%}
             <li class="active">{{ _('Template %(name)s on %(server)s', name=client, server=server) }}</li>
@@ -25,7 +25,7 @@
               {% else -%}
                 {% if conf -%}
             <li><a href="{{ url_for('view.settings', server=server) }}">{{ _('Burp Server Configuration of %(server)s', server=server) }}</a></li>
-            <li class="active">{{ conf|replace("%2F", "/")|escape }}</li>
+            <li class="active">{{ conf_read }}</li>
                 {% else -%}
             <li class="active">{{ _('Burp Server Configuration of %(server)s', server=server) }}</li>
                 {% endif -%}
@@ -36,7 +36,7 @@
             <li><a href="{{ url_for('view.settings', server=server) }}">{{ _('Burp Server Configuration') }}</a></li>
                 {% if conf -%}
             <li><a href="{{ url_for('view.cli_settings', server=server, client=client) }}">{{ client }}</a></li>
-            <li class="active">{{ conf|replace("%2F", "/")|escape }}</li>
+            <li class="active">{{ conf_read }}</li>
                 {% else -%}
                   {% if template -%}
             <li class="active">{{ _('Template %(name)s', name=client) }}</li>
@@ -47,7 +47,7 @@
               {% else -%}
                 {% if conf -%}
             <li><a href="{{ url_for('view.settings', server=server) }}">{{ _('Burp Server Configuration') }}</a></li>
-            <li class="active">{{ conf|replace("%2F", "/")|escape }}</li>
+            <li class="active">{{ conf_read }}</li>
                 {% else -%}
             <li class="active">{{ _('Burp Server Configuration') }}</li>
                 {% endif -%}
@@ -388,12 +388,12 @@
                   {% endif -%}
                   <div class="btn-toolbar">
                     <div class="col-lg-3 col-lg-offset-3">
-                      <button type="submit" class="btn btn-primary" ng-disabled="!setSettings.$valid">{{ _('Save') }}</button>
+                      <button type="submit" class="btn btn-primary" ng-disabled="!setSettings.$valid"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span>&nbsp;{{ _('Save') }}</button>
                     </div>
                     <div class="col-lg-6">
                       {% if client and not conf -%}
-                      <div class="btn-group dropupi text-right">
-                        <button type="button" class="btn btn-danger" ng-click="deleteClient()">{{ _("Remove '%(client)s'", client=client) }}</button>
+                      <div class="btn-group dropup text-right">
+                        <button type="button" class="btn btn-danger" ng-click="deleteClient()"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span>&nbsp;{{ _("Remove '%(client)s'", client=client) }}</button>
                         {% if not template -%}
                         <button class="btn btn-danger dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
                         <ul class="dropdown-menu browse">
@@ -403,6 +403,8 @@
                         </ul>
                         {% endif -%}
                       </div>
+                      {% elif conf -%}
+                      <button type="button" class="btn btn-danger" ng-click="deleteFile()"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span>&nbsp;{{ _("Remove file") }}</button>
                       {% endif -%}
                     </div>
                   </div>
@@ -439,7 +441,7 @@
                       <td>{{ client.name }}</td>
                       <td>{{ client.value }}</td>
                       {% endraw -%}
-                      <td><a href="{{ url_for("view.cli_settings", server=server) }}?client={{ '{{' }} client.name {{ '}}' }}" class="btn btn-info btn-xs no-link pull-right"><span class="glyphicon glyphicon-pencil" aria-hidden="true"> {{ _('edit') }}</a></td>
+                      <td><a href="{{ url_for("view.cli_settings", server=server) }}?client={{ '{{' }} client.name {{ '}}' }}" class="btn btn-info btn-xs no-link pull-right" title="{{ _('edit') }}"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a></td>
                     </tr>
                   </tbody>
                 </table>
@@ -473,7 +475,7 @@
                       <td>{{ template.name }}</td>
                       <td>{{ template.value }}</td>
                       {% endraw -%}
-                      <td><a href="{{ url_for("view.cli_settings", server=server) }}?client={{ '{{' }} template.name {{ '}}' }}&template=true" class="btn btn-info btn-xs no-link pull-right"><span class="glyphicon glyphicon-pencil" aria-hidden="true"> {{ _('edit') }}</a></td>
+                      <td><a href="{{ url_for("view.cli_settings", server=server) }}?client={{ '{{' }} template.name {{ '}}' }}&template=true" class="btn btn-info btn-xs no-link pull-right" title="{{ _('edit') }}"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a></td>
                     </tr>
                   </tbody>
                 </table>

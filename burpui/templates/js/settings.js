@@ -105,7 +105,7 @@ app.config(function(uiSelectConfig) {
 	uiSelectConfig.theme = 'bootstrap';
 });
 
-app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', 'DTOptionsBuilder', 'DTColumnDefBuilder', function($scope, $http, $scrollspy, DTOptionsBuilder, DTColumnDefBuilder) {
+app.controller('ConfigCtrl', ['$scope', '$http', '$timeout', '$scrollspy', 'DTOptionsBuilder', 'DTColumnDefBuilder', function($scope, $http, $timeout, $scrollspy, DTOptionsBuilder, DTColumnDefBuilder) {
 	$scope.bools = [];
 	$scope.strings = [];
 	$scope.integers = [];
@@ -245,7 +245,7 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', 'DTOptionsBuilder
 			$scope.invalid = {};
 			/* UX tweak: disable the submit button + change text */
 			submit = form.find('button[type="submit"]');
-			sav = submit.text();
+			sav = submit.html();
 			submit.text('{{ _("Saving...") }}');
 			submit.attr('disabled', true);
 			/* submit the data */
@@ -259,19 +259,26 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', 'DTOptionsBuilder
 			.done(function(data) {
 				/* The server answered correctly but some errors may have occurred server
 				 * side so we display them */
+				errors = false;
 				if (data.notif) {
 					$.each(data.notif, function(i, n) {
+						if (n[0] !== NOTIF_SUCCESS) {
+							errors = true;
+						}
 						notif(n[0], n[1]);
 						$scope.invalid[n[2]] = true;
 					});
 				}
-				$scope.setSettings.$setPristine();
-				$scope.changed = false;
-				$scope.getClientsList();
-				$scope.loadConfig();
+				/* if some errors occurred, don't refresh the form data */
+				if (!errors) {
+					$scope.setSettings.$setPristine();
+					$scope.changed = false;
+					$scope.getClientsList();
+					$scope.loadConfig();
+				}
 			}).always(function() {
 				/* reset the submit button state */
-				submit.text(sav);
+				submit.html(sav);
 				submit.attr('disabled', false);
 			});
 			/* re-enable the checkboxes */
@@ -329,7 +336,7 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', 'DTOptionsBuilder
 					var URL = '{{ url_for("view.settings", server=server) }}?conf='+encodeURIComponent(node.data.full);
 					{% endif -%}
 
-					$tdList.eq(1).html('<a href="'+URL+'" class="btn btn-info btn-xs no-link pull-right"><span class="glyphicon glyphicon-pencil" aria-hidden="true">&nbsp;{{ _("Edit") }}</a>');
+					$tdList.eq(1).html('<a href="'+URL+'" class="btn btn-info btn-xs no-link pull-right" title="{{ _('edit') }}"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a>');
 				},
 			});
 			var tree = $('#tree-hierarchy').fancytree('getTree');
@@ -568,6 +575,23 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', 'DTOptionsBuilder
 			}
 		);
 	};
+	$scope.deleteFile = function() {
+		api = '{{ url_for("api.server_settings", server=server, conf=conf) }}';
+		$.ajax({
+			url: api,
+			type: 'DELETE'
+		})
+		.fail(myFail)
+		.done(function(data) {
+			redirect = data[0][0] == NOTIF_SUCCESS;
+			notifAll(data, redirect);
+			if (redirect) {
+				$timeout(function() {
+					document.location = '{{ url_for("view.settings", server=server) }}';
+				}, 1000);
+			}
+		});
+	};
 	$scope.deleteClient = function() {
 		api = '{{ url_for("api.client_settings", client=client, server=server) }}';
 		$.ajax({
@@ -584,7 +608,9 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', 'DTOptionsBuilder
 			redirect = data[0][0] == NOTIF_SUCCESS;
 			notifAll(data, redirect);
 			if (redirect) {
-				document.location = '{{ url_for("view.settings", server=server) }}';
+				$timeout(function() {
+					document.location = '{{ url_for("view.settings", server=server) }}';
+				}, 1000);
 			}
 		});
 	};

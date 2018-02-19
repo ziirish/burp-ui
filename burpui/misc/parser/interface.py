@@ -194,6 +194,19 @@ class BUIparser(with_metaclass(ABCMeta, object)):
         )  # pragma: no cover
 
     @abstractmethod
+    def remove_conf(self, path=None):
+        """:func:`burpui.misc.parser.interface.BUIparser.remove_conf`
+        is used to remove a configuration file.
+        It only works for "included" files within the server configuration file.
+
+        :param path: The path of the file to remove
+        :type path: str
+        """
+        raise NotImplementedError(
+            "Sorry, the current Parser does not implement this method!"
+        )  # pragma: no cover
+
+    @abstractmethod
     def path_expander(self, pattern=None, source=None, client=None):
         """:func:`burpui.misc.parser.interface.BUIparser.path_expander` is used
         to expand path of file inclusions glob the user can set in the setting

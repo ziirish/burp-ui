@@ -598,6 +598,3 @@ d3.json("{{ url_for('api.clients_all') }}?_session=" + SESSION_TAG)
 			update_tree(root);
 		}
 	});
-
-{% import 'macros.html' as macros %}
-{{ macros.smooth_scrolling() }}

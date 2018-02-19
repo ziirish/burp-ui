@@ -995,6 +995,8 @@ class File(dict):
                 else:
                     self[key] = val
                 self.updated.append(key)
+                if key in self.reset:
+                    self[key].set_resets(self.reset[key])
             fil.write('{}\n'.format(self[key].dump_index(index, strict)))
             return None
 
@@ -1007,6 +1009,8 @@ class File(dict):
                 else:
                     self[key] = val
                 self.updated.append(key)
+                if key in self.reset:
+                    self[key].set_resets(self.reset[key])
             val = self[key]
             fil.write('{}\n'.format(self[key].dump(strict=strict)))
             return None
@@ -1556,7 +1560,7 @@ class Config(File):
         return self.files[idx]
 
     def get_file(self, path):
-        ret = self.files.get(path, File(self.parser, mode=self.mode))
+        ret = self.files.get(path, File(self.parser, path, mode=self.mode))
         ret.parse()
         return ret
 
