@@ -764,7 +764,6 @@ class Burp(Burp1):
         clients = query['clients']
         for client in clients:
             cli = {}
-            cli['labels'] = self.get_client_labels(client['name'])
             cli['name'] = client['name']
             cli['state'] = self._status_human_readable(client['run_status'])
             infos = client['backups']
@@ -990,6 +989,9 @@ class Burp(Burp1):
         ret = []
         if not client:
             return ret
+        # micro optimization since the status results are cached in memory for a
+        # couple seconds, using the same global query and iterating over it
+        # will be more efficient than filtering burp-side
         query = self.status('c:\n')
         if not query:
             return ret

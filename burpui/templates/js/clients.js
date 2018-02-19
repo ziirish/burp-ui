@@ -178,6 +178,7 @@ var _clients = function() {
 var __refresh_running = undefined;
 var __last_clients_running = [];
 var refresh_status = function( is_running ) {
+	cancel_refresh();
 	{% if config.WITH_CELERY %}
 	{% set api_running_clients = "api.async_running_clients" %}
 	{% else %}
@@ -238,6 +239,7 @@ var refresh_status = function( is_running ) {
 				}, {{ config.LIVEREFRESH * 1000 }});
 			} else {
 				_cache_id = new Date().getTime();
+				schedule_refresh();
 			}
 		});
 	};

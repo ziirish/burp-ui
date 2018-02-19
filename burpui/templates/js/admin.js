@@ -108,6 +108,12 @@ app.config(function(uiSelectConfig) {
 app.controller('AdminCtrl', ['$scope', '$http', '$scrollspy', 'DTOptionsBuilder', 'DTColumnDefBuilder', function($scope, $http, $scrollspy, DTOptionsBuilder, DTColumnDefBuilder) {
 }]);
 
+var _me = undefined;
+
+$.getJSON('{{ url_for("api.admin_me") }}').done(function (data) {
+	_me = data;
+});
+
 {{ macros.page_length('#table-list-clients') }}
 {{ macros.page_length('#table-list-templates') }}
 

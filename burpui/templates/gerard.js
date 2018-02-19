@@ -383,6 +383,33 @@ var _fit_menu = function() {
 	}
 }
 
+{% if not report and not login -%}
+{% set autorefresh = config.REFRESH -%}
+var auto_refresh = undefined;
+var schedule_refresh = function() {
+	auto_refresh = setTimeout(auto_refresh_function, {{ autorefresh * 1000 }});
+}
+var cancel_refresh = function() {
+	if (auto_refresh) {
+		clearTimeout(auto_refresh);
+		auto_refresh = undefined;
+	}
+}
+var auto_refresh_function = function() {
+	{% if clients -%}
+	_clients();
+	{% endif -%}
+	{% if client and not settings -%}
+	_client();
+	{% endif -%}
+	{% if servers and overview -%}
+	_servers();
+	{% endif -%}
+	cancel_refresh()
+	schedule_refresh();
+};
+{% endif -%}
+
 $(function() {
 
 	/***
@@ -473,28 +500,11 @@ $(function() {
 	/***
 	 * auto-refresh our page if needed
 	 */
-	{% set autorefresh = config.REFRESH -%}
-	var auto_refresh = undefined;
-	var auto_refresh_function = function() {
-		{% if clients -%}
-		_clients();
-		{% endif -%}
-		{% if client and not settings -%}
-		_client();
-		{% endif -%}
-		{% if servers and overview -%}
-		_servers();
-		{% endif -%}
-		if (auto_refresh) {
-			clearTimeout(auto_refresh);
-		}
-		auto_refresh = setTimeout(auto_refresh_function, {{ autorefresh * 1000 }});
-	};
-	auto_refresh = setTimeout(auto_refresh_function, {{ autorefresh * 1000 }});
+	schedule_refresh();
 	{% endif -%}
 
 	{% if not login -%}
-		{% if not config.WS_AVAILABLE or not config.WITH_CELERY -%}
+		{% if not config.WS_AVAILABLE or not config.WITH_CELERY or not config.WS_ENABLED -%}
 	/***
 	 * Javascript Loop
 	 */

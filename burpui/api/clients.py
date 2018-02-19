@@ -10,6 +10,7 @@
 from . import api, cache_key, force_refresh
 from ..server import BUIServer  # noqa
 from .custom import fields, Resource
+from .client import ClientLabels
 from ..ext.cache import cache
 from ..exceptions import BUIserverException
 from ..decorators import browser_cache
@@ -489,7 +490,17 @@ class ClientsStats(Resource):
                 jso = [x for x in jso if current_user.acl.is_client_allowed(x['name'], server)]
         except BUIserverException as e:
             self.abort(500, str(e))
-        return jso
+        ret = []
+        for client in jso:
+            tmp_client = client
+            try:
+                labels = ClientLabels._get_labels(client['name'], server)
+            except BUIserverException as exp:
+                self.abort(500, str(exp))
+            tmp_client['labels'] = labels
+            ret.append(tmp_client)
+
+        return ret
 
 
 @ns.route('/all',

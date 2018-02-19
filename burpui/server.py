@@ -8,6 +8,7 @@
 
 """
 import os
+import re
 import sys
 import logging
 import traceback
@@ -26,6 +27,8 @@ G_PORT = 5000
 G_BIND = u'::'
 G_REFRESH = 180
 G_LIVEREFRESH = 5
+G_IGNORE_LABELS = []
+G_FORMAT_LABELS = []
 G_SSL = False
 G_SINGLE = True
 G_SSLCERT = u''
@@ -83,6 +86,8 @@ class BUIServer(Flask):
         'UI': {
             'refresh': G_REFRESH,
             'liverefresh': G_LIVEREFRESH,
+            'ignore_labels': G_IGNORE_LABELS,
+            'format_labels': G_FORMAT_LABELS,
         },
         'Security': {
             'scookie': G_SCOOKIE,
@@ -234,6 +239,21 @@ class BUIServer(Flask):
             'integer',
             'UI'
         )
+        self.ignore_labels = self.conf.safe_get(
+            'ignore_labels',
+            'force_list',
+            'UI'
+        )
+        format_labels = self.conf.safe_get(
+            'format_labels',
+            'force_list',
+            'UI'
+        )
+        self.format_labels = []
+        for format_label in format_labels:
+            search = re.search(r'^s(?P<separator>.)(?P<regex>.*?)(?P=separator)(?P<replace>.*?)(?P=separator)$', format_label)
+            if search:
+                self.format_labels.append((search.group('regex'), search.group('replace')))
 
         # Production options
         self.storage = self.config['BUI_STORAGE'] = self.conf.safe_get(

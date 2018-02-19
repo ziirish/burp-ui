@@ -8,6 +8,7 @@
 
 """
 import os
+import re
 
 from . import api, cache_key, force_refresh
 from ..server import BUIServer  # noqa
@@ -985,6 +986,103 @@ class ClientStats(Resource):
         except BUIserverException as exp:
             self.abort(500, str(exp))
         return json
+
+
+@ns.route('/labels/<name>',
+          '/<server>/labels/<name>',
+          endpoint='client_labels')
+@ns.doc(
+    params={
+        'server': 'Which server to collect data from when in multi-agent' +
+                  ' mode',
+        'name': 'Client name',
+    },
+)
+class ClientLabels(Resource):
+    """The :class:`burpui.api.client.ClientLabels` resource allows you to
+    retrieve the labels of a given client.
+
+    This resource is part of the :mod:`burpui.api.client` module.
+
+    An optional ``GET`` parameter called ``serverName`` is supported when
+    running in multi-agent mode.
+    """
+    parser = ns.parser()
+    parser.add_argument(
+        'serverName',
+        help='Which server to collect data from when in multi-agent mode'
+    )
+    parser.add_argument('clientName', help='Client name')
+    labels_fields = ns.model('ClientLabels', {
+        'labels': fields.List(fields.String, description='List of labels'),
+    })
+
+    @cache.cached(timeout=1800, key_prefix=cache_key, unless=force_refresh)
+    @ns.marshal_list_with(labels_fields, code=200, description='Success')
+    @ns.expect(parser)
+    @ns.doc(
+        responses={
+            '403': 'Insufficient permissions',
+            '500': 'Internal failure',
+        },
+    )
+    @browser_cache(1800)
+    def get(self, server=None, name=None):
+        """Returns the labels of a given client
+
+        **GET** method provided by the webservice.
+
+        The *JSON* returned is:
+        ::
+
+            {
+              "labels": [
+                "label1",
+                "label2"
+              ]
+            }
+
+        The output is filtered by the :mod:`burpui.misc.acl` module so that you
+        only see stats about the clients you are authorized to.
+
+        :param server: Which server to collect data from when in multi-agent
+                       mode
+        :type server: str
+
+        :param name: The client we are working on
+        :type name: str
+
+        :returns: The *JSON* described above.
+        """
+        try:
+            if not current_user.is_anonymous and \
+                    not current_user.acl.is_admin() and \
+                    not current_user.acl.is_client_allowed(name, server):
+                self.abort(403, 'Sorry, you cannot access this client')
+            labels = self._get_labels(name, server)
+        except BUIserverException as exp:
+            self.abort(500, str(exp))
+        return {'labels': labels}
+
+    @staticmethod
+    def _get_labels(client, server):
+        key = 'labels-{}-{}'.format(client, server)
+        ret = cache.cache.get(key)
+        if ret is not None:
+            return ret
+        labels = bui.client.get_client_labels(client, agent=server)
+        ret = []
+        for label in labels:
+            if bui.ignore_labels and \
+                    re.search('|'.join(bui.ignore_labels), label):
+                continue
+            tmp_label = label
+            if bui.format_labels:
+                for regex, replace in bui.format_labels:
+                    tmp_label = re.sub(regex, replace, tmp_label)
+            ret.append(tmp_label)
+        cache.cache.set(key, ret, 1800)
+        return ret
 
 
 @ns.route('/running',

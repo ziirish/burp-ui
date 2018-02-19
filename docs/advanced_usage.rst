@@ -93,12 +93,18 @@ parameters:
     refresh = 180
     # refresh interval of the live-monitoring page in seconds
     liverefresh = 5
+    # list of labels to ignore (you can use regex)
+    ignore_labels = "color:.*", "custom:.*"
+    # format label using sed-like syntax
+    format_labels = "s/^os:\s*//"
 
 
 Each option is commented, but here is a more detailed documentation:
 
 - *refresh*: Time in seconds between two refresh of the interface.
 - *liverefresh*: Time in seconds between two refresh of the *live-monitor* page.
+- *ignore_labels*: List of labels to ignore from parsing (regex are supported).
+- *format_labels*: List of *sed-like* expressions to transform labels. Example: ``"s/^os:\s*//", "s/i/o/"`` will transform the label ``os: Windows`` into ``Wondows``.
 
 Production
 ----------
