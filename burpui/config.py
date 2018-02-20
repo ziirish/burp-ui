@@ -323,6 +323,8 @@ class BUIConfig(dict):
                         "'{}': no such validator".format(cast)
                     )
                     return val
+            if cast == 'force_list' and val is None:
+                val = []
             ret = caster(val)
             # special case for boolean and integer, etc.
             if ret is None:
