@@ -67,10 +67,13 @@ var _clients_table = $('#table-clients').DataTable( {
 	ajax: {
 		url: '{{ url_for("api.clients_stats", server=server) }}',
 		data: function (request) {
+			if (_some_clients_running || !AJAX_CACHE) {
+				_some_clients_running = false;
+				_cache_id = new Date().getTime();
+			}
 			request._extra = _cache_id;
 		},
 		dataSrc: function (data) {
-			_some_clients_running = false;
 			return data;
 		},
 		error: myFail,
