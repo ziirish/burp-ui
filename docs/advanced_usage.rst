@@ -604,6 +604,31 @@ of your `burpui.cfg`_ file to *none*:
     acl = none
 
 
+The *ACL* engine has some settings as bellow:
+
+::
+
+    # acl engine global options
+    [ACL]
+    # Enable extended matching rules (disabled by default)
+    # If the rule is a string like 'user1 = desk*', it will match any client that
+    # matches 'desk*' no mater what agent it is attached to.
+    # If it is a coma separated list of strings like 'user1 = desk*,laptop*' it
+    # will match the first matching rule no mater what agent it is attached to.
+    # If it is a dict like:
+    # user1 = '{"agents": ["srv*", "www*"], "clients": ["desk*", "laptop*"]}'
+    # It will also validate against the agent name.
+    extended = false
+    # If you don't explicitly specify grants, what should we assume?
+    assume_granted = true
+    # Enable 'legacy' behavior
+    # Since v0.6.0, if you don't specify the agents name explicitly, users will be
+    # granted on every agents where a client matches user's ACL. If you enable the
+    # 'legacy' behavior, you will need to specify the agents explicitly.
+    # Note: enabling this option will also disable the extended mode
+    legacy = false
+
+
 Basic ACL
 ^^^^^^^^^
 

@@ -109,10 +109,12 @@ app.controller('AdminCtrl', ['$scope', '$http', '$scrollspy', 'DTOptionsBuilder'
 }]);
 
 var _me = undefined;
+var _users_table = $('#table-users').DataTable();
 
 $.getJSON('{{ url_for("api.admin_me") }}').done(function (data) {
 	_me = data;
 });
+
 
 {{ macros.page_length('#table-list-clients') }}
 {{ macros.page_length('#table-list-templates') }}

@@ -2,6 +2,7 @@
 import os
 
 from .interface import BUIacl, BUIaclLoader
+from .grants import global_grants
 
 from importlib import import_module
 from six import iteritems
@@ -9,6 +10,8 @@ from collections import OrderedDict
 
 
 class ACLloader(BUIaclLoader):
+    section = name = 'ACL'
+
     def __init__(self, app=None):
         """See :func:`burpui.misc.acl.interface.BUIaclLoader.__init__`
 
@@ -16,9 +19,29 @@ class ACLloader(BUIaclLoader):
         :type app: :class:`burpui.server.BUIServer`
         """
         self.app = app
+        self.conf = self.app.conf
         self._acl = ACLhandler(self)
         backends = []
         self.errors = {}
+        if self.section in self.conf.options:
+            opts = {}
+            opts['extended'] = self.conf.safe_get(
+                'extended',
+                'boolean',
+                section=self.section
+            )
+            opts['assume_granted'] = self.conf.safe_get(
+                'assume_granted',
+                'boolean',
+                section=self.section,
+                defaults={self.section: {'assume_granted': True}}
+            )
+            opts['legacy'] = self.conf.safe_get(
+                'legacy',
+                'boolean',
+                section=self.section
+            )
+            global_grants.options = opts
         if self.app.acl_engine and 'none' not in self.app.acl_engine:
             me, _ = os.path.splitext(os.path.basename(__file__))
             back = self.app.acl_engine
@@ -55,17 +78,20 @@ class ACLloader(BUIaclLoader):
         for obj in backends:
             self.backends[obj.name] = obj
 
+    def reload(self):
+        return None
+
     @property
     def acl(self):
         return self._acl
 
     @property
     def grants(self):
-        return None
+        return global_grants.grants
 
     @property
     def groups(self):
-        return None
+        return global_grants.groups
 
 
 class ACLhandler(BUIacl):
@@ -86,6 +112,9 @@ class ACLhandler(BUIacl):
             ret = func(*args, **kwargs)
             if ret:
                 break
+        if not ret:
+            func = getattr(global_grants, method)
+            ret = func(*args, **kwargs)
         return ret
 
     def is_admin(self, username=None):

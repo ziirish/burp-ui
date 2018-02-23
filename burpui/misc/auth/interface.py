@@ -8,7 +8,7 @@
 
 """
 from flask_login import UserMixin
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta, abstractmethod, abstractproperty
 from six import with_metaclass
 
 import logging
@@ -59,6 +59,7 @@ class BUIhandler(with_metaclass(ABCMeta, object)):
         """
         pass
 
+    @abstractproperty
     @property
     def loader(self):
         return None

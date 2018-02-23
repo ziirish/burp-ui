@@ -362,4 +362,4 @@ def make_list(data):
     """
     if isinstance(data, list):
         return data
-    return [data]
+    return list(data) if data is not None else []
