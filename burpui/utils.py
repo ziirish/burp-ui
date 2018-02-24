@@ -18,7 +18,7 @@ import logging
 
 from uuid import UUID
 from inspect import currentframe, getouterframes
-from ._compat import PY3
+from ._compat import PY3, string_types
 
 NOTIF_OK = 0
 NOTIF_WARN = 1
@@ -362,4 +362,6 @@ def make_list(data):
     """
     if isinstance(data, list):
         return data
-    return list(data) if data is not None else []
+    if data is None:
+        return []
+    return list(data) if not isinstance(data, string_types) else [data]

@@ -161,8 +161,16 @@ class ACLproxy(BUIacl):
         # now we can retrieve the 'foreign' list and know if the object called
         # needs to be "proxyfied"
         if name in self.foreign:
-            return ProxyACLCall(self.acl, self.username, name)
+            if self.acl:
+                return ProxyACLCall(self.acl, self.username, name)
+            # no ACL, assume true
+            return ProxyTrue()
         return object.__getattribute__(self, name)
+
+
+class ProxyTrue(object):
+    def __call__(self, *args, **kwargs):
+        return True
 
 
 class ProxyFalse(object):

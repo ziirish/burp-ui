@@ -32,14 +32,14 @@ class BUImetaGrant(object):
         if isinstance(d1, list) and not isinstance(d2, dict):
             if d2 in d1:
                 return d1
-            return d1 + [d2]
+            return d1 + make_list(d2)
         if isinstance(d2, list) and not isinstance(d1, dict):
             if d1 in d2:
                 return d2
-            return d2 + [d1]
+            return d2 + make_list(d1)
         if not isinstance(d1, dict) and not isinstance(d2, dict):
             if d1 == d2:
-                return [d1]
+                return make_list(d1)
             else:
                 return [d1, d2]
 
@@ -219,7 +219,7 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
     def set_grant(self, name, grant):
         """parse and set the given grants"""
         if name in self._grants:
-            return self._grants[name].add_grant(grant)
+            return self._grants[name].add_grants(grant)
         self._grants[name] = BUIaclGrant(name, grant)
         return self._grants[name].grants
 
@@ -469,13 +469,11 @@ class BUIaclGroup(object):
         self._set_members(members)
 
     def _parse_members(self, members):
-        try:
-            parsed = json.loads(members)
-        except (ValueError, TypeError):
-            if ',' in members:
-                parsed = [x.strip() for x in members.split(',')]
-            else:
-                parsed = make_list(members)
+        # we support only lists
+        if ',' in members:
+            parsed = [x.strip() for x in members.split(',')]
+        else:
+            parsed = make_list(members)
         return parsed
 
     def _set_members(self, members):
@@ -510,7 +508,10 @@ class BUIaclGrant(BUImetaGrant):
         try:
             ret = json.loads(grants)
         except (ValueError, TypeError):
-            if ',' in grants:
+            # ignore mal-formatted json
+            if any([x in grants for x in ['{', '}', '[', ']']]):
+                ret = None
+            elif ',' in grants:
                 ret = [x.rstrip() for x in grants.split(',')]
             else:
                 ret = make_list(grants)
