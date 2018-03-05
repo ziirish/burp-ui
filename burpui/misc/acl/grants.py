@@ -470,7 +470,7 @@ class BUIaclGroup(object):
 
     def _parse_members(self, members):
         # we support only lists
-        if ',' in members:
+        if ',' in members and not isinstance(members, list):
             parsed = [x.strip() for x in members.split(',')]
         else:
             parsed = make_list(members)

@@ -39,7 +39,7 @@ class ACLloader(BUIaclLoader):
             if not self.conf.changed(self.conf_id):
                 return False
 
-        # our config changed or we were forced to reload our rules
+        # our config changed or we were forced to reload our rules.
         # if the global_grants didn't change, we reset them
         # if they changed, it means something else triggered a reset
         if not global_grants.changed(self.global_id) and not self.first_setup:

@@ -153,3 +153,54 @@ You can put this code in a file called *custom_acl.py*, save this file in
 The plugin will be automatically loaded.
 
 .. note:: This is just an example, do not run this particular plugin in production!
+
+
+ACL engine has built-in ``Groups`` support, to take full advantage of this
+feature, it is recommended to use the ``global_grants`` object as shown bellow:
+
+.. code-block:: python
+    :linenos:
+
+        from burpui.misc.acl.grants import global_grants
+        from burpui.misc.acl import interface
+
+        from six import iteritems
+
+        __type__ = 'acl'
+
+        class ACLloader(interface.BUIaclLoader):
+            name = 'CUSTOM2:ACL'
+            priority = 1001
+
+            _groups = {
+                'gp1': {
+                    'grants': 'server1, server2',
+                    'members': ['user1'],
+                },
+            }
+
+            def __init__(self, app):
+                self.app = app
+                self.admin = 'toto'
+                for gname, content in iteritems(self._groups):
+                    global_grants.set_group(gname, content['members'])
+                    global_grants.set_grant(gname, content['grants'])
+                self._acl = global_grants
+
+            @property
+            def acl(self):
+                return self._acl
+
+            @property
+            def grants(self):
+                return self.acl.grants
+
+            @property
+            def groups(self):
+                return self._groups
+
+
+You can omit either the ``global_grants.set_grant`` or the
+``global_grants.set_group`` part if you like. For instance to define the grants
+of a given group using another ACL backend, and using your plugin to manage
+groups membership.
