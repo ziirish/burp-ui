@@ -403,6 +403,8 @@ class BurpuiTestInit(TestCase):
     def tearDown(self):
         print ('\nTest 7 Finished!\n')
         os.unlink(self.tmpFile)
+        if os.path.exists('this-file-should-not-exist'):
+            os.rmdir('this-file-should-not-exist')
 
     def create_app(self):
         kwargs = {'verbose': 0, 'logfile': '/dev/null', 'gunicorn': False, 'unittest': True}
@@ -437,6 +439,8 @@ class BurpuiRedisTestCase(TestCase):
 
     def tearDown(self):
         print ('\nTest 7 Finished!\n')
+        if os.path.exists('this-file-should-not-exist'):
+            os.rmdir('this-file-should-not-exist')
 
     def login(self, username, password):
         return self.client.post(url_for('view.login'), data=dict(
