@@ -156,12 +156,12 @@ The plugin will be automatically loaded.
 
 
 ACL engine has built-in ``Groups`` support, to take full advantage of this
-feature, it is recommended to use the ``global_grants`` object as shown bellow:
+feature, it is recommended to use the ``meta_grants`` object as shown bellow:
 
 .. code-block:: python
     :linenos:
 
-        from burpui.misc.acl.grants import global_grants
+        from burpui.misc.acl.meta import meta_grants
         from burpui.misc.acl import interface
 
         from six import iteritems
@@ -183,9 +183,9 @@ feature, it is recommended to use the ``global_grants`` object as shown bellow:
                 self.app = app
                 self.admin = 'toto'
                 for gname, content in iteritems(self._groups):
-                    global_grants.set_group(gname, content['members'])
-                    global_grants.set_grant(gname, content['grants'])
-                self._acl = global_grants
+                    meta_grants.set_group(gname, content['members'])
+                    meta_grants.set_grant(gname, content['grants'])
+                self._acl = meta_grants
 
             @property
             def acl(self):
@@ -200,7 +200,7 @@ feature, it is recommended to use the ``global_grants`` object as shown bellow:
                 return self._groups
 
 
-You can omit either the ``global_grants.set_grant`` or the
-``global_grants.set_group`` part if you like. For instance to define the grants
+You can omit either the ``meta_grants.set_grant`` or the
+``meta_grants.set_group`` part if you like. For instance to define the grants
 of a given group using another ACL backend, and using your plugin to manage
 groups membership.

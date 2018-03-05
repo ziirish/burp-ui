@@ -1,5 +1,5 @@
 # -*- coding: utf8 -*-
-from .grants import global_grants
+from .meta import meta_grants
 from .interface import BUIaclLoader
 from ...utils import NOTIF_OK, NOTIF_WARN, NOTIF_ERROR
 
@@ -25,10 +25,10 @@ class ACLloader(BUIaclLoader):
         self._grants = {}
         self.first_setup = True
         self.moderator = {}
-        self._acl = global_grants
+        self._acl = meta_grants
         self.conf_id = None
-        self.global_id = global_grants.id
-        global_grants.register_backend(self.name, self)
+        self.meta_id = meta_grants.id
+        meta_grants.register_backend(self.name, self)
         self.load_acl(True)
 
     def reload(self):
@@ -40,10 +40,10 @@ class ACLloader(BUIaclLoader):
                 return False
 
         # our config changed or we were forced to reload our rules.
-        # if the global_grants didn't change, we reset them
+        # if the meta_grants didn't change, we reset them
         # if they changed, it means something else triggered a reset
-        if not global_grants.changed(self.global_id) and not self.first_setup:
-            global_grants.reset(self.name)
+        if not meta_grants.changed(self.meta_id) and not self.first_setup:
+            meta_grants.reset(self.name)
 
         self.first_setup = False
 
@@ -82,7 +82,7 @@ class ACLloader(BUIaclLoader):
                 'force_string',
                 section=self.section
             ) or {}
-            global_grants.set_moderator_grants(self.moderator)
+            meta_grants.set_moderator_grants(self.moderator)
             for opt in self.conf.options.get(self.section).keys():
                 if opt in ['admin', '+moderator', 'priority', '@moderator']:
                     continue
@@ -104,7 +104,7 @@ class ACLloader(BUIaclLoader):
                 if opt[0] == '+':
                     short = opt.lstrip('+')
                     gname = '@{}'.format(short)
-                    parsed = global_grants.set_group(gname, record)
+                    parsed = meta_grants.set_group(gname, record)
                     self._groups[short] = parsed
                     _record('members')
                 elif opt[0] == '@':
@@ -114,18 +114,18 @@ class ACLloader(BUIaclLoader):
                     gname = opt
                     parsed = record
                     _record('grants')
-                    global_grants.set_grant(gname, parsed)
+                    meta_grants.set_grant(gname, parsed)
                 else:
                     self._grants[opt] = record
-                    global_grants.set_grant(opt, record)
+                    meta_grants.set_grant(opt, record)
 
         if not is_empty(adms):
             self.admins = adms
         if not is_empty(mods):
             self.moderators = mods
 
-        global_grants.set_admin(self.admins)
-        global_grants.set_moderator(self.moderators)
+        meta_grants.set_admin(self.admins)
+        meta_grants.set_moderator(self.moderators)
 
         self.logger.debug('admins: {}'.format(self.admins))
         self.logger.debug('moderators: {}'.format(self.moderators))
@@ -133,7 +133,7 @@ class ACLloader(BUIaclLoader):
         self.logger.debug('groups: {}'.format(self.groups_def))
 
         self.conf_id = self.conf.id
-        self.global_id = global_grants.id
+        self.meta_id = meta_grants.id
 
         return True
 

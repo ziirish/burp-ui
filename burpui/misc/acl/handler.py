@@ -2,7 +2,7 @@
 import os
 
 from .interface import BUIacl, BUIaclLoader
-from .grants import global_grants
+from .meta import meta_grants
 
 from importlib import import_module
 from six import iteritems
@@ -41,7 +41,7 @@ class ACLloader(BUIaclLoader):
                 'boolean',
                 section=self.section
             )
-            global_grants.options = opts
+            meta_grants.options = opts
         if self.app.acl_engine and 'none' not in self.app.acl_engine:
             me, _ = os.path.splitext(os.path.basename(__file__))
             back = self.app.acl_engine
@@ -87,11 +87,11 @@ class ACLloader(BUIaclLoader):
 
     @property
     def grants(self):
-        return global_grants.grants
+        return meta_grants.grants
 
     @property
     def groups(self):
-        return global_grants.groups
+        return meta_grants.groups
 
 
 class ACLhandler(BUIacl):
@@ -113,7 +113,7 @@ class ACLhandler(BUIacl):
             if ret:
                 break
         if not ret:
-            func = getattr(global_grants, method)
+            func = getattr(meta_grants, method)
             ret = func(*args, **kwargs)
         return ret
 

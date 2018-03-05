@@ -1,8 +1,8 @@
 # -*- coding: utf8 -*-
 """
-.. module:: burpui.misc.acl.grants
+.. module:: burpui.misc.acl.meta
     :platform: Unix
-    :synopsis: Burp-UI ACL global definitions.
+    :synopsis: Burp-UI ACL meta definitions.
 
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
@@ -531,4 +531,4 @@ class BUIaclGrant(BUImetaGrant):
         return parsed
 
 
-global_grants = BUIgrantHandler()
+meta_grants = BUIgrantHandler()
