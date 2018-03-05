@@ -45,6 +45,7 @@ class Parser(Burp1):
     ]
     string_srv = Burp1.string_srv + [
         u'manual_delete',
+        u'rblk_memory_max',
     ]
     boolean_add = [
         u'acl',
@@ -81,6 +82,7 @@ class Parser(Burp1):
         u'enabled': u"0|1",
         u'cname_fqdn': u"0|1",
         u'cname_lowercase': u"0|1",
+        u'rblk_memory_max': u"b/Kb/Mb/Gb",
     })
     values = Burp1.values
     # status_address can now listen on any address
@@ -96,6 +98,7 @@ class Parser(Burp1):
         u'enabled': True,
         u'cname_fqdn': True,
         u'cname_lowercase': False,
+        u'rblk_memory_max': u'256Mb',
     })
     doc = Burp1.doc
     doc.update({
@@ -178,4 +181,10 @@ class Parser(Burp1):
                                    "'max_status_children' entries on separate "
                                    "lines if you have configured multiple "
                                    "status_port entries."),
+        u'rblk_memory_max': __("The maximum amount of data from the disk "
+                               "cached in server memory during a protocol2 "
+                               "restore/verify. The default is 256Mb. This "
+                               "option can be overriden per-client in the "
+                               "client configuration files in clientconfdir "
+                               "on the server."),
     })
