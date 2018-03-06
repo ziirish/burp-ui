@@ -61,14 +61,14 @@ app.controller('LiveCtrl', function($scope, $http, $timeout) {
 			}
 			if (status === 404) {
 				$scope.stopTimer();
-				notif(NOTIF_INFO, {{ _('Backup complete. Will redirect you in 5 seconds') }});
+				notif(NOTIF_INFO, "{{ _('Backup complete. Will redirect you in 5 seconds') }}");
 				$timeout(function() {
 					document.location = '{{ url_for("view.home") }}';
 				}, 5000);
 				return;
 			}
 			if ($scope.clients.length == 0) {
-				$http.post('{{ url_for("api.alert") }}', {'message': 'No more backup running'}, { headers: { 'X-From-UI': true } });
+				$http.post('{{ url_for("api.alert") }}', {'message': "{{ _('No more backup running') }}"}, { headers: { 'X-From-UI': true } });
 				document.location = '{{ url_for("view.home") }}';
 			}
 			timer = $timeout($scope.load, {{ config.LIVEREFRESH * 1000 }});
@@ -76,7 +76,7 @@ app.controller('LiveCtrl', function($scope, $http, $timeout) {
 		.error(function(data, status, headers, config) {
 			$scope.stopTimer();
 			errorsHandler(data);
-			notif(NOTIF_INFO, 'Will redirect you in 5 seconds');
+			notif(NOTIF_INFO, "{{ _('Will redirect you in 5 seconds') }}");
 			$timeout(function() {
 				document.location = '{{ url_for("view.home") }}';
 			}, 5000);
