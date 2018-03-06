@@ -36,6 +36,8 @@ Then you need to fork the project retrieve the sources:
 
     git clone https://git.ziirish.me/<your_login>/burp-ui.git
     cd burp-ui
+    git submodule update --init
+    pip install -r requirements.txt
 
 
 You can have the list of available languages by running:
@@ -53,7 +55,7 @@ following command:
 
 ::
 
-    ./bui-manage init_translation <country_code> # where <country_code> can be "de", "ru", etc.
+    ./tools/bui-manage init_translation <country_code> # where <country_code> can be "de", "ru", etc.
 
 
 Update translation
@@ -81,7 +83,7 @@ Then you can update the translation files with the following command:
 
 ::
 
-    ./bui-manage update_translation
+    ./tools/bui-manage update_translation
 
 
 Translation
