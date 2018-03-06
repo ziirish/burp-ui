@@ -19,14 +19,14 @@ services:
 
   pgsql:
     restart: always
-    image: registry.ziirish.me/ziirish/burp-ui/pgsql:0.5.1
+    image: registry.ziirish.me/ziirish/burp-ui/pgsql:10
   ## Additionally, you may want to persist data
   ## volumes:
   ##   - /var/lib/buistore/pgsql/10/data:/var/lib/postgresql/data
 
   burp-server:
     restart: always
-    image: registry.ziirish.me/ziirish/burp-ui/burp:latest
+    image: registry.ziirish.me/ziirish/burp-ui/burp:2.0.54
     ports:
       - 0.0.0.0:4971:4971
       - 0.0.0.0:4972:4972
@@ -41,7 +41,7 @@ services:
 
   burpui:
     restart: always
-    image: registry.ziirish.me/ziirish/burp-ui:0.5.1-py3.6
+    image: registry.ziirish.me/ziirish/burp-ui:latest
     depends_on:
       - burp-server
       - redis
