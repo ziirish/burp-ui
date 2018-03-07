@@ -430,7 +430,7 @@ class NewClientSettings(Resource):
         # if not clientconfdir:
         #    flash('Could not proceed, no \'clientconfdir\' find', 'warning')
         #    return redirect(request.referrer)
-        noti = bui.client.store_conf_cli(ImmutableMultiDict(), newclient, None, server)
+        noti = bui.client.store_conf_cli(ImmutableMultiDict(), newclient, None, agent=server)
         if server:
             noti.append([NOTIF_INFO, _('<a href="%(url)s">Click here</a> to edit \'%(client)s\' configuration', url=url_for('view.cli_settings', server=server, client=newclient), client=newclient)])
         else:

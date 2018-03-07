@@ -1068,6 +1068,7 @@ def diag(client, host, tips):
 def sysinfo(verbose, load):
     """Returns a couple of system informations to help debugging."""
     from .desc import __release__, __version__
+    import platform
 
     msg = None
     if load:
@@ -1089,6 +1090,9 @@ def sysinfo(verbose, load):
 
     click.echo('Python version:      {}.{}.{}'.format(sys.version_info[0], sys.version_info[1], sys.version_info[2]))
     click.echo('Burp-UI version:     {} ({})'.format(__version__, __release__))
+    click.echo('OS:                  {}:{} ({})'.format(platform.system(), platform.release(), os.name))
+    if platform.system() == 'Linux':
+        click.echo('Distribution:        {} {} {}'.format(*platform.dist()))
     click.echo('Single mode:         {}'.format(app.standalone))
     click.echo('Backend version:     {}'.format(backend_version))
     click.echo('WebSocket embedded:  {}'.format(click.style(embedded_ws, fg=colors[embedded_ws])))

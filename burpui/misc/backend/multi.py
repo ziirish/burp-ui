@@ -373,7 +373,7 @@ class NClient(BUIbackend):
         self.ssl = ssl
         self.app = app
         self.timeout = timeout or 5
-        self.version = None
+        self._agent_version = None
 
     def __getattribute__(self, name):
         # always return this value because we need it and if we don't do that
@@ -398,15 +398,15 @@ class NClient(BUIbackend):
         return object.__getattribute__(self, name)
 
     def _get_agent_version(self):
-        if self.ping() and not self.version:
+        if self.ping() and not self._agent_version:
             data = {'func': 'agent_version'}
             try:
-                self.version = json.loads(self.do_command(data))
+                self._agent_version = json.loads(self.do_command(data))
             except BUIserverException:
                 # just ignore the error if this custom function is not
                 # implemented
                 pass
-        return self.version
+        return self._agent_version
 
     def ping(self):
         """Check if we are connected to the agent"""

@@ -109,10 +109,32 @@ app.controller('AdminCtrl', ['$scope', '$http', '$scrollspy', 'DTOptionsBuilder'
 }]);
 
 var _me = undefined;
-var _users_table = $('#table-users').DataTable();
+var _users_table = undefined;
 
 $.getJSON('{{ url_for("api.admin_me") }}').done(function (data) {
 	_me = data;
+	_users_table = $('#table-users').DataTable( {
+		{{ macros.translate_datatable() }}
+		{{ macros.get_page_length() }}
+		responsive: true,
+		processing: true,
+		fixedHeader: true,
+		select: {
+			style: 'os',
+		},
+		ajax: {
+			url: '{{ url_for("api.user_sessions") }}',
+			headers: { 'X-From-UI': true },
+			cache: AJAX_CACHE,
+			error: myFail,
+			data: function (request) {
+				request._extra = _cache_id;
+			},
+			dataSrc: function (data) {
+				return data;
+			}
+		},
+	});
 });
 
 

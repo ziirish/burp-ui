@@ -10,7 +10,7 @@
 from .interface import BUIacl
 from ...utils import make_list
 
-from six import iteritems
+from six import iteritems, itervalues
 
 import re
 import json
@@ -242,6 +242,13 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
         """parse and set the moderators grants"""
         self.set_grant(self._gp_moderator_name, grants)
 
+    def get_member_groups(self, member):
+        groups = []
+        for group in itervalues(self._groups):
+            if group.is_member(member):
+                groups.append(group.name)
+        return groups
+
     def _extract_grants(self, username):
         if username not in self._parsed_grants:
 
@@ -465,7 +472,7 @@ class BUIaclGroup(object):
     represent a Group"""
 
     def __init__(self, name, members=None):
-        self.name = name
+        self._name = name
         self._set_members(members)
 
     def _parse_members(self, members):
@@ -492,6 +499,12 @@ class BUIaclGroup(object):
         return member in self._members
 
     @property
+    def name(self):
+        if self._name and any(self._name.startswith(x) for x in ['@', '+']):
+            return str(self._name[1:])
+        return self._name
+
+    @property
     def members(self):
         return list(self._members)
 
@@ -501,7 +514,7 @@ class BUIaclGrant(BUImetaGrant):
     represent a Grant"""
 
     def __init__(self, name, grants):
-        self.name = name
+        self._name = name
         self._grants = self._parse_grants(grants)
 
     def _parse_grants(self, grants):
@@ -516,6 +529,12 @@ class BUIaclGrant(BUImetaGrant):
             else:
                 ret = make_list(grants)
         return ret
+
+    @property
+    def name(self):
+        if self._name and any(self._name.startswith(x) for x in ['@', '+']):
+            return str(self._name[1:])
+        return self._name
 
     @property
     def grants(self):
