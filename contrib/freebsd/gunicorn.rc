@@ -1,0 +1,28 @@
+#!/bin/sh
+# PROVIDE: burpui
+# REQUIRE: DAEMON
+
+. /etc/rc.subr
+
+name=burpui
+rcvar=burpui_enable
+
+pidfile="/var/run/${name}.pid"
+
+load_rc_config $name
+: ${burpui_enabled:="YES"}
+
+command="/var/venv/bin/python"
+command_args="\
+   /usr/local/bin/gunicorn \
+    --worker-class gevent \
+    --workers 4 \
+    --pid ${pidfile} \
+    --bind 0.0.0.0:80 \
+    --error-logfile /var/log/gunicorn_error.log \
+    --access-logfile /var/log/gunicorn_access.log \
+    --name burpui \
+    --daemon \
+    'burpui:create_app(conf=\"/etc/burp/burpui.cfg\",verbose=2,logfile=\"/var/log/burpui.log\")'"
+
+run_rc_command "$1"

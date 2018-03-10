@@ -161,19 +161,27 @@ app.controller('UserCtrl', function($timeout, $scope, $http, $scrollspy) {
  */
 {% import 'macros.html' as macros %}
 
+var _cache_id = _EXTRA;
+
 {{ macros.timestamp_filter() }}
 
-var _sessions_table = $('#table-sessions').dataTable( {
+var _sessions_table = $('#table-sessions').DataTable( {
 	{{ macros.translate_datatable() }}
 	{{ macros.get_page_length() }}
 	responsive: true,
+	processing: true,
+	fixedHeader: true,
 	select: {
 		style: 'os',
 	},
 	ajax: {
 		url: '{{ url_for("api.user_sessions") }}',
 		headers: { 'X-From-UI': true },
+		cache: AJAX_CACHE,
 		error: myFail,
+		data: function (request) {
+			request._extra = _cache_id;
+		},
 		dataSrc: function (data) {
 			return data;
 		}
@@ -237,7 +245,7 @@ var _sessions_table = $('#table-sessions').dataTable( {
 		}
 	],
 	order: [[1, 'desc']],
-	destroy: true,
+	rowId: 'uuid',
 	columns: [
 		{ data: 'ip' },
 		{
@@ -319,7 +327,11 @@ var _sessions = function() {
 	if (first) {
 		first = false;
 	} else {
-		_sessions_table.api().ajax.reload( null, false );
+		if (!AJAX_CACHE) {
+			_cache_id = new Date().getTime();
+		}
+		_sessions_table.ajax.reload( null, false );
+		AJAX_CACHE = true;
 	}
 };
 
@@ -340,8 +352,8 @@ var _events_callback = function() {
 };
 
 var select_event = function( e, dt, type, indexes ) {
-	var selectedRows = _sessions_table.api().rows( { selected: true } ).count();
-	_sessions_table.api().buttons( [3, 4] ).enable( selectedRows > 0 );
+	var selectedRows = _sessions_table.rows( { selected: true } ).count();
+	_sessions_table.buttons( [3, 4] ).enable( selectedRows > 0 );
 };
 
 _sessions_table.on('select.dt', select_event);
@@ -360,6 +372,7 @@ var revoke_session = function(id, refresh) {
 	}).done(function(data) {
 		notifAll(data);
 		if (refresh && data[0] == NOTIF_SUCCESS) {
+			AJAX_CACHE = false;
 			_sessions();
 		}
 	}).fail(myFail);
@@ -368,7 +381,7 @@ var revoke_session = function(id, refresh) {
 $('#perform-revoke').on('click', function(e) {
 	$me = $(this);
 	if ($me.data('multi')) {
-		var rows = _sessions_table.api().rows( { selected: true } ).data();
+		var rows = _sessions_table.rows( { selected: true } ).data();
 		var current = undefined;
 		var requests = [];
 		var last;
@@ -381,12 +394,13 @@ $('#perform-revoke').on('click', function(e) {
 			requests.push(last);
 		});
 		if (current) {
-			$.when(requests).done(function() {
+			$.when.apply( $, requests ).done(function() {
 				window.location = '{{ url_for("view.logout") }}';
 				return;
 			});
 		} else {
-			$.when(requests).done(function() {
+			$.when.apply( $, requests ).done(function() {
+				AJAX_CACHE = false;
 				_sessions();
 			});
 		}
@@ -584,6 +598,3 @@ d3.json("{{ url_for('api.clients_all') }}?_session=" + SESSION_TAG)
 			update_tree(root);
 		}
 	});
-
-{% import 'macros.html' as macros %}
-{{ macros.smooth_scrolling() }}

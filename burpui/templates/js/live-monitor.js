@@ -39,14 +39,14 @@ app.filter('bytes_human', [function() {
 	};
 }]);
 
-app.controller('LiveCtrl', function($scope, $http, $interval) {
+app.controller('LiveCtrl', function($scope, $http, $timeout) {
 	$scope.clients = [];
 	var timer;
 
 	$scope.stopTimer = function() {
-		if (angular.isDefined(stop)) {
-			$interval.cancel(stop);
-			stop = undefined;
+		if (angular.isDefined(timer)) {
+			$timeout.cancel(timer);
+			timer = undefined;
 		}
 	};
 
@@ -59,16 +59,25 @@ app.controller('LiveCtrl', function($scope, $http, $interval) {
 				$scope.clients = [];
 				$scope.clients.push(data);
 			}
+			if (status === 404) {
+				$scope.stopTimer();
+				notif(NOTIF_INFO, "{{ _('Backup complete. Will redirect you in 5 seconds') }}");
+				$timeout(function() {
+					document.location = '{{ url_for("view.home") }}';
+				}, 5000);
+				return;
+			}
 			if ($scope.clients.length == 0) {
-				$http.post('{{ url_for("api.alert") }}', {'message': 'No more backup running'}, { headers: { 'X-From-UI': true } });
+				$http.post('{{ url_for("api.alert") }}', {'message': "{{ _('No more backup running') }}"}, { headers: { 'X-From-UI': true } });
 				document.location = '{{ url_for("view.home") }}';
 			}
+			timer = $timeout($scope.load, {{ config.LIVEREFRESH * 1000 }});
 		})
 		.error(function(data, status, headers, config) {
 			$scope.stopTimer();
 			errorsHandler(data);
-			notif(NOTIF_INFO, 'Will redirect you in 5 seconds');
-			setTimeout(function() {
+			notif(NOTIF_INFO, "{{ _('Will redirect you in 5 seconds') }}");
+			$timeout(function() {
 				document.location = '{{ url_for("view.home") }}';
 			}, 5000);
 		});
@@ -78,10 +87,6 @@ app.controller('LiveCtrl', function($scope, $http, $interval) {
 		e.preventDefault();
 		$scope.load();
 	};
-
-	timer = $interval(function() {
-		$scope.load();
-	}, {{ config.LIVEREFRESH * 1000 }});
 
 	$scope.load();
 });

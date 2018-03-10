@@ -7,7 +7,7 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
-from . import api, cache_key
+from . import api, cache_key, force_refresh
 from ..server import BUIServer  # noqa
 from .custom import fields, Resource
 from ..exceptions import BUIserverException
@@ -242,6 +242,10 @@ class Live(Resource):
                     res.append(data)
         else:
             for client in running:
+                # ACL
+                if has_acl and not is_admin and \
+                        not current_user.acl.is_client_allowed(client, server):
+                    continue
                 data = {}
                 data['client'] = client
                 try:
@@ -307,7 +311,7 @@ class Languages(Resource):
         '*': wild,
     })
 
-    @cache.cached(timeout=3600, key_prefix=cache_key)
+    @cache.cached(timeout=3600, key_prefix=cache_key, unless=force_refresh)
     @ns.marshal_with(languages_fields, code=200, description='Success')
     @browser_cache(3600)
     def get(self):
@@ -361,7 +365,7 @@ class About(Resource):
         'burp': fields.Nested(burp_fields, as_list=True, description='Burp version'),
     })
 
-    @cache.cached(timeout=3600, key_prefix=cache_key)
+    @cache.cached(timeout=3600, key_prefix=cache_key, unless=force_refresh)
     @ns.marshal_with(about_fields, code=200, description='Success')
     @ns.expect(parser)
     @browser_cache(3600)
@@ -467,7 +471,7 @@ class History(Resource):
         'name': fields.String(description='Feed name'),
     })
 
-    @cache.cached(timeout=1800, key_prefix=cache_key)
+    @cache.cached(timeout=1800, key_prefix=cache_key, unless=force_refresh)
     @ns.marshal_list_with(history_fields, code=200, description='Success')
     @ns.expect(parser)
     @ns.doc(
@@ -782,3 +786,13 @@ class History(Resource):
             ret.append(ev)
 
         return ret
+
+
+# @ns.route('/testacl',
+#           '/testacl/<client>',
+#           '/<server>/testacl',
+#           '/<server>/testacl/<client>',
+#           endpoint='testacl')
+# class TestAcl(Resource):
+#     def get(self, client=None, server=None):
+#         return current_user.acl.is_client_rw(client, server)

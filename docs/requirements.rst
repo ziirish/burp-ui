@@ -27,17 +27,6 @@ Some libraries are required to be able to compile some requirements:
     apt-get install libffi-dev libssl-dev python-dev python-pip
 
 
-Debian Wheezy
--------------
-
-It looks like some requirements are not automatically installed on *Debian
-Wheezy*. You can install them with the following command:
-
-::
-
-    pip install "burp-ui[debian_wheezy]"
-
-
 LDAP
 ----
 
@@ -111,6 +100,16 @@ If you want to rate-limit the API, you will need additional dependencies too:
 ::
 
     pip install flask-limiter
+
+
+WebSocket
+---------
+
+If you want to enable the WebSockets support, you need to install the following:
+
+::
+
+    pip install "burp-ui[websocket]"
 
 
 Burp1

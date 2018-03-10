@@ -50,10 +50,10 @@ test:py3.6:
   - docker
   except:
   - tags
-  - demo
 
 build:py2:
   stage: build
+  image: python:2.7
   script:
   - /bin/bash tests/run_build.sh
   tags:
@@ -65,6 +65,7 @@ build:py2:
     paths:
     - dist/
     - meta/
+    expire_in: 2 mos
 
 build:py3:
   stage: build
@@ -79,18 +80,39 @@ build:py3:
     paths:
     - dist/
     - meta/
+    expire_in: 2 mos
+
+build:doc:
+  stage: build
+  image: python:3.6
+  script:
+  - sed -e "s,^#\(.*\)@AUTOFLASK@\(.*\)$,\1sphinxcontrib.autohttp.flask\2," docs/conf.py
+  - apt-get update && apt-get install -y unzip
+  - wget https://bitbucket.org/birkenfeld/sphinx-contrib/get/8e295053a27d.zip
+  - unzip 8e295053a27d.zip
+  - (cd birkenfeld-sphinx-contrib-8e295053a27d/httpdomain/ && python setup.py build && python setup.py install)
+  - pip install -r docs/requirements.txt
+  - make doc
+  tags:
+  - build
+  only:
+  - master
+  artifacts:
+    paths:
+    - docs/_build/html
+    expire_in: 2 mos
+  allow_failure: true
 
 build:docker:latest:
   stage: build
   script:
   - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-  - docker build -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:latest -f docker/Dockerfile .
-  - docker tag $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:latest $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:latest-py3.6
-#  - docker build -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:latest-py3.6 -f docker/Dockerfile-py3.6 .
-  - cd docker/demo/docker-pg && docker build -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/pgsql:latest .
+  - docker build --pull -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:latest -f docker/Dockerfile .
+  - (cd docker/demo/docker-pg && docker build --pull -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/pgsql:10 .)
+  - (cd docker/components/docker-burp && docker build --pull -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/burp:2.0.54 .)
   - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:latest
-  - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:latest-py3.6
-  - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/pgsql:latest
+  - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/pgsql:10
+  - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/burp:2.0.54
   tags:
   - registry
   only:
@@ -100,28 +122,41 @@ build:docker:release:
   stage: build
   script:
   - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-  - docker build -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$CI_COMMIT_TAG -f docker/Dockerfile .
-  - docker tag $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$CI_COMMIT_TAG $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$CI_COMMIT_TAG-py3.6
-#  - docker build -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$CI_COMMIT_TAG-py3.6 -f docker/Dockerfile-py3.6 .
-  - cd docker/demo/docker-pg && docker build -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/pgsql:$CI_COMMIT_TAG .
+  - docker build --pull -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$CI_COMMIT_TAG -f docker/Dockerfile .
+  - (cd docker/demo/docker-pg && docker build --pull -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/pgsql:10 .)
+  - (cd docker/components/docker-burp && docker build --pull -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/burp:2.0.54 .)
   - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$CI_COMMIT_TAG
-  - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$CI_COMMIT_TAG-py3.6
-  - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/pgsql:$CI_COMMIT_TAG
+  - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/pgsql:10
+  - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/burp:2.0.54
   only:
   - tags
+  tags:
+  - registry
+
+build:docker:demo:
+  stage: build
+  script:
+  - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+  - docker build --pull -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:demo -f docker/Dockerfile .
+  - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:demo
+  - "curl $SENTRY_WEBHOOK -X POST -H 'Content-Type: application/json' -d '{\"version\": \"'$CI_COMMIT_REF_NAME'_'$CI_COMMIT_SHA'\"}'"
+  only:
+  - demo
   tags:
   - registry
 
 deploy:demo:
   stage: deploy
   script:
-  - find docker/demo/ -name "install" | xargs sed -i "s/@build@/$(git rev-parse HEAD)/"
+  - find docker/demo/ -name "install" -o -name "init" | xargs sed -i "s/@build@/$CI_COMMIT_SHA/"
   - cd docker/demo/ && find . -maxdepth 1 -type d -a ! -name dist -exec cp -r ../../dist "{}/" \; -exec cp -r ../../meta "{}/" \; && cd ../..
   - find docker/demo/ -name "Dockerfile" | xargs sed -i "s,^.*@ARTIFACTS@.*$,COPY dist/*.tar.gz /tmp/burpui.dev.tar.gz,;s,^.*@BUIAGENT_ARTIFACTS@.*$,COPY meta/burp-ui-agent*.tar.gz /tmp/burp-ui-agent.dev.tar.gz,"
   - test -d /srv/demo/docker && rm -rf /srv/demo/docker
   - cp -r docker/demo/ /srv/demo/docker
   - cd /srv/demo/docker/
-  - docker-compose build
+# old docker client, we need the "-e" flag
+  - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN -e $DUMMY_EMAIL $CI_REGISTRY
+  - docker-compose build --pull
   - docker-compose stop
   - docker-compose rm -f
   - docker-compose up -d

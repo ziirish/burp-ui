@@ -8,7 +8,7 @@
 
 """
 from flask_login import UserMixin
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta, abstractmethod, abstractproperty
 from six import with_metaclass
 
 import logging
@@ -59,6 +59,7 @@ class BUIhandler(with_metaclass(ABCMeta, object)):
         """
         pass
 
+    @abstractproperty
     @property
     def loader(self):
         return None
@@ -70,6 +71,7 @@ class BUIuser(with_metaclass(ABCMeta, UserMixin)):
     """
     backend = None
     admin = True
+    moderator = True
 
     @abstractmethod
     def login(self, passwd=None):
@@ -105,6 +107,15 @@ class BUIuser(with_metaclass(ABCMeta, UserMixin)):
         :returns: True if the user is admin, otherwise False
         """
         return self.admin
+
+    @property
+    def is_moderator(self):
+        """
+        If no ACL engine is loaded, every logged-in user will be granted
+        moderator rights
+        :returns: True if the user is moderator, otherwise False
+        """
+        return self.moderator
 
     def __str__(self):
         msg = UserMixin.__str__(self)

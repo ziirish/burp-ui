@@ -7,7 +7,8 @@
     <meta name="description" content="Burp-UI is a web-ui for burp backup written in python with Flask and jQuery/Bootstrap">
     <meta name="author" content="Ziirish">
     <meta name="session" content="{% if 'tag_id' in session %}{{ session['tag_id'] }}{% endif %}">
-    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    <meta name="_extra" content="{{ g._extra }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}?_ver={{ g.version }}">
 
     <title>Burp-UI</title>
 
@@ -19,12 +20,13 @@
     {% if not report -%}
     <link href="{{ url_for('bower.static', filename='datatables.net-bs/css/dataTables.bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ url_for('bower.static', filename='datatables.net-responsive-bs/css/responsive.bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('bower.static', filename='datatables.net-fixedheader-bs/css/fixedHeader.bootstrap.min.css') }}" rel="stylesheet">
       {% if me -%}
     <link href="{{ url_for('bower.static', filename='datatables.net-select-bs/css/select.bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ url_for('bower.static', filename='datatables.net-buttons-bs/css/buttons.bootstrap.min.css') }}" rel="stylesheet">
       {% endif -%}
     {% endif -%}
-    {% if tree -%}
+    {% if tree or settings -%}
     <link href="{{ url_for('bower.static', filename='jquery.fancytree/dist/skin-bootstrap/ui.fancytree.min.css') }}" rel="stylesheet">
     {% endif -%}
     {% if settings or me -%}
@@ -38,7 +40,7 @@
     <link href="{{ url_for('bower.static', filename='components-font-awesome/css/font-awesome.min.css') }}" rel="stylesheet">
 
     <!-- Custom styles for this template -->
-    <link href="{{ url_for('static', filename='dashboard.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='dashboard.css') }}?_ver={{ g.version }}" rel="stylesheet">
 
   </head>
 
@@ -51,6 +53,7 @@
         {% if not live and not login and not about -%}
         {% include "sidebar.html" %}
         {% endif -%}
+        <span id="_top"></span>
         {% block body %}{% endblock %}
       </div>
     </div>
@@ -62,6 +65,7 @@
     <script src="{{ url_for('bower.static', filename='jquery-ui/jquery-ui.min.js') }}"></script>
     <script src="{{ url_for('bower.static', filename='bootstrap/dist/js/bootstrap.min.js') }}"></script>
     <script src="{{ url_for('bower.static', filename='socket.io-client/dist/socket.io.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='lodash/dist/lodash.min.js') }}"></script>
     <!-- Typeadhead + Bloodhound Javascript
     ================================================== -->
     <script src="{{ url_for('bower.static', filename='typeahead.js/dist/typeahead.jquery.min.js') }}"></script>
@@ -84,6 +88,7 @@
     <script src="{{ url_for('bower.static', filename='datatables.net-bs/js/dataTables.bootstrap.min.js') }}"></script>
     <script src="{{ url_for('bower.static', filename='datatables.net-responsive/js/dataTables.responsive.min.js') }}"></script>
     <script src="{{ url_for('bower.static', filename='datatables.net-responsive-bs/js/responsive.bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='datatables.net-fixedheader/js/dataTables.fixedHeader.min.js') }}"></script>
       {% if me -%}
     <script src="{{ url_for('bower.static', filename='datatables.net-select/js/dataTables.select.min.js') }}"></script>
     <script src="{{ url_for('bower.static', filename='datatables.net-buttons/js/dataTables.buttons.min.js') }}"></script>
@@ -98,19 +103,21 @@
     <script src="{{ url_for('bower.static', filename='angular-sanitize/angular-sanitize.min.js') }}"></script>
     <script src="{{ url_for('bower.static', filename='angular-resource/angular-resource.min.js') }}"></script>
     <script src="{{ url_for('bower.static', filename='angular-animate/angular-animate.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='angular-datatables-0.6.2/dist/angular-datatables.min.js') }}"></script>
     {% endif -%}
-    {% if tree -%}
+    {% if tree or settings -%}
     <!-- Fancytree Javascript
     ================================================== -->
+    {# <script src="{{ url_for('bower.static', filename='js-cookie/src/js.cookie.js') }}"></script> -#}
+    <script src="{{ url_for('bower.static', filename='jquery.floatThead/dist/jquery.floatThead.min.js') }}"></script>
     <script src="{{ url_for('bower.static', filename='jquery.fancytree/dist/jquery.fancytree-all.min.js') }}"></script>
     <!-- FileDownload Javascript
     ================================================== -->
     <script src="{{ url_for('bower.static', filename='jquery-file-download/src/Scripts/jquery.fileDownload.js') }}"></script>
     {% endif -%}
-    {% if settings or me -%}
+    {% if settings or me or admin -%}
     <!-- configuration panel Javascript
     ================================================== -->
-    <script src="{{ url_for('bower.static', filename='lodash/dist/lodash.min.js') }}"></script>
     <script src="{{ url_for('bower.static', filename='bootstrap-switch/dist/js/bootstrap-switch.min.js') }}"></script>
     <script src="{{ url_for('bower.static', filename='angular-bootstrap-switch/dist/angular-bootstrap-switch.min.js') }}"></script>
     <script src="{{ url_for('bower.static', filename='ui-select/dist/select.min.js') }}"></script>

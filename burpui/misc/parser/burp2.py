@@ -18,16 +18,38 @@ class Parser(Burp1):
     """Extends :class:`burpui.misc.parser.burp1.Parser`"""
     pver = 2
 
+    pair_srv = [
+        u'port',
+        u'max_children',
+        u'status_port',
+        u'max_status_children',
+    ]
+    pair_associations = {
+        u'port': u'max_children',
+        u'max_children': u'port',
+        u'status_port': u'max_status_children',
+        u'max_status_children': u'status_port',
+    }
+    integer_srv = Burp1.integer_srv
+    for rem in ['port', 'max_children', 'status_port', 'max_status_children']:
+        integer_srv.remove(rem)
+    advanced_type = Burp1.advanced_type
+    advanced_type.update({
+        u'port': u'integer',
+        u'max_children': u'integer',
+        u'status_port': u'integer',
+        u'max_status_children': u'integer',
+    })
     multi_srv = Burp1.multi_srv + [
         u'label',
     ]
     string_srv = Burp1.string_srv + [
         u'manual_delete',
+        u'rblk_memory_max',
     ]
     boolean_add = [
         u'acl',
         u'xattr',
-        u'server_can_override_includes',
         u'glob_after_script_pre',
         u'cname_fqdn',
         u'cname_lowercase',
@@ -55,17 +77,20 @@ class Parser(Burp1):
         u'randomise': __(u"max secs"),
         u'manual_delete': __(u"path"),
         u'label': __(u"some informations"),
-        u'server_can_override_includes': u"0|1",
+        u'status_address': __(u"address|localhost"),
         u'glob_after_script_pre': u"0|1",
         u'enabled': u"0|1",
         u'cname_fqdn': u"0|1",
         u'cname_lowercase': u"0|1",
+        u'rblk_memory_max': u"b/Kb/Mb/Gb",
     })
+    values = Burp1.values
+    # status_address can now listen on any address
+    del values['status_address']
     defaults = Burp1.defaults
     defaults.update({
         u'acl': True,
         u'xattr': True,
-        u'server_can_override_includes': True,
         u'glob_after_script_pre': True,
         u'randomise': 0,
         u'manual_delete': u'',
@@ -73,6 +98,7 @@ class Parser(Burp1):
         u'enabled': True,
         u'cname_fqdn': True,
         u'cname_lowercase': False,
+        u'rblk_memory_max': u'256Mb',
     })
     doc = Burp1.doc
     doc.update({
@@ -105,10 +131,11 @@ class Parser(Burp1):
                      " output. The idea is to provide a mechanism for"
                      " arbitrary values to be passed to clients of the server"
                      " status monitor."),
-        u'server_can_override_includes': __(u"To prevent the server from being"
-                                            " able to override your local"
-                                            " include/exclude list, set this"
-                                            " to 0. The default is 1."),
+        u'status_address': __(u"Defines the main TCP address that the server "
+                              "listens on for status requests. The default  "
+                              "is  special  value  'localhost'  that includes "
+                              "both '::1' (if available) and '127.0.0.1' "
+                              "(always)."),
         u'glob_after_script_pre': __(u"Set this to 0 if you do not want"
                                      " include_glob settings to be evaluated"
                                      " after the pre script is run. The"
@@ -132,4 +159,32 @@ class Parser(Burp1):
                                " The default is 0. When set to 1 the name"
                                " provided by the client while authenticating"
                                " will be lowercased."),
+        u'port': __(u"Defines the main TCP port that the server listens on. "
+                    "Specify multiple 'port' entries on separate lines in "
+                    "order to listen on multiple ports. Each port can be "
+                    "configured with its own 'max_children' value."),
+        u'max_children': __(u"Defines the number of child processes to fork "
+                            "(the number of clients that can simultaneously "
+                            "connect. The default is 5. Specify multiple "
+                            "'max_children' entries on separate lines if you "
+                            "have configured multiple port entries."),
+        u'status_port': __(u"Defines the TCP port that the server listens on "
+                           "for status requests. Comment this out to have no "
+                           "status server. Specify multiple 'status_port' "
+                           "entries on separate lines in order to listen on "
+                           "multiple ports. Each port can be configured with "
+                           "its own 'max_status_children' value."),
+        u'max_status_children': __(u"Defines the number of status child "
+                                   "processes to fork (the number of status "
+                                   "clients that can simultaneously connect. "
+                                   "The default is 5. Specify multiple "
+                                   "'max_status_children' entries on separate "
+                                   "lines if you have configured multiple "
+                                   "status_port entries."),
+        u'rblk_memory_max': __("The maximum amount of data from the disk "
+                               "cached in server memory during a protocol2 "
+                               "restore/verify. The default is 256Mb. This "
+                               "option can be overriden per-client in the "
+                               "client configuration files in clientconfdir "
+                               "on the server."),
     })

@@ -9,5 +9,10 @@ jQuery/Bootstrap
 
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 """
+import sys
 
 __title__ = 'burp-ui-agent'
+
+if sys.version_info < (3, 0):  # pragma: no cover
+    reload(sys)
+    sys.setdefaultencoding('utf-8')

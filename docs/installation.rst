@@ -42,19 +42,6 @@ following command:
     If you encounter any issue after upgrading to the latest stable release,
     make sure you read the `upgrading <upgrading.html>`__ page.
 
-Debian Wheezy
--------------
-
-The version of ``pip`` available on *Debian Wheezy* does not support all the
-features needed to build and install the latest `Burp-UI`_ version.
-
-Instead, you may want to run the following command either to install it from
-scratch or to upgrade your current version to the latest one:
-
-::
-
-    easy_install --upgrade burp-ui
-
 
 .. _Flask: http://flask.pocoo.org/
 .. _burpui.cfg: https://git.ziirish.me/ziirish/burp-ui/blob/master/share/burpui/etc/burpui.sample.cfg

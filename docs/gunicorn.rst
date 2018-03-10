@@ -20,6 +20,13 @@ You will then be able to launch `Burp-UI`_ this way:
     gunicorn -k gevent -w 4 'burpui:create_app(conf="/path/to/burpui.cfg")'
 
 
+.. note:: If you decide to use gunicorn AND the embedded websocket server,
+          you'll need to use the ``geventwebsocket.gunicorn.workers.GeventWebSocketWorker``
+          worker name (ie. ``-k geventwebsocket.gunicorn.workers.GeventWebSocketWorker``).
+          For this worker to be available, you need to install the ``gevent-websocket``
+          pip package.
+
+
 This will listen to 127.0.0.1:8000 by default. See the ``gunicorn``
 `documentation <http://docs.gunicorn.org/en/stable/settings.html>`__ for
 details.

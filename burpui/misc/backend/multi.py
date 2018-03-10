@@ -373,7 +373,7 @@ class NClient(BUIbackend):
         self.ssl = ssl
         self.app = app
         self.timeout = timeout or 5
-        self.version = None
+        self._agent_version = None
 
     def __getattribute__(self, name):
         # always return this value because we need it and if we don't do that
@@ -398,15 +398,15 @@ class NClient(BUIbackend):
         return object.__getattribute__(self, name)
 
     def _get_agent_version(self):
-        if self.ping() and not self.version:
+        if self.ping() and not self._agent_version:
             data = {'func': 'agent_version'}
             try:
-                self.version = json.loads(self.do_command(data))
+                self._agent_version = json.loads(self.do_command(data))
             except BUIserverException:
                 # just ignore the error if this custom function is not
                 # implemented
                 pass
-        return self.version
+        return self._agent_version
 
     def ping(self):
         """Check if we are connected to the agent"""
@@ -511,13 +511,13 @@ class NClient(BUIbackend):
     """
 
     @implement
-    def store_conf_cli(self, data, client=None, conf=None, agent=None):
+    def store_conf_cli(self, data, client=None, conf=None, template=False, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.store_conf_cli`"""
         # serialize data as it is a nested dict
         import hmac
         import hashlib
         from base64 import b64encode
-        if not isinstance(data, _ImmutableMultiDict):
+        if not isinstance(data, (_ImmutableMultiDict, ImmutableMultiDict)):
             msg = 'Wrong data type'
             self.logger.warning(msg)
             raise BUIserverException(msg)
@@ -527,7 +527,7 @@ class NClient(BUIbackend):
             data = ImmutableMultiDict(data.to_dict(False))
         key = '{}{}'.format(self.password, 'store_conf_cli')
         key = to_bytes(key)
-        pickles = b64encode(pickle.dumps({'data': data, 'conf': conf, 'client': client}, 2))
+        pickles = b64encode(pickle.dumps({'data': data, 'conf': conf, 'client': client, 'template': template}, 2))
         bytes_pickles = to_bytes(pickles)
         digest = hmac.new(key, bytes_pickles, hashlib.sha1).hexdigest()
         data = {'func': 'store_conf_cli', 'args': pickles, 'pickled': True, 'digest': digest}
@@ -540,7 +540,7 @@ class NClient(BUIbackend):
         import hmac
         import hashlib
         from base64 import b64encode
-        if not isinstance(data, _ImmutableMultiDict):
+        if not isinstance(data, (_ImmutableMultiDict, ImmutableMultiDict)):
             msg = 'Wrong data type'
             self.logger.warning(msg)
             raise BUIserverException(msg)

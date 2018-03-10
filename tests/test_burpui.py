@@ -138,15 +138,19 @@ class BurpuiAPITestCase(TestCase):
                             u'boolean': [],
                             u'integer': [],
                             u'multi': [],
+                            u'pair': [],
                             u'includes': [],
                             u'includes_ext': [],
-                            u'clients': []
+                            u'hierarchy': [{u'children': [], u'title': u'null', u'dir': u'/dev', u'full': u'/dev/null', u'name': u'null', u'parent': None}],
+                            u'raw': '',
                         }
                     ),
                     (u'boolean', self.bui.client.get_parser_attr('boolean_srv')),
                     (u'string', self.bui.client.get_parser_attr('string_srv')),
                     (u'integer', self.bui.client.get_parser_attr('integer_srv')),
                     (u'multi', self.bui.client.get_parser_attr('multi_srv')),
+                    (u'pair', self.bui.client.get_parser_attr('pair_associations')),
+                    (u'advanced', self.bui.client.get_parser_attr('advanced_type')),
                     (u'server_doc', self.bui.client.get_parser_attr('doc')),
                     (u'suggest', self.bui.client.get_parser_attr('values')),
                     (u'placeholders', self.bui.client.get_parser_attr('placeholders')),
@@ -166,7 +170,9 @@ class BurpuiAPITestCase(TestCase):
                             u'multi': [],
                             u'includes': [],
                             u'includes_ext': [],
-                            u'clients': []
+                            u'hierarchy': [],
+                            u'templates': [],
+                            u'raw': None,
                         }
                     ),
                     (u'boolean', self.bui.client.get_parser_attr('boolean_cli')),
@@ -265,7 +271,7 @@ class BurpuiRoutesTestCase(TestCase):
     def test_get_clients(self):
         with patch('burpui.misc.backend.burp1.Burp.status', side_effect=mock_status):
             response = self.client.get(url_for('api.clients_stats'))
-            self.assertEqual(sorted(response.json, key=lambda k: k['name']), sorted([{u'state': u'idle', u'last': u'never', u'human': u'never', u'name': u'testclient', u'phase': None, u'percent': 0}], key=lambda k: k['name']))
+            self.assertEqual(sorted(response.json, key=lambda k: k['name']), sorted([{u'state': u'idle', u'last': u'never', u'name': u'testclient', u'phase': None, u'percent': 0, u'labels': []}], key=lambda k: k['name']))
 
 
 class BurpuiLoginTestCase(TestCase):
@@ -295,7 +301,7 @@ class BurpuiLoginTestCase(TestCase):
     def test_config_render(self):
         rv = self.login('admin', 'admin')
         response = self.client.get(url_for('view.settings'))
-        assert 'Burp Configuration' in response.data.decode('utf-8')
+        assert 'Burp Server Configuration' in response.data.decode('utf-8')
 
     def test_login_ok(self):
         rv = self.login('admin', 'admin')
@@ -347,7 +353,7 @@ class BurpuiACLTestCase(TestCase):
         with self.client:
             rv = self.login('admin', 'admin')
             response = self.client.get(url_for('view.settings'))
-            assert 'Burp Configuration' in response.data.decode('utf-8')
+            assert 'Burp Server Configuration' in response.data.decode('utf-8')
             self.logout()
 
     def test_admin_api(self):
@@ -397,6 +403,8 @@ class BurpuiTestInit(TestCase):
     def tearDown(self):
         print ('\nTest 7 Finished!\n')
         os.unlink(self.tmpFile)
+        if os.path.exists('this-file-should-not-exist'):
+            os.rmdir('this-file-should-not-exist')
 
     def create_app(self):
         kwargs = {'verbose': 0, 'logfile': '/dev/null', 'gunicorn': False, 'unittest': True}
@@ -431,6 +439,8 @@ class BurpuiRedisTestCase(TestCase):
 
     def tearDown(self):
         print ('\nTest 7 Finished!\n')
+        if os.path.exists('this-file-should-not-exist'):
+            os.rmdir('this-file-should-not-exist')
 
     def login(self, username, password):
         return self.client.post(url_for('view.login'), data=dict(

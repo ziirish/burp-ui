@@ -100,7 +100,8 @@ class ServerBackup(Resource):
         # Manage ACL
         if not current_user.is_anonymous and \
                 not current_user.acl.is_admin() and \
-                not current_user.acl.is_client_allowed(name, server):
+                not current_user.acl.is_moderator() and \
+                not current_user.acl.is_client_rw(name, server):
             self.abort(403, 'You are not allowed to cancel a backup for this client')
         try:
             return bui.client.cancel_server_backup(name, server)
@@ -136,7 +137,8 @@ class ServerBackup(Resource):
         # Manage ACL
         if not current_user.is_anonymous and \
                 not current_user.acl.is_admin() and \
-                not current_user.acl.is_client_allowed(name, server):
+                not current_user.acl.is_moderator() and \
+                not current_user.acl.is_client_rw(name, server):
             self.abort(
                 403,
                 'You are not allowed to schedule a backup for this client'

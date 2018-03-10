@@ -93,12 +93,18 @@ parameters:
     refresh = 180
     # refresh interval of the live-monitoring page in seconds
     liverefresh = 5
+    # list of labels to ignore (you can use regex)
+    ignore_labels = "color:.*", "custom:.*"
+    # format label using sed-like syntax
+    format_labels = "s/^os:\s*//"
 
 
 Each option is commented, but here is a more detailed documentation:
 
 - *refresh*: Time in seconds between two refresh of the interface.
 - *liverefresh*: Time in seconds between two refresh of the *live-monitor* page.
+- *ignore_labels*: List of labels to ignore from parsing (regex are supported).
+- *format_labels*: List of *sed-like* expressions to transform labels. Example: ``"s/^os:\s*//", "s/i/o/"`` will transform the label ``os: Windows`` into ``Wondows``.
 
 Production
 ----------
@@ -164,6 +170,8 @@ You will find details on how to use this feature in the
 
     [WebSocket]
     ## This section contains WebSocket server specific options.
+    # whether to enable websocket or not
+    enabled = true
     # whether to embed the websocket server or not
     # if set to "true", you should have only *one* gunicorn worker
     # see here for details:
@@ -596,6 +604,31 @@ of your `burpui.cfg`_ file to *none*:
     acl = none
 
 
+The *ACL* engine has some settings as bellow:
+
+::
+
+    # acl engine global options
+    [ACL]
+    # Enable extended matching rules (disabled by default)
+    # If the rule is a string like 'user1 = desk*', it will match any client that
+    # matches 'desk*' no mater what agent it is attached to.
+    # If it is a coma separated list of strings like 'user1 = desk*,laptop*' it
+    # will match the first matching rule no mater what agent it is attached to.
+    # If it is a dict like:
+    # user1 = '{"agents": ["srv*", "www*"], "clients": ["desk*", "laptop*"]}'
+    # It will also validate against the agent name.
+    extended = false
+    # If you don't explicitly specify grants, what should we assume?
+    assume_granted = true
+    # Enable 'legacy' behavior
+    # Since v0.6.0, if you don't specify the agents name explicitly, users will be
+    # granted on every agents where a client matches user's ACL. If you enable the
+    # 'legacy' behavior, you will need to specify the agents explicitly.
+    # Note: enabling this option will also disable the extended mode
+    legacy = false
+
+
 Basic ACL
 ^^^^^^^^^
 
@@ -620,7 +653,7 @@ Now you can add *basic acl* specific options:
     [BASIC:ACL]
     # Backend priority. Higher is first
     priority = 100
-    # Enable extended matching rules
+    # Enable extended matching rules (disabled by default)
     # If the rule is a string like 'user1 = desk*', it will match any client that
     # matches 'desk*' no mater what agent it is attached to.
     # If it is a coma separated list of strings like 'user1 = desk*,laptop*' it
@@ -629,6 +662,8 @@ Now you can add *basic acl* specific options:
     # user1 = '{"agents": ["srv*", "www*"], "clients": ["desk*", "laptop*"]}'
     # It will also validate against the agent name.
     extended = false
+    # If you don't explicitly specify grants, what should we assume?
+    assume_granted = true
     # Enable 'legacy' behavior
     # Since v0.6.0, if you don't specify the agents name explicitly, users will be
     # granted on every agents where a client matches user's ACL. If you enable the
@@ -638,19 +673,27 @@ Now you can add *basic acl* specific options:
     # List of administrators
     admin = user1,user2
     # List of moderators. Users listed here will inherit the grants of the
-    # 'virtual' user 'moderator'
-    moderators = user5,user6
+    # group '@moderator'
+    +moderator = user5,user6
     # Please note the double-quotes and single-quotes on the following lines are
     # mandatory!
     # You can also overwrite the default behavior by specifying which clients a
     # user can access
-    moderator = '{"agents":{"ro":["agent1"]}}'
+    @moderator = '{"agents":{"ro":["agent1"]}}'
     user3 = '["client4", "client5"]'
     # In case you are not in a single mode, you can also specify which clients
     # a user can access on a specific Agent
     user4 = '{"agent1": ["client6", "client7"], "agent2": ["client8"]}'
     # You can define read-only and/or read-write grants for moderators using:
     user5 = '{"agents": ["www*"], "clients": {"ro": ["desk*"], "rw": ["desk1"]}}'
+    # Finally, you can define groups using the syntax "@groupname" and adding
+    # members using "+groupname". Note: groups can inherit groups!
+    @group1 = '{"agents": {"ro": ["*"]}}'
+    @group2 = '{"clients": {"rw": ["dev*"]}}'
+    +group1 = @group2
+    +group2 = user7
+    # As a result, user7 will be granted the following rights:
+    # '{"agents": {"ro": ["*"]}, "clients": {"rw": ["dev*"]}}'
 
 
 .. warning:: The double-quotes and single-quotes are **MANDATORY**
@@ -660,12 +703,16 @@ By default, if a user is named ``admin`` it will be granted the admin role.
 Here are the default grants:
 
 
-1. admin => you can do anything
-2. non admin => you can only see the client that matches your username
-3. custom => you can manually assign username to clients using the syntax
+1. *admin* => you can do anything
+2. *non admin* => you can only see the client that matches your username
+3. *custom* => you can manually assign username to clients using the syntax
    ``username = client1,client2`` or
    ``username = '{"agent1": ["client1-1"], "agent2": ["client2-3", "client2-4"]}'``
    (if you are running a multi-agent setup)
+4. *moderators* => can edit the Burp server configurations of any agent unless
+   told other wise (with ``ro`` rights), but cannot restore files unless told
+   otherwise (with ``rw`` rights). Besides, moderators can create new users.
+   They can also delete backups if they have ``rw`` rights on the client.
 
 
 .. _Burp: http://burp.grke.org/

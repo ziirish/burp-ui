@@ -2,6 +2,7 @@
 import os
 
 from .interface import BUIacl, BUIaclLoader
+from .meta import meta_grants
 
 from importlib import import_module
 from six import iteritems
@@ -9,6 +10,8 @@ from collections import OrderedDict
 
 
 class ACLloader(BUIaclLoader):
+    section = name = 'ACL'
+
     def __init__(self, app=None):
         """See :func:`burpui.misc.acl.interface.BUIaclLoader.__init__`
 
@@ -16,9 +19,29 @@ class ACLloader(BUIaclLoader):
         :type app: :class:`burpui.server.BUIServer`
         """
         self.app = app
+        self.conf = self.app.conf
         self._acl = ACLhandler(self)
         backends = []
         self.errors = {}
+        if self.section in self.conf.options:
+            opts = {}
+            opts['extended'] = self.conf.safe_get(
+                'extended',
+                'boolean',
+                section=self.section
+            )
+            opts['assume_granted'] = self.conf.safe_get(
+                'assume_granted',
+                'boolean',
+                section=self.section,
+                defaults={self.section: {'assume_granted': True}}
+            )
+            opts['legacy'] = self.conf.safe_get(
+                'legacy',
+                'boolean',
+                section=self.section
+            )
+            meta_grants.options = opts
         if self.app.acl_engine and 'none' not in self.app.acl_engine:
             me, _ = os.path.splitext(os.path.basename(__file__))
             back = self.app.acl_engine
@@ -41,10 +64,10 @@ class ACLloader(BUIaclLoader):
             except:
                 import traceback
                 self.errors[name] = traceback.format_exc()
-        backends.sort(key=lambda x: x.priority, reverse=True)
+        backends.sort(key=lambda x: getattr(x, 'priority', -1), reverse=True)
         if not backends:
             raise ImportError(
-                'No backend found for \'{}\':\n{}'.format(self.app.auth,
+                'No backend found for \'{}\':\n{}'.format(self.app.acl_engine,
                                                           self.errors)
             )
         for name, err in iteritems(self.errors):
@@ -55,9 +78,20 @@ class ACLloader(BUIaclLoader):
         for obj in backends:
             self.backends[obj.name] = obj
 
+    def reload(self):
+        return None
+
     @property
     def acl(self):
         return self._acl
+
+    @property
+    def grants(self):
+        return meta_grants.grants
+
+    @property
+    def groups(self):
+        return meta_grants.groups
 
 
 class ACLhandler(BUIacl):
@@ -78,6 +112,9 @@ class ACLhandler(BUIacl):
             ret = func(*args, **kwargs)
             if ret:
                 break
+        if not ret:
+            func = getattr(meta_grants, method)
+            ret = func(*args, **kwargs)
         return ret
 
     def is_admin(self, username=None):
@@ -90,12 +127,31 @@ class ACLhandler(BUIacl):
         ret = self._iterate_through_loader('is_moderator', username) or False
         return ret
 
+    def is_client_rw(self, username=None, client=None, server=None):
+        """See :func:`burpui.misc.acl.interface.BUIacl.is_client_rw`"""
+        ret = self._iterate_through_loader(
+            'is_client_rw',
+            username,
+            client,
+            server
+        ) or False
+        return ret
+
     def is_client_allowed(self, username=None, client=None, server=None):
         """See :func:`burpui.misc.acl.interface.BUIacl.is_client_allowed`"""
         ret = self._iterate_through_loader(
             'is_client_allowed',
             username,
             client,
+            server
+        ) or False
+        return ret
+
+    def is_server_rw(self, username=None, server=None):
+        """See :func:`burpui.misc.acl.interface.BUIacl.is_server_rw`"""
+        ret = self._iterate_through_loader(
+            'is_server_rw',
+            username,
             server
         ) or False
         return ret

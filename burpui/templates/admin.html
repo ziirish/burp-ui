@@ -4,11 +4,33 @@
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
           {% include "small_topbar.html" %}
           <ul class="breadcrumb" style="margin-bottom: 5px;">
+            {% if server -%}
+            <li><a href="{{ url_for('view.home') }}">{{ _('Home') }}</a></li>
+            <li><a href="{{ url_for('view.clients', server=server) }}">{{ _('%(server)s clients', server=server) }}</a></li>
             <li class="active">{{ _('Administration') }}</li>
+            {% else -%}
+            <li><a href="{{ url_for('view.home') }}">{{ _('Home') }}</a></li>
+            <li class="active">{{ _('Administration') }}</li>
+            {% endif -%}
           </ul>
           <br />
-          <h1 class="page-header">nyan</h1>
-          <div class="row placeholders">
+          <div class="form-container">
+            <legend id="users">{{ _('Users') }}</legend>
+            <div class="table-responsive">
+              <table class="table table-striped table-hover nowrap" id="table-users" width="100%">
+                <thead>
+                  <tr>
+                    <th>{{ _('Username') }}</th>
+                    <th>{{ _('Authentication Backend') }}</th>
+                    <th>{{ _('Role') }}</th>
+                    <th>{{ _('Groups') }}</th>
+                    <th>{{ _('Controls') }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 {% endblock %}

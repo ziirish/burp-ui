@@ -1,4 +1,4 @@
-    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="navbar navbar-inverse navbar-fixed-top fh-fixedHeader" role="navigation">
       <div class="container-fluid">
         <div class="navbar-header">
           <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
@@ -38,11 +38,13 @@
             </li>
               {% endif -%}
               {% if config.STANDALONE or server or me -%}
+                {% if current_user and current_user.is_authenticated and (current_user.is_admin or current_user.is_moderator) -%}
             <li class="detail {% if settings %}active{% endif %}">
               <a href="{{ url_for('view.settings', server=server) }}">
-                <i class="fa fa-wrench" aria-hidden="true"></i><span class="dtl">&nbsp;{{ _('Settings') }}</span>
+                <i class="fa fa-wrench" aria-hidden="true"></i><span class="dtl">&nbsp;{{ _('Burp Settings') }}</span>
               </a>
             </li>
+                {% endif -%}
               {% endif -%}
             <li class="detail {% if live %}active{% endif %}">
               <a href="{{ url_for('view.live_monitor', server=server) }}">
@@ -50,14 +52,12 @@
               </a>
             </li>
               {% if current_user and current_user.is_authenticated -%}
-                {% if current_user.is_admin -%}
-            <!--
+                {% if current_user.is_admin or current_user.is_moderator -%}
             <li class="detail {% if admin %}active{% endif %}">
               <a href="{{ url_for('view.admin') }}">
               <i class="fa fa-cogs" aria-hidden="true"></i><span class="dtl">&nbsp;{{ _('Administration') }}</span>
               </a>
             </li>
-            -->
                 {% endif -%}
             <li class="detail {% if me %}active{% endif %}">
               <a href="{{ url_for('view.me') }}">

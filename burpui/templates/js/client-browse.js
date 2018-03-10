@@ -43,6 +43,7 @@ $( document ).ready(function() {
 		selectMode: 3,
 		extensions: ["glyph", "table", "gridnav", "filter"],
 		glyph: {
+		  preset: "bootstrap3",
 			map: {
 				doc: "glyphicon glyphicon-file",
 				docOpen: "glyphicon glyphicon-file",
@@ -62,6 +63,14 @@ $( document ).ready(function() {
 				loading: "glyphicon glyphicon-refresh glyphicon-spin"
 			}
 		},
+		persist: {
+			expandLazy: false,
+			overrideSource: false,
+			store: "cookie",
+			cookie: {
+				path: '{{ url_for("api.client_tree", name=cname, backup=nbackup, server=server) }}',
+			},
+		},
 		source: function() { 
 			{% if edit and edit.found -%}
 			url = '{{ url_for("api.client_tree", name=cname, backup=nbackup, server=server, root=edit.roots, recursive=True, selected=True) }}';
@@ -71,6 +80,7 @@ $( document ).ready(function() {
 			return $.getJSON(url, function(data) {
 				$("#waiting-container").hide();
 				$("#tree-container").show();
+
 				return data;
 			})
 			.fail(myFail);
@@ -81,7 +91,7 @@ $( document ).ready(function() {
 			p = node.key;
 			if (p !== "/") p += '/';
 			p = encodeURIComponent(p);
-			data.result = { url: '{{ url_for("api.client_tree", name=cname, backup=nbackup, server=server) }}?root='+p, debugDelay: 500 };
+			data.result = $.getJSON('{{ url_for("api.client_tree", name=cname, backup=nbackup, server=server) }}?root='+p);
 		},
 		loadChildren: function(event, data) {
 			// This is a hack to select all children of a selected node after
@@ -91,6 +101,13 @@ $( document ).ready(function() {
 			if (fixNeeded) {
 				data.node.fixSelection3AfterClick();
 			}
+		},
+		init: function() {
+			$('#tree').floatThead({
+				position: 'auto',
+				autoReflow: true,
+				top: $('.navbar').height(),
+			});
 		},
 		scrollParent: $(window),
 		renderColumns: function(event, data) {
@@ -115,7 +132,7 @@ $( document ).ready(function() {
 			var btn = $("#btn-expand-collapse-tree");
 			if (btn.data('collapsed')) {
 				btn.data('collapsed', false);
-				btn.html('<i class="fa fa-compress" aria-hidden="true"></i>&nbsp;{{ _("Colapse tree") }}');
+				btn.html('<i class="fa fa-compress" aria-hidden="true"></i>&nbsp;{{ _("Collapse tree") }}');
 			}
 		}
 	});
@@ -211,7 +228,7 @@ $( document ).ready(function() {
 							failCallback: function (responseHtml, url) {
 								$preparingFileModal.modal('hide');
 								if (responseHtml == 'encrypted') {
-									msg = 'The backup seems encrypted, please provide the encryption key in the \'Download options\' form.';
+									msg = '{{ _("The backup seems encrypted, please provide the encryption key in the \\\'Download options\\\' form.") }}';
 								} else {
 									msg = responseHtml;
 								}
@@ -234,7 +251,7 @@ $( document ).ready(function() {
 						return false;
 					}
 					if (resp == 'encrypted') {
-						msg = 'The backup seems encrypted, please provide the encryption key in the \'Download options\' form.';
+						msg = '{{ _("The backup seems encrypted, please provide the encryption key in the \\\'Download options\\\' form.") }}';
 					} else {
 						msg = resp;
 					}

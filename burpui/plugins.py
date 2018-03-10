@@ -25,6 +25,7 @@ class PluginManager(object):
         self.app = app
         self.searchpath = searchpath
         self.init = False
+        self.loaded = False
         self.plugins = {}
 
     def _init_manager(self):
@@ -34,8 +35,11 @@ class PluginManager(object):
         self.plugin_source = self.plugin_base.make_plugin_source(
             searchpath=self.searchpath
         )
+        self.init = True
 
-    def load_all(self):
+    def load_all(self, force=False):
+        if self.loaded and not force:
+            return
         self._init_manager()
         for plugin_name in self.plugin_source.list_plugins():
             if plugin_name not in self.plugins:
@@ -63,6 +67,7 @@ class PluginManager(object):
                             str(exp)
                         )
                     )
+        self.loaded = True
 
     def get_plugins_by_type(self, plugin_type):
         ret = {}

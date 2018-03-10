@@ -7,9 +7,10 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
-from . import api, cache_key
+from . import api, cache_key, force_refresh
 from ..server import BUIServer  # noqa
 from .custom import fields, Resource
+from .client import ClientLabels
 from ..ext.cache import cache
 from ..exceptions import BUIserverException
 from ..decorators import browser_cache
@@ -22,8 +23,6 @@ bui = current_app  # type: BUIServer
 ns = api.namespace('clients', 'Clients methods')
 
 
-# Seem to not be used anymore
-# TODO: we can probably remove this someday
 @ns.route('/running',
           '/<server>/running',
           '/running/<client>',
@@ -71,32 +70,40 @@ class RunningClients(Resource):
         :returns: The *JSON* described above.
         """
         server = server or self.parser.parse_args()['serverName']
+        return self._running_clients(None, client, server)
+
+    def _running_clients(self, res, client, server):
         if client:
             if not current_user.is_anonymous and \
                     not current_user.acl.is_admin() and \
                     not current_user.acl.is_client_allowed(client, server):
-                running = []
-                return running
-            if bui.client.is_backup_running(client, server):
-                running = [client]
-                return running
-            else:
-                running = []
-                return running
+                return []
 
-        running = bui.client.is_one_backup_running(server)
+            if bui.client.is_backup_running(client, server):
+                return [client]
+            else:
+                return []
+
+        running = res or bui.client.is_one_backup_running(server)
         # Manage ACL
         if not current_user.is_anonymous and not current_user.acl.is_admin():
             if isinstance(running, dict):
-                new = {}
-                for serv in bui.client.servers:
+                ret = {}
+
+                def __extract_running_clients(serv):
                     try:
                         clients = [x['name'] for x in bui.client.get_all_clients(serv)]
                     except BUIserverException:
                         clients = []
                     allowed = [x for x in clients if current_user.acl.is_client_allowed(x, serv)]
-                    new[serv] = [x for x in running[serv] if x in allowed]
-                running = new
+                    return [x for x in running[serv] if x in allowed]
+
+                if server:
+                    return __extract_running_clients(server)
+
+                for serv in bui.client.servers:
+                    ret[serv] = __extract_running_clients(serv)
+                return ret
             else:
                 try:
                     clients = [x['name'] for x in bui.client.get_all_clients(server)]
@@ -104,6 +111,8 @@ class RunningClients(Resource):
                     clients = []
                 allowed = [x for x in clients if current_user.acl.is_client_allowed(x, server)]
                 running = [x for x in running if x in allowed]
+        elif server and isinstance(running, dict):
+            return running.get(server, [])
         return running
 
 
@@ -126,7 +135,6 @@ class RunningBackup(Resource):
         'running': fields.Boolean(required=True, description='Is there a backup running right now'),
     })
 
-    @cache.cached(timeout=60, key_prefix=cache_key)
     @ns.marshal_with(running_fields, code=200, description='Success')
     def get(self, server=None):
         """Tells if a backup is running right now
@@ -235,7 +243,7 @@ class ClientsReport(Resource):
         'clients': fields.Nested(client_fields, as_list=True, required=True),
     })
 
-    @cache.cached(timeout=1800, key_prefix=cache_key)
+    @cache.cached(timeout=1800, key_prefix=cache_key, unless=force_refresh)
     @ns.marshal_with(report_fields, code=200, description='Success')
     @ns.expect(parser)
     @ns.doc(
@@ -244,6 +252,7 @@ class ClientsReport(Resource):
             500: 'Internal failure',
         },
     )
+    @browser_cache(1800)
     def get(self, server=None):
         """Returns a global report about all the clients of a given server
 
@@ -414,14 +423,14 @@ class ClientsStats(Resource):
     parser.add_argument('serverName', help='Which server to collect data from when in multi-agent mode')
     client_fields = ns.model('ClientsStatsSingle', {
         'last': fields.DateTime(required=True, dt_format='iso8601', description='Date of last backup'),
-        'human': fields.DateTimeHuman(required=True, attribute='last', description='Human readable date of the last backup'),
         'name': fields.String(required=True, description='Client name'),
         'state': fields.LocalizedString(required=True, description='Current state of the client (idle, backup, etc.)'),
         'phase': fields.String(description='Phase of the current running backup'),
         'percent': fields.Integer(description='Percentage done', default=0),
+        'labels': fields.List(fields.String, description='List of labels'),
     })
 
-    @cache.cached(timeout=1800, key_prefix=cache_key)
+    @cache.cached(timeout=1800, key_prefix=cache_key, unless=force_refresh)
     @ns.marshal_list_with(client_fields, code=200, description='Success')
     @ns.expect(parser)
     @ns.doc(
@@ -430,6 +439,7 @@ class ClientsStats(Resource):
             500: 'Internal failure',
         },
     )
+    @browser_cache(1800)
     def get(self, server=None):
         """Returns a list of clients with their states
 
@@ -446,6 +456,7 @@ class ClientsStats(Resource):
                   "state": "idle",
                   "phase": "phase1",
                   "percent": 12,
+                  "labels": []
                 },
                 {
                   "last": "never",
@@ -453,6 +464,7 @@ class ClientsStats(Resource):
                   "state": "idle",
                   "phase": "phase2",
                   "percent": 42,
+                  "labels": []
                 }
               ]
             }
@@ -478,7 +490,17 @@ class ClientsStats(Resource):
                 jso = [x for x in jso if current_user.acl.is_client_allowed(x['name'], server)]
         except BUIserverException as e:
             self.abort(500, str(e))
-        return jso
+        ret = []
+        for client in jso:
+            tmp_client = client
+            try:
+                labels = ClientLabels._get_labels(client['name'], server)
+            except BUIserverException as exp:
+                self.abort(500, str(exp))
+            tmp_client['labels'] = labels
+            ret.append(tmp_client)
+
+        return ret
 
 
 @ns.route('/all',
@@ -504,7 +526,7 @@ class AllClients(Resource):
         'agent': fields.String(required=False, default=None, description='Associated Agent name'),
     })
 
-    @cache.cached(timeout=1800, key_prefix=cache_key)
+    @cache.cached(timeout=1800, key_prefix=cache_key, unless=force_refresh)
     @ns.marshal_list_with(client_fields, code=200, description='Success')
     @ns.expect(parser)
     @ns.doc(
@@ -553,17 +575,19 @@ class AllClients(Resource):
         server = server or args['serverName']
 
         is_admin = current_user.is_anonymous or current_user.acl.is_admin()
+        is_moderator = current_user.is_anonymous or current_user.acl.is_moderator()
 
         user = (args.get('user', current_user.name) or current_user.name) if \
-            is_admin \
+            is_admin or is_moderator \
             else current_user.name
 
         # drop privileges when switching user
         if user != current_user.name:
             is_admin = False
+            is_moderator = False
 
         if (server and
-                not is_admin and
+                not is_admin and not is_moderator and
                 not current_user.acl.is_server_allowed(server)):
             self.abort(403, "You are not allowed to view this server infos")
 

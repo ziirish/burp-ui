@@ -1,0 +1,79 @@
+#!/bin/ash
+set -e
+
+SETUP_DIR="/app/setup"
+
+trap appStop SIGINT SIGTERM
+
+appStart () {
+
+  BURP_UID=${BURP_UID:-5337}
+  BURP_GID=${BURP_GID:-5337}
+  TIMEZONE=${TIMEZONE:-Europe/Paris}
+
+  [ -e /usr/share/zoneinfo/$TIMEZONE ] && {
+    cp /usr/share/zoneinfo/$TIMEZONE /etc/localtime
+    echo "$TIMEZONE" >/etc/timezone
+  }
+
+  # Create burp-ui User
+  getent group | grep -q burp || addgroup -g $BURP_GID burp
+  getent passwd | grep -q burp || adduser -h /var/spool/burp -D -s /sbin/nologin -u $BURP_UID -G burp burp
+
+  pidfile=$(grep -E "^pidfile" /etc/burp/burp-server.conf | sed -r "s/^pidfile *= *(.*)$/\1/")
+  [ -n "$pidfile" ] && touch $pidfile && chown burp: $pidfile
+
+  # start supervisord
+  /usr/bin/supervisord -c /etc/supervisord.conf
+
+  echo "Starting crond..."
+  supervisorctl start cron >/dev/null
+
+  echo "Starting burp-server..."
+  supervisorctl start burp-server >/dev/null
+
+  # wait a bit for the logs to be populated
+  sleep 2
+
+  # watch the access logs
+  tail -F /var/log/supervisor/burp-server.log
+}
+
+appStop() {
+  echo ""
+  echo "Stopping burp-server..."
+  supervisorctl stop burp-server >/dev/null
+  echo "Stopping crond..."
+  supervisorctl stop cron >/dev/null
+  echo "Stopping supervisord..."
+  kill -15 $(cat /var/run/supervisord.pid)
+  exit
+}
+
+appHelp () {
+  echo "Available options:"
+  echo " app:start          - Starts the burp-ui server (default)"
+  echo " app:help           - Displays the help"
+  echo " [command]          - Execute the specified linux command eg. bash."
+}
+
+case "$1" in
+  app:start)
+    appStart
+    ;;
+  *)
+    if [ -x $1 ]; then
+      $1
+    else
+      prog=$(which $1)
+      if [ -n "${prog}" ] ; then
+        shift 1
+        su -l burpui -c "$prog $@"
+      else
+        appHelp
+      fi
+    fi
+    ;;
+esac
+
+exit 0

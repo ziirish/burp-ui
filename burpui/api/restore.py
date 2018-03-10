@@ -85,18 +85,18 @@ class Restore(Resource):
         :returns: A :mod:`flask.Response` object representing an archive of the restored files
         """
         args = self.parser.parse_args()
-        l = args['list']
-        s = args['strip']
-        f = args['format'] or 'zip'
-        p = args['pass']
+        lst = args['list']
+        stp = args['strip']
+        fmt = args['format'] or 'zip'
+        pwd = args['pass']
         resp = None
         # Check params
-        if not l or not name or not backup:
+        if not lst or not name or not backup:
             self.abort(400, 'missing arguments')
         # Manage ACL
         if not current_user.is_anonymous and \
                 not current_user.acl.is_admin() and \
-                not current_user.acl.is_client_allowed(name, server):
+                not current_user.acl.is_client_rw(name, server):
             self.abort(403, 'You are not allowed to perform a restoration for this client')
         if server:
             filename = 'restoration_%d_%s_on_%s_at_%s.%s' % (
@@ -104,19 +104,25 @@ class Restore(Resource):
                 name,
                 server,
                 strftime("%Y-%m-%d_%H_%M_%S", gmtime()),
-                f)
+                fmt)
         else:
             filename = 'restoration_%d_%s_at_%s.%s' % (
                 backup,
                 name,
                 strftime("%Y-%m-%d_%H_%M_%S", gmtime()),
-                f)
+                fmt)
 
-        archive, err = bui.client.restore_files(name, backup, l, s, f, p, server)
+        archive, err = bui.client.restore_files(name, backup, lst, stp, fmt, pwd, server)
         if not archive:
             if err:
+                if (not current_user.is_anonymous and
+                        not current_user.acl.is_admin() or
+                        bui.demo) and err != 'encrypted':
+                    err = 'An error occurred while performing the ' \
+                          'restoration. Please contact your administrator ' \
+                          'for further details'
                 return make_response(err, 500)
-            self.abort(500)
+            return make_response(err, 500)
 
         if not server:
             try:
@@ -126,7 +132,7 @@ class Restore(Resource):
                 # ended. Because the fh is open, the file will be actually removed
                 # when the transfer is done and the send_file method has closed
                 # the fh. Only tested on Linux systems.
-                fh = open(archive, 'r')
+                fh = open(archive, 'rb')
 
                 @after_this_request
                 def remove_file(response):
@@ -142,9 +148,9 @@ class Restore(Resource):
                                  attachment_filename=filename,
                                  mimetype='application/zip')
                 resp.set_cookie('fileDownload', 'true')
-            except Exception as e:
-                bui.client.logger.error(str(e))
-                self.abort(500, str(e))
+            except Exception as exp:
+                bui.client.logger.error(str(exp))
+                self.abort(500, str(exp))
         else:
             # Multi-agent mode
             try:
@@ -157,25 +163,25 @@ class Restore(Resource):
 
                 bui.client.logger.debug('Need to get {} Bytes : {}'.format(length, socket))
 
-                def stream_file(sock, l):
+                def stream_file(sock, size):
                     """The restoration took place on another server so we need
                     to stream the file that is not present on the current
                     machine.
                     """
                     bsize = 1024
                     received = 0
-                    if l < bsize:
-                        bsize = l
-                    while received < l:
+                    if size < bsize:
+                        bsize = size
+                    while received < size:
                         buf = b''
-                        r, _, _ = select.select([sock], [], [], 5)
-                        if not r:
+                        read, _, _ = select.select([sock], [], [], 5)
+                        if not read:
                             raise Exception('Socket timed-out')
                         buf += sock.recv(bsize)
                         if not buf:
                             continue
                         received += len(buf)
-                        self.logger.debug('{}/{}'.format(received, l))
+                        self.logger.debug('{}/{}'.format(received, size))
                         yield buf
                     sock.sendall(struct.pack('!Q', 2))
                     sock.sendall(b'RE')
@@ -196,11 +202,11 @@ class Restore(Resource):
                     time(),
                     length,
                     adler32(filename.encode('utf-8')) & 0xffffffff))
-            except HTTPException as e:
-                raise e
-            except Exception as e:
-                bui.client.logger.error(str(e))
-                self.abort(500, str(e))
+            except HTTPException as exp:
+                raise exp
+            except Exception as exp:
+                bui.client.logger.error(str(exp))
+                self.abort(500, str(exp))
         return resp
 
 
@@ -298,7 +304,7 @@ class ServerRestore(Resource):
         # Manage ACL
         if not current_user.is_anonymous and \
                 not current_user.acl.is_admin() and \
-                not current_user.acl.is_client_allowed(name, server):
+                not current_user.acl.is_client_rw(name, server):
             self.abort(403, 'You are not allowed to edit a restoration for this client')
         try:
             return bui.client.is_server_restore(name, server)
@@ -332,7 +338,7 @@ class ServerRestore(Resource):
         # Manage ACL
         if not current_user.is_anonymous and \
                 not current_user.acl.is_admin() and \
-                not current_user.acl.is_client_allowed(name, server):
+                not current_user.acl.is_client_rw(name, server):
             self.abort(403, 'You are not allowed to cancel a restoration for this client')
         try:
             return bui.client.cancel_server_restore(name, server)
@@ -420,7 +426,7 @@ class DoServerRestore(Resource):
         # Manage ACL
         if not current_user.is_anonymous and \
                 not current_user.acl.is_admin() and \
-                not current_user.acl.is_client_allowed(name, server) and \
+                not current_user.acl.is_client_rw(name, server) and \
                 not current_user.acl.is_client_allowed(to, server):
             self.abort(
                 403,

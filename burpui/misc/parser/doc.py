@@ -123,6 +123,7 @@ class Doc(BUIparser):
     }
     placeholders = {
         u'.': __(u"path or glob"),
+        u'address': __(u"address"),
         u'atime': u"0|1",
         u'autoupgrade_dir': __(u"path"),
         u'ca_burp_ca': __(u"path"),
@@ -240,6 +241,11 @@ class Doc(BUIparser):
         u'ssl_key',
         u'timer_script',
     ]
+    advanced_type = {
+        u'keep': u'integer',
+    }
+    pair_srv = []
+    pair_associations = {}
     multi_srv = [
         u'exclude_comp',
         u'exclude_ext',

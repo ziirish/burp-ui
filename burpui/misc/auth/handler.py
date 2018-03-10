@@ -12,6 +12,8 @@ from six import iteritems
 from collections import OrderedDict
 from flask_login import AnonymousUserMixin
 
+ACL_METHODS = BUIacl.__abstractmethods__
+
 
 class UserAuthHandler(BUIhandler):
     """See :class:`burpui.misc.auth.interface.BUIhandler`"""
@@ -47,7 +49,7 @@ class UserAuthHandler(BUIhandler):
             except:
                 import traceback
                 self.errors[name] = traceback.format_exc()
-        backends.sort(key=lambda x: x.priority, reverse=True)
+        backends.sort(key=lambda x: getattr(x, 'priority', -1), reverse=True)
         if not backends:
             raise ImportError(
                 'No backend found for \'{}\':\n{}'.format(self.app.auth,
@@ -94,45 +96,102 @@ class UserAuthHandler(BUIhandler):
         if name in self.users:
             del self.users[name]
 
+    @property
+    def loader(self):
+        return None
+
+
+class ProxyACLCall(object):
+    """Class that actually calls the ACL method"""
+    def __init__(self, acl, username, method):
+        """
+        :param acl: ACL to use
+        :type acl: :class:`burpui.misc.acl.interface.BUIacl`
+
+        :param username: username to check ACL for
+        :type username: str
+
+        :param method: Name of the method to proxify
+        :type method: str
+        """
+        self.acl = acl
+        self.username = username
+        self.method = method
+
+    def __call__(self, *args, **kwargs):
+        """This is where the proxy call (and the magic) occurs"""
+        # retrieve the original function prototype
+        proto = getattr(BUIacl, self.method)
+        args_name = list(proto.__code__.co_varnames)
+        # skip self
+        args_name.pop(0)
+        # skip username
+        args_name.pop(0)
+        # we transform unnamed arguments to named ones
+        # example:
+        #     def my_function(toto, tata=None, titi=None):
+        #
+        #     x = my_function('blah', titi='blih')
+        #
+        # => {'toto': 'blah', 'titi': 'blih'}
+        encoded_args = {
+            'username': self.username
+        }
+        for idx, opt in enumerate(args):
+            encoded_args[args_name[idx]] = opt
+        encoded_args.update(kwargs)
+
+        func = getattr(self.acl, self.method)
+        return func(**encoded_args)
+
 
 class ACLproxy(BUIacl):
+    foreign = ACL_METHODS
+    BUIacl.__abstractmethods__ = frozenset()
+
     def __init__(self, acl, username):
         self.acl = acl
         self.username = username
 
-    def is_admin(self):
-        if not self.acl:
-            return True
-        return self.acl.is_admin(self.username)
+    def __getattribute__(self, name):
+        # always return this value because we need it and if we don't do that
+        # we'll end up with an infinite loop
+        if name == 'foreign':
+            return object.__getattribute__(self, name)
+        # now we can retrieve the 'foreign' list and know if the object called
+        # needs to be "proxyfied"
+        if name in self.foreign:
+            if self.acl:
+                return ProxyACLCall(self.acl, self.username, name)
+            # no ACL, assume true
+            return ProxyTrue()
+        return object.__getattribute__(self, name)
 
-    def is_moderator(self):
-        if not self.acl:
-            return True
-        return self.acl.is_moderator(self.username)
 
-    def is_client_allowed(self, client, server=None):
-        if not self.acl:
-            return True
-        return self.acl.is_client_allowed(self.username, client, server)
+class ProxyTrue(object):
+    def __call__(self, *args, **kwargs):
+        return True
 
-    def is_server_allowed(self, server):
-        if not self.acl:
-            return True
-        return self.acl.is_server_allowed(self.username, server)
+
+class ProxyFalse(object):
+    def __call__(self, *args, **kwargs):
+        return False
 
 
 class ACLanon(BUIacl):
-    def is_admin(self):
-        return False
+    foreign = ACL_METHODS
+    BUIacl.__abstractmethods__ = frozenset()
 
-    def is_moderator(self):
-        return False
-
-    def is_client_allowed(self, client, server=None):
-        return False
-
-    def is_server_allowed(self, server):
-        return False
+    def __getattribute__(self, name):
+        # always return this value because we need it and if we don't do that
+        # we'll end up with an infinite loop
+        if name == 'foreign':
+            return object.__getattribute__(self, name)
+        # now we can retrieve the 'foreign' list and know if the object called
+        # needs to be "proxyfied"
+        if name in self.foreign:
+            return ProxyFalse()
+        return object.__getattribute__(self, name)
 
 
 class BUIanon(AnonymousUserMixin):
@@ -148,6 +207,10 @@ class BUIanon(AnonymousUserMixin):
 
     @property
     def is_admin(self):
+        return False
+
+    @property
+    def is_moderator(self):
         return False
 
 
@@ -180,14 +243,13 @@ class UserHandler(BUIuser):
                 continue
             res = user.get_id()
             if res:
+                self.real = user
                 self.active = True
                 self.name = res
                 self.back = back
                 break
 
         self._acl = ACLproxy(self.app.acl, self.name)
-        # language may change upon login
-        self._store_lang()
         # now load the available prefs
         self._load_prefs()
 
@@ -195,30 +257,25 @@ class UserHandler(BUIuser):
     def acl(self):
         return self._acl
 
+    @property
+    def is_admin(self):
+        return self.acl.is_admin()
+
+    @property
+    def is_moderator(self):
+        return self.acl.is_moderator()
+
     def _load_prefs(self):
         session['login'] = self.name
         if self.app.config['WITH_SQL']:
             from ...models import Pref
             prefs = Pref.query.filter_by(user=self.name).all()
             for pref in prefs:
+                if pref.key == 'language':
+                    continue
                 if hasattr(self, pref.key):
                     setattr(self, pref.key, pref.value)
                 session[pref.key] = pref.value
-
-    def _store_lang(self):
-        if self.app.config['WITH_SQL'] and self.language:
-            from ...ext.sql import db
-            from ...models import Pref
-            pref = Pref.query.filter_by(user=self.name, key='language').first()
-            if pref:
-                pref.value = self.language
-            else:
-                pref = Pref(self.name, 'language', self.language)
-                db.session.add(pref)
-            try:
-                db.session.commit()
-            except:
-                db.session.rollback()
 
     def refresh_session(self):
         self.authenticated = session.get('authenticated', False)

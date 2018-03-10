@@ -8,18 +8,20 @@
 
 """
 import os
+import re
 
-from . import api, cache_key
+from . import api, cache_key, force_refresh
 from ..server import BUIServer  # noqa
 from .custom import fields, Resource
 from .custom.inputs import boolean
+from ..decorators import browser_cache
 from ..ext.cache import cache
 from ..exceptions import BUIserverException
 from ..utils import NOTIF_ERROR
 
 from six import iteritems
 from flask_restplus.marshalling import marshal
-from flask import current_app
+from flask import current_app, request
 from flask_login import current_user
 
 bui = current_app  # type: BUIServer
@@ -154,8 +156,16 @@ class ClientTree(Resource):
         required=False,
         default=False
     )
+    parser.add_argument(
+        'init',
+        type=boolean,
+        help='First call to load the root of the tree',
+        nullable=True,
+        required=False,
+        default=False
+    )
 
-    @cache.cached(timeout=3600, key_prefix=cache_key)
+    @cache.cached(timeout=3600, key_prefix=cache_key, unless=force_refresh)
     @ns.marshal_list_with(node_fields, code=200, description='Success')
     @ns.expect(parser)
     @ns.doc(
@@ -164,6 +174,7 @@ class ClientTree(Resource):
             '500': 'Internal failure',
         },
     )
+    @browser_cache(3600)
     def get(self, server=None, name=None, backup=None):
         """Returns a list of 'nodes' under a given path
 
@@ -223,6 +234,20 @@ class ClientTree(Resource):
                 not current_user.acl.is_admin() and \
                 not current_user.acl.is_client_allowed(name, server):
             self.abort(403, 'Sorry, you are not allowed to view this client')
+
+        from_cookie = None
+        if args['init'] and not root_list:
+            from_cookie = request.cookies.get('fancytree-1-expanded', '')
+            if from_cookie:
+                args['recursive'] = True
+                _root = bui.client.get_tree(name, backup, agent=server)
+                root_list = [x['name'] for x in _root]
+                for path in from_cookie.split('~'):
+                    if not path.endswith('/'):
+                        path += '/'
+                    if path not in root_list:
+                        root_list.append(path)
+                root_list = sorted(root_list)
 
         try:
             root_list_clean = []
@@ -357,7 +382,7 @@ class ClientTreeAll(Resource):
         help='Which server to collect data from when in multi-agent mode'
     )
 
-    @cache.cached(timeout=3600, key_prefix=cache_key)
+    @cache.cached(timeout=3600, key_prefix=cache_key, unless=force_refresh)
     @ns.marshal_list_with(node_fields, code=200, description='Success')
     @ns.expect(parser)
     @ns.doc(
@@ -367,6 +392,7 @@ class ClientTreeAll(Resource):
             '500': 'Internal failure',
         },
     )
+    @browser_cache(3600)
     def get(self, server=None, name=None, backup=None):
         """Returns a list of all 'nodes' of a given backup
 
@@ -625,7 +651,7 @@ class ClientReport(Resource):
         ),
     })
 
-    @cache.cached(timeout=1800, key_prefix=cache_key)
+    @cache.cached(timeout=1800, key_prefix=cache_key, unless=force_refresh)
     @ns.marshal_with(report_fields, code=200, description='Success')
     @ns.expect(parser)
     @ns.doc(
@@ -634,6 +660,7 @@ class ClientReport(Resource):
             '500': 'Internal failure',
         },
     )
+    @browser_cache(1800)
     def get(self, server=None, name=None, backup=None):
         """Returns a global report of a given backup/client
 
@@ -854,7 +881,9 @@ class ClientReport(Resource):
 
         if not current_user.is_anonymous and \
                 not current_user.acl.is_admin() and \
-                not current_user.acl.is_client_allowed(name, server):
+                (not current_user.acl.is_moderator() or
+                 current_user.acl.is_moderator() and
+                 not current_user.acl.is_client_rw(name, server)):
             self.abort(403, 'You don\'t have rights on this client')
 
         msg = bui.client.delete_backup(name, backup, server)
@@ -906,7 +935,7 @@ class ClientStats(Resource):
         ),
     })
 
-    @cache.cached(timeout=1800, key_prefix=cache_key)
+    @cache.cached(timeout=1800, key_prefix=cache_key, unless=force_refresh)
     @ns.marshal_list_with(client_fields, code=200, description='Success')
     @ns.expect(parser)
     @ns.doc(
@@ -915,6 +944,7 @@ class ClientStats(Resource):
             '500': 'Internal failure',
         },
     )
+    @browser_cache(1800)
     def get(self, server=None, name=None):
         """Returns a list of backups for a given client
 
@@ -953,6 +983,198 @@ class ClientStats(Resource):
                     not current_user.acl.is_client_allowed(name, server):
                 self.abort(403, 'Sorry, you cannot access this client')
             json = bui.client.get_client(name, agent=server)
+        except BUIserverException as exp:
+            self.abort(500, str(exp))
+        return json
+
+
+@ns.route('/labels/<name>',
+          '/<server>/labels/<name>',
+          endpoint='client_labels')
+@ns.doc(
+    params={
+        'server': 'Which server to collect data from when in multi-agent' +
+                  ' mode',
+        'name': 'Client name',
+    },
+)
+class ClientLabels(Resource):
+    """The :class:`burpui.api.client.ClientLabels` resource allows you to
+    retrieve the labels of a given client.
+
+    This resource is part of the :mod:`burpui.api.client` module.
+
+    An optional ``GET`` parameter called ``serverName`` is supported when
+    running in multi-agent mode.
+    """
+    parser = ns.parser()
+    parser.add_argument(
+        'serverName',
+        help='Which server to collect data from when in multi-agent mode'
+    )
+    parser.add_argument('clientName', help='Client name')
+    labels_fields = ns.model('ClientLabels', {
+        'labels': fields.List(fields.String, description='List of labels'),
+    })
+
+    @cache.cached(timeout=1800, key_prefix=cache_key, unless=force_refresh)
+    @ns.marshal_list_with(labels_fields, code=200, description='Success')
+    @ns.expect(parser)
+    @ns.doc(
+        responses={
+            '403': 'Insufficient permissions',
+            '500': 'Internal failure',
+        },
+    )
+    @browser_cache(1800)
+    def get(self, server=None, name=None):
+        """Returns the labels of a given client
+
+        **GET** method provided by the webservice.
+
+        The *JSON* returned is:
+        ::
+
+            {
+              "labels": [
+                "label1",
+                "label2"
+              ]
+            }
+
+        The output is filtered by the :mod:`burpui.misc.acl` module so that you
+        only see stats about the clients you are authorized to.
+
+        :param server: Which server to collect data from when in multi-agent
+                       mode
+        :type server: str
+
+        :param name: The client we are working on
+        :type name: str
+
+        :returns: The *JSON* described above.
+        """
+        try:
+            if not current_user.is_anonymous and \
+                    not current_user.acl.is_admin() and \
+                    not current_user.acl.is_client_allowed(name, server):
+                self.abort(403, 'Sorry, you cannot access this client')
+            labels = self._get_labels(name, server)
+        except BUIserverException as exp:
+            self.abort(500, str(exp))
+        return {'labels': labels}
+
+    @staticmethod
+    def _get_labels(client, server):
+        key = 'labels-{}-{}'.format(client, server)
+        ret = cache.cache.get(key)
+        if ret is not None:
+            return ret
+        labels = bui.client.get_client_labels(client, agent=server)
+        ret = []
+        for label in labels:
+            if bui.ignore_labels and \
+                    re.search('|'.join(bui.ignore_labels), label):
+                continue
+            tmp_label = label
+            if bui.format_labels:
+                for regex, replace in bui.format_labels:
+                    tmp_label = re.sub(regex, replace, tmp_label)
+            ret.append(tmp_label)
+        cache.cache.set(key, ret, 1800)
+        return ret
+
+
+@ns.route('/running',
+          '/running/<name>',
+          '/<server>/running',
+          '/<server>/running/<name>',
+          endpoint='client_running_status')
+@ns.doc(
+    params={
+        'server': 'Which server to collect data from when in multi-agent' +
+                  ' mode',
+        'name': 'Client name',
+    },
+)
+class ClientRunningStatus(Resource):
+    """The :class:`burpui.api.client.ClientRunningStatus` resource allows you to
+    retrieve the running status of a given client.
+
+    This resource is part of the :mod:`burpui.api.client` module.
+
+    An optional ``GET`` parameter called ``serverName`` is supported when
+    running in multi-agent mode.
+    """
+    parser = ns.parser()
+    parser.add_argument(
+        'serverName',
+        help='Which server to collect data from when in multi-agent mode'
+    )
+    parser.add_argument('clientName', help='Client name')
+    running_fields = ns.model('ClientRunningStatus', {
+        'state': fields.LocalizedString(required=True, description='Running state'),
+        'percent': fields.Integer(
+            required=False,
+            description='Backup progress in percent',
+            default=-1
+        ),
+        'phase': fields.String(
+            required=False,
+            description='Backup phase',
+            default=None
+        ),
+        'last': fields.DateTime(
+            required=False,
+            dt_format='iso8601',
+            description='Date of last backup'
+        ),
+    })
+
+    @ns.marshal_list_with(running_fields, code=200, description='Success')
+    @ns.expect(parser)
+    @ns.doc(
+        responses={
+            '403': 'Insufficient permissions',
+            '500': 'Internal failure',
+        },
+    )
+    def get(self, server=None, name=None):
+        """Returns the running status of a given client
+
+        **GET** method provided by the webservice.
+
+        The *JSON* returned is:
+        ::
+
+            {
+              "state": "running",
+              "percent": 42,
+              "phase": "2",
+              "last": "now"
+            }
+
+        The output is filtered by the :mod:`burpui.misc.acl` module so that you
+        only see stats about the clients you are authorized to.
+
+        :param server: Which server to collect data from when in multi-agent
+                       mode
+        :type server: str
+
+        :param name: The client we are working on
+        :type name: str
+
+        :returns: The *JSON* described above.
+        """
+        args = self.parser.parse_args()
+        server = server or args['serverName']
+        name = name or args['clientName']
+        try:
+            if not current_user.is_anonymous and \
+                    not current_user.acl.is_admin() and \
+                    not current_user.acl.is_client_allowed(name, server):
+                self.abort(403, 'Sorry, you cannot access this client')
+            json = bui.client.get_client_status(name, agent=server)
         except BUIserverException as exp:
             self.abort(500, str(exp))
         return json

@@ -18,14 +18,28 @@ if 'sdist' in sys.argv or 'bdist' in sys.argv:
     if os.path.exists(os.path.join(ROOT, 'burpui', 'VERSION')):
         shutil.copyfile(os.path.join(ROOT, 'burpui', 'VERSION'), 'burpui_agent/VERSION')
     rev = 'stable'
-    if os.path.exists(os.path.join(ROOT, '.git/HEAD')):
+    ci = os.getenv('CI')
+    commit = os.getenv('CI_COMMIT_SHA')
+    if not ci and os.path.exists(os.path.join(ROOT, '.git/HEAD')):
         try:
             branch = subprocess.check_output('sed s@^.*/@@g {}/.git/HEAD'.format(ROOT).split()).rstrip()
             ver = open(os.path.join('burpui_agent', 'VERSION')).read().rstrip()
             if branch and 'dev' in ver:
                 rev = branch
             try:
-                with open('burpui_agent/RELEASE', 'w') as f:
+                with open('burpui_agent/RELEASE', 'wb') as f:
+                    f.write(rev)
+            except:
+                pass
+        except:
+            pass
+    elif ci:
+        try:
+            ver = open(os.path.join('burpui_agent', 'VERSION')).read().rstrip()
+            if 'dev' in ver:
+                rev = commit
+            try:
+                with open('burpui_agent/RELEASE', 'wb') as f:
                     f.write(rev)
             except:
                 pass
@@ -102,10 +116,10 @@ setup(
         'arrow==0.10.0',
         'tzlocal==1.4',
         'six==1.10.0',
-        'pyOpenSSL==17.0.0',
+        'pyOpenSSL>=17.2.0',
         'configobj==5.0.6',
-        'pyasn1==0.2.3',
-        'cffi==1.10.0',
+        'pyasn1>=0.2.3',
+        'cffi>=1.10.0',
     ],
     classifiers=[
         'Framework :: Flask',
@@ -115,7 +129,7 @@ setup(
         'Operating System :: POSIX :: Linux',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.6',
         'Topic :: System :: Archiving :: Backup',
         'Topic :: System :: Monitoring',
     ]

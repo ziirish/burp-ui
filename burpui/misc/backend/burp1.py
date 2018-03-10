@@ -680,10 +680,47 @@ class Burp(BUIbackend):
                 cli['last'] = int(spl[2])
             else:
                 spl = infos.split('\t')
-                cli['last'] = int(spl[len(spl) - 2])
+                cli['last'] = int((spl[-1].split())[-1])
             cli['last'] = utc_to_local(cli['last'])
             res.append(cli)
         return res
+
+    def get_client_status(self, name=None, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.get_client_status`"""
+        cli = {}
+        filemap = self.status('c:{0}\n'.format(name))
+        for line in filemap:
+            if not re.match('^{0}\t'.format(name), line):
+                continue
+            regex = re.compile(r'\s*(\S+)\s+\d\s+(\S)\s+(.+)')
+            match = regex.search(line)
+            cli['state'] = self.states[match.group(2)]
+            infos = match.group(3)
+            if cli['state'] in ['running']:
+                regex = re.compile(r'\s*(\S+)')
+                reg = regex.search(infos)
+                phase = reg.group(0)
+                if phase and phase in self.states:
+                    cli['phase'] = self.states[phase]
+                else:
+                    cli['phase'] = 'unknown'
+                cli['last'] = 'now'
+                counters = self.get_counters(name)
+                if 'percent' in counters:
+                    cli['percent'] = counters['percent']
+                else:
+                    cli['percent'] = 0
+            elif infos == "0":
+                cli['last'] = 'never'
+            elif re.match(r'^\d+\s\d+\s\d+$', infos):
+                spl = infos.split()
+                cli['last'] = int(spl[2])
+            else:
+                spl = infos.split('\t')
+                cli['last'] = int((spl[-1].split())[-1])
+            cli['last'] = utc_to_local(cli['last'])
+            break
+        return cli
 
     def get_client(self, name=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_client`"""
@@ -857,23 +894,27 @@ class Burp(BUIbackend):
         if os.path.isdir(tmpdir):
             shutil.rmtree(tmpdir)
         full_reg = u''
+
+        def _escape(s):
+            return re.sub(r"[(){}\[\].*?|^$\\+-]", r"\\\g<0>", s)
+
         for restore in flist['restore']:
             reg = u''
             if restore['folder'] and restore['key'] != '/':
-                reg += '^' + re.escape(restore['key']) + '/|'
+                reg += '^' + _escape(restore['key']) + '/|'
             else:
-                reg += '^' + re.escape(restore['key']) + '$|'
-            full_reg += reg
+                reg += '^' + _escape(restore['key']) + '$|'
+            full_reg += to_unicode(reg)
 
-        cmd = [self.burpbin, '-C', quote(name), '-a', 'r', '-b', quote(str(backup)), '-r', full_reg.rstrip('|'), '-d', tmpdir]
+        cmd = [self.burpbin, '-C', quote(name), '-a', 'r', '-b', quote(str(backup)), '-r', full_reg.rstrip('|').replace(r"\n", r"\\n"), '-d', tmpdir]
         if password:
             if not self.burpconfcli:
                 return None, 'No client configuration file specified'
             tmpdesc = os.fdopen(tmphandler, 'wb+')
-            with open(self.burpconfcli) as fileobj:
+            with open(self.burpconfcli, 'rb') as fileobj:
                 shutil.copyfileobj(fileobj, tmpdesc)
 
-            tmpdesc.write('encryption_password = {}\n'.format(sanitize_string(password)))
+            tmpdesc.write(to_bytes('encryption_password = {}\n'.format(sanitize_string(password))))
             tmpdesc.close()
             cmd.append('-c')
             cmd.append(tmpfile)
@@ -959,7 +1000,7 @@ class Burp(BUIbackend):
             return []
         return self.parser.read_server_conf(conf)
 
-    def store_conf_cli(self, data, client=None, conf=None, agent=None):
+    def store_conf_cli(self, data, client=None, conf=None, template=False, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.store_conf_cli`"""
         if not self.parser:
             return []
@@ -967,7 +1008,7 @@ class Burp(BUIbackend):
             conf = unquote(conf)
         except:
             pass
-        return self.parser.store_client_conf(data, client, conf)
+        return self.parser.store_client_conf(data, client, conf, template)
 
     def store_conf_srv(self, data, conf=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.store_conf_srv`"""

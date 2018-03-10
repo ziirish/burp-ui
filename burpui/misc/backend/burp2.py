@@ -13,6 +13,7 @@ import time
 import subprocess
 import sys
 import json
+import datetime
 
 from select import select
 from six import iteritems, viewkeys
@@ -32,6 +33,23 @@ BURP_MINIMAL_VERSION = 'burp-2.0.18'
 BURP_LIST_BATCH = '2.0.48'
 BURP_STATUS_FORMAT_V2 = '2.1.10'
 BURP_REVERSE_COUNTERS = '2.1.6'
+
+try:
+    import gevent
+    from gevent.lock import RLock
+
+    G_LOCK = RLock()
+    WITH_GEVENT = True
+except ImportError:
+    class DummyLock(object):
+        def __enter__(self):
+            return self
+
+        def __exit__(*x):
+            pass
+
+    G_LOCK = DummyLock()
+    WITH_GEVENT = False
 
 
 # Some functions are the same as in Burp1 backend
@@ -54,6 +72,10 @@ class Burp(Burp1):
     _vers = 2
     # cache to store the guessed OS
     _os_cache = {}
+    # cache status results
+    _status_cache = {}
+    _last_status_cleanup = datetime.datetime.now()
+    _time_to_cache = datetime.timedelta(seconds=3)
 
     def __init__(self, server=None, conf=None):
         """
@@ -154,8 +176,6 @@ class Burp(Burp1):
             shell=False,
             bufsize=0
         )
-        # wait a little bit in case the process dies on a network error
-        time.sleep(0.5)
         if not self._proc_is_alive():
             details = u''
             if verbose:
@@ -191,7 +211,7 @@ class Burp(Burp1):
         if not self.server_version:
             if 'logline' in jso:
                 ret = re.search(
-                    r'^Server version: (\d+\.\d+\.\d+)$',
+                    r'^Server version: (\d+\.\d+\.\d+).*$',
                     jso['logline']
                 )
                 if ret:
@@ -272,31 +292,48 @@ class Burp(Burp1):
                 # the os throws an exception if there is no data or timeout
                 self.logger.warning(str(exp))
                 self._kill_burp()
-                break
+                return None
         return jso
 
-    def status(self, query='c:\n', timeout=None, agent=None):
+    def _cleanup_cache(self):
+        now = datetime.datetime.now()
+        if now - self._last_status_cleanup > self._time_to_cache:
+            self._status_cache.clear()
+            self._last_status_cleanup = now
+
+    def status(self, query='c:\n', timeout=None, cache=True, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.status`"""
         try:
             timeout = timeout or self.timeout
             query = sanitize_string(query.rstrip())
             self.logger.info("query: '{}'".format(query))
             query = '{0}\n'.format(query)
-            if not self._proc_is_alive():
-                self._spawn_burp()
 
-            _, write, _ = select([], [self.proc.stdin], [], self.timeout)
-            if self.proc.stdin not in write:
-                raise TimeoutError('Write operation timed out')
-            self.proc.stdin.write(to_bytes(query))
-            jso = self._read_proc_stdout(timeout)
-            if self._is_warning(jso):
-                self.logger.warning(jso['warning'])
-                self.logger.debug('Nothing interesting to return')
-                return None
+            with G_LOCK:
+                self._cleanup_cache()
+                # return cached results
+                if cache and query in self._status_cache:
+                    return self._status_cache[query]
 
-            self.logger.debug('=> {}'.format(jso))
-            return jso
+                if not self._proc_is_alive():
+                    self._spawn_burp()
+
+                _, write, _ = select([], [self.proc.stdin], [], self.timeout)
+                if self.proc.stdin not in write:
+                    raise TimeoutError('Write operation timed out')
+                self.proc.stdin.write(to_bytes(query))
+                jso = self._read_proc_stdout(timeout)
+                if self._is_warning(jso):
+                    self.logger.warning(jso['warning'])
+                    self.logger.debug('Nothing interesting to return')
+                    return None
+
+                self.logger.debug('=> {}'.format(jso))
+
+                if cache:
+                    self._status_cache[query] = jso
+
+                return jso
         except TimeoutError as exp:
             msg = 'Cannot send command: {}'.format(str(exp))
             self.logger.error(msg)
@@ -327,14 +364,6 @@ class Burp(Burp1):
             return ret
         if 'backup_stats' in logs:
             ret = self._parse_backup_stats(number, client, forward)
-        # TODO: support clients that were upgraded to 2.x
-        # else:
-        #    cl = None
-        #    if forward:
-        #        cl = client
-
-        #    f = self.status('c:{0}:b:{1}:f:log.gz\n'.format(client, number))
-        #    ret = self._parse_backup_log(f, number, cl)
 
         ret['encrypted'] = False
         if 'files_enc' in ret and ret['files_enc']['total'] > 0:
@@ -417,11 +446,6 @@ class Burp(Burp1):
             'total': 'scanned',
             'scanned': 'scanned',
         }
-        # Prior burp-2.1.6 some counters are reversed
-        # See https://github.com/grke/burp/commit/adeb3ad68477303991a393fa7cd36bc94ff6b429
-        if self.server_version and self.server_version < BURP_REVERSE_COUNTERS:
-            counts['changed'] = 'same'
-            counts['unchanged'] = 'changed'
         single = [
             'time_start',
             'time_end',
@@ -431,8 +455,7 @@ class Burp(Burp1):
             'bytes'
         ]
         query = self.status(
-            'c:{0}:b:{1}:l:backup_stats\n'.format(client, number),
-            agent=agent
+            'c:{0}:b:{1}:l:backup_stats\n'.format(client, number)
         )
         if not query:
             return ret
@@ -508,7 +531,7 @@ class Burp(Burp1):
         else:
             if not name or name not in self.running:
                 return ret
-        query = self.status('c:{0}\n'.format(name))
+        query = self.status('c:{0}\n'.format(name), cache=False)
         # check the status returned something
         if not query:
             return ret
@@ -559,16 +582,27 @@ class Burp(Burp1):
             except KeyError:
                 return cntr
 
-        for counter in backup['counters']:
+        for counter in backup.get('counters', {}):
             name = translate(counter['name'])
             if counter['name'] not in single:
-                ret[name] = [
-                    counter['count'],
-                    counter['changed'],
-                    counter['same'],
-                    counter['deleted'],
-                    counter['scanned']
-                ]
+                # Prior burp-2.1.6 some counters are reversed
+                # See https://github.com/grke/burp/commit/adeb3ad68477303991a393fa7cd36bc94ff6b429
+                if self.server_version and self.server_version < BURP_REVERSE_COUNTERS:
+                    ret[name] = [
+                        counter['count'],
+                        counter['same'],     # reversed
+                        counter['changed'],  # reversed
+                        counter['deleted'],
+                        counter['scanned']
+                    ]
+                else:
+                    ret[name] = [
+                        counter['count'],
+                        counter['changed'],
+                        counter['same'],
+                        counter['deleted'],
+                        counter['scanned']
+                    ]
             else:
                 ret[name] = counter['count']
 
@@ -576,7 +610,7 @@ class Burp(Burp1):
             ret['phase'] = backup['phase']
         else:
             for phase in phases:
-                if phase in backup['flags']:
+                if phase in backup.get('flags', []):
                     ret['phase'] = phase
                     break
 
@@ -734,19 +768,51 @@ class Burp(Burp1):
             cli['state'] = self._status_human_readable(client['run_status'])
             infos = client['backups']
             if cli['state'] in ['running']:
-                cli['phase'] = client['phase']
                 cli['last'] = 'now'
-                counters = self.get_counters(cli['name'])
-                if 'percent' in counters:
-                    cli['percent'] = counters['percent']
-                else:
-                    cli['percent'] = 0
             elif not infos:
                 cli['last'] = 'never'
             else:
                 infos = infos[0]
                 cli['last'] = infos['timestamp']
             ret.append(cli)
+        return ret
+
+    def get_client_status(self, name=None, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.get_client_status`"""
+        ret = {}
+        if not name:
+            return ret
+        query = self.status('c:{0}\n'.format(name))
+        if not query:
+            return ret
+        try:
+            client = query['clients'][0]
+        except (KeyError, IndexError):
+            self.logger.warning('Client not found')
+            return ret
+        ret['state'] = self._status_human_readable(client['run_status'])
+        infos = client['backups']
+        if ret['state'] in ['running']:
+            try:
+                ret['phase'] = client['phase']
+            except KeyError:
+                for child in client.get('children', []):
+                    if 'action' in child and child['action'] == 'backup':
+                        ret['phase'] = child['phase']
+                        break
+            if name not in self.running:
+                self.is_one_backup_running()
+            counters = self.get_counters(name)
+            if 'percent' in counters:
+                ret['percent'] = counters['percent']
+            else:
+                ret['percent'] = 0
+            ret['last'] = 'now'
+        elif not infos:
+            ret['last'] = 'never'
+        else:
+            infos = infos[0]
+            ret['last'] = infos['timestamp']
         return ret
 
     def get_client(self, name=None, agent=None):
@@ -763,13 +829,14 @@ class Burp(Burp1):
             return ret
         try:
             backups = query['clients'][0]['backups']
-        except KeyError:
+        except (KeyError, IndexError):
             self.logger.warning('Client not found')
             return ret
-        for cpt, backup in enumerate(backups):
+        threads = []
+        for idx, backup in enumerate(backups):
             # skip the first elements if we are in a page
             if page and page > 1 and limit > 0:
-                if cpt < (page - 1) * limit:
+                if idx < (page - 1) * limit:
                     continue
             back = {}
             # skip running backups since data will be inconsistent
@@ -787,30 +854,44 @@ class Burp(Burp1):
             # skip backups after "end"
             if end and backup['timestamp'] > end:
                 continue
-            log = self.get_backup_logs(backup['number'], name)
-            try:
-                back['encrypted'] = log['encrypted']
+
+            def __get_log(client, bkp, res):
+                log = self.get_backup_logs(bkp['number'], client)
                 try:
-                    back['received'] = log['received']
-                except KeyError:
-                    back['received'] = 0
-                try:
-                    back['size'] = log['totsize']
-                except KeyError:
-                    back['size'] = 0
-                back['end'] = log['end']
-                # override date since the timestamp is odd
-                back['date'] = log['start']
-                ret.append(back)
-            except Exception:
-                self.logger.warning('Unable to parse logs')
-                pass
+                    res['encrypted'] = log['encrypted']
+                    try:
+                        res['received'] = log['received']
+                    except KeyError:
+                        res['received'] = 0
+                    try:
+                        res['size'] = log['totsize']
+                    except KeyError:
+                        res['size'] = 0
+                    res['end'] = log['end']
+                    # override date since the timestamp is odd
+                    res['date'] = log['start']
+                except Exception:
+                    self.logger.warning('Unable to parse logs')
+                    return None
+                return res
+
+            if WITH_GEVENT:
+                threads.append(gevent.spawn(__get_log, name, backup, back))
+            else:
+                with_log = __get_log(name, backup, back)
+                if with_log:
+                    ret.append(with_log)
+
             # stop after "limit" elements
             if page and page > 1 and limit > 0:
-                if cpt >= page * limit:
+                if idx >= page * limit:
                     break
-            elif limit > 0 and cpt >= limit:
+            elif limit > 0 and idx >= limit:
                 break
+
+        if WITH_GEVENT:
+            gevent.joinall(threads)
+            ret = [x.value for x in threads]
 
         # Here we need to reverse the array so the backups are sorted by num
         # ASC
@@ -908,11 +989,16 @@ class Burp(Burp1):
         ret = []
         if not client:
             return ret
-        query = self.status('c:{0}\n'.format(client))
+        # micro optimization since the status results are cached in memory for a
+        # couple seconds, using the same global query and iterating over it
+        # will be more efficient than filtering burp-side
+        query = self.status('c:\n')
         if not query:
             return ret
         try:
-            return query['clients'][0]['labels']
+            for cli in query['clients']:
+                if cli['name'] == client:
+                    return cli['labels']
         except KeyError:
             return ret
 

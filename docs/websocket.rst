@@ -10,7 +10,7 @@ In order to use this feature, you need some extra requirements:
 
 
 It is highly recommended to use a `Redis`_ *Broker* for the websocket server to
- interact with the celery workers and other pieces of the code.
+interact with the celery workers and other pieces of the code.
 It is also advised to run one or several dedicated WebSocket servers behind a 
 reverse-proxy because *gunicorn* does not play well with it.
 
@@ -22,7 +22,7 @@ Dedicated Server
 
 You can choose to either run an embedded WebSocket server though this is not
 recommended in production or you can run one or several dedicated WebSocket
- servers through the ``bui-manage`` command like this:
+servers through the ``bui-manage`` command like this:
 
 ::
 
@@ -30,7 +30,8 @@ recommended in production or you can run one or several dedicated WebSocket
 
 
 If you are running the above command, you'll need to set the ``url`` option
-under the ``[WebSocket]`` section to ``"document.domain + ':5001'"``.
+under the ``[WebSocket]`` section to ``"document.domain + ':5001'"`` (unless you
+use a reverse-proxy, see bellow).
 
 .. warning:: The quotes are **MANDATORY** in this case.
 

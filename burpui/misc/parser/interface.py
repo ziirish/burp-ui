@@ -103,6 +103,30 @@ class BUIparser(with_metaclass(ABCMeta, object)):
                         ]
                     },
                 ],
+                "hierarchy": [
+                    {
+                        "children": [
+                            {
+                                "children": [],
+                                "dir": "/tmp/burp/conf.d",
+                                "full": "/tmp/burp/conf.d/empty.conf",
+                                "name": "empty.conf",
+                                "parent": "/tmp/burp/burp-server.conf"
+                            },
+                            {
+                                "children": [],
+                                "dir": "/tmp/burp/conf.d",
+                                "full": "/tmp/burp/conf.d/ipv4.conf",
+                                "name": "ipv4.conf",
+                                "parent": "/tmp/burp/burp-server.conf"
+                            }
+                        ],
+                        "dir": "/tmp/burp",
+                        "full": "/tmp/burp/burp-server.conf",
+                        "name": "burp-server.conf",
+                        "parent": null
+                    }
+                ]
             }
         """
         raise NotImplementedError(
@@ -110,7 +134,7 @@ class BUIparser(with_metaclass(ABCMeta, object)):
         )  # pragma: no cover
 
     @abstractmethod
-    def store_client_conf(self, data, client=None, conf=None):
+    def store_client_conf(self, data, client=None, conf=None, template=False):
         """:func:`burpui.misc.parser.interface.BUIparser.store_client_conf` is
         used by :func:`burpui.misc.backend.BUIbackend.store_conf_cli`.
 
@@ -120,6 +144,12 @@ class BUIparser(with_metaclass(ABCMeta, object)):
 
         :param client: Name of the client for which to apply this config
         :type client: str
+
+        :param conf: The explicit filename of the conf
+        :type conf: str
+
+        :param template: Is this file a template
+        :type template: bool
         """
         raise NotImplementedError(
             "Sorry, the current Parser does not implement this method!"
@@ -127,7 +157,7 @@ class BUIparser(with_metaclass(ABCMeta, object)):
 
     @abstractmethod
     def store_conf(self, data, conf=None, client=None, mode='srv',
-                   insecure=False):
+                   insecure=False, template=False):
         """:func:`burpui.misc.parser.interface.BUIparser.store_conf` is used to
         store the configuration from the web-ui into the actual configuration
         files.
@@ -149,12 +179,28 @@ class BUIparser(with_metaclass(ABCMeta, object)):
         :param insecure: Used for the CLI
         :type insecure: bool
 
+        :param template: Is it a template
+        :type template: bool
+
         :returns: A list of notifications to return to the UI (success or
                   failure)
 
         Example::
 
             [[0, "Success"]]
+        """
+        raise NotImplementedError(
+            "Sorry, the current Parser does not implement this method!"
+        )  # pragma: no cover
+
+    @abstractmethod
+    def remove_conf(self, path=None):
+        """:func:`burpui.misc.parser.interface.BUIparser.remove_conf`
+        is used to remove a configuration file.
+        It only works for "included" files within the server configuration file.
+
+        :param path: The path of the file to remove
+        :type path: str
         """
         raise NotImplementedError(
             "Sorry, the current Parser does not implement this method!"
@@ -193,6 +239,17 @@ class BUIparser(with_metaclass(ABCMeta, object)):
         )  # pragma: no cover
 
     @abstractmethod
+    def list_templates(self):
+        """:func:`burpui.misc.parser.interface.BUIparser.list_templates` is used
+        to retrieve a list of templates with their absolute paths.
+
+        :returns: A list of templates
+        """
+        raise NotImplementedError(
+            "Sorry, the current Parser does not implement this method!"
+        )  # pragma: no cover
+
+    @abstractmethod
     def is_client_revoked(self, client=None):
         """:func:`burpui.misc.parser.interface.BUIparser.is_client_revoked` is
         used to check if a given client has it's certificate revoked or not.
@@ -207,7 +264,7 @@ class BUIparser(with_metaclass(ABCMeta, object)):
         )  # pragma: no cover
 
     @abstractmethod
-    def remove_client(self, client=None, keepconf=False, delcert=False, revoke=False):
+    def remove_client(self, client=None, keepconf=False, delcert=False, revoke=False, template=False):
         """:func:`burpui.misc.parser.interface.BUIparser.remove_client` is used
         to delete a client from burp's configuration.
 
@@ -223,6 +280,9 @@ class BUIparser(with_metaclass(ABCMeta, object)):
         :param revoke: Whether to revoke the associated certificate
         :type revoke: bool
 
+        :param template: Whether we remove a template
+        :type template: bool
+
         :returns: A list of notifications to return to the UI (success or
                   failure)
         """
@@ -231,7 +291,7 @@ class BUIparser(with_metaclass(ABCMeta, object)):
         )  # pragma: no cover
 
     @abstractmethod
-    def read_client_conf(self, client=None, conf=None):
+    def read_client_conf(self, client=None, conf=None, template=False):
         """:func:`burpui.misc.parser.interface.BUIparser.read_client_conf` is
         called by :func:`burpui.misc.backend.interface.BUIbackend.read_conf_cli`
         in order to parse the burp-clients configuration files.

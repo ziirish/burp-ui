@@ -91,6 +91,14 @@ Please refer to the `ACL API <acl.html>`_ page for more details.
             def acl(self):
                 return self._acl
 
+            @property
+            def grants(self):
+                return None
+
+            @property
+            def groups(self):
+                return None
+
 
         class CustomACL(interface.BUIacl):
 
@@ -107,12 +115,22 @@ Please refer to the `ACL API <acl.html>`_ page for more details.
                     return False
                 return username == self.loader.admin
 
+            def is_client_rw(self, username=None, client=None, server=None):
+                if not username:
+                    return False
+                return username == self.loader.admin
+
             def is_client_allowed(self, username=None, client=None, server=None):
                 if not username:
                     return False
                 return username == self.loader.admin
 
-            def is_server_allowed(self, username=None, client=None, server=None):
+            def is_server_rw(self, username=None, server=None):
+                if not username:
+                    return False
+                return username == self.loader.admin
+
+            def is_server_allowed(self, username=None, server=None):
                 if not username:
                     return False
                 return username == self.loader.admin
@@ -135,3 +153,54 @@ You can put this code in a file called *custom_acl.py*, save this file in
 The plugin will be automatically loaded.
 
 .. note:: This is just an example, do not run this particular plugin in production!
+
+
+ACL engine has built-in ``Groups`` support, to take full advantage of this
+feature, it is recommended to use the ``meta_grants`` object as shown bellow:
+
+.. code-block:: python
+    :linenos:
+
+        from burpui.misc.acl.meta import meta_grants
+        from burpui.misc.acl import interface
+
+        from six import iteritems
+
+        __type__ = 'acl'
+
+        class ACLloader(interface.BUIaclLoader):
+            name = 'CUSTOM2:ACL'
+            priority = 1001
+
+            _groups = {
+                'gp1': {
+                    'grants': 'server1, server2',
+                    'members': ['user1'],
+                },
+            }
+
+            def __init__(self, app):
+                self.app = app
+                self.admin = 'toto'
+                for gname, content in iteritems(self._groups):
+                    meta_grants.set_group(gname, content['members'])
+                    meta_grants.set_grant(gname, content['grants'])
+                self._acl = meta_grants
+
+            @property
+            def acl(self):
+                return self._acl
+
+            @property
+            def grants(self):
+                return self.acl.grants
+
+            @property
+            def groups(self):
+                return self._groups
+
+
+You can omit either the ``meta_grants.set_grant`` or the
+``meta_grants.set_group`` part if you like. For instance to define the grants
+of a given group using another ACL backend, and using your plugin to manage
+groups membership.

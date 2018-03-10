@@ -97,17 +97,22 @@
  * }
  * The JSON is then split-ed out into several dict/arrays to build our form.
  */
+{% import 'macros.html' as macros %}
 
-var app = angular.module('MainApp', ['ngSanitize', 'frapontillo.bootstrap-switch', 'ui.select', 'mgcrea.ngStrap', 'angular-onbeforeunload']);
+var app = angular.module('MainApp', ['ngSanitize', 'frapontillo.bootstrap-switch', 'ui.select', 'mgcrea.ngStrap', 'angular-onbeforeunload', 'datatables']);
 
 app.config(function(uiSelectConfig) {
 	uiSelectConfig.theme = 'bootstrap';
 });
 
-app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', function($scope, $http, $scrollspy) {
+app.controller('ConfigCtrl', ['$scope', '$http', '$timeout', '$scrollspy', 'DTOptionsBuilder', 'DTColumnDefBuilder', function($scope, $http, $timeout, $scrollspy, DTOptionsBuilder, DTColumnDefBuilder) {
 	$scope.bools = [];
 	$scope.strings = [];
+	$scope.integers = [];
+	$scope.multis = [];
+	$scope.pairs = [];
 	$scope.clients = [];
+	$scope.hierarchy = [];
 	$scope.client = {};
 	$scope.defaults = {};
 	$scope.placeholders = {};
@@ -119,50 +124,85 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', function($scope, 
 	$scope.revokeEnabled = false;
 	$scope.inc_invalid = {};
 	$scope.old = {};
+	$scope.raw = {};
 	$scope.spy = {};
+	$scope.raw_content = '';
 	$scope.new = {
 			'bools': undefined,
 			'integers': undefined,
 			'strings': undefined,
-			'multis': undefined
+			'multis': undefined,
+			'templates': undefined,
+			'pairs': undefined,
 		};
 	$scope.add = {
 			'bools': false,
 			'integers': false,
 			'strings': false,
-			'multis': false
+			'multis': false,
+			'templates': false,
+			'pairs': false
 		};
+	$scope.advanced = {};
 	$scope.changed = false;
-	{% if client -%}
-	$http.get('{{ url_for("api.client_settings", client=client, conf=conf, server=server) }}', { headers: { 'X-From-UI': true } })
-	{% else -%}
-	$http.get('{{ url_for("api.server_settings", conf=conf, server=server) }}', { headers: { 'X-From-UI': true } })
-	{% endif -%}
-	  .then(function(response) {
-			data = response.data;
-			$scope.bools = data.results.boolean;
-			$scope.all.bools = data.boolean;
-			$scope.strings = data.results.common;
-			$scope.all.strings = data.string;
-			$scope.integers = data.results.integer;
-			$scope.all.integers = data.integer;
-			$scope.multis = data.results.multi;
-			$scope.all.multis = data.multi;
-			$scope.clients = data.results.clients;
-			$scope.server_doc = data.server_doc;
-			$scope.suggest = data.suggest;
-			$scope.placeholders = data.placeholders;
-			$scope.defaults = data.defaults;
-			$scope.includes = data.results.includes;
-			$scope.includes_ori = angular.copy($scope.includes);
-			$scope.includes_ext = data.results.includes_ext;
-			$scope.refreshScrollspy();
-			$('#waiting-container').hide();
-			$('#settings-panel').show();
-		}, function(response) {
-			notifAll(response.data);
-			$('#waiting-container').hide();
-		});
+	$scope.checkbox_translation = {
+			'yes':   "{{ _('yes') }}",
+			'no':    "{{ _('no') }}",
+			'reset': "{{ _('reset list') }}",
+		};
+	$scope.dtOptions = {
+			{{ macros.translate_datatable() }}
+			{{ macros.get_page_length() }}
+			fixedHeader: true,
+		};
+	$scope.dtColumnDefs = [
+			DTColumnDefBuilder.newColumnDef(0),
+			DTColumnDefBuilder.newColumnDef(1),
+			DTColumnDefBuilder.newColumnDef(2).notSortable(),
+		];
+	$scope.loadConfig = function() {
+		{% if client -%}
+			{% if template -%}
+		$http.get('{{ url_for("api.client_settings", client=client, conf=conf, template=True, server=server) }}', { headers: { 'X-From-UI': true } })
+			{% else -%}
+		$http.get('{{ url_for("api.client_settings", client=client, conf=conf, server=server) }}', { headers: { 'X-From-UI': true } })
+			{% endif -%}
+		{% else -%}
+		$http.get('{{ url_for("api.server_settings", conf=conf, server=server) }}', { headers: { 'X-From-UI': true } })
+		{% endif -%}
+			.then(function(response) {
+				data = response.data;
+				$scope.bools = data.results.boolean;
+				$scope.all.bools = data.boolean;
+				$scope.strings = data.results.common;
+				$scope.all.strings = data.string;
+				$scope.integers = data.results.integer;
+				$scope.all.integers = data.integer;
+				$scope.multis = data.results.multi;
+				$scope.all.multis = data.multi;
+				$scope.pairs = data.results.pair;
+				$scope.all.pairs = _.keys(data.pair);
+				$scope.pair_associations = data.pair;
+				$scope.server_doc = data.server_doc;
+				$scope.suggest = data.suggest;
+				$scope.placeholders = data.placeholders;
+				$scope.defaults = data.defaults;
+				$scope.includes = data.results.includes;
+				$scope.includes_ori = angular.copy($scope.includes);
+				$scope.includes_ext = data.results.includes_ext;
+				$scope.templates = data.results.templates;
+				$scope.hierarchy = data.results.hierarchy;
+				$scope.raw_content = data.results.raw;
+				$scope.advanced = data.advanced;
+				$scope.refreshHierarchy();
+				$scope.refreshScrollspy();
+				$('#waiting-container').hide();
+				$('#settings-panel').show();
+			}, function(response) {
+				notifAll(response.data);
+				$('#waiting-container').hide();
+			});
+	};
 	$http.get('{{ url_for("api.setting_options", server=server) }}', { headers: { 'X-From-UI': true } })
 		.then(function(response) {
 			$scope.revokeEnabled = response.data.is_revocation_enabled;
@@ -205,7 +245,7 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', function($scope, 
 			$scope.invalid = {};
 			/* UX tweak: disable the submit button + change text */
 			submit = form.find('button[type="submit"]');
-			sav = submit.text();
+			sav = submit.html();
 			submit.text('{{ _("Saving...") }}');
 			submit.attr('disabled', true);
 			/* submit the data */
@@ -219,18 +259,26 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', function($scope, 
 			.done(function(data) {
 				/* The server answered correctly but some errors may have occurred server
 				 * side so we display them */
+				errors = false;
 				if (data.notif) {
 					$.each(data.notif, function(i, n) {
+						if (n[0] !== NOTIF_SUCCESS) {
+							errors = true;
+						}
 						notif(n[0], n[1]);
 						$scope.invalid[n[2]] = true;
 					});
 				}
-				$scope.setSettings.$setPristine();
-				$scope.changed = false;
-				$scope.getClientsList();
+				/* if some errors occurred, don't refresh the form data */
+				if (!errors) {
+					$scope.setSettings.$setPristine();
+					$scope.changed = false;
+					$scope.getClientsList();
+					$scope.loadConfig();
+				}
 			}).always(function() {
 				/* reset the submit button state */
-				submit.text(sav);
+				submit.html(sav);
 				submit.attr('disabled', false);
 			});
 			/* re-enable the checkboxes */
@@ -241,6 +289,60 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', function($scope, 
 				angular.forEach(value.reset, function(val, i) {
 					form.find('#'+value.name+'_reset_bui_CUSTOM_view-'+i).attr('disabled', false);
 				});
+			});
+		}
+	};
+	$scope.refreshHierarchy = function() {
+		if ($scope.hierarchy) {
+			$('#tree-hierarchy').fancytree({
+				extensions: ["glyph", "table"],
+				glyph: {
+					preset: "bootstrap3",
+					map: {
+						doc: "glyphicon glyphicon-file",
+						docOpen: "glyphicon glyphicon-file",
+						checkbox: "glyphicon glyphicon-unchecked",
+						checkboxSelected: "glyphicon glyphicon-check",
+						checkboxUnknown: "glyphicon glyphicon-share",
+						dragHelper: "glyphicon glyphicon-play",
+						dropMarker: "glyphicon glyphicon-arrow-right",
+						error: "glyphicon glyphicon-warning-sign",
+						expanderClosed: "glyphicon glyphicon-plus-sign",
+						expanderLazy: "glyphicon glyphicon-plus-sign",
+						// expanderLazy: "glyphicon glyphicon-expand",
+						expanderOpen: "glyphicon glyphicon-minus-sign",
+						// expanderOpen: "glyphicon glyphicon-collapse-down",
+						folder: "glyphicon glyphicon-folder-close",
+						folderOpen: "glyphicon glyphicon-folder-open",
+						loading: "glyphicon glyphicon-refresh glyphicon-spin"
+					}
+				},
+				source: $scope.hierarchy,
+				init: function() {
+					$('#tree-hierarchy').floatThead({
+						position: 'auto',
+						autoReflow: true,
+						top: $('.navbar').height(),
+					});
+				},
+				scrollParent: $(window),
+				renderColumns: function(event, data) {
+					var node = data.node;
+					$tdList = $(node.tr).find(">td");
+
+					{% if client -%}
+					var URL = '{{ url_for("view.cli_settings", client=client, server=server) }}?conf='+encodeURIComponent(node.data.full);
+					{% else -%}
+					var URL = '{{ url_for("view.settings", server=server) }}?conf='+encodeURIComponent(node.data.full);
+					{% endif -%}
+
+					$tdList.eq(1).html('<a href="'+URL+'" class="btn btn-info btn-xs no-link pull-right" title="{{ _('edit') }}"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a>');
+				},
+			});
+			var tree = $('#tree-hierarchy').fancytree('getTree');
+
+			tree.getRootNode().visit(function(node) {
+				node.setExpanded(true);
 			});
 		}
 	};
@@ -277,15 +379,37 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', function($scope, 
 			$scope.new[type] = undefined;
 		}
 		$scope.add[type] = true;
+		all = $scope.all[type];
+		if (type === 'templates') {
+			all = [];
+			_($scope.all[type]).forEach(function(value, name) {
+				all.push(name);
+			});
+		}
 		keys = _.map($scope[type], 'name');
-		diff = _.difference($scope.all[type], keys);
+		if (type === 'pairs') {
+			iter = angular.copy(keys);
+			_(iter).forEach(function(key) {
+				var assoc = $scope.pair_associations[key];
+				if (_.findIndex(keys, key) == -1) {
+					keys.push(assoc);
+				}
+			});
+		}
+		diff = _.difference(all, keys);
 		$scope.avail[type] = [];
 		_(diff).forEach(function(n) {
-			v = $scope.defaults[n];
-			if (!v && type == 'multis') {
+			var data = {'name': n};
+			var v = $scope.defaults[n];
+			if (!v && type === 'multis') {
 				v = [''];
+				data['reset'] = [false];
 			}
-			$scope.avail[type].push({'name': n, 'value': v});
+			if (!v && type === 'templates') {
+				v = $scope.all[type][n];
+			}
+			data['value'] = v;
+			$scope.avail[type].push(data);
 		});
 	};
 	$scope.undoAdd = function(type) {
@@ -293,17 +417,40 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', function($scope, 
 	};
 	$scope.removeMulti = function(pindex, cindex) {
 		$scope.multis[pindex].value.splice(cindex, 1);
+		$scope.multis[pindex].reset.splice(cindex, 1);
 		if ($scope.multis[pindex].value.length <= 0) {
 			$scope.multis.splice(pindex, 1);
 		}
 		$scope.add.multis = false;
 		$scope.new.multis = false;
 		$scope.changed = true;
+		$scope.refreshScrollspy();
 	};
 	$scope.addMulti = function(pindex) {
 		$scope.multis[pindex].value.push('');
+		$scope.multis[pindex].reset.push(false);
 		$scope.add.multis = false;
 		$scope.new.multis = false;
+		$scope.changed = true;
+		$scope.refreshScrollspy();
+	};
+	$scope.removePairElement = function(pindex, pkey, cindex) {
+		$scope.pairs[pindex].value[pkey].splice(cindex, 1);
+		if ($scope.pairs[pindex].value[pkey].length <= 0 && $scope.pairs[pindex].value[$scope.pair_associations[pkey]].length <= 0) {
+			$scope.pairs.splice(pindex, 1);
+		}
+		$scope.add.pairs = false;
+		$scope.new.pairs = false;
+		$scope.changed = true;
+		$scope.refreshScrollspy();
+	};
+	$scope.addPairElement = function(pindex, pkey) {
+		if (!$scope.pairs[pindex].value[pkey]) {
+		  $scope.pairs[pindex].value[pkey] = [];
+		}
+		$scope.pairs[pindex].value[pkey].push('');
+		$scope.add.pairs = false;
+		$scope.new.pairs = false;
 		$scope.changed = true;
 		$scope.refreshScrollspy();
 	};
@@ -318,6 +465,8 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', function($scope, 
 		$scope.old.includes_ori.push($scope.includes_ori[index]);
 		$scope.includes.splice(index, 1);
 		$scope.includes_ori.splice(index, 1);
+		$scope.changed = true;
+		$scope.refreshScrollspy();
 	};
 	$scope.clickAddIncludes = function() {
 		val = '';
@@ -330,11 +479,17 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', function($scope, 
 		}
 		$scope.includes.push(val);
 		$scope.includes_ori.push(val2);
+		$scope.changed = true;
+		$scope.refreshScrollspy();
 	};
 	$scope.select = function(selected, select, type) {
 		select.search = undefined;
 		if ($scope.old[type] && $scope.old[type][selected.name]) {
 			selected.value = $scope.old[type][selected.name];
+		} else if (type === 'pairs') {
+			selected.value = {};
+			selected.value[selected.name] = [''];
+			selected.value[$scope.pair_associations[selected.name]] = [];
 		}
 		$scope[type].push(selected);
 		$scope.add[type] = false;
@@ -363,11 +518,11 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', function($scope, 
 		{% endif -%}
 		$scope.inc_invalid = {};
 		$http.get(
-				api,
-				{
-					headers: { 'X-From-UI': true },
-					params: { 'path': path },
-				}
+			api,
+			{
+				headers: { 'X-From-UI': true },
+				params: { 'path': path },
+			}
 		).then(
 			function(response) {
 				data = response.data;
@@ -390,11 +545,51 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', function($scope, 
 	};
 	$scope.getClientsList = function() {
 		api = '{{ url_for("api.clients_list", server=server) }}';
+		$http.get(
+			api,
+			{
+				headers: { 'X-From-UI': true },
+			}
+		).then(
+			function(response) {
+				var data = response.data;
+				$scope.clients = data.result;
+			}
+		);
+	};
+	$scope.getTemplatesList = function() {
+		api = '{{ url_for("api.templates_list", server=server) }}';
+		$http.get(
+			api,
+			{
+				headers: { 'X-From-UI': true },
+			}
+		).then(
+			function(response) {
+				var data = response.data;
+				$scope.raw.templates = data.result;
+				$scope.all.templates = {};
+				_(data.result).forEach(function(r) {
+					$scope.all.templates[r.name] = r.value;
+				});
+			}
+		);
+	};
+	$scope.deleteFile = function() {
+		api = '{{ url_for("api.server_settings", server=server, conf=conf) }}';
 		$.ajax({
 			url: api,
-			type: 'GET'
-		}).done(function(data) {
-			$scope.clients = data.result;
+			type: 'DELETE'
+		})
+		.fail(myFail)
+		.done(function(data) {
+			redirect = data[0][0] == NOTIF_SUCCESS;
+			notifAll(data, redirect);
+			if (redirect) {
+				$timeout(function() {
+					document.location = '{{ url_for("view.settings", server=server) }}';
+				}, 1000);
+			}
 		});
 	};
 	$scope.deleteClient = function() {
@@ -402,14 +597,20 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', function($scope, 
 		$.ajax({
 			url: api,
 			type: 'DELETE',
+			{% if template -%}
+			data: { template: true }
+			{% else -%}
 			data: { delcert: $('#delcert').is(':checked'), revoke: $('#revoke').is(':checked'), keepconf: $('#keepconf').is(':checked') }
+			{% endif -%}
 		})
 		.fail(myFail)
 		.done(function(data) {
 			redirect = data[0][0] == NOTIF_SUCCESS;
 			notifAll(data, redirect);
 			if (redirect) {
-				document.location = '{{ url_for("view.settings", server=server) }}';
+				$timeout(function() {
+					document.location = '{{ url_for("view.settings", server=server) }}';
+				}, 1000);
 			}
 		});
 	};
@@ -435,6 +636,31 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', function($scope, 
 			}
 		});
 	};
+	$scope.createTemplate = function(e) {
+		/* we disable the 'real' form submission */
+		e.preventDefault();
+		var form = $(e.target);
+		$.ajax({
+			url: form.attr('action'),
+			type: 'PUT',
+			data: form.serialize()
+		})
+		.fail(myFail)
+		.done(function(data) {
+			/* The server answered correctly but some errors may have occurred server
+			 * side so we display them */
+			if (data.notif) {
+				notif(data.notif[0][0], data.notif[0][1]);
+				if (data.notif[0][0] == NOTIF_SUCCESS) {
+					$scope.getTemplatesList();
+					notif(data.notif[1][0], data.notif[1][1], 20000);
+				}
+			}
+		});
+	};
+	$scope.isNumber = function(key) {
+		return $scope.advanced && $scope.advanced[key] === 'integer';
+	};
 	/* These callbacks expand/reduce the input for a better readability */
 	$scope.focusIn = function(ev) {
 		el = $( ev.target ).parent();
@@ -442,6 +668,8 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', function($scope, 
 		el.next('div').hide();
 		/* Hide the legend */
 		el.next('div').next('div').hide();
+		/* Hide the reset button */
+		el.next('div').next('div').next('div').hide();
 		/* Expand the input */
 		el.removeClass('col-lg-2').addClass('col-lg-9');
 	};
@@ -449,9 +677,20 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$scrollspy', function($scope, 
 		el = $( ev.target ).parent();
 		el.next('div').show();
 		el.next('div').next('div').show();
+		el.next('div').next('div').next('div').show();
 		el.removeClass('col-lg-9').addClass('col-lg-2');
 	};
+	$scope.loadConfig();
+	$scope.getClientsList();
+	$scope.getTemplatesList();
 }]);
 
-{% import 'macros.html' as macros %}
-{{ macros.smooth_scrolling() }}
+{{ macros.page_length('#table-list-clients') }}
+{{ macros.page_length('#table-list-templates') }}
+
+$(document).ready(function () {
+	$('#config-nav a').click(function (e) {
+		e.preventDefault();
+		$(this).tab('show');
+	});
+});

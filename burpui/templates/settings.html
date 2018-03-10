@@ -4,248 +4,496 @@
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
           {% include "small_topbar.html" %}
           <ul class="breadcrumb" style="margin-bottom: 5px;">
+            {% if conf -%}
+            {% set conf_read=conf|replace("%2F", "/")|escape -%}
+            {% endif -%}
             {% if server -%}
             <li><a href="{{ url_for('view.home') }}">{{ _('Home') }}</a></li>
-            <li class="active">{{ _('Burp Configuration of %(server)s', server=server) }}</li>
+            <li><a href="{{ url_for('view.clients', server=server) }}">{{ _('%(server)s clients', server=server) }}</a></li>
+              {% if client -%}
+            <li><a href="{{ url_for('view.settings', server=server) }}">{{ _('Burp Server Configuration of %(server)s', server=server) }}</a></li>
+                {% if conf -%}
+            <li><a href="{{ url_for('view.cli_settings', server=server, client=client) }}">{{ _('%(client)s on %(server)s', client=client, server=server) }}</a></li>
+            <li class="active">{{ conf_read }}</li>
+                {% else -%}
+                  {% if template -%}
+            <li class="active">{{ _('Template %(name)s on %(server)s', name=client, server=server) }}</li>
+                  {% else -%}
+            <li class="active">{{ _('%(client)s on %(server)s', client=client, server=server) }}</li>
+                  {% endif -%}
+                {% endif -%}
+              {% else -%}
+                {% if conf -%}
+            <li><a href="{{ url_for('view.settings', server=server) }}">{{ _('Burp Server Configuration of %(server)s', server=server) }}</a></li>
+            <li class="active">{{ conf_read }}</li>
+                {% else -%}
+            <li class="active">{{ _('Burp Server Configuration of %(server)s', server=server) }}</li>
+                {% endif -%}
+              {% endif -%}
             {% else -%}
-            <li class="active">{{ _('Burp Configuration') }}</li>
+            <li><a href="{{ url_for('view.home') }}">{{ _('Home') }}</a></li>
+              {% if client -%}
+            <li><a href="{{ url_for('view.settings', server=server) }}">{{ _('Burp Server Configuration') }}</a></li>
+                {% if conf -%}
+            <li><a href="{{ url_for('view.cli_settings', server=server, client=client) }}">{{ client }}</a></li>
+            <li class="active">{{ conf_read }}</li>
+                {% else -%}
+                  {% if template -%}
+            <li class="active">{{ _('Template %(name)s', name=client) }}</li>
+                  {% else -%}
+            <li class="active">{{ client }}</li>
+                  {% endif -%}
+                {% endif -%}
+              {% else -%}
+                {% if conf -%}
+            <li><a href="{{ url_for('view.settings', server=server) }}">{{ _('Burp Server Configuration') }}</a></li>
+            <li class="active">{{ conf_read }}</li>
+                {% else -%}
+            <li class="active">{{ _('Burp Server Configuration') }}</li>
+                {% endif -%}
+              {% endif -%}
             {% endif -%}
           </ul>
           <br />
 
-          <div id="waiting-container" class="row">
-            <span class="icon-refresh-animate glyphicon glyphicon-refresh"></span>&nbsp;{{ _('Loading, Please wait...') }}
-            <br />
-            <div class="progress progress-striped active">
-              <div class="progress-bar progress-bar-info" style="width: 100%"></div>
-            </div>
-          </div>
-
-          <div id="settings-panel" class="form-container" style="display:none;" ng-cloak>
-            {% if client -%}
-            <form class="form-horizontal" action="{{ url_for('api.client_settings', client=client, conf=conf, server=server) }}" method="POST" ng-submit="submit($event)" name="setSettings" onbeforeunload>
-            {% else -%}
-            <form class="form-horizontal" action="{{ url_for('api.server_settings', conf=conf, server=server) }}" method="POST" ng-submit="submit($event)" name="setSettings" onbeforeunload>
-            {% endif -%}
-              <fieldset>
-                <legend id="boolean">{{ _('Booleans') }}</legend>
-              {# From here, the jinja syntax is escaped because we use the angularjs syntax #}
-              {% raw %}
-                <div class="form-group" ng-repeat="bool in bools">
-                  <label for="{{ ::bool.name }}_view" class="col-lg-3 control-label">{{ ::bool.name }}</label>
-                  <div class="col-lg-2">
-                    <input bs-switch ng-model="bool.value" type="checkbox" id="{{ ::bool.name }}_view" name="{{ ::bool.name }}_view" class="form-control">
-                    <input type="hidden" name="{{ ::bool.name }}" id="{{ ::bool.name }}">
-                  </div>
-                  <div class="col-lg-1">
-                    <button type="button" class="btn btn-danger" ng-click="remove('bools', $index)"><span class="glyphicon glyphicon-minus"></span></button>
-                  </div>
-                  <div class="col-lg-6" ng-bind-html="::server_doc[bool.name]"></div>
-                </div>
-                <div class="form-group" ng-hide="!add.bools">
-                  <div class="col-lg-3">
-                    <ui-select ng-model="new.bools" ng-disabled="!add.bools" style="width: 100%;" on-select="select($item, $select, 'bools')">
-              {% endraw %}
-                    <ui-select-match placeholder="{{ _('Select an option') }}">
-              {% raw %}
-                        {{ $select.selected.name }}
-                      </ui-select-match>
-                      <ui-select-choices repeat="value.name as value in avail.bools | filter: $select.search">
-                        <div ng-bind-html="value.name | highlight: $select.search"></div>
-                      </ui-select-choices>
-                    </ui-select>
-                  </div>
-                  <div class="col-lg-9">
-                    <button type="button" class="btn btn-danger" ng-click="undoAdd('bools')"><span class="glyphicon glyphicon-remove"></span></button>
-                  </div>
-                </div>
-                <div class="form-group" ng-hide="bools.length >= all.bools.length || add.bools">
-                  <div class="col-lg-3 col-lg-offset-3">
-                    <button type="button" class="btn btn-success btn-primary" ng-click="clickAdd('bools')"><span class="glyphicon glyphicon-plus"></span></button>
-                  </div>
-                </div>
-              </fieldset>
-              <fieldset>
-              {% endraw %}
-                <legend id="string">{{ _('Strings') }}</legend>
-              {% raw %}
-                <div class="form-group" ng-repeat="string in strings" ng-class="{'has-error': invalid[string.name] }">
-                  <label for="{{ ::string.name }}" class="col-lg-3 control-label">{{ ::string.name }}</label>
-                  <div ng-if="!suggest[string.name]" class="col-lg-2">
-                    <input class="form-control" type="text" id="{{ ::string.name }}" name="{{ ::string.name }}" ng-model="string.value" ng-focus="focusIn($event)" ng-blur="focusOut($event)" placeholder="{{ ::placeholders[string.name] }}">
-                  </div>
-                  <div ng-if="suggest[string.name]" class="col-lg-2">
-                    <select class="form-control" id="{{ ::string.name }}" name="{{ ::string.name }}" ng-model="string.value" placeholder="{{ ::placeholders[string.name] }}">
-                      <option ng-repeat="opt in ::suggest[string.name]" ng-selected="{{opt==string.value}}" value="{{ opt }}">{{ opt }}</option>
-                    </select>
-                  </div>
-                  <div class="col-lg-1">
-                    <button type="button" class="btn btn-danger" ng-click="remove('strings', $index)"><span class="glyphicon glyphicon-minus"></span></button>
-                  </div>
-                  <div class="col-lg-6" ng-bind-html="::server_doc[string.name]"></div>
-                </div>
-                <div class="form-group" ng-hide="!add.strings">
-                  <div class="col-lg-3">
-                    <ui-select ng-model="new.strings" ng-disabled="!add.strings" style="width: 100%;" on-select="select($item, $select, 'strings')">
-              {% endraw %}
-                    <ui-select-match placeholder="{{ _('Select an option') }}">
-              {% raw %}
-                        {{ $select.selected.name }}
-                      </ui-select-match>
-                      <ui-select-choices repeat="value.name as value in avail.strings | filter: $select.search">
-                        <div ng-bind-html="value.name | highlight: $select.search"></div>
-                      </ui-select-choices>
-                    </ui-select>
-                  </div>
-                  <div class="col-lg-9">
-                    <button type="button" class="btn btn-danger" ng-click="undoAdd('strings')"><span class="glyphicon glyphicon-remove"></span></button>
-                  </div>
-                </div>
-                <div class="form-group" ng-hide="strings.length >= all.strings.length || add.strings">
-                  <div class="col-lg-3 col-lg-offset-3">
-                    <button type="button" class="btn btn-success btn-primary" ng-click="clickAdd('strings')"><span class="glyphicon glyphicon-plus"></span></button>
-                  </div>
-                </div>
-              </fieldset>
-              <fieldset>
-              {% endraw %}
-                <legend id="integer">{{ _('Integers') }}</legend>
-              {% raw %}
-                <div class="form-group" ng-class="{'has-error': !setSettings[int.name].$valid}" ng-repeat="int in integers">
-                  <label for="{{ ::int.name }}" class="col-lg-3 control-label">{{ ::int.name }}</label>
-                  <div class="col-lg-2">
-                    <input class="form-control" type="number" id="{{ ::int.name }}" name="{{ ::int.name }}" ng-model="int.value" ng-focus="focusIn($event)" ng-blur="focusOut($event)" placeholder="{{ ::placeholders[int.name] }}">
-                  </div>
-                  <div class="col-lg-1">
-                    <button type="button" class="btn btn-danger" ng-click="remove('integers', $index)"><span class="glyphicon glyphicon-minus"></span></button>
-                  </div>
-                  <div class="col-lg-6" ng-bind-html="::server_doc[int.name]"></div>
-                </div>
-                <div class="form-group" ng-hide="!add.integers">
-                  <div class="col-lg-3">
-                    <ui-select ng-model="new.integers" ng-disabled="!add.integers" style="width: 100%;" on-select="select($item, $select, 'integers')">
-              {% endraw %}
-                    <ui-select-match placeholder="{{ _('Select an option') }}">
-              {% raw %}
-                        {{ $select.selected.name }}
-                      </ui-select-match>
-                      <ui-select-choices repeat="value.name as value in avail.integers | filter: $select.search">
-                        <div ng-bind-html="value.name | highlight: $select.search"></div>
-                      </ui-select-choices>
-                    </ui-select>
-                  </div>
-                  <div class="col-lg-9">
-                    <button type="button" class="btn btn-danger" ng-click="undoAdd('integers')"><span class="glyphicon glyphicon-remove"></span></button>
-                  </div>
-                </div>
-                <div class="form-group" ng-hide="integers.length >= all.integers.length || add.integers">
-                  <div class="col-lg-3 col-lg-offset-3">
-                    <button type="button" class="btn btn-success btn-primary" ng-click="clickAdd('integers')"><span class="glyphicon glyphicon-plus"></span></button>
-                  </div>
-                </div>
-              </fieldset>
-              <fieldset>
-              {% endraw %}
-                <legend id="multi">{{ _('Multi') }}</legend>
-              {% raw %}
-                <div class="well" ng-repeat="multi in multis">
-                  <div class="form-group" ng-repeat="(i, val) in multi.value track by $index">
-                    <label class="col-lg-3 control-label" for="{{ ::$parent.multi.name }}-{{ $index }}">{{ ::$parent.multi.name }}</label>
-                    <div class="col-lg-2">
-                      <input class="form-control" type="text" name="{{ ::$parent.multi.name }}" id="{{ ::$parent.multi.name }}-{{ $index }}" ng-model="$parent.multi.value[i]" ng-focus="focusIn($event)" ng-blur="focusOut($event)" placeholder="{{ ::placeholders[$parent.multi.name] }}">
-                    </div>
-                    <div class="col-lg-1">
-                      <button type="button" class="btn btn-danger" ng-click="removeMulti($parent.$index, $index)"><span class="glyphicon glyphicon-minus"></span></button>
-                      <button type="button" class="btn btn-success btn-primary" ng-click="addMulti($parent.$parent.$index)" ng-if="$last"><span class="glyphicon glyphicon-plus"></span></button>
-                    </div>
-                    <div class="col-lg-5">
-                      <div ng-if="$first" ng-bind-html="::server_doc[$parent.multi.name]"></div>
-                    </div>
-                    <div class="col-lg-1">
-                      <input type="checkbox" id="{{ ::$parent.multi.name }}_reset_bui_CUSTOM_view-{{ i }}" title="{{ _('Reset list') }}" ng-model="$parent.multi.reset[i]">
-                      <input type="hidden" name="{{ ::$parent.multi.name }}_reset_bui_CUSTOM" id="{{ ::$parent.multi.name }}_reset_bui_CUSTOM-{{ i }}">
-                    </div>
-                  </div>
-                </div>
-                <div class="form-group" ng-hide="!add.multis">
-                  <div class="col-lg-3">
-                    <ui-select ng-model="new.multis" ng-disabled="!add.multis" style="width: 100%;" on-select="select($item, $select, 'multis')">
-              {% endraw %}
-                      <ui-select-match placeholder="{{ _('Select an option') }}">
-              {% raw %}
-                        {{ $select.selected.name }}
-                      </ui-select-match>
-                      <ui-select-choices repeat="value.name as value in avail.multis | filter: $select.search">
-                        <div ng-bind-html="value.name | highlight: $select.search"></div>
-                      </ui-select-choices>
-                    </ui-select>
-                  </div>
-                  <div class="col-lg-9">
-                    <button type="button" class="btn btn-danger" ng-click="undoAdd('multis')"><span class="glyphicon glyphicon-remove"></span></button>
-                  </div>
-                </div>
-                <div class="form-group" ng-hide="multis.length >= all.multis.length || add.multis">
-                  <div class="col-lg-3 col-lg-offset-3">
-                    <button type="button" class="btn btn-success btn-primary" ng-click="clickAdd('multis')"><span class="glyphicon glyphicon-plus"></span></button>
-                  </div>
-                </div>
-              </fieldset>
-              <fieldset>
-              {% endraw %}
-                <legend id="includes_source">{{ _('Source external configuration files') }}</legend>
-              {% raw %}
-                <div class="well">
-                  <div class="form-group" ng-repeat="(i, val) in includes track by $index" ng-class="{'has-error': inc_invalid[$index] }">
-                    <label for="include-{{ $index }}" class="col-lg-3 control-label">
-              {% endraw %}
-                      {{ _('source config') }}
-              {% raw %}
-                    </label>
-                    <div class="col-lg-2">
-                      <input class="form-control" type="text" id="include-{{ $index }}" name="includes" ng-model="includes[i]" ng-focus="focusIn($event)" ng-blur="focusOut($event)" placeholder="{{ ::placeholders['.'] }}">
-                      <input type="hidden" ng-disabled="{{ includes_ori[$index] === false }}" name="includes_ori" value="{{ includes_ori[$index] }}">
-                    </div>
-                    <div class="col-lg-2 btn-toolbar">
-                      <button type="button" class="btn btn-danger" ng-click="removeIncludes($index)"><span class="glyphicon glyphicon-minus"></span></button>
-                      <div class="btn-group">
-                        <button class="btn btn-info" type="button" ng-disabled="!includes[i]" data-toggle="dropdown" ng-click="expandPath($index)"><span class="glyphicon glyphicon-pencil"></span></button>
-                        <button aria-expanded="false" aria-haspopup="true" data-toggle="dropdown" class="btn btn-info dropdown-toggle" type="button" ng-click="expandPath($index)" ng-disabled="!includes[i]">
-                          <span class="caret"></span>
-                        </button>
-                        <ul class="dropdown-menu browse">
-                          <li style="cursor: pointer;" ng-repeat="(j, path) in paths[$index] track by $index" ng-click="editInclude($parent.$index, $index)">{{ path }}</li>
-                      </ul>
-                    </div>
-                    </div>
-                    <div class="col-lg-5" ng-if="$first" ng-bind-html="::server_doc['.']"></div>
-                  </div>
-                  <div class="form-group">
-              {% endraw %}
-                    <label for="btn-add-include" class="col-lg-3 control-label">{{ _('source config') }}</label>
-                    <div class="col-lg-9">
-                      <button type="button" class="btn btn-success btn-primary" ng-click="clickAddIncludes()"><span class="glyphicon glyphicon-plus"></span></button>
-                    </div>
-                  </div>
-                </div>
-              </fieldset>
-              <div class="btn-toolbar">
-                <div class="col-lg-3 col-lg-offset-3">
-                  <button type="submit" class="btn btn-primary" ng-disabled="!setSettings.$valid">{{ _('Submit') }}</button>
-                </div>
-                <div class="col-lg-6">
-                  {% if client and not conf -%}
-                  <div class="btn-group dropupi text-right">
-                    <button type="button" class="btn btn-danger" ng-click="deleteClient()">{{ _("Remove '%(client)s'", client=client) }}</button>
-                    <button class="btn btn-danger dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
-                    <ul class="dropdown-menu browse">
-                      <li><label for="keepconf">{{ _('Do not remove the configuration:') }}&nbsp;</label><input type="checkbox" id="keepconf" name="keepconf"></li>
-                      <li><label for="delcert">{{ _('Remove associated certificate:') }}&nbsp;</label><input type="checkbox" id="delcert" name="delcert"></li>
-                      <li><label for="revoke">{{ _('Revoke associated certificate:') }}&nbsp;</label><input type="checkbox" id="revoke" name="revoke" ng-disabled="!revokeEnabled"></li>
-                  </div>
-                  {% endif -%}
+          <ul class="nav nav-tabs" id="config-nav">
+            <li class="active"><a href="#config" data-toggle="tab" aria-expanded="true">{{ _('Config') }}</a></li>
+            <li><a href="#raw" data-toggle="tab" aria-expanded="false">{{ _('Raw content') }}</a></li>
+            <li><a href="#hierarchy" data-toggle="tab" aria-expanded="false">{{ _('Hierarchy') }}</a></li>
+            <li><a href="#clients" data-toggle="tab" aria-expanded="false">{{ _('Clients') }}</a></li>
+            <li><a href="#list-templates" data-toggle="tab" aria-expanded="false">{{ _('Templates') }}</a></li>
+          </ul>
+          <div id="config-tab-content" class="tab-content">
+            <div class="tab-pane fade active in" id="config">
+              <div id="waiting-container" class="row">
+                <span class="icon-refresh-animate glyphicon glyphicon-refresh"></span>&nbsp;{{ _('Loading, Please wait...') }}
+                <br />
+                <div class="progress progress-striped active">
+                  <div class="progress-bar progress-bar-info" style="width: 100%"></div>
                 </div>
               </div>
-            </form>
+
+              <div id="settings-panel" class="form-container" style="display:none;" ng-cloak>
+                {% if client -%}
+                  {% if template -%}
+                <form class="form-horizontal" action="{{ url_for('api.client_settings', client=client, conf=conf, template=template, server=server) }}" method="POST" ng-submit="submit($event)" name="setSettings" onbeforeunload>
+                  {% else -%}
+                <form class="form-horizontal" action="{{ url_for('api.client_settings', client=client, conf=conf, server=server) }}" method="POST" ng-submit="submit($event)" name="setSettings" onbeforeunload>
+                  {% endif -%}
+                {% else -%}
+                <form class="form-horizontal" action="{{ url_for('api.server_settings', conf=conf, server=server) }}" method="POST" ng-submit="submit($event)" name="setSettings" onbeforeunload>
+                {% endif -%}
+                  <fieldset>
+                    <legend id="boolean">{{ _('Booleans') }}</legend>
+                  {# From here, the jinja syntax is escaped because we use the angularjs syntax #}
+                  {% raw %}
+                    <div class="form-group" ng-repeat="bool in bools">
+                      <label for="{{ ::bool.name }}_view" class="col-lg-3 control-label">{{ ::bool.name }}</label>
+                      <div class="col-lg-2">
+                        <input bs-switch ng-model="bool.value" type="checkbox" id="{{ ::bool.name }}_view" name="{{ ::bool.name }}_view" class="form-control">
+                        <input type="hidden" name="{{ ::bool.name }}" id="{{ ::bool.name }}">
+                      </div>
+                      <div class="col-lg-1">
+                        <button type="button" class="btn btn-danger" ng-click="remove('bools', $index)"><span class="glyphicon glyphicon-minus"></span></button>
+                      </div>
+                      <div class="col-lg-6" ng-bind-html="::server_doc[bool.name]"></div>
+                    </div>
+                    <div class="form-group" ng-hide="!add.bools">
+                      <div class="col-lg-3">
+                        <ui-select ng-model="new.bools" ng-disabled="!add.bools" style="width: 100%;" on-select="select($item, $select, 'bools')">
+                  {% endraw %}
+                        <ui-select-match placeholder="{{ _('Select an option') }}">
+                  {% raw %}
+                            {{ $select.selected.name }}
+                          </ui-select-match>
+                          <ui-select-choices repeat="value.name as value in avail.bools | filter: $select.search">
+                            <div ng-bind-html="value.name | highlight: $select.search"></div>
+                          </ui-select-choices>
+                        </ui-select>
+                      </div>
+                      <div class="col-lg-9">
+                        <button type="button" class="btn btn-danger" ng-click="undoAdd('bools')"><span class="glyphicon glyphicon-remove"></span></button>
+                      </div>
+                    </div>
+                    <div class="form-group" ng-hide="bools.length >= all.bools.length || add.bools">
+                      <div class="col-lg-3 col-lg-offset-3">
+                        <button type="button" class="btn btn-success btn-primary" ng-click="clickAdd('bools')"><span class="glyphicon glyphicon-plus"></span></button>
+                      </div>
+                    </div>
+                  </fieldset>
+                  <fieldset>
+                  {% endraw %}
+                    <legend id="string">{{ _('Strings') }}</legend>
+                  {% raw %}
+                    <div class="form-group" ng-repeat="string in strings" ng-class="{'has-error': invalid[string.name] }">
+                      <label for="{{ ::string.name }}" class="col-lg-3 control-label">{{ ::string.name }}</label>
+                      <div ng-if="!suggest[string.name]" class="col-lg-2">
+                        <input class="form-control" type="text" id="{{ ::string.name }}" name="{{ ::string.name }}" ng-model="string.value" ng-focus="focusIn($event)" ng-blur="focusOut($event)" placeholder="{{ ::placeholders[string.name] }}">
+                      </div>
+                      <div ng-if="suggest[string.name]" class="col-lg-2">
+                        <select class="form-control" id="{{ ::string.name }}" name="{{ ::string.name }}" ng-model="string.value" placeholder="{{ ::placeholders[string.name] }}">
+                          <option ng-repeat="opt in ::suggest[string.name]" ng-selected="{{opt==string.value}}" value="{{ opt }}">{{ opt }}</option>
+                        </select>
+                      </div>
+                      <div class="col-lg-1">
+                        <button type="button" class="btn btn-danger" ng-click="remove('strings', $index)"><span class="glyphicon glyphicon-minus"></span></button>
+                      </div>
+                      <div class="col-lg-6" ng-bind-html="::server_doc[string.name]"></div>
+                    </div>
+                    <div class="form-group" ng-hide="!add.strings">
+                      <div class="col-lg-3">
+                        <ui-select ng-model="new.strings" ng-disabled="!add.strings" style="width: 100%;" on-select="select($item, $select, 'strings')">
+                  {% endraw %}
+                        <ui-select-match placeholder="{{ _('Select an option') }}">
+                  {% raw %}
+                            {{ $select.selected.name }}
+                          </ui-select-match>
+                          <ui-select-choices repeat="value.name as value in avail.strings | filter: $select.search">
+                            <div ng-bind-html="value.name | highlight: $select.search"></div>
+                          </ui-select-choices>
+                        </ui-select>
+                      </div>
+                      <div class="col-lg-9">
+                        <button type="button" class="btn btn-danger" ng-click="undoAdd('strings')"><span class="glyphicon glyphicon-remove"></span></button>
+                      </div>
+                    </div>
+                    <div class="form-group" ng-hide="strings.length >= all.strings.length || add.strings">
+                      <div class="col-lg-3 col-lg-offset-3">
+                        <button type="button" class="btn btn-success btn-primary" ng-click="clickAdd('strings')"><span class="glyphicon glyphicon-plus"></span></button>
+                      </div>
+                    </div>
+                  </fieldset>
+                  <fieldset>
+                  {% endraw %}
+                    <legend id="integer">{{ _('Integers') }}</legend>
+                  {% raw %}
+                    <div class="form-group" ng-class="{'has-error': !setSettings[int.name].$valid}" ng-repeat="int in integers">
+                      <label for="{{ ::int.name }}" class="col-lg-3 control-label">{{ ::int.name }}</label>
+                      <div class="col-lg-2">
+                        <input class="form-control" type="number" id="{{ ::int.name }}" name="{{ ::int.name }}" ng-model="int.value" ng-focus="focusIn($event)" ng-blur="focusOut($event)" placeholder="{{ ::placeholders[int.name] }}">
+                      </div>
+                      <div class="col-lg-1">
+                        <button type="button" class="btn btn-danger" ng-click="remove('integers', $index)"><span class="glyphicon glyphicon-minus"></span></button>
+                      </div>
+                      <div class="col-lg-6" ng-bind-html="::server_doc[int.name]"></div>
+                    </div>
+                    <div class="form-group" ng-hide="!add.integers">
+                      <div class="col-lg-3">
+                        <ui-select ng-model="new.integers" ng-disabled="!add.integers" style="width: 100%;" on-select="select($item, $select, 'integers')">
+                  {% endraw %}
+                        <ui-select-match placeholder="{{ _('Select an option') }}">
+                  {% raw %}
+                            {{ $select.selected.name }}
+                          </ui-select-match>
+                          <ui-select-choices repeat="value.name as value in avail.integers | filter: $select.search">
+                            <div ng-bind-html="value.name | highlight: $select.search"></div>
+                          </ui-select-choices>
+                        </ui-select>
+                      </div>
+                      <div class="col-lg-9">
+                        <button type="button" class="btn btn-danger" ng-click="undoAdd('integers')"><span class="glyphicon glyphicon-remove"></span></button>
+                      </div>
+                    </div>
+                    <div class="form-group" ng-hide="integers.length >= all.integers.length || add.integers">
+                      <div class="col-lg-3 col-lg-offset-3">
+                        <button type="button" class="btn btn-success btn-primary" ng-click="clickAdd('integers')"><span class="glyphicon glyphicon-plus"></span></button>
+                      </div>
+                    </div>
+                  </fieldset>
+                  {% endraw %}
+                  {% if not client -%}
+                  <fieldset>
+                    <legend id="pair">{{ _('Pairs') }}</legend>
+                  {% raw %}
+                    <div class="well" ng-repeat="pair in pairs">
+                      <div class="row" ng-repeat="(id, values) in pair.value track by $index">
+                        <div class="form-group" ng-repeat="(i, val) in values track by $index">
+                          <label class="col-lg-3 control-label" for="{{ $parent.id }}-{{ $index }}">{{ $parent.id }}</label>
+                          <div class="col-lg-2">
+                            <input class="form-control" type="text" ng-if="!isNumber($parent.id)" name="{{ $parent.id }}" id="{{ $parent.id }}-{{ $index }}" ng-model="$parent.pair.value[id][i]" ng-focus="focusIn($event)" ng-blur="focusOut($event)" placeholder="{{ ::placeholders[$parent.id] }}">
+                            <input class="form-control" type="number" ng-if="isNumber($parent.id)" name="{{ $parent.id }}" id="{{ $parent.id }}-{{ $index }}" ng-model="$parent.pair.value[id][i]" ng-focus="focusIn($event)" ng-blur="focusOut($event)" placeholder="{{ ::placeholders[$parent.id] }}">
+                          </div>
+                          <div class="col-lg-1">
+                            <button type="button" class="btn btn-danger" ng-click="removePairElement($parent.$parent.$index, $parent.id, $index)"><span class="glyphicon glyphicon-minus"></span></button>
+                            <button type="button" class="btn btn-success btn-primary" ng-click="addPairElement($parent.$parent.$parent.$index, $parent.id)" ng-if="$last"><span class="glyphicon glyphicon-plus"></span></button>
+                          </div>
+                          <div class="col-lg-6">
+                            <div ng-if="$first" ng-bind-html="::server_doc[$parent.id]"></div>
+                          </div>
+                        </div>
+                        <div class="form-group" ng-if="!pair.value[$parent.pair_associations[id]] || pair.value[$parent.pair_associations[id]].length <= 0">
+                  {% endraw %}
+                        <label for="btn-add-include" class="col-lg-3 control-label">{{ _('add {{ $parent.pair_associations[id] }}') }}</label>
+                  {% raw %}
+                          <div class="col-lg-9">
+                            <button type="button" class="btn btn-success btn-primary" ng-click="addPairElement($parent.$parent.$index, $parent.pair_associations[id])"><span class="glyphicon glyphicon-plus"></span></button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group" ng-hide="!add.pairs">
+                      <div class="col-lg-3">
+                        <ui-select ng-model="new.pairs" ng-disabled="!add.pairs" style="width: 100%;" on-select="select($item, $select, 'pairs')">
+                  {% endraw %}
+                          <ui-select-match placeholder="{{ _('Select a pair member') }}">
+                  {% raw %}
+                            {{ $select.selected.name }}
+                          </ui-select-match>
+                          <ui-select-choices repeat="value.name as value in avail.pairs | filter: $select.search">
+                            <div ng-bind-html="value.name | highlight: $select.search"></div>
+                          </ui-select-choices>
+                        </ui-select>
+                      </div>
+                      <div class="col-lg-9">
+                        <button type="button" class="btn btn-danger" ng-click="undoAdd('pairs')"><span class="glyphicon glyphicon-remove"></span></button>
+                      </div>
+                    </div>
+                    <div class="form-group" ng-hide="pairs.length >= all.pairs.length / 2 || add.pairs">
+                      <div class="col-lg-3 col-lg-offset-3">
+                        <button type="button" class="btn btn-success btn-primary" ng-click="clickAdd('pairs')"><span class="glyphicon glyphicon-plus"></span></button>
+                      </div>
+                    </div>
+                  </fieldset>
+                  {% endraw %}
+                  {% endif -%}
+                  <fieldset>
+                    <legend id="multi">{{ _('Multi') }}</legend>
+                  {% raw %}
+                    <div class="well" ng-repeat="multi in multis">
+                      <div class="form-group" ng-repeat="(i, val) in multi.value track by $index">
+                        <label class="col-lg-3 control-label" for="{{ ::$parent.multi.name }}-{{ $index }}">{{ ::$parent.multi.name }}</label>
+                        <div class="col-lg-2">
+                          <input class="form-control" type="text" ng-if="!isNumber($parent.multi.name)" name="{{ ::$parent.multi.name }}" id="{{ ::$parent.multi.name }}-{{ $index }}" ng-model="$parent.multi.value[i]" ng-focus="focusIn($event)" ng-blur="focusOut($event)" placeholder="{{ ::placeholders[$parent.multi.name] }}">
+                          <input class="form-control" type="number" ng-if="isNumber($parent.multi.name)" name="{{ ::$parent.multi.name }}" id="{{ ::$parent.multi.name }}-{{ $index }}" ng-model="$parent.multi.value[i]" ng-focus="focusIn($event)" ng-blur="focusOut($event)" placeholder="{{ ::placeholders[$parent.multi.name] }}">
+                        </div>
+                        <div class="col-lg-1">
+                          <button type="button" class="btn btn-danger" ng-click="removeMulti($parent.$index, $index)"><span class="glyphicon glyphicon-minus"></span></button>
+                          <button type="button" class="btn btn-success btn-primary" ng-click="addMulti($parent.$parent.$index)" ng-if="$last"><span class="glyphicon glyphicon-plus"></span></button>
+                        </div>
+                        <div class="col-lg-4">
+                          <div ng-if="$first" ng-bind-html="::server_doc[$parent.multi.name]"></div>
+                        </div>
+                        <div class="col-lg-2">
+                          <input bs-switch switch-size="mini" switch-on-text="{{ checkbox_translation.yes }}" switch-off-text="{{ checkbox_translation.no }}" switch-label="{{ checkbox_translation.reset }}" type="checkbox" id="{{ ::$parent.multi.name }}_reset_bui_CUSTOM_view-{{ i }}" title="{{ checkbox_translation.reset }}" ng-model="$parent.multi.reset[i]">
+                          <input type="hidden" name="{{ ::$parent.multi.name }}_reset_bui_CUSTOM" id="{{ ::$parent.multi.name }}_reset_bui_CUSTOM-{{ i }}">
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group" ng-hide="!add.multis">
+                      <div class="col-lg-3">
+                        <ui-select ng-model="new.multis" ng-disabled="!add.multis" style="width: 100%;" on-select="select($item, $select, 'multis')">
+                  {% endraw %}
+                          <ui-select-match placeholder="{{ _('Select an option') }}">
+                  {% raw %}
+                            {{ $select.selected.name }}
+                          </ui-select-match>
+                          <ui-select-choices repeat="value.name as value in avail.multis | filter: $select.search">
+                            <div ng-bind-html="value.name | highlight: $select.search"></div>
+                          </ui-select-choices>
+                        </ui-select>
+                      </div>
+                      <div class="col-lg-9">
+                        <button type="button" class="btn btn-danger" ng-click="undoAdd('multis')"><span class="glyphicon glyphicon-remove"></span></button>
+                      </div>
+                    </div>
+                    <div class="form-group" ng-hide="multis.length >= all.multis.length || add.multis">
+                      <div class="col-lg-3 col-lg-offset-3">
+                        <button type="button" class="btn btn-success btn-primary" ng-click="clickAdd('multis')"><span class="glyphicon glyphicon-plus"></span></button>
+                      </div>
+                    </div>
+                  </fieldset>
+                  <fieldset>
+                  {% endraw %}
+                    <legend id="includes_source">{{ _('Source external configuration files') }}</legend>
+                  {% raw %}
+                    <div class="well">
+                      <div class="form-group" ng-repeat="(i, val) in includes track by $index" ng-class="{'has-error': inc_invalid[$index] }">
+                        <label for="include-{{ $index }}" class="col-lg-3 control-label">
+                  {% endraw %}
+                          {{ _('source config') }}
+                  {% raw %}
+                        </label>
+                        <div class="col-lg-2">
+                          <input class="form-control" type="text" id="include-{{ $index }}" name="includes" ng-model="includes[i]" ng-focus="focusIn($event)" ng-blur="focusOut($event)" placeholder="{{ ::placeholders['.'] }}">
+                          <input type="hidden" ng-disabled="{{ includes_ori[$index] === false }}" name="includes_ori" value="{{ includes_ori[$index] }}">
+                        </div>
+                        <div class="col-lg-2 btn-toolbar">
+                          <button type="button" class="btn btn-danger" ng-click="removeIncludes($index)"><span class="glyphicon glyphicon-minus"></span></button>
+                          <div class="btn-group">
+                            <button class="btn btn-info" type="button" ng-disabled="!includes[i]" data-toggle="dropdown" ng-click="expandPath($index)"><span class="glyphicon glyphicon-pencil"></span></button>
+                            <button aria-expanded="false" aria-haspopup="true" data-toggle="dropdown" class="btn btn-info dropdown-toggle" type="button" ng-click="expandPath($index)" ng-disabled="!includes[i]">
+                              <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu browse">
+                              <li style="cursor: pointer;" ng-repeat="(j, path) in paths[$index] track by $index" ng-click="editInclude($parent.$index, $index)">{{ path }}</li>
+                          </ul>
+                        </div>
+                        </div>
+                        <div class="col-lg-5" ng-if="$first" ng-bind-html="::server_doc['.']"></div>
+                      </div>
+                      <div class="form-group">
+                  {% endraw %}
+                        <label for="btn-add-include" class="col-lg-3 control-label">{{ _('source new config') }}</label>
+                        <div class="col-lg-9">
+                          <button type="button" class="btn btn-success btn-primary" ng-click="clickAddIncludes()"><span class="glyphicon glyphicon-plus"></span></button>
+                        </div>
+                      </div>
+                    </div>
+                  </fieldset>
+                  {% if client and not template -%}
+                  <fieldset>
+                    <legend id="templates">{{ _('Templates') }}</legend>
+                  {% raw %}
+                    <div class="well">
+                      <div class="form-group" ng-repeat="template in templates track by $index" ng-class="{'has-error': inc_invalid[$index] }">
+                        <label for="template-{{ $index }}" class="col-lg-3 control-label">
+                  {% endraw %}
+                          {{ _('template') }}
+                  {% raw %}
+                        </label>
+                        <div class="col-lg-2">
+                          <input class="form-control" type="text" id="template-{{ $index }}" ng-model="template.name" ng-focus="focusIn($event)" ng-blur="focusOut($event)" placeholder="{{ ::placeholders['.'] }}" readonly>
+                          <input type="hidden" name="templates" id="template-hidden-{{ $index }}" value="{{ template.value }}">
+                        </div>
+                        <div class="col-lg-2 btn-toolbar">
+                          <button type="button" class="btn btn-danger" ng-click="remove('templates', $index)"><span class="glyphicon glyphicon-minus"></span></button>
+                        </div>
+                        <div class="col-lg-5" ng-if="$first" ng-bind-html="::server_doc['.']"></div>
+                      </div>
+                      <div class="form-group" ng-hide="!add.templates">
+                        <div class="col-lg-3">
+                          <ui-select ng-model="new.templates" ng-disabled="!add.templates" style="width: 100%;" on-select="select($item, $select, 'templates')">
+                    {% endraw %}
+                          <ui-select-match placeholder="{{ _('Select a template') }}">
+                    {% raw %}
+                              {{ $select.selected.name }}
+                    {% endraw %}
+                            </ui-select-match>
+                            <ui-select-choices repeat="value.name as value in avail.templates | filter: $select.search">
+                              <div ng-bind-html="value.name | highlight: $select.search"></div>
+                            </ui-select-choices>
+                          </ui-select>
+                        </div>
+                        <div class="col-lg-9">
+                          <button type="button" class="btn btn-danger" ng-click="undoAdd('templates')"><span class="glyphicon glyphicon-remove"></span></button>
+                        </div>
+                      </div>
+                      <div class="form-group" ng-hide="templates.length >= raw.templates.length || add.templates">
+                        <div class="col-lg-3 col-lg-offset-3">
+                          <button type="button" class="btn btn-success btn-primary" ng-click="clickAdd('templates')"><span class="glyphicon glyphicon-plus"></span></button>
+                        </div>
+                      </div>
+                    </div>
+                  </fieldset>
+                  {% endif -%}
+                  <div class="btn-toolbar">
+                    <div class="col-lg-3 col-lg-offset-3">
+                      <button type="submit" class="btn btn-primary" ng-disabled="!setSettings.$valid"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span>&nbsp;{{ _('Save') }}</button>
+                    </div>
+                    <div class="col-lg-6">
+                      {% if client and not conf -%}
+                      <div class="btn-group dropup text-right">
+                        <button type="button" class="btn btn-danger" ng-click="deleteClient()"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span>&nbsp;{{ _("Remove '%(client)s'", client=client) }}</button>
+                        {% if not template -%}
+                        <button class="btn btn-danger dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
+                        <ul class="dropdown-menu browse">
+                          <li><label for="keepconf">{{ _('Do not remove the configuration:') }}&nbsp;</label><input type="checkbox" id="keepconf" name="keepconf"></li>
+                          <li><label for="delcert">{{ _('Remove associated certificate:') }}&nbsp;</label><input type="checkbox" id="delcert" name="delcert"></li>
+                          <li><label for="revoke">{{ _('Revoke associated certificate:') }}&nbsp;</label><input type="checkbox" id="revoke" name="revoke" ng-disabled="!revokeEnabled"></li>
+                        </ul>
+                        {% endif -%}
+                      </div>
+                      {% elif conf -%}
+                      <button type="button" class="btn btn-danger" ng-click="deleteFile()"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span>&nbsp;{{ _("Remove file") }}</button>
+                      {% endif -%}
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+            <div class="tab-pane fade" id="raw">
+              <pre>{{ '{{ raw_content }}' }}</pre>
+            </div>
+            <div class="tab-pane fade" id="hierarchy">
+              <div style="padding-top: 80px; margin-top: -45px;"></div>
+              <div id="tree-container" class="table-responsive row">
+                <table id="tree-hierarchy" class="table">
+                  <thead>
+                    <tr>
+                      <th>{{ _('File') }}</th><th></th>
+                    </tr>
+                  </thead>
+                </table>
+              </div>
+            </div>
+            <div class="tab-pane fade" id="clients">
+              <div style="padding-top: 80px; margin-top: -45px;"></div>
+              <div id="table-clients" class="table-responsive row">
+                <table class="table table-striped table-hover nowrap" width="100%" datatable="ng" dt-options="dtOptions" dt-column-defs="dtColumnDefs" id="table-list-clients">
+                  <thead>
+                    <tr>
+                      <th>{{ _('Name') }}</th><th>{{ _('Path') }}</th><th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr ng-repeat="client in clients">
+                      {% raw -%}
+                      <td>{{ client.name }}</td>
+                      <td>{{ client.value }}</td>
+                      {% endraw -%}
+                      <td><a href="{{ url_for("view.cli_settings", server=server) }}?client={{ '{{' }} client.name {{ '}}' }}" class="btn btn-info btn-xs no-link pull-right" title="{{ _('edit') }}"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="row well">
+                <form action="{{ url_for('api.new_client', server=server) }}" method="POST" ng-submit="createClient($event)">
+                  <fieldset>
+                    <Legend>{{ _('Create new client') }}</Legend>
+                    <div class="input-group col-lg-3">
+                      <input class="form-control" type="text" name="newclient" id="newclient" placeholder="{{ _('Create new client') }}">
+                      <span class="input-group-btn">
+                        <button class="btn btn-success" type="submit"><span class="glyphicon glyphicon-plus"></span></button>
+                      </span>
+                    </div>
+                  </fieldset>
+                </form>
+              </div>
+            </div>
+            <div class="tab-pane fade" id="list-templates">
+              <div style="padding-top: 80px; margin-top: -45px;"></div>
+              <div id="table-templates" class="table-responsive row">
+                <table class="table table-striped table-hover nowrap" width="100%" datatable="ng" dt-options="dtOptions" dt-column-defs="dtColumnDefs" id="table-list-templates">
+                  <thead>
+                    <tr>
+                      <th>{{ _('Name') }}</th><th>{{ _('Path') }}</th><th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr ng-repeat="template in raw.templates">
+                      {% raw -%}
+                      <td>{{ template.name }}</td>
+                      <td>{{ template.value }}</td>
+                      {% endraw -%}
+                      <td><a href="{{ url_for("view.cli_settings", server=server) }}?client={{ '{{' }} template.name {{ '}}' }}&template=true" class="btn btn-info btn-xs no-link pull-right" title="{{ _('edit') }}"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="row well">
+                <form action="{{ url_for('api.new_template', server=server) }}" method="POST" ng-submit="createTemplate($event)">
+                  <fieldset>
+                    <Legend>{{ _('Create new template') }}</Legend>
+                    <div class="input-group col-lg-3">
+                      <input class="form-control" type="text" name="newtemplate" id="newtemplate" placeholder="{{ _('Create new template') }}">
+                      <span class="input-group-btn">
+                        <button class="btn btn-success" type="submit"><span class="glyphicon glyphicon-plus"></span></button>
+                      </span>
+                    </div>
+                  </fieldset>
+                </form>
+              </div>
+            </div>
           </div>
         </div>
 {% endblock %}

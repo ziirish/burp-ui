@@ -4,23 +4,32 @@
  * It is available on the global clients view
  */
 
+var _cache_id = _EXTRA;
+
 /***
  * _servers: function that retrieve up-to-date informations from the burp server
  *  The JSON is then parsed into a table
  */
 {% import 'macros.html' as macros %}
-var _servers_table = $('#table-servers').dataTable( {
+var _servers_table = $('#table-servers').DataTable( {
 	{{ macros.translate_datatable() }}
 	{{ macros.get_page_length() }}
 	responsive: true,
+	processing: true,
+	fixedHeader: true,
 	ajax: {
 		url: '{{ url_for("api.servers_stats") }}',
+		data: function (request) {
+			request._extra = _cache_id;
+		},
 		dataSrc: function (data) {
 			return data;
 		},
 		error: myFail,
+		headers: { 'X-From-UI': true },
+		cache: AJAX_CACHE,
 	},
-	destroy: true,
+	rowId: 'name',
 	rowCallback: function( row, data ) {
 		if (!data.alive) {
 			row.className += ' danger';
@@ -53,7 +62,11 @@ var _servers = function() {
 	if (first) {
 		first = false;
 	} else {
-		_servers_table.api().ajax.reload( null, false );
+		if (!AJAX_CACHE) {
+			_cache_id = new Date().getTime();
+		}
+		_servers_table.ajax.reload( null, false );
+		AJAX_CACHE = true;
 	}
 };
 

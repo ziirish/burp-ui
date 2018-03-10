@@ -16,15 +16,22 @@ git checkout tags/$BURP_VERSION
 make -j4
 make install
 
+apt-get remove -y python-cffi
+apt-get update
+apt-get install -y libssl-dev
+
 cd
 
 # Install burp-ui
 pip install --upgrade pip
+pip install --upgrade setuptools
 pip install gevent
-pip install "requests[security]"
-pip install --upgrade cffi
+#pip install "requests[security]"
+#pip install --upgrade cffi
 pip install --upgrade $BURPUI
 pip install ujson
+pip install ipaddress
+pip install enum34
 
 # Create burp-ui User
 useradd -m -s /bin/bash -d /var/lib/burpui -c 'Burp-UI daemon user' -u 5337 burpui

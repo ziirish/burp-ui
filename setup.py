@@ -31,6 +31,7 @@ VENDOR_TO_KEEP = [
     'burpui/static/vendor/datatables.net-responsive-bs/css/responsive.bootstrap.min.css',
     'burpui/static/vendor/datatables.net-select-bs/css/select.bootstrap.min.css',
     'burpui/static/vendor/datatables.net-buttons-bs/css/buttons.bootstrap.min.css',
+    'burpui/static/vendor/datatables.net-fixedheader-bs/css/fixedHeader.bootstrap.min.css',
     'burpui/static/vendor/jquery.fancytree/dist/skin-bootstrap/ui.fancytree.min.css',
     'burpui/static/vendor/bootstrap-switch/dist/css/bootstrap3/bootstrap-switch.min.css',
     'burpui/static/vendor/ui-select/dist/select.min.css',
@@ -47,6 +48,8 @@ VENDOR_TO_KEEP = [
     'burpui/static/vendor/datatables.net-select/js/dataTables.select.min.js',
     'burpui/static/vendor/datatables.net-buttons/js/dataTables.buttons.min.js',
     'burpui/static/vendor/datatables.net-buttons-bs/js/buttons.bootstrap.min.js',
+    'burpui/static/vendor/datatables.net-fixedheader/js/dataTables.fixedHeader.min.js',
+    'burpui/static/vendor/jquery.floatThead/dist/jquery.floatThead.min.js',
     'burpui/static/vendor/jquery.fancytree/dist/jquery.fancytree-all.min.js',
     'burpui/static/vendor/jquery-file-download/src/Scripts/jquery.fileDownload.js',
     'burpui/static/vendor/lodash/dist/lodash.min.js',
@@ -61,9 +64,11 @@ VENDOR_TO_KEEP = [
     'burpui/static/vendor/angular-strap/dist/angular-strap.min.js',
     'burpui/static/vendor/angular-strap/dist/angular-strap.tpl.min.js',
     'burpui/static/vendor/angular-onbeforeunload/build/angular-onbeforeunload.js',
+    'burpui/static/vendor/angular-datatables-0.6.2/dist/angular-datatables.min.js',
     'burpui/static/vendor/moment/min/moment.min.js',
     'burpui/static/vendor/moment/locale/fr.js',
     'burpui/static/vendor/moment/locale/es.js',
+    'burpui/static/vendor/moment/locale/it.js',
     'burpui/static/vendor/angular-ui-calendar/src/calendar.js',
     'burpui/static/vendor/fullcalendar/dist/fullcalendar.min.css',
     'burpui/static/vendor/fullcalendar/dist/fullcalendar.print.min.css',
@@ -81,6 +86,7 @@ VENDOR_TO_KEEP = [
     'burpui/static/vendor/components-font-awesome/fonts/fontawesome-webfont.woff',
     'burpui/static/vendor/components-font-awesome/fonts/fontawesome-webfont.woff2',
     'burpui/static/vendor/socket.io-client/dist/socket.io.js',
+    'burpui/static/vendor/js-cookie/src/js.cookie.js',
 ]
 
 for p in VENDOR_TO_KEEP:
@@ -144,7 +150,9 @@ class BuildStatic(Command):
         call('{} ./burpui -m manage compile_translation'.format(sys.executable).split(), stderr=DEVNULL)
         log.info('getting revision number')
         rev = 'stable'
-        if os.path.exists('.git') and call("which git", shell=True, stderr=STDOUT, stdout=DEVNULL) == 0:
+        ci = os.getenv('CI')
+        commit = os.getenv('CI_COMMIT_SHA')
+        if not ci and os.path.exists('.git') and call("which git", shell=True, stderr=STDOUT, stdout=DEVNULL) == 0:
             try:
                 branch = check_output('git rev-parse HEAD', shell=True).rstrip()
                 ver = open(os.path.join('burpui', 'VERSION')).read().rstrip()
@@ -157,6 +165,18 @@ class BuildStatic(Command):
                         f.write(rev)
                 except:
                     log.error('Unable to create release file')
+            except:
+                pass
+        elif ci:
+            try:
+                ver = open(os.path.join('burpui', 'VERSION')).read().rstrip()
+                if 'dev' in ver:
+                    rev = commit
+                try:
+                    with open('burpui/RELEASE', 'wb') as f:
+                        f.write(rev)
+                except:
+                    pass
             except:
                 pass
         else:
@@ -275,16 +295,15 @@ setup(
     extras_require={
         'ldap_authentication': ['ldap3'],
         'extra': ['ujson'],
-        'gunicorn': ['eventlet', 'gunicorn'],
+        'gunicorn': ['gevent', 'gunicorn'],
         'gunicorn-extra': ['redis', 'Flask-Session==0.3.1'],
         'agent': ['gevent'],
         'ci': test_requires,
         'dev': dev_requires,
-        'debian_wheezy': ['functools32'],
         'celery': ['Celery', 'redis'],
         'sql': ['Flask-SQLAlchemy', 'Flask-Migrate>=2.1.0', 'sqlalchemy-utils'],
         'limit': ['Flask-Limiter', 'redis'],
-        'websocket': ['flask-socketio', 'redis'],
+        'websocket': ['flask-socketio', 'redis', 'gevent-websocket'],
     },
     tests_require=test_requires,
     classifiers=[
@@ -295,7 +314,6 @@ setup(
         'Operating System :: POSIX :: Linux',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.6',
         'Topic :: System :: Archiving :: Backup',
         'Topic :: System :: Monitoring',

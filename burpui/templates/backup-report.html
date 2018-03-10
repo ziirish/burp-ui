@@ -19,40 +19,52 @@
           <h1 class="page-header">{{ _('Backup n°%(number)s of %(client)s', number=mypad(nbackup), client=cname) }}</h1>
           <div class="row placeholders">
             <div class="col-xs-6 col-sm-6 placeholder">
-              <div class="mycharts" id="chart_new" style="height: 350px;">
-                <svg></svg>
+              <div class="well">
+                <h4>{{ _('New') }}</h4>
+                <div class="mycharts" id="chart_new" style="height: 350px;">
+                  <svg></svg>
+                </div>
               </div>
-              <h4>{{ _('New') }}</h4>
             </div>
             <div class="col-xs-6 col-sm-6 placeholder">
-              <div class="mycharts" id="chart_changed" style="height: 350px;">
-                <svg></svg>
+              <div class="well">
+                <h4>{{ _('Changed') }}</h4>
+                <div class="mycharts" id="chart_changed" style="height: 350px;">
+                  <svg></svg>
+                </div>
               </div>
-              <h4>{{ _('Changed') }}</h4>
             </div>
             <div class="col-xs-6 col-sm-6 placeholder">
-              <div class="mycharts" id="chart_unchanged" style="height: 350px;">
-                <svg></svg>
+              <div class="well">
+                <h4>{{ _('Unchanged') }}</h4>
+                <div class="mycharts" id="chart_unchanged" style="height: 350px;">
+                  <svg></svg>
+                </div>
               </div>
-              <h4>{{ _('Unchanged') }}</h4>
             </div>
             <div class="col-xs-6 col-sm-6 placeholder">
-              <div class="mycharts" id="chart_deleted" style="height: 350px;">
-                <svg></svg>
+              <div class="well">
+                <h4>{{ _('Deleted') }}</h4>
+                <div class="mycharts" id="chart_deleted" style="height: 350px;">
+                  <svg></svg>
+                </div>
               </div>
-              <h4>{{ _('Deleted') }}</h4>
             </div>
             <div class="col-xs-6 col-sm-6 placeholder">
-              <div class="mycharts" id="chart_total" style="height: 350px;">
-                <svg></svg>
+              <div class="well">
+                <h4>{{ _('Total') }}</h4>
+                <div class="mycharts" id="chart_total" style="height: 350px;">
+                  <svg></svg>
+                </div>
               </div>
-              <h4>{{ _('Total') }}</h4>
             </div>
             <div class="col-xs-6 col-sm-6 placeholder">
-              <div class="mycharts" id="chart_scanned" style="height: 350px;">
-                <svg></svg>
+              <div class="well">
+                <h4>{{ _('Scanned') }}</h4>
+                <div class="mycharts" id="chart_scanned" style="height: 350px;">
+                  <svg></svg>
+                </div>
               </div>
-              <h4>{{ _('Scanned') }}</h4>
             </div>
             <!--
             <div class="col-xs-12 col-sm-12 placeholder">
@@ -74,8 +86,10 @@
             </div>
             -->
             <div class="col-xs-12 col-sm-12 placeholder">
-              <div class="mycharts" id="chart_combined" style="height: 450px;">
-                <svg></svg>
+              <div class="well">
+                <div class="mycharts" id="chart_combined" style="height: 450px;">
+                  <svg></svg>
+                </div>
               </div>
             </div>
           </div>

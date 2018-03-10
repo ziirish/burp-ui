@@ -7,6 +7,7 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
+import re
 import math
 import uuid
 
@@ -62,6 +63,12 @@ def bytes_human(value):
     return '{0:.1eM}'.format(_hr(value))
 
 
+@view.app_template_filter()
+def regex_replace(value, regex, replace):
+    """Replace every string matching the given regex with the replacement"""
+    return re.sub(regex, replace, value, flags=re.IGNORECASE)
+
+
 """
 And here is the main site
 """
@@ -101,7 +108,8 @@ def calendar(server=None, client=None):
 @login_required
 def settings(server=None, conf=None):
     # Only the admin can edit the configuration
-    if not current_user.is_anonymous and not current_user.acl.is_admin():
+    if not current_user.is_anonymous and not current_user.acl.is_admin() and \
+            not current_user.acl.is_moderator():
         abort(403)
     if not conf:
         try:
@@ -124,7 +132,8 @@ def settings(server=None, conf=None):
 @login_required
 def admin():
     # Only the admin can access this page
-    if not current_user.is_anonymous and not current_user.acl.is_admin():
+    if not current_user.is_anonymous and not current_user.acl.is_admin() and \
+            not current_user.acl.is_moderator():
         abort(403)
     return render_template('admin.html', admin=True, ng_controller='AdminCtrl')
 
@@ -144,7 +153,8 @@ def me():
 @login_required
 def cli_settings(server=None, client=None, conf=None):
     # Only the admin can edit the configuration
-    if not current_user.is_anonymous and not current_user.acl.is_admin():
+    if not current_user.is_anonymous and not current_user.acl.is_admin() and \
+            not current_user.acl.is_moderator():
         abort(403)
     if not conf:
         try:
@@ -162,9 +172,11 @@ def cli_settings(server=None, client=None, conf=None):
             pass
     client = client or request.args.get('client')
     server = server or request.args.get('serverName')
+    template = request.args.get('template') or False
     return render_template(
         'settings.html',
         settings=True,
+        template=template,
         client=client,
         server=server,
         conf=conf,
@@ -290,15 +302,15 @@ def client_report(server=None, name=None):
     """Specific client report"""
     server = server or request.args.get('serverName')
     try:
-        l = bui.client.get_client(name, agent=server)
+        res = bui.client.get_client(name, agent=server)
     except BUIserverException:
-        l = []
-    if len(l) == 1:
+        res = []
+    if len(res) == 1:
         return redirect(
             url_for(
                 '.backup_report',
                 name=name,
-                backup=l[0]['number'],
+                backup=res[0]['number'],
                 server=server
             )
         )

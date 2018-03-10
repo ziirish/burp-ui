@@ -16,7 +16,7 @@ pip install -r requirements.txt
 pip install wheel
 
 echo "building dist"
-[ "$(sed 's/\([[:digit:]]*\)\..*$/\1/' <<<$VERSION)" -eq 2 ] && {
+#[ "$(sed 's/\([[:digit:]]*\)\..*$/\1/' <<<$VERSION)" -eq 2 ] && {
     $PYTHON setup.py sdist bdist_wheel bdist_egg
     mkdir meta
     cd pkgs
@@ -28,20 +28,20 @@ echo "building dist"
         cd ..
     done
     cd ..
-} || {
-    $PYTHON setup.py bdist_egg
-    mkdir meta
-    cd pkgs
-    for pkg in *
-    do
-        [ -f "$pkg" ] && continue
-        cd $pkg
-        $PYTHON setup.py bdist_egg
-        find dist -exec cp "{}" ../../meta/ \;
-        cd ..
-    done
-    cd ..
-}
+#} || {
+#    $PYTHON setup.py bdist_egg
+#    mkdir meta
+#    cd pkgs
+#    for pkg in *
+#    do
+#        [ -f "$pkg" ] && continue
+#        cd $pkg
+#        $PYTHON setup.py bdist_egg
+#        find dist -exec cp "{}" ../../meta/ \;
+#        cd ..
+#    done
+#    cd ..
+#}
 
 # Not useful anymore since we are using artifacts
 #echo "publishing build"

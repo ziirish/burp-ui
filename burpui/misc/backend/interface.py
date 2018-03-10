@@ -99,15 +99,17 @@ class BUIbackend(with_metaclass(ABCMeta, object)):
             conf.update_defaults(self.defaults)
             section = 'Burp'
             if section not in conf.options:
-                section = 'Burp{}'.format(self._vers)
-                if section in conf.options:
+                section_old = 'Burp{}'.format(self._vers)
+                if section_old in conf.options:
                     # TODO: remove the compatibility
                     self.logger.critical(
                         'The "[{}]" section is DEPRECATED and will be removed '
                         'in v0.7.0. Please use the "[Burp]" section '
-                        'instead.'.format(section)
+                        'instead.'.format(section_old)
                     )
+                    section = section_old
             conf.default_section(section)
+            self.with_celery = conf.get('WITH_CELERY', False)
             self.port = conf.safe_get('bport', 'integer')
             self.host = conf.safe_get('bhost')
             self.burpbin = self._get_binary_path(
@@ -251,7 +253,7 @@ class BUIbackend(with_metaclass(ABCMeta, object)):
 
             [
                 "client1\t2\ti\t576 0 1443766803",
-                "client2\t2\ti\t1 0 1422189120",
+                "client2\t2\ti\t1 0 1422189120"
             ]
         """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
@@ -484,34 +486,34 @@ class BUIbackend(with_metaclass(ABCMeta, object)):
                     "last": "2015-01-25 13:32:00",
                     "name": "client2",
                     "state": "idle"
-                },
+                }
             ]
         """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
-#    @abstractmethod
-#    def get_client_status(self, client=None, agent=None):
-#        """The :func:`burpui.misc.backend.interface.BUIbackend.get_client_status`
-#        function returns the status of a given client with its last stats.
-#
-#        :param client: What client status do we want
-#        :type client: str
-#        :param agent: What server to ask (only in multi-agent mode)
-#        :type agent: str
-#
-#        :returns: The last status of a given client
-#
-#        Example::
-#
-#            {
-#                "name": "client1",
-#                "state": "idle",
-#                "percent": null,
-#                "phase": null,
-#            }
-#
-#        """
-#        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+    @abstractmethod
+    def get_client_status(self, name=None, agent=None):
+        """The :func:`burpui.misc.backend.interface.BUIbackend.get_client_status`
+        function returns the status of a given client with its last stats.
+
+        :param name: What client status do we want
+        :type name: str
+        :param agent: What server to ask (only in multi-agent mode)
+        :type agent: str
+
+        :returns: The last status of a given client
+
+        Example::
+
+            {
+                "state": "idle",
+                "percent": null,
+                "phase": null,
+                "last": "never"
+            }
+
+        """
+        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
     @abstractmethod
     def get_client(self, name=None, agent=None):
@@ -536,7 +538,7 @@ class BUIbackend(with_metaclass(ABCMeta, object)):
                     "encrypted": true,
                     "number": "1",
                     "received": 889818873,
-                    "size": 35612321050,
+                    "size": 35612321050
                 }
             ]
         """
@@ -577,7 +579,7 @@ class BUIbackend(with_metaclass(ABCMeta, object)):
                     "encrypted": true,
                     "number": "1",
                     "received": 889818873,
-                    "size": 35612321050,
+                    "size": 35612321050
                 }
             ]
         """
@@ -767,8 +769,8 @@ class BUIbackend(with_metaclass(ABCMeta, object)):
                             "Mon,Tue,Thu,Fri,17,18,19,20,21,22,23",
                             "Wed,Sat,Sun,06,07,08,09,10,11,12,13,14,15,16,17,18,19,20,21,22,23"
                         ]
-                    },
-                ],
+                    }
+                ]
             }
         """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
@@ -806,7 +808,7 @@ class BUIbackend(with_metaclass(ABCMeta, object)):
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
     @abstractmethod
-    def store_conf_cli(self, data, client=None, conf=None, agent=None):
+    def store_conf_cli(self, data, client=None, conf=None, template=False, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.store_conf_cli`
         function works the same way as the
         :func:`burpui.misc.backend.interface.BUIbackend.store_conf_srv` function

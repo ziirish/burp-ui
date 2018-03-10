@@ -22,12 +22,13 @@ clean:
 	@find . -type d -name "__pycache__" -exec rm -rf "{}" \; || true
 	@find . -type f -name "*.pyc" -delete || true
 	@rm -rf build dist burp_ui.egg-info docs/_build || true
+	@cd docs && make clean
 
 clean_coverage:
 	@rm -f .coverage
 
 flake8:
 	@echo 'Checking pep8 compliance and errors...'
-	@flake8 --ignore=E501 burpui
+	@flake8 --ignore=E501,E722 burpui
 
 check: pep8 pyflakes doc_coverage test
