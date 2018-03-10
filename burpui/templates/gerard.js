@@ -504,7 +504,7 @@ $(function() {
 	{% endif -%}
 
 	{% if not login -%}
-		{% if not config.WS_AVAILABLE or not config.WITH_CELERY or not config.WS_ENABLED -%}
+		{% if (not config.WS_AVAILABLE or not config.WITH_CELERY or not config.WS_ENABLED) and config.LIVEREFRESH > 0 -%}
 	/***
 	 * Javascript Loop
 	 */

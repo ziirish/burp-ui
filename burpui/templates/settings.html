@@ -274,7 +274,7 @@
                           <div ng-if="$first" ng-bind-html="::server_doc[$parent.multi.name]"></div>
                         </div>
                         <div class="col-lg-2">
-                          <input bs-switch switch-size="mini" switch-on-text="{{ checkbox_translation.yes }}" switch-off-text="{{ checkbox_translation.no }}" switch-label="{{ checkbox_translation.reset }}" type="checkbox" id="{{ ::$parent.multi.name }}_reset_bui_CUSTOM_view-{{ i }}" title="{{ checkbox_translation.reset }}" ng-model="$parent.multi.reset[i]">
+                          <input bs-switch switch-size="mini" switch-on-text="{{ checkbox_translation.yes }}" switch-off-text="{{ checkbox_translation.no }}" switch-label="{{ checkbox_translation.reset }}" type="checkbox" id="{{ ::$parent.multi.name }}_reset_bui_CUSTOM_view-{{ i }}" title="{{ checkbox_translation.reset }}" ng-model="$parent.multi.reset[i]" switch-label-width="100px">
                           <input type="hidden" name="{{ ::$parent.multi.name }}_reset_bui_CUSTOM" id="{{ ::$parent.multi.name }}_reset_bui_CUSTOM-{{ i }}">
                         </div>
                       </div>
@@ -315,7 +315,7 @@
                         </label>
                         <div class="col-lg-2">
                           <input class="form-control" type="text" id="include-{{ $index }}" name="includes" ng-model="includes[i]" ng-focus="focusIn($event)" ng-blur="focusOut($event)" placeholder="{{ ::placeholders['.'] }}">
-                          <input type="hidden" ng-disabled="{{ includes_ori[$index] === false }}" name="includes_ori" value="{{ includes_ori[$index] }}">
+                          <input type="hidden" ng-if="includes_ori[$index] !== false" name="includes_ori" value="{{ includes_ori[$index] }}">
                         </div>
                         <div class="col-lg-2 btn-toolbar">
                           <button type="button" class="btn btn-danger" ng-click="removeIncludes($index)"><span class="glyphicon glyphicon-minus"></span></button>

@@ -333,6 +333,10 @@ legend[id] {
   font-style: italic;
 }
 
+.ui-select-bootstrap .ui-select-choices-row > span {
+  color: #c8c8c8;
+}
+
 .ui-select-bootstrap .ui-select-choices-row > a {
   color: #fff;
 }

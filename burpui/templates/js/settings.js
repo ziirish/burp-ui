@@ -123,6 +123,7 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$timeout', '$scrollspy', 'DTOp
 	$scope.paths = {};
 	$scope.revokeEnabled = false;
 	$scope.inc_invalid = {};
+	$scope.includes_ori = [];
 	$scope.old = {};
 	$scope.raw = {};
 	$scope.spy = {};
@@ -188,7 +189,7 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$timeout', '$scrollspy', 'DTOp
 				$scope.placeholders = data.placeholders;
 				$scope.defaults = data.defaults;
 				$scope.includes = data.results.includes;
-				$scope.includes_ori = angular.copy($scope.includes);
+				$scope.includes_ori = angular.copy(data.results.includes, $scope.includes_ori);
 				$scope.includes_ext = data.results.includes_ext;
 				$scope.templates = data.results.templates;
 				$scope.hierarchy = data.results.hierarchy;
