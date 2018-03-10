@@ -59,8 +59,8 @@ build:py2:
   tags:
   - build
   only:
-  - master
-  - demo
+  - master@ziirish/burp-ui
+  - demo@ziirish/burp-ui
   artifacts:
     paths:
     - dist/
@@ -75,7 +75,7 @@ build:py3:
   tags:
   - build
   only:
-  - master
+  - master@ziirish/burp-ui
   artifacts:
     paths:
     - dist/
@@ -96,7 +96,7 @@ build:doc:
   tags:
   - build
   only:
-  - master
+  - master@ziirish/burp-ui
   artifacts:
     paths:
     - docs/_build/html
@@ -116,7 +116,7 @@ build:docker:latest:
   tags:
   - registry
   only:
-  - rc
+  - rc@ziirish/burp-ui
 
 build:docker:release:
   stage: build
@@ -141,7 +141,7 @@ build:docker:demo:
   - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:demo
   - "curl $SENTRY_WEBHOOK -X POST -H 'Content-Type: application/json' -d '{\"version\": \"'$CI_COMMIT_REF_NAME'_'$CI_COMMIT_SHA'\"}'"
   only:
-  - demo
+  - demo@ziirish/burp-ui
   tags:
   - registry
 
@@ -163,7 +163,7 @@ deploy:demo:
   tags:
   - deploy
   only:
-  - demo
+  - demo@ziirish/burp-ui
   environment:
     name: demo
     url: https://demo.burp-ui.org/
