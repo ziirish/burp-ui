@@ -218,7 +218,7 @@ def manage():
     env['BUI_CONFIG'] = conf
     if migrations:
         env['BUI_MIGRATIONS'] = migrations
-    if os.path.isdir('burpui'):
+    if os.path.isdir('burpui') and os.path.isfile('burpui/cli.py'):
         env['FLASK_APP'] = 'burpui/cli.py'
     else:
         env['FLASK_APP'] = 'burpui.cli'
