@@ -47,6 +47,7 @@ class Parser(Doc):
         self.templates = []
         self.templates_dir = '.buitemplates'
         self.templates_path = None
+        self.templates_mtime = None
         self.filescache = {}
         self._configs = {}
         self.root = None
@@ -140,6 +141,7 @@ class Parser(Doc):
 
         for template in templates:
             conf = self.server_conf.clone()
+            conf.set_template(True)
             path = os.path.join(self.templates_path, template['name'])
             if template['name'] not in self._templates_conf:
                 conf.add_file(path)
@@ -172,6 +174,17 @@ class Parser(Doc):
         changed = mtime != self.clientconfdir_mtime
         if changed:
             self.clientconfdir_mtime = mtime
+            return True
+        return False
+
+    def _templates_changed(self):
+        """Detect changes in templates_dir"""
+        if not self.templates_path:
+            return False
+        mtime = os.path.getmtime(self.templates_path)
+        changed = mtime != self.templates_mtime
+        if changed:
+            self.templates_mtime = mtime
             return True
         return False
 
@@ -249,7 +262,9 @@ class Parser(Doc):
         if not self.clientconfdir or not os.path.isdir(self.templates_path):
             return res
 
-        if self.templates and not force and not self._clientconfdir_changed():
+        if self.templates and not force and \
+                not self._clientconfdir_changed() and \
+                not self._templates_changed():
             return self.templates
 
         for tpl in os.listdir(self.templates_path):
@@ -263,6 +278,7 @@ class Parser(Doc):
 
         self.templates = res
         self.clientconfdir_mtime = os.path.getmtime(self.clientconfdir)
+        self.templates_mtime = os.path.getmtime(self.templates_path)
         return res
 
     def _get_server_path(self, name=None, fil=None):
@@ -340,6 +356,10 @@ class Parser(Doc):
 
                 if client in self._clients_conf and not template:
                     del self._clients_conf[client]
+                elif template and client in self._templates_conf:
+                    del self._templates_conf[client]
+                if path in self.filescache:
+                    del self.filescache[path]
 
                 self._refresh_cache()
 
@@ -570,6 +590,8 @@ class Parser(Doc):
                 if 'value' in include and path in include['value']:
                     try:
                         os.unlink(path)
+                        if path in self.filescache:
+                            del self.filescache[path]
                         return [
                             [
                                 NOTIF_OK,

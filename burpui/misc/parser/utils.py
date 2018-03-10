@@ -189,7 +189,7 @@ class OptionInc(Option):
     type = 'include'
     delim = ""
 
-    def __init__(self, parser, name, value=None, root=None, mode='srv'):
+    def __init__(self, parser, name, value=None, root=None, mode='srv', template=False):
         """
         :param parser: Parser instance
         :type parser: :class:`burpui.misc.parser.burp1.Parser`
@@ -197,6 +197,7 @@ class OptionInc(Option):
         super(OptionInc, self).__init__(name, value)
         self.parser = parser
         self.mode = mode
+        self.is_template = template
         self.extended = []
         self._is_reset = []
         self._dirty = True
@@ -258,7 +259,10 @@ class OptionInc(Option):
     def dump(self):
         """Return the option representation to store in configuration file"""
         if self.extend() and not self.parser.backend.enforce:
-            return '. {}'.format(self.name)
+            name = self.name or ''
+            if self.is_template and name.startswith('../'):
+                name = str(name[3:])
+            return '. {}'.format(name)
         # if the include did not match anything, we can safely remove it
         return ''
 
@@ -599,7 +603,7 @@ class File(dict):
     md5 = None
     mtime = 0
 
-    def __init__(self, parser, name=None, mode='srv', parent=None):
+    def __init__(self, parser, name=None, mode='srv', parent=None, is_template=False):
         """
         :param parser: Parser object
         :type parser: :class:`burpui.misc.parser.doc.Doc`
@@ -620,6 +624,7 @@ class File(dict):
         self._raw = []
         self._raw_data = MultiDict()
         self._data = MultiDict()
+        self._is_template = is_template
         self.parser = parser
         self.mode = mode
         self.name = name
@@ -815,7 +820,8 @@ class File(dict):
                 key,
                 value,
                 root=self.name,
-                mode=self.mode
+                mode=self.mode,
+                template=self._is_template
             )
 
         return OptionStr(key, value)
@@ -874,8 +880,11 @@ class File(dict):
                     key,
                     value,
                     root=self.name,
-                    mode=self.mode
+                    mode=self.mode,
+                    template=self._is_template
                 )
+                if self._is_template and key.startswith('../'):
+                    key = str(key[3:])
         else:
             opt = OptionStr(key, value)
         self.options[key] = opt
@@ -984,6 +993,8 @@ class File(dict):
         # special case
         if key == '.':
             val = sanitize_string(data)
+            if self._is_template and not val.startswith('../'):
+                val = '../{}'.format(val)
             fil.write('. {}\n'.format(val))
             return val
 
@@ -1195,12 +1206,15 @@ class File(dict):
                             not self._line_is_comment(line) and
                             not self._line_is_file_include(line)):
                         # The line was removed, we comment it
-                        fil.write('#{}\n'.format(line))
+                        _dump(line, comment=True)
                     elif self._line_is_file_include(line):
                         # The line is a file inclusion, we check if the line
                         # was already present
                         ori = self._include_get_file(line)
-                        if ori in data.getlist('includes_ori'):
+                        if self._is_template and ori.startswith('../'):
+                            ori = str(ori[3:])
+                        if ori in data.getlist('includes_ori') and \
+                                ori not in already_file:
                             idx = data.getlist('includes_ori').index(ori)
                             inc = data.getlist('includes')[idx]
                             self._write_key(fil, '.', inc)
@@ -1419,6 +1433,7 @@ class Config(File):
         self.name = path
         self._includes = []
         self._templates = []
+        self._is_template = False
         self._dirty = True
         if path:
             self.files[path] = File(parser, path, mode=mode)
@@ -1555,7 +1570,7 @@ class Config(File):
     def add_file(self, path=None, parent=None):
         idx = path or self.default
         if idx not in self.files:
-            self.files[idx] = File(self.parser, idx, self.mode, parent)
+            self.files[idx] = File(self.parser, idx, self.mode, parent, self._is_template)
             self._dirty = True
         return self.files[idx]
 
@@ -1570,6 +1585,9 @@ class Config(File):
 
     def list_files(self):
         return self.files.keys()
+
+    def set_template(self, val):
+        self._is_template = val
 
     def _refresh(self):
         if self._dirty or \
