@@ -401,7 +401,8 @@ class NClient(BUIbackend):
         if self.ping() and not self._agent_version:
             data = {'func': 'agent_version'}
             try:
-                self._agent_version = json.loads(self.do_command(data))
+                vers = self.do_command(data)
+                self._agent_version = json.loads(to_unicode(vers))
             except BUIserverException:
                 # just ignore the error if this custom function is not
                 # implemented
@@ -527,9 +528,9 @@ class NClient(BUIbackend):
             data = ImmutableMultiDict(data.to_dict(False))
         key = '{}{}'.format(self.password, 'store_conf_cli')
         key = to_bytes(key)
-        pickles = b64encode(pickle.dumps({'data': data, 'conf': conf, 'client': client, 'template': template}, 2))
+        pickles = to_unicode(b64encode(pickle.dumps({'data': data, 'conf': conf, 'client': client, 'template': template}, 2)))
         bytes_pickles = to_bytes(pickles)
-        digest = hmac.new(key, bytes_pickles, hashlib.sha1).hexdigest()
+        digest = to_unicode(hmac.new(key, bytes_pickles, hashlib.sha1).hexdigest())
         data = {'func': 'store_conf_cli', 'args': pickles, 'pickled': True, 'digest': digest}
         return json.loads(self.do_command(data))
 
@@ -550,9 +551,9 @@ class NClient(BUIbackend):
             data = ImmutableMultiDict(data.to_dict(False))
         key = u'{}{}'.format(self.password, 'store_conf_srv')
         key = to_bytes(key)
-        pickles = b64encode(pickle.dumps({'data': data, 'conf': conf}, 2))
+        pickles = to_unicode(b64encode(pickle.dumps({'data': data, 'conf': conf}, 2)))
         bytes_pickles = to_bytes(pickles)
-        digest = hmac.new(key, bytes_pickles, hashlib.sha1).hexdigest()
+        digest = to_unicode(hmac.new(key, bytes_pickles, hashlib.sha1).hexdigest())
         data = {'func': 'store_conf_srv', 'args': pickles, 'pickled': True, 'digest': digest}
         return json.loads(self.do_command(data))
 

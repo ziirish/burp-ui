@@ -63,7 +63,7 @@ def to_bytes(text):
     """Transform string to bytes."""
     if isinstance(text, text_type):
         text = text.encode('utf-8')
-    return text
+    return text or b''
 
 
 def to_unicode(input_bytes, encoding='utf-8'):
@@ -72,7 +72,7 @@ def to_unicode(input_bytes, encoding='utf-8'):
         input_bytes = input_bytes.decode(encoding)
     elif re.match(r'\\u[0-9a-f]{4}', input_bytes):
         input_bytes = input_bytes.decode('unicode-escape')
-    return input_bytes
+    return input_bytes or u''
 
 
 # maps module name -> attribute name -> original item
