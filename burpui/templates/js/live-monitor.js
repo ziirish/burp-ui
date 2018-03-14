@@ -52,7 +52,8 @@ app.controller('LiveCtrl', function($scope, $http, $timeout) {
 
 	$scope.load = function() {
 		$http.get(counters, { headers: { 'X-From-UI': true } })
-		.success(function(data, status, headers, config) {
+		.then(function(response) {
+			var data = response.data;
 			if (angular.isArray(data)) {
 				$scope.clients = data;
 			} else {
@@ -72,8 +73,8 @@ app.controller('LiveCtrl', function($scope, $http, $timeout) {
 				document.location = '{{ url_for("view.home") }}';
 			}
 			timer = $timeout($scope.load, {{ config.LIVEREFRESH * 1000 }});
-		})
-		.error(function(data, status, headers, config) {
+		}, function(response) {
+			var data = response.data;
 			$scope.stopTimer();
 			errorsHandler(data);
 			notif(NOTIF_INFO, "{{ _('Will redirect you in 5 seconds') }}");

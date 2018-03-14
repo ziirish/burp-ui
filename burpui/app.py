@@ -10,6 +10,7 @@ jQuery/Bootstrap
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 """
 import os
+import time
 import logging
 
 from logging import Formatter
@@ -414,6 +415,7 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
     def setup_request():
         g.version = '{}-{}'.format(__version__, __release__)
         g.locale = get_locale()
+        g.now = round(time.time())
         g.date_format = session.get('dateFormat', 'llll')
         # make sure to store secure cookie if required
         if app.scookie:

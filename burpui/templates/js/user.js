@@ -130,17 +130,6 @@ app.controller('UserCtrl', function($timeout, $scope, $http, $scrollspy) {
 	$timeout(function() {
 		$scope.refreshScrollspy();
 	});
-	/*
-	$scope.api = '';
-	$scope.burp = Array();
-
-	$http.get('{{ url_for("api.about") }}', { headers: { 'X-From-UI': true } })
-		.success(function(data, status, headers, config) {
-			$scope.version = data.version;
-			$scope.api = data.api;
-			$scope.burp = data.burp;
-		});
-	*/
 });
 
 /***

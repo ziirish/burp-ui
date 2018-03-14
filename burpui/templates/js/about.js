@@ -21,9 +21,9 @@ app.controller('AboutCtrl', function($scope, $http) {
 	$scope.burp = [];
 
 	$http.get('{{ url_for("api.about") }}', { headers: { 'X-From-UI': true } })
-		.success(function(data, status, headers, config) {
-			$scope.version = data.version;
-			$scope.api = data.api;
-			$scope.burp = data.burp;
+		.then(function(response) {
+			$scope.version = response.data.version;
+			$scope.api = response.data.api;
+			$scope.burp = response.data.burp;
 		});
 });
