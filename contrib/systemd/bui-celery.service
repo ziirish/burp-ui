@@ -3,8 +3,12 @@ Description=Burp-UI celery service
 After=network.target
 
 [Service]
-ExecStart=/usr/local/bin/bui-celery --beat -s /var/lib/burpui/celerybeat-schedule
+Type=Forking
 User=burpui
+Group=burpui
+RuntimeDirectory=bui-celery
+RuntimeDirectoryMode=0770
+ExecStart=/usr/bin/bui-celery -c /etc/burp/burpui.cfg --pidfile=/var/run/bui-celery/bui-celery.pid -t beat -s /var/lib/burpui/celerybeat-schedule
 
 [Install]
 WantedBy=multi-user.target
