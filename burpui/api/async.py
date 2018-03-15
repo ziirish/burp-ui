@@ -29,7 +29,6 @@ from flask import url_for, Response, current_app, after_this_request, \
 from flask_login import current_user
 from datetime import timedelta
 from werkzeug.datastructures import Headers
-from celery.task.control import revoke
 try:
     from .ext.ws import socketio  # noqa
     WS_AVAILABLE = True
@@ -50,9 +49,13 @@ task_types = {
     'browse': (load_all_tree, '.async_do_browse_all'),
 }
 
-@ns.route('/status/<task_type>/<task_id>', endpoint='async_status')
+
+@ns.route('/status/<task_type>/<task_id>',
+          '/<server>/status/<task_type>/<task_id>',
+          endpoint='async_status')
 @ns.doc(
     params={
+        'server': 'Which server to collect data from when in multi-agent mode',
         'task_id': 'The task ID to process',
         'task_type': 'The task type (either "restore" or "browse")',
     }
@@ -76,7 +79,7 @@ class AsyncStatus(Resource):
             500: 'Task failed',
         },
     )
-    def get(self, task_type, task_id):
+    def get(self, task_type, task_id, server=None):
         """Returns the state of the given task"""
         if task_type not in task_types:
             return {'state': 'FAILURE'}
@@ -115,7 +118,7 @@ class AsyncStatus(Resource):
             403: 'Permission denied',
         },
     )
-    def delete(self, task_type, task_id):
+    def delete(self, task_type, task_id, server=None):
         """Cancel a given task"""
         if task_type not in task_types:
             return '', 400
@@ -128,7 +131,7 @@ class AsyncStatus(Resource):
                 not current_user.acl.is_admin():
             self.abort(403, 'Unauthorized access')
 
-        # do not remove the task from db yet since we may need to remove 
+        # do not remove the task from db yet since we may need to remove
         # some temporary files afterward. The "cleanup_restore" task will take
         # care of this
         task.revoke()
