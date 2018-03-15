@@ -29,6 +29,7 @@ from flask import url_for, Response, current_app, after_this_request, \
 from flask_login import current_user
 from datetime import timedelta
 from werkzeug.datastructures import Headers
+from celery.task.control import revoke
 try:
     from .ext.ws import socketio  # noqa
     WS_AVAILABLE = True
@@ -44,15 +45,20 @@ else:
 bui = current_app  # type: BUIServer
 ns = api.namespace('async', 'Asynchronous methods')
 
+task_types = {
+    'restore': (perform_restore, '.async_get_file'),
+    'browse': (load_all_tree, '.async_do_browse_all'),
+}
 
-@ns.route('/status/<task_id>', endpoint='async_restore_status')
+@ns.route('/status/<task_type>/<task_id>', endpoint='async_status')
 @ns.doc(
     params={
         'task_id': 'The task ID to process',
+        'task_type': 'The task type (either "restore" or "browse")',
     }
 )
-class AsyncRestoreStatus(Resource):
-    """The :class:`burpui.api.async.AsyncRestoreStatus` resource allows you to
+class AsyncStatus(Resource):
+    """The :class:`burpui.api.async.AsyncStatus` resource allows you to
     follow a restore task.
 
     This resource is part of the :mod:`burpui.api.async` module.
@@ -70,9 +76,12 @@ class AsyncRestoreStatus(Resource):
             500: 'Task failed',
         },
     )
-    def get(self, task_id):
+    def get(self, task_type, task_id):
         """Returns the state of the given task"""
-        task = perform_restore.AsyncResult(task_id)
+        if task_type not in task_types:
+            return {'state': 'FAILURE'}
+        task_obj, callback = task_types[task_type]
+        task = task_obj.AsyncResult(task_id)
         if task.state == 'FAILURE':
             if db:
                 rec = Task.query.filter_by(uuid=task_id).first()
@@ -92,12 +101,38 @@ class AsyncRestoreStatus(Resource):
             return {
                 'state': task.state,
                 'location': url_for(
-                    '.async_get_file',
+                    callback,
                     task_id=task_id,
                     server=server
                 )
             }
         return {'state': task.state}
+
+    @ns.doc(
+        responses={
+            201: 'Success',
+            400: 'Wrong request',
+            403: 'Permission denied',
+        },
+    )
+    def delete(self, task_type, task_id):
+        """Cancel a given task"""
+        if task_type not in task_types:
+            return '', 400
+        task_obj, _ = task_types[task_type]
+        task = task_obj.AsyncResult(task_id)
+        user = task.result.get('user')
+        dst_server = task.result.get('server')
+
+        if (current_user.name != user or (dst_server and dst_server != server)) and \
+                not current_user.acl.is_admin():
+            self.abort(403, 'Unauthorized access')
+
+        # do not remove the task from db yet since we may need to remove 
+        # some temporary files afterward. The "cleanup_restore" task will take
+        # care of this
+        task.revoke()
+        return '', 201
 
 
 @ns.route('/get/<task_id>',
@@ -145,7 +180,8 @@ class AsyncGetFile(Resource):
         dst_server = task.result.get('server')
         filename = task.result.get('filename')
 
-        if current_user.name != user or (dst_server and dst_server != server):
+        if (current_user.name != user or (dst_server and dst_server != server)) and \
+                not current_user.acl.is_admin():
             self.abort(403, 'Unauthorized access')
 
         if db:
@@ -770,46 +806,6 @@ class AsyncClientTreeAll(Resource):
             ]
         )
         return {'id': task.id, 'name': 'load_all_tree'}, 202
-
-
-@ns.route('/browse-status/<task_id>', endpoint='async_browse_status')
-@ns.doc(
-    params={
-        'task_id': 'The task ID to process',
-    }
-)
-class AsyncBrowseStatus(Resource):
-    """The :class:`burpui.api.async.AsyncBrowseStatus` resource allows you to
-    follow a browse task.
-
-    This resource is part of the :mod:`burpui.api.async` module.
-    """
-    @ns.doc(
-        responses={
-            200: 'Success',
-            500: 'Task failed',
-        },
-    )
-    def get(self, task_id):
-        """Returns the state of the given task"""
-        task = load_all_tree.AsyncResult(task_id)
-        if task.state == 'FAILURE':
-            task.revoke()
-            err = str(task.result)
-            self.abort(502, err)
-        if task.state == 'SUCCESS':
-            if not task.result:
-                self.abort(500, 'The task did not return anything')
-            server = task.result.get('server')
-            return {
-                'state': task.state,
-                'location': url_for(
-                    '.async_do_browse_all',
-                    task_id=task_id,
-                    server=server
-                )
-            }
-        return {'state': task.state}
 
 
 @ns.route('/get-browse/<task_id>',

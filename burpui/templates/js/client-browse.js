@@ -207,6 +207,25 @@ $( document ).ready(function() {
 		e.stopPropagation();
 	});
 
+	{% if config.WITH_CELERY -%}
+	var _check_task_schedule = undefined;
+	$('#cancel-running-restore').on('click', function(e) {
+		var task_id = $(this).data('task_id');
+		var url = '{{ url_for("api.async_status", task_type="restore", task_id="") }}'+task_id;
+		if (!task_id) {
+			return;
+		}
+		if (_check_task_schedule) {
+			clearTimeout(_check_task_schedule);
+			_check_task_schedule = undefined;
+		}
+		$.ajax({
+			url: url,
+			type: 'DELETE',
+		});
+	});
+	{% endif -%}
+
 	$("#form-restore").on('submit', function(e) {
 		var $preparingFileModal = $("#restore-modal");
 		
@@ -214,10 +233,10 @@ $( document ).ready(function() {
 
 		{% if config.WITH_CELERY -%}
 		var check_task = function(task_id) {
-			$.getJSON('{{ url_for("api.async_restore_status", task_id="") }}'+task_id)
+			$.getJSON('{{ url_for("api.async_status", task_type="restore", task_id="") }}'+task_id)
 				.done(function(data) {
 					if (data.state != 'SUCCESS') {
-						setTimeout(function() {
+						_check_task_schedule = setTimeout(function() {
 							check_task(task_id);
 						}, 2000);
 					} else {
@@ -262,6 +281,7 @@ $( document ).ready(function() {
 		$.post($(this).prop('action'), $(this).serialize())
 			.done(function(data) {
 				check_task(data.id);
+				$('#cancel-running-restore').data('task_id', data.id);
 			})
 			.fail(function(xhr, stat, err) {
 				$preparingFileModal.modal('hide');
@@ -325,12 +345,13 @@ $( document ).ready(function() {
 		};
 		{% if config.WITH_CELERY -%}
 		var url = "{{ url_for('api.async_client_tree_all', name=cname, backup=nbackup, server=server) }}";
+		var _task_status_schedule = undefined;
 		var task_status = function(task_id) {
-			$.getJSON('{{ url_for("api.async_browse_status", task_id="") }}'+task_id)
+			$.getJSON('{{ url_for("api.async_status", task_type="browse", task_id="") }}'+task_id)
 				.fail(myFail)
 				.done(function(data) {
 					if (data.state != 'SUCCESS') {
-						setTimeout(function() {
+						_task_status_schedule = setTimeout(function() {
 							task_status(task_id);
 						}, 2000);
 					} else {

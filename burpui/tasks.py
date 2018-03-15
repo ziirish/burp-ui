@@ -237,7 +237,7 @@ def cleanup_restore():
                     'Task is not done yet or did not end '
                     'successfully: {}'.format(task.state)
                 )
-                task.revoke(terminate=True)
+                task.revoke()
                 continue
             if not task.result:
                 logger.warn('The task did not return anything')
