@@ -372,14 +372,21 @@ var _fit_menu = function() {
 		target.hover(
 			// mouse in
 			function() {
-				$(this).find('.dtl').stop().animate({width: 'toggle'}, 100);
+				$(this).find('.dtl').stop().animate({width: 'show'}, 100);
 			},
 			// mouse out
 			function() {
-				$(this).find('.dtl').stop().animate({width: 'toggle'}, 100);
+				$(this).find('.dtl').stop().animate({width: 'hide'}, 100);
 			}
 		);
 		target.find('.dtl').hide();
+		$.each(target, function(i, elmt) {
+			if ($(elmt).is(':hover')) {
+				$(elmt).find('.dtl').stop().animate({width: 'show'}, 100);
+				// there should be only one highlighted element
+				return;
+			}
+		});
 	}
 }
 

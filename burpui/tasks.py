@@ -132,12 +132,12 @@ def wait_for(lock_name, value, wait=10, timeout=LOCK_EXPIRE):
 @celery.task(ignore_result=True)
 def ping_backend():
     if bui.standalone:
-        bui.client.status(sync=True)
+        bui.client.status()
     else:
         def __status(server):
             (serv, back) = server
             try:
-                return bui.client.status(sync=True, agent=serv)
+                return bui.client.status(agent=serv)
             except BUIserverException:
                 return False
 
@@ -149,7 +149,7 @@ def ping_backend():
 
 @celery.task(bind=True, ignore_result=True)
 def backup_running(self):
-    # run once at the time, if one task was already running, we just discard
+    # run one at the time, if one task was already running, we just discard
     # the new attempt
     if not acquire_lock(self.name):
         return None
@@ -176,7 +176,7 @@ def backup_running(self):
 
 @celery.task(bind=True, ignore_result=True)
 def get_all_backups(self):
-    # run once at the time, if one task was already running, we just discard
+    # run one at the time, if one task was already running, we just discard
     # the new attempt
     if not acquire_lock(self.name):
         return None
@@ -197,7 +197,7 @@ def get_all_backups(self):
 
 @celery.task(bind=True, ignore_result=True)
 def get_all_clients_reports(self):
-    # run once at the time, if one task was already running, we just discard
+    # run one at the time, if one task was already running, we just discard
     # the new attempt
     if not acquire_lock(self.name):
         return None
@@ -226,9 +226,7 @@ def cleanup_expired_sessions():
 @celery.task(ignore_result=True)
 def cleanup_restore():
     tasks = db.session.query(Task).filter(Task.task == 'perform_restore').filter(datetime.utcnow() > Task.expire).all()
-    # tasks = Task.query.filter_by(task='perform_restore').all()
     for rec in tasks:
-        # if rec.expire and datetime.utcnow() > rec.expire:
         logger.info('Task expired: {}'.format(rec))
         task = perform_restore.AsyncResult(rec.uuid)
         try:
@@ -237,7 +235,6 @@ def cleanup_restore():
                     'Task is not done yet or did not end '
                     'successfully: {}'.format(task.state)
                 )
-                task.revoke()
                 continue
             if not task.result:
                 logger.warn('The task did not return anything')
@@ -370,3 +367,4 @@ def force_scheduling_now():
     backup_running.delay()
     get_all_clients_reports.delay()
     cleanup_expired_sessions.delay()
+    cleanup_restore.delay()

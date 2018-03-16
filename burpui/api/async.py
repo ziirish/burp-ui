@@ -25,7 +25,7 @@ from ..tasks import perform_restore, load_all_tree
 from time import time
 from zlib import adler32
 from flask import url_for, Response, current_app, after_this_request, \
-    send_file, redirect, request
+    send_file, request
 from flask_login import current_user
 from datetime import timedelta
 from werkzeug.datastructures import Headers
@@ -621,20 +621,8 @@ class AsyncHistory(History):
         """
         self._check_acl(client, server)
         res = cache.cache.get('all_backups')
-        args = self.parser.parse_args()
         if res is None:
-            # redirect to synchronous API call
-            # FIXME: Since we subclass the original code, we don't need the
-            # redirect anymore if the redirection is problematic
-            return redirect(
-                url_for(
-                    'api.history',
-                    client=client,
-                    server=server,
-                    start=args['start'],
-                    end=args['end']
-                )
-            )
+            return self._get_backup_history(client, server)
 
         return self._get_backup_history(client, server, res)
 
@@ -725,10 +713,8 @@ class AsyncClientsReport(ClientsReport):
         self._check_acl(server)
         res = cache.cache.get('all_clients_reports')
         if res is None:
-            # redirect to synchronous API call
-            # FIXME: Since we subclass the original code, we don't need the
-            # redirect anymore if the redirection is problematic
-            return redirect(url_for('api.clients_report', server=server))
+            return self._get_clients_reports(server=server)
+
         return self._get_clients_reports(res, server)
 
 

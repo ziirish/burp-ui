@@ -149,9 +149,9 @@ var _client = function() {
 				if (c.key === 'chart_'+l) {
 					if (data.length > 0) {
 						c.data = data;
-						$('#chart_'+l).parent().show();
+						$('#chart_'+l).parent().parent().show();
 					} else {
-						$('#chart_'+l).parent().hide();
+						$('#chart_'+l).parent().parent().hide();
 					}
 					return false;
 				}
