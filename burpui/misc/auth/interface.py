@@ -7,7 +7,7 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
-from flask_login import UserMixin
+from flask_login import UserMixin, AnonymousUserMixin
 from abc import ABCMeta, abstractmethod, abstractproperty
 from six import with_metaclass
 
@@ -48,7 +48,7 @@ class BUIhandler(with_metaclass(ABCMeta, object)):
 
         :returns: :class:`burpui.misc.auth.interface.BUIuser`
         """
-        return None  # pragma: no cover
+        return AnonymousUserMixin()
 
     def remove(self, name):
         """The :func:`burpui.misc.auth.interface.BUIhandler.remove` function

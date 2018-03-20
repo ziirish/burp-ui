@@ -141,6 +141,7 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
     _id = 1
     _gp_admin_name = '@BUIADMINRESERVED'
     _gp_moderator_name = '@moderator'
+    _gp_hidden = set([str(_gp_admin_name[1:]), str(_gp_moderator_name[1:])])
 
     _grants = {}
     _groups = {}
@@ -245,7 +246,7 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
     def get_member_groups(self, member):
         groups = []
         for group in itervalues(self._groups):
-            if group.is_member(member):
+            if group.is_member(member) and group.name not in self._gp_hidden:
                 groups.append(group.name)
         return groups
 

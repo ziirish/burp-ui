@@ -10,6 +10,7 @@
 from . import api
 from ..server import BUIServer  # noqa
 from ..sessions import session_manager
+from ..misc.acl.meta import meta_grants
 from ..utils import NOTIF_OK
 from .custom import fields, Resource
 #  from ..exceptions import BUIserverException
@@ -37,13 +38,22 @@ group_fields = ns.model('Groups', {
     'members': fields.List(fields.String, required=True, description='Group members'),
     'backend': fields.String(required=True, description='Backend name'),
 })
+groups_list_fields = ns.model('GroupsList', {
+    'groups': fields.List(fields.String, required=True, description='Groups list'),
+})
 group_members_fields = ns.model('GroupMembers', {
     'members': fields.List(fields.String, required=True, description='Group members'),
     'grant': fields.String(required=True, description='Group grant content'),
 })
+is_moderator_fields = ns.model('IsModerator', {
+    'moderator': fields.Boolean(required=True, description='Is the member a moderator'),
+})
 moderator_members_fields = ns.model('ModeratorMembers', {
     'members': fields.List(fields.String, required=True, description='Moderator members'),
     'grant': fields.String(required=True, description='Moderator grant content'),
+})
+is_admin_fields = ns.model('IsAdmin', {
+    'admin': fields.Boolean(required=True, description='Is the member an admin'),
 })
 admin_members_fields = ns.model('AdminMembers', {
     'members': fields.List(fields.String, required=True, description='Admin members'),
@@ -57,6 +67,28 @@ session_fields = ns.model('Sessions', {
     'expire': fields.DateTime(description='Expiration date'),
     'timestamp': fields.DateTime(description='Last seen'),
     'current': fields.Boolean(description='Is current session', default=False)
+})
+acl_backend_fields = ns.model('AclBackends', {
+    'name': fields.String(required=True, description='Backend name'),
+    'add_grant': fields.Boolean(required=False, default=False, description='Support grant creation'),
+    'mod_grant': fields.Boolean(required=False, default=False, description='Support grant edition'),
+    'del_grant': fields.Boolean(required=False, default=False, description='Support grant deletion'),
+    'add_group': fields.Boolean(required=False, default=False, description='Support group creation'),
+    'mod_group': fields.Boolean(required=False, default=False, description='Support group edition'),
+    'del_group': fields.Boolean(required=False, default=False, description='Support group deletion'),
+    'add_group_member': fields.Boolean(required=False, default=False, description='Support group member addition'),
+    'del_group_member': fields.Boolean(required=False, default=False, description='Support group member deletion'),
+    'add_moderator': fields.Boolean(required=False, default=False, description='Support moderator creation'),
+    'mod_moderator': fields.Boolean(required=False, default=False, description='Support moderator edition'),
+    'del_moderator': fields.Boolean(required=False, default=False, description='Support moderator deletion'),
+    'add_admin': fields.Boolean(required=False, default=False, description='Support admin creation'),
+    'del_admin': fields.Boolean(required=False, default=False, description='Support admin deletion'),
+})
+auth_backend_fields = ns.model('Backends', {
+    'name': fields.String(required=True, description='Backend name'),
+    'add': fields.Boolean(required=False, default=False, description='Support user creation'),
+    'mod': fields.Boolean(required=False, default=False, description='Support user edition'),
+    'del': fields.Boolean(required=False, default=False, description='Support user deletion'),
 })
 
 
@@ -78,6 +110,32 @@ class AdminMe(Resource):
         """
         ret = getattr(current_user, 'real', current_user)
         return ret
+
+
+@ns.route('/acl/isAdmin/<member>', endpoint='acl_is_admin')
+@ns.doc(
+    params={
+        'member': 'Username',
+    }
+)
+class AclIsAdmin(Resource):
+    """The :class:`burpui.api.admin.AclIsAdmin` resources allows you to check
+    if a given member is admin or not.
+
+    This resource is part of the :mod:`burpui.api.admin` module.
+    """
+
+    @api.acl_admin_or_moderator_required(message="Not allowed to view admins list")
+    @ns.marshal_with(is_admin_fields)
+    @ns.doc(
+        responses={
+            403: 'Insufficient permissions',
+            404: 'No backend found',
+        },
+    )
+    def get(self, member):
+        """Checks if a given member is admin"""
+        return {'admin': meta_grants.is_admin(member)}
 
 
 @ns.route('/acl/admin/<backend>',
@@ -211,6 +269,32 @@ class AclAdmins(Resource):
         )
         status = 201 if success else 200
         return [[code, message]], status
+
+
+@ns.route('/acl/isModerator/<member>', endpoint='acl_is_moderator')
+@ns.doc(
+    params={
+        'member': 'Username',
+    }
+)
+class AclIsModerator(Resource):
+    """The :class:`burpui.api.admin.AclIsModerator` resources allows you to check
+    if a given member is moderator or not.
+
+    This resource is part of the :mod:`burpui.api.admin` module.
+    """
+
+    @api.acl_admin_or_moderator_required(message="Not allowed to view admins list")
+    @ns.marshal_with(is_moderator_fields)
+    @ns.doc(
+        responses={
+            403: 'Insufficient permissions',
+            404: 'No backend found',
+        },
+    )
+    def get(self, member):
+        """Checks if a given member is moderator"""
+        return {'moderator': meta_grants.is_moderator(member)}
 
 
 @ns.route('/acl/moderator/<backend>',
@@ -529,6 +613,38 @@ class AclGroup(Resource):
         )
         status = 201 if success else 200
         return [[code, message]], status
+
+
+@ns.route('/acl/groupsOf/<member>',
+          endpoint='acl_groups_of')
+@ns.doc(
+    params={
+        'member': 'Username',
+    }
+)
+class AclGroupsOf(Resource):
+    """The :class:`burpui.api.admin.AclGroupsOf` resource allows you to retrieve
+    a list of groups of a given user.
+
+    This resource is part of the :mod:`burpui.api.admin` module.
+    """
+
+    @api.acl_admin_or_moderator_required(message="Not allowed to view groups list")
+    @ns.marshal_with(groups_list_fields, code=200, description='Success')
+    @ns.doc(
+        responses={
+            403: 'Insufficient permissions',
+            404: 'No backend found',
+        },
+    )
+    def get(self, member):
+        """Returns a list of group
+
+        **GET** method provided by the webservice.
+
+        :returns: Groups
+        """
+        return {'groups': meta_grants.get_member_groups(member)}
 
 
 @ns.route('/acl/groups',
@@ -906,6 +1022,46 @@ class AclGrants(Resource):
         return [[code, message]], status
 
 
+@ns.route('/acl/backend/<backend>', endpoint='acl_backend')
+class AclBackend(Resource):
+    """The :class:`burpui.api.admin.AclBackend` resource allows you to
+    retrieve a given ACL backend with its capabilities.
+
+    This resource is part of the :mod:`burpui.api.admin` module.
+    """
+
+    @api.acl_admin_or_moderator_required(message="Not allowed to view backends list")
+    @ns.marshal_with(acl_backend_fields, code=200, description='Success')
+    @ns.doc(
+        responses={
+            403: 'Insufficient permissions',
+            404: 'No backend found',
+        },
+    )
+    def get(self, backend):
+        """Returns a given ACL backend
+
+        **GET** method provided by the webservice.
+
+        :returns: Backend
+        """
+        try:
+            handler = getattr(bui, 'acl_handler')
+        except AttributeError:
+            handler = None
+
+        if not handler or len(handler.backends) == 0:
+            self.abort(404, "No authentication backend found")
+        if backend not in handler.backends:
+            self.abort(404, "ACL backend {} not found".format(backend))
+        back = {}
+        back['name'] = backend
+        for method in ['add_grant', 'del_grant', 'mod_grant', 'add_group', 'del_group', 'mod_group', 'add_group_member', 'del_group_member', 'add_moderator', 'del_moderator', 'mod_moderator', 'add_admin', 'del_admin']:
+            back[method] = getattr(handler.backends[backend], method, False) is not False
+
+        return back
+
+
 @ns.route('/acl/backends', endpoint='acl_backends')
 class AclBackends(Resource):
     """The :class:`burpui.api.admin.AclBackends` resource allows you to
@@ -913,25 +1069,9 @@ class AclBackends(Resource):
 
     This resource is part of the :mod:`burpui.api.admin` module.
     """
-    backend_fields = ns.model('AclBackends', {
-        'name': fields.String(required=True, description='Backend name'),
-        'add_grant': fields.Boolean(required=False, default=False, description='Support grant creation'),
-        'mod_grant': fields.Boolean(required=False, default=False, description='Support grant edition'),
-        'del_grant': fields.Boolean(required=False, default=False, description='Support grant deletion'),
-        'add_group': fields.Boolean(required=False, default=False, description='Support group creation'),
-        'mod_group': fields.Boolean(required=False, default=False, description='Support group edition'),
-        'del_group': fields.Boolean(required=False, default=False, description='Support group deletion'),
-        'add_group_member': fields.Boolean(required=False, default=False, description='Support group member addition'),
-        'del_group_member': fields.Boolean(required=False, default=False, description='Support group member deletion'),
-        'add_moderator': fields.Boolean(required=False, default=False, description='Support moderator creation'),
-        'mod_moderator': fields.Boolean(required=False, default=False, description='Support moderator edition'),
-        'del_moderator': fields.Boolean(required=False, default=False, description='Support moderator deletion'),
-        'add_admin': fields.Boolean(required=False, default=False, description='Support admin creation'),
-        'del_admin': fields.Boolean(required=False, default=False, description='Support admin deletion'),
-    })
 
     @api.acl_admin_required(message="Not allowed to view backends list")
-    @ns.marshal_list_with(backend_fields, code=200, description='Success')
+    @ns.marshal_list_with(acl_backend_fields, code=200, description='Success')
     @ns.doc(
         responses={
             403: 'Insufficient permissions',
@@ -1171,6 +1311,49 @@ class AuthUsers(Resource):
         return [[code, message]], status
 
 
+@ns.route('/auth/backend/<backend>', endpoint='auth_backend')
+class AuthBackend(Resource):
+    """The :class:`burpui.api.admin.AuthBackend` resource allows you to
+    retrieve a given authentication backend and its capabilities.
+
+    This resource is part of the :mod:`burpui.api.admin` module.
+    """
+
+    @api.acl_admin_or_moderator_required(message="Not allowed to view backends list")
+    @ns.marshal_with(auth_backend_fields, code=200, description='Success')
+    @ns.doc(
+        responses={
+            403: 'Insufficient permissions',
+            404: 'No backend found',
+        },
+    )
+    def get(self, backend):
+        """Returns a given authentication backend
+
+        **GET** method provided by the webservice.
+
+        :returns: Backend
+        """
+        try:
+            handler = getattr(bui, 'uhandler')
+        except AttributeError:
+            handler = None
+
+        if not handler or len(handler.backends) == 0:
+            self.abort(404, "No authentication backend found")
+        if backend not in handler.backends:
+            self.abort(404, "No authentication backend {} found".format(backend))
+        back = handler.backends[backend]
+        ret = {
+            'name': backend,
+            'add': getattr(back, 'add_user', False) is not False,
+            'del': getattr(back, 'del_user', False) is not False,
+            'mod': getattr(back, 'change_password', False) is not False,
+        }
+
+        return ret
+
+
 @ns.route('/auth/backends', endpoint='auth_backends')
 class AuthBackends(Resource):
     """The :class:`burpui.api.admin.AuthBackends` resource allows you to
@@ -1179,15 +1362,9 @@ class AuthBackends(Resource):
 
     This resource is part of the :mod:`burpui.api.admin` module.
     """
-    backend_fields = ns.model('Backends', {
-        'name': fields.String(required=True, description='Backend name'),
-        'add': fields.Boolean(required=False, default=False, description='Support user creation'),
-        'mod': fields.Boolean(required=False, default=False, description='Support user edition'),
-        'del': fields.Boolean(required=False, default=False, description='Support user deletion'),
-    })
 
     @api.acl_admin_required(message="Not allowed to view backends list")
-    @ns.marshal_list_with(backend_fields, code=200, description='Success')
+    @ns.marshal_list_with(auth_backend_fields, code=200, description='Success')
     @ns.doc(
         responses={
             403: 'Insufficient permissions',

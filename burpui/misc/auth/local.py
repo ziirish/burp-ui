@@ -3,6 +3,7 @@ import os
 import pwd
 import sys
 
+from flask_login import AnonymousUserMixin
 from .interface import BUIhandler, BUIuser, BUIloader
 
 
@@ -104,7 +105,7 @@ class UserHandler(BUIhandler):
             self.users[name] = LocalUser(self.local, name)
         ret = self.users[name]
         if not ret.active:
-            return None
+            return AnonymousUserMixin()
         return ret
 
     @property

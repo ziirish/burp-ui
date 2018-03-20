@@ -1,5 +1,6 @@
 # -*- coding: utf8 -*-
 from six import viewitems
+from flask_login import AnonymousUserMixin
 
 from .interface import BUIhandler, BUIuser, BUIloader
 
@@ -238,7 +239,7 @@ class UserHandler(BUIhandler):
             self.users[name] = LdapUser(self.ldap, name)
         ret = self.users[name]
         if not ret.active:
-            return None
+            return AnonymousUserMixin()
         return ret
 
     @property

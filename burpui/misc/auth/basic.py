@@ -1,6 +1,7 @@
 # -*- coding: utf8 -*-
 import re
 
+from flask_login import AnonymousUserMixin
 from .interface import BUIhandler, BUIuser, BUIloader
 from ...utils import NOTIF_ERROR, NOTIF_OK, NOTIF_WARN
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -25,7 +26,7 @@ class BasicLoader(BUIloader):
         self.app = app
         self.conf = self.app.conf
         self.conf_id = None
-        self.users = {}
+        self._users = {}
         self.handler = handler
         self.handler.name = self.name
         self.handler.add_user = self.add_user
@@ -38,7 +39,7 @@ class BasicLoader(BUIloader):
             if not self.conf.changed(self.conf_id):
                 return False
 
-        self.users = {
+        self._users = {
             'admin': {'pwd': generate_password_hash('admin'), 'salted': True}
         }
 
@@ -60,7 +61,7 @@ class BasicLoader(BUIloader):
                 section=self.section,
                 defaults=False
             )
-            self.users = {}
+            self._users = {}
             for opt in self.conf.options.get(self.section).keys():
                 salt = True
                 if opt == 'priority':
@@ -90,7 +91,7 @@ class BasicLoader(BUIloader):
                             pwd = generate_password_hash(pwd)
                             self.conf.options[self.section][opt] = pwd
                             changed = True
-                self.users[opt] = {'pwd': pwd, 'salted': salt}
+                self._users[opt] = {'pwd': pwd, 'salted': salt}
                 self.logger.info('Loading user: {} ({})'.format(
                     opt,
                     'hashed' if salt else 'plain')
@@ -141,6 +142,11 @@ class BasicLoader(BUIloader):
             else:
                 return self.users[uid]['pwd'] == passwd
         return False
+
+    @property
+    def users(self):
+        self.load_users()
+        return self._users
 
     def _setup_users(self):
         """Setup user management"""
@@ -237,7 +243,7 @@ class UserHandler(BUIhandler):
             self.users[name] = BasicUser(self.basic, name)
         ret = self.users[name]
         if not ret.active:
-            return None
+            return AnonymousUserMixin()
         return ret
 
     @property

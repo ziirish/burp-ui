@@ -50,7 +50,7 @@
 
     <div class="container-fluid">
       <div class="row" {% if ng_controller %}ng-controller="{{ ng_controller }}"{% endif %}>
-        {% if not live and not login and not about -%}
+        {% if not live and not login and not about and not authentication and not authorization -%}
         {% include "sidebar.html" %}
         {% endif -%}
         <span id="_top"></span>
