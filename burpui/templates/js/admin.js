@@ -101,6 +101,13 @@
 
 var _cache_id = _EXTRA;
 
+var _me = undefined;
+var _users = {};
+var _auth_backends = {};
+var _users_array = [];
+var __promises = [];
+var __globals_promises = [];
+
 var app = angular.module('MainApp', ['ngSanitize', 'ui.select', 'mgcrea.ngStrap', 'datatables']);
 
 app.config(function(uiSelectConfig) {
@@ -108,14 +115,62 @@ app.config(function(uiSelectConfig) {
 });
 
 app.controller('AdminCtrl', ['$scope', '$http', '$scrollspy', 'DTOptionsBuilder', 'DTColumnDefBuilder', function($scope, $http, $scrollspy, DTOptionsBuilder, DTColumnDefBuilder) {
-}]);
+	var vm = this;
+	$scope.auth_backends = [];
 
-var _me = undefined;
-var _users = {};
-var _auth_backends = {};
-var _users_array = [];
-var __promises = [];
-var __globals_promises = [];
+  $http.get('{{ url_for("api.auth_backends") }}', { headers: { 'X-From-UI': true } })
+		.then(function (response) {
+			$scope.auth_backends = [];
+			_auth_backends = {};
+			angular.forEach(response.data, function(back, i) {
+				_auth_backends[back.name] = back;
+				$scope.auth_backends.push(back);
+			});
+			$scope.auth_backend = "placeholder";
+			vm.userAdd.auth_backend.$setValidity('valid', false);
+			vm.userAdd.$setPristine();
+		});
+
+	$scope.checkSelect = function() {
+		vm.userAdd.auth_backend.$setValidity('valid', ($scope.auth_backend != "placeholder"));
+	};
+
+	$scope.addUser = function(e) {
+		e.preventDefault();
+		var form = $(e.target);
+		submit = form.find('button[type="submit"]');
+		sav = submit.html();
+		submit.html('<i class="fa fa-fw fa-spinner fa-pulse" aria-hidden="true"></i>&nbsp;{{ _("Creating...") }}');
+		submit.attr('disabled', true);
+		$http({
+			url: form.attr('action'),
+			method: form.attr('method'),
+			params: {
+				username: $scope.auth_username,
+				password: $scope.auth_password,
+				backend: $scope.auth_backend,
+			},
+			headers: { 'X-From-UI': true },
+		})
+		.catch(myFail)
+		.then(function(response) {
+			notifAll(response.data);
+			$scope.auth_username = null;
+			$scope.auth_password = null;
+			$scope.auth_backend = "placeholder";
+			vm.userAdd.auth_backend.$setValidity('valid', false);
+			vm.userAdd.auth_username.$setUntouched();
+			vm.userAdd.auth_password.$setUntouched();
+			vm.userAdd.auth_password.$setPristine();
+			vm.userAdd.$setPristine();
+			_authentication();
+		})
+		.finally(function() {
+			submit.html(sav);
+			submit.attr('disabled', false);
+		});
+	};
+}]);
 
 var _users_table = $('#table-users').DataTable( {
 	{{ macros.translate_datatable() }}
@@ -193,12 +248,6 @@ var g = $.getJSON('{{ url_for("api.admin_me") }}').done(function (data) {
 	_me = data;
 });
 __globals_promises.push(g);
-g = $.getJSON('{{ url_for("api.auth_backends") }}').done(function (data) {
-	$.each(data, function(i, back) {
-		_auth_backends[back.name] = back;
-	});
-});
-__globals_promises.push(g);
 
 var _authentication = function() {
 	$('#waiting-user-container').show();
@@ -209,8 +258,12 @@ var _authentication = function() {
 		$.each(users, function(i, user) {
 			__usernames.push(user.name);
 			if (_users[user.name]) {
-				_users[user.name]['backends'].push(user.backend);
-				_users[user.name]['raw'].push(user);
+				if (_users[user.name]['backends'].indexOf(user.backend) === -1) {
+					_users[user.name]['backends'].push(user.backend);
+				}
+				if (_users[user.name]['raw'].indexOf(user) === -1) {
+					_users[user.name]['raw'].push(user);
+				}
 			} else {
 				_users[user.name] = {
 					id: user.name,
@@ -325,6 +378,7 @@ $('#perform-delete').on('click', function(e) {
 			$.ajax({
 				url: "{{ url_for('api.auth_users', name='') }}"+$(e).data('id')+"?backend="+$(e).data('backend'),
 				type: 'DELETE',
+				headers: { 'X-From-UI': true },
 			}).done(function(data) {
 				notifAll(data);
 				_authentication();
@@ -339,7 +393,7 @@ $( document ).on('click', '.btn-edit-user', function(e) {
 	var user = _users[user_id];
 	var content = '<legend>{{ _("Please select the backend from which to edit the user from:") }}</legend>';
 	content += '<div class="form-group"><label for="edit_backend" class="col-lg-2 control-label">Backend</label>';
-	content += '<div class="col-lg-10"><select class="form-control" id="edit_backend" name="edit_backend" data-id="'+user_id+'"><option disabled selected>'+'{{ _("Please select a backend") }}'+'</option>';
+	content += '<div class="col-lg-10"><select class="form-control" id="edit_backend" name="edit_backend" data-id="'+user_id+'"><option disabled selected value="placeholder">'+'{{ _("Please select a backend") }}'+'</option>';
 	$.each(user['backends'], function(i, back) {
 		is_enabled = _auth_backends[back]['mod'];
 		content += '<option'+(is_enabled?'':' disabled')+'>'+back+'</option>';
@@ -350,13 +404,16 @@ $( document ).on('click', '.btn-edit-user', function(e) {
 	$('#edit-user-modal').modal('toggle');
 });
 $( document ).on('change', '#edit_backend', function(e) {
-	if ($('#edit_backend option:selected').text() != '{{ _("Please select a backend") }}') {
+	if ($('#edit_backend option:selected').val() != 'placeholder') {
 		$('#perform-edit').prop('disabled', false);
 	}
 });
 $('#perform-edit').on('click', function(e) {
 	location = "{{ url_for('view.admin_authentication', user='') }}"+$('#edit_backend').data('id')+'?backend='+$('#edit_backend option:selected').text();
 });
+
+/* Add user */
+
 
 /* user sessions */
 $( document ).on('click', '.btn-sessions-user', function(e) {

@@ -10,6 +10,34 @@
           <br />
           <div class="form-container">
             <legend id="authentication">{{ _('Authentication') }}</legend>
+            <div class="row well">
+              <form action="{{ url_for('api.auth_users') }}" method="PUT" class="form-inline" name="pctrl.userAdd" ng-submit="addUser($event)">
+                <fieldset>
+                  <Legend>{{ _('Create new User') }}</Legend>
+                  <div class="form-group" ng-class="{'has-error': pctrl.userAdd.auth_username.$touched && !pctrl.userAdd.auth_username.$valid}">
+                    <label class="sr-only" for="auth_username">{{ _('Username') }}</label>
+                    <input class="form-control" type="text" id="auth_username" name="auth_username" placeholder="{{ _('Username') }}" ng-model="auth_username" required>
+                  </div>
+                  <div class="form-group" ng-class="{'has-error': pctrl.userAdd.auth_password.$touched && !pctrl.userAdd.auth_password.$valid}">
+                    <label class="sr-only" for="auth_password">{{ _('Password') }}</label>
+                    <input class="form-control" type="password" id="auth_password" name="auth_password" placeholder="{{ _('Password') }}" ng-model="auth_password" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="sr-only" for="auth_backend">{{ _('Backend') }}</label>
+                    <select class="form-control" name="auth_backend" id="auth_backend" ng-model="auth_backend" ng-change="checkSelect()" required>
+                      <option selected disabled value="placeholder">{{ _('Authentication Backend') }}</option>
+                      {% raw -%}
+                      <option ng-repeat="back in auth_backends" ng-disabled="!back.add" value="{{ back.name }}">{{ back.name }}</option>
+                      {% endraw -%}
+                    </select>
+                  </div>
+                  <button class="btn btn-success" type="submit" ng-disabled="!pctrl.userAdd.$valid"><i class="fa fa-plus" aria-hidden="true"></i>&nbsp;{{ _('Create') }}</button>
+                </fieldset>
+              </form>
+            </div>
+            <br />
+            <h3>{{ _('Users list') }}</h3>
+            <hr />
             <div id="waiting-user-container" class="row">
               <i class="fa fa-spin fa-fw fa-refresh" aria-hidden="true"></i>{{ _('Loading, Please wait...') }}
               <br />

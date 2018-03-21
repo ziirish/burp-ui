@@ -277,7 +277,8 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$timeout', '$scrollspy', 'DTOp
 					$scope.getClientsList();
 					$scope.loadConfig();
 				}
-			}).always(function() {
+			})
+			.always(function() {
 				/* reset the submit button state */
 				submit.html(sav);
 				submit.attr('disabled', false);
