@@ -84,7 +84,7 @@ app.controller('UserCtrl', function($timeout, $scope, $http, $scrollspy) {
 		var form = $(e.target);
 		submit = form.find('button[type="submit"]');
 		sav = submit.text();
-		submit.text('Saving...');
+		submit.html('<i class="fa fa-fw fa-spinner fa-pulse" aria-hidden="true"></i>&nbsp;{{ _("Saving...") }}');
 		submit.attr('disabled', true);
 		/* submit the data */
 		$.ajax({

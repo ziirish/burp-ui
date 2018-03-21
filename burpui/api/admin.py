@@ -1492,7 +1492,10 @@ class MySessions(Resource):
         store = session_manager.get_session_by_id(str(id))
         if not store:
             self.abort('Session not found')
-        if store.user != user:
+        if store.user != user and \
+                not current_user.is_anonymous and \
+                not current_user.acl.is_admin() and \
+                not current_user.acl.is_moderator():
             self.abort(403, 'Insufficient permissions')
         if session_manager.invalidate_session_by_id(store.uuid):
             session_manager.delete_session_by_id(store.uuid)

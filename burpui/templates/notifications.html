@@ -1,5 +1,5 @@
         <div style="position: fixed; width: 100%; z-index: 9999;">
-          <div {% if not login %}class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2"{% endif %}>
+          <div {% if not no_sidebar %}class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2"{% endif %}>
             <div id="bui-notifications">
               {% with messages = get_flashed_messages(with_categories=true) -%}
                 {% if messages -%}

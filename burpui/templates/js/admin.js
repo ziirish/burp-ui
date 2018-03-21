@@ -112,8 +112,10 @@ app.controller('AdminCtrl', ['$scope', '$http', '$scrollspy', 'DTOptionsBuilder'
 
 var _me = undefined;
 var _users = {};
+var _auth_backends = {};
 var _users_array = [];
 var __promises = [];
+var __globals_promises = [];
 
 var _users_table = $('#table-users').DataTable( {
 	{{ macros.translate_datatable() }}
@@ -181,15 +183,22 @@ var _users_table = $('#table-users').DataTable( {
 		{
 			data: null,
 			render: function ( data, type, row ) {
-				return '<button data-member="'+data.id+'" class="btn btn-xs btn-danger btn-delete-user" title="{{ _("Remove") }}"><i class="fa fa-trash" aria-hidden="true"></i></button>&nbsp;<button data-member="'+data.id+'" class="btn btn-xs btn-info btn-edit-user" title="{{ _("Edit") }}"><i class="fa fa-pencil" aria-hidden="true"></i></button>';
+				return '<button data-member="'+data.id+'" class="btn btn-xs btn-danger btn-delete-user" title="{{ _("Remove") }}"><i class="fa fa-trash" aria-hidden="true"></i></button>&nbsp;<button data-member="'+data.id+'" class="btn btn-xs btn-info btn-edit-user" title="{{ _("Edit") }}"><i class="fa fa-pencil" aria-hidden="true"></i></button>&nbsp;<button data-member="'+data.id+'" class="btn btn-xs btn-warning btn-sessions-user" title="{{ _("Sessions") }}"><i class="fa fa-list-alt" aria-hidden="true"></i></button>';
 			}
 		},
 	],
 });
 
-$.getJSON('{{ url_for("api.admin_me") }}').done(function (data) {
+var g = $.getJSON('{{ url_for("api.admin_me") }}').done(function (data) {
 	_me = data;
 });
+__globals_promises.push(g);
+g = $.getJSON('{{ url_for("api.auth_backends") }}').done(function (data) {
+	$.each(data, function(i, back) {
+		_auth_backends[back.name] = back;
+	});
+});
+__globals_promises.push(g);
 
 var _authentication = function() {
 	$('#waiting-user-container').show();
@@ -260,7 +269,6 @@ var _authentication = function() {
 var _admin = function() {
 	_authentication();
 };
-_admin();
 
 {{ macros.page_length('#table-list-clients') }}
 {{ macros.page_length('#table-list-templates') }}
@@ -273,13 +281,19 @@ $( document ).ready(function () {
 });
 
 /* Delete user */
+var _remove_selected = 0;
 $( document ).on('click', '.btn-delete-user', function(e) {
 	var user_id = $(this).data('member');
 	var user = _users[user_id];
-	var content = '<legend>{{ _("Please select the backend(s) from which to remove the user from:") }}</legend>';
+	var content = '<legend>{{ _("Please select the backend(s) from which to remove the user:") }}</legend>';
 	$.each(user['backends'], function(i, back) {
-		content += '<div class="form-group"><input type="checkbox" name="user_backend" id="user_backend_'+i+'" data-id="'+user_id+'" data-backend="'+back+'"><label for="user_backend_'+i+'">&nbsp;'+back+'</label></div>';
+		var disabled_legend = '{{ _("The backend does not support user removal") }}';
+		var disabled = 'disabled title="'+disabled_legend+'"';
+		var is_enabled = _auth_backends[back]['del'];
+		content += '<div class="checkbox"><label><input type="checkbox" name="user_backend" data-id="'+user_id+'" data-backend="'+back+'" '+(is_enabled?'':disabled)+'>'+back+(is_enabled?'':' <em>('+disabled_legend+')</em>')+'</label></div>';
 	});
+	/* disable submit button while we did not select a backend */
+	$('#perform-delete').prop('disabled', true);
 	$('#delete-details').html(content);
 	$('#delete-user-modal').modal('toggle');
 });
@@ -292,6 +306,16 @@ $( document ).on('change', 'input[name=user_backend]', function(e) {
 		} else {
 			$('#delete-confirm').hide();
 		}
+	}
+	if ($(this).is(':checked')) {
+		_remove_selected++;
+	} else {
+		_remove_selected--;
+	}
+	if (_remove_selected > 0) {
+		$('#perform-delete').prop('disabled', false);
+	} else {
+		$('#perform-delete').prop('disabled', true);
 	}
 });
 $('#perform-delete').on('click', function(e) {
@@ -315,11 +339,27 @@ $( document ).on('click', '.btn-edit-user', function(e) {
 	var user = _users[user_id];
 	var content = '<legend>{{ _("Please select the backend from which to edit the user from:") }}</legend>';
 	content += '<div class="form-group"><label for="edit_backend" class="col-lg-2 control-label">Backend</label>';
-	content += '<div class="col-lg-10"><select class="form-control" id="edit_backend" name="edit_backend">';
+	content += '<div class="col-lg-10"><select class="form-control" id="edit_backend" name="edit_backend" data-id="'+user_id+'"><option disabled selected>'+'{{ _("Please select a backend") }}'+'</option>';
 	$.each(user['backends'], function(i, back) {
-		content += '<option>'+back+'</option>';
+		is_enabled = _auth_backends[back]['mod'];
+		content += '<option'+(is_enabled?'':' disabled')+'>'+back+'</option>';
 	});
 	content += '</select></div></div>';
+	$('#perform-edit').prop('disabled', true);
 	$('#edit-details').html(content);
 	$('#edit-user-modal').modal('toggle');
+});
+$( document ).on('change', '#edit_backend', function(e) {
+	if ($('#edit_backend option:selected').text() != '{{ _("Please select a backend") }}') {
+		$('#perform-edit').prop('disabled', false);
+	}
+});
+$('#perform-edit').on('click', function(e) {
+	location = "{{ url_for('view.admin_authentication', user='') }}"+$('#edit_backend').data('id')+'?backend='+$('#edit_backend option:selected').text();
+});
+
+/* user sessions */
+$( document ).on('click', '.btn-sessions-user', function(e) {
+	var user_id = $(this).data('member');
+	location = "{{ url_for('view.admin_sessions', user='') }}"+user_id;
 });

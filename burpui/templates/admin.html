@@ -11,7 +11,7 @@
           <div class="form-container">
             <legend id="authentication">{{ _('Authentication') }}</legend>
             <div id="waiting-user-container" class="row">
-              <span class="icon-refresh-animate glyphicon glyphicon-refresh"></span>&nbsp;{{ _('Loading, Please wait...') }}
+              <i class="fa fa-spin fa-fw fa-refresh" aria-hidden="true"></i>{{ _('Loading, Please wait...') }}
               <br />
               <div class="progress progress-striped active">
                 <div class="progress-bar progress-bar-info" style="width: 100%"></div>
@@ -46,14 +46,14 @@
               </div>
               <div class="modal-body">
                 <div class="alert alert-warning">
-                  <span class="glyphicon glyphicon-question-sign"></span>&nbsp;{{ _('You are about to delete a user, are you sure?') }}
+                  <i class="fa fa-fw fa-2x fa-question-circle"></i>{{ _('You are about to delete a user, are you sure?') }}
                 </div>
                 <form class="form-horizontal" id="delete-user-form">
                   <fieldset id="delete-details">
                   </fieldset>
                 </form>
                 <div class="alert alert-danger" id="delete-confirm" style="display:none;">
-                  <strong><span class="glyphicon glyphicon-exclamation-sign"></span>&nbsp;{{ _('Warning!') }}</strong> {{ _('You are about to remove your <strong>current</strong> user.') }}
+                  <strong><i class="fa fa-fw fa-2x fa-exclamation-circle"></i>{{ _('Warning!') }}</strong> {{ _('You are about to remove your <strong>current</strong> user.') }}
                 </div>
               </div>
               <div class="modal-footer">

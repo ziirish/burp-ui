@@ -128,6 +128,16 @@ def settings(server=None, conf=None):
     )
 
 
+@view.route('/admin/sessions/<user>')
+@login_required
+def admin_sessions(user):
+    # Only the admin can access this page
+    if not current_user.is_anonymous and not current_user.acl.is_admin() and \
+            not current_user.acl.is_moderator():
+        abort(403)
+    return render_template('admin/sessions.html', admin=True, sessions=True, user=user, ng_controller='AdminCtrl')
+
+
 @view.route('/admin/authentication/<user>')
 @login_required
 def admin_authentication(user):

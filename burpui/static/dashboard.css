@@ -396,7 +396,7 @@ td {
   -o-transition: all 0.3s ease;
   transition: all 0.3s ease;
 }
-#back-to-top span {
+#back-to-top i {
   color: #fff;
   margin: 0;
   position: relative;
@@ -412,7 +412,7 @@ td {
 #back-to-top:hover {
   background: #428bca;
 }
-#back-to-top:hover span {
+#back-to-top:hover i {
   color: #fff;
   top: 5px;
 }

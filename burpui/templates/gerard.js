@@ -90,20 +90,20 @@ var notif = function(type, message, timeout) {
 	switch(type) {
 		case NOTIF_SUCCESS:
 			t = 'success';
-			i = '<span class="glyphicon glyphicon-ok-sign"></span> ';
+			i = '<i class="fa fa-fw fa-check-circle" aria-hidden="true"></i>&nbsp;';
 			break;
 		case NOTIF_WARNING:
 			t = 'warning';
-			i = '<span class="glyphicon glyphicon-question-sign"></span> ';
+			i = '<i class="fa fa-fw fa-question-circle" aria-hidden="true"></i>&nbsp;';
 			break;
 		case NOTIF_ERROR:
 			t = 'danger';
-			i = '<span class="glyphicon glyphicon-exclamation-sign"></span> ';
+			i = '<i class="fa fa-fw fa-exclamation-circle" aria-hidden="true"></i>&nbsp;';
 			break;
 		case NOTIF_INFO:
 		default:
 			t = 'info';
-			i = '<span class="glyphicon glyphicon-info-sign"></span> ';
+			i = '<i class="fa fa-fw fa-info-circle" aria-hidden="true"></i>&nbsp;';
 			break;
 	}
 	e = $('<div class="alert alert-dismissable alert-'+t+'">'+
@@ -359,7 +359,15 @@ $('#input-client').typeahead({
 {% endif -%}
 
 {% if admin -%}
+	{% if authentication -%}
+{% include "js/admin/authentication.js" %}
+	{% elif authorization -%}
+{% include "js/admin/authorization.js" %}
+	{% elif sessions -%}
+{% include "js/admin/sessions.js" %}
+	{% else -%}
 {% include "js/admin.js" %}
+	{% endif -%}
 {% endif -%}
 
 var _fit_menu = function() {
@@ -440,24 +448,24 @@ $(function() {
 	 */
 	$('#refresh').on('click', function(e) {
 		e.preventDefault();
-		{% if clients -%}
 		AJAX_CACHE = false;
+		{% if clients -%}
 		_clients();
 		{% endif -%}
 		{% if client and is_client_func -%}
-		AJAX_CACHE = false;
 		_client();
 		{% endif -%}
 		{% if not login -%}
 		_check_running();
 		{% endif -%}
 		{% if servers -%}
-		AJAX_CACHE = false;
 		_servers();
 		{% endif -%}
 		{% if me -%}
-		AJAX_CACHE = false;
 		_sessions();
+		{% endif -%}
+		{% if admin -%}
+		_admin();
 		{% endif -%}
 	});
 
@@ -501,6 +509,9 @@ $(function() {
 	{% endif -%}
 	{% if me -%}
 	_sessions();
+	{% endif -%}
+	{% if admin -%}
+	_admin();
 	{% endif -%}
 
 	{% if not report and not login -%}

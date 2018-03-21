@@ -1,0 +1,34 @@
+{% extends "layout.html" %}
+{% block body %}
+        {% include "notifications.html" %}
+        <div class="col-sm-12 col-md-12 main">
+          {% include "small_topbar.html" %}
+          <ul class="breadcrumb" style="margin-bottom: 5px;">
+            <li><a href="{{ url_for('view.home') }}">{{ _('Home') }}</a></li>
+            <li><a href="{{ url_for('view.admin') }}">{{ _('Administration') }}</a></li>
+            <li class="active">{{ _('Authentication user %(backend)s/%(user)s', backend=backend, user=user) }}</li>
+          </ul>
+          <br />
+          <div class="form-container">
+            <legend id="authentication">{{ _('Authentication') }}</legend>
+            <form class="form-horizontal well" name="changePassword" method="POST" action="{{ url_for('api.auth_users', name=user) }}">
+              <fieldset>
+                <legend>{{ _('Password of user %(user)s on %(backend)s', user=user, backend=backend) }}</legend>
+                <input type="hidden" name="backend" value="{{ backend }}">
+                <div class="form-group">
+                  <label for="inputPassword" class="col-lg-2 control-label">{{ _('New password') }}</label>
+                  <div class="col-lg-3">
+                    <input class="form-control input-sm" name="password" id="inputPassword" placeholder="{{ _('New password') }}" type="password">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <div class="col-lg-10 col-lg-offset-2">
+                    <button type="submit" class="btn btn-primary"><i class="fa fa-fw fa-floppy-o" aria-hidden="true"></i>{{ _('Save') }}</button>
+                    <button type="reset" class="btn btn-default"><i class="fa fa-fw fa-undo" aria-hidden="true"></i>{{ _('Cancel') }}</button>
+                  </div>
+                </div>
+              </fieldset>
+            </form>
+          </div>
+        </div>
+{% endblock %}
