@@ -247,7 +247,7 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$timeout', '$scrollspy', 'DTOp
 			/* UX tweak: disable the submit button + change text */
 			submit = form.find('button[type="submit"]');
 			sav = submit.html();
-			submit.text('{{ _("Saving...") }}');
+			submit.html('<i class="fa fa-fw fa-spinner fa-pulse" aria-hidden="true"></i>&nbsp;{{ _("Saving...") }}');
 			submit.attr('disabled', true);
 			/* submit the data */
 			$.ajax({
@@ -337,7 +337,7 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$timeout', '$scrollspy', 'DTOp
 					var URL = '{{ url_for("view.settings", server=server) }}?conf='+encodeURIComponent(node.data.full);
 					{% endif -%}
 
-					$tdList.eq(1).html('<a href="'+URL+'" class="btn btn-info btn-xs no-link pull-right" title="{{ _('edit') }}"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a>');
+					$tdList.eq(1).html('<a href="'+URL+'" class="btn btn-info btn-xs no-link pull-right" title="{{ _('edit') }}"><i class="fa fa-pencil" aria-hidden="true"></i></a>');
 				},
 			});
 			var tree = $('#tree-hierarchy').fancytree('getTree');
@@ -619,6 +619,10 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$timeout', '$scrollspy', 'DTOp
 		/* we disable the 'real' form submission */
 		e.preventDefault();
 		var form = $(e.target);
+		submit = form.find('button[type="submit"]');
+		sav = submit.html();
+		submit.html('<i class="fa fa-fw fa-spinner fa-pulse" aria-hidden="true"></i>&nbsp;{{ _("Creating...") }}');
+		submit.attr('disabled', true);
 		$.ajax({
 			url: form.attr('action'),
 			type: 'PUT',
@@ -635,12 +639,20 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$timeout', '$scrollspy', 'DTOp
 					notif(data.notif[1][0], data.notif[1][1], 20000);
 				}
 			}
+		})
+		.always(function() {
+			submit.attr('disabled', false);
+			submit.html(sav);
 		});
 	};
 	$scope.createTemplate = function(e) {
 		/* we disable the 'real' form submission */
 		e.preventDefault();
 		var form = $(e.target);
+		submit = form.find('button[type="submit"]');
+		sav = submit.html();
+		submit.html('<i class="fa fa-fw fa-spinner fa-pulse" aria-hidden="true"></i>&nbsp;{{ _("Creating...") }}');
+		submit.attr('disabled', true);
 		$.ajax({
 			url: form.attr('action'),
 			type: 'PUT',
@@ -657,6 +669,10 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$timeout', '$scrollspy', 'DTOp
 					notif(data.notif[1][0], data.notif[1][1], 20000);
 				}
 			}
+		})
+		.always(function() {
+			submit.attr('disabled', false);
+			submit.html(sav);
 		});
 	};
 	$scope.isNumber = function(key) {

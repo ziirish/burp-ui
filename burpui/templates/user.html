@@ -54,8 +54,8 @@
                 </div>
                 <div class="form-group">
                   <div class="col-lg-10 col-lg-offset-2">
-                    <button type="submit" class="btn btn-primary" ng-disabled="changePassword.$invalid && changePassword.$dirty"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span>&nbsp;{{ _('Save') }}</button>
-                    <button type="reset" class="btn btn-default"><span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span>&nbsp;{{ _('Cancel') }}</button>
+                    <button type="submit" class="btn btn-primary" ng-disabled="changePassword.$invalid && changePassword.$dirty"><i class="fa fa-fw fa-floppy-o" aria-hidden="true"></i>{{ _('Save') }}</button>
+                    <button type="reset" class="btn btn-default"><i class="fa fa-fw fa-undo" aria-hidden="true"></i>{{ _('Cancel') }}</button>
                   </div>
                 </div>
               </fieldset>
@@ -88,8 +88,8 @@
                 </div>
                 <div class="form-group">
                   <div class="col-lg-10 col-lg-offset-2">
-                    <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span>&nbsp;{{ _('Save') }}</button>
-                    <button type="reset" class="btn btn-default"><span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span>&nbsp;{{ _('Cancel') }}</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa fa-fw fa-floppy-o" aria-hidden="true"></i>{{ _('Save') }}</button>
+                    <button type="reset" class="btn btn-default"><i class="fa fa-fw fa-undo" aria-hidden="true"></i>{{ _('Cancel') }}</button>
                   </div>
                 </div>
               </fieldset>
@@ -110,11 +110,11 @@
               </div>
               <div class="modal-body">
                 <div class="alert alert-warning">
-                  <span class="glyphicon glyphicon-question-sign"></span>&nbsp;{{ _('You are about to revoke a session, are you sure?') }}
+                  <i class="fa fa-2x fa-fw fa-question-circle"></i>{{ _('You are about to revoke a session, are you sure?') }}
                   <pre id="session-details"></pre>
                 </div>
                 <div class="alert alert-danger" id="error-confirm" style="display:none;">
-                  <strong><span class="glyphicon glyphicon-exclamation-sign"></span>&nbsp;{{ _('Warning!') }}</strong> {{ _('You are about to revoke your <strong>current</strong> session.') }}
+                  <strong><i class="fa fa-2x fa-fw fa-exclamation-circle"></i>&nbsp;{{ _('Warning!') }}</strong> {{ _('You are about to revoke your <strong>current</strong> session.') }}
                 </div>
               </div>
               <div class="modal-footer">

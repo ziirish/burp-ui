@@ -47,11 +47,11 @@ var _servers_table = $('#table-servers').DataTable( {
 		},
 		{ data: 'clients' },
 		{ data: null, render: function (data, type, row ) {
-				glyph = 'glyphicon-ok';
+				glyph = 'fa-check';
 				if (!data.alive) {
-					glyph = 'glyphicon-remove';
+					glyph = 'fa-remove';
 				}
-				return '<span class="glyphicon '+glyph+'"></span>';
+				return '<i class="fa '+glyph+'"></i>';
 			}
 		}
 	]

@@ -66,7 +66,7 @@
           <div id="config-tab-content" class="tab-content">
             <div class="tab-pane fade active in" id="config">
               <div id="waiting-container" class="row">
-                <span class="icon-refresh-animate glyphicon glyphicon-refresh"></span>&nbsp;{{ _('Loading, Please wait...') }}
+                <i class="fa fa-fw fa-spin fa-refresh" aria-hidden="true"></i>{{ _('Loading, Please wait...') }}
                 <br />
                 <div class="progress progress-striped active">
                   <div class="progress-bar progress-bar-info" style="width: 100%"></div>
@@ -94,7 +94,7 @@
                         <input type="hidden" name="{{ ::bool.name }}" id="{{ ::bool.name }}">
                       </div>
                       <div class="col-lg-1">
-                        <button type="button" class="btn btn-danger" ng-click="remove('bools', $index)"><span class="glyphicon glyphicon-minus"></span></button>
+                        <button type="button" class="btn btn-danger" ng-click="remove('bools', $index)"><i class="fa fa-minus" aria-hidden="true"></i></button>
                       </div>
                       <div class="col-lg-6" ng-bind-html="::server_doc[bool.name]"></div>
                     </div>
@@ -112,12 +112,12 @@
                         </ui-select>
                       </div>
                       <div class="col-lg-9">
-                        <button type="button" class="btn btn-danger" ng-click="undoAdd('bools')"><span class="glyphicon glyphicon-remove"></span></button>
+                        <button type="button" class="btn btn-danger" ng-click="undoAdd('bools')"><i class="fa fa-remove" aria-hidden="true"></i></button>
                       </div>
                     </div>
                     <div class="form-group" ng-hide="bools.length >= all.bools.length || add.bools">
                       <div class="col-lg-3 col-lg-offset-3">
-                        <button type="button" class="btn btn-success btn-primary" ng-click="clickAdd('bools')"><span class="glyphicon glyphicon-plus"></span></button>
+                        <button type="button" class="btn btn-success btn-primary" ng-click="clickAdd('bools')"><i class="fa fa-plus" aria-hidden="true"></i></button>
                       </div>
                     </div>
                   </fieldset>
@@ -136,7 +136,7 @@
                         </select>
                       </div>
                       <div class="col-lg-1">
-                        <button type="button" class="btn btn-danger" ng-click="remove('strings', $index)"><span class="glyphicon glyphicon-minus"></span></button>
+                        <button type="button" class="btn btn-danger" ng-click="remove('strings', $index)"><i class="fa fa-minus" aria-hidden="true"></i></button>
                       </div>
                       <div class="col-lg-6" ng-bind-html="::server_doc[string.name]"></div>
                     </div>
@@ -154,12 +154,12 @@
                         </ui-select>
                       </div>
                       <div class="col-lg-9">
-                        <button type="button" class="btn btn-danger" ng-click="undoAdd('strings')"><span class="glyphicon glyphicon-remove"></span></button>
+                        <button type="button" class="btn btn-danger" ng-click="undoAdd('strings')"><i class="fa fa-remove" aria-hidden="true"></i></button>
                       </div>
                     </div>
                     <div class="form-group" ng-hide="strings.length >= all.strings.length || add.strings">
                       <div class="col-lg-3 col-lg-offset-3">
-                        <button type="button" class="btn btn-success btn-primary" ng-click="clickAdd('strings')"><span class="glyphicon glyphicon-plus"></span></button>
+                        <button type="button" class="btn btn-success btn-primary" ng-click="clickAdd('strings')"><i class="fa fa-plus" aria-hidden="true"></i></button>
                       </div>
                     </div>
                   </fieldset>
@@ -173,7 +173,7 @@
                         <input class="form-control" type="number" id="{{ ::int.name }}" name="{{ ::int.name }}" ng-model="int.value" ng-focus="focusIn($event)" ng-blur="focusOut($event)" placeholder="{{ ::placeholders[int.name] }}">
                       </div>
                       <div class="col-lg-1">
-                        <button type="button" class="btn btn-danger" ng-click="remove('integers', $index)"><span class="glyphicon glyphicon-minus"></span></button>
+                        <button type="button" class="btn btn-danger" ng-click="remove('integers', $index)"><i class="fa fa-minus" aria-hidden="true"></i></button>
                       </div>
                       <div class="col-lg-6" ng-bind-html="::server_doc[int.name]"></div>
                     </div>
@@ -191,12 +191,12 @@
                         </ui-select>
                       </div>
                       <div class="col-lg-9">
-                        <button type="button" class="btn btn-danger" ng-click="undoAdd('integers')"><span class="glyphicon glyphicon-remove"></span></button>
+                        <button type="button" class="btn btn-danger" ng-click="undoAdd('integers')"><i class="fa fa-remove" aria-hidden="true"></i></button>
                       </div>
                     </div>
                     <div class="form-group" ng-hide="integers.length >= all.integers.length || add.integers">
                       <div class="col-lg-3 col-lg-offset-3">
-                        <button type="button" class="btn btn-success btn-primary" ng-click="clickAdd('integers')"><span class="glyphicon glyphicon-plus"></span></button>
+                        <button type="button" class="btn btn-success btn-primary" ng-click="clickAdd('integers')"><i class="fa fa-plus" aria-hidden="true"></i></button>
                       </div>
                     </div>
                   </fieldset>
@@ -214,8 +214,8 @@
                             <input class="form-control" type="number" ng-if="isNumber($parent.id)" name="{{ $parent.id }}" id="{{ $parent.id }}-{{ $index }}" ng-model="$parent.pair.value[id][i]" ng-focus="focusIn($event)" ng-blur="focusOut($event)" placeholder="{{ ::placeholders[$parent.id] }}">
                           </div>
                           <div class="col-lg-1">
-                            <button type="button" class="btn btn-danger" ng-click="removePairElement($parent.$parent.$index, $parent.id, $index)"><span class="glyphicon glyphicon-minus"></span></button>
-                            <button type="button" class="btn btn-success btn-primary" ng-click="addPairElement($parent.$parent.$parent.$index, $parent.id)" ng-if="$last"><span class="glyphicon glyphicon-plus"></span></button>
+                            <button type="button" class="btn btn-danger" ng-click="removePairElement($parent.$parent.$index, $parent.id, $index)"><i class="fa fa-minus" aria-hidden="true"></i></button>
+                            <button type="button" class="btn btn-success btn-primary" ng-click="addPairElement($parent.$parent.$parent.$index, $parent.id)" ng-if="$last"><i class="fa fa-plus" aria-hidden="true"></i></button>
                           </div>
                           <div class="col-lg-6">
                             <div ng-if="$first" ng-bind-html="::server_doc[$parent.id]"></div>
@@ -226,7 +226,7 @@
                         <label for="btn-add-include" class="col-lg-3 control-label">{{ _('add {{ $parent.pair_associations[id] }}') }}</label>
                   {% raw %}
                           <div class="col-lg-9">
-                            <button type="button" class="btn btn-success btn-primary" ng-click="addPairElement($parent.$parent.$index, $parent.pair_associations[id])"><span class="glyphicon glyphicon-plus"></span></button>
+                            <button type="button" class="btn btn-success btn-primary" ng-click="addPairElement($parent.$parent.$index, $parent.pair_associations[id])"><i class="fa fa-plus" aria-hidden="true"></i></button>
                           </div>
                         </div>
                       </div>
@@ -245,12 +245,12 @@
                         </ui-select>
                       </div>
                       <div class="col-lg-9">
-                        <button type="button" class="btn btn-danger" ng-click="undoAdd('pairs')"><span class="glyphicon glyphicon-remove"></span></button>
+                        <button type="button" class="btn btn-danger" ng-click="undoAdd('pairs')"><i class="fa fa-remove" aria-hidden="true"></i></button>
                       </div>
                     </div>
                     <div class="form-group" ng-hide="pairs.length >= all.pairs.length / 2 || add.pairs">
                       <div class="col-lg-3 col-lg-offset-3">
-                        <button type="button" class="btn btn-success btn-primary" ng-click="clickAdd('pairs')"><span class="glyphicon glyphicon-plus"></span></button>
+                        <button type="button" class="btn btn-success btn-primary" ng-click="clickAdd('pairs')"><i class="fa fa-plus" aria-hidden="true"></i></button>
                       </div>
                     </div>
                   </fieldset>
@@ -267,8 +267,8 @@
                           <input class="form-control" type="number" ng-if="isNumber($parent.multi.name)" name="{{ ::$parent.multi.name }}" id="{{ ::$parent.multi.name }}-{{ $index }}" ng-model="$parent.multi.value[i]" ng-focus="focusIn($event)" ng-blur="focusOut($event)" placeholder="{{ ::placeholders[$parent.multi.name] }}">
                         </div>
                         <div class="col-lg-1">
-                          <button type="button" class="btn btn-danger" ng-click="removeMulti($parent.$index, $index)"><span class="glyphicon glyphicon-minus"></span></button>
-                          <button type="button" class="btn btn-success btn-primary" ng-click="addMulti($parent.$parent.$index)" ng-if="$last"><span class="glyphicon glyphicon-plus"></span></button>
+                          <button type="button" class="btn btn-danger" ng-click="removeMulti($parent.$index, $index)"><i class="fa fa-minus" aria-hidden="true"></i></button>
+                          <button type="button" class="btn btn-success btn-primary" ng-click="addMulti($parent.$parent.$index)" ng-if="$last"><i class="fa fa-plus" aria-hidden="true"></i></button>
                         </div>
                         <div class="col-lg-4">
                           <div ng-if="$first" ng-bind-html="::server_doc[$parent.multi.name]"></div>
@@ -293,12 +293,12 @@
                         </ui-select>
                       </div>
                       <div class="col-lg-9">
-                        <button type="button" class="btn btn-danger" ng-click="undoAdd('multis')"><span class="glyphicon glyphicon-remove"></span></button>
+                        <button type="button" class="btn btn-danger" ng-click="undoAdd('multis')"><i class="fa fa-remove" aria-hidden="true"></i></button>
                       </div>
                     </div>
                     <div class="form-group" ng-hide="multis.length >= all.multis.length || add.multis">
                       <div class="col-lg-3 col-lg-offset-3">
-                        <button type="button" class="btn btn-success btn-primary" ng-click="clickAdd('multis')"><span class="glyphicon glyphicon-plus"></span></button>
+                        <button type="button" class="btn btn-success btn-primary" ng-click="clickAdd('multis')"><i class="fa fa-plus" aria-hidden="true"></i></button>
                       </div>
                     </div>
                   </fieldset>
@@ -318,9 +318,9 @@
                           <input type="hidden" ng-if="includes_ori[$index] !== false" name="includes_ori" value="{{ includes_ori[$index] }}">
                         </div>
                         <div class="col-lg-2 btn-toolbar">
-                          <button type="button" class="btn btn-danger" ng-click="removeIncludes($index)"><span class="glyphicon glyphicon-minus"></span></button>
+                          <button type="button" class="btn btn-danger" ng-click="removeIncludes($index)"><i class="fa fa-minus" aria-hidden="true"></i></button>
                           <div class="btn-group">
-                            <button class="btn btn-info" type="button" ng-disabled="!includes[i]" data-toggle="dropdown" ng-click="expandPath($index)"><span class="glyphicon glyphicon-pencil"></span></button>
+                            <button class="btn btn-info" type="button" ng-disabled="!includes[i]" data-toggle="dropdown" ng-click="expandPath($index)"><i class="fa fa-pencil" aria-hidden="true"></i></button>
                             <button aria-expanded="false" aria-haspopup="true" data-toggle="dropdown" class="btn btn-info dropdown-toggle" type="button" ng-click="expandPath($index)" ng-disabled="!includes[i]">
                               <span class="caret"></span>
                             </button>
@@ -335,7 +335,7 @@
                   {% endraw %}
                         <label for="btn-add-include" class="col-lg-3 control-label">{{ _('source new config') }}</label>
                         <div class="col-lg-9">
-                          <button type="button" class="btn btn-success btn-primary" ng-click="clickAddIncludes()"><span class="glyphicon glyphicon-plus"></span></button>
+                          <button type="button" class="btn btn-success btn-primary" ng-click="clickAddIncludes()"><i class="fa fa-plus" aria-hidden="true"></i></button>
                         </div>
                       </div>
                     </div>
@@ -356,7 +356,7 @@
                           <input type="hidden" name="templates" id="template-hidden-{{ $index }}" value="{{ template.value }}">
                         </div>
                         <div class="col-lg-2 btn-toolbar">
-                          <button type="button" class="btn btn-danger" ng-click="remove('templates', $index)"><span class="glyphicon glyphicon-minus"></span></button>
+                          <button type="button" class="btn btn-danger" ng-click="remove('templates', $index)"><i class="fa fa-minus" aria-hidden="true"></i></button>
                         </div>
                         <div class="col-lg-5" ng-if="$first" ng-bind-html="::server_doc['.']"></div>
                       </div>
@@ -375,12 +375,12 @@
                           </ui-select>
                         </div>
                         <div class="col-lg-9">
-                          <button type="button" class="btn btn-danger" ng-click="undoAdd('templates')"><span class="glyphicon glyphicon-remove"></span></button>
+                          <button type="button" class="btn btn-danger" ng-click="undoAdd('templates')"><i class="fa fa-remove" aria-hidden="true"></i></button>
                         </div>
                       </div>
                       <div class="form-group" ng-hide="templates.length >= raw.templates.length || add.templates">
                         <div class="col-lg-3 col-lg-offset-3">
-                          <button type="button" class="btn btn-success btn-primary" ng-click="clickAdd('templates')"><span class="glyphicon glyphicon-plus"></span></button>
+                          <button type="button" class="btn btn-success btn-primary" ng-click="clickAdd('templates')"><i class="fa fa-plus" aria-hidden="true"></i></button>
                         </div>
                       </div>
                     </div>
@@ -388,12 +388,12 @@
                   {% endif -%}
                   <div class="btn-toolbar">
                     <div class="col-lg-3 col-lg-offset-3">
-                      <button type="submit" class="btn btn-primary" ng-disabled="!setSettings.$valid"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span>&nbsp;{{ _('Save') }}</button>
+                      <button type="submit" class="btn btn-primary" ng-disabled="!setSettings.$valid"><i class="fa fa-fw fa-floppy-o" aria-hidden="true"></i>&nbsp;{{ _('Save') }}</button>
                     </div>
                     <div class="col-lg-6">
                       {% if client and not conf -%}
                       <div class="btn-group dropup text-right">
-                        <button type="button" class="btn btn-danger" ng-click="deleteClient()"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span>&nbsp;{{ _("Remove '%(client)s'", client=client) }}</button>
+                        <button type="button" class="btn btn-danger" ng-click="deleteClient()"><i class="fa fa-fw fa-trash" aria-hidden="true"></i>&nbsp;{{ _("Remove '%(client)s'", client=client) }}</button>
                         {% if not template -%}
                         <button class="btn btn-danger dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
                         <ul class="dropdown-menu browse">
@@ -404,7 +404,7 @@
                         {% endif -%}
                       </div>
                       {% elif conf -%}
-                      <button type="button" class="btn btn-danger" ng-click="deleteFile()"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span>&nbsp;{{ _("Remove file") }}</button>
+                      <button type="button" class="btn btn-danger" ng-click="deleteFile()"><i class="fa fa-fw fa-trash" aria-hidden="true"></i>{{ _("Remove file") }}</button>
                       {% endif -%}
                     </div>
                   </div>
@@ -441,7 +441,7 @@
                       <td>{{ client.name }}</td>
                       <td>{{ client.value }}</td>
                       {% endraw -%}
-                      <td><a href="{{ url_for("view.cli_settings", server=server) }}?client={{ '{{' }} client.name {{ '}}' }}" class="btn btn-info btn-xs no-link pull-right" title="{{ _('edit') }}"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a></td>
+                      <td><a href="{{ url_for("view.cli_settings", server=server) }}?client={{ '{{' }} client.name {{ '}}' }}" class="btn btn-info btn-xs no-link pull-right" title="{{ _('edit') }}"><i class="fa fa-pencil" aria-hidden="true"></i></a></td>
                     </tr>
                   </tbody>
                 </table>
@@ -453,7 +453,7 @@
                     <div class="input-group col-lg-3">
                       <input class="form-control" type="text" name="newclient" id="newclient" placeholder="{{ _('Create new client') }}">
                       <span class="input-group-btn">
-                        <button class="btn btn-success" type="submit"><span class="glyphicon glyphicon-plus"></span></button>
+                        <button class="btn btn-success" type="submit"><i class="fa fa-plus" aria-hidden="true"></i></button>
                       </span>
                     </div>
                   </fieldset>
@@ -475,7 +475,7 @@
                       <td>{{ template.name }}</td>
                       <td>{{ template.value }}</td>
                       {% endraw -%}
-                      <td><a href="{{ url_for("view.cli_settings", server=server) }}?client={{ '{{' }} template.name {{ '}}' }}&template=true" class="btn btn-info btn-xs no-link pull-right" title="{{ _('edit') }}"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a></td>
+                      <td><a href="{{ url_for("view.cli_settings", server=server) }}?client={{ '{{' }} template.name {{ '}}' }}&template=true" class="btn btn-info btn-xs no-link pull-right" title="{{ _('edit') }}"><i class="fa fa-pencil" aria-hidden="true"></i></a></td>
                     </tr>
                   </tbody>
                 </table>
@@ -487,7 +487,7 @@
                     <div class="input-group col-lg-3">
                       <input class="form-control" type="text" name="newtemplate" id="newtemplate" placeholder="{{ _('Create new template') }}">
                       <span class="input-group-btn">
-                        <button class="btn btn-success" type="submit"><span class="glyphicon glyphicon-plus"></span></button>
+                        <button class="btn btn-success" type="submit"><i class="fa fa-plus" aria-hidden="true"></i></button>
                       </span>
                     </div>
                   </fieldset>

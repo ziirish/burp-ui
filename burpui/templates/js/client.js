@@ -24,13 +24,13 @@ var __translate = {
 };
 
 /***
- * Icons for <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+ * Icons for <i class="fa fa-search" aria-hidden="true"></i>
  */
 var __icons = {
-	"{{ _('client crashed') }}": 'glyphicon glyphicon-exclamation-sign',
-	"{{ _('server crashed') }}": 'glyphicon glyphicon-exclamation-sign',
-	"{{ _('running') }}": 'glyphicon glyphicon-play',
-	"{{ _('idle') }}": 'glyphicon glyphicon-pause',
+	"{{ _('client crashed') }}": 'fa fa-fw fa-exclamation',
+	"{{ _('server crashed') }}": 'fa fa-fw fa-exclamation',
+	"{{ _('running') }}": 'fa fa-fw fa-play',
+	"{{ _('idle') }}": 'fa fa-fw fa-pause',
 };
 
 /***
@@ -123,13 +123,13 @@ var _client_table = $('#table-client').DataTable( {
 		{
 			data: null,
 			render: function ( data, type, row ) {
-				return '<span class="glyphicon glyphicon-'+(data.deletable?'ok':'remove')+'"></span>';
+				return '<i class="fa fa-'+(data.deletable?'check':'remove')+'" aria-hidden="true"></i>';
 			}
 		},
 		{
 			data: null,
 			render: function ( data, type, row ) {
-				return '<span class="glyphicon glyphicon-'+(data.encrypted?'lock':'globe')+'"></span>&nbsp;'+(data.encrypted?"{{ _('Encrypted backup') }}":"{{ _('Unencrypted backup') }}");
+				return '<i class="fa fa-fw fa-'+(data.encrypted?'lock':'globe')+'" aria-hidden="true"></i>&nbsp;'+(data.encrypted?"{{ _('Encrypted backup') }}":"{{ _('Unencrypted backup') }}");
 			}
 		},
 		{
@@ -202,7 +202,7 @@ var refresh_status = function( is_running ) {
 	var _client_running = false;
 	var _span = $('#running-status');
 	var _inner_format_status = function(status) {
-		var _content = '<span class="'+__icons[status.state]+'" aria-hidden="true"></span> ';
+		var _content = '<i class="'+__icons[status.state]+'" aria-hidden="true"></i> ';
 		if (status.state == '{{ _("running") }}') {
 			_client_running = true;
 			_content += status.state+' - '+status.phase;
@@ -267,7 +267,7 @@ $( document ).ready(function() {
 		var column = _client_table.column( $(this).attr('data-column') );
 		var vis = column.visible();
 
-		// add glyphicon someday: glyphicon glyphicon-eye-close
+		// add fa someday: fa fa-eye-close
 		if (vis) {
 			$(this).addClass('italic');
 		} else {

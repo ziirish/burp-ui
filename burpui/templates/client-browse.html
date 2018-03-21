@@ -24,13 +24,13 @@
                   <input type="text" class="form-control" placeholder="{{ _('filter...') }}" name="search-tree" autocomplete="off">
                   <div class="input-group-btn">
                     <button class="btn btn-default dropdown-toggle" data-toggle="dropdown" type="button">
-                      <span class="glyphicon glyphicon-cog"></span> {{ _('options') }}
+                      <i class="fa fa-fw fa-cog" aria-hidden="true"></i>&nbsp;{{ _('options') }}
                       <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu browse" style="z-index: 1002;">
-                      <li><label for="hideMode"><span class="glyphicon glyphicon-eye-close"></span> {{ _('Hide unmatched nodes') }}&nbsp;</label><input type="checkbox" id="hideMode"></li>
-                      <li><label for="leavesOnly"><span class="glyphicon glyphicon-leaf"></span> {{ _('Leaves only') }}&nbsp;</label><input type="checkbox" id="leavesOnly"></li>
-                      <li><label for="regex"><span class="glyphicon glyphicon-filter"></span> {{ _('Use regex') }}&nbsp;</label><input type="checkbox" id="regex"></li>
+                      <li><label for="hideMode"><i class="fa fa-fw fa-eye-slash" aria-hidden="true"></i>&nbsp;{{ _('Hide unmatched nodes') }}&nbsp;</label><input type="checkbox" id="hideMode"></li>
+                      <li><label for="leavesOnly"><i class="fa fa-fw fa-leaf" aria-hidden="true"></i>&nbsp;{{ _('Leaves only') }}&nbsp;</label><input type="checkbox" id="leavesOnly"></li>
+                      <li><label for="regex"><i class="fa fa-fw fa-filter" aria-hidden="true"></i>&nbsp;{{ _('Use regex') }}&nbsp;</label><input type="checkbox" id="regex"></li>
                     </ul>
                   </div>
                 </div>
@@ -45,7 +45,7 @@
           </div>
           <br />
           <div id="waiting-container" class="row">
-            <span class="icon-refresh-animate glyphicon glyphicon-refresh"></span>&nbsp;{{ _('Loading, Please wait...') }}
+            <i class="fa fa-spin fa-fw fa-refresh" aria-hidden="true"></i>&nbsp;{{ _('Loading, Please wait...') }}
             <br />
             <div class="progress progress-striped active">
               <div class="progress-bar progress-bar-info" style="width: 100%"></div>
@@ -75,7 +75,7 @@
                 <div id="notice">
                   <div class="panel panel-warning">
                     <div class="panel-heading">
-                      <h3 class="panel-title"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;{{ _('Information') }}</h3>
+                      <h3 class="panel-title"><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i>&nbsp;{{ _('Information') }}</h3>
                     </div>
                     <div class="panel-body">
                       {{ _('This backup is encrypted, please provide the encryption password in order to perform an online restoration.') }}
@@ -84,10 +84,10 @@
                 </div>
                 {% endif -%}
                 <div class="btn-group dropup">
-                  <button type="submit" class="btn btn-info" id="perform"><span class="glyphicon glyphicon-cloud-download"></span>&nbsp;{{ _('Download selected files') }}</button>
+                  <button type="submit" class="btn btn-info" id="perform"><i class="fa fa-fw fa-cloud-download" aria-hidden="true"></i>&nbsp;{{ _('Download selected files') }}</button>
                   <button class="btn btn-info dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
                   <ul class="dropdown-menu browse" style="z-index: 1002;">
-                    <li><label for="strip">{{ _('Number of leading path components to strip') }}:&nbsp;</label><input type="text" id="strip" name="strip" placeholder="0" autocomplete="off" maxlength="2" size="2" value="0"></li>
+                    <li><label for="strip">{{ _('Number of leading path components to strip') }}:&nbsp;</label><input type="number" id="strip" name="strip" placeholder="0" autocomplete="off" min="0" style="width: 3em;" value="0"></li>
                     <li><label for="format">{{ _('Archive format') }}:&nbsp;</label><select id="format" name="format" style="color: #000;"><option>zip</option><option>tar.gz</option><option>tar.bz2</option></select></li>
                     <li><label for="pass">{{ _('Encryption password') }}:&nbsp;</label><input type="password" id="pass" name="pass" placeholder="{{ _('password') }}" autocomplete="off" size="20"></li>
                   </ul>
@@ -98,10 +98,10 @@
               <input type="hidden" name="list-sc">
               <div id="server-initiated-form" style="display:none;">
                 <div class="btn-group dropup pull-right" ng-show="sc_restore.enabled">
-                  <button type="submit" class="btn btn-info" id="perform-server-initiated"><span class="glyphicon glyphicon-cloud-upload"></span>&nbsp;{{ _('Server initiated restore') }}</button>
+                  <button type="submit" class="btn btn-info" id="perform-server-initiated"><i class="fa fa-fw fa-cloud-upload" aria-hidden="true"></i>&nbsp;{{ _('Server initiated restore') }}</button>
                   <button class="btn btn-info dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
                   <ul class="dropdown-menu dropdown-menu-right browse" style="z-index: 1002;">
-                    <li><label for="strip-sc">{{ _('Number of leading path components to strip') }}:&nbsp;</label><input type="text" id="strip-sc" name="strip-sc" placeholder="0" autocomplete="off" maxlength="2" size="2" value="{% if edit and edit.strip %}{{ edit.strip }}{% else %}0{% endif %}"></li>
+                    <li><label for="strip-sc">{{ _('Number of leading path components to strip') }}:&nbsp;</label><input type="number" id="strip-sc" name="strip-sc" placeholder="0" autocomplete="off" min="0" style="width: 3em;" value="{% if edit and edit.strip %}{{ edit.strip }}{% else %}0{% endif %}"></li>
                     <li><label for="prefix-sc">{{ _('Prefix to the restore path') }}:&nbsp;</label><input type="text" id="prefix-sc" name="prefix-sc" placeholder="{{ _('prefix') }}" autocomplete="off" value="{% if edit and edit.restoreprefix %}{{ edit.restoreprefix }}{% endif %}"></li>
                     <li>
                       <label for="restoreto-sc">{{ _('Restore files on an other client') }}:&nbsp;</label>
@@ -116,7 +116,7 @@
                   </ul>
                 </div>
                 {% if edit -%}
-                <button type="button" id="btn-cancel-restore" class="btn btn-danger pull-right" ng-show="sc_restore.enabled"><span class="glyphicon glyphicon-trash"></span>&nbsp;{{ _('Cancel restore') }}</button>
+                <button type="button" id="btn-cancel-restore" class="btn btn-danger pull-right" ng-show="sc_restore.enabled"><i class="fa fa-fw fa-trash" aria-hidden="true"></i>&nbsp;{{ _('Cancel restore') }}</button>
                 {% endif -%}
                 <button type="button" id="btn-clear" class="btn btn-info pull-right"><i class="fa fa-eraser" aria-hidden="true"></i>&nbsp;{{ _('Clear selection') }}</button>
               </div>
@@ -131,7 +131,7 @@
                 <h4 class="modal-title">{{ _('Processing request') }}</h4>
               </div>
               <div class="modal-body">
-                <span class="icon-refresh-animate glyphicon glyphicon-refresh"></span>&nbsp;{{ _('Please wait while restoration is processing...') }}
+                <i class="fa fa-spin fa-fw fa-refresh" aria-hidden="true"></i>&nbsp;{{ _('Please wait while restoration is processing...') }}
                 <br />
                 <div class="progress progress-striped active">
                   <div class="progress-bar progress-bar-info" style="width: 100%"></div>
@@ -155,7 +155,7 @@
               </div>
               <div class="modal-body">
                 <div class="alert alert-danger">
-                  <span class="glyphicon glyphicon-exclamation-sign"></span>&nbsp;{{ _('An error occurred while processing the restoration.') }}
+                  <i class="fa fa-fw fa-exclamation-circle" aria-hidden="true"></i>&nbsp;{{ _('An error occurred while processing the restoration.') }}
                   <pre id="error-response"></pre>
                 </div>
               </div>

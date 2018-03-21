@@ -208,7 +208,7 @@ var _sessions_table = $('#table-sessions').DataTable( {
 			}
 		},
 		{
-			text: '<span class="glyphicon glyphicon-trash"></span>',
+			text: '<span aria-label="{{ _("Revoke") }}"><i class="fa fa-trash-o" aria-hidden="true"></i></span>',
 			titleAttr: '{{ _("Revoke selected") }}',
 			className: 'btn-danger',
 			action: function ( e, dt, node, config ) {
@@ -289,13 +289,13 @@ var _sessions_table = $('#table-sessions').DataTable( {
 		{
 			data: 'api',
 			render: function( data, type, row ) {
-				return '<span class="glyphicon glyphicon-'+(data?'ok':'remove')+'"></span>';
+				return '<i class="fa fa-'+(data?'check':'remove')+'" aria-hidden="true"></i>';
 			}
 		},
 		{
 			data: 'current',
 			render: function( data, type, row ) {
-				return '<span class="glyphicon glyphicon-'+(data?'ok':'remove')+'"></span>';
+				return '<i class="fa fa-'+(data?'check':'remove')+'" aria-hidden="true"></i>';
 			}
 		},
 		{
