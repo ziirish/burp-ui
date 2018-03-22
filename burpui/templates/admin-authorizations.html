@@ -1,0 +1,111 @@
+{% extends "layout.html" %}
+{% block body %}
+        {% include "notifications.html" %}
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+          {% include "small_topbar.html" %}
+          <ul class="breadcrumb" style="margin-bottom: 5px;">
+            <li><a href="{{ url_for('view.home') }}">{{ _('Home') }}</a></li>
+            <li class="active">{{ _('Administration') }}</li>
+          </ul>
+          <br />
+          <div class="form-container">
+            <legend id="authentication">{{ _('Authentication') }}</legend>
+            <div class="row well">
+              <form action="{{ url_for('api.auth_users') }}" method="PUT" class="form-inline" name="pctrl.userAdd" ng-submit="addUser($event)">
+                <fieldset>
+                  <Legend>{{ _('Create new User') }}</Legend>
+                  <div class="form-group" ng-class="{'has-error': pctrl.userAdd.auth_username.$touched && !pctrl.userAdd.auth_username.$valid}">
+                    <label class="sr-only" for="auth_username">{{ _('Username') }}</label>
+                    <input class="form-control" type="text" id="auth_username" name="auth_username" placeholder="{{ _('Username') }}" ng-model="auth_username" required>
+                  </div>
+                  <div class="form-group" ng-class="{'has-error': pctrl.userAdd.auth_password.$touched && !pctrl.userAdd.auth_password.$valid}">
+                    <label class="sr-only" for="auth_password">{{ _('Password') }}</label>
+                    <input class="form-control" type="password" id="auth_password" name="auth_password" placeholder="{{ _('Password') }}" ng-model="auth_password" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="sr-only" for="auth_backend">{{ _('Backend') }}</label>
+                    <select class="form-control" name="auth_backend" id="auth_backend" ng-model="auth_backend" ng-change="checkSelect()" required>
+                      <option selected disabled value="placeholder">{{ _('Authentication Backend') }}</option>
+                      {% raw -%}
+                      <option ng-repeat="back in auth_backends" ng-disabled="!back.add" value="{{ back.name }}">{{ back.name }}</option>
+                      {% endraw -%}
+                    </select>
+                  </div>
+                  <button class="btn btn-success" type="submit" ng-disabled="!pctrl.userAdd.$valid"><i class="fa fa-plus" aria-hidden="true"></i>&nbsp;{{ _('Create') }}</button>
+                </fieldset>
+              </form>
+            </div>
+          </div>
+          <div class="form-container">
+            <legend>{{ _('Users list') }}</legend>
+            <div id="waiting-user-container" class="row">
+              <i class="fa fa-spin fa-fw fa-refresh" aria-hidden="true"></i>&nbsp;{{ _('Loading, Please wait...') }}
+              <br />
+              <div class="progress progress-striped active">
+                <div class="progress-bar progress-bar-info" style="width: 100%"></div>
+              </div>
+            </div>
+            <div class="table-responsive" id="table-users-container" style="display: none;">
+              <table class="table table-striped table-hover nowrap" id="table-users" width="100%">
+                <thead>
+                  <tr>
+                    <th>{{ _('Username') }}</th>
+                    <th>{{ _('Authentication Backend') }}</th>
+                    <th>{{ _('Role') }}</th>
+                    <th>{{ _('Groups') }}</th>
+                    <th>{{ _('Controls') }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div id="delete-user-modal" class="modal fade">
+          <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">{{ _('Confirmation') }}</h4>
+              </div>
+              <div class="modal-body">
+                <div class="alert alert-warning">
+                  <i class="fa fa-fw fa-2x fa-question-circle"></i>{{ _('You are about to delete a user, are you sure?') }}
+                </div>
+                <form class="form-horizontal" id="delete-user-form">
+                  <fieldset id="delete-details">
+                  </fieldset>
+                </form>
+                <div class="alert alert-danger" id="delete-confirm" style="display:none;">
+                  <strong><i class="fa fa-fw fa-2x fa-exclamation-circle"></i>{{ _('Warning!') }}</strong> {{ _('You are about to remove your <strong>current</strong> user.') }}
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">{{ _('Cancel') }}</button>
+                <button type="button" class="btn btn-info" data-dismiss="modal" id="perform-delete">{{ _('Confirm') }}</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="edit-user-modal" class="modal fade">
+          <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">{{ _('Confirmation') }}</h4>
+              </div>
+              <div class="modal-body">
+                <form class="form-horizontal">
+                  <fieldset id="edit-details">
+                  </fieldset>
+                </form>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">{{ _('Cancel') }}</button>
+                <button type="button" class="btn btn-info" data-dismiss="modal" id="perform-edit">{{ _('Edit') }}</button>
+              </div>
+            </div>
+          </div>
+        </div>
+{% endblock %}

@@ -151,14 +151,24 @@ def admin_authentication(user):
     return render_template('admin/authentication.html', admin=True, authentication=True, user=user, backend=backend, ng_controller='AdminCtrl')
 
 
-@view.route('/admin')
+@view.route('/admin/authorizations')
 @login_required
-def admin():
+def admin_authorizations():
     # Only the admin can access this page
     if not current_user.is_anonymous and not current_user.acl.is_admin() and \
             not current_user.acl.is_moderator():
         abort(403)
-    return render_template('admin.html', admin=True, ng_controller='AdminCtrl')
+    return render_template('admin-authorizations.html', admin=True, authorizations=True, ng_controller='AdminCtrl')
+
+
+@view.route('/admin/authentications')
+@login_required
+def admin_authentications():
+    # Only the admin can access this page
+    if not current_user.is_anonymous and not current_user.acl.is_admin() and \
+            not current_user.acl.is_moderator():
+        abort(403)
+    return render_template('admin-authentications.html', admin=True, authentications=True, ng_controller='AdminCtrl')
 
 
 @view.route('/me')

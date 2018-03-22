@@ -5,7 +5,7 @@
           {% include "small_topbar.html" %}
           <ul class="breadcrumb" style="margin-bottom: 5px;">
             <li><a href="{{ url_for('view.home') }}">{{ _('Home') }}</a></li>
-            <li><a href="{{ url_for('view.admin') }}">{{ _('Administration') }}</a></li>
+            <li><a href="{{ url_for('view.admin_authentications') }}">{{ _('Administration') }}</a></li>
             <li class="active">{{ _('Authentication user %(backend)s/%(user)s', backend=backend, user=user) }}</li>
           </ul>
           <br />

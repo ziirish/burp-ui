@@ -365,8 +365,10 @@ $('#input-client').typeahead({
 {% include "js/admin/authorization.js" %}
 	{% elif sessions -%}
 {% include "js/admin/sessions.js" %}
-	{% else -%}
-{% include "js/admin.js" %}
+	{% elif authorizations -%}
+{% include "js/admin-authorizations.js" %}
+	{% elif authentications -%}
+{% include "js/admin-authentications.js" %}
 	{% endif -%}
 {% endif -%}
 

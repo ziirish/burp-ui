@@ -1,4 +1,3 @@
-
 /***
  * The Settings Panel is managed with AngularJS.
  * Following is the AngularJS Application and Controller.
@@ -411,9 +410,6 @@ $( document ).on('change', '#edit_backend', function(e) {
 $('#perform-edit').on('click', function(e) {
 	location = "{{ url_for('view.admin_authentication', user='') }}"+$('#edit_backend').data('id')+'?backend='+$('#edit_backend option:selected').text();
 });
-
-/* Add user */
-
 
 /* user sessions */
 $( document ).on('click', '.btn-sessions-user', function(e) {

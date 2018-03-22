@@ -54,7 +54,7 @@
               {% if current_user and current_user.is_authenticated -%}
                 {% if current_user.is_admin or current_user.is_moderator -%}
             <li class="detail {% if admin %}active{% endif %}">
-              <a href="{{ url_for('view.admin') }}">
+              <a href="{{ url_for('view.admin_authentications') }}">
               <i class="fa fa-cogs" aria-hidden="true"></i><span class="dtl">&nbsp;{{ _('Administration') }}</span>
               </a>
             </li>
