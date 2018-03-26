@@ -76,6 +76,7 @@ VENDOR_TO_KEEP = [
     'burpui/static/vendor/fullcalendar/dist/gcal.min.js',
     'burpui/static/vendor/fullcalendar/dist/locale/fr.js',
     'burpui/static/vendor/fullcalendar/dist/locale/es.js',
+    'burpui/static/vendor/fullcalendar/dist/locale/it.js',
     'burpui/static/vendor/angular-bootstrap/ui-bootstrap.min.js',
     'burpui/static/vendor/angular-bootstrap/ui-bootstrap-tpls.min.js',
     'burpui/static/vendor/components-font-awesome/css/font-awesome.min.css',
