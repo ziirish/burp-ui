@@ -346,7 +346,7 @@ var _authorization_groups = function() {
 				if (_groups[group.id]['raw'].indexOf(group) === -1) {
 					_groups[group.id]['raw'].push(group);
 				}
-				_groups[group.id]['members'] = _.merge(_groups[group.id]['members'], group.members);
+				_groups[group.id]['members'] = _.uniq(_.concat(_groups[group.id]['members'], group.members));
 			} else {
 				_groups[group.id] = {
 					id: group.id,
