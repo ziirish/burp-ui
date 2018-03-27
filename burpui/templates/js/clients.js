@@ -100,9 +100,12 @@ var _clients_table = $('#table-clients').DataTable( {
 	},
 	columns: [
 		{
-			data: null,
+			data: 'name',
 			render: function ( data, type, row ) {
-				return '<a href="{{ url_for("view.client", server=server) }}?name='+data.name+'" style="color: inherit; text-decoration: inherit;">'+data.name+'</a>';
+				if (type === 'filter' || type === 'sort') {
+					return data;
+				}
+				return '<a href="{{ url_for("view.client", server=server, name="") }}'+data+'" style="color: inherit; text-decoration: inherit;">'+data+'</a>';
 			}
 		},
 		{
@@ -121,22 +124,25 @@ var _clients_table = $('#table-clients').DataTable( {
 			}
 		},
 		{
-			data: null,
+			data: 'last',
 			type: 'timestamp',
 			render: function (data, type, row ) {
-				if (!(data.last in __status || data.last in __date))
-					return '<span data-toggle="tooltip" title="'+data.last+'">'+moment(data.last, moment.ISO_8601).format({{ g.date_format|tojson }})+'</span>';
-				return data.last
+				if (!(data in __status || data in __date))
+					return '<span data-toggle="tooltip" title="'+data+'">'+moment(data, moment.ISO_8601).format({{ g.date_format|tojson }})+'</span>';
+				return data
 			}
 		},
 		{
-			data: null,
+			data: 'labels',
 			render: function (data, type, row) {
+				if (type === 'filter' || type === 'sort') {
+					return data;
+				}
 				var ret = '';
-				if (!data.labels) {
+				if (!data) {
 					return ret;
 				}
-				$.each(data.labels, function(i, label) {
+				$.each(data, function(i, label) {
 					ret += '<span class="label label-info">'+label+'</span>&nbsp;';
 				});
 				return ret;
@@ -144,6 +150,7 @@ var _clients_table = $('#table-clients').DataTable( {
 		},
 		{
 			data: null,
+			orderable: false,
 			render: function (data, type, row ) {
 				var cls = '';
 				var link_start = '';

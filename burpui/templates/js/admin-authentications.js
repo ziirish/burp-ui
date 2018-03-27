@@ -1,101 +1,3 @@
-/***
- * The Settings Panel is managed with AngularJS.
- * Following is the AngularJS Application and Controller.
- * Our $scope is initialized with a $http request that retrieves a JSON like that:
- * {
- * 	"boolean": [
- * 		"key",
- * 		...
- * 	],
- * 	"defaults": {
- * 		"key1": "default",
- * 		"key2": false,
- * 		"key3": [
- * 			4,
- * 			2,
- * 		],
- * 		...
- * 	},
- * 	"integer": [
- * 		"key",
- * 	],
- * 	"multi": [
- * 		"key",
- * 	],
- * 	"placeholders": {
- * 		"key": "placeholder",
- * 		...
- * 	},
- * 	"results": {
- * 		"boolean": [
- * 			{
- * 				"name": "key",
- * 				"value": true
- * 			},
- * 			...
- * 		],
- * 		"clients": [
- * 			{
- * 				"name": "clientname",
- * 				"value": "/etc/burp/clientconfdir/clientname"
- * 			},
- * 			...
- * 		],
- * 		"common": [
- * 			{
- * 				"name": "key",
- * 				"value": "val"
- * 			},
- * 			...
- * 		],
- * 		"integer": [
- * 			{
- * 				"name": "key",
- * 				"value": 42
- * 			},
- * 			...
- * 		],
- * 		"multi": [
- * 			{
- * 				"name": "key",
- * 				"value": [
- * 					"value1",
- * 					"value2",
- * 					...
- * 				]
- * 			},
- * 			...
- * 		],
- *    "includes": [
- *      "glob",
- *      "example*.conf",
- *      ...
- *    ],
- *    "includes_ext": [
- *      "glob",
- *      "example1.conf",
- *      "example_toto.conf",
- *      ...
- *    ]
- * 	},
- * 	"server_doc": {
- * 		"key": "documentations of the specified key from the manpage",
- * 		...
- * 	},
- * 	"string": [
- * 		"key",
- * 		...
- * 	],
- * 	"suggest": {
- * 		"key": [
- * 			"value1",
- * 			"value2",
- * 		],
- * 		[...]
- * 	}
- * }
- * The JSON is then split-ed out into several dict/arrays to build our form.
- */
 {% import 'macros.html' as macros %}
 
 var _cache_id = _EXTRA;
@@ -217,26 +119,6 @@ var _users_table = $('#table-users').DataTable( {
 		{
 			data: null,
 			render: function ( data, type, row ) {
-				var ret = '';
-				$.each(data.roles, function(i, role) {
-					ret += '<span class="label label-warning">'+role+'</span>&nbsp;';
-				});
-				return ret;
-			}
-		},
-		{
-			data: null,
-			render: function ( data, type, row ) {
-				var ret = '';
-				$.each(data.groups, function(i, group) {
-					ret += '<span class="label label-primary">'+group+'</span>&nbsp;';
-				});
-				return ret;
-			}
-		},
-		{
-			data: null,
-			render: function ( data, type, row ) {
 				return '<button data-member="'+data.id+'" class="btn btn-xs btn-danger btn-delete-user" title="{{ _("Remove") }}"><i class="fa fa-trash" aria-hidden="true"></i></button>&nbsp;<button data-member="'+data.id+'" class="btn btn-xs btn-info btn-edit-user" title="{{ _("Edit") }}"><i class="fa fa-pencil" aria-hidden="true"></i></button>&nbsp;<button data-member="'+data.id+'" class="btn btn-xs btn-warning btn-sessions-user" title="{{ _("Sessions") }}"><i class="fa fa-list-alt" aria-hidden="true"></i></button>';
 			}
 		},
@@ -253,7 +135,6 @@ var _authentication = function() {
 	$('#table-users-container').hide();
 	var __usernames = [];
 	$.getJSON('{{ url_for("api.auth_users") }}').done(function (users) {
-		__promises = [];
 		$.each(users, function(i, user) {
 			__usernames.push(user.name);
 			if (_users[user.name]) {
@@ -267,26 +148,8 @@ var _authentication = function() {
 				_users[user.name] = {
 					id: user.name,
 					backends: [user.backend],
-					roles: [],
-					groups: [],
 					raw: [user],
 				};
-				var p = $.getJSON('{{ url_for("api.acl_groups_of", member="") }}'+user.name).done(function (data) {
-					_users[user.name]['groups'] = data.groups;
-				});
-				__promises.push(p);
-				p = $.getJSON('{{ url_for("api.acl_is_admin", member="") }}'+user.name).done(function (data) {
-					if (data.admin) {
-						_users[user.name]['roles'].push('admin');
-					}
-				});
-				__promises.push(p);
-				p = $.getJSON('{{ url_for("api.acl_is_moderator", member="") }}'+user.name).done(function (data) {
-					if (data.moderator) {
-						_users[user.name]['roles'].push('moderator');
-					}
-				});
-				__promises.push(p);
 			}
 		});
 		var redraw = false;
@@ -294,27 +157,14 @@ var _authentication = function() {
 		$.each(_users, function(key, value) {
 			if (__usernames.indexOf(key) == -1) {
 				delete _users[key];
-				redraw = true;
 			} else {
 				_users_array.push(value);
 			}
 		});
-		if (redraw) {
-			_users_table.clear();
-			_users_table.rows.add(_users_array).draw();
-			$('#waiting-user-container').hide();
-			$('#table-users-container').show();
-		}
-		$.when.apply( $, __promises ).done(function() {
-			_users_array = [];
-			$.each(_users, function(key, value) {
-				_users_array.push(value);
-			});
-			_users_table.clear();
-			_users_table.rows.add(_users_array).draw();
-			$('#waiting-user-container').hide();
-			$('#table-users-container').show();
-		});
+		_users_table.clear();
+		_users_table.rows.add(_users_array).draw();
+		$('#waiting-user-container').hide();
+		$('#table-users-container').show();
 	});
 };
 

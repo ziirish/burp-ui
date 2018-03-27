@@ -1,107 +1,10 @@
-/***
- * The Settings Panel is managed with AngularJS.
- * Following is the AngularJS Application and Controller.
- * Our $scope is initialized with a $http request that retrieves a JSON like that:
- * {
- * 	"boolean": [
- * 		"key",
- * 		...
- * 	],
- * 	"defaults": {
- * 		"key1": "default",
- * 		"key2": false,
- * 		"key3": [
- * 			4,
- * 			2,
- * 		],
- * 		...
- * 	},
- * 	"integer": [
- * 		"key",
- * 	],
- * 	"multi": [
- * 		"key",
- * 	],
- * 	"placeholders": {
- * 		"key": "placeholder",
- * 		...
- * 	},
- * 	"results": {
- * 		"boolean": [
- * 			{
- * 				"name": "key",
- * 				"value": true
- * 			},
- * 			...
- * 		],
- * 		"clients": [
- * 			{
- * 				"name": "clientname",
- * 				"value": "/etc/burp/clientconfdir/clientname"
- * 			},
- * 			...
- * 		],
- * 		"common": [
- * 			{
- * 				"name": "key",
- * 				"value": "val"
- * 			},
- * 			...
- * 		],
- * 		"integer": [
- * 			{
- * 				"name": "key",
- * 				"value": 42
- * 			},
- * 			...
- * 		],
- * 		"multi": [
- * 			{
- * 				"name": "key",
- * 				"value": [
- * 					"value1",
- * 					"value2",
- * 					...
- * 				]
- * 			},
- * 			...
- * 		],
- *    "includes": [
- *      "glob",
- *      "example*.conf",
- *      ...
- *    ],
- *    "includes_ext": [
- *      "glob",
- *      "example1.conf",
- *      "example_toto.conf",
- *      ...
- *    ]
- * 	},
- * 	"server_doc": {
- * 		"key": "documentations of the specified key from the manpage",
- * 		...
- * 	},
- * 	"string": [
- * 		"key",
- * 		...
- * 	],
- * 	"suggest": {
- * 		"key": [
- * 			"value1",
- * 			"value2",
- * 		],
- * 		[...]
- * 	}
- * }
- * The JSON is then split-ed out into several dict/arrays to build our form.
- */
 {% import 'macros.html' as macros %}
 
 var _cache_id = _EXTRA;
 
 var _me = undefined;
 var _users = {};
+var _groups = {};
 var _auth_backends = {};
 var _users_array = [];
 var __promises = [];
@@ -117,7 +20,7 @@ app.controller('AdminCtrl', ['$scope', '$http', '$scrollspy', 'DTOptionsBuilder'
 	var vm = this;
 	$scope.auth_backends = [];
 
-  $http.get('{{ url_for("api.auth_backends") }}', { headers: { 'X-From-UI': true } })
+  $http.get('{{ url_for("api.acl_backends") }}', { headers: { 'X-From-UI': true } })
 		.then(function (response) {
 			$scope.auth_backends = [];
 			_auth_backends = {};
@@ -126,8 +29,10 @@ app.controller('AdminCtrl', ['$scope', '$http', '$scrollspy', 'DTOptionsBuilder'
 				$scope.auth_backends.push(back);
 			});
 			$scope.auth_backend = "placeholder";
+			/*
 			vm.userAdd.auth_backend.$setValidity('valid', false);
 			vm.userAdd.$setPristine();
+			*/
 		});
 
 	$scope.checkSelect = function() {
@@ -171,6 +76,82 @@ app.controller('AdminCtrl', ['$scope', '$http', '$scrollspy', 'DTOptionsBuilder'
 	};
 }]);
 
+var _groups_table = $('#table-groups').DataTable( {
+	{{ macros.translate_datatable() }}
+	{{ macros.get_page_length() }}
+	responsive: true,
+	processing: true,
+	fixedHeader: true,
+	select: {
+		style: 'os',
+	},
+	data: [],
+	rowId: 'id',
+	rowCallback: function( row, data, index ) {
+		var classes = row.className.split(' ');
+		_.each(classes, function(cl) {
+			if (_.indexOf(['odd', 'even'], cl) != -1) {
+				row.className = cl;
+				return;
+			}
+		});
+		if (data.id === _me.name) {
+			row.className += ' success';
+		}
+	},
+	columns: [
+		{
+			data: 'id',
+		},
+		{
+			data: 'backends',
+			render: function ( data, type, row ) {
+				if (type === 'filter' || type === 'sort') {
+					return data;
+				}
+				var ret = '';
+				$.each(data, function(i, back) {
+					ret += '<span class="label label-default">'+back+'</span>&nbsp;';
+				});
+				return ret;
+			}
+		},
+		{
+			data: 'members',
+			render: function ( data, type, row ) {
+				if (type === 'filter' || type === 'sort') {
+					return data.length+'-'+data.join(',');
+				}
+				return '<span class="badge" data-toggle="tooltip" title="'+data.join(', ')+'">'+data.length+'</span>';
+			}
+		},
+		{
+			data: 'grants',
+			render: function ( data, type, row ) {
+				if (type === 'filter' || type === 'sort') {
+					return data;
+				}
+				var ret = '';
+				$.each(data, function(i, grant) {
+					ret += '<code data-toggle="tooltip" data-html="true" title="<code>'+grant.replace(/\"/g,'&quot;')+'</code>">'+$.trim(grant).substring(0, 20).split(' ').slice(0, -1).join(" ")+'...</code>&nbsp;';
+				});
+				return ret;
+			}
+		},
+		{
+			data: null,
+			orderable: false,
+			render: function ( data, type, row ) {
+				return '<button data-member="'+data.id+'" class="btn btn-xs btn-danger btn-delete-user" title="{{ _("Remove") }}"><i class="fa fa-trash" aria-hidden="true"></i></button>&nbsp;<button data-member="'+data.id+'" class="btn btn-xs btn-info btn-edit-user" title="{{ _("Edit") }}"><i class="fa fa-pencil" aria-hidden="true"></i></button>';
+			}
+		},
+	],
+});
+
+_groups_table.on('draw.dt', function() {
+	$('[data-toggle="tooltip"]').tooltip();
+});
+
 var _users_table = $('#table-users').DataTable( {
 	{{ macros.translate_datatable() }}
 	{{ macros.get_page_length() }}
@@ -190,57 +171,78 @@ var _users_table = $('#table-users').DataTable( {
 				return;
 			}
 		});
-		_.each(data.raw, function(raw) {
-			if (raw.name === _me.name && raw.backend == _me.backend) {
-				row.className += ' success';
-				return;
-			}
-		});
+		if (data.id === _me.name) {
+			row.className += ' success';
+		}
 	},
 	columns: [
 		{
-			data: null,
-			render: function ( data, type, row ) {
-				return data.id;
-			}
+			data: 'id',
 		},
 		{
-			data: null,
+			data: 'backends',
 			render: function ( data, type, row ) {
+				if (type === 'filter' || type === 'sort') {
+					return data;
+				}
 				var ret = '';
-				$.each(data.backends, function(i, back) {
+				$.each(data, function(i, back) {
 					ret += '<span class="label label-default">'+back+'</span>&nbsp;';
 				});
 				return ret;
 			}
 		},
 		{
-			data: null,
+			data: 'roles',
 			render: function ( data, type, row ) {
+				if (type === 'filter' || type === 'sort') {
+					return data;
+				}
 				var ret = '';
-				$.each(data.roles, function(i, role) {
+				$.each(data, function(i, role) {
 					ret += '<span class="label label-warning">'+role+'</span>&nbsp;';
 				});
 				return ret;
 			}
 		},
 		{
-			data: null,
+			data: 'groups',
 			render: function ( data, type, row ) {
+				if (type === 'filter' || type === 'sort') {
+					return data;
+				}
 				var ret = '';
-				$.each(data.groups, function(i, group) {
+				$.each(data, function(i, group) {
 					ret += '<span class="label label-primary">'+group+'</span>&nbsp;';
 				});
 				return ret;
 			}
 		},
 		{
-			data: null,
+			data: 'grants',
 			render: function ( data, type, row ) {
-				return '<button data-member="'+data.id+'" class="btn btn-xs btn-danger btn-delete-user" title="{{ _("Remove") }}"><i class="fa fa-trash" aria-hidden="true"></i></button>&nbsp;<button data-member="'+data.id+'" class="btn btn-xs btn-info btn-edit-user" title="{{ _("Edit") }}"><i class="fa fa-pencil" aria-hidden="true"></i></button>&nbsp;<button data-member="'+data.id+'" class="btn btn-xs btn-warning btn-sessions-user" title="{{ _("Sessions") }}"><i class="fa fa-list-alt" aria-hidden="true"></i></button>';
+				if (type === 'filter' || type === 'sort') {
+					return data;
+				}
+				var ret = '';
+				$.each(data, function(i, grant) {
+					ret += '<code data-toggle="tooltip" data-html="true" title="<code>'+grant.replace(/\"/g,'&quot;')+'</code>">'+$.trim(grant).substring(0, 20).split(' ').slice(0, -1).join(" ")+'...</code>&nbsp;';
+				});
+				return ret;
+			}
+		},
+		{
+			data: null,
+			orderable: false,
+			render: function ( data, type, row ) {
+				return '<button data-member="'+data.id+'" class="btn btn-xs btn-danger btn-delete-user" title="{{ _("Remove") }}"><i class="fa fa-trash" aria-hidden="true"></i></button>&nbsp;<button data-member="'+data.id+'" class="btn btn-xs btn-info btn-edit-user" title="{{ _("Edit") }}"><i class="fa fa-pencil" aria-hidden="true"></i></button>';
 			}
 		},
 	],
+});
+
+_users_table.on('draw.dt', function() {
+	$('[data-toggle="tooltip"]').tooltip();
 });
 
 var g = $.getJSON('{{ url_for("api.admin_me") }}').done(function (data) {
@@ -248,47 +250,53 @@ var g = $.getJSON('{{ url_for("api.admin_me") }}').done(function (data) {
 });
 __globals_promises.push(g);
 
-var _authentication = function() {
+var _authorization_users = function() {
 	$('#waiting-user-container').show();
 	$('#table-users-container').hide();
 	var __usernames = [];
-	$.getJSON('{{ url_for("api.auth_users") }}').done(function (users) {
+	var __top_promises = [];
+	var t = $.getJSON('{{ url_for("api.acl_grants") }}').done(function (grants) {
 		__promises = [];
-		$.each(users, function(i, user) {
-			__usernames.push(user.name);
-			if (_users[user.name]) {
-				if (_users[user.name]['backends'].indexOf(user.backend) === -1) {
-					_users[user.name]['backends'].push(user.backend);
+		$.each(grants, function(i, user) {
+			__usernames.push(user.id);
+			if (_users[user.id]) {
+				if (_users[user.id]['backends'].indexOf(user.backend) === -1) {
+					_users[user.id]['backends'].push(user.backend);
 				}
-				if (_users[user.name]['raw'].indexOf(user) === -1) {
-					_users[user.name]['raw'].push(user);
+				if (_users[user.id]['grants'].indexOf(user.grant) === -1) {
+					_users[user.id]['grants'].push(user.grant);
+				}
+				if (_users[user.id]['raw'].indexOf(user) === -1) {
+					_users[user.id]['raw'].push(user);
 				}
 			} else {
-				_users[user.name] = {
-					id: user.name,
+				_users[user.id] = {
+					id: user.id,
 					backends: [user.backend],
 					roles: [],
 					groups: [],
+					grants: [user.grant],
 					raw: [user],
 				};
-				var p = $.getJSON('{{ url_for("api.acl_groups_of", member="") }}'+user.name).done(function (data) {
-					_users[user.name]['groups'] = data.groups;
+				var p = $.getJSON('{{ url_for("api.acl_groups_of", member="") }}'+user.id).done(function (data) {
+					_users[user.id]['groups'] = data.groups;
 				});
 				__promises.push(p);
-				p = $.getJSON('{{ url_for("api.acl_is_admin", member="") }}'+user.name).done(function (data) {
+				p = $.getJSON('{{ url_for("api.acl_is_admin", member="") }}'+user.id).done(function (data) {
 					if (data.admin) {
-						_users[user.name]['roles'].push('admin');
+						_users[user.id]['roles'].push('admin');
 					}
 				});
 				__promises.push(p);
-				p = $.getJSON('{{ url_for("api.acl_is_moderator", member="") }}'+user.name).done(function (data) {
+				p = $.getJSON('{{ url_for("api.acl_is_moderator", member="") }}'+user.id).done(function (data) {
 					if (data.moderator) {
-						_users[user.name]['roles'].push('moderator');
+						_users[user.id]['roles'].push('moderator');
 					}
 				});
 				__promises.push(p);
 			}
 		});
+		__top_promises.push(t);
 		var redraw = false;
 		_users_array = [];
 		$.each(_users, function(key, value) {
@@ -305,21 +313,83 @@ var _authentication = function() {
 			$('#waiting-user-container').hide();
 			$('#table-users-container').show();
 		}
-		$.when.apply( $, __promises ).done(function() {
-			_users_array = [];
-			$.each(_users, function(key, value) {
-				_users_array.push(value);
+		$.when.apply( $, __top_promises ).done(function() {
+			$.when.apply( $, __promises ).done(function() {
+				_users_array = [];
+				$.each(_users, function(key, value) {
+					_users_array.push(value);
+				});
+				_users_table.clear();
+				_users_table.rows.add(_users_array).draw();
+				$('#waiting-user-container').hide();
+				$('#table-users-container').show();
 			});
-			_users_table.clear();
-			_users_table.rows.add(_users_array).draw();
-			$('#waiting-user-container').hide();
-			$('#table-users-container').show();
+		});
+	});
+};
+
+var _authorization_groups = function() {
+	$('#waiting-group-container').show();
+	$('#table-groups-container').hide();
+	var __groupnames = [];
+	var __top_promises = [];
+	var t = $.getJSON('{{ url_for("api.acl_groups") }}').done(function (groups) {
+		$.each(groups, function(i, group) {
+			__groupnames.push(group.id);
+			if (_groups[group.id]) {
+				if (_groups[group.id]['backends'].indexOf(group.backend) === -1) {
+					_groups[group.id]['backends'].push(group.backend);
+				}
+				if (_groups[group.id]['grants'].indexOf(group.grant) === -1) {
+					_groups[group.id]['grants'].push(group.grant);
+				}
+				if (_groups[group.id]['raw'].indexOf(group) === -1) {
+					_groups[group.id]['raw'].push(group);
+				}
+				_groups[group.id]['members'] = _.merge(_groups[group.id]['members'], group.members);
+			} else {
+				_groups[group.id] = {
+					id: group.id,
+					backends: [group.backend],
+					members: group.members,
+					grants: [group.grant],
+					raw: [group],
+				};
+			}
+		});
+		__top_promises.push(t);
+		var redraw = false;
+		_groups_array = [];
+		$.each(_groups, function(key, value) {
+			if (__groupnames.indexOf(key) == -1) {
+				delete _groups[key];
+				redraw = true;
+			} else {
+				_groups_array.push(value);
+			}
+		});
+		if (redraw) {
+			_groups_table.clear();
+			_groups_table.rows.add(_groups_array).draw();
+			$('#waiting-group-container').hide();
+			$('#table-groups-container').show();
+		}
+		$.when.apply( $, __top_promises ).done(function() {
+			_groups_array = [];
+			$.each(_groups, function(key, value) {
+				_groups_array.push(value);
+			});
+			_groups_table.clear();
+			_groups_table.rows.add(_groups_array).draw();
+			$('#waiting-group-container').hide();
+			$('#table-groups-container').show();
 		});
 	});
 };
 
 var _admin = function() {
-	_authentication();
+	_authorization_users();
+	_authorization_groups();
 };
 
 {{ macros.page_length('#table-list-clients') }}

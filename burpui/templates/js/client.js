@@ -98,42 +98,46 @@ var _client_table = $('#table-client').DataTable( {
 		{
 			data: null,
 			render: function ( data, type, row ) {
-				return '<a href="{{ url_for("view.client_browse", name=cname, server=server) }}?backup='+data.number+(data.encrypted?'&encrypted=1':'')+'" style="color: inherit; text-decoration: inherit;">'+pad(data.number, 7)+'</a>';
+				if (type === 'filter' || type === 'sort') {
+					return data.number;
+				}
+				return '<a href="{{ url_for("view.client_browse", name=cname, server=server) }}/'+data.number+(data.encrypted?'&encrypted=1':'')+'" style="color: inherit; text-decoration: inherit;">'+pad(data.number, 7)+'</a>';
 			}
 		},
 		{
-			data: null,
+			data: 'date',
 			type: 'timestamp',
 			render: function ( data, type, row ) {
-				return '<span data-toggle="tooltip" title="'+data.date+'">'+moment(data.date, moment.ISO_8601).format({{ g.date_format|tojson }})+'</span>';
+				return '<span data-toggle="tooltip" title="'+data+'">'+moment(data, moment.ISO_8601).format({{ g.date_format|tojson }})+'</span>';
 			}
 		},
 		{
-			data: null,
+			data: 'received',
 			render: function ( data, type, row ) {
-				return _bytes_human_readable(data.received, false);
+				return _bytes_human_readable(data, false);
 			}
 		},
 		{
-			data: null,
+			data: 'size',
 			render: function ( data, type, row ) {
-				return _bytes_human_readable(data.size, false);
+				return _bytes_human_readable(data, false);
 			}
 		},
 		{
-			data: null,
+			data: 'deletable',
 			render: function ( data, type, row ) {
-				return '<i class="fa fa-'+(data.deletable?'check':'remove')+'" aria-hidden="true"></i>';
+				return '<i class="fa fa-'+(data?'check':'remove')+'" aria-hidden="true"></i>';
 			}
 		},
 		{
-			data: null,
+			data: 'encrypted',
 			render: function ( data, type, row ) {
-				return '<i class="fa fa-fw fa-'+(data.encrypted?'lock':'globe')+'" aria-hidden="true"></i>&nbsp;'+(data.encrypted?"{{ _('Encrypted backup') }}":"{{ _('Unencrypted backup') }}");
+				return '<i class="fa fa-fw fa-'+(data?'lock':'globe')+'" aria-hidden="true"></i>&nbsp;'+(data?"{{ _('Encrypted backup') }}":"{{ _('Unencrypted backup') }}");
 			}
 		},
 		{
 			data: null,
+			orderable: false,
 			render: function ( data, type, row ) {
 				var disable = '';
 				if (!data.deletable) {

@@ -8,8 +8,9 @@
             <li class="active">{{ _('Administration') }}</li>
           </ul>
           <br />
+          <!--
           <div class="form-container">
-            <legend id="authentication">{{ _('Authentication') }}</legend>
+            <legend id="authentication">{{ _('Authorization') }}</legend>
             <div class="row well">
               <form action="{{ url_for('api.auth_users') }}" method="PUT" class="form-inline" name="pctrl.userAdd" ng-submit="addUser($event)">
                 <fieldset>
@@ -36,8 +37,9 @@
               </form>
             </div>
           </div>
+          -->
           <div class="form-container">
-            <legend>{{ _('Users list') }}</legend>
+            <legend>{{ _('Grants list') }}</legend>
             <div id="waiting-user-container" class="row">
               <i class="fa fa-spin fa-fw fa-refresh" aria-hidden="true"></i>&nbsp;{{ _('Loading, Please wait...') }}
               <br />
@@ -50,9 +52,35 @@
                 <thead>
                   <tr>
                     <th>{{ _('Username') }}</th>
-                    <th>{{ _('Authentication Backend') }}</th>
+                    <th>{{ _('Authorization Backend') }}</th>
                     <th>{{ _('Role') }}</th>
                     <th>{{ _('Groups') }}</th>
+                    <th>{{ _('Grants') }}</th>
+                    <th>{{ _('Controls') }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="form-container">
+            <legend>{{ _('Groups list') }}</legend>
+            <div id="waiting-group-container" class="row">
+              <i class="fa fa-spin fa-fw fa-refresh" aria-hidden="true"></i>&nbsp;{{ _('Loading, Please wait...') }}
+              <br />
+              <div class="progress progress-striped active">
+                <div class="progress-bar progress-bar-info" style="width: 100%"></div>
+              </div>
+            </div>
+            <div class="table-responsive" id="table-groups-container" style="display: none;">
+              <table class="table table-striped table-hover nowrap" id="table-groups" width="100%">
+                <thead>
+                  <tr>
+                    <th>{{ _('Group name') }}</th>
+                    <th>{{ _('Authorization Backend') }}</th>
+                    <th>{{ _('Members') }}</th>
+                    <th>{{ _('Grants') }}</th>
                     <th>{{ _('Controls') }}</th>
                   </tr>
                 </thead>

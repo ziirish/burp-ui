@@ -37,7 +37,12 @@ var _servers_table = $('#table-servers').DataTable( {
 		row.className += ' clickable';
 	},
 	columns: [
-		{ data: null, render: function ( data, type, row ) {
+		{
+			data: null,
+			render: function ( data, type, row ) {
+				if (type === 'filter' || type === 'sort') {
+					return data.name;
+				}
 				href = '{{ url_for("view.clients") }}?serverName='+data.name;
 				if (!data.alive) {
 					href = '#';
@@ -46,9 +51,14 @@ var _servers_table = $('#table-servers').DataTable( {
 			}
 		},
 		{ data: 'clients' },
-		{ data: null, render: function (data, type, row ) {
+		{
+			data: 'alive',
+			render: function (data, type, row ) {
+				if (type === 'filter' || type === 'sort') {
+					return data;
+				}
 				glyph = 'fa-check';
-				if (!data.alive) {
+				if (!data) {
 					glyph = 'fa-remove';
 				}
 				return '<i class="fa '+glyph+'"></i>';
