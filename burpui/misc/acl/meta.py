@@ -414,6 +414,8 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
 
         if not client_match and username == client:
             client_match = username
+        elif not client_match:
+            client_match = False
 
         if server:
             server_match = self._server_match(username, server)

@@ -156,7 +156,7 @@ class ACLproxy(BUIacl):
     def __getattribute__(self, name):
         # always return this value because we need it and if we don't do that
         # we'll end up with an infinite loop
-        if name == 'foreign':
+        if name in ['foreign', 'acl', 'username']:
             return object.__getattribute__(self, name)
         # now we can retrieve the 'foreign' list and know if the object called
         # needs to be "proxyfied"
