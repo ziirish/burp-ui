@@ -19,6 +19,8 @@ from six import iteritems
 from flask import current_app
 from flask_login import current_user
 
+import json
+
 bui = current_app  # type: BUIServer
 ns = api.namespace('admin', 'Admin methods')
 
@@ -112,7 +114,9 @@ class AdminMe(Resource):
         return ret
 
 
-@ns.route('/acl/isAdmin/<member>', endpoint='acl_is_admin')
+@ns.route('/acl/isAdmin/<member>',
+          '/acl/<backend>/isAdmin/<member>',
+          endpoint='acl_is_admin')
 @ns.doc(
     params={
         'member': 'Username',
@@ -133,9 +137,22 @@ class AclIsAdmin(Resource):
             404: 'No backend found',
         },
     )
-    def get(self, member):
+    def get(self, member, backend=None):
         """Checks if a given member is admin"""
-        return {'admin': meta_grants.is_admin(member)}
+        if not backend:
+            return {'admin': meta_grants.is_admin(member)}
+        try:
+            handler = getattr(bui, 'acl_handler')
+        except AttributeError:
+            handler = None
+
+        if not handler or len(handler.backends) == 0:
+            self.abort(404, "No acl backend found")
+        if backend not in handler.backends:
+            self.abort(404, "No acl backend '{}' found".format(backend))
+        ret = {}
+        loader = handler.backends[backend]
+        return {'admin': member in loader.admins}
 
 
 @ns.route('/acl/admin/<backend>',
@@ -271,7 +288,9 @@ class AclAdmins(Resource):
         return [[code, message]], status
 
 
-@ns.route('/acl/isModerator/<member>', endpoint='acl_is_moderator')
+@ns.route('/acl/isModerator/<member>',
+          '/acl/<backend>/isModerator/<member>',
+          endpoint='acl_is_moderator')
 @ns.doc(
     params={
         'member': 'Username',
@@ -292,9 +311,22 @@ class AclIsModerator(Resource):
             404: 'No backend found',
         },
     )
-    def get(self, member):
+    def get(self, member, backend=None):
         """Checks if a given member is moderator"""
-        return {'moderator': meta_grants.is_moderator(member)}
+        if not backend:
+            return {'moderator': meta_grants.is_moderator(member)}
+        try:
+            handler = getattr(bui, 'acl_handler')
+        except AttributeError:
+            handler = None
+
+        if not handler or len(handler.backends) == 0:
+            self.abort(404, "No acl backend found")
+        if backend not in handler.backends:
+            self.abort(404, "No acl backend '{}' found".format(backend))
+        ret = {}
+        loader = handler.backends[backend]
+        return {'moderator': member in loader.moderators}
 
 
 @ns.route('/acl/moderator/<backend>',
@@ -493,7 +525,7 @@ class AclGroup(Resource):
     This resource is part of the :mod:`burpui.api.admin` module.
     """
     parser = ns.parser()
-    parser.add_argument('memberName', required=False, help='Group member', location='values')
+    parser.add_argument('memberName', required=False, help='Group member', location='values', action='append')
 
     @api.acl_admin_or_moderator_required(message="Not allowed to view groups list")
     @ns.marshal_with(group_members_fields, code=200, description='Success')
@@ -556,7 +588,7 @@ class AclGroup(Resource):
 
         loader = handler.backends[backend]
 
-        member = member or args['memberName']
+        members = [member] or args['memberName']
 
         if loader.add_group_member is False:
             self.abort(
@@ -565,12 +597,16 @@ class AclGroup(Resource):
                 "".format(backend)
             )
 
-        success, message, code = loader.add_group_member(
-            name,
-            member
-        )
-        status = 201 if success else 200
-        return [[code, message]], status
+        ret = []
+        status = 200
+        for member in members:
+            success, message, code = loader.add_group_member(
+                name,
+                member
+            )
+            ret.append([code, message])
+            status = 201 if success else 200
+        return ret, status
 
     @api.acl_admin_or_moderator_required(message="Not allowed to remove member in group")
     @ns.expect(parser)
@@ -598,7 +634,7 @@ class AclGroup(Resource):
 
         loader = handler.backends[backend]
 
-        member = member or args['memberName']
+        members = [member] or args['memberName']
 
         if loader.del_group_member is False:
             self.abort(
@@ -607,12 +643,16 @@ class AclGroup(Resource):
                 "".format(backend)
             )
 
-        success, message, code = loader.del_group_member(
-            name,
-            member
-        )
-        status = 201 if success else 200
-        return [[code, message]], status
+        ret = []
+        status = 200
+        for member in members:
+            success, message, code = loader.del_group_member(
+                name,
+                member
+            )
+            ret.append([code, message])
+            status = 201 if success else 200
+        return ret, status
 
 
 @ns.route('/acl/groupsOf/<member>',
@@ -836,7 +876,9 @@ class AclGroups(Resource):
 
 
 @ns.route('/acl/grants',
+          '/acl/<backend>/grants',
           '/acl/grants/<name>',
+          '/acl/<backend>/grants/<name>',
           endpoint='acl_grants')
 @ns.doc(
     params={
@@ -870,7 +912,7 @@ class AclGrants(Resource):
             404: 'No backend found',
         },
     )
-    def get(self):
+    def get(self, name=None, backend=None):
         """Returns a list of grants
 
         **GET** method provided by the webservice.
@@ -888,12 +930,16 @@ class AclGrants(Resource):
         for _, loader in iteritems(handler.backends):
             grants = loader.grants
             if grants:
-                for name, grant in iteritems(grants):
-                    ret.append({
-                        'id': name,
-                        'grant': grant,
+                for _id, grant in iteritems(grants):
+                    append = {
+                        'id': _id,
+                        'grant': json.dumps(grant),
                         'backend': loader.name
-                    })
+                    }
+                    if name and name == _id:
+                        if (backend and backend == loader.name) or backend is None:
+                            return [append]
+                    ret.append(append)
         return ret
 
     @api.disabled_on_demo()
@@ -909,9 +955,10 @@ class AclGrants(Resource):
             500: 'Backend does not support this operation',
         },
     )
-    def put(self):
+    def put(self, backend=None):
         """Create a new grant"""
         args = self.parser_add.parse_args()
+        backend = backend or args['backend']
 
         try:
             handler = getattr(bui, 'acl_handler')
@@ -919,16 +966,16 @@ class AclGrants(Resource):
             handler = None
 
         if not handler or len(handler.backends) == 0 or \
-                args['backend'] not in handler.backends:
+                backend not in handler.backends:
             self.abort(404, "No acl backend found")
 
-        loader = handler.backends[args['backend']]
+        loader = handler.backends[backend]
 
         if loader.add_grant is False:
             self.abort(
                 500,
                 "The '{}' backend does not support grant creation"
-                "".format(args['backend'])
+                "".format(backend)
             )
 
         success, message, code = loader.add_grant(
@@ -951,9 +998,10 @@ class AclGrants(Resource):
             500: 'Backend does not support this operation',
         },
     )
-    def delete(self, name):
+    def delete(self, name, backend=None):
         """Delete a grant"""
         args = self.parser_del.parse_args()
+        backend = backend or args['backend']
 
         try:
             handler = getattr(bui, 'acl_handler')
@@ -961,16 +1009,16 @@ class AclGrants(Resource):
             handler = None
 
         if not handler or len(handler.backends) == 0 or \
-                args['backend'] not in handler.backends:
+                backend not in handler.backends:
             self.abort(404, "No acl backend found")
 
-        loader = handler.backends[args['backend']]
+        loader = handler.backends[backend]
 
         if loader.del_grant is False:
             self.abort(
                 500,
                 "The '{}' backend does not support grant deletion"
-                "".format(args['backend'])
+                "".format(backend)
             )
 
         success, message, code = loader.del_grant(
@@ -992,9 +1040,10 @@ class AclGrants(Resource):
             500: 'Backend does not support this operation',
         },
     )
-    def post(self, name):
+    def post(self, name, backend=None):
         """Change a grant"""
         args = self.parser_mod.parse_args()
+        backend = backend or args['backend']
 
         try:
             handler = getattr(bui, 'acl_handler')
@@ -1002,16 +1051,16 @@ class AclGrants(Resource):
             handler = None
 
         if not handler or len(handler.backends) == 0 or \
-                args['backend'] not in handler.backends:
+                backend not in handler.backends:
             self.abort(404, "No acl backend found")
 
-        loader = handler.backends[args['backend']]
+        loader = handler.backends[backend]
 
         if loader.mod_grant is False:
             self.abort(
                 500,
                 "The '{}' backend does not support grant modification"
-                "".format(args['backend'])
+                "".format(backend)
             )
 
         success, message, code = loader.mod_grant(
