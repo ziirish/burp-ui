@@ -362,7 +362,11 @@ $('#input-client').typeahead({
 	{% if authentication -%}
 {% include "js/admin/authentication.js" %}
 	{% elif authorization -%}
-{% include "js/admin/authorization.js" %}
+		{% if grant -%}
+{% include "js/admin/grant-authorization.js" %}
+		{% elif group -%}
+{% include "js/admin/group-authorization.js" %}
+		{% endif -%}
 	{% elif sessions -%}
 {% include "js/admin/sessions.js" %}
 	{% elif authorizations -%}

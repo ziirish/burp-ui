@@ -57,8 +57,8 @@ app.controller('UserCtrl', function($timeout, $scope, $http, $scrollspy) {
 		e.preventDefault();
 		var form = $(e.target);
 		var submit = form.find('button[type="submit"]');
-		var sav = submit.text();
-		submit.text('{{ _("Saving...") }}');
+		var sav = submit.html();
+		submit.html('<i class="fa fa-fw fa-spinner fa-pulse" aria-hidden="true"></i>&nbsp;{{ _("Saving...") }}');
 		submit.attr('disabled', true);
 		table.page.len($scope.prefs.pageLength).draw();
 		/* submit the data */
@@ -74,7 +74,7 @@ app.controller('UserCtrl', function($timeout, $scope, $http, $scrollspy) {
 		})
 		.always(function() {
 			/* reset the submit button state */
-			submit.text(sav);
+			submit.html(sav);
 			submit.attr('disabled', false);
 		});
 	};
@@ -83,7 +83,7 @@ app.controller('UserCtrl', function($timeout, $scope, $http, $scrollspy) {
 		e.preventDefault();
 		var form = $(e.target);
 		submit = form.find('button[type="submit"]');
-		sav = submit.text();
+		sav = submit.html();
 		submit.html('<i class="fa fa-fw fa-spinner fa-pulse" aria-hidden="true"></i>&nbsp;{{ _("Saving...") }}');
 		submit.attr('disabled', true);
 		/* submit the data */
@@ -103,7 +103,7 @@ app.controller('UserCtrl', function($timeout, $scope, $http, $scrollspy) {
 		})
 		.always(function() {
 			/* reset the submit button state */
-			submit.text(sav);
+			submit.html(sav);
 			submit.attr('disabled', false);
 		});
 	};
@@ -229,6 +229,9 @@ var _sessions_table = $('#table-sessions').DataTable( {
 				$('#session-details').empty().text(output);
 				$('#perform-revoke').data('multi', true);
 				$('#confirmation-modal').modal('toggle');
+				$('pre code').each(function(i, block) {
+					hljs.highlightBlock(block);
+				});
 			},
 			enabled: false
 		}

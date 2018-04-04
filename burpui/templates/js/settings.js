@@ -99,10 +99,27 @@
  */
 {% import 'macros.html' as macros %}
 
-var app = angular.module('MainApp', ['ngSanitize', 'frapontillo.bootstrap-switch', 'ui.select', 'mgcrea.ngStrap', 'angular-onbeforeunload', 'datatables']);
+var app = angular.module('MainApp', ['ngSanitize', 'frapontillo.bootstrap-switch', 'ui.select', 'mgcrea.ngStrap', 'angular-onbeforeunload', 'datatables', 'hljs']);
 
 app.config(function(uiSelectConfig) {
 	uiSelectConfig.theme = 'bootstrap';
+});
+
+app.directive('highlight', function($interpolate, $window) {
+	return {
+		restrict: 'EA',
+		scope: true,
+		compile: function(tElem, tAttrs) {
+			var interpolateFn = $interpolate(tElem.html(), true);
+			tElem.html('');
+
+			return function(scope, elem, attrs) {
+				scope.$watch(interpolateFn, function(value) {
+					elem.html(hljs.highlight('INI', value).value);
+				});
+			}
+		}
+	};
 });
 
 app.controller('ConfigCtrl', ['$scope', '$http', '$timeout', '$scrollspy', 'DTOptionsBuilder', 'DTColumnDefBuilder', function($scope, $http, $timeout, $scrollspy, DTOptionsBuilder, DTColumnDefBuilder) {

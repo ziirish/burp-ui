@@ -29,7 +29,7 @@ var __translate = {
 var __icons = {
 	"{{ _('client crashed') }}": 'fa fa-fw fa-exclamation',
 	"{{ _('server crashed') }}": 'fa fa-fw fa-exclamation',
-	"{{ _('running') }}": 'fa fa-fw fa-play',
+	"{{ _('running') }}": 'fa fa-fw fa-play blink',
 	"{{ _('idle') }}": 'fa fa-fw fa-pause',
 };
 
@@ -206,13 +206,15 @@ var refresh_status = function( is_running ) {
 	var _client_running = false;
 	var _span = $('#running-status');
 	var _inner_format_status = function(status) {
-		var _content = '<i class="'+__icons[status.state]+'" aria-hidden="true"></i> ';
+		var _content = '<i class="'+__icons[status.state]+'" aria-hidden="true"></i>&nbsp;';
 		if (status.state == '{{ _("running") }}') {
 			_client_running = true;
+			_content += '<a href="{{ url_for("view.live_monitor", server=server, name=cname) }}">';
 			_content += status.state+' - '+status.phase;
 			if (status.percent > 0) {
 				_content += ' ('+status.percent+'%)';
 			}
+			_content += '</a>';
 		} else if (status.state) {
 			_content += status.state;
 		} else {

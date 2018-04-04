@@ -131,18 +131,20 @@ var _groups_table = $('#table-groups').DataTable( {
 				if (type === 'filter' || type === 'sort') {
 					return data;
 				}
-				var ret = '';
+				var htmlGrants = '';
+				var tooltipGrants = '';
 				$.each(data, function(i, grant) {
-					ret += '<code data-toggle="tooltip" data-html="true" title="<code>'+grant.replace(/\"/g,'&quot;')+'</code>">'+$.trim(grant).substring(0, 20).split(' ').slice(0, -1).join(" ")+'...</code>&nbsp;';
+					tooltipGrants += '<pre><code class="JSON">'+JSON.stringify(JSON.parse(grant), null, 4)+'</code></pre><br />';
+					htmlGrants += '<kbd>'+$.trim(grant).substring(0, 30).split(' ').slice(0, -1).join(" ")+'...</kbd>&nbsp;';
 				});
-				return ret;
+				return '<span data-toggle="tooltip" title=\''+tooltipGrants+'\' data-html="true" data-template=\'<div class="tooltip" role="tooltip"><div class="tooltip-arrow"></div><div class="tooltip-inner tooltip-custom"></div></div>\'>'+htmlGrants+'</span>';
 			}
 		},
 		{
 			data: null,
 			orderable: false,
 			render: function ( data, type, row ) {
-				return '<button data-member="'+data.id+'" class="btn btn-xs btn-danger btn-delete-user" title="{{ _("Remove") }}"><i class="fa fa-trash" aria-hidden="true"></i></button>&nbsp;<button data-member="'+data.id+'" class="btn btn-xs btn-info btn-edit-user" title="{{ _("Edit") }}"><i class="fa fa-pencil" aria-hidden="true"></i></button>';
+				return '<button data-member="'+data.id+'" class="btn btn-xs btn-danger btn-delete-group" title="{{ _("Remove") }}"><i class="fa fa-trash" aria-hidden="true"></i></button>&nbsp;<button data-member="'+data.id+'" class="btn btn-xs btn-info btn-edit-group" title="{{ _("Edit") }}"><i class="fa fa-pencil" aria-hidden="true"></i></button>';
 			}
 		},
 	],
@@ -150,6 +152,14 @@ var _groups_table = $('#table-groups').DataTable( {
 
 _groups_table.on('draw.dt', function() {
 	$('[data-toggle="tooltip"]').tooltip();
+	$('[data-toggle="tooltip"]').on('inserted.bs.tooltip', function() {
+		$('.tooltip-custom').each(function(i, elmt) {
+			$(elmt).css('text-align', 'left');
+		});
+		$('pre code').each(function(i, block) {
+			hljs.highlightBlock(block);
+		});
+	});
 });
 
 var _users_table = $('#table-users').DataTable( {
@@ -224,11 +234,19 @@ var _users_table = $('#table-users').DataTable( {
 				if (type === 'filter' || type === 'sort') {
 					return data;
 				}
-				var ret = '';
+				var htmlGrants = '';
+				var tooltipGrants = '';
 				$.each(data, function(i, grant) {
-					ret += '<code data-toggle="tooltip" data-html="true" title="<code>'+grant.replace(/\"/g,'&quot;')+'</code>">'+$.trim(grant).substring(0, 20).split(' ').slice(0, -1).join(" ")+'...</code>&nbsp;';
+					var json = '';
+					try {
+						json = JSON.stringify(JSON.parse(grant), null, 4);
+					} catch(e) {
+						json = grant;
+					}
+					tooltipGrants += '<pre><code class="JSON">'+json+'</code></pre><br />';
+					htmlGrants += '<kbd>'+$.trim(grant).substring(0, 30).split(' ').slice(0, -1).join(" ")+'...</kbd>&nbsp;';
 				});
-				return ret;
+				return '<span data-toggle="tooltip" data-placement="auto top" title=\''+tooltipGrants+'\' data-html="true" data-template=\'<div class="tooltip" role="tooltip"><div class="tooltip-arrow"></div><div class="tooltip-inner tooltip-custom"></div></div>\'>'+htmlGrants+'</span>';
 			}
 		},
 		{
@@ -243,6 +261,14 @@ var _users_table = $('#table-users').DataTable( {
 
 _users_table.on('draw.dt', function() {
 	$('[data-toggle="tooltip"]').tooltip();
+	$('[data-toggle="tooltip"]').on('inserted.bs.tooltip', function() {
+		$('.tooltip-custom').each(function(i, elmt) {
+			$(elmt).css('text-align', 'left');
+		});
+		$('pre code').each(function(i, block) {
+			hljs.highlightBlock(block);
+		});
+	});
 });
 
 var g = $.getJSON('{{ url_for("api.admin_me") }}').done(function (data) {
@@ -411,7 +437,7 @@ $( document ).on('click', '.btn-delete-user', function(e) {
 	$.each(user['backends'], function(i, back) {
 		var disabled_legend = '{{ _("The backend does not support user removal") }}';
 		var disabled = 'disabled title="'+disabled_legend+'"';
-		var is_enabled = _auth_backends[back]['del'];
+		var is_enabled = _auth_backends[back]['del_grant'];
 		content += '<div class="checkbox"><label><input type="checkbox" name="user_backend" data-id="'+user_id+'" data-backend="'+back+'" '+(is_enabled?'':disabled)+'>'+back+(is_enabled?'':' <em>('+disabled_legend+')</em>')+'</label></div>';
 	});
 	/* disable submit button while we did not select a backend */
@@ -422,7 +448,7 @@ $( document ).on('click', '.btn-delete-user', function(e) {
 $( document ).on('change', 'input[name=user_backend]', function(e) {
 	var user_id = $(this).data('id');
 	var backend = $(this).data('backend');
-	if (user_id == _me.id && backend == _me.backend) {
+	if (user_id == _me.id) {
 		if ($(this).is(':checked')) {
 			$('#delete-confirm').show();
 		} else {
@@ -441,18 +467,22 @@ $( document ).on('change', 'input[name=user_backend]', function(e) {
 	}
 });
 $('#perform-delete').on('click', function(e) {
+	var _delete_promises = [];
 	$.each($('input[name=user_backend]'), function(i, elmt) {
 		var e = $(elmt);
 		if (e.is(':checked')) {
-			$.ajax({
-				url: "{{ url_for('api.auth_users', name='') }}"+$(e).data('id')+"?backend="+$(e).data('backend'),
+			var d = $.ajax({
+				url: "{{ url_for('api.acl_grants', name='') }}"+$(e).data('id')+"?backend="+$(e).data('backend'),
 				type: 'DELETE',
 				headers: { 'X-From-UI': true },
 			}).done(function(data) {
 				notifAll(data);
-				_authentication();
 			}).fail(myFail);
+			_delete_promises.push(d);
 		}
+	});
+	$.when.apply( $, _delete_promises ).done(function() {
+		_authorization_users();
 	});
 });
 
@@ -464,7 +494,7 @@ $( document ).on('click', '.btn-edit-user', function(e) {
 	content += '<div class="form-group"><label for="edit_backend" class="col-lg-2 control-label">Backend</label>';
 	content += '<div class="col-lg-10"><select class="form-control" id="edit_backend" name="edit_backend" data-id="'+user_id+'"><option disabled selected value="placeholder">'+'{{ _("Please select a backend") }}'+'</option>';
 	$.each(user['backends'], function(i, back) {
-		is_enabled = _auth_backends[back]['mod'];
+		is_enabled = _auth_backends[back]['mod_grant'];
 		content += '<option'+(is_enabled?'':' disabled')+'>'+back+'</option>';
 	});
 	content += '</select></div></div>';
@@ -478,11 +508,5 @@ $( document ).on('change', '#edit_backend', function(e) {
 	}
 });
 $('#perform-edit').on('click', function(e) {
-	location = "{{ url_for('view.admin_authentication', user='') }}"+$('#edit_backend').data('id')+'?backend='+$('#edit_backend option:selected').text();
-});
-
-/* user sessions */
-$( document ).on('click', '.btn-sessions-user', function(e) {
-	var user_id = $(this).data('member');
-	location = "{{ url_for('view.admin_sessions', user='') }}"+user_id;
+	location = "{{ url_for('view.admin_grant_authorization', grant='') }}"+$('#edit_backend').data('id')+'?backend='+$('#edit_backend option:selected').text();
 });

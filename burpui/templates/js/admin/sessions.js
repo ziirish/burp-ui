@@ -95,6 +95,9 @@ var _sessions_table = $('#table-sessions').DataTable( {
 				$('#session-details').empty().text(output);
 				$('#perform-revoke').data('multi', true);
 				$('#confirmation-modal').modal('toggle');
+				$('pre code').each(function(i, block) {
+					hljs.highlightBlock(block);
+				});
 			},
 			enabled: false
 		}

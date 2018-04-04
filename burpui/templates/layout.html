@@ -37,6 +37,9 @@
     <link href="{{ url_for('bower.static', filename='fullcalendar/dist/fullcalendar.min.css') }}" rel="stylesheet">
     <link href="{{ url_for('bower.static', filename='fullcalendar/dist/fullcalendar.print.min.css') }}" media="print" rel="stylesheet">
     {% endif -%}
+    {% if admin or me or settings -%}
+    <link href="{{ url_for('static', filename='3rdparty/highlightjs/style.css') }}?_ver={{ g.version }}" rel="stylesheet">
+    {% endif -%}
     <link href="{{ url_for('bower.static', filename='components-font-awesome/css/font-awesome.min.css') }}" rel="stylesheet">
 
     <!-- Custom styles for this template -->
@@ -97,6 +100,11 @@
     <script src="{{ url_for('bower.static', filename='datatables.net-buttons-bs/js/buttons.bootstrap.min.js') }}"></script>
       {% endif -%}
     {% endif -%}
+    {% if authorization -%}
+    <!-- ACE editor Javascript
+    ================================================== -->
+    <script src="{{ url_for('bower.static', filename='ace-builds/src-min-noconflict/ace.js') }}"></script>
+    {% endif -%}
     {% if about or live or settings or ng_controller -%}
     <!-- configuration angular views
     ================================================== -->
@@ -106,6 +114,7 @@
     <script src="{{ url_for('bower.static', filename='angular-resource/angular-resource.min.js') }}"></script>
     <script src="{{ url_for('bower.static', filename='angular-animate/angular-animate.min.js') }}"></script>
     <script src="{{ url_for('bower.static', filename='angular-datatables-0.6.2/dist/angular-datatables.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='angular-highlightjs/build/angular-highlightjs.min.js') }}"></script>
     {% endif -%}
     {% if tree or settings -%}
     <!-- Fancytree Javascript
@@ -132,9 +141,14 @@
     ================================================== -->
     <script src="{{ url_for('bower.static', filename='fullcalendar/dist/fullcalendar.min.js') }}"></script>
     <script src="{{ url_for('bower.static', filename='fullcalendar/dist/gcal.min.js') }}"></script>
-    {% if g.locale and g.locale != 'en' -%}
+      {% if g.locale and g.locale != 'en' -%}
     <script src="{{ url_for('bower.static', filename='fullcalendar/dist/locale/{}.js'.format(g.locale)) }}"></script>
+      {% endif -%}
     {% endif -%}
+    {% if admin or me or settings -%}
+    <!-- highlightjs Javascript
+    ================================================== -->
+    <script src="{{ url_for('static', filename='3rdparty/highlightjs/highlight.pack.js') }}?_ver={{ g.version }}"></script>
     {% endif -%}
     <script type="text/javascript">
       {% include "gerard.js" %}

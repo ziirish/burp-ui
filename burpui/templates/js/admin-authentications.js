@@ -221,18 +221,22 @@ $( document ).on('change', 'input[name=user_backend]', function(e) {
 	}
 });
 $('#perform-delete').on('click', function(e) {
+	var _delete_promises = [];
 	$.each($('input[name=user_backend]'), function(i, elmt) {
 		var e = $(elmt);
 		if (e.is(':checked')) {
-			$.ajax({
+			var p = $.ajax({
 				url: "{{ url_for('api.auth_users', name='') }}"+$(e).data('id')+"?backend="+$(e).data('backend'),
 				type: 'DELETE',
 				headers: { 'X-From-UI': true },
 			}).done(function(data) {
 				notifAll(data);
-				_authentication();
 			}).fail(myFail);
+			_delete_promises.push(p);
 		}
+	});
+	$.when.apply( $, _delete_promises ).done(function() {
+		_authentication();
 	});
 });
 

@@ -65,6 +65,7 @@ VENDOR_TO_KEEP = [
     'burpui/static/vendor/angular-strap/dist/angular-strap.tpl.min.js',
     'burpui/static/vendor/angular-onbeforeunload/build/angular-onbeforeunload.js',
     'burpui/static/vendor/angular-datatables-0.6.2/dist/angular-datatables.min.js',
+    'burpui/static/vendor/angular-highlightjs/build/angular-highlightjs.min.js',
     'burpui/static/vendor/moment/min/moment.min.js',
     'burpui/static/vendor/moment/locale/fr.js',
     'burpui/static/vendor/moment/locale/es.js',
@@ -88,6 +89,10 @@ VENDOR_TO_KEEP = [
     'burpui/static/vendor/components-font-awesome/fonts/fontawesome-webfont.woff2',
     'burpui/static/vendor/socket.io-client/dist/socket.io.js',
     'burpui/static/vendor/js-cookie/src/js.cookie.js',
+    'burpui/static/vendor/ace-builds/src-min-noconflict/ace.js',
+    'burpui/static/vendor/ace-builds/src-min-noconflict/mode-json.js',
+    'burpui/static/vendor/ace-builds/src-min-noconflict/worker-json.js',
+    'burpui/static/vendor/ace-builds/src-min-noconflict/theme-ambiance.js',
 ]
 
 for p in VENDOR_TO_KEEP:

@@ -164,7 +164,7 @@ var _clients_table = $('#table-clients').DataTable( {
 				} else {
 					label = '&nbsp;{{ _("idle") }}';
 				}
-				return link_start + '<span class="fa-stack" style="color: #000; text-align: center;"><i class="fa fa-square fa-stack-2x"></i><i class="fa fa-terminal fa-stack-1x fa-inverse ' + cls + '"></i></span>' + label + link_end;
+				return link_start + '<span class="fa-stack" style="color: #000; text-align: center;"><i class="fa fa-square fa-stack-2x" aria-hidden="true"></i><i class="fa fa-terminal fa-stack-1x fa-inverse ' + cls + '" aria-hidden="true"></i></span>' + label + link_end;
 			}
 		}
 	]

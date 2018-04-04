@@ -7,7 +7,7 @@ $('form[name=changePassword]').on('submit', function(e) {
 	e.preventDefault();
 	var form = $(e.target);
 	submit = form.find('button[type="submit"]');
-	sav = submit.text();
+	sav = submit.html();
 	submit.html('<i class="fa fa-fw fa-spinner fa-pulse" aria-hidden="true"></i>&nbsp;{{ _("Saving...") }}');
 	submit.attr('disabled', true);
 	/* submit the data */
@@ -26,7 +26,7 @@ $('form[name=changePassword]').on('submit', function(e) {
 	})
 	.always(function() {
 		/* reset the submit button state */
-		submit.text(sav);
+		submit.html(sav);
 		submit.attr('disabled', false);
 	});
 });

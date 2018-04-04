@@ -357,6 +357,10 @@ td {
   word-wrap: break-word;
 }
 
+.tooltip-inner {
+  max-width: 300px;
+}
+
 .node {
   cursor: pointer;
 }
