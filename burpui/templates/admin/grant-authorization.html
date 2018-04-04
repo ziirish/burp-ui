@@ -1,0 +1,55 @@
+{% extends "layout.html" %}
+{% block body %}
+        {% include "notifications.html" %}
+        <div class="col-sm-12 col-md-12 main">
+          {% include "small_topbar.html" %}
+          <ul class="breadcrumb" style="margin-bottom: 5px;">
+            <li><a href="{{ url_for('view.home') }}">{{ _('Home') }}</a></li>
+            <li><a href="{{ url_for('view.admin_authorizations') }}">{{ _('Administration') }}</a></li>
+            <li class="active">{{ _('Authorization user %(backend)s/%(grant)s', backend=backend, grant=grant) }}</li>
+          </ul>
+          <br />
+          <div class="form-container">
+            <legend id="authentication">{{ _('Authorization') }}</legend>
+            <form class="form-horizontal well" name="pctrl.changeGrant" method="POST" action="{{ url_for('api.acl_grants', name=grant) }}" ng-submit="updateGrants($event)">
+              <fieldset>
+                <legend>{{ _('Grant %(grant)s on %(backend)s', grant=grant, backend=backend) }}</legend>
+                <input type="hidden" name="backend" value="{{ backend }}">
+                <div class="form-group" ng-class="{'has-error': !validGrantInput}">
+                  <label for="grantValue" class="col-lg-2 control-label">{{ _('Grants') }}</label>
+                  <div class="col-lg-6">
+                    <div ui-ace ng-model="grantValue" read-only="isLoading" ace-mode="json" ace-theme="ambiance" style="height: 200px;" class="form-control"></div>
+                    <!--
+                    <textarea class="form-control" rows="5" placeholder="{{ _('Loading...') }}" id="grantValue" name="grantValue" ng-model="grantValue" ng-disabled="isLoading" grant></textarea>
+                    -->
+                  </div>
+                  <span id="helpBlock" class="help-block" ng-show="!validGrantInput" ng-cloak>{{ _('You need to enter a valid JSON expression. Example:') }}&nbsp;<kbd>"client"</kbd>, <kbd>{"clients": ["c1", "c2"]}</kbd>, <kbd>["client1", "client2"]</kbd>, <kbd>{ "agents": { "agent1": ["client1", "client2"] } }</kbd></span>
+                </div>
+                <div class="form-group">
+                  <div class="col-lg-3 col-lg-offset-2">
+                    <div class="checkbox">
+                      <label>
+                        <input type="checkbox" ng-model="isAdmin" ng-disabled="!isAdminEnabled"> {{ _("Is Admin") }}
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <div class="col-lg-3 col-lg-offset-2">
+                    <div class="checkbox">
+                    <label>
+                      <input type="checkbox" ng-model="isModerator" ng-disabled="!isModeratorEnabled"> {{ _("Is Moderator") }}
+                    </label>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <div class="col-lg-10 col-lg-offset-2">
+                    <button type="submit" class="btn btn-primary" ng-disabled="!pctrl.changeGrant.$valid || !validGrantInput"><i class="fa fa-fw fa-floppy-o" aria-hidden="true"></i>{{ _('Save') }}</button>
+                  </div>
+                </div>
+              </fieldset>
+            </form>
+          </div>
+        </div>
+{% endblock %}
