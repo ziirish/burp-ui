@@ -893,16 +893,16 @@ class AclGrants(Resource):
     This resource is part of the :mod:`burpui.api.admin` module.
     """
     parser_add = ns.parser()
-    parser_add.add_argument('grant', required=True, help='Grant name', location='values')
-    parser_add.add_argument('content', required=True, help='Grant content', location='values')
-    parser_add.add_argument('backend', required=True, help='Backend', location='values')
+    parser_add.add_argument('grant', required=True, help='Grant name')
+    parser_add.add_argument('content', required=True, help='Grant content')
+    parser_add.add_argument('backend', help='Backend')
 
     parser_mod = ns.parser()
-    parser_mod.add_argument('content', required=True, help='Grant content', location='values')
-    parser_mod.add_argument('backend', required=True, help='Backend', location='values')
+    parser_mod.add_argument('content', required=True, help='Grant content')
+    parser_mod.add_argument('backend', help='Backend')
 
     parser_del = ns.parser()
-    parser_del.add_argument('backend', required=True, help='Backend', location='values')
+    parser_del.add_argument('backend', help='Backend', location='values')
 
     @api.acl_admin_or_moderator_required(message="Not allowed to view grants list")
     @ns.marshal_list_with(grant_fields, code=200, description='Success')

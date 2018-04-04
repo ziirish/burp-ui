@@ -469,10 +469,12 @@ app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBu
 			var p = $http({
 				url: '{{ url_for("api.acl_grants", backend=backend, name=grant) }}',
 				method: 'POST',
-				params: {
-					content: $scope.grantValue,
+				data: {
+					content: JSON.stringify(JSON.parse($scope.grantValue)), // remove indentation
 				},
-				headers: { 'X-From-UI': true },
+				headers: {
+					'X-From-UI': true,
+				},
 			})
 			.catch(myFail)
 			.then(function(response) {

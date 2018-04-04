@@ -510,3 +510,77 @@ $( document ).on('change', '#edit_backend', function(e) {
 $('#perform-edit').on('click', function(e) {
 	location = "{{ url_for('view.admin_grant_authorization', grant='') }}"+$('#edit_backend').data('id')+'?backend='+$('#edit_backend option:selected').text();
 });
+
+/* Delete group */
+var _remove_group_selected = 0;
+$( document ).on('click', '.btn-delete-group', function(e) {
+	var group_id = $(this).data('member');
+	var group = _groups[group_id];
+	var content = '<legend>{{ _("Please select the backend(s) from which to remove the group:") }}</legend>';
+	$.each(group['backends'], function(i, back) {
+		var disabled_legend = '{{ _("The backend does not support group removal") }}';
+		var disabled = 'disabled title="'+disabled_legend+'"';
+		var is_enabled = _auth_backends[back]['del_group'];
+		content += '<div class="checkbox"><label><input type="checkbox" name="group_backend" data-id="'+group_id+'" data-backend="'+back+'" '+(is_enabled?'':disabled)+'>'+back+(is_enabled?'':' <em>('+disabled_legend+')</em>')+'</label></div>';
+	});
+	/* disable submit button while we did not select a backend */
+	$('#perform-group-delete').prop('disabled', true);
+	$('#delete-group-details').html(content);
+	$('#delete-group-modal').modal('toggle');
+});
+$( document ).on('change', 'input[name=group_backend]', function(e) {
+	if ($(this).is(':checked')) {
+		_remove_group_selected++;
+	} else {
+		_remove_group_selected--;
+	}
+	if (_remove_group_selected > 0) {
+		$('#perform-group-delete').prop('disabled', false);
+	} else {
+		$('#perform-group-delete').prop('disabled', true);
+	}
+});
+$('#perform-group-delete').on('click', function(e) {
+	var _delete_promises = [];
+	$.each($('input[name=group_backend]'), function(i, elmt) {
+		var e = $(elmt);
+		if (e.is(':checked')) {
+			var d = $.ajax({
+				url: "{{ url_for('api.acl_groups', name='') }}"+$(e).data('id')+"?backend="+$(e).data('backend'),
+				type: 'DELETE',
+				headers: { 'X-From-UI': true },
+			}).done(function(data) {
+				notifAll(data);
+			}).fail(myFail);
+			_delete_promises.push(d);
+		}
+	});
+	$.when.apply( $, _delete_promises ).done(function() {
+		_authorization_groups();
+	});
+});
+
+/* Edit group */
+$( document ).on('click', '.btn-edit-group', function(e) {
+	var group_id = $(this).data('member');
+	var group = _groups[group_id];
+	var content = '<legend>{{ _("Please select the backend from which to edit the user from:") }}</legend>';
+	content += '<div class="form-group"><label for="edit_group_backend" class="col-lg-2 control-label">Backend</label>';
+	content += '<div class="col-lg-10"><select class="form-control" id="edit_group_backend" name="edit_group_backend" data-id="'+group_id+'"><option disabled selected value="placeholder">'+'{{ _("Please select a backend") }}'+'</option>';
+	$.each(group['backends'], function(i, back) {
+		is_enabled = _auth_backends[back]['mod_group'];
+		content += '<option'+(is_enabled?'':' disabled')+'>'+back+'</option>';
+	});
+	content += '</select></div></div>';
+	$('#perform-group-edit').prop('disabled', true);
+	$('#edit-group-details').html(content);
+	$('#edit-group-modal').modal('toggle');
+});
+$( document ).on('change', '#edit_group_backend', function(e) {
+	if ($('#edit_group_backend option:selected').val() != 'placeholder') {
+		$('#perform-group-edit').prop('disabled', false);
+	}
+});
+$('#perform-group-edit').on('click', function(e) {
+	location = "{{ url_for('view.admin_group_authorization', group='') }}"+$('#edit_group_backend').data('id')+'?backend='+$('#edit_group_backend option:selected').text();
+});
