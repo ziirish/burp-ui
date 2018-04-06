@@ -150,7 +150,6 @@ class AclIsAdmin(Resource):
             self.abort(404, "No acl backend found")
         if backend not in handler.backends:
             self.abort(404, "No acl backend '{}' found".format(backend))
-        ret = {}
         loader = handler.backends[backend]
         return {'admin': member in loader.admins}
 
@@ -324,7 +323,6 @@ class AclIsModerator(Resource):
             self.abort(404, "No acl backend found")
         if backend not in handler.backends:
             self.abort(404, "No acl backend '{}' found".format(backend))
-        ret = {}
         loader = handler.backends[backend]
         return {'moderator': member in loader.moderators}
 
