@@ -525,7 +525,7 @@ class AclGroup(Resource):
     This resource is part of the :mod:`burpui.api.admin` module.
     """
     parser = ns.parser()
-    parser.add_argument('memberName', required=False, help='Group member', location='values', action='append')
+    parser.add_argument('memberNames', required=False, help='Group members', action='append')
 
     @api.acl_admin_or_moderator_required(message="Not allowed to view groups list")
     @ns.marshal_with(group_members_fields, code=200, description='Success')
@@ -588,7 +588,7 @@ class AclGroup(Resource):
 
         loader = handler.backends[backend]
 
-        members = [member] or args['memberName']
+        members = [member] if member else (args['memberNames'] or [])
 
         if loader.add_group_member is False:
             self.abort(
@@ -634,7 +634,7 @@ class AclGroup(Resource):
 
         loader = handler.backends[backend]
 
-        members = [member] or args['memberName']
+        members = [member] if member else (args['memberNames'] or [])
 
         if loader.del_group_member is False:
             self.abort(
@@ -688,11 +688,14 @@ class AclGroupsOf(Resource):
 
 
 @ns.route('/acl/groups',
+          '/acl/<backend>/groups',
           '/acl/groups/<name>',
+          '/acl/<backend>/groups/<name>',
           endpoint='acl_groups')
 @ns.doc(
     params={
         'name': 'Group name',
+        'backend': 'Backend name',
     }
 )
 class AclGroups(Resource):
@@ -704,15 +707,15 @@ class AclGroups(Resource):
     """
     parser_add = ns.parser()
     parser_add.add_argument('group', required=True, help='Group name', location='values')
-    parser_add.add_argument('grant', required=True, help='Group grant content', location='values')
-    parser_add.add_argument('backend', required=True, help='Backend', location='values')
+    parser_add.add_argument('grant', required=True, help='Group grant content')
+    parser_add.add_argument('backend', help='Backend', location='values')
 
     parser_mod = ns.parser()
-    parser_mod.add_argument('grant', required=True, help='Group grant content', location='values')
-    parser_mod.add_argument('backend', required=True, help='Backend', location='values')
+    parser_mod.add_argument('grant', required=True, help='Group grant content')
+    parser_mod.add_argument('backend', help='Backend', location='values')
 
     parser_del = ns.parser()
-    parser_del.add_argument('backend', required=True, help='Backend', location='values')
+    parser_del.add_argument('backend', help='Backend', location='values')
 
     @api.acl_admin_or_moderator_required(message="Not allowed to view groups list")
     @ns.marshal_list_with(group_fields, code=200, description='Success')
@@ -722,7 +725,7 @@ class AclGroups(Resource):
             404: 'No backend found',
         },
     )
-    def get(self):
+    def get(self, name=None, backend=None):
         """Returns a list of group
 
         **GET** method provided by the webservice.
@@ -740,13 +743,17 @@ class AclGroups(Resource):
         for _, loader in iteritems(handler.backends):
             groups = loader.groups
             if groups:
-                for name, group in iteritems(groups):
-                    ret.append({
-                        'id': name.lstrip('@'),
+                for _id, group in iteritems(groups):
+                    append = {
+                        'id': _id.lstrip('@'),
                         'grant': group.get('grants', ''),
                         'members': group.get('members', []),
                         'backend': loader.name
-                    })
+                    }
+                    if name and name == append['id']:
+                        if (backend and backend == append['backend']) or backend is None:
+                            return [append]
+                    ret.append(append)
         return ret
 
     @api.disabled_on_demo()
@@ -762,9 +769,10 @@ class AclGroups(Resource):
             500: 'Backend does not support this operation',
         },
     )
-    def put(self):
+    def put(self, backend=None):
         """Create a new group"""
         args = self.parser_add.parse_args()
+        backend = backend or args['backend']
 
         try:
             handler = getattr(bui, 'acl_handler')
@@ -772,16 +780,16 @@ class AclGroups(Resource):
             handler = None
 
         if not handler or len(handler.backends) == 0 or \
-                args['backend'] not in handler.backends:
+                backend not in handler.backends:
             self.abort(404, "No acl backend found")
 
-        loader = handler.backends[args['backend']]
+        loader = handler.backends[backend]
 
         if loader.add_group is False:
             self.abort(
                 500,
                 "The '{}' backend does not support group creation"
-                "".format(args['backend'])
+                "".format(backend)
             )
 
         success, message, code = loader.add_group(
@@ -804,9 +812,10 @@ class AclGroups(Resource):
             500: 'Backend does not support this operation',
         },
     )
-    def delete(self, name):
+    def delete(self, name, backend=None):
         """Delete a group"""
         args = self.parser_del.parse_args()
+        backend = backend or args['backend']
 
         try:
             handler = getattr(bui, 'acl_handler')
@@ -814,16 +823,16 @@ class AclGroups(Resource):
             handler = None
 
         if not handler or len(handler.backends) == 0 or \
-                args['backend'] not in handler.backends:
+                backend not in handler.backends:
             self.abort(404, "No acl backend found")
 
-        loader = handler.backends[args['backend']]
+        loader = handler.backends[backend]
 
         if loader.del_group is False:
             self.abort(
                 500,
                 "The '{}' backend does not support group deletion"
-                "".format(args['backend'])
+                "".format(backend)
             )
 
         success, message, code = loader.del_group(
@@ -845,9 +854,10 @@ class AclGroups(Resource):
             500: 'Backend does not support this operation',
         },
     )
-    def post(self, name):
+    def post(self, name, backend=None):
         """Change a group"""
         args = self.parser_mod.parse_args()
+        backend = backend or args['backend']
 
         try:
             handler = getattr(bui, 'acl_handler')
@@ -855,16 +865,16 @@ class AclGroups(Resource):
             handler = None
 
         if not handler or len(handler.backends) == 0 or \
-                args['backend'] not in handler.backends:
+                backend not in handler.backends:
             self.abort(404, "No acl backend found")
 
-        loader = handler.backends[args['backend']]
+        loader = handler.backends[backend]
 
         if loader.mod_group is False:
             self.abort(
                 500,
                 "The '{}' backend does not support group modification"
-                "".format(args['backend'])
+                "".format(backend)
             )
 
         success, message, code = loader.mod_group(
@@ -883,6 +893,7 @@ class AclGroups(Resource):
 @ns.doc(
     params={
         'name': 'Grant name',
+        'backend': 'Backend name',
     }
 )
 class AclGrants(Resource):

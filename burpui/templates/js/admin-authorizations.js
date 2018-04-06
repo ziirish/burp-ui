@@ -95,7 +95,7 @@ var _groups_table = $('#table-groups').DataTable( {
 				return;
 			}
 		});
-		if (data.id === _me.name) {
+		if (data.members.indexOf(_me.name) !== -1) {
 			row.className += ' success';
 		}
 	},
@@ -334,10 +334,13 @@ var _authorization_users = function() {
 			}
 		});
 		if (redraw) {
-			_users_table.clear();
-			_users_table.rows.add(_users_array).draw();
-			$('#waiting-user-container').hide();
-			$('#table-users-container').show();
+			$.when.apply( $, __globals_promises ).always(function() {
+				_users_table.clear();
+				_users_table.rows.add(_users_array).draw();
+				_users_table.fixedHeader.adjust();
+				$('#waiting-user-container').hide();
+				$('#table-users-container').show();
+			});
 		}
 		$.when.apply( $, __top_promises ).done(function() {
 			$.when.apply( $, __promises ).done(function() {
@@ -345,10 +348,13 @@ var _authorization_users = function() {
 				$.each(_users, function(key, value) {
 					_users_array.push(value);
 				});
-				_users_table.clear();
-				_users_table.rows.add(_users_array).draw();
-				$('#waiting-user-container').hide();
-				$('#table-users-container').show();
+				$.when.apply( $, __globals_promises ).always(function() {
+					_users_table.clear();
+					_users_table.rows.add(_users_array).draw();
+					_users_table.fixedHeader.adjust();
+					$('#waiting-user-container').hide();
+					$('#table-users-container').show();
+				});
 			});
 		});
 	});
@@ -395,20 +401,26 @@ var _authorization_groups = function() {
 			}
 		});
 		if (redraw) {
-			_groups_table.clear();
-			_groups_table.rows.add(_groups_array).draw();
-			$('#waiting-group-container').hide();
-			$('#table-groups-container').show();
+			$.when.apply( $, __globals_promises ).always(function() {
+				_groups_table.clear();
+				_groups_table.rows.add(_groups_array).draw();
+				_groups_table.fixedHeader.adjust();
+				$('#waiting-group-container').hide();
+				$('#table-groups-container').show();
+			});
 		}
 		$.when.apply( $, __top_promises ).done(function() {
 			_groups_array = [];
 			$.each(_groups, function(key, value) {
 				_groups_array.push(value);
 			});
-			_groups_table.clear();
-			_groups_table.rows.add(_groups_array).draw();
-			$('#waiting-group-container').hide();
-			$('#table-groups-container').show();
+			$.when.apply( $, __globals_promises ).always(function() {
+				_groups_table.clear();
+				_groups_table.rows.add(_groups_array).draw();
+				_groups_table.fixedHeader.adjust();
+				$('#waiting-group-container').hide();
+				$('#table-groups-container').show();
+			});
 		});
 	});
 };

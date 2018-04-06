@@ -480,7 +480,7 @@ class BUIaclGroup(object):
 
     def _parse_members(self, members):
         # we support only lists
-        if ',' in members and not isinstance(members, list):
+        if members and ',' in members and not isinstance(members, list):
             parsed = [x.strip() for x in members.split(',')]
         else:
             parsed = make_list(members)
@@ -527,7 +527,7 @@ class BUIaclGrant(BUImetaGrant):
             # ignore mal-formatted json
             if any([x in grants for x in ['{', '}', '[', ']']]):
                 ret = None
-            elif ',' in grants:
+            elif grants and ',' in grants:
                 ret = [x.rstrip() for x in grants.split(',')]
             else:
                 ret = make_list(grants)

@@ -26,6 +26,7 @@ python setup.py sdist
 pip install ujson
 pip install gunicorn
 pip install gevent
+pip install gevent-websocket
 pip install redis
 pip install mysqlclient
 pip install psycopg2

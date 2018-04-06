@@ -273,7 +273,7 @@ class ACLloader(BUIaclLoader):
         self._setup_acl()
         self._groups[group].remove(member)
         gmembers = '+{}'.format(group)
-        self.conf.options[self.section][gmembers] = self._groups[group]
+        self.conf.options[self.section][gmembers] = self._groups[group] or ''
         self.conf.options.write()
         self.load_acl(True)
         message = "'{}' removed from group '{}'".format(member, group)
@@ -300,7 +300,7 @@ class ACLloader(BUIaclLoader):
             return False, message, NOTIF_WARN
         self._setup_acl()
         self.moderators.remove(member)
-        self.conf.options[self.section]['+moderator'] = self.moderators
+        self.conf.options[self.section]['+moderator'] = self.moderators or ''
         self.conf.options.write()
         message = "'{}' successfully removed from moderators".format(member)
         return True, message, NOTIF_OK
@@ -335,7 +335,7 @@ class ACLloader(BUIaclLoader):
             return False, message, NOTIF_WARN
         self._setup_acl()
         self.admins.remove(member)
-        self.conf.options[self.section]['admin'] = self.admins
+        self.conf.options[self.section]['admin'] = self.admins or ''
         self.conf.options.write()
         message = "'{}' successfully removed from admins".format(member)
         return True, message, NOTIF_OK

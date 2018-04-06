@@ -118,6 +118,7 @@ var _users_table = $('#table-users').DataTable( {
 		},
 		{
 			data: null,
+			orderable: false,
 			render: function ( data, type, row ) {
 				return '<button data-member="'+data.id+'" class="btn btn-xs btn-danger btn-delete-user" title="{{ _("Remove") }}"><i class="fa fa-trash" aria-hidden="true"></i></button>&nbsp;<button data-member="'+data.id+'" class="btn btn-xs btn-info btn-edit-user" title="{{ _("Edit") }}"><i class="fa fa-pencil" aria-hidden="true"></i></button>&nbsp;<button data-member="'+data.id+'" class="btn btn-xs btn-warning btn-sessions-user" title="{{ _("Sessions") }}"><i class="fa fa-list-alt" aria-hidden="true"></i></button>';
 			}

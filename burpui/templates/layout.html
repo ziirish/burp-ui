@@ -29,7 +29,7 @@
     {% if tree or settings -%}
     <link href="{{ url_for('bower.static', filename='jquery.fancytree/dist/skin-bootstrap/ui.fancytree.min.css') }}" rel="stylesheet">
     {% endif -%}
-    {% if settings or me -%}
+    {% if settings or me or admin -%}
     <link href="{{ url_for('bower.static', filename='bootstrap-switch/dist/css/bootstrap3/bootstrap-switch.min.css') }}" rel="stylesheet">
     <link href="{{ url_for('bower.static', filename='angular-ui-select/dist/select.min.css') }}" rel="stylesheet">
     {% endif -%}
