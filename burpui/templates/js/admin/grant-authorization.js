@@ -81,7 +81,7 @@ app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBu
 				method: method,
 				headers: { 'X-From-UI': true },
 			})
-			.catch(myFail)
+			.catch(buiFail)
 			.then(function(response) {
 				$scope.orig.admin = $scope.isAdmin;
 				notifAll(response.data);
@@ -100,7 +100,7 @@ app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBu
 				method: method,
 				headers: { 'X-From-UI': true },
 			})
-			.catch(myFail)
+			.catch(buiFail)
 			.then(function(response) {
 				$scope.orig.moderator = $scope.isModerator;
 				notifAll(response.data);
@@ -119,7 +119,7 @@ app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBu
 					'X-From-UI': true,
 				},
 			})
-			.catch(myFail)
+			.catch(buiFail)
 			.then(function(response) {
 				$scope.orig.grantValue = $scope.grantValue;
 				notifAll(response.data);

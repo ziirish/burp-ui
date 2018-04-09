@@ -76,7 +76,7 @@ var _clients_table = $('#table-clients').DataTable( {
 		dataSrc: function (data) {
 			return data;
 		},
-		error: myFail,
+		error: buiFail,
 		headers: { 'X-From-UI': true },
 		cache: AJAX_CACHE && !_some_clients_running,
 	},

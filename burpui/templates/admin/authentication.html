@@ -11,10 +11,9 @@
           <br />
           <div class="form-container">
             <legend id="authentication">{{ _('Authentication') }}</legend>
-            <form class="form-horizontal well" name="changePassword" method="POST" action="{{ url_for('api.auth_users', name=user) }}">
+            <form class="form-horizontal well" name="changePassword" method="POST" action="{{ url_for('api.auth_users', name=user, backend=backend) }}">
               <fieldset>
                 <legend>{{ _('Password of user %(user)s on %(backend)s', user=user, backend=backend) }}</legend>
-                <input type="hidden" name="backend" value="{{ backend }}">
                 <div class="form-group">
                   <label for="inputPassword" class="col-lg-2 control-label">{{ _('New password') }}</label>
                   <div class="col-lg-3">

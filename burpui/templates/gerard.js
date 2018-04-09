@@ -158,7 +158,7 @@ var xhrErrorsHandler = function(xhr) {
 	return false;
 };
 
-var myFail = function(xhr, stat, err) {
+var buiFail = function(xhr, stat, err) {
 	if (xhrErrorsHandler(xhr)) {
 		return;
 	}

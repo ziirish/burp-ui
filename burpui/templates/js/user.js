@@ -68,7 +68,7 @@ app.controller('UserCtrl', function($timeout, $scope, $http, $scrollspy) {
 			data: $scope.prefs,
 			headers: { 'X-From-UI': true },
 		})
-		.fail(myFail)
+		.fail(buiFail)
 		.done(function(data) {
 			notif(NOTIF_SUCCESS, "{{ _('Preferences successfuly saved') }}");
 		})
@@ -97,7 +97,7 @@ app.controller('UserCtrl', function($timeout, $scope, $http, $scrollspy) {
 			},
 			headers: { 'X-From-UI': true },
 		})
-		.fail(myFail)
+		.fail(buiFail)
 		.done(function(data) {
 			notifAll(data);
 		})
@@ -167,7 +167,7 @@ var _sessions_table = $('#table-sessions').DataTable( {
 		url: '{{ url_for("api.user_sessions") }}',
 		headers: { 'X-From-UI': true },
 		cache: AJAX_CACHE,
-		error: myFail,
+		error: buiFail,
 		data: function (request) {
 			request._extra = _cache_id;
 		},
@@ -367,7 +367,7 @@ var revoke_session = function(id, refresh) {
 			AJAX_CACHE = false;
 			_sessions();
 		}
-	}).fail(myFail);
+	}).fail(buiFail);
 };
 
 $('#perform-revoke').on('click', function(e) {

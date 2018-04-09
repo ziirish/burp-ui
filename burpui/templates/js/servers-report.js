@@ -62,7 +62,7 @@ var _servers = function() {
 		});
 		_redraw();
 	})
-	.fail(myFail)
+	.fail(buiFail)
 	.fail(function () {
 		$('.mycharts').each(function() {
 			$(this).parent().hide();

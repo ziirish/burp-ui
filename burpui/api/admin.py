@@ -1162,11 +1162,14 @@ class AclBackends(Resource):
 
 
 @ns.route('/auth/users',
+          '/auth/<backend>/users',
           '/auth/users/<name>',
+          '/auth/<backend>/users/<name>',
           endpoint='auth_users')
 @ns.doc(
     params={
         'name': 'Username',
+        'backend': 'Authentication backend',
     }
 )
 class AuthUsers(Resource):
@@ -1177,17 +1180,17 @@ class AuthUsers(Resource):
     This resource is part of the :mod:`burpui.api.admin` module.
     """
     parser_add = ns.parser()
-    parser_add.add_argument('username', required=True, help='Username', location='values')
-    parser_add.add_argument('password', required=True, help='Password', location='values')
-    parser_add.add_argument('backend', required=True, help='Backend', location='values')
+    parser_add.add_argument('username', required=True, help='Username')
+    parser_add.add_argument('password', required=True, help='Password')
+    parser_add.add_argument('backend', help='Backend')
 
     parser_mod = ns.parser()
-    parser_mod.add_argument('password', required=True, help='Password', location='values')
-    parser_mod.add_argument('backend', required=True, help='Backend', location='values')
-    parser_mod.add_argument('old_password', required=False, help='Old password', location='values')
+    parser_mod.add_argument('password', required=True, help='Password')
+    parser_mod.add_argument('backend', help='Backend')
+    parser_mod.add_argument('old_password', required=False, help='Old password')
 
     parser_del = ns.parser()
-    parser_del.add_argument('backend', required=True, help='Backend', location='values')
+    parser_del.add_argument('backend', help='Backend')
 
     @api.acl_admin_or_moderator_required(message="Not allowed to view users list")
     @ns.marshal_list_with(user_fields, code=200, description='Success')
@@ -1197,7 +1200,7 @@ class AuthUsers(Resource):
             404: 'No backend found',
         },
     )
-    def get(self):
+    def get(self, name=None, backend=None):
         """Returns a list of users
 
         **GET** method provided by the webservice.
@@ -1212,7 +1215,7 @@ class AuthUsers(Resource):
         if not handler or len(handler.backends) == 0:
             self.abort(404, "No authentication backend found")
         ret = []
-        for name, backend in iteritems(handler.backends):
+        for _, backend in iteritems(handler.backends):
             loader = backend.loader
             try:
                 users = getattr(loader, 'users')
@@ -1221,18 +1224,26 @@ class AuthUsers(Resource):
             if users:
                 if isinstance(users, list):
                     for user in users:
-                        ret.append({
+                        append = {
                             'id': backend.user(user).get_id(),
                             'name': user,
                             'backend': backend.name
-                        })
+                        }
+                        if name and name == append['id']:
+                            if (backend and backend == append['backend']) or backend is None:
+                                return append
+                        ret.append(append)
                 elif isinstance(users, dict):
                     for user, _ in iteritems(users):
-                        ret.append({
+                        append = {
                             'id': backend.user(user).get_id(),
                             'name': user,
                             'backend': backend.name
-                        })
+                        }
+                        if name and name == append['id']:
+                            if (backend and backend == append['backend']) or backend is None:
+                                return append
+                        ret.append(append)
         return ret
 
     @api.disabled_on_demo()
@@ -1248,9 +1259,11 @@ class AuthUsers(Resource):
             500: 'Backend does not support this operation',
         },
     )
-    def put(self):
+    def put(self, name=None, backend=None):
         """Create a new user"""
         args = self.parser_add.parse_args()
+        username = name or args['username']
+        backend = backend or args['backend']
 
         try:
             handler = getattr(bui, 'uhandler')
@@ -1258,20 +1271,20 @@ class AuthUsers(Resource):
             handler = None
 
         if not handler or len(handler.backends) == 0 or \
-                args['backend'] not in handler.backends:
+                backend not in handler.backends:
             self.abort(404, "No authentication backend found")
 
-        backend = handler.backends[args['backend']]
+        backend = handler.backends[backend]
 
         if backend.add_user is False:
             self.abort(
                 500,
                 "The '{}' backend does not support user creation"
-                "".format(args['backend'])
+                "".format(backend)
             )
 
         success, message, code = backend.add_user(
-            args['username'],
+            username,
             args['password']
         )
         status = 201 if success else 200
@@ -1290,9 +1303,10 @@ class AuthUsers(Resource):
             500: 'Backend does not support this operation',
         },
     )
-    def delete(self, name):
+    def delete(self, name, backend=None):
         """Delete a user"""
         args = self.parser_del.parse_args()
+        backend = backend or args['backend']
 
         try:
             handler = getattr(bui, 'uhandler')
@@ -1300,16 +1314,16 @@ class AuthUsers(Resource):
             handler = None
 
         if not handler or len(handler.backends) == 0 or \
-                args['backend'] not in handler.backends:
+                backend not in handler.backends:
             self.abort(404, "No authentication backend found")
 
-        backend = handler.backends[args['backend']]
+        backend = handler.backends[backend]
 
         if backend.del_user is False:
             self.abort(
                 500,
                 "The '{}' backend does not support user deletion"
-                "".format(args['backend'])
+                "".format(backend)
             )
 
         success, message, code = backend.del_user(
@@ -1331,9 +1345,10 @@ class AuthUsers(Resource):
             500: 'Backend does not support this operation',
         },
     )
-    def post(self, name):
+    def post(self, name, backend=None):
         """Change user password"""
         args = self.parser_mod.parse_args()
+        backend = backend or args['backend']
         is_admin = True
 
         if not current_user.is_anonymous:
@@ -1348,16 +1363,16 @@ class AuthUsers(Resource):
             handler = None
 
         if not handler or len(handler.backends) == 0 or \
-                args['backend'] not in handler.backends:
+                backend not in handler.backends:
             self.abort(404, "No authentication backend found")
 
-        backend = handler.backends[args['backend']]
+        backend = handler.backends[backend]
 
         if backend.change_password is False:
             self.abort(
                 500,
                 "The '{}' backend does not support user modification"
-                "".format(args['backend'])
+                "".format(backend)
             )
 
         success, message, code = backend.change_password(

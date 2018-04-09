@@ -16,11 +16,10 @@ $('form[name=changePassword]').on('submit', function(e) {
 		type: 'POST',
 		data: {
 			'password': $('input[name=password]').val(),
-			'backend': "{{ backend }}"
 		},
 		headers: { 'X-From-UI': true },
 	})
-	.fail(myFail)
+	.fail(buiFail)
 	.done(function(data) {
 		notifAll(data);
 	})

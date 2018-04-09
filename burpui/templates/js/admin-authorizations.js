@@ -56,7 +56,7 @@ app.controller('AdminCtrl', ['$scope', '$http', '$scrollspy', 'DTOptionsBuilder'
 			},
 			headers: { 'X-From-UI': true },
 		})
-		.catch(myFail)
+		.catch(buiFail)
 		.then(function(response) {
 			notifAll(response.data);
 			$scope.auth_username = null;
@@ -489,7 +489,7 @@ $('#perform-delete').on('click', function(e) {
 				headers: { 'X-From-UI': true },
 			}).done(function(data) {
 				notifAll(data);
-			}).fail(myFail);
+			}).fail(buiFail);
 			_delete_promises.push(d);
 		}
 	});
@@ -563,7 +563,7 @@ $('#perform-group-delete').on('click', function(e) {
 				headers: { 'X-From-UI': true },
 			}).done(function(data) {
 				notifAll(data);
-			}).fail(myFail);
+			}).fail(buiFail);
 			_delete_promises.push(d);
 		}
 	});

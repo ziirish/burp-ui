@@ -84,7 +84,7 @@ var _client_table = $('#table-client').DataTable( {
 			return data;
 		},
 		error: function(xhr, stat, err) {
-			myFail(xhr, stat, err);
+			buiFail(xhr, stat, err);
 			$('#table-client').hide();
 			$('#client-alert').show();
 		}
@@ -295,7 +295,7 @@ $( document ).ready(function() {
 				$('.edit-restore').hide();
 				$('.scheduled-backup').show();
 			}
-		}).fail(myFail);
+		}).fail(buiFail);
 	});
 
 	$('#btn-cancel-backup').on('click', function(e) {
@@ -309,7 +309,7 @@ $( document ).ready(function() {
 				$('.cancel-backup').hide();
 				$('.scheduled-backup').show();
 			}
-		}).fail(myFail);
+		}).fail(buiFail);
 	});
 
 	$('#btn-schedule-backup').on('click', function(e) {
@@ -323,7 +323,7 @@ $( document ).ready(function() {
 				$('.cancel-backup').show();
 				$('.scheduled-backup').hide();
 			}
-		}).fail(myFail);
+		}).fail(buiFail);
 	});
 });
 
@@ -350,5 +350,5 @@ $( document ).on('click', '.btn-delete-backup', function(e) {
 		notif(NOTIF_SUCCESS, '{{ _("Delete task launched") }}');
 		/* refresh backups list now */
 		_client();
-	}).fail(myFail);
+	}).fail(buiFail);
 });

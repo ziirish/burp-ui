@@ -46,14 +46,14 @@ app.controller('AdminCtrl', ['$scope', '$http', '$scrollspy', 'DTOptionsBuilder'
 		$http({
 			url: form.attr('action'),
 			method: form.attr('method'),
-			params: {
+			data: {
 				username: $scope.auth_username,
 				password: $scope.auth_password,
 				backend: $scope.auth_backend,
 			},
 			headers: { 'X-From-UI': true },
 		})
-		.catch(myFail)
+		.catch(buiFail)
 		.then(function(response) {
 			notifAll(response.data);
 			$scope.auth_username = null;
@@ -162,10 +162,12 @@ var _authentication = function() {
 				_users_array.push(value);
 			}
 		});
-		_users_table.clear();
-		_users_table.rows.add(_users_array).draw();
-		$('#waiting-user-container').hide();
-		$('#table-users-container').show();
+		$.when.apply( $, __globals_promises ).always(function() {
+			_users_table.clear();
+			_users_table.rows.add(_users_array).draw();
+			$('#waiting-user-container').hide();
+			$('#table-users-container').show();
+		});
 	});
 };
 
@@ -232,7 +234,7 @@ $('#perform-delete').on('click', function(e) {
 				headers: { 'X-From-UI': true },
 			}).done(function(data) {
 				notifAll(data);
-			}).fail(myFail);
+			}).fail(buiFail);
 			_delete_promises.push(p);
 		}
 	});
@@ -270,4 +272,9 @@ $('#perform-edit').on('click', function(e) {
 $( document ).on('click', '.btn-sessions-user', function(e) {
 	var user_id = $(this).data('member');
 	location = "{{ url_for('view.admin_sessions', user='') }}"+user_id;
+});
+
+/* new user */
+$( document ).on('click', '#btn-add-user', function(e) {
+	$('#create-user-modal').modal('toggle');
 });

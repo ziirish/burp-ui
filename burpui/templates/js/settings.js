@@ -273,7 +273,7 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$timeout', '$scrollspy', 'DTOp
 				data: form.serialize(),
 				headers: { 'X-From-UI': true },
 			})
-			.fail(myFail)
+			.fail(buiFail)
 			.done(function(data) {
 				/* The server answered correctly but some errors may have occurred server
 				 * side so we display them */
@@ -600,7 +600,7 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$timeout', '$scrollspy', 'DTOp
 			url: api,
 			type: 'DELETE'
 		})
-		.fail(myFail)
+		.fail(buiFail)
 		.done(function(data) {
 			redirect = data[0][0] == NOTIF_SUCCESS;
 			notifAll(data, redirect);
@@ -622,7 +622,7 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$timeout', '$scrollspy', 'DTOp
 			data: { delcert: $('#delcert').is(':checked'), revoke: $('#revoke').is(':checked'), keepconf: $('#keepconf').is(':checked') }
 			{% endif -%}
 		})
-		.fail(myFail)
+		.fail(buiFail)
 		.done(function(data) {
 			redirect = data[0][0] == NOTIF_SUCCESS;
 			notifAll(data, redirect);
@@ -646,7 +646,7 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$timeout', '$scrollspy', 'DTOp
 			type: 'PUT',
 			data: form.serialize()
 		})
-		.fail(myFail)
+		.fail(buiFail)
 		.done(function(data) {
 			/* The server answered correctly but some errors may have occurred server
 			 * side so we display them */
@@ -676,7 +676,7 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$timeout', '$scrollspy', 'DTOp
 			type: 'PUT',
 			data: form.serialize()
 		})
-		.fail(myFail)
+		.fail(buiFail)
 		.done(function(data) {
 			/* The server answered correctly but some errors may have occurred server
 			 * side so we display them */

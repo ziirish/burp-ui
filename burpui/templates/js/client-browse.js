@@ -83,7 +83,7 @@ $( document ).ready(function() {
 
 				return data;
 			})
-			.fail(myFail);
+			.fail(buiFail);
 		},
 		lazyLoad: function(event, data) {
 			fixNeeded = true;
@@ -260,7 +260,7 @@ $( document ).ready(function() {
 				.fail(function(xhr, stat, err) {
 					$preparingFileModal.modal('hide');
 					if (xhr.status != 502) {
-						myFail(xhr, stat, err);
+						buiFail(xhr, stat, err);
 					}
 					if ('responseJSON' in xhr && 'message' in xhr.responseJSON) {
 						resp = xhr.responseJSON.message;
@@ -285,7 +285,7 @@ $( document ).ready(function() {
 			})
 			.fail(function(xhr, stat, err) {
 				$preparingFileModal.modal('hide');
-				myFail(xhr, stat, err);
+				buiFail(xhr, stat, err);
 			});
 		{% else -%}
 		$.fileDownload($(this).prop('action'), {
@@ -321,7 +321,7 @@ $( document ).ready(function() {
 			data: form.serialize(),
 			dataType: 'text json',
 		})
-		.fail(myFail)
+		.fail(buiFail)
 		.done(function(data) {
 			notifAll(data);
 		});
@@ -335,7 +335,7 @@ $( document ).ready(function() {
 		btn.html('<i class="fa fa-spinner fa-pulse fa-fw"></i>&nbsp;{{ _("Loading") }}');
 		var load_all_tree = function(url) {
 			$.get(url)
-				.fail(myFail)
+				.fail(buiFail)
 				.done(function(data) {
 					tree.reload(data);
 					btn.html('<i class="fa fa-check-square-o" aria-hidden="true"></i>&nbsp;{{ _("Nodes loaded") }}');
@@ -348,7 +348,7 @@ $( document ).ready(function() {
 		var _task_status_schedule = undefined;
 		var task_status = function(task_id) {
 			$.getJSON('{{ url_for("api.async_status", task_type="browse", task_id="", server=server) }}'+task_id)
-				.fail(myFail)
+				.fail(buiFail)
 				.done(function(data) {
 					if (data.state != 'SUCCESS') {
 						_task_status_schedule = setTimeout(function() {
@@ -360,7 +360,7 @@ $( document ).ready(function() {
 				});
 		};
 		$.post(url)
-			.fail(myFail)
+			.fail(buiFail)
 			.done(function(data) {
 				task_status(data.id);
 			});
@@ -423,7 +423,7 @@ $( document ).ready(function() {
 			if (data[0] == 0) {
 				$('#btn-cancel-restore').hide();
 			}
-		}).fail(myFail);
+		}).fail(buiFail);
 	});
 	{% endif -%}
 });

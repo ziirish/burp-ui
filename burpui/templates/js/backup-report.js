@@ -72,7 +72,7 @@ var _client = function() {
 		});
 		_redraw();
 	})
-	.fail(myFail)
+	.fail(buiFail)
 	.fail(function() {
 		$('.mycharts').each(function() {
 			$(this).parent().hide();

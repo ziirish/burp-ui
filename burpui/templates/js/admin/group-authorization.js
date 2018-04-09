@@ -99,7 +99,7 @@ app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBu
 					'X-From-UI': true,
 				},
 			})
-			.catch(myFail)
+			.catch(buiFail)
 			.then(function(response) {
 				$scope.orig.grantValue = $scope.grantValue;
 				notifAll(response.data);
@@ -118,7 +118,7 @@ app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBu
 					'X-From-UI': true,
 				},
 			})
-			.catch(myFail)
+			.catch(buiFail)
 			.catch(function () {
 				vm.updateGroup.groupMembers = $scope.orig.groupMembers;
 			})
@@ -140,7 +140,7 @@ app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBu
 					'X-From-UI': true,
 				},
 			})
-			.catch(myFail)
+			.catch(buiFail)
 			.catch(function () {
 				vm.updateGroup.groupMembers = $scope.orig.groupMembers;
 			})

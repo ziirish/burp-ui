@@ -25,7 +25,7 @@ var _servers_table = $('#table-servers').DataTable( {
 		dataSrc: function (data) {
 			return data;
 		},
-		error: myFail,
+		error: buiFail,
 		headers: { 'X-From-UI': true },
 		cache: AJAX_CACHE,
 	},

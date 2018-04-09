@@ -33,7 +33,7 @@ var _sessions_table = $('#table-sessions').DataTable( {
 		url: '{{ url_for("api.other_sessions", user=user) }}',
 		headers: { 'X-From-UI': true },
 		cache: AJAX_CACHE,
-		error: myFail,
+		error: buiFail,
 		data: function (request) {
 			request._extra = _cache_id;
 		},
@@ -233,7 +233,7 @@ var revoke_session = function(id, refresh) {
 			AJAX_CACHE = false;
 			_sessions();
 		}
-	}).fail(myFail);
+	}).fail(buiFail);
 };
 
 $('#perform-revoke').on('click', function(e) {
