@@ -8,36 +8,13 @@
             <li class="active">{{ _('Administration') }}</li>
           </ul>
           <br />
-          <!--
           <div class="form-container">
-            <legend id="authentication">{{ _('Authorization') }}</legend>
+            <legend id="grants">{{ _('Grants') }}</legend>
             <div class="row well">
-              <form action="{{ url_for('api.auth_users') }}" method="PUT" class="form-inline" name="pctrl.userAdd" ng-submit="addUser($event)">
-                <fieldset>
-                  <Legend>{{ _('Create new User') }}</Legend>
-                  <div class="form-group" ng-class="{'has-error': pctrl.userAdd.auth_username.$touched && !pctrl.userAdd.auth_username.$valid}">
-                    <label class="sr-only" for="auth_username">{{ _('Username') }}</label>
-                    <input class="form-control" type="text" id="auth_username" name="auth_username" placeholder="{{ _('Username') }}" ng-model="auth_username" required>
-                  </div>
-                  <div class="form-group" ng-class="{'has-error': pctrl.userAdd.auth_password.$touched && !pctrl.userAdd.auth_password.$valid}">
-                    <label class="sr-only" for="auth_password">{{ _('Password') }}</label>
-                    <input class="form-control" type="password" id="auth_password" name="auth_password" placeholder="{{ _('Password') }}" ng-model="auth_password" required>
-                  </div>
-                  <div class="form-group">
-                    <label class="sr-only" for="auth_backend">{{ _('Backend') }}</label>
-                    <select class="form-control" name="auth_backend" id="auth_backend" ng-model="auth_backend" ng-change="checkSelect()" required>
-                      <option selected disabled value="placeholder">{{ _('Authentication Backend') }}</option>
-                      {% raw -%}
-                      <option ng-repeat="back in auth_backends" ng-disabled="!back.add" value="{{ back.name }}">{{ back.name }}</option>
-                      {% endraw -%}
-                    </select>
-                  </div>
-                  <button class="btn btn-success" type="submit" ng-disabled="!pctrl.userAdd.$valid"><i class="fa fa-plus" aria-hidden="true"></i>&nbsp;{{ _('Create') }}</button>
-                </fieldset>
-              </form>
+              <h3>{{ _('Create new grant') }}</h3>
+              <p><button class="btn btn-success" id="btn-add-grant" ng-click="addNewGrant()"><i class="fa fa-plus" aria-hidden="true"></i>&nbsp;{{ _('New grant') }}</button></p>
             </div>
           </div>
-          -->
           <div class="form-container">
             <legend>{{ _('Grants list') }}</legend>
             <div id="waiting-user-container" class="row">
@@ -62,6 +39,13 @@
                 <tbody>
                 </tbody>
               </table>
+            </div>
+          </div>
+          <div class="form-container">
+            <legend id="grants">{{ _('Groups') }}</legend>
+            <div class="row well">
+              <h3>{{ _('Create new group') }}</h3>
+              <p><button class="btn btn-success" id="btn-add-group" ng-click="addNewGroup()"><i class="fa fa-plus" aria-hidden="true"></i>&nbsp;{{ _('New group') }}</button></p>
             </div>
           </div>
           <div class="form-container">
@@ -176,6 +160,90 @@
               <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">{{ _('Cancel') }}</button>
                 <button type="button" class="btn btn-info" data-dismiss="modal" id="perform-group-edit">{{ _('Edit') }}</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="create-grant-modal" class="modal fade">
+          <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                {% raw -%}
+                <h4 class="modal-title">{{ modalTitle }}</h4>
+                {% endraw -%}
+              </div>
+              <div class="modal-body">
+                <form class="form-horizontal" name="pctrl.grantAdd" ng-submit="addGrant($event)">
+                  <fieldset>
+                    {% raw -%}
+                    <Legend>{{ modalLegend }}</Legend>
+                    <div class="form-group" ng-class="{'has-error': pctrl.grantAdd.name.$touched && !pctrl.grantAdd.name.$valid}">
+                      <label class="col-lg-2 control-label" for="name">{{ nameLabel }}</label>
+                      <div class="col-lg-10">
+                        <input class="form-control" type="text" id="name" name="name" placeholder="{{ nameLabel }}" ng-model="name" required>
+                      </div>
+                    </div>
+                    {% endraw -%}
+                    <div class="form-group">
+                      <label class="col-lg-2 control-label" for="acl_backend">{{ _('Backend') }}</label>
+                      <div class="col-lg-10">
+                        <select class="form-control" name="acl_backend" id="acl_backend" ng-model="acl_backend" ng-change="checkSelect()" required>
+                          <option selected disabled value="placeholder">{{ _('Authorization Backend') }}</option>
+                          {% raw -%}
+                          <option ng-repeat="back in acl_backends" ng-disabled="!actionAllowed(back)" value="{{ back.name }}">{{ back.name }}</option>
+                          {% endraw -%}
+                        </select>
+                      </div>
+                    </div>
+                    <div class="form-group" ng-class="{'has-error': !validGrantInput}">
+                      <label for="grantValue" class="col-lg-2 control-label">{{ _('Grants') }}</label>
+                      <div class="col-lg-6">
+                        <div ui-ace ng-model="grantValue" ace-mode="json" ace-theme="ambiance" style="height: 200px;" class="form-control"></div>
+                      </div>
+                      <span id="helpBlock" class="help-block" ng-show="!validGrantInput" ng-cloak>{{ _('You need to enter a valid JSON expression. Example:') }}&nbsp;<kbd>"client"</kbd>, <kbd>{"clients": ["c1", "c2"]}</kbd>, <kbd>["client1", "client2"]</kbd>, <kbd>{ "agents": { "agent1": ["client1", "client2"] } }</kbd></span>
+                    </div>
+                    <div class="form-group" ng-if="mode == 'group'">
+                      <label for="group-members" class="col-lg-2 control-label">{{ _('Group members') }}</label>
+                      <div class="col-lg-6">
+                        <ui-select id="group-members" name="group-members" multiple ng-model="pctrl.grantAdd.groupMembers" ng-disabled="loadingMembers" style="width: 100%;" title="{{ _('Choose a person') }}">
+                          <ui-select-match placeholder="{{ _('Select person...') }}">{{ '{{$item.id}}' }}</ui-select-match>
+                          <ui-select-choices repeat="person.id as person in pctrl.grantAdd.backendUsers | filter: $select.search">
+                            <div ng-bind-html="person.id | highlight: $select.search"></div>
+                          </ui-select-choices>
+                        </ui-select>
+                      </div>
+                    </div>
+                    <div ng-if="mode == 'grant'">
+                      <div class="form-group">
+                        <div class="col-lg-3 col-lg-offset-2">
+                          <div class="checkbox">
+                            <label>
+                              <input type="checkbox" ng-model="isAdmin"> {{ _("Is Admin") }}
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <div class="col-lg-3 col-lg-offset-2">
+                          <div class="checkbox">
+                          <label>
+                            <input type="checkbox" ng-model="isModerator"> {{ _("Is Moderator") }}
+                          </label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <div class="col-lg-10 col-lg-offset-2">
+                        <button class="btn btn-success" type="submit" ng-disabled="!pctrl.grantAdd.$valid || !validGrantInput"><i class="fa fa-plus" aria-hidden="true"></i>&nbsp;{{ _('Create') }}</button>
+                      </div>
+                    </div>
+                  </fieldset>
+                </form>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">{{ _('Cancel') }}</button>
               </div>
             </div>
           </div>

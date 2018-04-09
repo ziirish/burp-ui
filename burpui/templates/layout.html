@@ -100,7 +100,7 @@
     <script src="{{ url_for('bower.static', filename='datatables.net-buttons-bs/js/buttons.bootstrap.min.js') }}"></script>
       {% endif -%}
     {% endif -%}
-    {% if authorization -%}
+    {% if authorization or authorizations -%}
     <!-- ACE editor Javascript
     ================================================== -->
     <script src="{{ url_for('bower.static', filename='ace-builds/src-min-noconflict/ace.js') }}"></script>

@@ -5,7 +5,7 @@ var _cache_id = _EXTRA;
 var _me = undefined;
 var _users = {};
 var _groups = {};
-var _auth_backends = {};
+var _acl_backends = {};
 var _users_array = [];
 var __promises = [];
 var __globals_promises = [];
@@ -16,30 +16,86 @@ app.config(function(uiSelectConfig) {
 	uiSelectConfig.theme = 'bootstrap';
 });
 
+{{ macros.angular_ui_ace() }}
+
 app.controller('AdminCtrl', ['$scope', '$http', '$scrollspy', 'DTOptionsBuilder', 'DTColumnDefBuilder', function($scope, $http, $scrollspy, DTOptionsBuilder, DTColumnDefBuilder) {
 	var vm = this;
-	$scope.auth_backends = [];
+	var _g_promises = [];
+	$scope.acl_backends = [];
+	$scope.isLoading = false;
+	$scope.validGrantInput = true;
+	$scope.grantValue = '';
+	$scope.loadingMembers = false;
+	vm.grantAdd = {};
+	vm.grantAdd.groupMembers = [];
+	vm.grantAdd.backendUsers = [];
 
-  $http.get('{{ url_for("api.acl_backends") }}', { headers: { 'X-From-UI': true } })
+  var g = $http.get('{{ url_for("api.acl_backends") }}', { headers: { 'X-From-UI': true } })
 		.then(function (response) {
-			$scope.auth_backends = [];
-			_auth_backends = {};
+			$scope.acl_backends = [];
+			_acl_backends = {};
 			angular.forEach(response.data, function(back, i) {
-				_auth_backends[back.name] = back;
-				$scope.auth_backends.push(back);
+				_acl_backends[back.name] = back;
+				$scope.acl_backends.push(back);
 			});
-			$scope.auth_backend = "placeholder";
+			$scope.acl_backend = "placeholder";
 			/*
 			vm.userAdd.auth_backend.$setValidity('valid', false);
 			vm.userAdd.$setPristine();
 			*/
 		});
+	_g_promises.push(g);
 
-	$scope.checkSelect = function() {
-		vm.userAdd.auth_backend.$setValidity('valid', ($scope.auth_backend != "placeholder"));
+	$scope.addNewGroup = function() {
+		$scope.modalTitle = '{{ _("Create Group") }}';
+		$scope.modalLegend = '{{ _("Create new Group") }}';
+		$scope.nameLabel = '{{ _("Group name") }}';
+		$scope.mode = 'group';
+		$('#create-grant-modal').modal('toggle');
 	};
 
-	$scope.addUser = function(e) {
+	$scope.addNewGrant = function() {
+		$scope.modalTitle = '{{ _("Create Grant") }}';
+		$scope.modalLegend = '{{ _("Create new Grant") }}';
+		$scope.nameLabel = '{{ _("Grant/User name") }}';
+		$scope.mode = 'grant';
+		$('#create-grant-modal').modal('toggle');
+	};
+
+	$scope.checkSelect = function() {
+		vm.grantAdd.acl_backend.$setValidity('valid', ($scope.acl_backend != "placeholder"));
+		if ($scope.acl_backend !== 'placeholder') {
+			$scope.loadingMembers = true;
+			// empty list
+			vm.grantAdd.backendUsers = [];
+			$http.get(
+				'{{ url_for("api.acl_grants") }}',
+				{
+					params: {
+						backend: '{{ backend }}',
+					},
+					headers: { 'X-From-UI': true }
+				})
+				.then(function (response) {
+					_.forEach(response.data, function(user) {
+						vm.grantAdd.backendUsers.push(user);
+					});
+				})
+				.finally(function () {
+					$scope.loadingMembers = false;
+				});
+		}
+	};
+
+	$scope.actionAllowed = function(back) {
+		var capabilities = {
+			'grant': 'add_grant',
+			'group': 'add_group',
+		};
+		return back[capabilities[$scope.mode]];
+	};
+
+	$scope.addGrant = function(e) {
 		e.preventDefault();
 		var form = $(e.target);
 		submit = form.find('button[type="submit"]');
@@ -449,7 +505,7 @@ $( document ).on('click', '.btn-delete-user', function(e) {
 	$.each(user['backends'], function(i, back) {
 		var disabled_legend = '{{ _("The backend does not support user removal") }}';
 		var disabled = 'disabled title="'+disabled_legend+'"';
-		var is_enabled = _auth_backends[back]['del_grant'];
+		var is_enabled = _acl_backends[back]['del_grant'];
 		content += '<div class="checkbox"><label><input type="checkbox" name="user_backend" data-id="'+user_id+'" data-backend="'+back+'" '+(is_enabled?'':disabled)+'>'+back+(is_enabled?'':' <em>('+disabled_legend+')</em>')+'</label></div>';
 	});
 	/* disable submit button while we did not select a backend */
@@ -506,7 +562,7 @@ $( document ).on('click', '.btn-edit-user', function(e) {
 	content += '<div class="form-group"><label for="edit_backend" class="col-lg-2 control-label">Backend</label>';
 	content += '<div class="col-lg-10"><select class="form-control" id="edit_backend" name="edit_backend" data-id="'+user_id+'"><option disabled selected value="placeholder">'+'{{ _("Please select a backend") }}'+'</option>';
 	$.each(user['backends'], function(i, back) {
-		is_enabled = _auth_backends[back]['mod_grant'];
+		is_enabled = _acl_backends[back]['mod_grant'];
 		content += '<option'+(is_enabled?'':' disabled')+'>'+back+'</option>';
 	});
 	content += '</select></div></div>';
@@ -532,7 +588,7 @@ $( document ).on('click', '.btn-delete-group', function(e) {
 	$.each(group['backends'], function(i, back) {
 		var disabled_legend = '{{ _("The backend does not support group removal") }}';
 		var disabled = 'disabled title="'+disabled_legend+'"';
-		var is_enabled = _auth_backends[back]['del_group'];
+		var is_enabled = _acl_backends[back]['del_group'];
 		content += '<div class="checkbox"><label><input type="checkbox" name="group_backend" data-id="'+group_id+'" data-backend="'+back+'" '+(is_enabled?'':disabled)+'>'+back+(is_enabled?'':' <em>('+disabled_legend+')</em>')+'</label></div>';
 	});
 	/* disable submit button while we did not select a backend */
@@ -580,7 +636,7 @@ $( document ).on('click', '.btn-edit-group', function(e) {
 	content += '<div class="form-group"><label for="edit_group_backend" class="col-lg-2 control-label">Backend</label>';
 	content += '<div class="col-lg-10"><select class="form-control" id="edit_group_backend" name="edit_group_backend" data-id="'+group_id+'"><option disabled selected value="placeholder">'+'{{ _("Please select a backend") }}'+'</option>';
 	$.each(group['backends'], function(i, back) {
-		is_enabled = _auth_backends[back]['mod_group'];
+		is_enabled = _acl_backends[back]['mod_group'];
 		content += '<option'+(is_enabled?'':' disabled')+'>'+back+'</option>';
 	});
 	content += '</select></div></div>';

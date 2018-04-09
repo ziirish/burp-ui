@@ -199,6 +199,10 @@ class ACLloader(BUIaclLoader):
         """Create a group"""
         self._setup_acl()
         name = '@{}'.format(name)
+        if name == 'moderator':
+            message = "'moderator' is a reserved name"
+            self.logger.error(message)
+            return False, message, NOTIF_ERROR
         if name in self.conf.options[self.section]:
             message = "group '{}' already exists".format(name)
             self.logger.warning(message)
@@ -214,6 +218,10 @@ class ACLloader(BUIaclLoader):
         self._setup_acl()
         self.load_acl(True)
         gname = '@{}'.format(name)
+        if name == 'moderator':
+            message = "'moderator' is a reserved name"
+            self.logger.error(message)
+            return False, message, NOTIF_ERROR
         if gname not in self.conf.options[self.section]:
             message = "group '{}' does not exist".format(name)
             self.logger.error(message)
@@ -231,6 +239,10 @@ class ACLloader(BUIaclLoader):
         """Update a group"""
         self._setup_acl()
         name = '@{}'.format(name)
+        if name == 'moderator':
+            message = "'moderator' is a reserved name"
+            self.logger.error(message)
+            return False, message, NOTIF_ERROR
         if name not in self.conf.options[self.section]:
             message = "group '{}' does not exist".format(name)
             self.logger.warning(message)

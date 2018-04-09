@@ -154,8 +154,8 @@ class AclIsAdmin(Resource):
         return {'admin': member in loader.admins}
 
 
-@ns.route('/acl/admin/<backend>',
-          '/acl/admin/<backend>/<member>',
+@ns.route('/acl/<backend>/admin',
+          '/acl/<backend>/admin/<member>',
           endpoint='acl_admins')
 @ns.doc(
     params={
@@ -327,8 +327,8 @@ class AclIsModerator(Resource):
         return {'moderator': member in loader.moderators}
 
 
-@ns.route('/acl/moderator/<backend>',
-          '/acl/moderator/<backend>/<member>',
+@ns.route('/acl/<backend>/moderator',
+          '/acl/<backend>/moderator/<member>',
           endpoint='acl_moderators')
 @ns.doc(
     params={
@@ -505,8 +505,8 @@ class AclModerators(Resource):
         return [[code, message]], status
 
 
-@ns.route('/acl/group/<name>/<backend>',
-          '/acl/group/<name>/<backend>/<member>',
+@ns.route('/acl/<backend>/group/<name>',
+          '/acl/<backend>/group/<name>/<member>',
           endpoint='acl_group_members')
 @ns.doc(
     params={
