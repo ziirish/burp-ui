@@ -2,16 +2,16 @@
           <div id="navbar-config">
             <h4>{{ _('Configuration navigation') }}</h4>
             <ul class="nav nav-sidebar bui-scrollspy">
-              <li class="active" data-target="#boolean"><a class="scroll" href="#boolean">{{ _('Booleans') }}</a></li>
-              <li data-target="#string"><a class="scroll" href="#string">{{ _('Strings') }}</a></li>
-              <li data-target="#integer"><a class="scroll" href="#integer">{{ _('Integers') }}</a></li>
+              <li class="active" data-target="#boolean"><a class="scroll" href="#boolean"><i class="fa fa-fw fa-check-square-o" aria-hidden="true"></i>&nbsp;{{ _('Booleans') }}</a></li>
+              <li data-target="#string"><a class="scroll" href="#string"><i class="fa fa-fw fa-align-right" aria-hidden="true"></i>&nbsp;{{ _('Strings') }}</a></li>
+              <li data-target="#integer"><a class="scroll" href="#integer"><i class="fa fa-fw fa-list-ol" aria-hidden="true"></i>&nbsp;{{ _('Integers') }}</a></li>
               {% if not client -%}
-              <li data-target="#pair"><a class="scroll" href="#pair">{{ _('Pairs') }}</a></li>
+              <li data-target="#pair"><a class="scroll" href="#pair"><i class="fa fa-fw fa-exchange" aria-hidden="true"></i>&nbsp;{{ _('Pairs') }}</a></li>
               {% endif -%}
-              <li data-target="#multi"><a class="scroll" href="#multi">{{ _('Multi') }}</a></li>
-              <li data-target="#includes_source"><a class="scroll" href="#includes_source">{{ _('Source files') }}</a></li>
+              <li data-target="#multi"><a class="scroll" href="#multi"><i class="fa fa-fw fa-list-ul" aria-hidden="true"></i>&nbsp;{{ _('Multi') }}</a></li>
+              <li data-target="#includes_source"><a class="scroll" href="#includes_source"><i class="fa fa-fw fa-files-o" aria-hidden="true"></i>&nbsp;{{ _('Source files') }}</a></li>
               {% if client and not template -%}
-              <li data-target="#templates"><a class="scroll" href="#templates">{{ _('Templates') }}</a></li>
+              <li data-target="#templates"><a class="scroll" href="#templates"><i class="fa fa-fw fa-file-text-o" aria-hidden="true"></i>&nbsp;{{ _('Templates') }}</a></li>
               {% endif -%}
             </ul>
           </div>
