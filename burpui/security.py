@@ -26,7 +26,7 @@ def sanitize_string(string, strict=True, paranoid=False):
     else:
         import re
         ret = repr(string).replace('\\\\', '\\')
-        ret = re.sub(r"^u?(?P<quote>['\"])(.*)(?P=quote)$", r"\1", ret)
+        ret = re.sub(r"^u?(?P<quote>['\"])(.*)(?P=quote)$", r"\2", ret)
         return to_unicode(ret)
 
 
