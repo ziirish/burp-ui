@@ -1,5 +1,4 @@
 FROM debian:jessie
-MAINTAINER hi+burpui@ziirish.me
 
 RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y supervisor logrotate locales wget curl uthash-dev g++ make libssl-dev librsync-dev git cron \

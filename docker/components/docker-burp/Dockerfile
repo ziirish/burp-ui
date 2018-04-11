@@ -1,5 +1,4 @@
 FROM alpine:3.7
-MAINTAINER hi+burpui@ziirish.me
 
 RUN apk add --no-cache supervisor logrotate librsync libressl tzdata bash coreutils \
 	&& apk add --no-cache --virtual .fetch-deps \
