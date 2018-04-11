@@ -17,7 +17,7 @@ from ..utils import NOTIF_INFO
 
 from six import iteritems
 from flask_babel import gettext as _, refresh
-from flask import jsonify, request, url_for, current_app, g
+from flask import jsonify, request, url_for, current_app, g, session
 from ..datastructures import ImmutableMultiDict
 
 bui = current_app  # type: BUIServer
@@ -369,7 +369,7 @@ class NewTemplateSettings(Resource):
         }
     )
     def put(self, server=None):
-        """Creates a new client"""
+        """Creates a new template"""
         newtemplate = self.parser.parse_args()['newtemplate']
         if not newtemplate:
             self.abort(400, 'No template name provided')
@@ -437,6 +437,13 @@ class NewClientSettings(Resource):
             noti.append([NOTIF_INFO, _('<a href="%(url)s">Click here</a> to edit \'%(client)s\' configuration', url=url_for('view.cli_settings', client=newclient), client=newclient)])
         # clear the cache when we add a new client
         cache.clear()
+        # clear client-side cache through the _extra META variable
+        try:
+            _extra = session.get('_extra', g.now)
+            _extra = int(_extra)
+        except ValueError:
+            _extra = 0
+        session['_extra'] = '{}'.format(_extra + 1)
         if bui.config['WITH_CELERY']:
             from ..tasks import force_scheduling_now
             force_scheduling_now()
@@ -563,6 +570,13 @@ class ClientSettings(Resource):
         if not keepconf:
             # clear the cache when we remove a client
             cache.clear()
+            # clear client-side cache through the _extra META variable
+            try:
+                _extra = session.get('_extra', g.now)
+                _extra = int(_extra)
+            except ValueError:
+                _extra = 0
+            session['_extra'] = '{}'.format(_extra + 1)
             if bui.config['WITH_CELERY']:
                 from ..tasks import force_scheduling_now
                 force_scheduling_now()

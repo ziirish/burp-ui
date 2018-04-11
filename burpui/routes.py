@@ -12,7 +12,7 @@ import math
 import uuid
 
 from flask import request, render_template, redirect, url_for, abort, \
-    flash, Blueprint, session, current_app
+    flash, Blueprint, session, current_app, g
 from flask_login import login_user, login_required, logout_user, current_user
 from flask_babel import gettext as _, refresh as refresh_babel
 
@@ -472,6 +472,7 @@ def login():
         refresh = True
         session['tag_id'] = uuid.uuid4()
         session['language'] = form.language.data
+        session['_extra'] = g.now
         user = bui.uhandler.user(form.username.data, refresh)
         # at the time the context is loaded, the locale is not set
         refresh_babel()
