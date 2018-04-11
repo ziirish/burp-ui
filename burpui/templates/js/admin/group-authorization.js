@@ -93,7 +93,7 @@ app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBu
 				url: '{{ url_for("api.acl_groups", backend=backend, name=group) }}',
 				method: 'POST',
 				data: {
-					grant: JSON.stringify(JSON.parse($scope.grantValue)), // remove indentation
+					grant: $scope.grantValue ? JSON.stringify(JSON.parse($scope.grantValue)) : "", // remove indentation
 				},
 				headers: {
 					'X-From-UI': true,

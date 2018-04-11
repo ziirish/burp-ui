@@ -301,6 +301,7 @@ class ACLloader(BUIaclLoader):
         self.moderators.append(member)
         self.conf.options[self.section]['+moderator'] = self.moderators
         self.conf.options.write()
+        self.load_acl(True)
         message = "'{}' successfully added as moderator".format(member)
         return True, message, NOTIF_OK
 
@@ -314,6 +315,7 @@ class ACLloader(BUIaclLoader):
         self.moderators.remove(member)
         self.conf.options[self.section]['+moderator'] = self.moderators or ''
         self.conf.options.write()
+        self.load_acl(True)
         message = "'{}' successfully removed from moderators".format(member)
         return True, message, NOTIF_OK
 
@@ -323,6 +325,7 @@ class ACLloader(BUIaclLoader):
         self.moderator = grants
         self.conf.options[self.section]['@moderator'] = grants
         self.conf.options.write()
+        self.load_acl(True)
         message = "moderator grants updated"
         return True, message, NOTIF_OK
 
@@ -336,6 +339,7 @@ class ACLloader(BUIaclLoader):
         self.admins.append(member)
         self.conf.options[self.section]['admin'] = self.admins
         self.conf.options.write()
+        self.load_acl(True)
         message = "'{}' successfully added as admin".format(member)
         return True, message, NOTIF_OK
 
@@ -349,6 +353,7 @@ class ACLloader(BUIaclLoader):
         self.admins.remove(member)
         self.conf.options[self.section]['admin'] = self.admins or ''
         self.conf.options.write()
+        self.load_acl(True)
         message = "'{}' successfully removed from admins".format(member)
         return True, message, NOTIF_OK
 

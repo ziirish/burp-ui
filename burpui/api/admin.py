@@ -154,7 +154,8 @@ class AclIsAdmin(Resource):
         return {'admin': member in loader.admins}
 
 
-@ns.route('/acl/<backend>/admin',
+@ns.route('/acl/admin',
+          '/acl/<backend>/admin',
           '/acl/<backend>/admin/<member>',
           endpoint='acl_admins')
 @ns.doc(
@@ -171,7 +172,8 @@ class AclAdmins(Resource):
     This resource is part of the :mod:`burpui.api.admin` module.
     """
     parser = ns.parser()
-    parser.add_argument('memberName', required=False, help='Moderator member', location='values')
+    parser.add_argument('memberName', required=False, help='Moderator member')
+    parser.add_argument('backendName', required=False, help='Backend name')
 
     @api.acl_admin_or_moderator_required(message="Not allowed to view admins list")
     @ns.marshal_with(admin_members_fields, code=200, description='Success')
@@ -212,12 +214,13 @@ class AclAdmins(Resource):
             404: 'No backend found',
         },
     )
-    def put(self, backend, member=None):
+    def put(self, backend=None, member=None):
         """Add a member as admin
 
         **PUT** method provided by the webservice.
         """
         args = self.parser.parse_args()
+        backend = backend or args['backendName']
         try:
             handler = getattr(bui, 'acl_handler')
         except AttributeError:
@@ -253,12 +256,13 @@ class AclAdmins(Resource):
             404: 'No backend found',
         },
     )
-    def delete(self, backend, member=None):
+    def delete(self, backend=None, member=None):
         """Remove an admin member
 
         **DELETE** method provided by the webservice.
         """
         args = self.parser.parse_args()
+        backend = backend or args['backendName']
         try:
             handler = getattr(bui, 'acl_handler')
         except AttributeError:
@@ -327,7 +331,8 @@ class AclIsModerator(Resource):
         return {'moderator': member in loader.moderators}
 
 
-@ns.route('/acl/<backend>/moderator',
+@ns.route('/acl/moderator',
+          '/acl/<backend>/moderator',
           '/acl/<backend>/moderator/<member>',
           endpoint='acl_moderators')
 @ns.doc(
@@ -344,7 +349,8 @@ class AclModerators(Resource):
     This resource is part of the :mod:`burpui.api.admin` module.
     """
     parser = ns.parser()
-    parser.add_argument('memberName', required=False, help='Moderator member', location='values')
+    parser.add_argument('memberName', required=False, help='Moderator member')
+    parser.add_argument('backendName', required=False, help='Backend name')
 
     parser_mod = ns.parser()
     parser_mod.add_argument('grants', required=False, help='Moderator grants', location='values')
@@ -389,12 +395,13 @@ class AclModerators(Resource):
             404: 'No backend found',
         },
     )
-    def put(self, backend, member=None):
+    def put(self, backend=None, member=None):
         """Add a member as moderator
 
         **PUT** method provided by the webservice.
         """
         args = self.parser.parse_args()
+        backend = backend or args['backendName']
         try:
             handler = getattr(bui, 'acl_handler')
         except AttributeError:
@@ -430,12 +437,13 @@ class AclModerators(Resource):
             404: 'No backend found',
         },
     )
-    def delete(self, backend, member=None):
+    def delete(self, backend=None, member=None):
         """Remove a moderator member
 
         **DELETE** method provided by the webservice.
         """
         args = self.parser.parse_args()
+        backend = backend or args['backendName']
         try:
             handler = getattr(bui, 'acl_handler')
         except AttributeError:
@@ -505,7 +513,8 @@ class AclModerators(Resource):
         return [[code, message]], status
 
 
-@ns.route('/acl/<backend>/group/<name>',
+@ns.route('/acl/group',
+          '/acl/<backend>/group/<name>',
           '/acl/<backend>/group/<name>/<member>',
           endpoint='acl_group_members')
 @ns.doc(
@@ -524,6 +533,8 @@ class AclGroup(Resource):
     """
     parser = ns.parser()
     parser.add_argument('memberNames', required=False, help='Group members', action='append')
+    parser.add_argument('groupName', required=False, help='Group name')
+    parser.add_argument('backendName', required=False, help='Backend name')
 
     @api.acl_admin_or_moderator_required(message="Not allowed to view groups list")
     @ns.marshal_with(group_members_fields, code=200, description='Success')
@@ -568,12 +579,14 @@ class AclGroup(Resource):
             404: 'No backend found',
         },
     )
-    def put(self, name, backend, member=None):
+    def put(self, name=None, backend=None, member=None):
         """Add a member in a given group
 
         **PUT** method provided by the webservice.
         """
         args = self.parser.parse_args()
+        name = name or args['groupName']
+        backend = backend or args['backendName']
         try:
             handler = getattr(bui, 'acl_handler')
         except AttributeError:

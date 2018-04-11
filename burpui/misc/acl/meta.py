@@ -524,6 +524,9 @@ class BUIaclGrant(BUImetaGrant):
         try:
             ret = json.loads(grants)
         except (ValueError, TypeError):
+            # handle empty/missing grants
+            if not grants:
+                return []
             # ignore mal-formatted json
             if any([x in grants for x in ['{', '}', '[', ']']]):
                 ret = None

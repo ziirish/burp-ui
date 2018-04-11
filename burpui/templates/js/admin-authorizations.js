@@ -18,7 +18,7 @@ app.config(function(uiSelectConfig) {
 
 {{ macros.angular_ui_ace() }}
 
-app.controller('AdminCtrl', ['$scope', '$http', '$scrollspy', 'DTOptionsBuilder', 'DTColumnDefBuilder', function($scope, $http, $scrollspy, DTOptionsBuilder, DTColumnDefBuilder) {
+app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBuilder', 'DTColumnDefBuilder', function($scope, $http, $q, $scrollspy, DTOptionsBuilder, DTColumnDefBuilder) {
 	var vm = this;
 	var _g_promises = [];
 	$scope.acl_backends = [];
@@ -26,6 +26,9 @@ app.controller('AdminCtrl', ['$scope', '$http', '$scrollspy', 'DTOptionsBuilder'
 	$scope.validGrantInput = true;
 	$scope.grantValue = '';
 	$scope.loadingMembers = false;
+	$scope.mode = undefined;
+	$scope.isAdmin = false;
+	$scope.isModerator = false;
 	vm.grantAdd = {};
 	vm.grantAdd.groupMembers = [];
 	vm.grantAdd.backendUsers = [];
@@ -39,10 +42,6 @@ app.controller('AdminCtrl', ['$scope', '$http', '$scrollspy', 'DTOptionsBuilder'
 				$scope.acl_backends.push(back);
 			});
 			$scope.acl_backend = "placeholder";
-			/*
-			vm.userAdd.auth_backend.$setValidity('valid', false);
-			vm.userAdd.$setPristine();
-			*/
 		});
 	_g_promises.push(g);
 
@@ -50,29 +49,125 @@ app.controller('AdminCtrl', ['$scope', '$http', '$scrollspy', 'DTOptionsBuilder'
 		$scope.modalTitle = '{{ _("Create Group") }}';
 		$scope.modalLegend = '{{ _("Create new Group") }}';
 		$scope.nameLabel = '{{ _("Group name") }}';
+		if ($scope.mode !== 'group') {
+			$scope.grantValue = '';
+			vm.grantAdd.groupMembers = []
+		}
 		$scope.mode = 'group';
+		$scope.url = '{{ url_for("api.acl_groups") }}';
+		$scope.httpParams = $scope.genNewGroupParams;
+		$scope.httpCallback = $scope.addGroupCallback;
 		$('#create-grant-modal').modal('toggle');
+	};
+	$scope.genNewGroupParams = function() {
+		return {
+			backend: $scope.acl_backend,
+			group: $scope.name,
+			grant: $scope.grantValue ? JSON.stringify(JSON.parse($scope.grantValue)) : "", // remove indentation
+		};
+	};
+	$scope.addGroupCallback = function(response) {
+		var locals = [];
+		if (vm.grantAdd.groupMembers.length > 0) {
+			var l = $http({
+				url: '{{ url_for("api.acl_group_members") }}',
+				method: 'PUT',
+				data: {
+					groupName: $scope.name,
+					backendName: $scope.acl_backend,
+					memberNames: vm.grantAdd.groupMembers,
+				},
+				headers: {
+					'X-From-UI': true,
+				},
+			})
+			.catch(buiFail)
+			.then(function (resp2) {
+				notifAll(resp2.data);
+			});
+			locals.push(l);
+		}
+		$q.all(locals).finally(function() {
+			_authorization_groups();
+		});
+		// mandatory: we need to pass the response to the next function
+		return response;
 	};
 
 	$scope.addNewGrant = function() {
 		$scope.modalTitle = '{{ _("Create Grant") }}';
 		$scope.modalLegend = '{{ _("Create new Grant") }}';
 		$scope.nameLabel = '{{ _("Grant/User name") }}';
+		if ($scope.mode !== 'grant') {
+			$scope.grantValue = '';
+			$scope.isAdmin = false;
+			$scope.isModerator = false;
+		}
 		$scope.mode = 'grant';
+		$scope.url = '{{ url_for("api.acl_grants") }}';
+		$scope.httpParams = $scope.genNewGrantParams;
+		$scope.httpCallback = $scope.addGrantCallback;
 		$('#create-grant-modal').modal('toggle');
+	};
+	$scope.genNewGrantParams = function() {
+		return {
+			backend: $scope.acl_backend,
+			grant: $scope.name,
+			content: $scope.grantValue ? JSON.stringify(JSON.parse($scope.grantValue)) : "", // remove indentation
+		};
+	};
+	$scope.addGrantCallback = function(response) {
+		var locals = [];
+		if ($scope.isAdmin) {
+			var l = $http({
+				url: '{{ url_for("api.acl_admins") }}',
+				method: 'PUT',
+			  params: {
+					memberName: $scope.name,
+					backendName: $scope.acl_backend,
+				},
+				headers: { 'X-From-UI': true },
+			})
+			.catch(buiFail)
+			.then(function(resp2) {
+				notifAll(resp2.data);
+			});
+			locals.push(l);
+		}
+		if ($scope.isModerator) {
+			var l = $http({
+				url: '{{ url_for("api.acl_moderators") }}',
+				method: 'PUT',
+			  params: {
+					memberName: $scope.name,
+					backendName: $scope.acl_backend,
+				},
+				headers: { 'X-From-UI': true },
+			})
+			.catch(buiFail)
+			.then(function(resp2) {
+				notifAll(resp2.data);
+			});
+			locals.push(l);
+		}
+    $q.all(locals).finally(function() {
+			_authorization_users();
+		});
+		return response;
 	};
 
 	$scope.checkSelect = function() {
 		vm.grantAdd.acl_backend.$setValidity('valid', ($scope.acl_backend != "placeholder"));
 		if ($scope.acl_backend !== 'placeholder') {
 			$scope.loadingMembers = true;
+			var locals = [];
 			// empty list
 			vm.grantAdd.backendUsers = [];
-			$http.get(
+			var l = $http.get(
 				'{{ url_for("api.acl_grants") }}',
 				{
 					params: {
-						backend: '{{ backend }}',
+						backend: $scope.acl_backend,
 					},
 					headers: { 'X-From-UI': true }
 				})
@@ -80,10 +175,28 @@ app.controller('AdminCtrl', ['$scope', '$http', '$scrollspy', 'DTOptionsBuilder'
 					_.forEach(response.data, function(user) {
 						vm.grantAdd.backendUsers.push(user);
 					});
-				})
-				.finally(function () {
-					$scope.loadingMembers = false;
 				});
+			locals.push(l);
+
+			l = $http.get(
+				'{{ url_for("api.acl_groups") }}',
+				{
+					params: {
+						backend: $scope.acl_backend,
+					},
+					headers: { 'X-From-UI': true }
+				})
+				.then(function (response) {
+					_.forEach(response.data, function(group) {
+						group['id'] = '@'+group['id'];
+						vm.grantAdd.backendUsers.push(group);
+					});
+				});
+			locals.push(g);
+
+			$q.all(locals).finally(function() {
+				$scope.loadingMembers = false;
+			});
 		}
 	};
 
@@ -103,27 +216,29 @@ app.controller('AdminCtrl', ['$scope', '$http', '$scrollspy', 'DTOptionsBuilder'
 		submit.html('<i class="fa fa-fw fa-spinner fa-pulse" aria-hidden="true"></i>&nbsp;{{ _("Creating...") }}');
 		submit.attr('disabled', true);
 		$http({
-			url: form.attr('action'),
-			method: form.attr('method'),
-			params: {
-				username: $scope.auth_username,
-				password: $scope.auth_password,
-				backend: $scope.auth_backend,
-			},
+			url: $scope.url,
+			method: 'PUT',
+			params: $scope.httpParams(),
 			headers: { 'X-From-UI': true },
 		})
 		.catch(buiFail)
 		.then(function(response) {
 			notifAll(response.data);
-			$scope.auth_username = null;
-			$scope.auth_password = null;
-			$scope.auth_backend = "placeholder";
-			vm.userAdd.auth_backend.$setValidity('valid', false);
-			vm.userAdd.auth_username.$setUntouched();
-			vm.userAdd.auth_password.$setUntouched();
-			vm.userAdd.auth_password.$setPristine();
-			vm.userAdd.$setPristine();
-			_authentication();
+			// mandatory: we need to pass the response to the next function
+			return response;
+		})
+		.then($scope.httpCallback)
+		.then(function(response) {
+			// status 201 means the grant was created, any other status code means
+			// something went wrong (either critical or a warning)
+			if (response.status === 201) {
+				$scope.acl_backend = "placeholder";
+				$scope.name = "";
+				vm.grantAdd.name.$setPristine();
+				vm.grantAdd.name.$setUntouched();
+				vm.grantAdd.acl_backend.$setValidity('valid', ($scope.acl_backend != "placeholder"));
+				$('#create-grant-modal').modal('toggle');
+			}
 		})
 		.finally(function() {
 			submit.html(sav);
@@ -539,8 +654,40 @@ $('#perform-delete').on('click', function(e) {
 	$.each($('input[name=user_backend]'), function(i, elmt) {
 		var e = $(elmt);
 		if (e.is(':checked')) {
+			var user_id = $(e).data('id');
+			var backend = $(e).data('backend');
+			var user = _users[user_id];
+			if (user['roles'].indexOf('admin') !== -1) {
+				$.ajax({
+					url: "{{ url_for('api.acl_admins') }}",
+					data: {
+						memberName: user_id,
+						backendName: backend,
+					},
+					type: 'DELETE',
+					headers: { 'X-From-UI': true },
+				}).done(function(data) {
+					notifAll(data);
+				}).fail(buiFail);
+			}
+			if (user['roles'].indexOf('moderator') !== -1) {
+				$.ajax({
+					url: "{{ url_for('api.acl_moderators') }}",
+					data: {
+						memberName: user_id,
+						backendName: backend,
+					},
+					type: 'DELETE',
+					headers: { 'X-From-UI': true },
+				}).done(function(data) {
+					notifAll(data);
+				}).fail(buiFail);
+			}
 			var d = $.ajax({
-				url: "{{ url_for('api.acl_grants', name='') }}"+$(e).data('id')+"?backend="+$(e).data('backend'),
+				url: "{{ url_for('api.acl_grants', name='') }}"+user_id,
+				data: {
+					backend: backend,
+				},
 				type: 'DELETE',
 				headers: { 'X-From-UI': true },
 			}).done(function(data) {
@@ -614,7 +761,10 @@ $('#perform-group-delete').on('click', function(e) {
 		var e = $(elmt);
 		if (e.is(':checked')) {
 			var d = $.ajax({
-				url: "{{ url_for('api.acl_groups', name='') }}"+$(e).data('id')+"?backend="+$(e).data('backend'),
+				url: "{{ url_for('api.acl_groups', name='') }}"+$(e).data('id'),
+				data: {
+					backend: $(e).data('backend'),
+				},
 				type: 'DELETE',
 				headers: { 'X-From-UI': true },
 			}).done(function(data) {

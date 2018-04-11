@@ -96,7 +96,7 @@
               </div>
               <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">{{ _('Cancel') }}</button>
-                <button type="button" class="btn btn-info" data-dismiss="modal" id="perform-delete">{{ _('Confirm') }}</button>
+                <button type="button" class="btn btn-danger" data-dismiss="modal" id="perform-delete">{{ _('Confirm') }}</button>
               </div>
             </div>
           </div>
@@ -206,7 +206,7 @@
                     <div class="form-group" ng-if="mode == 'group'">
                       <label for="group-members" class="col-lg-2 control-label">{{ _('Group members') }}</label>
                       <div class="col-lg-6">
-                        <ui-select id="group-members" name="group-members" multiple ng-model="pctrl.grantAdd.groupMembers" ng-disabled="loadingMembers" style="width: 100%;" title="{{ _('Choose a person') }}">
+                        <ui-select id="group-members" name="group-members" multiple ng-model="pctrl.grantAdd.groupMembers" ng-disabled="$parent.loadingMembers" style="width: 100%;" title="{{ _('Choose a person') }}">
                           <ui-select-match placeholder="{{ _('Select person...') }}">{{ '{{$item.id}}' }}</ui-select-match>
                           <ui-select-choices repeat="person.id as person in pctrl.grantAdd.backendUsers | filter: $select.search">
                             <div ng-bind-html="person.id | highlight: $select.search"></div>
@@ -219,7 +219,7 @@
                         <div class="col-lg-3 col-lg-offset-2">
                           <div class="checkbox">
                             <label>
-                              <input type="checkbox" ng-model="isAdmin"> {{ _("Is Admin") }}
+                              <input type="checkbox" ng-model="$parent.isAdmin"> {{ _("Is Admin") }}
                             </label>
                           </div>
                         </div>
@@ -228,7 +228,7 @@
                         <div class="col-lg-3 col-lg-offset-2">
                           <div class="checkbox">
                           <label>
-                            <input type="checkbox" ng-model="isModerator"> {{ _("Is Moderator") }}
+                            <input type="checkbox" ng-model="$parent.isModerator"> {{ _("Is Moderator") }}
                           </label>
                           </div>
                         </div>
