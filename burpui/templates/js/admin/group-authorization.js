@@ -117,11 +117,11 @@ app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBu
 				method: method,
 				headers: { 'X-From-UI': true },
 			})
-			.catch(buiFail)
 			.then(function(response) {
 				$scope.orig.admin = $scope.isAdmin;
 				notifAll(response.data);
-			});
+			})
+			.catch(buiFail);
 			promises.push(p);
 		}
 		if ($scope.isModerator !== $scope.orig.moderator) {
@@ -136,11 +136,11 @@ app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBu
 				method: method,
 				headers: { 'X-From-UI': true },
 			})
-			.catch(buiFail)
 			.then(function(response) {
 				$scope.orig.moderator = $scope.isModerator;
 				notifAll(response.data);
-			});
+			})
+			.catch(buiFail);
 			promises.push(p);
 		}
 		if ($scope.grantValue != $scope.orig.grantValue) {
@@ -155,11 +155,11 @@ app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBu
 					'X-From-UI': true,
 				},
 			})
-			.catch(buiFail)
 			.then(function(response) {
 				$scope.orig.grantValue = $scope.grantValue;
 				notifAll(response.data);
-			});
+			})
+			.catch(buiFail);
 			promises.push(p);
 		}
 		if (removed.length > 0) {
@@ -174,13 +174,13 @@ app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBu
 					'X-From-UI': true,
 				},
 			})
-			.catch(buiFail)
-			.catch(function () {
-				vm.updateGroup.groupMembers = $scope.orig.groupMembers;
-			})
 			.then(function (response) {
 				$scope.orig.groupMembers = vm.updateGroup.groupMembers;
 				notifAll(response.data);
+			})
+			.catch(buiFail)
+			.catch(function () {
+				vm.updateGroup.groupMembers = $scope.orig.groupMembers;
 			});
 			promises.push(p);
 		}
@@ -196,13 +196,13 @@ app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBu
 					'X-From-UI': true,
 				},
 			})
-			.catch(buiFail)
-			.catch(function () {
-				vm.updateGroup.groupMembers = $scope.orig.groupMembers;
-			})
 			.then(function (response) {
 				$scope.orig.groupMembers = vm.updateGroup.groupMembers;
 				notifAll(response.data);
+			})
+			.catch(buiFail)
+			.catch(function () {
+				vm.updateGroup.groupMembers = $scope.orig.groupMembers;
 			});
 			promises.push(p);
 		}

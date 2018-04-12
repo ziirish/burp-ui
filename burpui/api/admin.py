@@ -213,6 +213,7 @@ class AclAdmins(Resource):
         }
         return ret
 
+    @api.disabled_on_demo()
     @api.acl_admin_required(message="Not allowed to add admin members")
     @ns.expect(parser)
     @ns.doc(
@@ -255,6 +256,7 @@ class AclAdmins(Resource):
         status = 201 if success else 200
         return [[code, message]], status
 
+    @api.disabled_on_demo()
     @api.acl_admin_required(message="Not allowed to remove admin members")
     @ns.expect(parser)
     @ns.doc(
@@ -395,6 +397,7 @@ class AclModerators(Resource):
         }
         return ret
 
+    @api.disabled_on_demo()
     @api.acl_admin_or_moderator_required(message="Not allowed to add moderator members")
     @ns.expect(parser)
     @ns.doc(
@@ -437,6 +440,7 @@ class AclModerators(Resource):
         status = 201 if success else 200
         return [[code, message]], status
 
+    @api.disabled_on_demo()
     @api.acl_admin_or_moderator_required(message="Not allowed to remove moderator members")
     @ns.expect(parser)
     @ns.doc(
@@ -479,6 +483,7 @@ class AclModerators(Resource):
         status = 201 if success else 200
         return [[code, message]], status
 
+    @api.disabled_on_demo()
     @api.acl_admin_or_moderator_required(message="Not allowed to update moderator grants")
     @ns.expect(parser_mod)
     @ns.doc(
@@ -579,6 +584,7 @@ class AclGroup(Resource):
             }
         return ret
 
+    @api.disabled_on_demo()
     @api.acl_admin_or_moderator_required(message="Not allowed to add member in group")
     @ns.expect(parser)
     @ns.doc(
@@ -627,6 +633,7 @@ class AclGroup(Resource):
             status = 201 if success else 200
         return ret, status
 
+    @api.disabled_on_demo()
     @api.acl_admin_or_moderator_required(message="Not allowed to remove member in group")
     @ns.expect(parser)
     @ns.doc(
