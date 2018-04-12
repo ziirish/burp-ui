@@ -40,8 +40,12 @@ group_fields = ns.model('Groups', {
     'members': fields.List(fields.String, required=True, description='Group members'),
     'backend': fields.String(required=True, description='Backend name'),
 })
+groups_fields = ns.model('GroupsFields', {
+    'name': fields.String(required=True, description='Group name'),
+    'inherit': fields.String(required=False, description='This group is inherited by'),
+})
 groups_list_fields = ns.model('GroupsList', {
-    'groups': fields.List(fields.String, required=True, description='Groups list'),
+    'groups': fields.List(fields.Nested(groups_fields), required=True, description='Groups list'),
 })
 group_members_fields = ns.model('GroupMembers', {
     'members': fields.List(fields.String, required=True, description='Group members'),
@@ -49,6 +53,7 @@ group_members_fields = ns.model('GroupMembers', {
 })
 is_moderator_fields = ns.model('IsModerator', {
     'moderator': fields.Boolean(required=True, description='Is the member a moderator'),
+    'inherit': fields.String(required=False, description='What provides this grant if inherited'),
 })
 moderator_members_fields = ns.model('ModeratorMembers', {
     'members': fields.List(fields.String, required=True, description='Moderator members'),
@@ -56,6 +61,7 @@ moderator_members_fields = ns.model('ModeratorMembers', {
 })
 is_admin_fields = ns.model('IsAdmin', {
     'admin': fields.Boolean(required=True, description='Is the member an admin'),
+    'inherit': fields.String(required=False, description='What provides this grant if inherited'),
 })
 admin_members_fields = ns.model('AdminMembers', {
     'members': fields.List(fields.String, required=True, description='Admin members'),
@@ -140,7 +146,8 @@ class AclIsAdmin(Resource):
     def get(self, member, backend=None):
         """Checks if a given member is admin"""
         if not backend:
-            return {'admin': meta_grants.is_admin(member)}
+            (ret, inh) = meta_grants.is_admin(member)
+            return {'admin': ret, 'inherit': inh}
         try:
             handler = getattr(bui, 'acl_handler')
         except AttributeError:
@@ -317,7 +324,8 @@ class AclIsModerator(Resource):
     def get(self, member, backend=None):
         """Checks if a given member is moderator"""
         if not backend:
-            return {'moderator': meta_grants.is_moderator(member)}
+            (ret, inh) = meta_grants.is_moderator(member)
+            return {'moderator': ret, 'inherit': inh}
         try:
             handler = getattr(bui, 'acl_handler')
         except AttributeError:
@@ -695,7 +703,7 @@ class AclGroupsOf(Resource):
 
         :returns: Groups
         """
-        return {'groups': meta_grants.get_member_groups(member)}
+        return {'groups': [{'name': name, 'inherit': inherit} for name, inherit in meta_grants.get_member_groups(member)]}
 
 
 @ns.route('/acl/groups',

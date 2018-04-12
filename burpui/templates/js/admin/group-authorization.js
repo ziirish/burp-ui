@@ -1,4 +1,5 @@
 {% import 'macros.html' as macros %}
+{% set gpname = "@"+group %}
 
 var _admin = function() {
 	// do nothing
@@ -20,6 +21,10 @@ app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBu
 	$scope.grantValue = '{{ _("Loading, please wait...") }}';
 	$scope.isLoading = true;
 	$scope.orig = {};
+	$scope.isAdmin = false;
+	$scope.isAdminEnabled = false;
+	$scope.isModerator = false;
+	$scope.isModeratorEnabled = false;
 	vm.updateGroup = {};
 	vm.updateGroup.backendUsers = [];
 
@@ -61,6 +66,19 @@ app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBu
 		});
 	_g_promises.push(g);
 
+	$http.get('{{ url_for("api.acl_is_admin", backend=backend, member=gpname) }}', { headers: { 'X-From-UI': true } })
+		.then(function (response) {
+			$scope.isAdmin = response.data.admin;
+			$scope.orig['admin'] = response.data.admin;
+			$scope.isAdminEnabled = true;
+		});
+	$http.get('{{ url_for("api.acl_is_moderator", backend=backend, member=gpname) }}', { headers: { 'X-From-UI': true } })
+		.then(function (response) {
+			$scope.isModerator = response.data.moderator;
+			$scope.orig['moderator'] = response.data.moderator;
+			$scope.isModeratorEnabled = true;
+		});
+
 	$q.all(_g_promises).finally(function () {
 		var _all = _.map(vm.updateGroup.backendUsers, 'id');
 		var missing = _.difference(vm.updateGroup.groupMembers, _all);
@@ -87,6 +105,44 @@ app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBu
 			submit.html(sav);
 			submit.attr('disabled', false);
 		};
+		if ($scope.isAdmin !== $scope.orig.admin) {
+			disableSubmit();
+			var url = '{{ url_for("api.acl_admins", backend=backend, member=gpname) }}';
+			var method = 'PUT';
+			if (!$scope.isAdmin) {
+				method = 'DELETE';
+			}
+			var p = $http({
+				url: url,
+				method: method,
+				headers: { 'X-From-UI': true },
+			})
+			.catch(buiFail)
+			.then(function(response) {
+				$scope.orig.admin = $scope.isAdmin;
+				notifAll(response.data);
+			});
+			promises.push(p);
+		}
+		if ($scope.isModerator !== $scope.orig.moderator) {
+			disableSubmit();
+			var url = '{{ url_for("api.acl_moderators", backend=backend, member=gpname) }}';
+			var method = 'PUT';
+			if (!$scope.isModerator) {
+				method = 'DELETE';
+			}
+			var p = $http({
+				url: url,
+				method: method,
+				headers: { 'X-From-UI': true },
+			})
+			.catch(buiFail)
+			.then(function(response) {
+				$scope.orig.moderator = $scope.isModerator;
+				notifAll(response.data);
+			});
+			promises.push(p);
+		}
 		if ($scope.grantValue != $scope.orig.grantValue) {
 			disableSubmit();
 			var p = $http({

@@ -246,8 +246,9 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
     def get_member_groups(self, member):
         groups = []
         for group in itervalues(self._groups):
-            if group.is_member(member) and group.name not in self._gp_hidden:
-                groups.append(group.name)
+            (ret, inh) = group.is_member(member)
+            if ret and group.name not in self._gp_hidden:
+                groups.append((group.name, inh))
         return groups
 
     def _extract_grants(self, username):
@@ -284,7 +285,8 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
                 # no grants need to be parsed for admins
                 if gname == self._gp_admin_name:
                     continue
-                if group.is_member(username) and gname != username:
+                (ret, _) = group.is_member(username)
+                if ret and gname != username:
                     __merge_grants_with(gname)
 
             self._parsed_grants.append(username)
@@ -341,13 +343,15 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
 
     def is_admin(self, username):
         """See :func:`burpui.misc.acl.interface.BUIacl.is_admin`"""
-        return self._gp_admin_name in self._groups and \
-            self._groups[self._gp_admin_name].is_member(username)
+        if self._gp_admin_name in self._groups:
+            return self._groups[self._gp_admin_name].is_member(username)
+        return False, None
 
     def is_moderator(self, username):
         """See :func:`burpui.misc.acl.interface.BUIacl.is_moderator`"""
-        return self._gp_moderator_name in self._groups and \
-            self._groups[self._gp_moderator_name].is_member(username)
+        if self._gp_moderator_name in self._groups:
+            return self._groups[self._gp_moderator_name].is_member(username)
+        return False, None
 
     def is_client_rw(self, username=None, client=None, server=None):
         """See :func:`burpui.misc.acl.interface.BUIacl.is_client_rw`"""
@@ -477,6 +481,7 @@ class BUIaclGroup(object):
     def __init__(self, name, members=None):
         self._name = name
         self._set_members(members)
+        self.has_subgroups = -1
 
     def _parse_members(self, members):
         # we support only lists
@@ -492,14 +497,30 @@ class BUIaclGroup(object):
     def add_members(self, new_members):
         new_members = self._parse_members(new_members)
         self._members = self._members | set(new_members)
+        # reset the flag
+        self.has_subgroups = -1
         return new_members
 
     def del_members(self, members_remove):
         members_remove = self._parse_members(members_remove)
         self._members = self._members - set(members_remove)
+        # reset the flag
+        self.has_subgroups = -1
 
     def is_member(self, member):
-        return member in self._members
+        inherit = None
+        ret = member in self._members
+        if not ret and (self.has_subgroups > 0 or self.has_subgroups == -1):
+            self.has_subgroups = 0
+            for mem in self.members:
+                if mem.startswith('@'):
+                    self.has_subgroups += 1
+                    if mem in meta_grants._groups:
+                        (ret, _) = meta_grants._groups[mem].is_member(member)
+                        if ret:
+                            inherit = mem
+                            break
+        return ret, inherit
 
     @property
     def name(self):

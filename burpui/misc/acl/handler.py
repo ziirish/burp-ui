@@ -110,11 +110,15 @@ class ACLhandler(BUIacl):
         for _, acl_engine in iteritems(self.loader.backends):
             func = getattr(acl_engine.acl, method)
             ret = func(*args, **kwargs)
+            if isinstance(ret, tuple):
+                (ret, _) = ret
             if ret:
                 break
         if not ret:
             func = getattr(meta_grants, method)
             ret = func(*args, **kwargs)
+            if isinstance(ret, tuple):
+                (ret, _) = ret
         return ret
 
     def is_admin(self, username=None):

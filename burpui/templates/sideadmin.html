@@ -2,7 +2,7 @@
           <div id="navbar-config">
             <h4>{{ _('Administration navigation') }}</h4>
             <ul class="nav nav-sidebar">
-              <li {% if authentications %}class="active"{% endif %}><a href="{{ url_for('view.admin_authentications') }}"><i class="fa fa-fw fa-id-card-o" aria-hidden="true"></i>&nbsp;{{ _('Authentication') }}</a></li>
-              <li {% if authorizations %}class="active"{% endif %}><a href="{{ url_for('view.admin_authorizations') }}"><i class="fa fa-fw fa-lock" aria-hidden="true"></i>&nbsp;{{ _('Authorization') }}</a></li>
+              <li {% if authentications or sessions or authentication %}class="active"{% endif %}><a href="{{ url_for('view.admin_authentications') }}"><i class="fa fa-fw fa-id-card-o" aria-hidden="true"></i>&nbsp;{{ _('Authentication') }}</a></li>
+              <li {% if authorizations or authorization %}class="active"{% endif %}><a href="{{ url_for('view.admin_authorizations') }}"><i class="fa fa-fw fa-lock" aria-hidden="true"></i>&nbsp;{{ _('Authorization') }}</a></li>
             </ul>
           </div>
