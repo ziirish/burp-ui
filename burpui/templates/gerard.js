@@ -154,6 +154,9 @@ var xhrErrorsHandler = function(xhr) {
 	} else if ('responseText' in xhr) {
 		notif(NOTIF_ERROR, xhr.responseText);
 		return true;
+	} else if ('data' in xhr) {
+		errorsHandler(xhr.data);
+		return true;
 	}
 	return false;
 };
