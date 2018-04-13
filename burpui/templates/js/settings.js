@@ -595,6 +595,11 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$timeout', '$scrollspy', 'DTOp
 		);
 	};
 	$scope.deleteFile = function() {
+		/* UX tweak: disable the submit button + change text */
+		submit = $('#btn-remove-file');
+		sav = submit.html();
+		submit.html('<i class="fa fa-fw fa-spinner fa-pulse" aria-hidden="true"></i>&nbsp;{{ _("Deleting...") }}');
+		submit.attr('disabled', true);
 		api = '{{ url_for("api.server_settings", server=server, conf=conf) }}';
 		$.ajax({
 			url: api,
@@ -609,9 +614,19 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$timeout', '$scrollspy', 'DTOp
 					document.location = '{{ url_for("view.settings", server=server) }}';
 				}, 1000);
 			}
+		})
+		.always(function() {
+			/* reset the submit button state */
+			submit.html(sav);
+			submit.attr('disabled', false);
 		});
 	};
 	$scope.deleteClient = function() {
+		/* UX tweak: disable the submit button + change text */
+		submit = $('#btn-remove-client');
+		sav = submit.html();
+		submit.html('<i class="fa fa-fw fa-spinner fa-pulse" aria-hidden="true"></i>&nbsp;{{ _("Deleting...") }}');
+		submit.attr('disabled', true);
 		api = '{{ url_for("api.client_settings", client=client, server=server) }}';
 		$.ajax({
 			url: api,
@@ -631,6 +646,11 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$timeout', '$scrollspy', 'DTOp
 					document.location = '{{ url_for("view.settings", server=server) }}';
 				}, 1000);
 			}
+		})
+		.always(function() {
+			/* reset the submit button state */
+			submit.html(sav);
+			submit.attr('disabled', false);
 		});
 	};
 	$scope.createClient = function(e) {

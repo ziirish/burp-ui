@@ -393,7 +393,7 @@
                     <div class="col-lg-6">
                       {% if client and not conf -%}
                       <div class="btn-group dropup text-right">
-                        <button type="button" class="btn btn-danger" ng-click="deleteClient()"><i class="fa fa-fw fa-trash" aria-hidden="true"></i>&nbsp;{{ _("Remove '%(client)s'", client=client) }}</button>
+                        <button type="button" class="btn btn-danger" id="btn-remove-client" ng-click="deleteClient()"><i class="fa fa-fw fa-trash" aria-hidden="true"></i>&nbsp;{{ _("Remove '%(client)s'", client=client) }}</button>
                         {% if not template -%}
                         <button class="btn btn-danger dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
                         <ul class="dropdown-menu browse">
@@ -404,7 +404,7 @@
                         {% endif -%}
                       </div>
                       {% elif conf -%}
-                      <button type="button" class="btn btn-danger" ng-click="deleteFile()"><i class="fa fa-fw fa-trash" aria-hidden="true"></i>{{ _("Remove file") }}</button>
+                      <button type="button" class="btn btn-danger" id="btn-remove-file" ng-click="deleteFile()"><i class="fa fa-fw fa-trash" aria-hidden="true"></i>{{ _("Remove file") }}</button>
                       {% endif -%}
                     </div>
                   </div>
