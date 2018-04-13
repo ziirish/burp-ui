@@ -23,8 +23,6 @@ from .desc import __version__, __release__
 class BUIConfig(dict):
     """Custom config parser"""
     logger = logging.getLogger('burp-ui')
-    delta = datetime.timedelta(seconds=30)
-    last = datetime.datetime.now() - delta
     mtime = 0
 
     def __init__(self, config=None, explain=False, defaults=None):
@@ -89,8 +87,7 @@ class BUIConfig(dict):
     @property
     def options(self):
         """ConfigObj object"""
-        if (datetime.datetime.now() - self.last) > self.delta:
-            self._refresh()
+        self._refresh()
         return self.conf
 
     @property
@@ -180,13 +177,12 @@ class BUIConfig(dict):
 
     def changed(self, id):
         """Check if the conf has changed"""
-        if (datetime.datetime.now() - self.last) > self.delta:
-            self._refresh()
+        # don't use delta for cases where we run several gunicorn workers
+        self._refresh()
         return id != self.mtime
 
     def _refresh(self, force=False):
         """Refresh conf"""
-        self.last = datetime.datetime.now()
         mtime = os.path.getmtime(self.conffile)
         if mtime != self.mtime or force:
             self.logger.debug('Configuration changed')
