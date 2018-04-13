@@ -53,6 +53,11 @@ var _bytes_human_readable = function(bytes, si) {
 	return bytes.toFixed(1)+' '+units[u];
 };
 
+// NOTE: only escapes a " if it's not already escaped
+function escapeDoubleQuotes(str) {
+	return str.replace(/\\([\s\S])|(")/g,"\\$1$2"); // thanks @slevithan!
+}
+
 var notifAll = function(messages, forward) {
 	forward = (typeof forward === "undefined") ? false : forward;
 	if (messages instanceof Array && messages.length > 0) {
@@ -153,6 +158,9 @@ var xhrErrorsHandler = function(xhr) {
 		return errorsHandler(json);
 	} else if ('responseText' in xhr) {
 		notif(NOTIF_ERROR, xhr.responseText);
+		return true;
+	} else if ('data' in xhr) {
+		errorsHandler(xhr.data);
 		return true;
 	}
 	return false;
@@ -373,6 +381,8 @@ $('#input-client').typeahead({
 {% include "js/admin-authorizations.js" %}
 	{% elif authentications -%}
 {% include "js/admin-authentications.js" %}
+	{% elif backends -%}
+{% include "js/admin-backends.js" %}
 	{% endif -%}
 {% endif -%}
 

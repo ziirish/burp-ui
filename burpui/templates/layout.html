@@ -53,7 +53,7 @@
 
     <div class="container-fluid">
       <div class="row" {% if ng_controller %}ng-controller="{{ ng_controller }} as pctrl"{% endif %}>
-        {% if not live and not login and not about and not authentication and not authorization and not sessions -%}
+        {% if not live and not login and not about -%}
         {% include "sidebar.html" %}
         {% else -%}
         {% set no_sidebar = True %}

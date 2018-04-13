@@ -177,6 +177,26 @@ def admin_group_authorization(group):
     return render_template('admin/group-authorization.html', admin=True, authorization=True, group=group, backend=backend, ng_controller='AdminCtrl')
 
 
+@view.route('/admin/backend/<backend>')
+@login_required
+def admin_backend(backend):
+    # Only the admin can access this page
+    if not current_user.is_anonymous and not current_user.acl.is_admin() and \
+            not current_user.acl.is_moderator():
+        abort(403)
+    return render_template('admin/backend.html', admin=True, onebackend=True, backend=backend, ng_controller='AdminCtrl')
+
+
+@view.route('/admin/backends')
+@login_required
+def admin_backends():
+    # Only the admin can access this page
+    if not current_user.is_anonymous and not current_user.acl.is_admin() and \
+            not current_user.acl.is_moderator():
+        abort(403)
+    return render_template('admin-backends.html', admin=True, backends=True, ng_controller='AdminCtrl')
+
+
 @view.route('/admin/authorizations')
 @login_required
 def admin_authorizations():

@@ -81,16 +81,16 @@ app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBu
 				method: method,
 				headers: { 'X-From-UI': true },
 			})
-			.catch(buiFail)
 			.then(function(response) {
 				$scope.orig.admin = $scope.isAdmin;
 				notifAll(response.data);
-			});
+			})
+			.catch(buiFail);
 			promises.push(p);
 		}
 		if ($scope.isModerator !== $scope.orig.moderator) {
 			disableSubmit();
-			var url = '{{ url_for("api.acl_moderators", backend=backend, member=grant) }}';
+			var url = '{{ url_for("api.acl_moderator", backend=backend, member=grant) }}';
 			var method = 'PUT';
 			if (!$scope.isModerator) {
 				method = 'DELETE';
@@ -100,11 +100,11 @@ app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBu
 				method: method,
 				headers: { 'X-From-UI': true },
 			})
-			.catch(buiFail)
 			.then(function(response) {
 				$scope.orig.moderator = $scope.isModerator;
 				notifAll(response.data);
-			});
+			})
+			.catch(buiFail);
 			promises.push(p);
 		}
 		if ($scope.grantValue != $scope.orig.grantValue) {
@@ -119,11 +119,11 @@ app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBu
 					'X-From-UI': true,
 				},
 			})
-			.catch(buiFail)
 			.then(function(response) {
 				$scope.orig.grantValue = $scope.grantValue;
 				notifAll(response.data);
-			});
+			})
+			.catch(buiFail);
 			promises.push(p);
 		}
 		$q.all(promises).finally(function() { enableSubmit(); });

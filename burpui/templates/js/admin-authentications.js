@@ -101,16 +101,16 @@ var _users_table = $('#table-users').DataTable( {
 	},
 	columns: [
 		{
-			data: null,
+			data: 'id',
 			render: function ( data, type, row ) {
-				return data.id;
+				return data;
 			}
 		},
 		{
-			data: null,
+			data: 'backends',
 			render: function ( data, type, row ) {
 				var ret = '';
-				$.each(data.backends, function(i, back) {
+				$.each(data, function(i, back) {
 					ret += '<span class="label label-default">'+back+'</span>&nbsp;';
 				});
 				return ret;
@@ -175,8 +175,7 @@ var _admin = function() {
 	_authentication();
 };
 
-{{ macros.page_length('#table-list-clients') }}
-{{ macros.page_length('#table-list-templates') }}
+{{ macros.page_length('#table-users') }}
 
 $( document ).ready(function () {
 	$('#config-nav a').click(function (e) {
