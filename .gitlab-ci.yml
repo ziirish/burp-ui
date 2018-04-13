@@ -1,5 +1,5 @@
-before_script:
-  - git submodule update --init
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
 
 stages:
   - test
@@ -27,18 +27,6 @@ test:py2.7:
   - docker
   except:
   - tags
-
-#test:py3.4:
-#  stage: test
-#  image: python:3.4
-#  script:
-#  - pip install tox
-#  - tox -e py34
-#  tags:
-#  - docker
-#  except:
-#  - tags
-#  - demo
 
 test:py3.6:
   stage: test
