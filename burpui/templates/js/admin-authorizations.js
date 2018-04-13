@@ -104,7 +104,7 @@ app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBu
 		}
 		if ($scope.isModerator) {
 			var l = $http({
-				url: '{{ url_for("api.acl_moderators") }}',
+				url: '{{ url_for("api.acl_moderator") }}',
 				method: 'PUT',
 			  params: {
 					memberName: '@'+$scope.name,
@@ -167,7 +167,7 @@ app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBu
 		}
 		if ($scope.isModerator) {
 			var l = $http({
-				url: '{{ url_for("api.acl_moderators") }}',
+				url: '{{ url_for("api.acl_moderator") }}',
 				method: 'PUT',
 			  params: {
 					memberName: $scope.name,
@@ -300,10 +300,22 @@ var _groups_table = $('#table-groups').DataTable( {
 		if (data.members.indexOf(_me.name) !== -1) {
 			row.className += ' success';
 		}
+		if (data.id === 'moderator') {
+			row.className += ' warning';
+		}
 	},
 	columns: [
 		{
 			data: 'id',
+			render: function ( data, type, row ) {
+				if (type === 'sort') {
+					if (data === 'moderator') {
+						// make the 'moderator' group appear last
+						return 'ZZZZZZZZZZZZZZZZZZZZZZZZZZZ';
+					}
+				}
+				return data;
+			},
 		},
 		{
 			data: 'backends',
@@ -327,11 +339,11 @@ var _groups_table = $('#table-groups').DataTable( {
 				var ret = '';
 				$.each(data.roles, function(i, role) {
 					inh = _groups[data.id][role+'_by'];
-					if (inh) {
-						ret += '<span data-toggle="tooltip" data-placement="auto top" title=\'{{ _("Inherited by: ") }}'+inh+'\' data-html="true">';
+					if (inh.length > 0) {
+						ret += '<span data-toggle="tooltip" data-placement="auto top" title=\'{{ _("Inherited by: ") }}'+inh.join(', ')+'\' data-html="true">';
 					}
-					ret += '<span class="label label-warning">'+(inh ? '<em>' : '')+role+(inh ? '</em>' : '')+'</span>';
-					if (inh) {
+					ret += '<span class="label label-warning">'+(inh.length > 0 ? '<em>' : '')+role+(inh.length > 0 ? '</em>' : '')+'</span>';
+					if (inh.length > 0) {
 						ret += '</span>';
 					}
 					ret += '&nbsp;';
@@ -367,7 +379,7 @@ var _groups_table = $('#table-groups').DataTable( {
 			data: null,
 			orderable: false,
 			render: function ( data, type, row ) {
-				return '<button data-member="'+data.id+'" class="btn btn-xs btn-danger btn-delete-group" title="{{ _("Remove") }}"><i class="fa fa-trash" aria-hidden="true"></i></button>&nbsp;<button data-member="'+data.id+'" class="btn btn-xs btn-info btn-edit-group" title="{{ _("Edit") }}"><i class="fa fa-pencil" aria-hidden="true"></i></button>';
+				return '<button data-member="'+data.id+'" class="btn btn-xs btn-danger btn-delete-group" title="{{ _("Remove") }}"'+(data.id === 'moderator' ? 'disabled' : '')+'><i class="fa fa-trash" aria-hidden="true"></i></button>&nbsp;<button data-member="'+data.id+'" class="btn btn-xs btn-info btn-edit-group" title="{{ _("Edit") }}"><i class="fa fa-pencil" aria-hidden="true"></i></button>';
 			}
 		},
 	],
@@ -434,11 +446,11 @@ var _users_table = $('#table-users').DataTable( {
 				var ret = '';
 				$.each(data.roles, function(i, role) {
 					inh = _users[data.id][role+'_by'];
-					if (inh) {
-						ret += '<span data-toggle="tooltip" data-placement="auto top" title=\'{{ _("Inherited by: ") }}'+inh+'\' data-html="true">';
+					if (inh.length > 0) {
+						ret += '<span data-toggle="tooltip" data-placement="auto top" title=\'{{ _("Inherited by: ") }}'+inh.join(', ')+'\' data-html="true">';
 					}
-					ret += '<span class="label label-warning">'+(inh ? '<em>' : '')+role+(inh ? '</em>' : '')+'</span>';
-					if (inh) {
+					ret += '<span class="label label-warning">'+(inh.length > 0 ? '<em>' : '')+role+(inh.length > 0 ? '</em>' : '')+'</span>';
+					if (inh.length > 0) {
 						ret += '</span>';
 					}
 					ret += '&nbsp;';
@@ -459,11 +471,11 @@ var _users_table = $('#table-users').DataTable( {
 				var ret = '';
 				$.each(data, function(i, group) {
 					var inh = group.inherit;
-					if (inh) {
-						ret += '<span data-toggle="tooltip" data-placement="auto top" title=\'{{ _("Inherited by: ") }}'+inh+'\' data-html="true">';
+					if (inh.length > 0) {
+						ret += '<span data-toggle="tooltip" data-placement="auto top" title=\'{{ _("Inherited by: ") }}'+inh.join(', ')+'\' data-html="true">';
 					}
-					ret += '<span class="label label-primary">'+(inh ? '<em>' : '')+group.name+(inh ? '</em>' : '')+'</span>';
-					if (inh) {
+					ret += '<span class="label label-primary">'+(inh.length > 0 ? '<em>' : '')+group.name+(inh.length > 0 ? '</em>' : '')+'</span>';
+					if (inh.length > 0) {
 						ret += '</span>';
 					}
 					ret += '&nbsp;';
@@ -544,8 +556,8 @@ var _authorization_users = function() {
 					backends: [user.backend],
 					roles: [],
 					groups: [],
-					admin_by: null,
-					moderator_by: null,
+					admin_by: [],
+					moderator_by: [],
 					grants: [user.grant],
 					raw: [user],
 				};
@@ -615,6 +627,7 @@ var _authorization_groups = function() {
 	var __groupnames = [];
 	var __top_promises = [];
 	var __promises = [];
+	var redraw = false;
 	var t = $.getJSON('{{ url_for("api.acl_groups") }}').done(function (groups) {
 		$.each(groups, function(i, group) {
 			__groupnames.push(group.id);
@@ -634,8 +647,8 @@ var _authorization_groups = function() {
 					id: group.id,
 					backends: [group.backend],
 					roles: [],
-					admin_by: null,
-					moderator_by: null,
+					admin_by: [],
+					moderator_by: [],
 					members: group.members,
 					grants: [group.grant],
 					raw: [group],
@@ -656,8 +669,6 @@ var _authorization_groups = function() {
 				__promises.push(p);
 			}
 		});
-		__top_promises.push(t);
-		var redraw = false;
 		_groups_array = [];
 		$.each(_groups, function(key, value) {
 			if (__groupnames.indexOf(key) == -1) {
@@ -667,30 +678,63 @@ var _authorization_groups = function() {
 				_groups_array.push(value);
 			}
 		});
-		if (redraw) {
-			$.when.apply( $, __globals_promises ).always(function() {
-				$.when.apply( $, __promises ).always(function() {
-					_groups_table.clear();
-					_groups_table.rows.add(_groups_array).draw();
-					_groups_table.fixedHeader.adjust();
-					$('#waiting-group-container').hide();
-					$('#table-groups-container').show();
-				});
-			});
+	});
+	__top_promises.push(t);
+	t = $.getJSON('{{ url_for("api.acl_moderators") }}').done(function (moderators) {
+		if ('moderator' in _groups) {
+			delete _groups['moderator'];
 		}
-		$.when.apply( $, __top_promises ).done(function() {
+		$.each(moderators, function(i, moderator) {
+			__groupnames.push('moderator');
+			if (_groups['moderator']) {
+				if (_groups['moderator']['backends'].indexOf(moderator.backend) === -1) {
+					_groups['moderator']['backends'].push(moderator.backend);
+				}
+				if (_groups['moderator']['grants'].indexOf(moderator.grant) === -1) {
+					_groups['moderator']['grants'].push(moderator.grant);
+				}
+				if (_groups['moderator']['raw'].indexOf(moderator) === -1) {
+					_groups['moderator']['raw'].push(moderator);
+				}
+				_groups['moderator']['members'] = _.uniq(_.concat(_groups['moderator']['members'], moderator.members));
+			} else {
+				_groups['moderator'] = {
+					id: 'moderator',
+					backends: [moderator.backend],
+					roles: [],
+					admin_by: [],
+					moderator_by: [],
+					members: moderator.members,
+					grants: [moderator.grant],
+					raw: [moderator],
+				};
+			}
+		});
+	});
+	__top_promises.push(t);
+	if (redraw) {
+		$.when.apply( $, __globals_promises ).always(function() {
 			$.when.apply( $, __promises ).always(function() {
-				_groups_array = [];
-				$.each(_groups, function(key, value) {
-					_groups_array.push(value);
-				});
-				$.when.apply( $, __globals_promises ).always(function() {
-					_groups_table.clear();
-					_groups_table.rows.add(_groups_array).draw();
-					_groups_table.fixedHeader.adjust();
-					$('#waiting-group-container').hide();
-					$('#table-groups-container').show();
-				});
+				_groups_table.clear();
+				_groups_table.rows.add(_groups_array).draw();
+				_groups_table.fixedHeader.adjust();
+				$('#waiting-group-container').hide();
+				$('#table-groups-container').show();
+			});
+		});
+	}
+	$.when.apply( $, __top_promises ).done(function() {
+		$.when.apply( $, __promises ).always(function() {
+			_groups_array = [];
+			$.each(_groups, function(key, value) {
+				_groups_array.push(value);
+			});
+			$.when.apply( $, __globals_promises ).always(function() {
+				_groups_table.clear();
+				_groups_table.rows.add(_groups_array).draw();
+				_groups_table.fixedHeader.adjust();
+				$('#waiting-group-container').hide();
+				$('#table-groups-container').show();
 			});
 		});
 	});
@@ -701,8 +745,8 @@ var _admin = function() {
 	_authorization_groups();
 };
 
-{{ macros.page_length('#table-list-clients') }}
-{{ macros.page_length('#table-list-templates') }}
+{{ macros.page_length('#table-users') }}
+{{ macros.page_length('#table-groups') }}
 
 $( document ).ready(function () {
 	$('#config-nav a').click(function (e) {
@@ -772,7 +816,7 @@ $('#perform-delete').on('click', function(e) {
 			}
 			if (user['roles'].indexOf('moderator') !== -1) {
 				$.ajax({
-					url: "{{ url_for('api.acl_moderators') }}",
+					url: "{{ url_for('api.acl_moderator') }}",
 					data: {
 						memberName: user_id,
 						backendName: backend,

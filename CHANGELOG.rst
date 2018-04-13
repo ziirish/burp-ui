@@ -18,6 +18,7 @@ Current
 - Add: `support new burp pair options <https://git.ziirish.me/ziirish/burp-ui/issues/220>`_
 - Add: `support new reset list (:=) syntax <https://git.ziirish.me/ziirish/burp-ui/issues/223>`_
 - Add: `new websocket server <https://git.ziirish.me/ziirish/burp-ui/issues/224>`_
+- Add: `new Administration panel <https://git.ziirish.me/ziirish/burp-ui/issues/222>`_
 - Improvement: `better ACL engine <https://git.ziirish.me/ziirish/burp-ui/issues/221>`_
 - Fix: issue `#213 <https://git.ziirish.me/ziirish/burp-ui/issues/213>`_
 - Fix: issue `#225 <https://git.ziirish.me/ziirish/burp-ui/issues/225>`_

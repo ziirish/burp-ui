@@ -5,7 +5,7 @@ from ...utils import NOTIF_OK, NOTIF_WARN, NOTIF_ERROR
 
 
 class ACLloader(BUIaclLoader):
-    """See :class:`burpui.misc.acl.interface.BUIaclLoader`"""
+    """Uses the Burp-UI configuration file to load its rules"""
     section = name = 'BASIC:ACL'
     priority = 100
 

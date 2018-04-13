@@ -507,20 +507,29 @@ class BUIaclGroup(object):
         # reset the flag
         self.has_subgroups = -1
 
-    def is_member(self, member):
-        inherit = None
+    def is_member(self, member, parent=None):
+        inherit = set()
         ret = member in self._members
         if not ret and (self.has_subgroups > 0 or self.has_subgroups == -1):
             self.has_subgroups = 0
             for mem in self.members:
+                # avoid infinite loop with mutual inheritance
+                if parent and mem in parent:
+                    continue
                 if mem.startswith('@'):
                     self.has_subgroups += 1
                     if mem in meta_grants._groups:
-                        (ret, _) = meta_grants._groups[mem].is_member(member)
+                        if parent:
+                            parent.append(mem)
+                        else:
+                            parent = [mem]
+                        (ret, inh2) = meta_grants._groups[mem].is_member(member, parent=parent)
                         if ret:
-                            inherit = mem
-                            break
-        return ret, inherit
+                            for subinh in inh2:
+                                inherit.add(subinh)
+                            inherit.add(mem)
+                            # no break, we may have other inheritance at the level
+        return ret, list(inherit)
 
     @property
     def name(self):

@@ -90,7 +90,7 @@ app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBu
 		}
 		if ($scope.isModerator !== $scope.orig.moderator) {
 			disableSubmit();
-			var url = '{{ url_for("api.acl_moderators", backend=backend, member=grant) }}';
+			var url = '{{ url_for("api.acl_moderator", backend=backend, member=grant) }}';
 			var method = 'PUT';
 			if (!$scope.isModerator) {
 				method = 'DELETE';

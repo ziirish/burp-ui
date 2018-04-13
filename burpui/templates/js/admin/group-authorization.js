@@ -28,7 +28,12 @@ app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBu
 	vm.updateGroup = {};
 	vm.updateGroup.backendUsers = [];
 
-	var g = $http.get('{{ url_for("api.acl_group_members", backend=backend, name=group) }}', { headers: { 'X-From-UI': true } })
+	{% if group != 'moderator' -%}
+	var url = '{{ url_for("api.acl_group_members", backend=backend, name=group) }}';
+	{% else -%}
+	var url = '{{ url_for("api.acl_moderator", backend=backend) }}';
+	{% endif -%}
+	var g = $http.get(url, { headers: { 'X-From-UI': true } })
 		.then(function (response) {
 			var content = '';
 			try {
@@ -66,6 +71,7 @@ app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBu
 		});
 	_g_promises.push(g);
 
+	{% if group != 'moderator' -%}
 	$http.get('{{ url_for("api.acl_is_admin", backend=backend, member=gpname) }}', { headers: { 'X-From-UI': true } })
 		.then(function (response) {
 			$scope.isAdmin = response.data.admin;
@@ -78,6 +84,7 @@ app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBu
 			$scope.orig['moderator'] = response.data.moderator;
 			$scope.isModeratorEnabled = true;
 		});
+	{% endif -%}
 
 	$q.all(_g_promises).finally(function () {
 		var _all = _.map(vm.updateGroup.backendUsers, 'id');
@@ -105,6 +112,7 @@ app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBu
 			submit.html(sav);
 			submit.attr('disabled', false);
 		};
+		{% if group != 'moderator' -%}
 		if ($scope.isAdmin !== $scope.orig.admin) {
 			disableSubmit();
 			var url = '{{ url_for("api.acl_admins", backend=backend, member=gpname) }}';
@@ -126,7 +134,7 @@ app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBu
 		}
 		if ($scope.isModerator !== $scope.orig.moderator) {
 			disableSubmit();
-			var url = '{{ url_for("api.acl_moderators", backend=backend, member=gpname) }}';
+			var url = '{{ url_for("api.acl_moderator", backend=backend, member=gpname) }}';
 			var method = 'PUT';
 			if (!$scope.isModerator) {
 				method = 'DELETE';
@@ -143,10 +151,16 @@ app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBu
 			.catch(buiFail);
 			promises.push(p);
 		}
+		{% endif -%}
 		if ($scope.grantValue != $scope.orig.grantValue) {
 			disableSubmit();
+			{% if group != 'moderator' -%}
+			var url = '{{ url_for("api.acl_groups", backend=backend, name=group) }}';
+			{% else -%}
+			var url = '{{ url_for("api.acl_moderator", backend=backend) }}';
+			{% endif -%}
 			var p = $http({
-				url: '{{ url_for("api.acl_groups", backend=backend, name=group) }}',
+				url: url,
 				method: 'POST',
 				data: {
 					grant: $scope.grantValue ? JSON.stringify(JSON.parse($scope.grantValue)) : "", // remove indentation
@@ -164,8 +178,13 @@ app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBu
 		}
 		if (removed.length > 0) {
 			disableSubmit();
+			{% if group != 'moderator' -%}
+			var url = '{{ url_for("api.acl_group_members", backend=backend, name=group) }}';
+			{% else -%}
+			var url = '{{ url_for("api.acl_moderator", backend=backend) }}';
+			{% endif -%}
 			var p = $http({
-				url: '{{ url_for("api.acl_group_members", backend=backend, name=group) }}',
+				url: url,
 				method: 'DELETE',
 				params: {
 					memberNames: removed,
@@ -186,8 +205,13 @@ app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBu
 		}
 		if (added.length > 0) {
 			disableSubmit();
+			{% if group != 'moderator' -%}
+			var url = '{{ url_for("api.acl_group_members", backend=backend, name=group) }}';
+			{% else -%}
+			var url = '{{ url_for("api.acl_moderator", backend=backend) }}';
+			{% endif -%}
 			var p = $http({
-				url: '{{ url_for("api.acl_group_members", backend=backend, name=group) }}',
+				url: url,
 				method: 'PUT',
 				data: {
 					memberNames: added,

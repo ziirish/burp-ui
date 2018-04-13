@@ -42,7 +42,7 @@ group_fields = ns.model('Groups', {
 })
 groups_fields = ns.model('GroupsFields', {
     'name': fields.String(required=True, description='Group name'),
-    'inherit': fields.String(required=False, description='This group is inherited by'),
+    'inherit': fields.List(fields.String, required=False, description='This group is inherited by'),
 })
 groups_list_fields = ns.model('GroupsList', {
     'groups': fields.List(fields.Nested(groups_fields), required=True, description='Groups list'),
@@ -53,15 +53,20 @@ group_members_fields = ns.model('GroupMembers', {
 })
 is_moderator_fields = ns.model('IsModerator', {
     'moderator': fields.Boolean(required=True, description='Is the member a moderator'),
-    'inherit': fields.String(required=False, description='What provides this grant if inherited'),
+    'inherit': fields.List(fields.String, required=False, description='What provides this grant if inherited'),
 })
 moderator_members_fields = ns.model('ModeratorMembers', {
     'members': fields.List(fields.String, required=True, description='Moderator members'),
     'grant': fields.String(required=True, description='Moderator grant content'),
 })
+moderators_fields = ns.model('Moderators', {
+    'members': fields.List(fields.String, required=True, description='Moderator members'),
+    'grant': fields.String(required=True, description='Moderator grant content'),
+    'backend': fields.String(required=True, description='Backend name'),
+})
 is_admin_fields = ns.model('IsAdmin', {
     'admin': fields.Boolean(required=True, description='Is the member an admin'),
-    'inherit': fields.String(required=False, description='What provides this grant if inherited'),
+    'inherit': fields.List(fields.String, required=False, description='What provides this grant if inherited'),
 })
 admin_members_fields = ns.model('AdminMembers', {
     'members': fields.List(fields.String, required=True, description='Admin members'),
@@ -78,6 +83,7 @@ session_fields = ns.model('Sessions', {
 })
 acl_backend_fields = ns.model('AclBackends', {
     'name': fields.String(required=True, description='Backend name'),
+    'description': fields.String(required=True, description='Backend description'),
     'add_grant': fields.Boolean(required=False, default=False, description='Support grant creation'),
     'mod_grant': fields.Boolean(required=False, default=False, description='Support grant edition'),
     'del_grant': fields.Boolean(required=False, default=False, description='Support grant deletion'),
@@ -341,29 +347,79 @@ class AclIsModerator(Resource):
         return {'moderator': member in loader.moderators}
 
 
+@ns.route('/acl/moderators',
+          '/acl/<backend>/moderators',
+          endpoint='acl_moderators')
+@ns.doc(
+    params={
+        'backend': 'Backend name',
+    }
+)
+class AclModerators(Resource):
+    """The :class:`burpui.api.admin.AclModerators` resource allows you to
+    retrieve a list of moderators.
+
+    This resource is part of the :mod:`burpui.api.admin` module.
+    """
+
+    @api.acl_admin_or_moderator_required(message="Not allowed to view groups list")
+    @ns.marshal_list_with(moderators_fields, code=200, description='Success')
+    @ns.doc(
+        responses={
+            403: 'Insufficient permissions',
+            404: 'No backend found',
+        },
+    )
+    def get(self, name=None, backend=None):
+        """Returns a list of moderators
+
+        **GET** method provided by the webservice.
+
+        :returns: Moderators
+        """
+        try:
+            handler = getattr(bui, 'acl_handler')
+        except AttributeError:
+            handler = None
+
+        if not handler or len(handler.backends) == 0:
+            self.abort(404, "No acl backend found")
+        ret = []
+        for _, loader in iteritems(handler.backends):
+            append = {
+                'grant': loader.moderator,
+                'members': loader.moderators,
+                'backend': loader.name
+            }
+            if (backend and backend == append['backend']) or backend is None:
+                return [append]
+            ret.append(append)
+        return ret
+
+
 @ns.route('/acl/moderator',
           '/acl/<backend>/moderator',
           '/acl/<backend>/moderator/<member>',
-          endpoint='acl_moderators')
+          endpoint='acl_moderator')
 @ns.doc(
     params={
         'backend': 'ACL backend',
         'member': 'Moderator member',
     }
 )
-class AclModerators(Resource):
-    """The :class:`burpui.api.admin.AclModerators` resource allows you to
+class AclModerator(Resource):
+    """The :class:`burpui.api.admin.AclModerator` resource allows you to
     retrieve a list of moderators and add/delete them if your
     acl backend support those actions.
 
     This resource is part of the :mod:`burpui.api.admin` module.
     """
     parser = ns.parser()
-    parser.add_argument('memberName', required=False, help='Moderator member')
+    parser.add_argument('memberNames', required=False, help='Moderator members', action='append')
     parser.add_argument('backendName', required=False, help='Backend name')
 
     parser_mod = ns.parser()
-    parser_mod.add_argument('grants', required=False, help='Moderator grants', location='values')
+    parser_mod.add_argument('grant', required=False, help='Moderator grants')
 
     @api.acl_admin_or_moderator_required(message="Not allowed to view moderators list")
     @ns.marshal_with(moderator_members_fields, code=200, description='Success')
@@ -425,7 +481,7 @@ class AclModerators(Resource):
 
         loader = handler.backends[backend]
 
-        member = member or args['memberName']
+        members = [member] if member else (args['memberNames'] or [])
 
         if loader.add_moderator is False:
             self.abort(
@@ -434,11 +490,15 @@ class AclModerators(Resource):
                 "".format(backend)
             )
 
-        success, message, code = loader.add_moderator(
-            member
-        )
-        status = 201 if success else 200
-        return [[code, message]], status
+        ret = []
+        status = 200
+        for member in members:
+            success, message, code = loader.add_moderator(
+                member
+            )
+            ret.append([code, message])
+            status = 201 if success else 200
+        return ret, status
 
     @api.disabled_on_demo()
     @api.acl_admin_or_moderator_required(message="Not allowed to remove moderator members")
@@ -468,7 +528,7 @@ class AclModerators(Resource):
 
         loader = handler.backends[backend]
 
-        member = member or args['memberName']
+        members = [member] if member else (args['memberNames'] or [])
 
         if loader.del_moderator is False:
             self.abort(
@@ -477,11 +537,15 @@ class AclModerators(Resource):
                 "".format(backend)
             )
 
-        success, message, code = loader.del_moderator(
-            member
-        )
-        status = 201 if success else 200
-        return [[code, message]], status
+        ret = []
+        status = 200
+        for member in members:
+            success, message, code = loader.del_moderator(
+                member
+            )
+            ret.append([code, message])
+            status = 201 if success else 200
+        return ret, status
 
     @api.disabled_on_demo()
     @api.acl_admin_or_moderator_required(message="Not allowed to update moderator grants")
@@ -510,7 +574,7 @@ class AclModerators(Resource):
 
         loader = handler.backends[backend]
 
-        grants = args['grants']
+        grants = args['grant']
 
         if loader.mod_moderator is False:
             self.abort(
@@ -1140,10 +1204,12 @@ class AclBackend(Resource):
             self.abort(404, "No authentication backend found")
         if backend not in handler.backends:
             self.abort(404, "ACL backend {} not found".format(backend))
+        loader = handler.backends[backend]
         back = {}
         back['name'] = backend
+        back['description'] = loader.__doc__
         for method in ['add_grant', 'del_grant', 'mod_grant', 'add_group', 'del_group', 'mod_group', 'add_group_member', 'del_group_member', 'add_moderator', 'del_moderator', 'mod_moderator', 'add_admin', 'del_admin']:
-            back[method] = getattr(handler.backends[backend], method, False) is not False
+            back[method] = getattr(loader, method, False) is not False
 
         return back
 
@@ -1182,6 +1248,7 @@ class AclBackends(Resource):
         for name, backend in iteritems(handler.backends):
             back = {}
             back['name'] = name
+            back['description'] = backend.__doc__
             for method in ['add_grant', 'del_grant', 'mod_grant', 'add_group', 'del_group', 'mod_group', 'add_group_member', 'del_group_member', 'add_moderator', 'del_moderator', 'mod_moderator', 'add_admin', 'del_admin']:
                 back[method] = getattr(backend, method, False) is not False
             ret.append(back)
