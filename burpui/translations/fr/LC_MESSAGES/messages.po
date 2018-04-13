@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2018-01-12 16:15+0100\n"
+"POT-Creation-Date: 2018-04-13 17:37+0200\n"
 "PO-Revision-Date: 2016-08-25 15:19+0200\n"
 "Last-Translator: Ziirish <hi+burpui@ziirish.me>\n"
 "Language: fr\n"
@@ -18,20 +18,24 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.5.1\n"
 
-#: burpui/app.py:708
+#: burpui/app.py:373
 msgid "Please log in to access this page."
 msgstr "Veuillez vous authentifier pour accéder à cette page."
 
-#: burpui/app.py:711
+#: burpui/app.py:376
 msgid "Please reauthenticate to access this page."
 msgstr "Veuillez vous ré-authentifier pour accéder à cette page."
 
-#: burpui/forms.py:18 burpui/templates/login.html:8
+#: burpui/forms.py:18 burpui/templates/admin-authentications.html:31
+#: burpui/templates/admin-authentications.html:101
+#: burpui/templates/admin-authentications.html:103
+#: burpui/templates/admin-authorizations.html:31 burpui/templates/login.html:8
 msgid "Username"
 msgstr "Utilisateur"
 
-#: burpui/forms.py:19 burpui/templates/login.html:9
-#: burpui/templates/user.html:33
+#: burpui/forms.py:19 burpui/templates/admin-authentications.html:107
+#: burpui/templates/admin-authentications.html:109
+#: burpui/templates/login.html:9 burpui/templates/user.html:33
 msgid "Password"
 msgstr "Mot de passe"
 
@@ -43,51 +47,74 @@ msgstr "Langue"
 msgid "Remember me"
 msgstr "Rester connecté"
 
-#: burpui/routes.py:193 burpui/routes.py:200
+#: burpui/routes.py:277 burpui/routes.py:284
 msgid "Sorry, there are no running backups"
 msgstr "Désolé, il n'y a pas de backups"
 
-#: burpui/routes.py:220 burpui/routes.py:258
+#: burpui/routes.py:304 burpui/routes.py:342
 msgid "Sorry, there are no restore file found for this client"
 msgstr "Désolé, il n&#39;y a pas restoration prévue pour ce client"
 
-#: burpui/routes.py:416
+#: burpui/routes.py:501
 msgid "Logged in successfully"
 msgstr "Connecté avec succès"
 
-#: burpui/routes.py:428
+#: burpui/routes.py:513
 msgid "Wrong username or password"
 msgstr "Mauvais nom d&#39;utilisateur ou mot de passe"
 
-#: burpui/routes.py:436
+#: burpui/routes.py:521
 msgid "Wrong CSRF token, please try again"
 msgstr "Mauvais token CSRF, veuillez réessayer"
 
-#: burpui/misc/parser/burp2.py:55
+#: burpui/api/settings.py:387 burpui/api/settings.py:389
+#, python-format
+msgid "<a href=\"%(url)s\">Click here</a> to edit '%(template)s' configuration"
+msgstr "<a href=\"%(url)s\">Cliquez ici</a> pour éditer la configuration de '%(template)s'"
+
+#: burpui/api/settings.py:435 burpui/api/settings.py:437
+#, python-format
+msgid "<a href=\"%(url)s\">Click here</a> to edit '%(client)s' configuration"
+msgstr "<a href=\"%(url)s\">Cliquez ici</a> pour éditer la configuration de '%(client)s'"
+
+#: burpui/api/settings.py:478 burpui/api/settings.py:494
+#: burpui/api/settings.py:553 burpui/api/settings.py:604
+msgid "Sorry, you don't have rights to access the setting panel"
+msgstr "Désolé, vous n'avez pas les permissions pour accéder à cette page"
+
+#: burpui/misc/acl/basic.py:8
+msgid "Uses the Burp-UI configuration file to load its rules"
+msgstr "Utilise le fichier de configuration de Burp-UI pour charger ses règles"
+
+#: burpui/misc/parser/burp2.py:77
 msgid "max secs"
 msgstr "maximun secondes"
 
-#: burpui/misc/parser/burp2.py:56 burpui/misc/parser/doc.py:127
-#: burpui/misc/parser/doc.py:128 burpui/misc/parser/doc.py:129
-#: burpui/misc/parser/doc.py:137 burpui/misc/parser/doc.py:138
-#: burpui/misc/parser/doc.py:141 burpui/misc/parser/doc.py:145
-#: burpui/misc/parser/doc.py:150 burpui/misc/parser/doc.py:157
-#: burpui/misc/parser/doc.py:161 burpui/misc/parser/doc.py:162
-#: burpui/misc/parser/doc.py:172 burpui/misc/parser/doc.py:175
-#: burpui/misc/parser/doc.py:179 burpui/misc/parser/doc.py:184
-#: burpui/misc/parser/doc.py:185 burpui/misc/parser/doc.py:189
-#: burpui/misc/parser/doc.py:194 burpui/misc/parser/doc.py:197
-#: burpui/misc/parser/doc.py:198 burpui/misc/parser/doc.py:200
-#: burpui/misc/parser/doc.py:202 burpui/misc/parser/doc.py:204
-#: burpui/misc/parser/doc.py:206 burpui/misc/parser/doc.py:214
+#: burpui/misc/parser/burp2.py:78 burpui/misc/parser/doc.py:128
+#: burpui/misc/parser/doc.py:129 burpui/misc/parser/doc.py:130
+#: burpui/misc/parser/doc.py:138 burpui/misc/parser/doc.py:139
+#: burpui/misc/parser/doc.py:142 burpui/misc/parser/doc.py:146
+#: burpui/misc/parser/doc.py:151 burpui/misc/parser/doc.py:158
+#: burpui/misc/parser/doc.py:162 burpui/misc/parser/doc.py:163
+#: burpui/misc/parser/doc.py:173 burpui/misc/parser/doc.py:176
+#: burpui/misc/parser/doc.py:180 burpui/misc/parser/doc.py:185
+#: burpui/misc/parser/doc.py:186 burpui/misc/parser/doc.py:190
+#: burpui/misc/parser/doc.py:195 burpui/misc/parser/doc.py:198
+#: burpui/misc/parser/doc.py:199 burpui/misc/parser/doc.py:201
+#: burpui/misc/parser/doc.py:203 burpui/misc/parser/doc.py:205
+#: burpui/misc/parser/doc.py:207 burpui/misc/parser/doc.py:215
 msgid "path"
 msgstr "chemin"
 
-#: burpui/misc/parser/burp2.py:57
+#: burpui/misc/parser/burp2.py:79
 msgid "some informations"
 msgstr "des informations"
 
-#: burpui/misc/parser/burp2.py:79
+#: burpui/misc/parser/burp2.py:80
+msgid "address|localhost"
+msgstr "adresse|localhost"
+
+#: burpui/misc/parser/burp2.py:105
 msgid ""
 "If acl support is compiled into burp, this allows you to decide whether "
 "or not to backup acls at runtime. The default is '1'."
@@ -96,7 +123,7 @@ msgstr ""
 "décider si il faut sauvegarder les ACLs ou non. La valeur par défaut est "
 "1."
 
-#: burpui/misc/parser/burp2.py:82
+#: burpui/misc/parser/burp2.py:108
 msgid ""
 "If xattr support is compiled into burp, this allows you to decide whether"
 " or not to backup xattrs at runtime. The default is '1'."
@@ -105,7 +132,7 @@ msgstr ""
 "décider si il faut sauvegarder les XATTRs ou non. La valeur par défaut "
 "est 1."
 
-#: burpui/misc/parser/burp2.py:85
+#: burpui/misc/parser/burp2.py:111
 msgid ""
 "When running a timed backup, sleep for a random number of seconds "
 "(between 0 and the number given) before contacting the server. "
@@ -116,7 +143,7 @@ msgstr ""
 "On peut également forcer ce paramètre avec l'option '-q' sur la ligne de "
 "commande."
 
-#: burpui/misc/parser/burp2.py:89
+#: burpui/misc/parser/burp2.py:115
 msgid ""
 "This can be overridden by the clientconfdir configuration files in "
 "clientconfdir on the server. When the server needs to delete old backups,"
@@ -137,7 +164,7 @@ msgstr ""
 "réalisée via une tâche cron par exemple. Faites attention à spécifier un "
 "chemin sur le même système de fichier que le pool de sauvegarde."
 
-#: burpui/misc/parser/burp2.py:101
+#: burpui/misc/parser/burp2.py:127
 msgid ""
 "You can have multiple labels, and they can be overridden in the client "
 "configuration files in clientconfdir on the server. They will appear as "
@@ -151,26 +178,27 @@ msgstr ""
 " dans la sortie JSON du moniteur. Le but est de pouvoir transmettre des "
 "données arbitraires aux clients via le moniteur d'état."
 
-#: burpui/misc/parser/burp2.py:108
+#: burpui/misc/parser/burp2.py:134
 msgid ""
-"To prevent the server from being able to override your local "
-"include/exclude list, set this to 0. The default is 1."
+"Defines the main TCP address that the server listens on for status "
+"requests. The default  is  special  value  'localhost'  that includes "
+"both '::1' (if available) and '127.0.0.1' (always)."
 msgstr ""
 
-#: burpui/misc/parser/burp2.py:112
+#: burpui/misc/parser/burp2.py:139
 msgid ""
 "Set this to 0 if you do not want include_glob settings to be evaluated "
 "after the pre script is run. The default is 1."
 msgstr ""
 
-#: burpui/misc/parser/burp2.py:116
+#: burpui/misc/parser/burp2.py:143
 msgid ""
 "Set this to 0 if you want to disable all clients. The default is 1. This "
 "option can be overridden per-client in the client configuration files in "
 "clientconfdir on the server."
 msgstr ""
 
-#: burpui/misc/parser/burp2.py:120
+#: burpui/misc/parser/burp2.py:147
 msgid ""
 "Whether to keep fqdn cname (like 'testclient.example.com') when looking-"
 "up in clientconfdir. This also affects the fqdn lookup on the client (see"
@@ -179,7 +207,7 @@ msgid ""
 " ('testclient.example.com' becomes 'testclient')."
 msgstr ""
 
-#: burpui/misc/parser/burp2.py:128
+#: burpui/misc/parser/burp2.py:155
 msgid ""
 "Whether to force lowercase cname when looking-up in clientconfdir. This "
 "also affects the fqdn lookup on the client (see client configuration "
@@ -187,86 +215,129 @@ msgid ""
 "by the client while authenticating will be lowercased."
 msgstr ""
 
+#: burpui/misc/parser/burp2.py:162
+msgid ""
+"Defines the main TCP port that the server listens on. Specify multiple "
+"'port' entries on separate lines in order to listen on multiple ports. "
+"Each port can be configured with its own 'max_children' value."
+msgstr ""
+
+#: burpui/misc/parser/burp2.py:166
+msgid ""
+"Defines the number of child processes to fork (the number of clients that"
+" can simultaneously connect. The default is 5. Specify multiple "
+"'max_children' entries on separate lines if you have configured multiple "
+"port entries."
+msgstr ""
+
+#: burpui/misc/parser/burp2.py:171
+msgid ""
+"Defines the TCP port that the server listens on for status requests. "
+"Comment this out to have no status server. Specify multiple 'status_port'"
+" entries on separate lines in order to listen on multiple ports. Each "
+"port can be configured with its own 'max_status_children' value."
+msgstr ""
+
+#: burpui/misc/parser/burp2.py:177
+msgid ""
+"Defines the number of status child processes to fork (the number of "
+"status clients that can simultaneously connect. The default is 5. Specify"
+" multiple 'max_status_children' entries on separate lines if you have "
+"configured multiple status_port entries."
+msgstr ""
+
+#: burpui/misc/parser/burp2.py:184
+msgid ""
+"The maximum amount of data from the disk cached in server memory during a"
+" protocol2 restore/verify. The default is 256Mb. This option can be "
+"overriden per-client in the client configuration files in clientconfdir "
+"on the server."
+msgstr ""
+
 #: burpui/misc/parser/doc.py:125
 msgid "path or glob"
 msgstr "chemin ou glob"
 
-#: burpui/misc/parser/doc.py:130 burpui/misc/parser/doc.py:131
+#: burpui/misc/parser/doc.py:126
+msgid "address"
+msgstr ""
+
+#: burpui/misc/parser/doc.py:131 burpui/misc/parser/doc.py:132
 msgid "name"
 msgstr "nom"
 
-#: burpui/misc/parser/doc.py:143 burpui/misc/parser/doc.py:171
-#: burpui/misc/parser/doc.py:173 burpui/misc/parser/doc.py:191
-#: burpui/misc/parser/doc.py:195 burpui/misc/parser/doc.py:207
-#: burpui/misc/parser/doc.py:213
+#: burpui/misc/parser/doc.py:144 burpui/misc/parser/doc.py:172
+#: burpui/misc/parser/doc.py:174 burpui/misc/parser/doc.py:192
+#: burpui/misc/parser/doc.py:196 burpui/misc/parser/doc.py:208
+#: burpui/misc/parser/doc.py:214
 msgid "string"
 msgstr "chaîne de caractères"
 
-#: burpui/misc/parser/doc.py:146 burpui/misc/parser/doc.py:147
-#: burpui/misc/parser/doc.py:155
+#: burpui/misc/parser/doc.py:147 burpui/misc/parser/doc.py:148
+#: burpui/misc/parser/doc.py:156
 msgid "extension"
 msgstr "extension"
 
-#: burpui/misc/parser/doc.py:148
+#: burpui/misc/parser/doc.py:149
 msgid "fstype"
 msgstr "système de fichier"
 
-#: burpui/misc/parser/doc.py:149 burpui/misc/parser/doc.py:156
+#: burpui/misc/parser/doc.py:150 burpui/misc/parser/doc.py:157
 msgid "regular expression"
 msgstr "expression régulière"
 
-#: burpui/misc/parser/doc.py:152
+#: burpui/misc/parser/doc.py:153
 msgid "groupname"
 msgstr "nom du groupe"
 
-#: burpui/misc/parser/doc.py:158
+#: burpui/misc/parser/doc.py:159
 msgid "glob"
 msgstr "glob"
 
-#: burpui/misc/parser/doc.py:159 burpui/misc/parser/doc.py:163
-#: burpui/misc/parser/doc.py:165 burpui/misc/parser/doc.py:166
-#: burpui/misc/parser/doc.py:167
+#: burpui/misc/parser/doc.py:160 burpui/misc/parser/doc.py:164
+#: burpui/misc/parser/doc.py:166 burpui/misc/parser/doc.py:167
+#: burpui/misc/parser/doc.py:168
 msgid "number"
 msgstr "nombre"
 
-#: burpui/misc/parser/doc.py:170
+#: burpui/misc/parser/doc.py:171
 msgid "file name"
 msgstr "nom du fichier"
 
-#: burpui/misc/parser/doc.py:177 burpui/misc/parser/doc.py:201
-#: burpui/misc/parser/doc.py:205 burpui/templates/client-browse.html:92
+#: burpui/misc/parser/doc.py:178 burpui/misc/parser/doc.py:202
+#: burpui/misc/parser/doc.py:206 burpui/templates/client-browse.html:92
 msgid "password"
 msgstr "mot de passe"
 
-#: burpui/misc/parser/doc.py:180 burpui/misc/parser/doc.py:208
+#: burpui/misc/parser/doc.py:181 burpui/misc/parser/doc.py:209
 msgid "port number"
 msgstr "numéro du port"
 
-#: burpui/misc/parser/doc.py:186
+#: burpui/misc/parser/doc.py:187
 msgid "client"
 msgstr "client"
 
-#: burpui/misc/parser/doc.py:203
+#: burpui/misc/parser/doc.py:204
 msgid "cipher list"
 msgstr "list de cipher"
 
-#: burpui/misc/parser/doc.py:215
+#: burpui/misc/parser/doc.py:216
 msgid "strftime format"
 msgstr "format strftime"
 
-#: burpui/misc/parser/doc.py:216
+#: burpui/misc/parser/doc.py:217
 msgid "umask"
 msgstr "umask"
 
-#: burpui/misc/parser/doc.py:217
+#: burpui/misc/parser/doc.py:218
 msgid "username"
 msgstr "nom d'utilisateur"
 
-#: burpui/misc/parser/doc.py:219
+#: burpui/misc/parser/doc.py:220
 msgid "list of drive letters"
 msgstr "liste des lettres des disques durs"
 
-#: burpui/misc/parser/doc.py:418
+#: burpui/misc/parser/doc.py:424
 msgid ""
 "Read additional configuration files. On Windows, the glob is "
 "unimplemented - you will need to specify an actual file."
@@ -275,7 +346,7 @@ msgstr ""
 "n'est pas implémenté - vous devez spécifier le chemin complet (relatif ou"
 " absolu)."
 
-#: burpui/misc/parser/doc.py:421
+#: burpui/misc/parser/doc.py:427
 msgid ""
 "Defines the main TCP address that the server listens on. The default is "
 "either '::' or '0.0.0.0', dependent upon compile time options."
@@ -283,7 +354,7 @@ msgstr ""
 "Défini l'adresse d'écoute du serveur. Par défaut: '::' ou '0.0.0.0' en "
 "fonction des options de compilation."
 
-#: burpui/misc/parser/doc.py:424
+#: burpui/misc/parser/doc.py:430
 msgid ""
 "This allows you to control whether the client uses O_NOATIME when opening"
 " files and directories. The default is 0, which enables O_NOATIME. This "
@@ -304,7 +375,7 @@ msgstr ""
 "de mettre atime=1. Avec atime=1, l'attribut <i>access time</i> sera mis à"
 " jours dès qu'un fichier estsauvegardé."
 
-#: burpui/misc/parser/doc.py:435
+#: burpui/misc/parser/doc.py:441
 msgid ""
 "Path to autoupgrade directory from which upgrades are downloaded. The "
 "option can be left unset in order not to autoupgrade clients. Please see "
@@ -312,11 +383,11 @@ msgid ""
 "option."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:441
+#: burpui/misc/parser/doc.py:447
 msgid "Path to the burp_ca script when using the ca_conf option."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:443
+#: burpui/misc/parser/doc.py:449
 msgid ""
 "Path to certificate authority configuration file. The CA configuration "
 "file will usually be /etc/burp/CA.cnf. The CA directory indicated by "
@@ -327,64 +398,64 @@ msgid ""
 "options, please see docs/burp_ca.txt."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:453
+#: burpui/misc/parser/doc.py:459
 msgid ""
 "Name of the CA that the server will generate when using the ca_conf "
 "option."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:455
+#: burpui/misc/parser/doc.py:461
 msgid ""
 "The name that the server will put into its own SSL certficates when using"
 " the ca_conf option."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:458
+#: burpui/misc/parser/doc.py:464
 msgid ""
 "Turn this off to prevent clients from deleting backups with the '-a D' "
 "option. The default is that clients can delete backups. Restore clients "
 "can override this setting."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:463
+#: burpui/misc/parser/doc.py:469
 msgid ""
 "Turn this off to prevent clients from forcing backups with the '-a b' "
 "option. Timed backups will still work. The default is that clients can "
 "force backups."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:468
+#: burpui/misc/parser/doc.py:474
 msgid ""
 "Turn this off to prevent clients from listing backups with the '-a l' "
 "option. The default is that clients can list backups. Restore clients can"
 " override this setting."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:472
+#: burpui/misc/parser/doc.py:478
 msgid ""
 "Turn this off to prevent clients from initiating restores with the '-a r'"
 " option. The default is that clients can initiate restores. Restore "
 "clients can override this setting."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:477
+#: burpui/misc/parser/doc.py:483
 msgid ""
 "Turn this off to prevent clients from initiating a verify job with the "
 "'-a v' option. The default is that clients can initiate a verify job. "
 "Restore clients can override this setting."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:482
+#: burpui/misc/parser/doc.py:488
 msgid ""
 "Path to the directory in which to keep per-client lock files. By default,"
 " this is set to the path given by the 'directory' option."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:485
+#: burpui/misc/parser/doc.py:491
 msgid "Path to the directory that contains client configuration files."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:487
+#: burpui/misc/parser/doc.py:493
 msgid ""
 "Choose the level of gzip compression for files stored in backups. Setting"
 " 0 or gzip0 turns compression off. The default is gzip9. This option can "
@@ -392,19 +463,19 @@ msgid ""
 "server."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:493
+#: burpui/misc/parser/doc.py:499
 msgid "Allow backups to cross all filesystem mountpoints."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:495
+#: burpui/misc/parser/doc.py:501
 msgid "Allow backups to cross a particular filesystem mountpoint."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:497
+#: burpui/misc/parser/doc.py:503
 msgid "Whether to daemonise. The default is 1."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:498
+#: burpui/misc/parser/doc.py:504
 msgid ""
 "Enables you to group clients together for file deduplication purposes. "
 "For example, you might want to set 'dedup_group=xp' for each Windows XP "
@@ -412,32 +483,32 @@ msgid ""
 " the option '-g xp'."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:503
+#: burpui/misc/parser/doc.py:509
 msgid ""
 "When turned on (which is the default) and the client is on version 1.3.6 "
 "or greater, the structure of the storage directory will mimic that of the"
 " original filesystem on the client."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:508
+#: burpui/misc/parser/doc.py:514
 msgid "Path to the directory in which to store backups."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:509
+#: burpui/misc/parser/doc.py:515
 msgid ""
 "Extensions to exclude from compression. Case insensitive. You can have "
 "multiple exclude compression lines. For example, set 'gz' to exclude "
 "gzipped files from compression."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:513
+#: burpui/misc/parser/doc.py:519
 msgid ""
 "Extensions to exclude from the backup. Case insensitive. You can have "
 "multiple exclude extension lines. For example, set 'vdi' to exclude "
 "VirtualBox disk images."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:517
+#: burpui/misc/parser/doc.py:523
 msgid ""
 "File systems to exclude from the backup. Case insensitive. You can have "
 "multiple exclude file system lines. For example, set 'tmpfs' to exclude "
@@ -446,34 +517,34 @@ msgid ""
 "example, 'exclude_fs = 0x01021994' will also exclude tmpfs."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:525
+#: burpui/misc/parser/doc.py:531
 msgid "Exclude paths that match the regular expression."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:527
+#: burpui/misc/parser/doc.py:533
 msgid ""
 "Path to exclude from the backup. You can have multiple exclude lines. Use"
 " forward slashes '/', not backslashes '\\' as path delimiters."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:530
+#: burpui/misc/parser/doc.py:536
 msgid "Whether to fork children. The default is 1."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:531
+#: burpui/misc/parser/doc.py:537
 msgid ""
 "Run as a particular group. This can be overridden by the client "
 "configuration files in clientconfdir on the server."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:534
+#: burpui/misc/parser/doc.py:540
 msgid ""
 "Do not back up the client if the estimated size of all files is greater "
 "than the specified size. Example: 'hard_quota = 100Gb'. Set to 0 (the "
 "default) to have no limit."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:538
+#: burpui/misc/parser/doc.py:544
 msgid ""
 "On the server, defines whether to keep hardlinked files in the backups, "
 "or whether to generate reverse deltas and delete the original files. Can "
@@ -483,7 +554,7 @@ msgid ""
 "a backup is reduced."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:548
+#: burpui/misc/parser/doc.py:554
 msgid ""
 "Extensions to include in the backup. Case insensitive. Nothing else will "
 "be included in the backup. You can have multiple include extension lines."
@@ -491,17 +562,17 @@ msgid ""
 "specify an 'include' line so that burp knows where to start looking."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:555
+#: burpui/misc/parser/doc.py:561
 msgid "Not implemented."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:556
+#: burpui/misc/parser/doc.py:562
 msgid ""
 "Path to include in the backup. You can have multiple include lines. Use "
 "forward slashes '/', not backslashes '\\' as path delimiters."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:559
+#: burpui/misc/parser/doc.py:565
 msgid ""
 "Include paths that match the glob expression.For example, "
 "'/home/*/Documents' will include '/home/user1/Documents' and "
@@ -510,7 +581,7 @@ msgid ""
 "contain only one '*'."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:566
+#: burpui/misc/parser/doc.py:572
 msgid ""
 "Number of backups to keep. This can be overridden by the client "
 "configuration files in clientconfdir on the server. Specify multiple "
@@ -527,7 +598,7 @@ msgid ""
 "together. That is, a backup every minute for 100 years."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:583
+#: burpui/misc/parser/doc.py:589
 msgid ""
 "When set to 0, delta differencing will not take place. That is, when a "
 "file changes, the server will request the whole new file. The default is "
@@ -535,13 +606,13 @@ msgid ""
 "clientconfdir on the server."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:588
+#: burpui/misc/parser/doc.py:594
 msgid ""
 "Path to the lockfile that ensures that two server processes cannot run "
 "simultaneously."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:590
+#: burpui/misc/parser/doc.py:596
 msgid ""
 "If a path is given, the server will move directories to be deleted into "
 "the directory specified by the path, but will not actually delete them. "
@@ -553,83 +624,83 @@ msgid ""
 "the client configuration files in clientconfdir on the server."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:603
+#: burpui/misc/parser/doc.py:609
 msgid ""
 "Defines the number of child processes to fork (the number of clients that"
 " can simultaneously connect. The default is 5."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:606
+#: burpui/misc/parser/doc.py:612
 msgid ""
 "Do not back up files that are greater than the specified size. Example: "
 "'max_file_size = 10Mb'. Set to 0 (the default) to have no limit."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:610
+#: burpui/misc/parser/doc.py:616
 msgid ""
 "On the server, the number of times that a single file can be hardlinked. "
 "The bedup program also obeys this setting. The default is 10000."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:613
+#: burpui/misc/parser/doc.py:619
 msgid ""
 "Defines the number of status child processes to fork (the number of "
 "status clients that can simultaneously connect. The default is 5."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:617
+#: burpui/misc/parser/doc.py:623
 msgid ""
 "Defines the number of subdirectories in the data storage areas. The "
 "maximum number of subdirectories that ext3 allows is 32000. If you do not"
 " set this option, it defaults to 30000."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:622
+#: burpui/misc/parser/doc.py:628
 msgid ""
 "Do not back up files that are less than the specified size. Example: "
 "'min_file_size = 10Mb'. Set to 0 (the default) to have no limit."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:626
+#: burpui/misc/parser/doc.py:632
 msgid "Required to run in server mode."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:627
+#: burpui/misc/parser/doc.py:633
 msgid ""
 "Whether or not the server should cache the directory tree when a monitor "
 "client is browsing. <br/>Advantage: browsing is faster. "
 "</br>Disadvantage: more memory is used."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:632
+#: burpui/misc/parser/doc.py:638
 msgid ""
 "Set the network timeout in seconds. If no data is sent or received over a"
 " period of this length, burp will give up. The default is 7200 seconds (2"
 " hours)."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:636
+#: burpui/misc/parser/doc.py:642
 msgid ""
 "If this file system entry exists, the directory containing it will not be"
 " backed up."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:638
+#: burpui/misc/parser/doc.py:644
 msgid "The same as notify_success_arg, but for backups that failed."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:640
+#: burpui/misc/parser/doc.py:646
 msgid "The same as notify_success_script, but for backups that failed."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:642
+#: burpui/misc/parser/doc.py:648
 msgid ""
 "A user-definable argument to the notify success script. You can have many"
 " of these. The notify_success_arg options can be overridden by the client"
 " configuration files in clientconfdir on the server."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:647
+#: burpui/misc/parser/doc.py:653
 msgid ""
 "Path to the script to run when a backup succeeds. User arguments are "
 "appended after the first five reserved arguments. An example notify "
@@ -637,18 +708,18 @@ msgid ""
 " the client configuration files in clientconfdir on the server."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:655
+#: burpui/misc/parser/doc.py:661
 msgid ""
 "Set to 1 to send success notifications when there were warnings. If this "
 "and notify_success_changes_only are not turned on, success notifications "
 "are always sent."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:661
+#: burpui/misc/parser/doc.py:667
 msgid "Defines the password to send to the server."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:662
+#: burpui/misc/parser/doc.py:668
 msgid ""
 "Allows you to turn client password checking on or off. The default is on."
 " SSL certificates will still be checked if you turn passwords off. This "
@@ -656,7 +727,7 @@ msgid ""
 "clientconfdir on the server."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:668
+#: burpui/misc/parser/doc.py:674
 msgid ""
 "When this is on, which is the default, a warning will be issued when the "
 "client sends a path that is too long to replicate in the storage area "
@@ -666,15 +737,15 @@ msgid ""
 "clientconfdir on the server."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:677
+#: burpui/misc/parser/doc.py:683
 msgid "Synonym for lockfile."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:678
+#: burpui/misc/parser/doc.py:684
 msgid "Defines the main TCP port that the server listens on."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:679
+#: burpui/misc/parser/doc.py:685
 msgid ""
 "Choose which style of backups and restores to use. 0 (the default) "
 "automatically decides based on the server version and which protocol is "
@@ -685,37 +756,37 @@ msgid ""
 "server also chooses a forced setting."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:688
+#: burpui/misc/parser/doc.py:694
 msgid ""
 "Set the network send rate limit, in Mb/s. If this option is not given, "
 "burp will send data as fast as it can."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:691
+#: burpui/misc/parser/doc.py:697
 msgid ""
 "Open all block devices for reading and back up the contents as if they "
 "were regular files."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:694
+#: burpui/misc/parser/doc.py:700
 msgid ""
 "Open all fifos for reading and back up the contents as if they were "
 "regular files."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:696
+#: burpui/misc/parser/doc.py:702
 msgid ""
 "Do not back up the given block device itself, but open it for reading and"
 " back up the contents as if it were a regular file."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:699
+#: burpui/misc/parser/doc.py:705
 msgid ""
 "Do not back up the given fifo itself, but open it for reading and back up"
 " the contents as if it were a regular file."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:702
+#: burpui/misc/parser/doc.py:708
 msgid ""
 "A client that is permitted to list, verify, restore and delete files "
 "belonging to any other client. You may specify multiple restore_clients. "
@@ -726,7 +797,7 @@ msgid ""
 "This will be addressed in a future version of burp."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:714
+#: burpui/misc/parser/doc.py:720
 msgid ""
 "Turn this on to enable 'resume partial' code. Requires "
 "'working_dir_recovery_method=resume'. When resuming an interrupted "
@@ -736,20 +807,20 @@ msgid ""
 "forever, so this feature now defaults to being turned off."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:723
+#: burpui/misc/parser/doc.py:729
 msgid ""
 "When enabled, this causes problems in the phase1 scan (such as an "
 "'include' being missing) to be treated as fatal errors. The default is "
 "off."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:728
+#: burpui/misc/parser/doc.py:734
 msgid ""
 "Goes with server_script and overrides server_script_pre_arg and "
 "server_script_post_arg."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:731
+#: burpui/misc/parser/doc.py:737
 msgid ""
 "Turn on to send a notification emails when the server pre and post "
 "scripts return non-zero. The output of the script will be included it the"
@@ -757,27 +828,27 @@ msgid ""
 "set."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:737
+#: burpui/misc/parser/doc.py:743
 msgid ""
 "A user-definable argument to the server post script. You can have many of"
 " these."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:740
+#: burpui/misc/parser/doc.py:746
 msgid ""
 "Turn on to send a notification email when the server post script returns "
 "non-zero. The output of the script will be included in the email. The "
 "default is off. Requires the notify_failure options to be set."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:747
+#: burpui/misc/parser/doc.py:753
 msgid ""
 "If this is set to 1, server_script_post will always be run. The default "
 "is 0, which means that if the task asked for by the client fails, "
 "server_script_post will not be run."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:754
+#: burpui/misc/parser/doc.py:760
 msgid ""
 "Path to a script to run on the server before the client disconnects. The "
 "arguments to it are 'post', '(client command)', '(client name), '(0 or 1 "
@@ -787,13 +858,13 @@ msgid ""
 "server."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:765
+#: burpui/misc/parser/doc.py:771
 msgid ""
 "A user-definable argument to the server pre script. You can have many of "
 "these."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:768
+#: burpui/misc/parser/doc.py:774
 msgid ""
 "Turn on to send a notification email when the server pre script returns "
 "non-zero. The output of the script will be included in the email. The "
@@ -803,7 +874,7 @@ msgid ""
 "set."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:779
+#: burpui/misc/parser/doc.py:785
 msgid ""
 "Path to a script to run on the server after each successfully "
 "authenticated connection but before any work is carried out. The "
@@ -815,7 +886,7 @@ msgid ""
 "clientconfdir on the server."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:793
+#: burpui/misc/parser/doc.py:799
 msgid ""
 "You can use this to save space in your config file when you want to run "
 "the same server script twice. It overrides server_script_pre and "
@@ -823,14 +894,14 @@ msgid ""
 "by the client configuration files in clientconfdir on the server."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:800
+#: burpui/misc/parser/doc.py:806
 msgid ""
 "A warning will be issued when the estimated size of all files is greater "
 "than the specified size and smaller than hard_quota. Example: 'soft_quota"
 " = 95Gb'. Set to 0 (the default) to have no warning."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:805
+#: burpui/misc/parser/doc.py:811
 msgid ""
 "When backing up Windows computers with burp protocol 1, this option "
 "allows you to save the VSS header data separate from the file data. The "
@@ -838,7 +909,7 @@ msgid ""
 "to the file data."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:810
+#: burpui/misc/parser/doc.py:816
 msgid ""
 "The path to the SSL CA certificate. This file will probably be the same "
 "on both the server and the client. The file should contain just the "
@@ -847,22 +918,22 @@ msgid ""
 "href='http://burp.grke.org/docs/burp_ca.html'> docs/burp_ca.txt</a>."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:817
+#: burpui/misc/parser/doc.py:823
 msgid "Synonym for ssl_key_password."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:818
+#: burpui/misc/parser/doc.py:824
 msgid ""
 "The path to the server SSL certificate. It works for me when the file "
 "contains the concatenation of the certificate and private key in PEM "
 "format."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:821
+#: burpui/misc/parser/doc.py:827
 msgid "Allowed SSL ciphers. See openssl ciphers for details."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:823
+#: burpui/misc/parser/doc.py:829
 msgid ""
 "Choose the level of zlib compression over SSL. Setting 0 or zlib0 "
 "turnsSSL compression off. Setting non-zero gives zlib5 compression (it is"
@@ -870,43 +941,43 @@ msgid ""
 "is 5. 'gzip' is a synonym of 'zlib'.is a synonym of 'zlib'."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:830
+#: burpui/misc/parser/doc.py:836
 msgid ""
 "Path to Diffie-Hellman parameter file. To generate one with openssl, use "
 "a command like this: openssl dhparam -out dhfile.pem -5 1024"
 msgstr ""
 
-#: burpui/misc/parser/doc.py:833
+#: burpui/misc/parser/doc.py:839
 msgid "The SSL key password."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:834
+#: burpui/misc/parser/doc.py:840
 msgid "The path to the server SSL private key in PEM format."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:836
+#: burpui/misc/parser/doc.py:842
 msgid ""
 "Must match the common name in the SSL certificate that the server "
 "giveswhen it connects. If ssl_peer_cn is not set, the server name will be"
 " used instead."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:840
+#: burpui/misc/parser/doc.py:846
 msgid ""
 "Defines the main TCP address that the server listens on for status "
 "requests. The default is either '::1' or '127.0.0.1', dependent upon "
 "compile time options."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:844
+#: burpui/misc/parser/doc.py:850
 msgid "Defines the TCP port that the server listens on for status requests."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:846
+#: burpui/misc/parser/doc.py:852
 msgid "Log to stdout. Defaults to on."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:847
+#: burpui/misc/parser/doc.py:853
 msgid ""
 "When backing up Windows computers with burp protocol 1, this option "
 "allows you to prevent the VSS header data being backed up. The default is"
@@ -914,18 +985,18 @@ msgid ""
 "need to give the client the '-x' command line option."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:853
+#: burpui/misc/parser/doc.py:859
 msgid "Log to syslog. Defaults to off."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:854
+#: burpui/misc/parser/doc.py:860
 msgid ""
 "A user-definable argument to the timer script.You can have many of these."
 " The timer_arg options can be overridden by the client configuration "
 "files in clientconfdir on the server."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:858
+#: burpui/misc/parser/doc.py:864
 msgid ""
 "Path to the script to run when a client connects with the timed backup "
 "option. If the script exits with code 0, a backup will run. The first two"
@@ -936,7 +1007,7 @@ msgid ""
 "in clientconfdir on the server."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:868
+#: burpui/misc/parser/doc.py:874
 #, python-format
 msgid ""
 "This allows you to tweak the format of the timestamps of individual "
@@ -944,17 +1015,17 @@ msgid ""
 "option is unset, burp uses \"%Y-%m-%d %H:%M:%S\"."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:873
+#: burpui/misc/parser/doc.py:879
 msgid "Set the file creation umask. Default is 0022."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:874
+#: burpui/misc/parser/doc.py:880
 msgid ""
 "Run as a particular user. This can be overridden by the client "
 "configuration files in clientconfdir on the server."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:877
+#: burpui/misc/parser/doc.py:883
 msgid ""
 "When this is on, which is the default, a warning will be issued when the "
 "client version does not match the server version. This option can be "
@@ -962,7 +1033,7 @@ msgid ""
 "server."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:882
+#: burpui/misc/parser/doc.py:888
 msgid ""
 "When backing up Windows computers, this option allows you to specify "
 "which drives have VSS snapshots taken of them. If you omit this option, "
@@ -970,7 +1041,7 @@ msgid ""
 "want no drives to have snapshots taken of them, you can specify '0'."
 msgstr ""
 
-#: burpui/misc/parser/doc.py:888
+#: burpui/misc/parser/doc.py:894
 msgid ""
 "This option tells the server what to do when it finds the working "
 "directory of an interrupted backup (perhaps somebody pulled the plug on "
@@ -996,26 +1067,262 @@ msgstr "Vous trouverez la documentation à l'adresse"
 msgid "Browse the "
 msgstr "Parcourir l'"
 
-#: burpui/templates/admin.html:7 burpui/templates/topbar.html:57
-msgid "Administration"
-msgstr "Administration"
-
-#: burpui/templates/backup-report.html:8 burpui/templates/backup-report.html:13
-#: burpui/templates/calendar.html:8 burpui/templates/calendar.html:11
-#: burpui/templates/client-browse.html:8 burpui/templates/client-browse.html:13
-#: burpui/templates/client-report.html:8 burpui/templates/client-report.html:12
-#: burpui/templates/client.html:8 burpui/templates/client.html:12
-#: burpui/templates/clients-report.html:8
+#: burpui/templates/admin-authentications.html:7
+#: burpui/templates/admin-authorizations.html:7
+#: burpui/templates/admin-backends.html:7
+#: burpui/templates/admin/authentication.html:7
+#: burpui/templates/admin/grant-authorization.html:7
+#: burpui/templates/admin/group-authorization.html:7
+#: burpui/templates/admin/sessions.html:7 burpui/templates/backup-report.html:8
+#: burpui/templates/backup-report.html:13 burpui/templates/calendar.html:8
+#: burpui/templates/calendar.html:11 burpui/templates/client-browse.html:8
+#: burpui/templates/client-browse.html:13 burpui/templates/client-report.html:8
+#: burpui/templates/client-report.html:12 burpui/templates/client.html:8
+#: burpui/templates/client.html:12 burpui/templates/clients-report.html:8
 #: burpui/templates/clients-report.html:11 burpui/templates/clients.html:8
 #: burpui/templates/clients.html:11 burpui/templates/live-monitor.html:5
 #: burpui/templates/servers-report.html:7 burpui/templates/servers.html:7
-#: burpui/templates/settings.html:8
+#: burpui/templates/settings.html:11 burpui/templates/settings.html:34
 msgid "Home"
 msgstr "Accueil"
+
+#: burpui/templates/admin-authentications.html:8
+#: burpui/templates/admin-authorizations.html:8
+#: burpui/templates/admin-backends.html:8
+#: burpui/templates/admin/authentication.html:8
+#: burpui/templates/admin/grant-authorization.html:8
+#: burpui/templates/admin/group-authorization.html:8
+#: burpui/templates/admin/sessions.html:8 burpui/templates/topbar.html:58
+msgid "Administration"
+msgstr "Administration"
+
+#: burpui/templates/admin-authentications.html:12
+#: burpui/templates/admin/authentication.html:13
+#: burpui/templates/small_topbar.html:37
+msgid "Authentication"
+msgstr "Identification"
+
+#: burpui/templates/admin-authentications.html:14
+msgid "Create new user"
+msgstr "Créer un nouvel utilisateur"
+
+#: burpui/templates/admin-authentications.html:15
+msgid "New user"
+msgstr "Nouvel utilisateur"
+
+#: burpui/templates/admin-authentications.html:19
+msgid "Users list"
+msgstr "Liste d'utilisateurs"
+
+#: burpui/templates/admin-authentications.html:21
+#: burpui/templates/admin-authorizations.html:21
+#: burpui/templates/admin-authorizations.html:54
+#: burpui/templates/client-browse.html:48 burpui/templates/settings.html:69
+msgid "Loading, Please wait..."
+msgstr "Chargement, veuillez patienter..."
+
+#: burpui/templates/admin-authentications.html:32
+#: burpui/templates/admin-authentications.html:116
+msgid "Authentication Backend"
+msgstr "Backend d'identification"
+
+#: burpui/templates/admin-authentications.html:33
+#: burpui/templates/admin-authorizations.html:36
+#: burpui/templates/admin-authorizations.html:69
+msgid "Controls"
+msgstr "Contrôles"
+
+#: burpui/templates/admin-authentications.html:47
+#: burpui/templates/admin-authentications.html:74
+#: burpui/templates/admin-authorizations.html:83
+#: burpui/templates/admin-authorizations.html:110
+#: burpui/templates/admin-authorizations.html:130
+#: burpui/templates/admin-authorizations.html:153
+#: burpui/templates/admin/sessions.html:37 burpui/templates/user.html:109
+msgid "Confirmation"
+msgstr "Confirmation"
+
+#: burpui/templates/admin-authentications.html:51
+#: burpui/templates/admin-authorizations.html:87
+msgid "You are about to delete a user, are you sure?"
+msgstr "Vous êtes sur le point de supprimer un utilisateur, êtes vous sûr ?"
+
+#: burpui/templates/admin-authentications.html:59
+#: burpui/templates/admin-authorizations.html:95
+#: burpui/templates/admin/sessions.html:45 burpui/templates/user.html:117
+msgid "Warning!"
+msgstr "Attention!"
+
+#: burpui/templates/admin-authentications.html:59
+msgid "You are about to remove your <strong>current</strong> user."
+msgstr ""
+"Vous êtes sur le point de supprimer votre utilisateur <strong>actuel</strong>."
+
+#: burpui/templates/admin-authentications.html:63
+#: burpui/templates/admin-authentications.html:83
+#: burpui/templates/admin-authentications.html:132
+#: burpui/templates/admin-authorizations.html:99
+#: burpui/templates/admin-authorizations.html:119
+#: burpui/templates/admin-authorizations.html:142
+#: burpui/templates/admin-authorizations.html:162
+#: burpui/templates/admin-authorizations.html:245
+#: burpui/templates/admin/authentication.html:26
+#: burpui/templates/admin/sessions.html:49
+#: burpui/templates/client-browse.html:142 burpui/templates/user.html:58
+#: burpui/templates/user.html:92 burpui/templates/user.html:121
+msgid "Cancel"
+msgstr "Annuler"
+
+#: burpui/templates/admin-authentications.html:64
+#: burpui/templates/admin-authorizations.html:100
+#: burpui/templates/admin-authorizations.html:143
+#: burpui/templates/admin/sessions.html:50 burpui/templates/user.html:122
+msgid "Confirm"
+msgstr "Confirmer"
+
+#: burpui/templates/admin-authentications.html:84
+#: burpui/templates/admin-authorizations.html:120
+#: burpui/templates/admin-authorizations.html:163
+#: burpui/templates/js/admin-authentications.js:123
+#: burpui/templates/js/admin-authorizations.js:382
+#: burpui/templates/js/admin-authorizations.js:511
+msgid "Edit"
+msgstr "Éditer"
+
+#: burpui/templates/admin-authentications.html:94
+msgid "Create User"
+msgstr "Nouvel utilisateur"
+
+#: burpui/templates/admin-authentications.html:99
+msgid "Create new User"
+msgstr "Créer un nouvel utilisateur"
+
+#: burpui/templates/admin-authentications.html:113
+#: burpui/templates/admin-authorizations.html:190
+#: burpui/templates/admin-backends.html:17
+msgid "Backend"
+msgstr "Backend"
+
+#: burpui/templates/admin-authentications.html:125
+#: burpui/templates/admin-authorizations.html:238
+msgid "Create"
+msgstr "Créer"
+
+#: burpui/templates/admin-authorizations.html:12
+#: burpui/templates/admin-authorizations.html:35
+#: burpui/templates/admin-authorizations.html:68
+#: burpui/templates/admin-authorizations.html:201
+#: burpui/templates/admin/grant-authorization.html:19
+#: burpui/templates/admin/group-authorization.html:18
+msgid "Grants"
+msgstr "Permissions"
+
+#: burpui/templates/admin-authorizations.html:14
+msgid "Create new grant"
+msgstr "Créer une nouvelle permission"
+
+#: burpui/templates/admin-authorizations.html:15
+msgid "New grant"
+msgstr "Nouvelle permission"
+
+#: burpui/templates/admin-authorizations.html:19
+msgid "Grants list"
+msgstr "Liste des permissions"
+
+#: burpui/templates/admin-authorizations.html:32
+#: burpui/templates/admin-authorizations.html:65
+#: burpui/templates/admin-authorizations.html:193
+msgid "Authorization Backend"
+msgstr "Backend d'authorisation"
+
+#: burpui/templates/admin-authorizations.html:33
+#: burpui/templates/admin-authorizations.html:66
+msgid "Role"
+msgstr "Rôle"
+
+#: burpui/templates/admin-authorizations.html:34
+#: burpui/templates/admin-authorizations.html:45
+msgid "Groups"
+msgstr "Groupes"
+
+#: burpui/templates/admin-authorizations.html:47
+msgid "Create new group"
+msgstr "Créer un nouveau groupe"
+
+#: burpui/templates/admin-authorizations.html:48
+msgid "New group"
+msgstr "Nouveau groupe"
+
+#: burpui/templates/admin-authorizations.html:52
+msgid "Groups list"
+msgstr "Liste des groupes"
+
+#: burpui/templates/admin-authorizations.html:64
+#: burpui/templates/js/admin-authorizations.js:50
+msgid "Group name"
+msgstr "Nom du groupe"
+
+#: burpui/templates/admin-authorizations.html:67
+msgid "Members"
+msgstr "Membres"
+
+#: burpui/templates/admin-authorizations.html:95
+msgid ""
+"You are about to remove your grants associated to your "
+"<strong>current</strong> user."
+msgstr ""
+"Vous êtes sur le point de supprimer une permission associée"
+"à votre utilisateur <strong>actuel</strong>."
+
+#: burpui/templates/admin-authorizations.html:134
+msgid "You are about to delete a group, are you sure?"
+msgstr "Vous êtes sur le point de supprimer un groupe, êtes vous sûr ?"
+
+#: burpui/templates/admin-authorizations.html:205
+#: burpui/templates/admin/grant-authorization.html:23
+#: burpui/templates/admin/group-authorization.html:22
+msgid "You need to enter a valid JSON expression. Example:"
+msgstr "Vous devez entrer une expression JSON valide. Exemple : "
+
+#: burpui/templates/admin-authorizations.html:208
+#: burpui/templates/admin/group-authorization.html:25
+msgid "Group members"
+msgstr "Membres du groupe"
+
+#: burpui/templates/admin-authorizations.html:210
+#: burpui/templates/admin/group-authorization.html:27
+msgid "Choose a person"
+msgstr "Choisissez une personne"
+
+#: burpui/templates/admin-authorizations.html:211
+#: burpui/templates/admin/group-authorization.html:28
+msgid "Select person..."
+msgstr "Sélectionnez une personne..."
+
+#: burpui/templates/admin-authorizations.html:222
+#: burpui/templates/admin/grant-authorization.html:29
+#: burpui/templates/admin/group-authorization.html:40
+msgid "Is Admin"
+msgstr "Est administrateur"
+
+#: burpui/templates/admin-authorizations.html:231
+#: burpui/templates/admin/grant-authorization.html:38
+#: burpui/templates/admin/group-authorization.html:49
+msgid "Is Moderator"
+msgstr "Est Modérateur"
+
+#: burpui/templates/admin-backends.html:12
+msgid "Backends list"
+msgstr "Liste des Backends"
+
+#: burpui/templates/admin-backends.html:18
+msgid "Description"
+msgstr "Déscription"
 
 #: burpui/templates/backup-report.html:9 burpui/templates/client-browse.html:9
 #: burpui/templates/client-report.html:9 burpui/templates/client.html:9
 #: burpui/templates/clients-report.html:9 burpui/templates/clients.html:9
+#: burpui/templates/settings.html:12
 #, python-format
 msgid "%(server)s clients"
 msgstr "Clients de %(server)s"
@@ -1045,8 +1352,8 @@ msgstr "Sauvegarde n°%(number)s"
 msgid "Backup n°%(number)s of %(client)s"
 msgstr "Sauvegarde n°%(number)s de %(client)s"
 
-#: burpui/templates/backup-report.html:25
-#: burpui/templates/client-report.html:23 burpui/templates/live-monitor.html:79
+#: burpui/templates/backup-report.html:23
+#: burpui/templates/client-report.html:21 burpui/templates/live-monitor.html:79
 msgid "New"
 msgstr "Nouveaux"
 
@@ -1055,23 +1362,23 @@ msgstr "Nouveaux"
 msgid "Changed"
 msgstr "Changés"
 
-#: burpui/templates/backup-report.html:37
-#: burpui/templates/client-report.html:35 burpui/templates/live-monitor.html:81
+#: burpui/templates/backup-report.html:40
+#: burpui/templates/client-report.html:37 burpui/templates/live-monitor.html:81
 msgid "Unchanged"
 msgstr "Inchangés"
 
-#: burpui/templates/backup-report.html:43
-#: burpui/templates/client-report.html:41 burpui/templates/live-monitor.html:82
+#: burpui/templates/backup-report.html:48
+#: burpui/templates/client-report.html:45 burpui/templates/live-monitor.html:82
 msgid "Deleted"
 msgstr "Supprimés"
 
-#: burpui/templates/backup-report.html:49
-#: burpui/templates/client-report.html:47
+#: burpui/templates/backup-report.html:58
+#: burpui/templates/client-report.html:53
 msgid "Total"
 msgstr "Totaux"
 
-#: burpui/templates/backup-report.html:55
-#: burpui/templates/client-report.html:53 burpui/templates/live-monitor.html:83
+#: burpui/templates/backup-report.html:66
+#: burpui/templates/client-report.html:61 burpui/templates/live-monitor.html:83
 msgid "Scanned"
 msgstr "Scannés"
 
@@ -1141,10 +1448,6 @@ msgstr ""
 #: burpui/templates/client-browse.html:43
 msgid "Fetch all nodes"
 msgstr "Pré-charger tous les nœuds"
-
-#: burpui/templates/client-browse.html:48 burpui/templates/settings.html:17
-msgid "Loading, Please wait..."
-msgstr "Chargement, veuillez patienter..."
 
 #: burpui/templates/client-browse.html:58
 msgid "mode"
@@ -1237,22 +1540,27 @@ msgstr "Traitement en cours"
 msgid "Please wait while restoration is processing..."
 msgstr "Veuillez patienter pendant la restauration..."
 
-#: burpui/templates/client-browse.html:141
-#: burpui/templates/client-browse.html:160
+#: burpui/templates/client-browse.html:144
+#: burpui/templates/client-browse.html:163
 msgid "Close"
 msgstr "Fermer"
 
-#: burpui/templates/client-browse.html:151
+#: burpui/templates/client-browse.html:154
 msgid "Restoration error"
 msgstr "Erreur de restauration"
 
-#: burpui/templates/client-browse.html:155
+#: burpui/templates/client-browse.html:158
 msgid "An error occurred while processing the restoration."
 msgstr "Une erreur s'est produite lors de la restauration."
 
-#: burpui/templates/client-report.html:59
+#: burpui/templates/client-report.html:69
 msgid "Statistics"
 msgstr "Statistiques"
+
+#: burpui/templates/client.html:17 burpui/templates/js/settings.js:358
+#: burpui/templates/settings.html:444 burpui/templates/settings.html:478
+msgid "edit"
+msgstr "éditer"
 
 #: burpui/templates/client.html:19
 msgid "Backups"
@@ -1285,7 +1593,7 @@ msgid "Status"
 msgstr "Status"
 
 #: burpui/templates/client.html:28 burpui/templates/client.html:40
-#: burpui/templates/js/client.js:135
+#: burpui/templates/js/client.js:146
 msgid "Delete"
 msgstr "Supprimer"
 
@@ -1333,31 +1641,33 @@ msgstr "nombre de fichiers"
 msgid "used space"
 msgstr "espace utilisé"
 
-#: burpui/templates/clients-report.html:51
+#: burpui/templates/clients-report.html:50
 msgid "Clients repartition"
 msgstr "Répartition des clients"
 
-#: burpui/templates/clients-report.html:57
+#: burpui/templates/clients-report.html:58
 #: burpui/templates/servers-report.html:22
 msgid "Used space"
 msgstr "Espace disque"
 
-#: burpui/templates/clients-report.html:63
-#: burpui/templates/servers-report.html:28
+#: burpui/templates/clients-report.html:66
+#: burpui/templates/servers-report.html:30
 msgid "Total files"
 msgstr "Nombre de fichiers"
 
-#: burpui/templates/clients-report.html:69
-#: burpui/templates/servers-report.html:34
+#: burpui/templates/clients-report.html:74
+#: burpui/templates/servers-report.html:38
 msgid "Number of backups"
 msgstr "Nombre de sauvegardes"
 
 #: burpui/templates/clients.html:15 burpui/templates/servers.html:17
-#: burpui/templates/topbar.html:29 burpui/templates/topbar.html:36
+#: burpui/templates/settings.html:63 burpui/templates/topbar.html:29
+#: burpui/templates/topbar.html:36
 msgid "Clients"
 msgstr "Clients"
 
 #: burpui/templates/clients.html:22 burpui/templates/servers.html:16
+#: burpui/templates/settings.html:435 burpui/templates/settings.html:469
 msgid "Name"
 msgstr "Nom"
 
@@ -1370,10 +1680,14 @@ msgid "Last Backup"
 msgstr "Dernière sauvegarde"
 
 #: burpui/templates/clients.html:25
+msgid "Labels"
+msgstr "Étiquettes"
+
+#: burpui/templates/clients.html:26
 msgid "Monitor"
 msgstr "Moniteur"
 
-#: burpui/templates/live-monitor.html:6 burpui/templates/topbar.html:49
+#: burpui/templates/live-monitor.html:6 burpui/templates/topbar.html:51
 msgid "Live monitor"
 msgstr "Moniteur temps réél"
 
@@ -1385,7 +1699,8 @@ msgstr ""
 "{{ ::client.client }}<span ng-if=\"client.agent\"> sur {{ ::client.agent "
 "}}</span>"
 
-#: burpui/templates/live-monitor.html:21
+#: burpui/templates/live-monitor.html:21 burpui/templates/settings.html:435
+#: burpui/templates/settings.html:469
 msgid "Path"
 msgstr "Chemin"
 
@@ -1424,11 +1739,13 @@ msgstr ""
 msgid "You have selected 1 row"
 msgstr "Vous avez sélectionné 1 ligne"
 
-#: burpui/templates/js/user.js:190 burpui/templates/macros.html:131
+#: burpui/templates/js/admin/sessions.js:52 burpui/templates/js/user.js:186
+#: burpui/templates/macros.html:131
 msgid "Select all"
 msgstr "Tout sélectionner"
 
-#: burpui/templates/js/user.js:203 burpui/templates/macros.html:132
+#: burpui/templates/js/admin/sessions.js:65 burpui/templates/js/user.js:199
+#: burpui/templates/macros.html:132
 msgid "Deselect all"
 msgstr "Tout dé-sélectionner"
 
@@ -1450,7 +1767,7 @@ msgstr ""
 msgid "Global report"
 msgstr "Rapport global"
 
-#: burpui/templates/servers-report.html:16
+#: burpui/templates/servers-report.html:14
 msgid "Clients repartition per server"
 msgstr "Répartition des clients par serveur"
 
@@ -1458,82 +1775,159 @@ msgstr "Répartition des clients par serveur"
 msgid "Servers"
 msgstr "Serveurs"
 
-#: burpui/templates/settings.html:9
+#: burpui/templates/settings.html:14 burpui/templates/settings.html:27
+#: burpui/templates/settings.html:30
 #, python-format
-msgid "Burp Configuration of %(server)s"
-msgstr "Configuration Burp de %(server)s"
+msgid "Burp Server Configuration of %(server)s"
+msgstr "Configuration du serveur Burp %(server)s"
 
-#: burpui/templates/settings.html:11
-msgid "Burp Configuration"
-msgstr "Configuration Burp"
+#: burpui/templates/settings.html:16 burpui/templates/settings.html:22
+#, python-format
+msgid "%(client)s on %(server)s"
+msgstr "%(client)s sur %(server)s"
 
-#: burpui/templates/settings.html:31 burpui/templates/sideconfig.html:5
+#: burpui/templates/settings.html:20
+#, python-format
+msgid "Template %(name)s on %(server)s"
+msgstr "Template %(name)s sur %(server)s"
+
+#: burpui/templates/settings.html:36 burpui/templates/settings.html:49
+#: burpui/templates/settings.html:52
+msgid "Burp Server Configuration"
+msgstr "Configuration du serveur Burp"
+
+#: burpui/templates/settings.html:42
+#, python-format
+msgid "Template %(name)s"
+msgstr "Template %(name)s"
+
+#: burpui/templates/settings.html:60
+msgid "Config"
+msgstr "Configuration"
+
+#: burpui/templates/settings.html:61
+msgid "Raw content"
+msgstr "Contenu brut"
+
+#: burpui/templates/settings.html:62
+msgid "Hierarchy"
+msgstr "Hiérarchie"
+
+#: burpui/templates/settings.html:64 burpui/templates/settings.html:345
+#: burpui/templates/sideconfig.html:14
+msgid "Templates"
+msgstr "Templates"
+
+#: burpui/templates/settings.html:87 burpui/templates/sideconfig.html:5
 msgid "Booleans"
 msgstr "Booléens"
 
-#: burpui/templates/settings.html:49 burpui/templates/settings.html:91
-#: burpui/templates/settings.html:128 burpui/templates/settings.html:174
+#: burpui/templates/settings.html:105 burpui/templates/settings.html:147
+#: burpui/templates/settings.html:184 burpui/templates/settings.html:286
 msgid "Select an option"
 msgstr "Choisissez une option"
 
-#: burpui/templates/settings.html:70 burpui/templates/sideconfig.html:6
+#: burpui/templates/settings.html:126 burpui/templates/sideconfig.html:6
 msgid "Strings"
 msgstr "Chaînes"
 
-#: burpui/templates/settings.html:112 burpui/templates/sideconfig.html:7
+#: burpui/templates/settings.html:168 burpui/templates/sideconfig.html:7
 msgid "Integers"
 msgstr "Nombres"
 
-#: burpui/templates/settings.html:149 burpui/templates/sideconfig.html:8
+#: burpui/templates/settings.html:206 burpui/templates/sideconfig.html:9
+msgid "Pairs"
+msgstr "Paires"
+
+#: burpui/templates/settings.html:226
+msgid "add {{ $parent.pair_associations[id] }}"
+msgstr "Ajoutez {{ $parent.pair_associations[id] }}"
+
+#: burpui/templates/settings.html:238
+msgid "Select a pair member"
+msgstr "Sélectionnez un membre d'une paire"
+
+#: burpui/templates/settings.html:260 burpui/templates/sideconfig.html:11
 msgid "Multi"
 msgstr "Valeurs multiples"
 
-#: burpui/templates/settings.html:195
+#: burpui/templates/settings.html:307
 msgid "Source external configuration files"
 msgstr "Charger des configurations externes"
 
-#: burpui/templates/settings.html:201 burpui/templates/settings.html:224
+#: burpui/templates/settings.html:313
 msgid "source config"
 msgstr "Charger configuration"
 
-#: burpui/templates/settings.html:233 burpui/templates/user.html:58
-#: burpui/templates/user.html:92
-msgid "Submit"
-msgstr "Envoyer"
+#: burpui/templates/settings.html:336
+msgid "source new config"
+msgstr "Charger une nouvelle configuration"
 
-#: burpui/templates/settings.html:238
+#: burpui/templates/settings.html:351
+msgid "template"
+msgstr "template"
+
+#: burpui/templates/settings.html:367
+msgid "Select a template"
+msgstr "Sélectionnez un template"
+
+#: burpui/templates/admin/authentication.html:25
+#: burpui/templates/admin/grant-authorization.html:45
+#: burpui/templates/admin/group-authorization.html:57
+#: burpui/templates/settings.html:391 burpui/templates/user.html:57
+#: burpui/templates/user.html:91
+msgid "Save"
+msgstr "Sauvegarder"
+
+#: burpui/templates/settings.html:396
 #, python-format
 msgid "Remove '%(client)s'"
 msgstr "Supprimer '%(client)s'"
 
-#: burpui/templates/settings.html:241
+#: burpui/templates/settings.html:400
 msgid "Do not remove the configuration:"
 msgstr "Ne pas supprimer la configuration :"
 
-#: burpui/templates/settings.html:242
+#: burpui/templates/settings.html:401
 msgid "Remove associated certificate:"
 msgstr "Supprimer les certificats associés :"
 
-#: burpui/templates/settings.html:243
+#: burpui/templates/settings.html:402
 msgid "Revoke associated certificate:"
 msgstr "Révoquer les certificats associés :"
+
+#: burpui/templates/settings.html:407
+msgid "Remove file"
+msgstr "Retirer le fichier"
+
+#: burpui/templates/settings.html:423
+msgid "File"
+msgstr "Fichier"
+
+#: burpui/templates/settings.html:452 burpui/templates/settings.html:454
+msgid "Create new client"
+msgstr "Créer un nouveau client"
+
+#: burpui/templates/settings.html:486 burpui/templates/settings.html:488
+msgid "Create new template"
+msgstr "Créer un nouveau template"
 
 #: burpui/templates/sideadmin.html:3
 msgid "Administration navigation"
 msgstr "Navigation"
 
 #: burpui/templates/sideadmin.html:5
-msgid "Users"
-msgstr "Utilisateurs"
+msgid "Authentications"
+msgstr "Identifications"
 
-#: burpui/templates/sideadmin.html:6 burpui/templates/topbar.html:43
-msgid "Burp Settings"
-msgstr "Paramètres de Burp"
-
-#: burpui/templates/sideadmin.html:7 burpui/templates/sideuser.html:7
+#: burpui/templates/sideadmin.html:6 burpui/templates/sideuser.html:7
 #: burpui/templates/user.html:100
-msgid "ACL"
-msgstr "Contrôles d'accès"
+msgid "Authorizations"
+msgstr "Authorisations"
+
+#: burpui/templates/sideadmin.html:7
+msgid "Backends"
+msgstr "Backends"
 
 #: burpui/templates/sidebar.html:18 burpui/templates/sidebar.html:20
 #: burpui/templates/sidebar.html:22 burpui/templates/sidebar.html:24
@@ -1555,30 +1949,16 @@ msgstr "Rapports"
 msgid "Configuration navigation"
 msgstr "Navigation"
 
-#: burpui/templates/sideconfig.html:9
+#: burpui/templates/sideconfig.html:12
 msgid "Source files"
 msgstr "Charger les fichiers"
-
-#: burpui/templates/sideconfig.html:11
-msgid "Client to configure"
-msgstr "Client à configurer"
-
-#: burpui/templates/sideconfig.html:15
-msgid "Select a client"
-msgstr "Sélectionner un client"
-
-#: burpui/templates/sideconfig.html:23
-msgid "config:"
-msgstr "configuration :"
-
-#: burpui/templates/sideconfig.html:33
-msgid "Create new client"
-msgstr "Créer un nouveau client"
 
 #: burpui/templates/sideuser.html:3
 msgid "User settings navigation"
 msgstr "Navigation"
 
+#: burpui/templates/admin/sessions.html:13
+#: burpui/templates/js/admin-authentications.js:123
 #: burpui/templates/sideuser.html:5 burpui/templates/user.html:11
 msgid "Sessions"
 msgstr "Sessions"
@@ -1587,6 +1967,12 @@ msgstr "Sessions"
 msgid "Preferences"
 msgstr "Préférences"
 
+#: burpui/templates/admin/grant-authorization.html:13
+#: burpui/templates/admin/group-authorization.html:13
+#: burpui/templates/small_topbar.html:38
+msgid "Authorization"
+msgstr "Authorisation"
+
 #: burpui/templates/topbar.html:5
 msgid "Toggle navigation"
 msgstr "Afficher menu"
@@ -1594,6 +1980,10 @@ msgstr "Afficher menu"
 #: burpui/templates/topbar.html:16
 msgid "About"
 msgstr "À propos"
+
+#: burpui/templates/topbar.html:44
+msgid "Burp Settings"
+msgstr "Paramètres de Burp"
 
 #: burpui/templates/topbar.html:64 burpui/templates/user.html:7
 msgid "User settings"
@@ -1611,27 +2001,27 @@ msgstr "Rafraîchir"
 msgid "Search client..."
 msgstr "Rechercher client..."
 
-#: burpui/templates/user.html:16
+#: burpui/templates/admin/sessions.html:18 burpui/templates/user.html:16
 msgid "IP"
 msgstr "IP"
 
-#: burpui/templates/user.html:17
+#: burpui/templates/admin/sessions.html:19 burpui/templates/user.html:17
 msgid "Last seen"
 msgstr "Dernière visite"
 
-#: burpui/templates/user.html:18
+#: burpui/templates/admin/sessions.html:20 burpui/templates/user.html:18
 msgid "User-Agent"
 msgstr "Navigateur"
 
-#: burpui/templates/user.html:19
+#: burpui/templates/admin/sessions.html:21 burpui/templates/user.html:19
 msgid "API Login"
 msgstr "Connexion via l'API"
 
-#: burpui/templates/user.html:20
+#: burpui/templates/admin/sessions.html:22 burpui/templates/user.html:20
 msgid "Current session"
 msgstr "Session actuelle"
 
-#: burpui/templates/user.html:21
+#: burpui/templates/admin/sessions.html:23 burpui/templates/user.html:21
 msgid "Expire"
 msgstr "Éxpire"
 
@@ -1643,7 +2033,9 @@ msgstr "Mot de passe actuel"
 msgid "Required"
 msgstr "Requis"
 
-#: burpui/templates/user.html:42 burpui/templates/user.html:44
+#: burpui/templates/admin/authentication.html:18
+#: burpui/templates/admin/authentication.html:20 burpui/templates/user.html:42
+#: burpui/templates/user.html:44
 msgid "New password"
 msgstr "Nouveau mot de passe"
 
@@ -1658,11 +2050,6 @@ msgstr "Nouveau mot de passe (confirmation)"
 #: burpui/templates/user.html:53
 msgid "Passwords mismatch"
 msgstr "Les mots de passe ne correspondent pas"
-
-#: burpui/templates/user.html:57 burpui/templates/user.html:91
-#: burpui/templates/user.html:121
-msgid "Cancel"
-msgstr "Annuler"
 
 #: burpui/templates/user.html:65
 msgid "UI Settings"
@@ -1685,28 +2072,123 @@ msgstr "La valeur par defaut est 'llll'"
 msgid "See <a href=\"%(url)s\">here</a> for available formats"
 msgstr "Voir <a href=\"%(url)s\">ici</a> pour la liste des formats disponibles"
 
-#: burpui/templates/user.html:113
+#: burpui/templates/admin/sessions.html:41 burpui/templates/user.html:113
 msgid "You are about to revoke a session, are you sure?"
 msgstr "Vous êtes sur le point de révoquer une session, êtes vous sûr ?"
 
-#: burpui/templates/user.html:117
-msgid "Warning!"
-msgstr "Attention!"
-
-#: burpui/templates/user.html:117
+#: burpui/templates/admin/sessions.html:45 burpui/templates/user.html:117
 msgid "You are about to revoke your <strong>current</strong> session."
 msgstr "Vous allez supprimer votre session <strong>actuelle</strong>."
 
-#: burpui/templates/user.html:122
-msgid "Confirm"
-msgstr "Confirmer"
+#: burpui/templates/admin/authentication.html:9
+#, python-format
+msgid "Authentication user %(backend)s/%(user)s"
+msgstr "Identification utilisateur %(backend)s/%(user)s"
 
-#: burpui/templates/js/client-browse.js:127
+#: burpui/templates/admin/authentication.html:16
+#, python-format
+msgid "Password of user %(user)s on %(backend)s"
+msgstr "Mot de passe de l'utilisateur %(user)s sur %(backend)s"
+
+#: burpui/templates/admin/grant-authorization.html:9
+#, python-format
+msgid "Authorization user %(backend)s/%(grant)s"
+msgstr "Authorisation utilisateur %(backend)s/%(grant)s"
+
+#: burpui/templates/admin/grant-authorization.html:16
+#, python-format
+msgid "Grants of %(user)s on %(backend)s"
+msgstr "Permission de %(user)s sur %(backend)s"
+
+#: burpui/templates/admin/group-authorization.html:9
+#, python-format
+msgid "Authorization group %(backend)s/%(group)s"
+msgstr "Authorisation de groupe %(backend)s/%(group)s"
+
+#: burpui/templates/admin/group-authorization.html:16
+#, python-format
+msgid "Grants of group %(group)s on %(backend)s"
+msgstr "Permission du groupe %(group)s sur %(backend)s"
+
+#: burpui/templates/admin/sessions.html:9
+#, python-format
+msgid "%(user)s's sessions"
+msgstr "Sessions de %(user)s"
+
+#: burpui/templates/js/admin-authentications.js:44
+#: burpui/templates/js/admin-authorizations.js:247
+#: burpui/templates/js/settings.js:642 burpui/templates/js/settings.js:672
+msgid "Creating..."
+msgstr "Création..."
+
+#: burpui/templates/js/admin-authentications.js:123
+#: burpui/templates/js/admin-authorizations.js:382
+#: burpui/templates/js/admin-authorizations.js:511
+msgid "Remove"
+msgstr "Supprimer"
+
+#: burpui/templates/js/admin-authentications.js:192
+#: burpui/templates/js/admin-authorizations.js:763
+msgid "Please select the backend(s) from which to remove the user:"
+msgstr "Veuillez sélectionner le(s) backend(s) duquel/desquels supprimer cet utilisateur :"
+
+#: burpui/templates/js/admin-authentications.js:194
+#: burpui/templates/js/admin-authorizations.js:765
+msgid "The backend does not support user removal"
+msgstr "Ce backend ne supporte pas la suppression d\\'utilisateur"
+
+#: burpui/templates/js/admin-authentications.js:249
+#: burpui/templates/js/admin-authorizations.js:852
+#: burpui/templates/js/admin-authorizations.js:929
+msgid "Please select the backend from which to edit the user from:"
+msgstr "Veuillez sélectionner le backend pour lequel vous souhaitez éditer cet utilisateur :"
+
+#: burpui/templates/js/admin-authentications.js:251
+#: burpui/templates/js/admin-authorizations.js:854
+#: burpui/templates/js/admin-authorizations.js:931
+msgid "Please select a backend"
+msgstr "Veuillez sélectionner un backend"
+
+#: burpui/templates/js/admin-authorizations.js:48
+msgid "Create Group"
+msgstr "Nouveau groupe"
+
+#: burpui/templates/js/admin-authorizations.js:49
+msgid "Create new Group"
+msgstr "Créer un nouveau groupe"
+
+#: burpui/templates/js/admin-authorizations.js:129
+msgid "Create Grant"
+msgstr "Nouvelle permission"
+
+#: burpui/templates/js/admin-authorizations.js:130
+msgid "Create new Grant"
+msgstr "Créer une nouvelle permission"
+
+#: burpui/templates/js/admin-authorizations.js:131
+msgid "Grant/User name"
+msgstr "Nom de la permission ou de l\\'utilisateur"
+
+#: burpui/templates/js/admin-authorizations.js:343
+#: burpui/templates/js/admin-authorizations.js:450
+#: burpui/templates/js/admin-authorizations.js:475
+msgid "Inherited by: "
+msgstr "Hérité par "
+
+#: burpui/templates/js/admin-authorizations.js:878
+msgid "Please select the backend(s) from which to remove the group:"
+msgstr "Veuillez sélectionner le(s) backend(s) duquel/desquels supprimer ce groupe :"
+
+#: burpui/templates/js/admin-authorizations.js:880
+msgid "The backend does not support group removal"
+msgstr "Le backend ne supporte pas la suppression de groupes"
+
+#: burpui/templates/js/client-browse.js:135
 msgid "Collapse tree"
 msgstr "Réduire l&#39;arborescence"
 
-#: burpui/templates/js/client-browse.js:223
-#: burpui/templates/js/client-browse.js:246
+#: burpui/templates/js/client-browse.js:250
+#: burpui/templates/js/client-browse.js:273
 msgid ""
 "The backup seems encrypted, please provide the encryption key in the "
 "\\'Download options\\' form."
@@ -1714,47 +2196,48 @@ msgstr ""
 "La sauvegarde semble chiffrée, veuillez renseigner la clé de chiffrement "
 "dans le formulaire \\'Options de téléchargement\\'"
 
-#: burpui/templates/js/client-browse.js:307
+#: burpui/templates/js/client-browse.js:335
 msgid "Loading"
 msgstr "Chargement"
 
-#: burpui/templates/js/client-browse.js:313
+#: burpui/templates/js/client-browse.js:341
 msgid "Nodes loaded"
 msgstr "Nœuds chargés"
 
-#: burpui/templates/js/client.js:11 burpui/templates/js/client.js:18
-#: burpui/templates/js/client.js:28 burpui/templates/js/clients.js:11
+#: burpui/templates/js/client.js:13 burpui/templates/js/client.js:20
+#: burpui/templates/js/client.js:30 burpui/templates/js/clients.js:11
 #: burpui/templates/js/clients.js:17
 msgid "client crashed"
 msgstr "erreur client"
 
-#: burpui/templates/js/client.js:12 burpui/templates/js/client.js:19
-#: burpui/templates/js/client.js:29 burpui/templates/js/clients.js:12
+#: burpui/templates/js/client.js:14 burpui/templates/js/client.js:21
+#: burpui/templates/js/client.js:31 burpui/templates/js/clients.js:12
 #: burpui/templates/js/clients.js:18
 msgid "server crashed"
 msgstr "erreur serveur"
 
-#: burpui/templates/js/client.js:13 burpui/templates/js/client.js:20
-#: burpui/templates/js/client.js:30 burpui/templates/js/clients.js:13
-#: burpui/templates/js/clients.js:19 burpui/templates/js/clients.js:100
+#: burpui/templates/js/client.js:15 burpui/templates/js/client.js:22
+#: burpui/templates/js/client.js:32 burpui/templates/js/client.js:210
+#: burpui/templates/js/clients.js:13 burpui/templates/js/clients.js:19
+#: burpui/templates/js/clients.js:115 burpui/templates/js/clients.js:120
 msgid "running"
 msgstr "en cours"
 
-#: burpui/templates/js/client.js:14 burpui/templates/js/client.js:21
-#: burpui/templates/js/client.js:31 burpui/templates/js/clients.js:20
-#: burpui/templates/js/clients.js:131
+#: burpui/templates/js/client.js:16 burpui/templates/js/client.js:23
+#: burpui/templates/js/client.js:33 burpui/templates/js/clients.js:20
+#: burpui/templates/js/clients.js:165
 msgid "idle"
 msgstr "en attente"
 
-#: burpui/templates/js/client.js:125
+#: burpui/templates/js/client.js:135
 msgid "Encrypted backup"
 msgstr "Sauvegarde chiffrée"
 
-#: burpui/templates/js/client.js:125
+#: burpui/templates/js/client.js:135
 msgid "Unencrypted backup"
 msgstr "Sauvegarde non chiffrée"
 
-#: burpui/templates/js/client.js:331
+#: burpui/templates/js/client.js:350
 msgid "Delete task launched"
 msgstr "Tâche de suppression lancée"
 
@@ -1766,11 +2249,37 @@ msgstr "jamais"
 msgid "now"
 msgstr "maintenant"
 
-#: burpui/templates/js/clients.js:129
+#: burpui/templates/js/clients.js:163
 msgid "view"
 msgstr "voir"
 
-#: burpui/templates/js/settings.js:209 burpui/templates/js/user.js:61
+#: burpui/templates/js/live-monitor.js:65
+msgid "Backup complete. Will redirect you in 5 seconds"
+msgstr "Sauvegarde terminée. Vous allez être redirigé dans 5 secondes"
+
+#: burpui/templates/js/live-monitor.js:72
+msgid "No more backup running"
+msgstr "Plus de sauvegardes en cours"
+
+#: burpui/templates/js/live-monitor.js:80
+msgid "Will redirect you in 5 seconds"
+msgstr "Vous allez être redirigé dans 5 secondes"
+
+#: burpui/templates/js/settings.js:167
+msgid "yes"
+msgstr "oui"
+
+#: burpui/templates/js/settings.js:168
+msgid "no"
+msgstr "non"
+
+#: burpui/templates/js/settings.js:169
+msgid "reset list"
+msgstr "liste raz"
+
+#: burpui/templates/js/admin/authentication.js:11
+#: burpui/templates/js/settings.js:267 burpui/templates/js/user.js:61
+#: burpui/templates/js/user.js:87
 msgid "Saving..."
 msgstr "Sauvegarde..."
 
@@ -1778,25 +2287,39 @@ msgstr "Sauvegarde..."
 msgid "Preferences successfuly saved"
 msgstr "Préférences sauvegardées avec succès"
 
-#: burpui/templates/js/user.js:195
+#: burpui/templates/js/admin/sessions.js:57 burpui/templates/js/user.js:191
 msgid "Select all filtered"
 msgstr "Sélectionner éléments filtrés"
 
-#: burpui/templates/js/user.js:208
+#: burpui/templates/js/admin/sessions.js:70 burpui/templates/js/user.js:204
 msgid "Deselect all filtered"
 msgstr "Dé-sélectionner éléments filtrés"
 
-#: burpui/templates/js/user.js:216
+#: burpui/templates/js/admin/sessions.js:77 burpui/templates/js/user.js:211
+msgid "Revoke"
+msgstr "Révoquer"
+
+#: burpui/templates/js/admin/sessions.js:78 burpui/templates/js/user.js:212
 msgid "Revoke selected"
 msgstr "Révoquer la sélection"
 
-#: burpui/templates/js/user.js:539 burpui/templates/js/user.js:552
+#: burpui/templates/js/user.js:544 burpui/templates/js/user.js:557
 msgid "clients"
 msgstr "clients"
 
-#: burpui/templates/js/user.js:541 burpui/templates/js/user.js:559
+#: burpui/templates/js/user.js:546 burpui/templates/js/user.js:564
 msgid "servers"
 msgstr "serveurs"
+
+#: burpui/templates/js/admin/grant-authorization.js:19
+#: burpui/templates/js/admin/group-authorization.js:21
+msgid "Loading, please wait..."
+msgstr "Chargement, veuillez patienter..."
+
+#: burpui/templates/js/admin/grant-authorization.js:65
+#: burpui/templates/js/admin/group-authorization.js:108
+msgid "Updating"
+msgstr "Mise à jour"
 
 #~ msgid ""
 #~ msgstr ""
@@ -1821,4 +2344,35 @@ msgstr "serveurs"
 
 #~ msgid "Revoke"
 #~ msgstr "Révoquer"
+
+#~ msgid ""
+#~ "To prevent the server from being "
+#~ "able to override your local "
+#~ "include/exclude list, set this to 0. "
+#~ "The default is 1."
+#~ msgstr ""
+
+#~ msgid "Burp Configuration of %(server)s"
+#~ msgstr "Configuration Burp de %(server)s"
+
+#~ msgid "Burp Configuration"
+#~ msgstr "Configuration Burp"
+
+#~ msgid "Submit"
+#~ msgstr "Envoyer"
+
+#~ msgid "Users"
+#~ msgstr "Utilisateurs"
+
+#~ msgid "ACL"
+#~ msgstr "Contrôles d'accès"
+
+#~ msgid "Client to configure"
+#~ msgstr "Client à configurer"
+
+#~ msgid "Select a client"
+#~ msgstr "Sélectionner un client"
+
+#~ msgid "config:"
+#~ msgstr "configuration :"
 

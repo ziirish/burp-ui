@@ -13,6 +13,11 @@ from six import with_metaclass
 import logging
 
 
+def __(string):
+    """dummy function to fake the translation"""
+    return string
+
+
 class BUIaclLoader(with_metaclass(ABCMeta, object)):
     """The :class:`burpui.misc.acl.interface.BUIaclLoader` class is used to
     load the actual ACL backend"""

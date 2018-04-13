@@ -18,6 +18,7 @@ from .custom import fields, Resource
 from six import iteritems
 from flask import current_app
 from flask_login import current_user
+from flask_babel import gettext
 
 import json
 
@@ -1207,7 +1208,7 @@ class AclBackend(Resource):
         loader = handler.backends[backend]
         back = {}
         back['name'] = backend
-        back['description'] = loader.__doc__
+        back['description'] = gettext(loader.__doc__)
         for method in ['add_grant', 'del_grant', 'mod_grant', 'add_group', 'del_group', 'mod_group', 'add_group_member', 'del_group_member', 'add_moderator', 'del_moderator', 'mod_moderator', 'add_admin', 'del_admin']:
             back[method] = getattr(loader, method, False) is not False
 
@@ -1248,7 +1249,7 @@ class AclBackends(Resource):
         for name, backend in iteritems(handler.backends):
             back = {}
             back['name'] = name
-            back['description'] = backend.__doc__
+            back['description'] = gettext(backend.__doc__)
             for method in ['add_grant', 'del_grant', 'mod_grant', 'add_group', 'del_group', 'mod_group', 'add_group_member', 'del_group_member', 'add_moderator', 'del_moderator', 'mod_moderator', 'add_admin', 'del_admin']:
                 back[method] = getattr(backend, method, False) is not False
             ret.append(back)

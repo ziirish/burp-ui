@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2018-01-12 16:15+0100\n"
+"POT-Creation-Date: 2018-04-13 17:37+0200\n"
 "PO-Revision-Date: 2017-03-07 12:04-0300\n"
 "Last-Translator: Pablo Estigarribia <pablodav@gmail.com>\n"
 "Language: es\n"
@@ -19,20 +19,24 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.5.1\n"
 
-#: burpui/app.py:708
+#: burpui/app.py:373
 msgid "Please log in to access this page."
 msgstr "Por favor inicia sesión para acceder a la página."
 
-#: burpui/app.py:711
+#: burpui/app.py:376
 msgid "Please reauthenticate to access this page."
 msgstr "Por favor, vuelve a iniciar sesión para acceder a esta página."
 
-#: burpui/forms.py:18 burpui/templates/login.html:8
+#: burpui/forms.py:18 burpui/templates/admin-authentications.html:31
+#: burpui/templates/admin-authentications.html:101
+#: burpui/templates/admin-authentications.html:103
+#: burpui/templates/admin-authorizations.html:31 burpui/templates/login.html:8
 msgid "Username"
 msgstr "Usuario"
 
-#: burpui/forms.py:19 burpui/templates/login.html:9
-#: burpui/templates/user.html:33
+#: burpui/forms.py:19 burpui/templates/admin-authentications.html:107
+#: burpui/templates/admin-authentications.html:109
+#: burpui/templates/login.html:9 burpui/templates/user.html:33
 msgid "Password"
 msgstr "Contraseña"
 
@@ -44,70 +48,101 @@ msgstr "Idiomas"
 msgid "Remember me"
 msgstr "Recordar sesión"
 
-#: burpui/routes.py:193 burpui/routes.py:200
+#: burpui/routes.py:277 burpui/routes.py:284
 msgid "Sorry, there are no running backups"
 msgstr "Lo sentimos, no hay respaldos ejecutándose."
 
-#: burpui/routes.py:220 burpui/routes.py:258
+#: burpui/routes.py:304 burpui/routes.py:342
 msgid "Sorry, there are no restore file found for this client"
 msgstr "Lo sentimos, no hay archivo de restore encontrado para este cliente"
 
-#: burpui/routes.py:416
+#: burpui/routes.py:501
 msgid "Logged in successfully"
 msgstr "Sesión iniciada con éxito"
 
-#: burpui/routes.py:428
+#: burpui/routes.py:513
 msgid "Wrong username or password"
 msgstr "El nombre de usuario o la contraseña son incorrectos."
 
-#: burpui/routes.py:436
+#: burpui/routes.py:521
 msgid "Wrong CSRF token, please try again"
 msgstr "Token CSRF incorrecto, por favor intente de nuevo"
 
-#: burpui/misc/parser/burp2.py:55
+#: burpui/api/settings.py:387 burpui/api/settings.py:389
+#, python-format
+msgid "<a href=\"%(url)s\">Click here</a> to edit '%(template)s' configuration"
+msgstr ""
+
+#: burpui/api/settings.py:435 burpui/api/settings.py:437
+#, python-format
+msgid "<a href=\"%(url)s\">Click here</a> to edit '%(client)s' configuration"
+msgstr ""
+
+#: burpui/api/settings.py:478 burpui/api/settings.py:494
+#: burpui/api/settings.py:553 burpui/api/settings.py:604
+msgid "Sorry, you don't have rights to access the setting panel"
+msgstr ""
+
+#: burpui/misc/acl/basic.py:8
+msgid "Uses the Burp-UI configuration file to load its rules"
+msgstr ""
+
+#: burpui/misc/parser/burp2.py:77
 msgid "max secs"
 msgstr "segundos máximo"
 
-#: burpui/misc/parser/burp2.py:56 burpui/misc/parser/doc.py:127
-#: burpui/misc/parser/doc.py:128 burpui/misc/parser/doc.py:129
-#: burpui/misc/parser/doc.py:137 burpui/misc/parser/doc.py:138
-#: burpui/misc/parser/doc.py:141 burpui/misc/parser/doc.py:145
-#: burpui/misc/parser/doc.py:150 burpui/misc/parser/doc.py:157
-#: burpui/misc/parser/doc.py:161 burpui/misc/parser/doc.py:162
-#: burpui/misc/parser/doc.py:172 burpui/misc/parser/doc.py:175
-#: burpui/misc/parser/doc.py:179 burpui/misc/parser/doc.py:184
-#: burpui/misc/parser/doc.py:185 burpui/misc/parser/doc.py:189
-#: burpui/misc/parser/doc.py:194 burpui/misc/parser/doc.py:197
-#: burpui/misc/parser/doc.py:198 burpui/misc/parser/doc.py:200
-#: burpui/misc/parser/doc.py:202 burpui/misc/parser/doc.py:204
-#: burpui/misc/parser/doc.py:206 burpui/misc/parser/doc.py:214
+#: burpui/misc/parser/burp2.py:78 burpui/misc/parser/doc.py:128
+#: burpui/misc/parser/doc.py:129 burpui/misc/parser/doc.py:130
+#: burpui/misc/parser/doc.py:138 burpui/misc/parser/doc.py:139
+#: burpui/misc/parser/doc.py:142 burpui/misc/parser/doc.py:146
+#: burpui/misc/parser/doc.py:151 burpui/misc/parser/doc.py:158
+#: burpui/misc/parser/doc.py:162 burpui/misc/parser/doc.py:163
+#: burpui/misc/parser/doc.py:173 burpui/misc/parser/doc.py:176
+#: burpui/misc/parser/doc.py:180 burpui/misc/parser/doc.py:185
+#: burpui/misc/parser/doc.py:186 burpui/misc/parser/doc.py:190
+#: burpui/misc/parser/doc.py:195 burpui/misc/parser/doc.py:198
+#: burpui/misc/parser/doc.py:199 burpui/misc/parser/doc.py:201
+#: burpui/misc/parser/doc.py:203 burpui/misc/parser/doc.py:205
+#: burpui/misc/parser/doc.py:207 burpui/misc/parser/doc.py:215
 msgid "path"
 msgstr "ruta(path)"
 
-#: burpui/misc/parser/burp2.py:57
+#: burpui/misc/parser/burp2.py:79
 msgid "some informations"
 msgstr "algo de información"
 
-#: burpui/misc/parser/burp2.py:79
+#: burpui/misc/parser/burp2.py:80
+msgid "address|localhost"
+msgstr ""
+
+#: burpui/misc/parser/burp2.py:105
 msgid ""
 "If acl support is compiled into burp, this allows you to decide whether "
 "or not to backup acls at runtime. The default is '1'."
-msgstr "Si el soporte de ACL se compila en burp, le permite decidir si o no respaldar las ACL durante el respaldo. El valor por defecto es '1'."
+msgstr ""
+"Si el soporte de ACL se compila en burp, le permite decidir si o no "
+"respaldar las ACL durante el respaldo. El valor por defecto es '1'."
 
-#: burpui/misc/parser/burp2.py:82
+#: burpui/misc/parser/burp2.py:108
 msgid ""
 "If xattr support is compiled into burp, this allows you to decide whether"
 " or not to backup xattrs at runtime. The default is '1'."
-msgstr "Si el soporte xattr se compila en burp, le permite decidir si desea o no xattrs durante el respaldo. El valor por defecto es '1'."
+msgstr ""
+"Si el soporte xattr se compila en burp, le permite decidir si desea o no "
+"xattrs durante el respaldo. El valor por defecto es '1'."
 
-#: burpui/misc/parser/burp2.py:85
+#: burpui/misc/parser/burp2.py:111
 msgid ""
 "When running a timed backup, sleep for a random number of seconds "
 "(between 0 and the number given) before contacting the server. "
 "Alternatively, this can be specified by the '-q' command line option."
-msgstr "Cuando se ejecuta una respaldo programada, dormir por un número aleatorio de segundos (entre 0 y el número dado) antes de contactar con el servidor. Alternativamente, esto puede ser especificado por la opción de línea de comandos '-q'."
+msgstr ""
+"Cuando se ejecuta una respaldo programada, dormir por un número aleatorio"
+" de segundos (entre 0 y el número dado) antes de contactar con el "
+"servidor. Alternativamente, esto puede ser especificado por la opción de "
+"línea de comandos '-q'."
 
-#: burpui/misc/parser/burp2.py:89
+#: burpui/misc/parser/burp2.py:115
 msgid ""
 "This can be overridden by the clientconfdir configuration files in "
 "clientconfdir on the server. When the server needs to delete old backups,"
@@ -117,145 +152,225 @@ msgid ""
 "later point. You will then need to configure a cron job, or similar, to "
 "delete the files yourself. Do not specify a path that is not on the same "
 "filesystem as the client storage directory."
-msgstr "Esto puede ser anulado por los archivos de configuración clientconfdir en clientconfdir en el servidor. Cuando el servidor tiene que eliminar respaldo antiguas, o escombros que quedaron de la generación de parches temporales de librsync = 1, lo habitual es eliminarlos en su lugar. Si se utiliza la opción 'manual_delete', los archivos se moverán a la ruta especificada para su eliminación en un momento posterior. A continuación, tendrá que configurar una tarea programada, o similar, para eliminar los archivos usted mismo. No especifique una ruta que no está en el mismo sistema de archivos como el directorio de almacenamiento del cliente."
+msgstr ""
+"Esto puede ser anulado por los archivos de configuración clientconfdir en"
+" clientconfdir en el servidor. Cuando el servidor tiene que eliminar "
+"respaldo antiguas, o escombros que quedaron de la generación de parches "
+"temporales de librsync = 1, lo habitual es eliminarlos en su lugar. Si se"
+" utiliza la opción 'manual_delete', los archivos se moverán a la ruta "
+"especificada para su eliminación en un momento posterior. A continuación,"
+" tendrá que configurar una tarea programada, o similar, para eliminar los"
+" archivos usted mismo. No especifique una ruta que no está en el mismo "
+"sistema de archivos como el directorio de almacenamiento del cliente."
 
-#: burpui/misc/parser/burp2.py:101
+#: burpui/misc/parser/burp2.py:127
 msgid ""
 "You can have multiple labels, and they can be overridden in the client "
 "configuration files in clientconfdir on the server. They will appear as "
 "an array of strings in the server status monitor JSON output. The idea is"
 " to provide a mechanism for arbitrary values to be passed to clients of "
 "the server status monitor."
-msgstr "Puede tener múltiples etiquetas, y puede suprimirse en los archivos de configuración del cliente en clientconfdir en el servidor. Ellos van a aparecer como una matriz de cadenas en el estado del servidor en la salida JSON del burp status monitor. La idea es proporcionar un mecanismo para valores arbitrarios que se pasan a los clientes del burp status monitor."
+msgstr ""
+"Puede tener múltiples etiquetas, y puede suprimirse en los archivos de "
+"configuración del cliente en clientconfdir en el servidor. Ellos van a "
+"aparecer como una matriz de cadenas en el estado del servidor en la "
+"salida JSON del burp status monitor. La idea es proporcionar un mecanismo"
+" para valores arbitrarios que se pasan a los clientes del burp status "
+"monitor."
 
-#: burpui/misc/parser/burp2.py:108
+#: burpui/misc/parser/burp2.py:134
 msgid ""
-"To prevent the server from being able to override your local "
-"include/exclude list, set this to 0. The default is 1."
-msgstr "Para evitar que el servidor sobrescriba su configuración local para su lista de include/exclude, fijar a 0. El valor predeterminado es 1."
+"Defines the main TCP address that the server listens on for status "
+"requests. The default  is  special  value  'localhost'  that includes "
+"both '::1' (if available) and '127.0.0.1' (always)."
+msgstr ""
 
-#: burpui/misc/parser/burp2.py:112
+#: burpui/misc/parser/burp2.py:139
 msgid ""
 "Set this to 0 if you do not want include_glob settings to be evaluated "
 "after the pre script is run. The default is 1."
-msgstr "Ponga esto a 0 si no desea que la configuración include_glob sea evaluada después de ejecutar el script: script_pre. El valor predeterminado es 1."
+msgstr ""
+"Ponga esto a 0 si no desea que la configuración include_glob sea evaluada"
+" después de ejecutar el script: script_pre. El valor predeterminado es 1."
 
-#: burpui/misc/parser/burp2.py:116
+#: burpui/misc/parser/burp2.py:143
 msgid ""
 "Set this to 0 if you want to disable all clients. The default is 1. This "
 "option can be overridden per-client in the client configuration files in "
 "clientconfdir on the server."
-msgstr "Ponga esto a 0 si desea desactivar todos los clientes. El valor predeterminado es 1. Esta opción puede ser anulada por cliente en los archivos de configuración del cliente en clientconfdir en el servidor."
+msgstr ""
+"Ponga esto a 0 si desea desactivar todos los clientes. El valor "
+"predeterminado es 1. Esta opción puede ser anulada por cliente en los "
+"archivos de configuración del cliente en clientconfdir en el servidor."
 
-#: burpui/misc/parser/burp2.py:120
+#: burpui/misc/parser/burp2.py:147
 msgid ""
 "Whether to keep fqdn cname (like 'testclient.example.com') when looking-"
 "up in clientconfdir. This also affects the fqdn lookup on the client (see"
 " client configuration options for details). The default is 1. When set to"
 " 0, the fqdn provided by the client while authenticating will be stripped"
 " ('testclient.example.com' becomes 'testclient')."
-msgstr "Si desea mantener fqdn cname (como 'testclient.example.com') cuando se mira en clientconfdir. Esto también afecta a las operaciones de búsqueda fqdn en el cliente (ver opciones de configuración del cliente para más detalles). El valor por defecto es 1. Cuando se establece en 0, el fqdn provisto por el cliente será despojado ( 'testclient.example.com' se convierte en 'testclient')."
+msgstr ""
+"Si desea mantener fqdn cname (como 'testclient.example.com') cuando se "
+"mira en clientconfdir. Esto también afecta a las operaciones de búsqueda "
+"fqdn en el cliente (ver opciones de configuración del cliente para más "
+"detalles). El valor por defecto es 1. Cuando se establece en 0, el fqdn "
+"provisto por el cliente será despojado ( 'testclient.example.com' se "
+"convierte en 'testclient')."
 
-#: burpui/misc/parser/burp2.py:128
+#: burpui/misc/parser/burp2.py:155
 msgid ""
 "Whether to force lowercase cname when looking-up in clientconfdir. This "
 "also affects the fqdn lookup on the client (see client configuration "
 "options for details). The default is 0. When set to 1 the name provided "
 "by the client while authenticating will be lowercased."
-msgstr "Si se debe forzar cname a minúscula cuando se mira en clientconfdir. Esto también afecta a las operaciones de búsqueda fqdn en el cliente (ver opciones de configuración del cliente para más detalles). El valor predeterminado es 0. Cuando se establece en 1 el nombre proporcionado por el cliente será en minúsculas al autenticarse."
+msgstr ""
+"Si se debe forzar cname a minúscula cuando se mira en clientconfdir. Esto"
+" también afecta a las operaciones de búsqueda fqdn en el cliente (ver "
+"opciones de configuración del cliente para más detalles). El valor "
+"predeterminado es 0. Cuando se establece en 1 el nombre proporcionado por"
+" el cliente será en minúsculas al autenticarse."
+
+#: burpui/misc/parser/burp2.py:162
+msgid ""
+"Defines the main TCP port that the server listens on. Specify multiple "
+"'port' entries on separate lines in order to listen on multiple ports. "
+"Each port can be configured with its own 'max_children' value."
+msgstr ""
+
+#: burpui/misc/parser/burp2.py:166
+msgid ""
+"Defines the number of child processes to fork (the number of clients that"
+" can simultaneously connect. The default is 5. Specify multiple "
+"'max_children' entries on separate lines if you have configured multiple "
+"port entries."
+msgstr ""
+
+#: burpui/misc/parser/burp2.py:171
+msgid ""
+"Defines the TCP port that the server listens on for status requests. "
+"Comment this out to have no status server. Specify multiple 'status_port'"
+" entries on separate lines in order to listen on multiple ports. Each "
+"port can be configured with its own 'max_status_children' value."
+msgstr ""
+
+#: burpui/misc/parser/burp2.py:177
+msgid ""
+"Defines the number of status child processes to fork (the number of "
+"status clients that can simultaneously connect. The default is 5. Specify"
+" multiple 'max_status_children' entries on separate lines if you have "
+"configured multiple status_port entries."
+msgstr ""
+
+#: burpui/misc/parser/burp2.py:184
+msgid ""
+"The maximum amount of data from the disk cached in server memory during a"
+" protocol2 restore/verify. The default is 256Mb. This option can be "
+"overriden per-client in the client configuration files in clientconfdir "
+"on the server."
+msgstr ""
 
 #: burpui/misc/parser/doc.py:125
 msgid "path or glob"
 msgstr "ruta o \"glob\""
 
-#: burpui/misc/parser/doc.py:130 burpui/misc/parser/doc.py:131
+#: burpui/misc/parser/doc.py:126
+msgid "address"
+msgstr ""
+
+#: burpui/misc/parser/doc.py:131 burpui/misc/parser/doc.py:132
 msgid "name"
 msgstr "nombre"
 
-#: burpui/misc/parser/doc.py:143 burpui/misc/parser/doc.py:171
-#: burpui/misc/parser/doc.py:173 burpui/misc/parser/doc.py:191
-#: burpui/misc/parser/doc.py:195 burpui/misc/parser/doc.py:207
-#: burpui/misc/parser/doc.py:213
+#: burpui/misc/parser/doc.py:144 burpui/misc/parser/doc.py:172
+#: burpui/misc/parser/doc.py:174 burpui/misc/parser/doc.py:192
+#: burpui/misc/parser/doc.py:196 burpui/misc/parser/doc.py:208
+#: burpui/misc/parser/doc.py:214
 msgid "string"
 msgstr "cadena"
 
-#: burpui/misc/parser/doc.py:146 burpui/misc/parser/doc.py:147
-#: burpui/misc/parser/doc.py:155
+#: burpui/misc/parser/doc.py:147 burpui/misc/parser/doc.py:148
+#: burpui/misc/parser/doc.py:156
 msgid "extension"
 msgstr "extensión"
 
-#: burpui/misc/parser/doc.py:148
+#: burpui/misc/parser/doc.py:149
 msgid "fstype"
 msgstr "fstype"
 
-#: burpui/misc/parser/doc.py:149 burpui/misc/parser/doc.py:156
+#: burpui/misc/parser/doc.py:150 burpui/misc/parser/doc.py:157
 msgid "regular expression"
 msgstr "expresión regular"
 
-#: burpui/misc/parser/doc.py:152
+#: burpui/misc/parser/doc.py:153
 msgid "groupname"
 msgstr "nombre del grupo"
 
-#: burpui/misc/parser/doc.py:158
+#: burpui/misc/parser/doc.py:159
 msgid "glob"
 msgstr "glob"
 
-#: burpui/misc/parser/doc.py:159 burpui/misc/parser/doc.py:163
-#: burpui/misc/parser/doc.py:165 burpui/misc/parser/doc.py:166
-#: burpui/misc/parser/doc.py:167
+#: burpui/misc/parser/doc.py:160 burpui/misc/parser/doc.py:164
+#: burpui/misc/parser/doc.py:166 burpui/misc/parser/doc.py:167
+#: burpui/misc/parser/doc.py:168
 msgid "number"
 msgstr "número"
 
-#: burpui/misc/parser/doc.py:170
+#: burpui/misc/parser/doc.py:171
 msgid "file name"
 msgstr "nombre de archivo"
 
-#: burpui/misc/parser/doc.py:177 burpui/misc/parser/doc.py:201
-#: burpui/misc/parser/doc.py:205 burpui/templates/client-browse.html:92
+#: burpui/misc/parser/doc.py:178 burpui/misc/parser/doc.py:202
+#: burpui/misc/parser/doc.py:206 burpui/templates/client-browse.html:92
 msgid "password"
 msgstr "contraseña"
 
-#: burpui/misc/parser/doc.py:180 burpui/misc/parser/doc.py:208
+#: burpui/misc/parser/doc.py:181 burpui/misc/parser/doc.py:209
 msgid "port number"
 msgstr "número de puerto"
 
-#: burpui/misc/parser/doc.py:186
+#: burpui/misc/parser/doc.py:187
 msgid "client"
 msgstr "cliente"
 
-#: burpui/misc/parser/doc.py:203
+#: burpui/misc/parser/doc.py:204
 msgid "cipher list"
 msgstr "lista de cifrado"
 
-#: burpui/misc/parser/doc.py:215
+#: burpui/misc/parser/doc.py:216
 msgid "strftime format"
 msgstr "formato strftime"
 
-#: burpui/misc/parser/doc.py:216
+#: burpui/misc/parser/doc.py:217
 msgid "umask"
 msgstr "umask"
 
-#: burpui/misc/parser/doc.py:217
+#: burpui/misc/parser/doc.py:218
 msgid "username"
 msgstr "nombre de usuario"
 
-#: burpui/misc/parser/doc.py:219
+#: burpui/misc/parser/doc.py:220
 msgid "list of drive letters"
 msgstr "lista de letras de unidad"
 
-#: burpui/misc/parser/doc.py:418
+#: burpui/misc/parser/doc.py:424
 msgid ""
 "Read additional configuration files. On Windows, the glob is "
 "unimplemented - you will need to specify an actual file."
-msgstr "Leer archivos de configuración adicionales. En Windows, glob no está implementado - necesitará para especificar un archivo real."
+msgstr ""
+"Leer archivos de configuración adicionales. En Windows, glob no está "
+"implementado - necesitará para especificar un archivo real."
 
-#: burpui/misc/parser/doc.py:421
+#: burpui/misc/parser/doc.py:427
 msgid ""
 "Defines the main TCP address that the server listens on. The default is "
 "either '::' or '0.0.0.0', dependent upon compile time options."
-msgstr "Define la dirección TCP principal que escucha el servidor. El valor predeterminado es '::' o '0.0.0.0', dependiendo de las opciones de tiempo de compilación."
+msgstr ""
+"Define la dirección TCP principal que escucha el servidor. El valor "
+"predeterminado es '::' o '0.0.0.0', dependiendo de las opciones de tiempo"
+" de compilación."
 
-#: burpui/misc/parser/doc.py:424
+#: burpui/misc/parser/doc.py:430
 msgid ""
 "This allows you to control whether the client uses O_NOATIME when opening"
 " files and directories. The default is 0, which enables O_NOATIME. This "
@@ -265,21 +380,34 @@ msgid ""
 "(perhaps you only have group or world access to the files), you will get "
 "errors until you set atime=1. With atime=1, the access times will be "
 "updated on the files and directories that get backed up."
-msgstr "Esto le permite controlar si el cliente utiliza O_NOATIME al abrir archivos y directorios. El valor por defecto es 0, lo que permite O_NOATIME. Esto significa que el cliente puede leer los archivos y directorios sin actualizar los tiempos de acceso. Sin embargo, esto sólo es posible si está ejecutando como root, o eres el propietario del archivo o directorio. Si este no es el caso (tal vez sólo tiene grupo o acceso general a los archivos), se producirán errores hasta que se establece atime = 1. Con atime = 1, los tiempos de acceso se actualizarán en los archivos y directorios al respaldar."
+msgstr ""
+"Esto le permite controlar si el cliente utiliza O_NOATIME al abrir "
+"archivos y directorios. El valor por defecto es 0, lo que permite "
+"O_NOATIME. Esto significa que el cliente puede leer los archivos y "
+"directorios sin actualizar los tiempos de acceso. Sin embargo, esto sólo "
+"es posible si está ejecutando como root, o eres el propietario del "
+"archivo o directorio. Si este no es el caso (tal vez sólo tiene grupo o "
+"acceso general a los archivos), se producirán errores hasta que se "
+"establece atime = 1. Con atime = 1, los tiempos de acceso se actualizarán"
+" en los archivos y directorios al respaldar."
 
-#: burpui/misc/parser/doc.py:435
+#: burpui/misc/parser/doc.py:441
 msgid ""
 "Path to autoupgrade directory from which upgrades are downloaded. The "
 "option can be left unset in order not to autoupgrade clients. Please see "
 "docs/autoupgrade.txt in the source package for more help with this "
 "option."
-msgstr "Ruta (path) al directorio autoupgrade desde el cual se descargan las actualizaciones. La opción se puede dejar sin establecer con el fin de no auto actualizar clientes. Por favor, vea docs/autoupgrade.txt en el paquete fuente para obtener más ayuda con esta opción."
+msgstr ""
+"Ruta (path) al directorio autoupgrade desde el cual se descargan las "
+"actualizaciones. La opción se puede dejar sin establecer con el fin de no"
+" auto actualizar clientes. Por favor, vea docs/autoupgrade.txt en el "
+"paquete fuente para obtener más ayuda con esta opción."
 
-#: burpui/misc/parser/doc.py:441
+#: burpui/misc/parser/doc.py:447
 msgid "Path to the burp_ca script when using the ca_conf option."
 msgstr "Ruta (path) al script burp_ca cuando se utiliza la opción ca_conf."
 
-#: burpui/misc/parser/doc.py:443
+#: burpui/misc/parser/doc.py:449
 msgid ""
 "Path to certificate authority configuration file. The CA configuration "
 "file will usually be /etc/burp/CA.cnf. The CA directory indicated by "
@@ -288,155 +416,230 @@ msgid ""
 "paths indicated by ssl_cert_ca, ssl_cert, ssl_key and ssl_dhfile will be "
 "overwritten. For more detailed information on this and the other ca_* "
 "options, please see docs/burp_ca.txt."
-msgstr "Ruta (path) al archivo de configuración de entidad emisora ​​de certificados (certificate authority). El archivo de configuración de CA por lo general será /etc/burp/CA.cnf. El directorio indicado por CA.cnf suele ser /etc/burp/CA. Si se establece ca_conf y no existe el directorio de CA, el servidor creará este y los caminos indicados por ssl_cert_ca, ssl_cert, ssl_key y ssl_dhfile serán sobrescritos. Para obtener información más detallada sobre esta y las otras opciones ca_ *, consulte docs/burp_ca.txt."
+msgstr ""
+"Ruta (path) al archivo de configuración de entidad emisora ​​de "
+"certificados (certificate authority). El archivo de configuración de CA "
+"por lo general será /etc/burp/CA.cnf. El directorio indicado por CA.cnf "
+"suele ser /etc/burp/CA. Si se establece ca_conf y no existe el directorio"
+" de CA, el servidor creará este y los caminos indicados por ssl_cert_ca, "
+"ssl_cert, ssl_key y ssl_dhfile serán sobrescritos. Para obtener "
+"información más detallada sobre esta y las otras opciones ca_ *, consulte"
+" docs/burp_ca.txt."
 
-#: burpui/misc/parser/doc.py:453
+#: burpui/misc/parser/doc.py:459
 msgid ""
 "Name of the CA that the server will generate when using the ca_conf "
 "option."
 msgstr "Nombre de CA que el servidor generará cuando se utiliza la opción ca_conf."
 
-#: burpui/misc/parser/doc.py:455
+#: burpui/misc/parser/doc.py:461
 msgid ""
 "The name that the server will put into its own SSL certficates when using"
 " the ca_conf option."
-msgstr "El nombre que el servidor va a poner en sus propios certificados SSL cuando utiliza la opción ca_conf."
+msgstr ""
+"El nombre que el servidor va a poner en sus propios certificados SSL "
+"cuando utiliza la opción ca_conf."
 
-#: burpui/misc/parser/doc.py:458
+#: burpui/misc/parser/doc.py:464
 msgid ""
 "Turn this off to prevent clients from deleting backups with the '-a D' "
 "option. The default is that clients can delete backups. Restore clients "
 "can override this setting."
-msgstr "Desactive esta opción para impedir que los clientes puedan eliminar los respaldos con la opción '-a D'. El valor por defecto es que los clientes pueden eliminar los respaldos. Los clientes \"restore_client\" pueden sobreescribir este ajuste."
+msgstr ""
+"Desactive esta opción para impedir que los clientes puedan eliminar los "
+"respaldos con la opción '-a D'. El valor por defecto es que los clientes "
+"pueden eliminar los respaldos. Los clientes \"restore_client\" pueden "
+"sobreescribir este ajuste."
 
-#: burpui/misc/parser/doc.py:463
+#: burpui/misc/parser/doc.py:469
 msgid ""
 "Turn this off to prevent clients from forcing backups with the '-a b' "
 "option. Timed backups will still work. The default is that clients can "
 "force backups."
-msgstr "Desactive esta opción para impedir que los clientes puedan forzar el inicio de un respaldo con la opción '-a b'. Los respaldos programados seguirán funcionando '-a t'. El valor por defecto es que los clientes pueden forzar un respaldo."
+msgstr ""
+"Desactive esta opción para impedir que los clientes puedan forzar el "
+"inicio de un respaldo con la opción '-a b'. Los respaldos programados "
+"seguirán funcionando '-a t'. El valor por defecto es que los clientes "
+"pueden forzar un respaldo."
 
-#: burpui/misc/parser/doc.py:468
+#: burpui/misc/parser/doc.py:474
 msgid ""
 "Turn this off to prevent clients from listing backups with the '-a l' "
 "option. The default is that clients can list backups. Restore clients can"
 " override this setting."
-msgstr "Desactive esta opción para evitar que los clientes puedan listar los respaldos con la opción '-a l'. El valor por defecto es que los clientes pueden listar los respaldos. Los clientes 'restore_client' pueden sobrescribir este ajuste."
+msgstr ""
+"Desactive esta opción para evitar que los clientes puedan listar los "
+"respaldos con la opción '-a l'. El valor por defecto es que los clientes "
+"pueden listar los respaldos. Los clientes 'restore_client' pueden "
+"sobrescribir este ajuste."
 
-#: burpui/misc/parser/doc.py:472
+#: burpui/misc/parser/doc.py:478
 msgid ""
 "Turn this off to prevent clients from initiating restores with the '-a r'"
 " option. The default is that clients can initiate restores. Restore "
 "clients can override this setting."
-msgstr "Desactive esta opción para impedir que los clientes puedan iniciar restauraciones con la opción 'r -a'. El valor por defecto es que los clientes pueden iniciar las restauraciones. Los clientes 'restore_client' pueden sobrescribir este ajuste."
+msgstr ""
+"Desactive esta opción para impedir que los clientes puedan iniciar "
+"restauraciones con la opción 'r -a'. El valor por defecto es que los "
+"clientes pueden iniciar las restauraciones. Los clientes 'restore_client'"
+" pueden sobrescribir este ajuste."
 
-#: burpui/misc/parser/doc.py:477
+#: burpui/misc/parser/doc.py:483
 msgid ""
 "Turn this off to prevent clients from initiating a verify job with the "
 "'-a v' option. The default is that clients can initiate a verify job. "
 "Restore clients can override this setting."
-msgstr "Desactive esta opción para impedir que los clientes puedan iniciar una tarea de verificación con la opción 'v -a'. El valor por defecto es que los clientes pueden iniciar una tarea de verificación. Los clientes 'restore_client' pueden sobrescribir este ajuste."
+msgstr ""
+"Desactive esta opción para impedir que los clientes puedan iniciar una "
+"tarea de verificación con la opción 'v -a'. El valor por defecto es que "
+"los clientes pueden iniciar una tarea de verificación. Los clientes "
+"'restore_client' pueden sobrescribir este ajuste."
 
-#: burpui/misc/parser/doc.py:482
+#: burpui/misc/parser/doc.py:488
 msgid ""
 "Path to the directory in which to keep per-client lock files. By default,"
 " this is set to the path given by the 'directory' option."
-msgstr "Ruta (path) al directorio en el que guardar los ficheros de bloqueo por cliente (archivo 'lock'). De forma predeterminada, esto se establece en la ruta dada por la opción 'directory'."
+msgstr ""
+"Ruta (path) al directorio en el que guardar los ficheros de bloqueo por "
+"cliente (archivo 'lock'). De forma predeterminada, esto se establece en "
+"la ruta dada por la opción 'directory'."
 
-#: burpui/misc/parser/doc.py:485
+#: burpui/misc/parser/doc.py:491
 msgid "Path to the directory that contains client configuration files."
-msgstr "Ruta (path) de acceso al directorio que contiene los archivos de configuración de clientes."
+msgstr ""
+"Ruta (path) de acceso al directorio que contiene los archivos de "
+"configuración de clientes."
 
-#: burpui/misc/parser/doc.py:487
+#: burpui/misc/parser/doc.py:493
 msgid ""
 "Choose the level of gzip compression for files stored in backups. Setting"
 " 0 or gzip0 turns compression off. The default is gzip9. This option can "
 "be overridden by the client configuration files in clientconfdir on the "
 "server."
-msgstr "Elegir el nivel de compresión gzip para los archivos almacenados en los respaldos. Ajuste 0 o gzip0 desactiva la compresión. El valor predeterminado es gzip9. Esta opción puede ser anulado por los archivos de configuración del cliente en clientconfdir en el servidor."
+msgstr ""
+"Elegir el nivel de compresión gzip para los archivos almacenados en los "
+"respaldos. Ajuste 0 o gzip0 desactiva la compresión. El valor "
+"predeterminado es gzip9. Esta opción puede ser anulado por los archivos "
+"de configuración del cliente en clientconfdir en el servidor."
 
-#: burpui/misc/parser/doc.py:493
+#: burpui/misc/parser/doc.py:499
 msgid "Allow backups to cross all filesystem mountpoints."
-msgstr "Permitir los respaldos en todos los puntos de montaje del sistema de archivos."
+msgstr ""
+"Permitir los respaldos en todos los puntos de montaje del sistema de "
+"archivos."
 
-#: burpui/misc/parser/doc.py:495
+#: burpui/misc/parser/doc.py:501
 msgid "Allow backups to cross a particular filesystem mountpoint."
-msgstr "Permitir que los respaldos puedan cruzar un punto de montaje del sistema de archivos en particular."
+msgstr ""
+"Permitir que los respaldos puedan cruzar un punto de montaje del sistema "
+"de archivos en particular."
 
-#: burpui/misc/parser/doc.py:497
+#: burpui/misc/parser/doc.py:503
 msgid "Whether to daemonise. The default is 1."
 msgstr "Si correr como servicio/demonio 'daemonise'. El valor predeterminado es 1."
 
-#: burpui/misc/parser/doc.py:498
+#: burpui/misc/parser/doc.py:504
 msgid ""
 "Enables you to group clients together for file deduplication purposes. "
 "For example, you might want to set 'dedup_group=xp' for each Windows XP "
 "client, and then run the bedup program on a cron job every other day with"
 " the option '-g xp'."
-msgstr "Permite agrupar a los clientes con fines de deduplicación. Por ejemplo, es posible que desee establecer 'dedup_group = XP' para cada cliente de Windows XP, y luego ejecutar el programa bedup en una tarea programada cada dos días con la opción '-g XP' (solo en protocol=1 se usa bedup, en protocol=2 es diferente)."
+msgstr ""
+"Permite agrupar a los clientes con fines de deduplicación. Por ejemplo, "
+"es posible que desee establecer 'dedup_group = XP' para cada cliente de "
+"Windows XP, y luego ejecutar el programa bedup en una tarea programada "
+"cada dos días con la opción '-g XP' (solo en protocol=1 se usa bedup, en "
+"protocol=2 es diferente)."
 
-#: burpui/misc/parser/doc.py:503
+#: burpui/misc/parser/doc.py:509
 msgid ""
 "When turned on (which is the default) and the client is on version 1.3.6 "
 "or greater, the structure of the storage directory will mimic that of the"
 " original filesystem on the client."
-msgstr "Cuando está activado (que es el valor predeterminado) y el cliente se encuentra en la versión 1.3.6 o superior, la estructura del directorio de almacenamiento imitará la del sistema de archivos original en el cliente."
+msgstr ""
+"Cuando está activado (que es el valor predeterminado) y el cliente se "
+"encuentra en la versión 1.3.6 o superior, la estructura del directorio de"
+" almacenamiento imitará la del sistema de archivos original en el "
+"cliente."
 
-#: burpui/misc/parser/doc.py:508
+#: burpui/misc/parser/doc.py:514
 msgid "Path to the directory in which to store backups."
 msgstr "Ruta al directorio donde almacenar los respaldos."
 
-#: burpui/misc/parser/doc.py:509
+#: burpui/misc/parser/doc.py:515
 msgid ""
 "Extensions to exclude from compression. Case insensitive. You can have "
 "multiple exclude compression lines. For example, set 'gz' to exclude "
 "gzipped files from compression."
-msgstr "Extensiones que se deben excluir de la compresión. Insensible a mayúsculas y minúsculas (Case insensitive). Usted puede tener múltiples líneas de exclusiones de compresión. Por ejemplo, establecer 'gz' para excluir ficheros comprimidos de la compresión."
+msgstr ""
+"Extensiones que se deben excluir de la compresión. Insensible a "
+"mayúsculas y minúsculas (Case insensitive). Usted puede tener múltiples "
+"líneas de exclusiones de compresión. Por ejemplo, establecer 'gz' para "
+"excluir ficheros comprimidos de la compresión."
 
-#: burpui/misc/parser/doc.py:513
+#: burpui/misc/parser/doc.py:519
 msgid ""
 "Extensions to exclude from the backup. Case insensitive. You can have "
 "multiple exclude extension lines. For example, set 'vdi' to exclude "
 "VirtualBox disk images."
-msgstr "Extensiones que se deben excluir del respaldo. Case insensitive (insensible a mayúsculas y minúsculas). Usted puede tener múltiples líneas de exclusiones de extensión. Por ejemplo, establecer 'VDI' para excluir las imágenes de disco de VirtualBox."
+msgstr ""
+"Extensiones que se deben excluir del respaldo. Case insensitive "
+"(insensible a mayúsculas y minúsculas). Usted puede tener múltiples "
+"líneas de exclusiones de extensión. Por ejemplo, establecer 'VDI' para "
+"excluir las imágenes de disco de VirtualBox."
 
-#: burpui/misc/parser/doc.py:517
+#: burpui/misc/parser/doc.py:523
 msgid ""
 "File systems to exclude from the backup. Case insensitive. You can have "
 "multiple exclude file system lines. For example, set 'tmpfs' to exclude "
 "tmpfs. Burp has an internal mapping of file system names to file system "
 "IDs. If you know the file system ID, you can use that instead. For "
 "example, 'exclude_fs = 0x01021994' will also exclude tmpfs."
-msgstr "Sistemas de archivos que se deben excluir del respaldo. Case insensitive. Usted puede tener múltiples líneas de  exclusiones de sistema de archivos. Por ejemplo,  'tmpfs' para excluir tmpfs. Burp tiene una asignación interna de nombres de sistemas de archivo a ID del sistema de  archivos. Si conoce el ID del sistema de archivos, puede utilizar este en su lugar. Por ejemplo, 'exclude_fs = 0x01021994' también excluye tmpfs."
+msgstr ""
+"Sistemas de archivos que se deben excluir del respaldo. Case insensitive."
+" Usted puede tener múltiples líneas de  exclusiones de sistema de "
+"archivos. Por ejemplo,  'tmpfs' para excluir tmpfs. Burp tiene una "
+"asignación interna de nombres de sistemas de archivo a ID del sistema de"
+"  archivos. Si conoce el ID del sistema de archivos, puede utilizar este "
+"en su lugar. Por ejemplo, 'exclude_fs = 0x01021994' también excluye "
+"tmpfs."
 
-#: burpui/misc/parser/doc.py:525
+#: burpui/misc/parser/doc.py:531
 msgid "Exclude paths that match the regular expression."
 msgstr "Excluir rutas (paths) que coincidan con la expresión regular."
 
-#: burpui/misc/parser/doc.py:527
+#: burpui/misc/parser/doc.py:533
 msgid ""
 "Path to exclude from the backup. You can have multiple exclude lines. Use"
 " forward slashes '/', not backslashes '\\' as path delimiters."
-msgstr "Ruta (path) a excluir del respaldo. Usted puede tener múltiples líneas de exclusiones. Utilice barras diagonales '/', no barras invertidas \\ '' como delimitadores de ruta."
+msgstr ""
+"Ruta (path) a excluir del respaldo. Usted puede tener múltiples líneas de"
+" exclusiones. Utilice barras diagonales '/', no barras invertidas \\ '' "
+"como delimitadores de ruta."
 
-#: burpui/misc/parser/doc.py:530
+#: burpui/misc/parser/doc.py:536
 msgid "Whether to fork children. The default is 1."
 msgstr "Crear procesos hijos. El valor predeterminado es 1."
 
-#: burpui/misc/parser/doc.py:531
+#: burpui/misc/parser/doc.py:537
 msgid ""
 "Run as a particular group. This can be overridden by the client "
 "configuration files in clientconfdir on the server."
-msgstr "Ejecutar como un grupo en particular. Esto puede ser anulado por los archivos de configuración del cliente en clientconfdir en el servidor."
+msgstr ""
+"Ejecutar como un grupo en particular. Esto puede ser anulado por los "
+"archivos de configuración del cliente en clientconfdir en el servidor."
 
-#: burpui/misc/parser/doc.py:534
+#: burpui/misc/parser/doc.py:540
 msgid ""
 "Do not back up the client if the estimated size of all files is greater "
 "than the specified size. Example: 'hard_quota = 100Gb'. Set to 0 (the "
 "default) to have no limit."
-msgstr "No respaldar el cliente, si el tamaño estimado de todos los archivos es mayor que el tamaño especificado. Ejemplo: 'hard_quota = 100 Gb'. Se establece en 0 (por defecto) sin límite."
+msgstr ""
+"No respaldar el cliente, si el tamaño estimado de todos los archivos es "
+"mayor que el tamaño especificado. Ejemplo: 'hard_quota = 100 Gb'. Se "
+"establece en 0 (por defecto) sin límite."
 
-#: burpui/misc/parser/doc.py:538
+#: burpui/misc/parser/doc.py:544
 msgid ""
 "On the server, defines whether to keep hardlinked files in the backups, "
 "or whether to generate reverse deltas and delete the original files. Can "
@@ -444,36 +647,56 @@ msgid ""
 " used Advantage: Restores will be faster, and since no reverse deltas "
 "need to be generated, the time and effort the server needs at the end of "
 "a backup is reduced."
-msgstr "En el servidor, define si desea mantener los archivos hardlinked en los respaldos, o si se debe generar deltas inversa y borrar los archivos originales. Se puede establecer en 0 (desactivado) o 1 (activado). Desventaja: Más espacio en disco utilizado, Ventaja: Restaura más rápido, y puesto que no hay deltas inversa que necesitan ser generadas, se reduce el tiempo y esfuerzo que el servidor necesita al final de un respaldo (phase4 shuffling más rápido)."
+msgstr ""
+"En el servidor, define si desea mantener los archivos hardlinked en los "
+"respaldos, o si se debe generar deltas inversa y borrar los archivos "
+"originales. Se puede establecer en 0 (desactivado) o 1 (activado). "
+"Desventaja: Más espacio en disco utilizado, Ventaja: Restaura más rápido,"
+" y puesto que no hay deltas inversa que necesitan ser generadas, se "
+"reduce el tiempo y esfuerzo que el servidor necesita al final de un "
+"respaldo (phase4 shuffling más rápido)."
 
-#: burpui/misc/parser/doc.py:548
+#: burpui/misc/parser/doc.py:554
 msgid ""
 "Extensions to include in the backup. Case insensitive. Nothing else will "
 "be included in the backup. You can have multiple include extension lines."
 " For example, set 'txt' to include files that end in '.txt'. You need to "
 "specify an 'include' line so that burp knows where to start looking."
-msgstr "Extensiones para incluir en el respaldo. Case insensitive. Nada más se incluirá en el respaldo. Usted puede tener múltiples líneas de extensión para incluir. Por ejemplo, establecer 'txt' para incluir archivos que terminan en '.txt'. Es necesario especificar una línea de 'include' de manera que burp sabe dónde empezar a buscar."
+msgstr ""
+"Extensiones para incluir en el respaldo. Case insensitive. Nada más se "
+"incluirá en el respaldo. Usted puede tener múltiples líneas de extensión "
+"para incluir. Por ejemplo, establecer 'txt' para incluir archivos que "
+"terminan en '.txt'. Es necesario especificar una línea de 'include' de "
+"manera que burp sabe dónde empezar a buscar."
 
-#: burpui/misc/parser/doc.py:555
+#: burpui/misc/parser/doc.py:561
 msgid "Not implemented."
 msgstr "No implementado"
 
-#: burpui/misc/parser/doc.py:556
+#: burpui/misc/parser/doc.py:562
 msgid ""
 "Path to include in the backup. You can have multiple include lines. Use "
 "forward slashes '/', not backslashes '\\' as path delimiters."
-msgstr "Path para incluir en el respaldo. Usted puede tener múltiples líneas \"include\". Utilice barras diagonales '/', no barras invertidas \\ '' como delimitadores de ruta."
+msgstr ""
+"Path para incluir en el respaldo. Usted puede tener múltiples líneas "
+"\"include\". Utilice barras diagonales '/', no barras invertidas \\ '' "
+"como delimitadores de ruta."
 
-#: burpui/misc/parser/doc.py:559
+#: burpui/misc/parser/doc.py:565
 msgid ""
 "Include paths that match the glob expression.For example, "
 "'/home/*/Documents' will include '/home/user1/Documents' and "
 "'/home/user2/Documents' if directories 'user1' and 'user2' exist in "
 "'/home'. The Windows implementation currently limit the expression to "
 "contain only one '*'."
-msgstr "Incluir caminos que concuerde con la expresión glob.Por ejemplo,  '/home/*/Documents' incluirá '/home/user1/Documents' y '/home/user2/Documents' si los directorios 'user1' y 'user2' existen en '/home'. En windows la implementación está limitada para contener solo un '*'. "
+msgstr ""
+"Incluir caminos que concuerde con la expresión glob.Por ejemplo,  "
+"'/home/*/Documents' incluirá '/home/user1/Documents' y "
+"'/home/user2/Documents' si los directorios 'user1' y 'user2' existen en "
+"'/home'. En windows la implementación está limitada para contener solo un"
+" '*'. "
 
-#: burpui/misc/parser/doc.py:566
+#: burpui/misc/parser/doc.py:572
 msgid ""
 "Number of backups to keep. This can be overridden by the client "
 "configuration files in clientconfdir on the server. Specify multiple "
@@ -488,23 +711,45 @@ msgid ""
 "delete intermediate backups when necessary. You can have as many 'keep' "
 "lines as you like, as long as they don't exceed 52560000 when multiplied "
 "together. That is, a backup every minute for 100 years."
-msgstr "Número de respaldo para mantener. Esto puede ser anulado por los archivos de configuración del cliente en clientconfdir en el servidor. Especificar múltiples entradas de 'keep' en líneas separadas con el fin de mantener varios períodos de respaldo. Por ejemplo, suponiendo que usted está haciendo una respaldo diario, keep=7 keep=4 keep=6 (en líneas separadas) mantendrá 7 respaldo diarias, 4 respaldo semanales (7x4 = 28), y 6 múltiplos de 4 semanas (7x4x6 = 168) - aproximadamente 6 respaldo mensuales. Efectivamente, se le garantiza ser capaz de restaurar hasta 168 días atrás, con el número de respaldo disponibles de forma exponencial decreciente a medida que avanza en el tiempo hasta ese punto. En este ejemplo, cada 7 (séptimo) respaldo será convertido en hardlinked para permitir a burp eliminar de manera segura los respaldos intermedios cuando sea necesario. Puede tener tantas líneas 'keep' como desee, siempre y cuando no excedan de 52.560.000 al ser multiplicados. Es decir, una respaldo cada minuto durante 100 años."
+msgstr ""
+"Número de respaldo para mantener. Esto puede ser anulado por los archivos"
+" de configuración del cliente en clientconfdir en el servidor. "
+"Especificar múltiples entradas de 'keep' en líneas separadas con el fin "
+"de mantener varios períodos de respaldo. Por ejemplo, suponiendo que "
+"usted está haciendo una respaldo diario, keep=7 keep=4 keep=6 (en líneas "
+"separadas) mantendrá 7 respaldo diarias, 4 respaldo semanales (7x4 = 28),"
+" y 6 múltiplos de 4 semanas (7x4x6 = 168) - aproximadamente 6 respaldo "
+"mensuales. Efectivamente, se le garantiza ser capaz de restaurar hasta "
+"168 días atrás, con el número de respaldo disponibles de forma "
+"exponencial decreciente a medida que avanza en el tiempo hasta ese punto."
+" En este ejemplo, cada 7 (séptimo) respaldo será convertido en hardlinked"
+" para permitir a burp eliminar de manera segura los respaldos intermedios"
+" cuando sea necesario. Puede tener tantas líneas 'keep' como desee, "
+"siempre y cuando no excedan de 52.560.000 al ser multiplicados. Es decir,"
+" una respaldo cada minuto durante 100 años."
 
-#: burpui/misc/parser/doc.py:583
+#: burpui/misc/parser/doc.py:589
 msgid ""
 "When set to 0, delta differencing will not take place. That is, when a "
 "file changes, the server will request the whole new file. The default is "
 "1. This option can be overridden by the client configuration files in "
 "clientconfdir on the server."
-msgstr "Cuando se establece en 0, la diferenciación de diferencias (los delta) no se llevarán a cabo. Es decir, cuando se modifique un archivo, el servidor solicitará el archivo completo nuevo. El valor predeterminado es 1. Esta opción puede ser anulado por los archivos de configuración del cliente en clientconfdir en el servidor."
+msgstr ""
+"Cuando se establece en 0, la diferenciación de diferencias (los delta) no"
+" se llevarán a cabo. Es decir, cuando se modifique un archivo, el "
+"servidor solicitará el archivo completo nuevo. El valor predeterminado es"
+" 1. Esta opción puede ser anulado por los archivos de configuración del "
+"cliente en clientconfdir en el servidor."
 
-#: burpui/misc/parser/doc.py:588
+#: burpui/misc/parser/doc.py:594
 msgid ""
 "Path to the lockfile that ensures that two server processes cannot run "
 "simultaneously."
-msgstr "Path de acceso al fichero de bloqueo (archivo 'lock') que asegura que los dos procesos de servidor no se pueden ejecutar simultáneamente."
+msgstr ""
+"Path de acceso al fichero de bloqueo (archivo 'lock') que asegura que los"
+" dos procesos de servidor no se pueden ejecutar simultáneamente."
 
-#: burpui/misc/parser/doc.py:590
+#: burpui/misc/parser/doc.py:596
 msgid ""
 "If a path is given, the server will move directories to be deleted into "
 "the directory specified by the path, but will not actually delete them. "
@@ -514,112 +759,166 @@ msgid ""
 "default is unset, which means that the server will automatically delete "
 "the directories at the end of a backup. This option can be overridden by "
 "the client configuration files in clientconfdir on the server."
-msgstr "Si se da un path, el servidor moverá directorios para ser eliminados en el directorio especificado por el path, pero en realidad no los eliminará. La ruta debe estar en el mismo sistema de archivos como el almacenamiento de respaldo. La idea es que un servidor ocupado se puede configurar para ejecutar las supresiones fuera de las franjas horarias de respaldo, cuando el servidor está menos ocupado, a través de una tarea programada. El valor por defecto está definido, lo que significa que el servidor eliminará automáticamente los directorios al final de una respaldo. Esta opción puede ser anulado por los archivos de configuración del cliente en clientconfdir en el servidor."
+msgstr ""
+"Si se da un path, el servidor moverá directorios para ser eliminados en "
+"el directorio especificado por el path, pero en realidad no los "
+"eliminará. La ruta debe estar en el mismo sistema de archivos como el "
+"almacenamiento de respaldo. La idea es que un servidor ocupado se puede "
+"configurar para ejecutar las supresiones fuera de las franjas horarias de"
+" respaldo, cuando el servidor está menos ocupado, a través de una tarea "
+"programada. El valor por defecto está definido, lo que significa que el "
+"servidor eliminará automáticamente los directorios al final de una "
+"respaldo. Esta opción puede ser anulado por los archivos de configuración"
+" del cliente en clientconfdir en el servidor."
 
-#: burpui/misc/parser/doc.py:603
+#: burpui/misc/parser/doc.py:609
 msgid ""
 "Defines the number of child processes to fork (the number of clients that"
 " can simultaneously connect. The default is 5."
-msgstr "Define el número de procesos hijo a la mesa (el número de clientes que pueden conectarse simultáneamente. El valor por defecto es 5."
+msgstr ""
+"Define el número de procesos hijo a la mesa (el número de clientes que "
+"pueden conectarse simultáneamente. El valor por defecto es 5."
 
-#: burpui/misc/parser/doc.py:606
+#: burpui/misc/parser/doc.py:612
 msgid ""
 "Do not back up files that are greater than the specified size. Example: "
 "'max_file_size = 10Mb'. Set to 0 (the default) to have no limit."
-msgstr "No hacer respaldo de los archivos que son mayores que el tamaño especificado. Ejemplo: 'max_file_size = 10Mb'. Se establece en 0 (por defecto) no tener límite."
+msgstr ""
+"No hacer respaldo de los archivos que son mayores que el tamaño "
+"especificado. Ejemplo: 'max_file_size = 10Mb'. Se establece en 0 (por "
+"defecto) no tener límite."
 
-#: burpui/misc/parser/doc.py:610
+#: burpui/misc/parser/doc.py:616
 msgid ""
 "On the server, the number of times that a single file can be hardlinked. "
 "The bedup program also obeys this setting. The default is 10000."
-msgstr "En el servidor, el número de veces que un único archivo se puede hardlinked. El programa bedup también obedece esta configuración. El valor predeterminado es 10000."
+msgstr ""
+"En el servidor, el número de veces que un único archivo se puede "
+"hardlinked. El programa bedup también obedece esta configuración. El "
+"valor predeterminado es 10000."
 
-#: burpui/misc/parser/doc.py:613
+#: burpui/misc/parser/doc.py:619
 msgid ""
 "Defines the number of status child processes to fork (the number of "
 "status clients that can simultaneously connect. The default is 5."
-msgstr "Define el número de procesos hijo de estado a la mesa (el número de clientes de estado que pueden conectarse simultáneamente. El valor por defecto es 5."
+msgstr ""
+"Define el número de procesos hijo de estado a la mesa (el número de "
+"clientes de estado que pueden conectarse simultáneamente. El valor por "
+"defecto es 5."
 
-#: burpui/misc/parser/doc.py:617
+#: burpui/misc/parser/doc.py:623
 msgid ""
 "Defines the number of subdirectories in the data storage areas. The "
 "maximum number of subdirectories that ext3 allows is 32000. If you do not"
 " set this option, it defaults to 30000."
-msgstr "Define el número de subdirectorios en las áreas de almacenamiento de datos. El número máximo de subdirectorios que permite ext3 es 32000. Si no se establece esta opción, que por defecto es 30000. (ext4 no tiene límite de subdirectorios)"
+msgstr ""
+"Define el número de subdirectorios en las áreas de almacenamiento de "
+"datos. El número máximo de subdirectorios que permite ext3 es 32000. Si "
+"no se establece esta opción, que por defecto es 30000. (ext4 no tiene "
+"límite de subdirectorios)"
 
-#: burpui/misc/parser/doc.py:622
+#: burpui/misc/parser/doc.py:628
 msgid ""
 "Do not back up files that are less than the specified size. Example: "
 "'min_file_size = 10Mb'. Set to 0 (the default) to have no limit."
-msgstr "No hacer respaldo de los archivos que son menores que el tamaño especificado. Ejemplo: 'min_file_size = 10Mb'. Se establece en 0 (por defecto) no tiene límite."
+msgstr ""
+"No hacer respaldo de los archivos que son menores que el tamaño "
+"especificado. Ejemplo: 'min_file_size = 10Mb'. Se establece en 0 (por "
+"defecto) no tiene límite."
 
-#: burpui/misc/parser/doc.py:626
+#: burpui/misc/parser/doc.py:632
 msgid "Required to run in server mode."
 msgstr "Necesaria para ejecutar en modo de servidor."
 
-#: burpui/misc/parser/doc.py:627
+#: burpui/misc/parser/doc.py:633
 msgid ""
 "Whether or not the server should cache the directory tree when a monitor "
 "client is browsing. <br/>Advantage: browsing is faster. "
 "</br>Disadvantage: more memory is used."
-msgstr "Si el servidor debe almacenar en caché el árbol de directorios del burp monitor cuando un cliente está navegando. Ventaja <br/>: la navegación es más rápida. </ br> Desventaja: se utiliza más memoria."
+msgstr ""
+"Si el servidor debe almacenar en caché el árbol de directorios del burp "
+"monitor cuando un cliente está navegando. Ventaja <br/>: la navegación es"
+" más rápida. </ br> Desventaja: se utiliza más memoria."
 
-#: burpui/misc/parser/doc.py:632
+#: burpui/misc/parser/doc.py:638
 msgid ""
 "Set the network timeout in seconds. If no data is sent or received over a"
 " period of this length, burp will give up. The default is 7200 seconds (2"
 " hours)."
-msgstr "Ajuste el tiempo de espera de la red en cuestión de segundos. Si no hay datos enviando o recibiendo durante un período de esta longitud, burp se dará por vencido. El valor predeterminado es 7200 segundos (2 horas)."
+msgstr ""
+"Ajuste el tiempo de espera de la red en cuestión de segundos. Si no hay "
+"datos enviando o recibiendo durante un período de esta longitud, burp se "
+"dará por vencido. El valor predeterminado es 7200 segundos (2 horas)."
 
-#: burpui/misc/parser/doc.py:636
+#: burpui/misc/parser/doc.py:642
 msgid ""
 "If this file system entry exists, the directory containing it will not be"
 " backed up."
 msgstr "Si existe esta entrada , el directorio que la contiene no será respaldado."
 
-#: burpui/misc/parser/doc.py:638
+#: burpui/misc/parser/doc.py:644
 msgid "The same as notify_success_arg, but for backups that failed."
 msgstr "Lo mismo que notify_success_arg, pero para los respaldos que han fallado."
 
-#: burpui/misc/parser/doc.py:640
+#: burpui/misc/parser/doc.py:646
 msgid "The same as notify_success_script, but for backups that failed."
-msgstr "Lo mismo que notify_success_script, pero para los respaldos que han fallado."
+msgstr ""
+"Lo mismo que notify_success_script, pero para los respaldos que han "
+"fallado."
 
-#: burpui/misc/parser/doc.py:642
+#: burpui/misc/parser/doc.py:648
 msgid ""
 "A user-definable argument to the notify success script. You can have many"
 " of these. The notify_success_arg options can be overridden by the client"
 " configuration files in clientconfdir on the server."
-msgstr "Un argumento definible por el usuario para el script de notificación exitosa. Usted puede tener muchos de estos. Las opciones notify_success_arg pueden ser sobrescritos los archivos de configuración del cliente en clientconfdir en el servidor."
+msgstr ""
+"Un argumento definible por el usuario para el script de notificación "
+"exitosa. Usted puede tener muchos de estos. Las opciones "
+"notify_success_arg pueden ser sobrescritos los archivos de configuración "
+"del cliente en clientconfdir en el servidor."
 
-#: burpui/misc/parser/doc.py:647
+#: burpui/misc/parser/doc.py:653
 msgid ""
 "Path to the script to run when a backup succeeds. User arguments are "
 "appended after the first five reserved arguments. An example notify "
 "script is provided. The notify_success_script option can be overridden by"
 " the client configuration files in clientconfdir on the server."
-msgstr "Path de acceso a la secuencia de comandos para ejecutar cuándo un respaldo tiene éxito. Los argumentos del usuario se añaden después de los primeros cinco argumentos reservados. Se proporciona un script de ejemplo para notificar. La opción notify_success_script puede sobrescrito por los archivos de configuración del cliente en clientconfdir en el servidor."
+msgstr ""
+"Path de acceso a la secuencia de comandos para ejecutar cuándo un "
+"respaldo tiene éxito. Los argumentos del usuario se añaden después de los"
+" primeros cinco argumentos reservados. Se proporciona un script de "
+"ejemplo para notificar. La opción notify_success_script puede sobrescrito"
+" por los archivos de configuración del cliente en clientconfdir en el "
+"servidor."
 
-#: burpui/misc/parser/doc.py:655
+#: burpui/misc/parser/doc.py:661
 msgid ""
 "Set to 1 to send success notifications when there were warnings. If this "
 "and notify_success_changes_only are not turned on, success notifications "
 "are always sent."
-msgstr "Se establece en 1 para enviar notificaciones de éxito cuando no haya advertencias. Si esto y notify_success_changes_only están apagadas, las notificaciones de éxito siempre se envían."
+msgstr ""
+"Se establece en 1 para enviar notificaciones de éxito cuando no haya "
+"advertencias. Si esto y notify_success_changes_only están apagadas, las "
+"notificaciones de éxito siempre se envían."
 
-#: burpui/misc/parser/doc.py:661
+#: burpui/misc/parser/doc.py:667
 msgid "Defines the password to send to the server."
 msgstr "Define la contraseña para enviar al servidor."
 
-#: burpui/misc/parser/doc.py:662
+#: burpui/misc/parser/doc.py:668
 msgid ""
 "Allows you to turn client password checking on or off. The default is on."
 " SSL certificates will still be checked if you turn passwords off. This "
 "option can be overridden by the client configuration files in "
 "clientconfdir on the server."
-msgstr "Permite apagar o encender la verificación del password del cliente. El valor por defecto está activada. Los certificados SSL todavía serán revisados ​​si a su vez las contraseñas se verifican. Esta opción puede ser sobrescrita por los archivos de configuración del cliente en clientconfdir en el servidor."
+msgstr ""
+"Permite apagar o encender la verificación del password del cliente. El "
+"valor por defecto está activada. Los certificados SSL todavía serán "
+"revisados ​​si a su vez las contraseñas se verifican. Esta opción puede "
+"ser sobrescrita por los archivos de configuración del cliente en "
+"clientconfdir en el servidor."
 
-#: burpui/misc/parser/doc.py:668
+#: burpui/misc/parser/doc.py:674
 msgid ""
 "When this is on, which is the default, a warning will be issued when the "
 "client sends a path that is too long to replicate in the storage area "
@@ -627,17 +926,24 @@ msgid ""
 "of the tree structure, regardless of the setting of this option. This "
 "option can be overridden by the client configuration files in "
 "clientconfdir on the server."
-msgstr "Cuando está activado, el cual es el valor predeterminado, se emitirá un aviso cuando el cliente envía un path que es demasiado largo para replicarse en la estructura de árbol de área de almacenamiento. El archivo siempre se guardará en un archivo numerado fuera de la estructura del árbol de directorios, independientemente del ajuste de esta opción. Esta opción puede ser sobrescrita por los archivos de configuración del cliente en clientconfdir en el servidor."
+msgstr ""
+"Cuando está activado, el cual es el valor predeterminado, se emitirá un "
+"aviso cuando el cliente envía un path que es demasiado largo para "
+"replicarse en la estructura de árbol de área de almacenamiento. El "
+"archivo siempre se guardará en un archivo numerado fuera de la estructura"
+" del árbol de directorios, independientemente del ajuste de esta opción. "
+"Esta opción puede ser sobrescrita por los archivos de configuración del "
+"cliente en clientconfdir en el servidor."
 
-#: burpui/misc/parser/doc.py:677
+#: burpui/misc/parser/doc.py:683
 msgid "Synonym for lockfile."
 msgstr "Sinónimo de fichero de bloqueo (archivo 'lock')."
 
-#: burpui/misc/parser/doc.py:678
+#: burpui/misc/parser/doc.py:684
 msgid "Defines the main TCP port that the server listens on."
 msgstr "Define el puerto TCP principal que escucha el servidor."
 
-#: burpui/misc/parser/doc.py:679
+#: burpui/misc/parser/doc.py:685
 msgid ""
 "Choose which style of backups and restores to use. 0 (the default) "
 "automatically decides based on the server version and which protocol is "
@@ -646,39 +952,61 @@ msgid ""
 "forces protocol2 style (inline deduplication with variable length "
 "blocks). If you choose a forced setting, it will be an error if the "
 "server also chooses a forced setting."
-msgstr "Elegir qué estilo de respaldo y restauración se usa. 0 (por defecto) automáticamente decide, basándose en la versión del servidor y el protocolo que se establece en el lado del servidor. 1 fuerzas el estilo protocol1 (detalle de nivel de archivo con un pseudo reflejado de almacenamiento en el servidor y rsync opcional). 2 fuerzas de estilo protocol2 (deduplicación en línea con bloques de longitud variable). Si se elige un ajuste forzado, será un error si el servidor también elige un ajuste forzado."
-
-#: burpui/misc/parser/doc.py:688
-msgid ""
-"Set the network send rate limit, in Mb/s. If this option is not given, "
-"burp will send data as fast as it can."
-msgstr "Establecer el límite de velocidad de envío por la red, en Mb/s. Si no se da esta opción, burp enviará datos tan rápido como se pueda. Si lo aplica en el servidor es la velocidad que envía desde el servidor al cliente, si lo aplica en el burp.conf del cliente, es la velocidad que burp envía desde el cliente al servidor."
-
-#: burpui/misc/parser/doc.py:691
-msgid ""
-"Open all block devices for reading and back up the contents as if they "
-"were regular files."
-msgstr "Abre todos los dispositivos de bloque para la lectura y respalda los contenidos como si fueran archivos normales."
+msgstr ""
+"Elegir qué estilo de respaldo y restauración se usa. 0 (por defecto) "
+"automáticamente decide, basándose en la versión del servidor y el "
+"protocolo que se establece en el lado del servidor. 1 fuerzas el estilo "
+"protocol1 (detalle de nivel de archivo con un pseudo reflejado de "
+"almacenamiento en el servidor y rsync opcional). 2 fuerzas de estilo "
+"protocol2 (deduplicación en línea con bloques de longitud variable). Si "
+"se elige un ajuste forzado, será un error si el servidor también elige un"
+" ajuste forzado."
 
 #: burpui/misc/parser/doc.py:694
 msgid ""
+"Set the network send rate limit, in Mb/s. If this option is not given, "
+"burp will send data as fast as it can."
+msgstr ""
+"Establecer el límite de velocidad de envío por la red, en Mb/s. Si no se "
+"da esta opción, burp enviará datos tan rápido como se pueda. Si lo aplica"
+" en el servidor es la velocidad que envía desde el servidor al cliente, "
+"si lo aplica en el burp.conf del cliente, es la velocidad que burp envía "
+"desde el cliente al servidor."
+
+#: burpui/misc/parser/doc.py:697
+msgid ""
+"Open all block devices for reading and back up the contents as if they "
+"were regular files."
+msgstr ""
+"Abre todos los dispositivos de bloque para la lectura y respalda los "
+"contenidos como si fueran archivos normales."
+
+#: burpui/misc/parser/doc.py:700
+msgid ""
 "Open all fifos for reading and back up the contents as if they were "
 "regular files."
-msgstr "Abrir todas las memorias FIFO para la lectura y respalda los contenidos como si fueran archivos normales."
+msgstr ""
+"Abrir todas las memorias FIFO para la lectura y respalda los contenidos "
+"como si fueran archivos normales."
 
-#: burpui/misc/parser/doc.py:696
+#: burpui/misc/parser/doc.py:702
 msgid ""
 "Do not back up the given block device itself, but open it for reading and"
 " back up the contents as if it were a regular file."
-msgstr "No respalda el dispositivo de bloque dado en sí mismo, pero abre este para leer y realizar respaldo del contenido como si fuera un archivo normal."
+msgstr ""
+"No respalda el dispositivo de bloque dado en sí mismo, pero abre este "
+"para leer y realizar respaldo del contenido como si fuera un archivo "
+"normal."
 
-#: burpui/misc/parser/doc.py:699
+#: burpui/misc/parser/doc.py:705
 msgid ""
 "Do not back up the given fifo itself, but open it for reading and back up"
 " the contents as if it were a regular file."
-msgstr "No respalda FIFO dado en si mismo, pero abre para leer y realizar respaldo del contenido como si fuera un archivo normal."
+msgstr ""
+"No respalda FIFO dado en si mismo, pero abre para leer y realizar "
+"respaldo del contenido como si fuera un archivo normal."
 
-#: burpui/misc/parser/doc.py:702
+#: burpui/misc/parser/doc.py:708
 msgid ""
 "A client that is permitted to list, verify, restore and delete files "
 "belonging to any other client. You may specify multiple restore_clients. "
@@ -687,9 +1015,17 @@ msgid ""
 "restoring a backup from a Windows computer onto a Linux computer will "
 "currently leave the VSS headers in place at the beginning of each file. "
 "This will be addressed in a future version of burp."
-msgstr "Un cliente que se permite para listar, verificar, restaurar y eliminar archivos que pertenecen a cualquier otro cliente. Puede especificar varios restore_clients. Si esto es demasiado permisivo, es posible configurar un restore_client para clientes individuales originales en los archivos de clientconfdir individuales. Tenga en cuenta que la restauración de unrespaldo de un equipo con Windows en un ordenador Linux dejará  las cabeceras de VSS al principio de cada archivo. Este problema se solucionará en una versión futura de burp."
+msgstr ""
+"Un cliente que se permite para listar, verificar, restaurar y eliminar "
+"archivos que pertenecen a cualquier otro cliente. Puede especificar "
+"varios restore_clients. Si esto es demasiado permisivo, es posible "
+"configurar un restore_client para clientes individuales originales en los"
+" archivos de clientconfdir individuales. Tenga en cuenta que la "
+"restauración de unrespaldo de un equipo con Windows en un ordenador Linux"
+" dejará  las cabeceras de VSS al principio de cada archivo. Este problema"
+" se solucionará en una versión futura de burp."
 
-#: burpui/misc/parser/doc.py:714
+#: burpui/misc/parser/doc.py:720
 msgid ""
 "Turn this on to enable 'resume partial' code. Requires "
 "'working_dir_recovery_method=resume'. When resuming an interrupted "
@@ -697,50 +1033,75 @@ msgid ""
 "blocks of that file in order to be more efficient. However, situations "
 "have been reported where the file on the server side just gets bigger "
 "forever, so this feature now defaults to being turned off."
-msgstr "Active este parámetro para permitir 'resumir parcial'. Requiere 'working_dir_recovery_method = resume'. Al reanudar una transferencia interrumpida de un solo archivo, intenta utilizar bloques previamente transferidas de ese archivo con el fin de ser más eficientes. Sin embargo, se han reportado situaciones donde el archivo en el servidor simplemente se hace más grande para siempre, por lo que esta función por defecto es desactivada."
+msgstr ""
+"Active este parámetro para permitir 'resumir parcial'. Requiere "
+"'working_dir_recovery_method = resume'. Al reanudar una transferencia "
+"interrumpida de un solo archivo, intenta utilizar bloques previamente "
+"transferidas de ese archivo con el fin de ser más eficientes. Sin "
+"embargo, se han reportado situaciones donde el archivo en el servidor "
+"simplemente se hace más grande para siempre, por lo que esta función por "
+"defecto es desactivada."
 
-#: burpui/misc/parser/doc.py:723
+#: burpui/misc/parser/doc.py:729
 msgid ""
 "When enabled, this causes problems in the phase1 scan (such as an "
 "'include' being missing) to be treated as fatal errors. The default is "
 "off."
-msgstr "Cuando está activada, causa problemas en la exploración fase 1 (como un 'include' está ausente) a ser tratados como errores fatales. Por defecto está desactivada."
+msgstr ""
+"Cuando está activada, causa problemas en la exploración fase 1 (como un "
+"'include' está ausente) a ser tratados como errores fatales. Por defecto "
+"está desactivada."
 
-#: burpui/misc/parser/doc.py:728
+#: burpui/misc/parser/doc.py:734
 msgid ""
 "Goes with server_script and overrides server_script_pre_arg and "
 "server_script_post_arg."
-msgstr "Va con server_script y sobrescribe server_script_pre_arg y server_script_post_arg."
+msgstr ""
+"Va con server_script y sobrescribe server_script_pre_arg y "
+"server_script_post_arg."
 
-#: burpui/misc/parser/doc.py:731
+#: burpui/misc/parser/doc.py:737
 msgid ""
 "Turn on to send a notification emails when the server pre and post "
 "scripts return non-zero. The output of the script will be included it the"
 " email. The default is off. Requires the notify_failure options to be "
 "set."
-msgstr "Encienda para enviar notificaciones de correo cuando la salida del script pre y post del servidor no sea cero. La salida del script será incluída en el correo electrónico. Por defecto está desactivada. Requiere que las opciones notify_failure se establezcan."
+msgstr ""
+"Encienda para enviar notificaciones de correo cuando la salida del script"
+" pre y post del servidor no sea cero. La salida del script será incluída "
+"en el correo electrónico. Por defecto está desactivada. Requiere que las "
+"opciones notify_failure se establezcan."
 
-#: burpui/misc/parser/doc.py:737
+#: burpui/misc/parser/doc.py:743
 msgid ""
 "A user-definable argument to the server post script. You can have many of"
 " these."
-msgstr "Un argumento definibles por el usuario para el script post  del servidor. Usted puede tener muchos de estos."
+msgstr ""
+"Un argumento definibles por el usuario para el script post  del servidor."
+" Usted puede tener muchos de estos."
 
-#: burpui/misc/parser/doc.py:740
+#: burpui/misc/parser/doc.py:746
 msgid ""
 "Turn on to send a notification email when the server post script returns "
 "non-zero. The output of the script will be included in the email. The "
 "default is off. Requires the notify_failure options to be set."
-msgstr "Activar para enviar una notificación por correo electrónico cuando el script de post del servidor devuelve distinto de cero. La salida del script será incluida en el correo electrónico. Por defecto está desactivada. Requiere que las opciones notify_failure se establezcan."
+msgstr ""
+"Activar para enviar una notificación por correo electrónico cuando el "
+"script de post del servidor devuelve distinto de cero. La salida del "
+"script será incluida en el correo electrónico. Por defecto está "
+"desactivada. Requiere que las opciones notify_failure se establezcan."
 
-#: burpui/misc/parser/doc.py:747
+#: burpui/misc/parser/doc.py:753
 msgid ""
 "If this is set to 1, server_script_post will always be run. The default "
 "is 0, which means that if the task asked for by the client fails, "
 "server_script_post will not be run."
-msgstr "Si esto se establece en 1, siempre se llevará a cabo server_script_post. El valor por defecto es 0, lo que significa que si la tarea solicitada por el cliente falla, server_script_post no se ejecuta."
+msgstr ""
+"Si esto se establece en 1, siempre se llevará a cabo server_script_post. "
+"El valor por defecto es 0, lo que significa que si la tarea solicitada "
+"por el cliente falla, server_script_post no se ejecuta."
 
-#: burpui/misc/parser/doc.py:754
+#: burpui/misc/parser/doc.py:760
 msgid ""
 "Path to a script to run on the server before the client disconnects. The "
 "arguments to it are 'post', '(client command)', '(client name), '(0 or 1 "
@@ -748,15 +1109,21 @@ msgid ""
 "defined by server_script_post_arg. This command and related options can "
 "be overriddden by the client configuration files in clientconfdir on the "
 "server."
-msgstr "Path a un script a ejecutar en el servidor antes de que el cliente se desconecte. Este comando y los argumentos pueden ser sobrescritos por la configuración de cliente en los archivos dentro de clientconfdir en el servidor."
+msgstr ""
+"Path a un script a ejecutar en el servidor antes de que el cliente se "
+"desconecte. Este comando y los argumentos pueden ser sobrescritos por la "
+"configuración de cliente en los archivos dentro de clientconfdir en el "
+"servidor."
 
-#: burpui/misc/parser/doc.py:765
+#: burpui/misc/parser/doc.py:771
 msgid ""
 "A user-definable argument to the server pre script. You can have many of "
 "these."
-msgstr "Un argumento definibles por el usuario para el script pre del servidor. Usted puede tener muchos de estos."
+msgstr ""
+"Un argumento definibles por el usuario para el script pre del servidor. "
+"Usted puede tener muchos de estos."
 
-#: burpui/misc/parser/doc.py:768
+#: burpui/misc/parser/doc.py:774
 msgid ""
 "Turn on to send a notification email when the server pre script returns "
 "non-zero. The output of the script will be included in the email. The "
@@ -764,9 +1131,16 @@ msgid ""
 "usually contact the server at 20 minute intervals and this could cause a "
 "lot of emails to be generated. Requires the notify_failure options to be "
 "set."
-msgstr "Encienda para enviar una notificación por correo electrónico cuando el script del servidor pre devuelve un valor distinto de 0. La salida del script será incluido en el correo electrónico. Por defecto está desactivada. La mayoría de la gente no quiere esta opción activada porque los clientes suelen ponerse en contacto con el servidor en intervalos de 20 minutos y esto podría causar una gran cantidad de mensajes de correo electrónico. Requiere que las opciones notify_failure que se establezcan."
+msgstr ""
+"Encienda para enviar una notificación por correo electrónico cuando el "
+"script del servidor pre devuelve un valor distinto de 0. La salida del "
+"script será incluido en el correo electrónico. Por defecto está "
+"desactivada. La mayoría de la gente no quiere esta opción activada porque"
+" los clientes suelen ponerse en contacto con el servidor en intervalos de"
+" 20 minutos y esto podría causar una gran cantidad de mensajes de correo "
+"electrónico. Requiere que las opciones notify_failure que se establezcan."
 
-#: burpui/misc/parser/doc.py:779
+#: burpui/misc/parser/doc.py:785
 msgid ""
 "Path to a script to run on the server after each successfully "
 "authenticated connection but before any work is carried out. The "
@@ -776,119 +1150,172 @@ msgid ""
 "task asked for by the client will not be run. This command and related "
 "options can be overriddden by the client configuration files in "
 "clientconfdir on the server."
-msgstr "Path de script para ejecutar en el servidor después de cada conexión autenticada con éxito pero antes de cualquier trabajo se lleve a cabo. Los argumentos para esto son 'pre', '(cient command)', '(cient name)', '(0 o 1 para exitoso o fallido)', '(código de salida de script timer)', y los argumentos definidos por 'server_script_pre_arg'. Si el script no retorna 0, la tarea consultada al cliente no será ejecutada. Este comando y las opciones relacionadas se pueden sobrescribir por la configuración del cliente en los archivos de clientconfdir en el servidor."
+msgstr ""
+"Path de script para ejecutar en el servidor después de cada conexión "
+"autenticada con éxito pero antes de cualquier trabajo se lleve a cabo. "
+"Los argumentos para esto son 'pre', '(cient command)', '(cient name)', "
+"'(0 o 1 para exitoso o fallido)', '(código de salida de script timer)', y"
+" los argumentos definidos por 'server_script_pre_arg'. Si el script no "
+"retorna 0, la tarea consultada al cliente no será ejecutada. Este comando"
+" y las opciones relacionadas se pueden sobrescribir por la configuración "
+"del cliente en los archivos de clientconfdir en el servidor."
 
-#: burpui/misc/parser/doc.py:793
+#: burpui/misc/parser/doc.py:799
 msgid ""
 "You can use this to save space in your config file when you want to run "
 "the same server script twice. It overrides server_script_pre and "
 "server_script_post. This command and related options can be overriddden "
 "by the client configuration files in clientconfdir on the server."
-msgstr "Usted puede usar esto para ahorrar espacio en su archivo de configuración cuando se quiere ejecutar el mismo server script dos veces. Sobrescribe server_script_pre y server_script_post. Este comando y las opciones relacionadas se pueden sobrescribir por los archivos de configuración de cliente en clientconfdir en el servidor."
+msgstr ""
+"Usted puede usar esto para ahorrar espacio en su archivo de configuración"
+" cuando se quiere ejecutar el mismo server script dos veces. Sobrescribe "
+"server_script_pre y server_script_post. Este comando y las opciones "
+"relacionadas se pueden sobrescribir por los archivos de configuración de "
+"cliente en clientconfdir en el servidor."
 
-#: burpui/misc/parser/doc.py:800
+#: burpui/misc/parser/doc.py:806
 msgid ""
 "A warning will be issued when the estimated size of all files is greater "
 "than the specified size and smaller than hard_quota. Example: 'soft_quota"
 " = 95Gb'. Set to 0 (the default) to have no warning."
-msgstr "Una advertencia se emite cuando el tamaño estimado de todos los archivos es mayor que el tamaño especificado y más pequeño que hard_quota. Ejemplo: 'soft_quota = 95GB'. Se establece en 0 (por defecto) para tener ninguna advertencia."
+msgstr ""
+"Una advertencia se emite cuando el tamaño estimado de todos los archivos "
+"es mayor que el tamaño especificado y más pequeño que hard_quota. "
+"Ejemplo: 'soft_quota = 95GB'. Se establece en 0 (por defecto) para tener "
+"ninguna advertencia."
 
-#: burpui/misc/parser/doc.py:805
+#: burpui/misc/parser/doc.py:811
 msgid ""
 "When backing up Windows computers with burp protocol 1, this option "
 "allows you to save the VSS header data separate from the file data. The "
 "default is off, which means that the VSS header data is saved prepended "
 "to the file data."
-msgstr "Cuando respalda los ordenadores Windows con el protocolo burp 1, esta opción le permite guardar los datos VSS de cabecera separada de los datos del archivo. El valor por defecto está apagado, lo que significa que los datos de cabecera de VSS se guarda colocado al comienzo de los datos del archivo."
+msgstr ""
+"Cuando respalda los ordenadores Windows con el protocolo burp 1, esta "
+"opción le permite guardar los datos VSS de cabecera separada de los datos"
+" del archivo. El valor por defecto está apagado, lo que significa que los"
+" datos de cabecera de VSS se guarda colocado al comienzo de los datos del"
+" archivo."
 
-#: burpui/misc/parser/doc.py:810
+#: burpui/misc/parser/doc.py:816
 msgid ""
 "The path to the SSL CA certificate. This file will probably be the same "
 "on both the server and the client. The file should contain just the "
 "certificate in PEM format. For more information on this, and the other "
 "ssl_* options, please see <a "
 "href='http://burp.grke.org/docs/burp_ca.html'> docs/burp_ca.txt</a>."
-msgstr "La ruta al certificado CA SSL. Este archivo probablemente será el mismo tanto en el servidor y el cliente. El archivo debe contener sólo el certificado en formato PEM. Para obtener más información sobre esto, y el otro ssl_ * las opciones, consulte docs <a href='http://burp.grke.org/docs/burp_ca.html'>/burp_ca.txt </a>."
+msgstr ""
+"La ruta al certificado CA SSL. Este archivo probablemente será el mismo "
+"tanto en el servidor y el cliente. El archivo debe contener sólo el "
+"certificado en formato PEM. Para obtener más información sobre esto, y el"
+" otro ssl_ * las opciones, consulte docs <a "
+"href='http://burp.grke.org/docs/burp_ca.html'>/burp_ca.txt </a>."
 
-#: burpui/misc/parser/doc.py:817
+#: burpui/misc/parser/doc.py:823
 msgid "Synonym for ssl_key_password."
 msgstr "Sinónimo de ssl_key_password."
 
-#: burpui/misc/parser/doc.py:818
+#: burpui/misc/parser/doc.py:824
 msgid ""
 "The path to the server SSL certificate. It works for me when the file "
 "contains the concatenation of the certificate and private key in PEM "
 "format."
-msgstr "La ruta de acceso al certificado SSL del servidor. A mí me funciona cuando el archivo contiene la concatenación del certificado y la clave privada en formato PEM."
+msgstr ""
+"La ruta de acceso al certificado SSL del servidor. A mí me funciona "
+"cuando el archivo contiene la concatenación del certificado y la clave "
+"privada en formato PEM."
 
-#: burpui/misc/parser/doc.py:821
+#: burpui/misc/parser/doc.py:827
 msgid "Allowed SSL ciphers. See openssl ciphers for details."
-msgstr "Sistemas de cifrado SSL permitidos. Ver cifrados OpenSSL para obtener más detalles."
+msgstr ""
+"Sistemas de cifrado SSL permitidos. Ver cifrados OpenSSL para obtener más"
+" detalles."
 
-#: burpui/misc/parser/doc.py:823
+#: burpui/misc/parser/doc.py:829
 msgid ""
 "Choose the level of zlib compression over SSL. Setting 0 or zlib0 "
 "turnsSSL compression off. Setting non-zero gives zlib5 compression (it is"
 " not currently possible for openssl to set any other level). The default "
 "is 5. 'gzip' is a synonym of 'zlib'.is a synonym of 'zlib'."
-msgstr "Elegir el nivel de compresión zlib a través de SSL. Ajuste 0 o zlib0 quita la compresión. Ajuste distinto de cero da compresión zlib5 (no es posible en la actualidad para openssl para establecer cualquier otro nivel). El valor predeterminado es 5. 'gzip' es sinónimo de 'zlib'."
+msgstr ""
+"Elegir el nivel de compresión zlib a través de SSL. Ajuste 0 o zlib0 "
+"quita la compresión. Ajuste distinto de cero da compresión zlib5 (no es "
+"posible en la actualidad para openssl para establecer cualquier otro "
+"nivel). El valor predeterminado es 5. 'gzip' es sinónimo de 'zlib'."
 
-#: burpui/misc/parser/doc.py:830
+#: burpui/misc/parser/doc.py:836
 msgid ""
 "Path to Diffie-Hellman parameter file. To generate one with openssl, use "
 "a command like this: openssl dhparam -out dhfile.pem -5 1024"
-msgstr "Path al archivo de parámetros Diffie-Hellman. Para generar una con OpenSSL, use un comando como el siguiente: openssl dhparam -out dhfile.pem -5 1024"
+msgstr ""
+"Path al archivo de parámetros Diffie-Hellman. Para generar una con "
+"OpenSSL, use un comando como el siguiente: openssl dhparam -out "
+"dhfile.pem -5 1024"
 
-#: burpui/misc/parser/doc.py:833
+#: burpui/misc/parser/doc.py:839
 msgid "The SSL key password."
 msgstr "La contraseña de la clave SSL."
 
-#: burpui/misc/parser/doc.py:834
+#: burpui/misc/parser/doc.py:840
 msgid "The path to the server SSL private key in PEM format."
 msgstr "La ruta de acceso a la clave privada SSL del servidor en formato PEM."
 
-#: burpui/misc/parser/doc.py:836
+#: burpui/misc/parser/doc.py:842
 msgid ""
 "Must match the common name in the SSL certificate that the server "
 "giveswhen it connects. If ssl_peer_cn is not set, the server name will be"
 " used instead."
-msgstr "Debe ser igual al nombre común en el certificado SSL que el servidor responde cuando este conecta. Si el ssl_peer_cn no está configurado, el nombre del servidor será usado entonces."
+msgstr ""
+"Debe ser igual al nombre común en el certificado SSL que el servidor "
+"responde cuando este conecta. Si el ssl_peer_cn no está configurado, el "
+"nombre del servidor será usado entonces."
 
-#: burpui/misc/parser/doc.py:840
+#: burpui/misc/parser/doc.py:846
 msgid ""
 "Defines the main TCP address that the server listens on for status "
 "requests. The default is either '::1' or '127.0.0.1', dependent upon "
 "compile time options."
-msgstr "Define la dirección TCP principal en que el servidor escucha las solicitudes de estado. El valor predeterminado es o bien ':: 1' o '127.0.0.1', dependiendo de las opciones de tiempo de compilación."
+msgstr ""
+"Define la dirección TCP principal en que el servidor escucha las "
+"solicitudes de estado. El valor predeterminado es o bien ':: 1' o "
+"'127.0.0.1', dependiendo de las opciones de tiempo de compilación."
 
-#: burpui/misc/parser/doc.py:844
+#: burpui/misc/parser/doc.py:850
 msgid "Defines the TCP port that the server listens on for status requests."
 msgstr "Define el puerto TCP que el servidor escucha las solicitudes de estado."
 
-#: burpui/misc/parser/doc.py:846
+#: burpui/misc/parser/doc.py:852
 msgid "Log to stdout. Defaults to on."
 msgstr "Log a la salida estándar (stdout). Por defecto es encendido."
 
-#: burpui/misc/parser/doc.py:847
+#: burpui/misc/parser/doc.py:853
 msgid ""
 "When backing up Windows computers with burp protocol 1, this option "
 "allows you to prevent the VSS header data being backed up. The default is"
 " off. To restore a backup that has no VSS information on Windows, you "
 "need to give the client the '-x' command line option."
-msgstr "Cuando respalda los ordenadores Windows con el protocolo burp 1, esta opción le permite evitar que los datos de cabecera de VSS sean respaldados. Por defecto está desactivada. Para restaurar una respaldo que no tiene información de VSS en Windows, es necesario dar al cliente la opción de línea de comandos '-x'."
+msgstr ""
+"Cuando respalda los ordenadores Windows con el protocolo burp 1, esta "
+"opción le permite evitar que los datos de cabecera de VSS sean "
+"respaldados. Por defecto está desactivada. Para restaurar una respaldo "
+"que no tiene información de VSS en Windows, es necesario dar al cliente "
+"la opción de línea de comandos '-x'."
 
-#: burpui/misc/parser/doc.py:853
+#: burpui/misc/parser/doc.py:859
 msgid "Log to syslog. Defaults to off."
 msgstr "Log a syslog. El valor predeterminado es off."
 
-#: burpui/misc/parser/doc.py:854
+#: burpui/misc/parser/doc.py:860
 msgid ""
 "A user-definable argument to the timer script.You can have many of these."
 " The timer_arg options can be overridden by the client configuration "
 "files in clientconfdir on the server."
-msgstr "Un argumento definible por el usuario para el timer script. Puede tener muchos de estos. Las opciones timer_arg pueden ser sobrescritos por los archivos de configuración del cliente en clientconfdir en el servidor."
+msgstr ""
+"Un argumento definible por el usuario para el timer script. Puede tener "
+"muchos de estos. Las opciones timer_arg pueden ser sobrescritos por los "
+"archivos de configuración del cliente en clientconfdir en el servidor."
 
-#: burpui/misc/parser/doc.py:858
+#: burpui/misc/parser/doc.py:864
 msgid ""
 "Path to the script to run when a client connects with the timed backup "
 "option. If the script exits with code 0, a backup will run. The first two"
@@ -897,43 +1324,70 @@ msgid ""
 "appended after that. An example timer script is provided. The "
 "timer_script option can be overridden by the client configuration files "
 "in clientconfdir on the server."
-msgstr "Path de acceso al script para ejecutar cuando un cliente se conecta con la opción de respaldo programada (timed backup). Si el script finaliza con el código 0, se ejecutará el respaldo. Los dos primeros argumentos son el nombre del cliente y la ruta de acceso al directorio de almacenamiento. Los siguientes tres argumentos son reservados, los argumentos del usuario son agregados después de estos. Un ejemplo de timer script se provee. La opción time_script  puede ser sobrescrito por el cliente en los archivos de configuración clientconfdir en el servidor. "
+msgstr ""
+"Path de acceso al script para ejecutar cuando un cliente se conecta con "
+"la opción de respaldo programada (timed backup). Si el script finaliza "
+"con el código 0, se ejecutará el respaldo. Los dos primeros argumentos "
+"son el nombre del cliente y la ruta de acceso al directorio de "
+"almacenamiento. Los siguientes tres argumentos son reservados, los "
+"argumentos del usuario son agregados después de estos. Un ejemplo de "
+"timer script se provee. La opción time_script  puede ser sobrescrito por "
+"el cliente en los archivos de configuración clientconfdir en el servidor."
+" "
 
-#: burpui/misc/parser/doc.py:868
+#: burpui/misc/parser/doc.py:874
 #, python-format
 msgid ""
 "This allows you to tweak the format of the timestamps of individual "
 "backups. See 'man strftime' to see available substitutions. If this "
 "option is unset, burp uses \"%Y-%m-%d %H:%M:%S\"."
-msgstr "Esto le permite modificar el formato de las marcas de tiempo (timestamps) de respaldos individuales. Ver 'man strftime' para ver las sustituciones disponibles. Si esta opción no está definida, burp utiliza   \"%Y-%m-%d %H:%M:%S\"."
+msgstr ""
+"Esto le permite modificar el formato de las marcas de tiempo (timestamps)"
+" de respaldos individuales. Ver 'man strftime' para ver las sustituciones"
+" disponibles. Si esta opción no está definida, burp utiliza   \"%Y-%m-%d "
+"%H:%M:%S\"."
 
-#: burpui/misc/parser/doc.py:873
+#: burpui/misc/parser/doc.py:879
 msgid "Set the file creation umask. Default is 0022."
-msgstr "Ajuste la máscara de usuario de creación del archivo (umask). El valor predeterminado es 0022."
+msgstr ""
+"Ajuste la máscara de usuario de creación del archivo (umask). El valor "
+"predeterminado es 0022."
 
-#: burpui/misc/parser/doc.py:874
+#: burpui/misc/parser/doc.py:880
 msgid ""
 "Run as a particular user. This can be overridden by the client "
 "configuration files in clientconfdir on the server."
-msgstr "Ejecutar como un usuario en particular. Esto puede ser sobrescrito por los archivos de configuración del cliente en clientconfdir en el servidor."
+msgstr ""
+"Ejecutar como un usuario en particular. Esto puede ser sobrescrito por "
+"los archivos de configuración del cliente en clientconfdir en el "
+"servidor."
 
-#: burpui/misc/parser/doc.py:877
+#: burpui/misc/parser/doc.py:883
 msgid ""
 "When this is on, which is the default, a warning will be issued when the "
 "client version does not match the server version. This option can be "
 "overridden by the client configuration files in clientconfdir on the "
 "server."
-msgstr "Cuando está activado, el cual es el valor por defecto, una advertencia se emite cuando la versión del cliente no coincide con la versión del servidor. Esta opción puede ser sobrescrita por los archivos de configuración del cliente en clientconfdir en el servidor."
+msgstr ""
+"Cuando está activado, el cual es el valor por defecto, una advertencia se"
+" emite cuando la versión del cliente no coincide con la versión del "
+"servidor. Esta opción puede ser sobrescrita por los archivos de "
+"configuración del cliente en clientconfdir en el servidor."
 
-#: burpui/misc/parser/doc.py:882
+#: burpui/misc/parser/doc.py:888
 msgid ""
 "When backing up Windows computers, this option allows you to specify "
 "which drives have VSS snapshots taken of them. If you omit this option, "
 "burp will automatically decide based on the 'include' options. If you "
 "want no drives to have snapshots taken of them, you can specify '0'."
-msgstr "Cuando respalda los ordenadores Windows, esta opción le permite especificar qué unidades usan instantáneas VSS tomadas de ellos. Si se omite esta opción, burp automáticamente decidirá sobre la base de las opciones 'include'. Si desea que no hay unidades para tener instantáneas, puede especificar 0."
+msgstr ""
+"Cuando respalda los ordenadores Windows, esta opción le permite "
+"especificar qué unidades usan instantáneas VSS tomadas de ellos. Si se "
+"omite esta opción, burp automáticamente decidirá sobre la base de las "
+"opciones 'include'. Si desea que no hay unidades para tener instantáneas,"
+" puede especificar 0."
 
-#: burpui/misc/parser/doc.py:888
+#: burpui/misc/parser/doc.py:894
 msgid ""
 "This option tells the server what to do when it finds the working "
 "directory of an interrupted backup (perhaps somebody pulled the plug on "
@@ -945,7 +1399,18 @@ msgid ""
 "at file granularity. NOTE: If the client has changed its include/exclude "
 "configuration since the backup was interrupted, the recovery method will "
 "automatically switch to 'use'. </li></ul>"
-msgstr "Esta opción le dice al servidor qué hacer cuando se encuentra el directorio de trabajo de una respaldo interrumpe (tal vez alguien quitó el cable del servidor,  o algo así). Esto puede ser sobrescrito por los archivos de configuración de cliente en clientconfdir en el servidor. Las opciones se ... <ul> <li> delete: Simplemente elimine el directorio de trabajo viejo </ li> <li> use:.. Convertir el directorio de trabajo en una respaldo completo </ ​​li> <li> resume: Simplemente siguen el respaldo anterior a partir del punto en que se interrumpió, con detalle de archivo. NOTA: Si el cliente ha cambiado su inclusión / exclusión de configuración desde que el  respaldo se interrumpe, el método de recuperación cambiará automáticamente a 'use'."
+msgstr ""
+"Esta opción le dice al servidor qué hacer cuando se encuentra el "
+"directorio de trabajo de una respaldo interrumpe (tal vez alguien quitó "
+"el cable del servidor,  o algo así). Esto puede ser sobrescrito por los "
+"archivos de configuración de cliente en clientconfdir en el servidor. Las"
+" opciones se ... <ul> <li> delete: Simplemente elimine el directorio de "
+"trabajo viejo </ li> <li> use:.. Convertir el directorio de trabajo en "
+"una respaldo completo </ ​​li> <li> resume: Simplemente siguen el "
+"respaldo anterior a partir del punto en que se interrumpió, con detalle "
+"de archivo. NOTA: Si el cliente ha cambiado su inclusión / exclusión de "
+"configuración desde que el  respaldo se interrumpe, el método de "
+"recuperación cambiará automáticamente a 'use'."
 
 #: burpui/templates/about.html:7
 msgid "is brought to you by"
@@ -959,26 +1424,259 @@ msgstr "Puede encontrar la documentación en"
 msgid "Browse the "
 msgstr "navegar por "
 
-#: burpui/templates/admin.html:7 burpui/templates/topbar.html:57
-msgid "Administration"
-msgstr "Administración"
-
-#: burpui/templates/backup-report.html:8 burpui/templates/backup-report.html:13
-#: burpui/templates/calendar.html:8 burpui/templates/calendar.html:11
-#: burpui/templates/client-browse.html:8 burpui/templates/client-browse.html:13
-#: burpui/templates/client-report.html:8 burpui/templates/client-report.html:12
-#: burpui/templates/client.html:8 burpui/templates/client.html:12
-#: burpui/templates/clients-report.html:8
+#: burpui/templates/admin-authentications.html:7
+#: burpui/templates/admin-authorizations.html:7
+#: burpui/templates/admin-backends.html:7
+#: burpui/templates/admin/authentication.html:7
+#: burpui/templates/admin/grant-authorization.html:7
+#: burpui/templates/admin/group-authorization.html:7
+#: burpui/templates/admin/sessions.html:7 burpui/templates/backup-report.html:8
+#: burpui/templates/backup-report.html:13 burpui/templates/calendar.html:8
+#: burpui/templates/calendar.html:11 burpui/templates/client-browse.html:8
+#: burpui/templates/client-browse.html:13 burpui/templates/client-report.html:8
+#: burpui/templates/client-report.html:12 burpui/templates/client.html:8
+#: burpui/templates/client.html:12 burpui/templates/clients-report.html:8
 #: burpui/templates/clients-report.html:11 burpui/templates/clients.html:8
 #: burpui/templates/clients.html:11 burpui/templates/live-monitor.html:5
 #: burpui/templates/servers-report.html:7 burpui/templates/servers.html:7
-#: burpui/templates/settings.html:8
+#: burpui/templates/settings.html:11 burpui/templates/settings.html:34
 msgid "Home"
 msgstr "Inicio"
+
+#: burpui/templates/admin-authentications.html:8
+#: burpui/templates/admin-authorizations.html:8
+#: burpui/templates/admin-backends.html:8
+#: burpui/templates/admin/authentication.html:8
+#: burpui/templates/admin/grant-authorization.html:8
+#: burpui/templates/admin/group-authorization.html:8
+#: burpui/templates/admin/sessions.html:8 burpui/templates/topbar.html:58
+msgid "Administration"
+msgstr "Administración"
+
+#: burpui/templates/admin-authentications.html:12
+#: burpui/templates/admin/authentication.html:13
+#: burpui/templates/small_topbar.html:37
+msgid "Authentication"
+msgstr ""
+
+#: burpui/templates/admin-authentications.html:14
+msgid "Create new user"
+msgstr ""
+
+#: burpui/templates/admin-authentications.html:15
+msgid "New user"
+msgstr ""
+
+#: burpui/templates/admin-authentications.html:19
+msgid "Users list"
+msgstr ""
+
+#: burpui/templates/admin-authentications.html:21
+#: burpui/templates/admin-authorizations.html:21
+#: burpui/templates/admin-authorizations.html:54
+#: burpui/templates/client-browse.html:48 burpui/templates/settings.html:69
+msgid "Loading, Please wait..."
+msgstr "Cargando, por favor espere..."
+
+#: burpui/templates/admin-authentications.html:32
+#: burpui/templates/admin-authentications.html:116
+msgid "Authentication Backend"
+msgstr ""
+
+#: burpui/templates/admin-authentications.html:33
+#: burpui/templates/admin-authorizations.html:36
+#: burpui/templates/admin-authorizations.html:69
+msgid "Controls"
+msgstr ""
+
+#: burpui/templates/admin-authentications.html:47
+#: burpui/templates/admin-authentications.html:74
+#: burpui/templates/admin-authorizations.html:83
+#: burpui/templates/admin-authorizations.html:110
+#: burpui/templates/admin-authorizations.html:130
+#: burpui/templates/admin-authorizations.html:153
+#: burpui/templates/admin/sessions.html:37 burpui/templates/user.html:109
+msgid "Confirmation"
+msgstr ""
+
+#: burpui/templates/admin-authentications.html:51
+#: burpui/templates/admin-authorizations.html:87
+msgid "You are about to delete a user, are you sure?"
+msgstr ""
+
+#: burpui/templates/admin-authentications.html:59
+#: burpui/templates/admin-authorizations.html:95
+#: burpui/templates/admin/sessions.html:45 burpui/templates/user.html:117
+msgid "Warning!"
+msgstr "¡Advertencia!"
+
+#: burpui/templates/admin-authentications.html:59
+msgid "You are about to remove your <strong>current</strong> user."
+msgstr ""
+
+#: burpui/templates/admin-authentications.html:63
+#: burpui/templates/admin-authentications.html:83
+#: burpui/templates/admin-authentications.html:132
+#: burpui/templates/admin-authorizations.html:99
+#: burpui/templates/admin-authorizations.html:119
+#: burpui/templates/admin-authorizations.html:142
+#: burpui/templates/admin-authorizations.html:162
+#: burpui/templates/admin-authorizations.html:245
+#: burpui/templates/admin/authentication.html:26
+#: burpui/templates/admin/sessions.html:49
+#: burpui/templates/client-browse.html:142 burpui/templates/user.html:58
+#: burpui/templates/user.html:92 burpui/templates/user.html:121
+msgid "Cancel"
+msgstr "Cancelar"
+
+#: burpui/templates/admin-authentications.html:64
+#: burpui/templates/admin-authorizations.html:100
+#: burpui/templates/admin-authorizations.html:143
+#: burpui/templates/admin/sessions.html:50 burpui/templates/user.html:122
+msgid "Confirm"
+msgstr "Confirmar"
+
+#: burpui/templates/admin-authentications.html:84
+#: burpui/templates/admin-authorizations.html:120
+#: burpui/templates/admin-authorizations.html:163
+#: burpui/templates/js/admin-authentications.js:123
+#: burpui/templates/js/admin-authorizations.js:382
+#: burpui/templates/js/admin-authorizations.js:511
+msgid "Edit"
+msgstr ""
+
+#: burpui/templates/admin-authentications.html:94
+msgid "Create User"
+msgstr ""
+
+#: burpui/templates/admin-authentications.html:99
+msgid "Create new User"
+msgstr ""
+
+#: burpui/templates/admin-authentications.html:113
+#: burpui/templates/admin-authorizations.html:190
+#: burpui/templates/admin-backends.html:17
+msgid "Backend"
+msgstr ""
+
+#: burpui/templates/admin-authentications.html:125
+#: burpui/templates/admin-authorizations.html:238
+msgid "Create"
+msgstr ""
+
+#: burpui/templates/admin-authorizations.html:12
+#: burpui/templates/admin-authorizations.html:35
+#: burpui/templates/admin-authorizations.html:68
+#: burpui/templates/admin-authorizations.html:201
+#: burpui/templates/admin/grant-authorization.html:19
+#: burpui/templates/admin/group-authorization.html:18
+msgid "Grants"
+msgstr ""
+
+#: burpui/templates/admin-authorizations.html:14
+msgid "Create new grant"
+msgstr ""
+
+#: burpui/templates/admin-authorizations.html:15
+msgid "New grant"
+msgstr ""
+
+#: burpui/templates/admin-authorizations.html:19
+msgid "Grants list"
+msgstr ""
+
+#: burpui/templates/admin-authorizations.html:32
+#: burpui/templates/admin-authorizations.html:65
+#: burpui/templates/admin-authorizations.html:193
+msgid "Authorization Backend"
+msgstr ""
+
+#: burpui/templates/admin-authorizations.html:33
+#: burpui/templates/admin-authorizations.html:66
+msgid "Role"
+msgstr ""
+
+#: burpui/templates/admin-authorizations.html:34
+#: burpui/templates/admin-authorizations.html:45
+msgid "Groups"
+msgstr ""
+
+#: burpui/templates/admin-authorizations.html:47
+msgid "Create new group"
+msgstr ""
+
+#: burpui/templates/admin-authorizations.html:48
+msgid "New group"
+msgstr ""
+
+#: burpui/templates/admin-authorizations.html:52
+msgid "Groups list"
+msgstr ""
+
+#: burpui/templates/admin-authorizations.html:64
+#: burpui/templates/js/admin-authorizations.js:50
+msgid "Group name"
+msgstr ""
+
+#: burpui/templates/admin-authorizations.html:67
+msgid "Members"
+msgstr ""
+
+#: burpui/templates/admin-authorizations.html:95
+msgid ""
+"You are about to remove your grants associated to your "
+"<strong>current</strong> user."
+msgstr ""
+
+#: burpui/templates/admin-authorizations.html:134
+msgid "You are about to delete a group, are you sure?"
+msgstr ""
+
+#: burpui/templates/admin-authorizations.html:205
+#: burpui/templates/admin/grant-authorization.html:23
+#: burpui/templates/admin/group-authorization.html:22
+msgid "You need to enter a valid JSON expression. Example:"
+msgstr ""
+
+#: burpui/templates/admin-authorizations.html:208
+#: burpui/templates/admin/group-authorization.html:25
+msgid "Group members"
+msgstr ""
+
+#: burpui/templates/admin-authorizations.html:210
+#: burpui/templates/admin/group-authorization.html:27
+msgid "Choose a person"
+msgstr ""
+
+#: burpui/templates/admin-authorizations.html:211
+#: burpui/templates/admin/group-authorization.html:28
+msgid "Select person..."
+msgstr ""
+
+#: burpui/templates/admin-authorizations.html:222
+#: burpui/templates/admin/grant-authorization.html:29
+#: burpui/templates/admin/group-authorization.html:40
+msgid "Is Admin"
+msgstr ""
+
+#: burpui/templates/admin-authorizations.html:231
+#: burpui/templates/admin/grant-authorization.html:38
+#: burpui/templates/admin/group-authorization.html:49
+msgid "Is Moderator"
+msgstr ""
+
+#: burpui/templates/admin-backends.html:12
+msgid "Backends list"
+msgstr ""
+
+#: burpui/templates/admin-backends.html:18
+msgid "Description"
+msgstr ""
 
 #: burpui/templates/backup-report.html:9 burpui/templates/client-browse.html:9
 #: burpui/templates/client-report.html:9 burpui/templates/client.html:9
 #: burpui/templates/clients-report.html:9 burpui/templates/clients.html:9
+#: burpui/templates/settings.html:12
 #, python-format
 msgid "%(server)s clients"
 msgstr "%(server)s clientes"
@@ -1008,8 +1706,8 @@ msgstr "visión general de respaldo n°%(number)s"
 msgid "Backup n°%(number)s of %(client)s"
 msgstr "Respaldo n°%(number)s de %(client)s"
 
-#: burpui/templates/backup-report.html:25
-#: burpui/templates/client-report.html:23 burpui/templates/live-monitor.html:79
+#: burpui/templates/backup-report.html:23
+#: burpui/templates/client-report.html:21 burpui/templates/live-monitor.html:79
 msgid "New"
 msgstr "Nuevo"
 
@@ -1018,23 +1716,23 @@ msgstr "Nuevo"
 msgid "Changed"
 msgstr "Cambiado"
 
-#: burpui/templates/backup-report.html:37
-#: burpui/templates/client-report.html:35 burpui/templates/live-monitor.html:81
+#: burpui/templates/backup-report.html:40
+#: burpui/templates/client-report.html:37 burpui/templates/live-monitor.html:81
 msgid "Unchanged"
 msgstr "Sin cambios"
 
-#: burpui/templates/backup-report.html:43
-#: burpui/templates/client-report.html:41 burpui/templates/live-monitor.html:82
+#: burpui/templates/backup-report.html:48
+#: burpui/templates/client-report.html:45 burpui/templates/live-monitor.html:82
 msgid "Deleted"
 msgstr "Eliminado"
 
-#: burpui/templates/backup-report.html:49
-#: burpui/templates/client-report.html:47
+#: burpui/templates/backup-report.html:58
+#: burpui/templates/client-report.html:53
 msgid "Total"
 msgstr "Total"
 
-#: burpui/templates/backup-report.html:55
-#: burpui/templates/client-report.html:53 burpui/templates/live-monitor.html:83
+#: burpui/templates/backup-report.html:66
+#: burpui/templates/client-report.html:61 burpui/templates/live-monitor.html:83
 msgid "Scanned"
 msgstr "Escaneado"
 
@@ -1086,7 +1784,9 @@ msgstr "Usar expresiones regulares"
 msgid ""
 "This will only expand already loaded nodes to avoid flooding the server "
 "with the lazy-loading requests"
-msgstr "Esto sólo expandirá nodos ya cargados para evitar la inundación del servidor con las peticiones de carga perezosa"
+msgstr ""
+"Esto sólo expandirá nodos ya cargados para evitar la inundación del "
+"servidor con las peticiones de carga perezosa"
 
 #: burpui/templates/client-browse.html:42
 #: burpui/templates/js/client-browse.js:36
@@ -1095,15 +1795,13 @@ msgstr "expandir el árbol"
 
 #: burpui/templates/client-browse.html:43
 msgid "This may take some time depending the number of files in your backup"
-msgstr "Este proceso puede tardar algún tiempo, dependiendo del número de archivos en el respaldo"
+msgstr ""
+"Este proceso puede tardar algún tiempo, dependiendo del número de "
+"archivos en el respaldo"
 
 #: burpui/templates/client-browse.html:43
 msgid "Fetch all nodes"
 msgstr "Cargar todos los nodos"
-
-#: burpui/templates/client-browse.html:48 burpui/templates/settings.html:17
-msgid "Loading, Please wait..."
-msgstr "Cargando, por favor espere..."
 
 #: burpui/templates/client-browse.html:58
 msgid "mode"
@@ -1134,7 +1832,9 @@ msgstr "Información"
 msgid ""
 "This backup is encrypted, please provide the encryption password in order"
 " to perform an online restoration."
-msgstr "Este respaldo está cifrado, proporcione la contraseña de cifrado con el fin de realizar una restauración en línea."
+msgstr ""
+"Este respaldo está cifrado, proporcione la contraseña de cifrado con el "
+"fin de realizar una restauración en línea."
 
 #: burpui/templates/client-browse.html:87
 msgid "Download selected files"
@@ -1194,22 +1894,27 @@ msgstr "Procesando..."
 msgid "Please wait while restoration is processing..."
 msgstr "Por favor, espere mientras que la restauración está procesando..."
 
-#: burpui/templates/client-browse.html:141
-#: burpui/templates/client-browse.html:160
+#: burpui/templates/client-browse.html:144
+#: burpui/templates/client-browse.html:163
 msgid "Close"
 msgstr "Cerrar"
 
-#: burpui/templates/client-browse.html:151
+#: burpui/templates/client-browse.html:154
 msgid "Restoration error"
 msgstr "Error de restauración"
 
-#: burpui/templates/client-browse.html:155
+#: burpui/templates/client-browse.html:158
 msgid "An error occurred while processing the restoration."
 msgstr "Se ha producido un error al procesar la restauración."
 
-#: burpui/templates/client-report.html:59
+#: burpui/templates/client-report.html:69
 msgid "Statistics"
 msgstr "Estadísticas"
+
+#: burpui/templates/client.html:17 burpui/templates/js/settings.js:358
+#: burpui/templates/settings.html:444 burpui/templates/settings.html:478
+msgid "edit"
+msgstr ""
 
 #: burpui/templates/client.html:19
 msgid "Backups"
@@ -1242,7 +1947,7 @@ msgid "Status"
 msgstr "Estados"
 
 #: burpui/templates/client.html:28 burpui/templates/client.html:40
-#: burpui/templates/js/client.js:135
+#: burpui/templates/js/client.js:146
 msgid "Delete"
 msgstr "Borrar"
 
@@ -1290,31 +1995,33 @@ msgstr "número de filas"
 msgid "used space"
 msgstr "espacio utilizado"
 
-#: burpui/templates/clients-report.html:51
+#: burpui/templates/clients-report.html:50
 msgid "Clients repartition"
 msgstr "Repartición de clientes"
 
-#: burpui/templates/clients-report.html:57
+#: burpui/templates/clients-report.html:58
 #: burpui/templates/servers-report.html:22
 msgid "Used space"
 msgstr "Espacio utilizado"
 
-#: burpui/templates/clients-report.html:63
-#: burpui/templates/servers-report.html:28
+#: burpui/templates/clients-report.html:66
+#: burpui/templates/servers-report.html:30
 msgid "Total files"
 msgstr "Total de archivos"
 
-#: burpui/templates/clients-report.html:69
-#: burpui/templates/servers-report.html:34
+#: burpui/templates/clients-report.html:74
+#: burpui/templates/servers-report.html:38
 msgid "Number of backups"
 msgstr "Número de respaldos"
 
 #: burpui/templates/clients.html:15 burpui/templates/servers.html:17
-#: burpui/templates/topbar.html:29 burpui/templates/topbar.html:36
+#: burpui/templates/settings.html:63 burpui/templates/topbar.html:29
+#: burpui/templates/topbar.html:36
 msgid "Clients"
 msgstr "Clientes"
 
 #: burpui/templates/clients.html:22 burpui/templates/servers.html:16
+#: burpui/templates/settings.html:435 burpui/templates/settings.html:469
 msgid "Name"
 msgstr "Nombre"
 
@@ -1327,10 +2034,14 @@ msgid "Last Backup"
 msgstr "Último respaldo"
 
 #: burpui/templates/clients.html:25
+msgid "Labels"
+msgstr ""
+
+#: burpui/templates/clients.html:26
 msgid "Monitor"
 msgstr "Monitor"
 
-#: burpui/templates/live-monitor.html:6 burpui/templates/topbar.html:49
+#: burpui/templates/live-monitor.html:6 burpui/templates/topbar.html:51
 msgid "Live monitor"
 msgstr "Monitor en vivo"
 
@@ -1338,9 +2049,12 @@ msgstr "Monitor en vivo"
 msgid ""
 "{{ ::client.client }}<span ng-if=\"client.agent\"> on {{ ::client.agent "
 "}}</span>"
-msgstr "{{ ::client.client }}<span ng-if=\"client.agent\"> en {{ ::client.agent }}</span>"
+msgstr ""
+"{{ ::client.client }}<span ng-if=\"client.agent\"> en {{ ::client.agent "
+"}}</span>"
 
-#: burpui/templates/live-monitor.html:21
+#: burpui/templates/live-monitor.html:21 burpui/templates/settings.html:435
+#: burpui/templates/settings.html:469
 msgid "Path"
 msgstr "Ruta (path)"
 
@@ -1377,11 +2091,13 @@ msgstr "Click en una fila para seleccionarla (manten ctrl para seleccionar varia
 msgid "You have selected 1 row"
 msgstr "Seleccionaste 1 fila"
 
-#: burpui/templates/js/user.js:190 burpui/templates/macros.html:131
+#: burpui/templates/js/admin/sessions.js:52 burpui/templates/js/user.js:186
+#: burpui/templates/macros.html:131
 msgid "Select all"
 msgstr "Seleccionar todo"
 
-#: burpui/templates/js/user.js:203 burpui/templates/macros.html:132
+#: burpui/templates/js/admin/sessions.js:65 burpui/templates/js/user.js:199
+#: burpui/templates/macros.html:132
 msgid "Deselect all"
 msgstr "Quitar selección"
 
@@ -1392,13 +2108,18 @@ msgid ""
 "                You can login with either <em>admin</em> / <em>admin</em>"
 " or with <em>demo</em> / <em>demo</em>.\n"
 "                "
-msgstr "\n <strong> ¡Hola! </strong> Bienvenido a burp-UI de demostración. \nPuede ingresar con <em> admin </em> / <em> admin </em> o con <em> demo </em> / <em> demo</em>.   \n                "
+msgstr ""
+"\n"
+" <strong> ¡Hola! </strong> Bienvenido a burp-UI de demostración. \n"
+"Puede ingresar con <em> admin </em> / <em> admin </em> o con <em> demo "
+"</em> / <em> demo</em>.   \n"
+"                "
 
 #: burpui/templates/servers-report.html:10
 msgid "Global report"
 msgstr "Reporte global"
 
-#: burpui/templates/servers-report.html:16
+#: burpui/templates/servers-report.html:14
 msgid "Clients repartition per server"
 msgstr "Reparticiones de cliente por servidor"
 
@@ -1406,82 +2127,159 @@ msgstr "Reparticiones de cliente por servidor"
 msgid "Servers"
 msgstr "Servidores"
 
-#: burpui/templates/settings.html:9
+#: burpui/templates/settings.html:14 burpui/templates/settings.html:27
+#: burpui/templates/settings.html:30
 #, python-format
-msgid "Burp Configuration of %(server)s"
-msgstr "Configuración Burp de %(server)s"
+msgid "Burp Server Configuration of %(server)s"
+msgstr ""
 
-#: burpui/templates/settings.html:11
-msgid "Burp Configuration"
-msgstr "Configuración de Burp"
+#: burpui/templates/settings.html:16 burpui/templates/settings.html:22
+#, python-format
+msgid "%(client)s on %(server)s"
+msgstr ""
 
-#: burpui/templates/settings.html:31 burpui/templates/sideconfig.html:5
+#: burpui/templates/settings.html:20
+#, python-format
+msgid "Template %(name)s on %(server)s"
+msgstr ""
+
+#: burpui/templates/settings.html:36 burpui/templates/settings.html:49
+#: burpui/templates/settings.html:52
+msgid "Burp Server Configuration"
+msgstr ""
+
+#: burpui/templates/settings.html:42
+#, python-format
+msgid "Template %(name)s"
+msgstr ""
+
+#: burpui/templates/settings.html:60
+msgid "Config"
+msgstr ""
+
+#: burpui/templates/settings.html:61
+msgid "Raw content"
+msgstr ""
+
+#: burpui/templates/settings.html:62
+msgid "Hierarchy"
+msgstr ""
+
+#: burpui/templates/settings.html:64 burpui/templates/settings.html:345
+#: burpui/templates/sideconfig.html:14
+msgid "Templates"
+msgstr ""
+
+#: burpui/templates/settings.html:87 burpui/templates/sideconfig.html:5
 msgid "Booleans"
 msgstr "Booleano"
 
-#: burpui/templates/settings.html:49 burpui/templates/settings.html:91
-#: burpui/templates/settings.html:128 burpui/templates/settings.html:174
+#: burpui/templates/settings.html:105 burpui/templates/settings.html:147
+#: burpui/templates/settings.html:184 burpui/templates/settings.html:286
 msgid "Select an option"
 msgstr "Seleccionar una opción"
 
-#: burpui/templates/settings.html:70 burpui/templates/sideconfig.html:6
+#: burpui/templates/settings.html:126 burpui/templates/sideconfig.html:6
 msgid "Strings"
 msgstr "Cadenas texto"
 
-#: burpui/templates/settings.html:112 burpui/templates/sideconfig.html:7
+#: burpui/templates/settings.html:168 burpui/templates/sideconfig.html:7
 msgid "Integers"
 msgstr "Enteros"
 
-#: burpui/templates/settings.html:149 burpui/templates/sideconfig.html:8
+#: burpui/templates/settings.html:206 burpui/templates/sideconfig.html:9
+msgid "Pairs"
+msgstr ""
+
+#: burpui/templates/settings.html:226
+msgid "add {{ $parent.pair_associations[id] }}"
+msgstr ""
+
+#: burpui/templates/settings.html:238
+msgid "Select a pair member"
+msgstr ""
+
+#: burpui/templates/settings.html:260 burpui/templates/sideconfig.html:11
 msgid "Multi"
 msgstr "Multi"
 
-#: burpui/templates/settings.html:195
+#: burpui/templates/settings.html:307
 msgid "Source external configuration files"
 msgstr "Archivos de configuración fuente externos"
 
-#: burpui/templates/settings.html:201 burpui/templates/settings.html:224
+#: burpui/templates/settings.html:313
 msgid "source config"
 msgstr "configuración fuente"
 
-#: burpui/templates/settings.html:233 burpui/templates/user.html:58
-#: burpui/templates/user.html:92
-msgid "Submit"
-msgstr "Ingresar"
+#: burpui/templates/settings.html:336
+msgid "source new config"
+msgstr ""
 
-#: burpui/templates/settings.html:238
+#: burpui/templates/settings.html:351
+msgid "template"
+msgstr ""
+
+#: burpui/templates/settings.html:367
+msgid "Select a template"
+msgstr ""
+
+#: burpui/templates/admin/authentication.html:25
+#: burpui/templates/admin/grant-authorization.html:45
+#: burpui/templates/admin/group-authorization.html:57
+#: burpui/templates/settings.html:391 burpui/templates/user.html:57
+#: burpui/templates/user.html:91
+msgid "Save"
+msgstr ""
+
+#: burpui/templates/settings.html:396
 #, python-format
 msgid "Remove '%(client)s'"
 msgstr "Remover '%(client)s'"
 
-#: burpui/templates/settings.html:241
+#: burpui/templates/settings.html:400
 msgid "Do not remove the configuration:"
 msgstr "No remover la configuración:"
 
-#: burpui/templates/settings.html:242
+#: burpui/templates/settings.html:401
 msgid "Remove associated certificate:"
 msgstr "Remover certificado asociado"
 
-#: burpui/templates/settings.html:243
+#: burpui/templates/settings.html:402
 msgid "Revoke associated certificate:"
 msgstr "Revocar certificado asociado:"
+
+#: burpui/templates/settings.html:407
+msgid "Remove file"
+msgstr ""
+
+#: burpui/templates/settings.html:423
+msgid "File"
+msgstr ""
+
+#: burpui/templates/settings.html:452 burpui/templates/settings.html:454
+msgid "Create new client"
+msgstr "Crear nuevo cliente"
+
+#: burpui/templates/settings.html:486 burpui/templates/settings.html:488
+msgid "Create new template"
+msgstr ""
 
 #: burpui/templates/sideadmin.html:3
 msgid "Administration navigation"
 msgstr "Navegación por la administración"
 
 #: burpui/templates/sideadmin.html:5
-msgid "Users"
-msgstr "Usuarios"
+msgid "Authentications"
+msgstr ""
 
-#: burpui/templates/sideadmin.html:6 burpui/templates/topbar.html:43
-msgid "Burp Settings"
-msgstr "Ajustes Burp"
-
-#: burpui/templates/sideadmin.html:7 burpui/templates/sideuser.html:7
+#: burpui/templates/sideadmin.html:6 burpui/templates/sideuser.html:7
 #: burpui/templates/user.html:100
-msgid "ACL"
-msgstr "ACL"
+msgid "Authorizations"
+msgstr ""
+
+#: burpui/templates/sideadmin.html:7
+msgid "Backends"
+msgstr ""
 
 #: burpui/templates/sidebar.html:18 burpui/templates/sidebar.html:20
 #: burpui/templates/sidebar.html:22 burpui/templates/sidebar.html:24
@@ -1503,30 +2301,16 @@ msgstr "Informes"
 msgid "Configuration navigation"
 msgstr "Navegación de configuración"
 
-#: burpui/templates/sideconfig.html:9
+#: burpui/templates/sideconfig.html:12
 msgid "Source files"
 msgstr "Archivos código fuente"
-
-#: burpui/templates/sideconfig.html:11
-msgid "Client to configure"
-msgstr "Cliente a configurar"
-
-#: burpui/templates/sideconfig.html:15
-msgid "Select a client"
-msgstr "Seleccionar un cliente"
-
-#: burpui/templates/sideconfig.html:23
-msgid "config:"
-msgstr "configuración:"
-
-#: burpui/templates/sideconfig.html:33
-msgid "Create new client"
-msgstr "Crear nuevo cliente"
 
 #: burpui/templates/sideuser.html:3
 msgid "User settings navigation"
 msgstr "Ajustes de usuario"
 
+#: burpui/templates/admin/sessions.html:13
+#: burpui/templates/js/admin-authentications.js:123
 #: burpui/templates/sideuser.html:5 burpui/templates/user.html:11
 msgid "Sessions"
 msgstr "Sesiones"
@@ -1535,6 +2319,12 @@ msgstr "Sesiones"
 msgid "Preferences"
 msgstr "Preferencias"
 
+#: burpui/templates/admin/grant-authorization.html:13
+#: burpui/templates/admin/group-authorization.html:13
+#: burpui/templates/small_topbar.html:38
+msgid "Authorization"
+msgstr ""
+
 #: burpui/templates/topbar.html:5
 msgid "Toggle navigation"
 msgstr "Fijar navegación"
@@ -1542,6 +2332,10 @@ msgstr "Fijar navegación"
 #: burpui/templates/topbar.html:16
 msgid "About"
 msgstr "Acerca de..."
+
+#: burpui/templates/topbar.html:44
+msgid "Burp Settings"
+msgstr "Ajustes Burp"
 
 #: burpui/templates/topbar.html:64 burpui/templates/user.html:7
 msgid "User settings"
@@ -1559,27 +2353,27 @@ msgstr "Refrescar"
 msgid "Search client..."
 msgstr "Búsqueda de cliente..."
 
-#: burpui/templates/user.html:16
+#: burpui/templates/admin/sessions.html:18 burpui/templates/user.html:16
 msgid "IP"
 msgstr "IP"
 
-#: burpui/templates/user.html:17
+#: burpui/templates/admin/sessions.html:19 burpui/templates/user.html:17
 msgid "Last seen"
 msgstr "Ultima vez visto"
 
-#: burpui/templates/user.html:18
+#: burpui/templates/admin/sessions.html:20 burpui/templates/user.html:18
 msgid "User-Agent"
 msgstr "User-Agent"
 
-#: burpui/templates/user.html:19
+#: burpui/templates/admin/sessions.html:21 burpui/templates/user.html:19
 msgid "API Login"
 msgstr "Inicio de sesion API"
 
-#: burpui/templates/user.html:20
+#: burpui/templates/admin/sessions.html:22 burpui/templates/user.html:20
 msgid "Current session"
 msgstr "Sesión actual"
 
-#: burpui/templates/user.html:21
+#: burpui/templates/admin/sessions.html:23 burpui/templates/user.html:21
 msgid "Expire"
 msgstr "Expirar"
 
@@ -1591,7 +2385,9 @@ msgstr "Contraseña actual"
 msgid "Required"
 msgstr "Requerido"
 
-#: burpui/templates/user.html:42 burpui/templates/user.html:44
+#: burpui/templates/admin/authentication.html:18
+#: burpui/templates/admin/authentication.html:20 burpui/templates/user.html:42
+#: burpui/templates/user.html:44
 msgid "New password"
 msgstr "Nueva contraseña"
 
@@ -1606,11 +2402,6 @@ msgstr "Nueva contraseña (confirmar)"
 #: burpui/templates/user.html:53
 msgid "Passwords mismatch"
 msgstr "Passwords mismatch"
-
-#: burpui/templates/user.html:57 burpui/templates/user.html:91
-#: burpui/templates/user.html:121
-msgid "Cancel"
-msgstr "Cancelar"
 
 #: burpui/templates/user.html:65
 msgid "UI Settings"
@@ -1633,74 +2424,172 @@ msgstr "Por defecto 'IIII'"
 msgid "See <a href=\"%(url)s\">here</a> for available formats"
 msgstr "Ver <a href=\"%(url)s\">aquí</a> por formatos disponibles"
 
-#: burpui/templates/user.html:113
+#: burpui/templates/admin/sessions.html:41 burpui/templates/user.html:113
 msgid "You are about to revoke a session, are you sure?"
 msgstr "Usted está a punto de revocar una sesión, ¿está seguro?"
 
-#: burpui/templates/user.html:117
-msgid "Warning!"
-msgstr "¡Advertencia!"
-
-#: burpui/templates/user.html:117
+#: burpui/templates/admin/sessions.html:45 burpui/templates/user.html:117
 msgid "You are about to revoke your <strong>current</strong> session."
 msgstr "Vas a revocar su <strong>actual</ strong> sesión."
 
-#: burpui/templates/user.html:122
-msgid "Confirm"
-msgstr "Confirmar"
+#: burpui/templates/admin/authentication.html:9
+#, python-format
+msgid "Authentication user %(backend)s/%(user)s"
+msgstr ""
 
-#: burpui/templates/js/client-browse.js:127
+#: burpui/templates/admin/authentication.html:16
+#, python-format
+msgid "Password of user %(user)s on %(backend)s"
+msgstr ""
+
+#: burpui/templates/admin/grant-authorization.html:9
+#, python-format
+msgid "Authorization user %(backend)s/%(grant)s"
+msgstr ""
+
+#: burpui/templates/admin/grant-authorization.html:16
+#, python-format
+msgid "Grants of %(user)s on %(backend)s"
+msgstr ""
+
+#: burpui/templates/admin/group-authorization.html:9
+#, python-format
+msgid "Authorization group %(backend)s/%(group)s"
+msgstr ""
+
+#: burpui/templates/admin/group-authorization.html:16
+#, python-format
+msgid "Grants of group %(group)s on %(backend)s"
+msgstr ""
+
+#: burpui/templates/admin/sessions.html:9
+#, python-format
+msgid "%(user)s's sessions"
+msgstr ""
+
+#: burpui/templates/js/admin-authentications.js:44
+#: burpui/templates/js/admin-authorizations.js:247
+#: burpui/templates/js/settings.js:642 burpui/templates/js/settings.js:672
+msgid "Creating..."
+msgstr ""
+
+#: burpui/templates/js/admin-authentications.js:123
+#: burpui/templates/js/admin-authorizations.js:382
+#: burpui/templates/js/admin-authorizations.js:511
+msgid "Remove"
+msgstr ""
+
+#: burpui/templates/js/admin-authentications.js:192
+#: burpui/templates/js/admin-authorizations.js:763
+msgid "Please select the backend(s) from which to remove the user:"
+msgstr ""
+
+#: burpui/templates/js/admin-authentications.js:194
+#: burpui/templates/js/admin-authorizations.js:765
+msgid "The backend does not support user removal"
+msgstr ""
+
+#: burpui/templates/js/admin-authentications.js:249
+#: burpui/templates/js/admin-authorizations.js:852
+#: burpui/templates/js/admin-authorizations.js:929
+msgid "Please select the backend from which to edit the user from:"
+msgstr ""
+
+#: burpui/templates/js/admin-authentications.js:251
+#: burpui/templates/js/admin-authorizations.js:854
+#: burpui/templates/js/admin-authorizations.js:931
+msgid "Please select a backend"
+msgstr ""
+
+#: burpui/templates/js/admin-authorizations.js:48
+msgid "Create Group"
+msgstr ""
+
+#: burpui/templates/js/admin-authorizations.js:49
+msgid "Create new Group"
+msgstr ""
+
+#: burpui/templates/js/admin-authorizations.js:129
+msgid "Create Grant"
+msgstr ""
+
+#: burpui/templates/js/admin-authorizations.js:130
+msgid "Create new Grant"
+msgstr ""
+
+#: burpui/templates/js/admin-authorizations.js:131
+msgid "Grant/User name"
+msgstr ""
+
+#: burpui/templates/js/admin-authorizations.js:343
+#: burpui/templates/js/admin-authorizations.js:450
+#: burpui/templates/js/admin-authorizations.js:475
+msgid "Inherited by: "
+msgstr ""
+
+#: burpui/templates/js/admin-authorizations.js:878
+msgid "Please select the backend(s) from which to remove the group:"
+msgstr ""
+
+#: burpui/templates/js/admin-authorizations.js:880
+msgid "The backend does not support group removal"
+msgstr ""
+
+#: burpui/templates/js/client-browse.js:135
 msgid "Collapse tree"
 msgstr "Colapsar árbol"
 
-#: burpui/templates/js/client-browse.js:223
-#: burpui/templates/js/client-browse.js:246
+#: burpui/templates/js/client-browse.js:250
+#: burpui/templates/js/client-browse.js:273
 msgid ""
 "The backup seems encrypted, please provide the encryption key in the "
 "\\'Download options\\' form."
-msgstr "El respaldo parece cifrado, proporcione la clave de cifrado en el formulario \\ 'Opciones de descarga \\'."
+msgstr ""
+"El respaldo parece cifrado, proporcione la clave de cifrado en el "
+"formulario \\ 'Opciones de descarga \\'."
 
-#: burpui/templates/js/client-browse.js:307
+#: burpui/templates/js/client-browse.js:335
 msgid "Loading"
 msgstr "Cargando"
 
-#: burpui/templates/js/client-browse.js:313
+#: burpui/templates/js/client-browse.js:341
 msgid "Nodes loaded"
 msgstr "Nodos cargados"
 
-#: burpui/templates/js/client.js:11 burpui/templates/js/client.js:18
-#: burpui/templates/js/client.js:28 burpui/templates/js/clients.js:11
+#: burpui/templates/js/client.js:13 burpui/templates/js/client.js:20
+#: burpui/templates/js/client.js:30 burpui/templates/js/clients.js:11
 #: burpui/templates/js/clients.js:17
 msgid "client crashed"
 msgstr "falló cliente"
 
-#: burpui/templates/js/client.js:12 burpui/templates/js/client.js:19
-#: burpui/templates/js/client.js:29 burpui/templates/js/clients.js:12
+#: burpui/templates/js/client.js:14 burpui/templates/js/client.js:21
+#: burpui/templates/js/client.js:31 burpui/templates/js/clients.js:12
 #: burpui/templates/js/clients.js:18
 msgid "server crashed"
 msgstr "falló servidor"
 
-#: burpui/templates/js/client.js:13 burpui/templates/js/client.js:20
-#: burpui/templates/js/client.js:30 burpui/templates/js/clients.js:13
-#: burpui/templates/js/clients.js:19 burpui/templates/js/clients.js:100
+#: burpui/templates/js/client.js:15 burpui/templates/js/client.js:22
+#: burpui/templates/js/client.js:32 burpui/templates/js/client.js:210
+#: burpui/templates/js/clients.js:13 burpui/templates/js/clients.js:19
+#: burpui/templates/js/clients.js:115 burpui/templates/js/clients.js:120
 msgid "running"
 msgstr "ejecutándose"
 
-#: burpui/templates/js/client.js:14 burpui/templates/js/client.js:21
-#: burpui/templates/js/client.js:31 burpui/templates/js/clients.js:20
-#: burpui/templates/js/clients.js:131
+#: burpui/templates/js/client.js:16 burpui/templates/js/client.js:23
+#: burpui/templates/js/client.js:33 burpui/templates/js/clients.js:20
+#: burpui/templates/js/clients.js:165
 msgid "idle"
 msgstr "inactivo"
 
-#: burpui/templates/js/client.js:125
+#: burpui/templates/js/client.js:135
 msgid "Encrypted backup"
 msgstr "Respaldo cifrado"
 
-#: burpui/templates/js/client.js:125
+#: burpui/templates/js/client.js:135
 msgid "Unencrypted backup"
 msgstr "Respaldo sin cifrar"
 
-#: burpui/templates/js/client.js:331
+#: burpui/templates/js/client.js:350
 msgid "Delete task launched"
 msgstr "Eliminar tarea iniciada"
 
@@ -1712,11 +2601,37 @@ msgstr "nunca"
 msgid "now"
 msgstr "ahora"
 
-#: burpui/templates/js/clients.js:129
+#: burpui/templates/js/clients.js:163
 msgid "view"
 msgstr "ver"
 
-#: burpui/templates/js/settings.js:209 burpui/templates/js/user.js:61
+#: burpui/templates/js/live-monitor.js:65
+msgid "Backup complete. Will redirect you in 5 seconds"
+msgstr ""
+
+#: burpui/templates/js/live-monitor.js:72
+msgid "No more backup running"
+msgstr ""
+
+#: burpui/templates/js/live-monitor.js:80
+msgid "Will redirect you in 5 seconds"
+msgstr ""
+
+#: burpui/templates/js/settings.js:167
+msgid "yes"
+msgstr ""
+
+#: burpui/templates/js/settings.js:168
+msgid "no"
+msgstr ""
+
+#: burpui/templates/js/settings.js:169
+msgid "reset list"
+msgstr ""
+
+#: burpui/templates/js/admin/authentication.js:11
+#: burpui/templates/js/settings.js:267 burpui/templates/js/user.js:61
+#: burpui/templates/js/user.js:87
 msgid "Saving..."
 msgstr "Guardando..."
 
@@ -1724,25 +2639,39 @@ msgstr "Guardando..."
 msgid "Preferences successfuly saved"
 msgstr "Configuraciones guardadas correctamente"
 
-#: burpui/templates/js/user.js:195
+#: burpui/templates/js/admin/sessions.js:57 burpui/templates/js/user.js:191
 msgid "Select all filtered"
 msgstr "Seleccionar todos los filtrados"
 
-#: burpui/templates/js/user.js:208
+#: burpui/templates/js/admin/sessions.js:70 burpui/templates/js/user.js:204
 msgid "Deselect all filtered"
 msgstr "Quitar selección de todos los filtrados"
 
-#: burpui/templates/js/user.js:216
+#: burpui/templates/js/admin/sessions.js:77 burpui/templates/js/user.js:211
+msgid "Revoke"
+msgstr ""
+
+#: burpui/templates/js/admin/sessions.js:78 burpui/templates/js/user.js:212
 msgid "Revoke selected"
 msgstr "Revocar selección"
 
-#: burpui/templates/js/user.js:539 burpui/templates/js/user.js:552
+#: burpui/templates/js/user.js:544 burpui/templates/js/user.js:557
 msgid "clients"
 msgstr "clientes"
 
-#: burpui/templates/js/user.js:541 burpui/templates/js/user.js:559
+#: burpui/templates/js/user.js:546 burpui/templates/js/user.js:564
 msgid "servers"
 msgstr "servidores"
+
+#: burpui/templates/js/admin/grant-authorization.js:19
+#: burpui/templates/js/admin/group-authorization.js:21
+msgid "Loading, please wait..."
+msgstr ""
+
+#: burpui/templates/js/admin/grant-authorization.js:65
+#: burpui/templates/js/admin/group-authorization.js:108
+msgid "Updating"
+msgstr ""
 
 #~ msgid "overview"
 #~ msgstr "Descripción general"
@@ -1761,4 +2690,39 @@ msgstr "servidores"
 #~ "provide the encryption key in the "
 #~ "'Download options' form."
 #~ msgstr ""
+
+#~ msgid ""
+#~ "To prevent the server from being "
+#~ "able to override your local "
+#~ "include/exclude list, set this to 0. "
+#~ "The default is 1."
+#~ msgstr ""
+#~ "Para evitar que el servidor sobrescriba"
+#~ " su configuración local para su lista"
+#~ " de include/exclude, fijar a 0. El"
+#~ " valor predeterminado es 1."
+
+#~ msgid "Burp Configuration of %(server)s"
+#~ msgstr "Configuración Burp de %(server)s"
+
+#~ msgid "Burp Configuration"
+#~ msgstr "Configuración de Burp"
+
+#~ msgid "Submit"
+#~ msgstr "Ingresar"
+
+#~ msgid "Users"
+#~ msgstr "Usuarios"
+
+#~ msgid "ACL"
+#~ msgstr "ACL"
+
+#~ msgid "Client to configure"
+#~ msgstr "Cliente a configurar"
+
+#~ msgid "Select a client"
+#~ msgstr "Seleccionar un cliente"
+
+#~ msgid "config:"
+#~ msgstr "configuración:"
 

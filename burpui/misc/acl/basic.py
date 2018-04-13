@@ -1,11 +1,11 @@
 # -*- coding: utf8 -*-
 from .meta import meta_grants, BUIaclGrant
-from .interface import BUIaclLoader
+from .interface import BUIaclLoader, __
 from ...utils import NOTIF_OK, NOTIF_WARN, NOTIF_ERROR
 
 
 class ACLloader(BUIaclLoader):
-    """Uses the Burp-UI configuration file to load its rules"""
+    __doc__ = __("""Uses the Burp-UI configuration file to load its rules""")
     section = name = 'BASIC:ACL'
     priority = 100
 
