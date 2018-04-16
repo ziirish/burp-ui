@@ -653,23 +653,6 @@ Now you can add *basic acl* specific options:
     [BASIC:ACL]
     # Backend priority. Higher is first
     priority = 100
-    # Enable extended matching rules (disabled by default)
-    # If the rule is a string like 'user1 = desk*', it will match any client that
-    # matches 'desk*' no mater what agent it is attached to.
-    # If it is a coma separated list of strings like 'user1 = desk*,laptop*' it
-    # will match the first matching rule no mater what agent it is attached to.
-    # If it is a dict like:
-    # user1 = '{"agents": ["srv*", "www*"], "clients": ["desk*", "laptop*"]}'
-    # It will also validate against the agent name.
-    extended = false
-    # If you don't explicitly specify grants, what should we assume?
-    assume_granted = true
-    # Enable 'legacy' behavior
-    # Since v0.6.0, if you don't specify the agents name explicitly, users will be
-    # granted on every agents where a client matches user's ACL. If you enable the
-    # 'legacy' behavior, you will need to specify the agents explicitly.
-    # Note: enabling this option will also disable the extended mode
-    legacy = false
     # List of administrators
     admin = user1,user2
     # List of moderators. Users listed here will inherit the grants of the
