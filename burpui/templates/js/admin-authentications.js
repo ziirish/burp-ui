@@ -18,6 +18,7 @@ app.config(function(uiSelectConfig) {
 app.controller('AdminCtrl', ['$scope', '$http', '$scrollspy', 'DTOptionsBuilder', 'DTColumnDefBuilder', function($scope, $http, $scrollspy, DTOptionsBuilder, DTColumnDefBuilder) {
 	var vm = this;
 	$scope.auth_backends = [];
+	$scope.dismiss = true;
 
   $http.get('{{ url_for("api.auth_backends") }}', { headers: { 'X-From-UI': true } })
 		.then(function (response) {
@@ -65,6 +66,9 @@ app.controller('AdminCtrl', ['$scope', '$http', '$scrollspy', 'DTOptionsBuilder'
 			vm.userAdd.auth_password.$setPristine();
 			vm.userAdd.$setPristine();
 			_authentication();
+			if ($scope.dismiss) {
+				$('#create-user-modal').modal('toggle');
+			}
 		})
 		.finally(function() {
 			submit.html(sav);
