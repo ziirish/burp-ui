@@ -182,6 +182,7 @@ class BUIacl(with_metaclass(ABCMeta, object)):
         """
         return False  # pragma: no cover
 
+    @abstractmethod
     def is_server_rw(self, username=None, server=None):
         """:func:`burpui.misc.acl.interface.BUIacl.is_server_rw` tells us
         if a given user has access to a given server in RW mode.
@@ -197,6 +198,7 @@ class BUIacl(with_metaclass(ABCMeta, object)):
         """
         return False  # pragma: no cover
 
+    @abstractmethod
     def is_server_allowed(self, username=None, server=None):
         """:func:`burpui.misc.acl.interface.BUIacl.is_server_allowed` tells us
         if a given user has access to a given server.

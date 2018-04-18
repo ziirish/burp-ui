@@ -30,16 +30,22 @@ class ACLloader(BUIaclLoader):
                 'boolean',
                 section=self.section
             )
-            opts['assume_granted'] = self.conf.safe_get(
-                'assume_granted',
+            opts['assume_rw'] = self.conf.safe_get(
+                'assume_rw',
                 'boolean',
                 section=self.section,
-                defaults={self.section: {'assume_granted': True}}
+                defaults={self.section: {'assume_rw': True}}
             )
             opts['legacy'] = self.conf.safe_get(
                 'legacy',
                 'boolean',
                 section=self.section
+            )
+            opts['implicit_link'] = self.conf.safe_get(
+                'implicit_link',
+                'boolean',
+                section=self.section,
+                defaults={self.section: {'implicit_link': True}}
             )
             meta_grants.options = opts
         if self.app.acl_engine and 'none' not in self.app.acl_engine:

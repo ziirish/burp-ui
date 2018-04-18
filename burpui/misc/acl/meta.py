@@ -22,6 +22,8 @@ class BUImetaGrant(object):
     def _merge_data(self, d1, d2):
         """Merge data as list or dict recursively avoiding duplicates"""
         if not d1 and not d2:
+            if isinstance(d1, dict) or isinstance(d2, dict):
+                return {}
             return []
         if not d2:
             return d1
@@ -51,37 +53,57 @@ class BUImetaGrant(object):
                 res[key2] = val2
         return res
 
-    def _parse_clients(self, data, mode=None):
+    def _parse_clients(self, data, mode=None, parent=None):
         agents = clients = []
         advanced = {}
         if isinstance(data, list):
             if mode:
-                advanced[mode] = {'clients': data}
+                if parent and parent not in ['agents', 'clients', 'ro', 'rw']:
+                    advanced[mode] = {parent: data}
+                else:
+                    advanced[mode] = {'clients': data}
             return data, agents, advanced
         if not isinstance(data, dict):
             if mode:
-                advanced[mode] = {'clients': make_list(data)}
+                if parent and parent not in ['agents', 'clients', 'ro', 'rw']:
+                    advanced[mode] = {parent: make_list(data)}
+                else:
+                    advanced[mode] = {'clients': make_list(data)}
             return make_list(data), agents, advanced
         for key, val in iteritems(data):
             if key in ['agents', 'clients', 'ro', 'rw']:
                 continue
-            cl1, ag1, ad1 = self._parse_clients(val)
+            cl1, ag1, ad1 = self._parse_clients(val, parent=key)
             agents = self._merge_data(agents, ag1)
             clients = self._merge_data(clients, cl1)
             agents = self._merge_data(agents, key)
             advanced = self._merge_data(advanced, ad1)
             advanced = self._merge_data(advanced, {key: cl1})
             if mode:
-                advanced = self._merge_data(advanced, {mode: {key: cl1}})
+                if parent and parent not in ['agents', 'clients', 'ro', 'rw']:
+                    advanced = self._merge_data(advanced, {mode: {parent: cl1}})
+                else:
+                    advanced = self._merge_data(advanced, {mode: {key: cl1}})
 
         for key in ['clients', 'ro', 'rw']:
             md = None
             if key in data:
                 if key in ['ro', 'rw']:
                     md = key
-                cl2, ag2, ad2 = self._parse_clients(data[key], md)
+                cl2, ag2, ad2 = self._parse_clients(data[key], md, parent=key)
                 agents = self._merge_data(agents, ag2)
                 clients = self._merge_data(clients, cl2)
+                if parent and parent not in ['agents', 'clients', 'ro', 'rw']:
+                    ro = ad2.get('ro')
+                    rw = ad2.get('rw')
+                    if ro and 'clients' in ro:
+                        ro[parent] = ro['clients']
+                        del ro['clients']
+                        ad2['ro'] = ro
+                    if rw and 'clients' in rw:
+                        rw[parent] = rw['clients']
+                        del rw['clients']
+                        ad2['rw'] = rw
                 advanced = self._merge_data(advanced, ad2)
 
         if 'agents' in data:
@@ -111,9 +133,12 @@ class BUImetaGrant(object):
             clients = self._merge_data(clients, cl1)
             agents = self._merge_data(agents, key)
             advanced = self._merge_data(advanced, ad1)
-            advanced = self._merge_data(advanced, {key: cl1})
             if mode:
-                advanced = self._merge_data(advanced, {mode: {key: cl1}})
+                advanced = self._merge_data(advanced, {mode: ad1})
+            # FIXME: why did I do that?
+            # advanced = self._merge_data(advanced, {key: cl1})
+            # if mode:
+            #     advanced = self._merge_data(advanced, {mode: {key: cl1}})
 
         for key in ['agents', 'ro', 'rw']:
             md = None
@@ -251,7 +276,7 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
                 groups.append((group.name, inh))
         return groups
 
-    def _extract_grants(self, username):
+    def _extract_grants(self, username, parent=None):
         if username not in self._parsed_grants:
 
             if username in self.grants:
@@ -264,9 +289,9 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
             self._agents_cache[username] = agents
             self._advanced_cache[username] = advanced
 
-            def __merge_grants_with(grp):
+            def __merge_grants_with(grp, prt):
                 if grp not in self._parsed_grants:
-                    self._extract_grants(grp)
+                    self._extract_grants(grp, prt)
                 self._clients_cache[username] = self._merge_data(
                     self._clients_cache[username],
                     self._clients_cache.get(grp, [])
@@ -286,8 +311,12 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
                 if gname == self._gp_admin_name:
                     continue
                 (ret, _) = group.is_member(username)
-                if ret and gname != username:
-                    __merge_grants_with(gname)
+                if not parent:
+                    parent = set([username])
+                elif isinstance(parent, set):
+                    parent.add(username)
+                if ret and gname != username and parent and gname not in parent:
+                    __merge_grants_with(gname, parent)
 
             self._parsed_grants.append(username)
 
@@ -317,13 +346,14 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
             return None
 
         if self.opt('extended'):
+            matches = []
             for exp in clients:
                 regex = fnmatch.translate(exp)
                 if re.match(regex, client):
-                    return exp
-            return False
+                    matches.append(exp)
+            return matches if matches else False
         else:
-            return client if client in clients else False
+            return [client] if client in clients else False
 
     def _server_match(self, username, server):
         servers = self._extract_agents(username)
@@ -331,13 +361,14 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
             return None
 
         if self.opt('extended'):
+            matches = []
             for exp in servers:
                 regex = fnmatch.translate(exp)
                 if re.match(regex, server):
-                    return exp
-            return False
+                    matches.append(exp)
+            return matches if matches else False
         else:
-            return server if server in servers else False
+            return [server] if server in servers else False
 
     # implement BUIacl methods
 
@@ -358,7 +389,7 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
         if not username or not client:  # pragma: no cover
             return False
 
-        is_admin = self.is_admin(username)
+        (is_admin, _) = self.is_admin(username)
 
         if self.is_client_allowed(username, client, server):
             # legacy mode: assume rw for everyone
@@ -367,57 +398,102 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
             client_match = self._client_match(username, client)
             advanced = self._extract_advanced(username)
 
-            if not client_match and username == client:
-                client_match = username
+            if client_match is None and username == client:
+                client_match = [username]
 
             if server:
                 server_match = self._server_match(username, server)
 
                 if not server_match and not client_match:
-                    return is_admin or self.opt('assume_granted')
+                    return is_admin or self.opt('assume_rw', True)
 
                 # the whole agent is rw and we did not find explicit entry for
                 # client_match
                 if client_match is False:
-                    if server_match in advanced.get('rw', {}) or \
-                            server_match in advanced.get('rw', {}).get('agents', []):
+                    if server_match and \
+                            any([x in advanced.get('rw', {}) or
+                                 x in advanced.get('rw', {}).get('agents', [])
+                                 for x in server_match]):
                         return True
                     if server in advanced.get('rw', {}) or \
                             server in advanced.get('rw', {}).get('agents', []):
                         return True
 
                 if server_match and \
-                        (server_match in advanced.get('ro', {}) or
-                         server_match in advanced.get('ro', {}).get('agents', [])):
-                    # the agent is ro, but the client is explicitly defined as rw
+                        any([x in advanced.get('rw', {}) or
+                             x in advanced.get('rw', {}).get('agents', [])
+                             for x in server_match]):
+                    # the agent is rw but the client is explicitly defined as ro
                     if client_match and \
-                        (client_match not in advanced.get('rw', {}).get(server_match, []) or
-                         client_match not in advanced.get('rw', {}).get('clients', [])):
+                        any([x in advanced.get('ro', []) or
+                             x in advanced.get('ro', {}).get('clients', []) or
+                             any([x in advanced.get('ro', {}).get(y, [])
+                                  for y in server_match])
+                             for x in client_match
+                            ]):
+                        return False
+
+                    # both agent and client are defined as rw
+                    if client_match and \
+                        any([x in advanced.get('rw', []) or
+                             x in advanced.get('rw', {}).get('clients', []) or
+                             any([x in advanced.get('rw', {}).get(y, [])
+                                  for y in server_match])
+                             for x in client_match
+                            ]):
                         return True
 
-            rw_clients = advanced.get('rw', {}).get('clients', [])
+                if server_match and \
+                        any([x in advanced.get('ro', {}) or
+                             x in advanced.get('ro', {}).get('agents', [])
+                             for x in server_match]):
+                    # the agent is ro, but the client is explicitly defined as rw
+                    if client_match and \
+                        any([x in advanced.get('rw', {}).get('clients', []) or
+                             x in advanced.get('rw', []) or
+                             any([x in advanced.get('rw', {}).get(y, [])
+                                  for y in server_match])
+                             for x in client_match
+                            ]):
+                        return True
+
+                    # both server and client are explicitly defined as ro
+                    if client_match and \
+                        any([x in advanced.get('ro', {}).get('clients', []) or
+                             x in advanced.get('ro', []) or
+                             any([x in advanced.get('ro', {}).get(y, [])
+                                 for y in server_match])
+                             for x in client_match
+                            ]):
+                        return False
+
+                    # agent is ro
+                    return is_admin or self.opt('assume_rw', True)
+
+            # client is explicitly defined as ro
+            ro_clients = advanced.get('ro', {}).get('clients', [])
             if client_match and \
-                    client_match in rw_clients:
-                return True
+                    any([x in ro_clients for x in client_match]):
+                return False
 
             if client and \
-                    client in rw_clients:
-                return True
+                    client in ro_clients:
+                return False
 
         if self.opt('legacy'):
             return True
-        return is_admin or self.opt('assume_granted')
+        return is_admin or self.opt('assume_rw', True)
 
     def is_client_allowed(self, username=None, client=None, server=None):
         """See :func:`burpui.misc.acl.interface.BUIacl.is_client_allowed`"""
         if not username or not client:  # pragma: no cover
             return False
 
-        is_admin = self.is_admin(username)
+        (is_admin, _) = self.is_admin(username)
         client_match = self._client_match(username, client)
 
-        if not client_match and username == client:
-            client_match = username
+        if client_match is None and username == client:
+            client_match = [username]
         elif not client_match:
             client_match = False
 
@@ -428,15 +504,29 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
                     return is_admin
 
                 advanced = self._extract_advanced(username)
+                if self.opt('implicit_link', True) and not advanced:
+                    advanced = False
 
-                if not client_match and server_match not in advanced and \
-                        (server_match in self._extract_advanced_mode(username, 'ro', 'agents') or
-                         server_match in self._extract_advanced_mode(username, 'rw', 'agents')):
+                if advanced is not False and \
+                        all([x not in advanced for x in server_match]) and \
+                        any([x in self._extract_advanced_mode(username, 'ro', 'agents') or
+                             x in self._extract_advanced_mode(username, 'rw', 'agents')
+                             for x in server_match]):
                     return True
 
-                advanced = advanced.get(server_match, advanced.get(server, []))
-                if client_match not in advanced and client not in advanced:
-                    return is_admin
+                if advanced is not False:
+                    tmp = set(advanced.get(server, []))
+                    for srv in server_match:
+                        tmp |= set(advanced.get(srv, []))
+                    advanced = list(tmp)
+                if advanced is not False and \
+                        client_match is not False and \
+                        (any([x in advanced for x in client_match]) or
+                         client in advanced):
+                    return True
+
+                if advanced is not False:
+                    return False
 
         return client_match is not False or is_admin
 
@@ -445,20 +535,20 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
         if not username or not server:  # pragma: no cover
             return False
 
-        is_admin = self.is_admin(username)
+        (is_admin, _) = self.is_admin(username)
         if self.is_server_allowed(username, server):
             server_match = self._server_match(username, server)
             if not server_match:
-                return self.is_admin or self.opt('assume_granted')
+                return is_admin or self.opt('assume_rw', True)
 
             advanced = self._extract_advanced(username)
 
-            if server_match in advanced.get('rw', {}).get('agents', []):
+            if any([x in advanced.get('rw', {}).get('agents', []) for x in server_match]):
                 return True
 
         if self.opt('legacy'):
             return True
-        return is_admin or self.opt('assume_granted')
+        return is_admin or self.opt('assume_rw', True)
 
     def is_server_allowed(self, username=None, server=None):
         """See :func:`burpui.misc.acl.interface.BUIacl.is_server_allowed`"""
@@ -466,7 +556,7 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
             return False
 
         server_match = self._server_match(username, server)
-        is_admin = self.is_admin(username)
+        (is_admin, _) = self.is_admin(username)
 
         if server_match is None and self.opt('legacy'):
             server_match = False
