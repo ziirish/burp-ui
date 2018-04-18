@@ -122,6 +122,8 @@ def settings(server=None, conf=None):
     return render_template(
         'settings.html',
         settings=True,
+        is_admin=current_user.acl.is_admin(),
+        is_moderator=current_user.acl.is_moderator(),
         server=server,
         conf=conf,
         ng_controller='ConfigCtrl'

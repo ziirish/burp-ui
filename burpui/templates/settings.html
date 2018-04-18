@@ -57,13 +57,16 @@
           <br />
 
           <ul class="nav nav-tabs" id="config-nav">
+            {% if not is_moderator and is_admin -%}
             <li class="active"><a href="#config" data-toggle="tab" aria-expanded="true">{{ _('Config') }}</a></li>
             <li><a href="#raw" data-toggle="tab" aria-expanded="false">{{ _('Raw content') }}</a></li>
             <li><a href="#hierarchy" data-toggle="tab" aria-expanded="false">{{ _('Hierarchy') }}</a></li>
-            <li><a href="#clients" data-toggle="tab" aria-expanded="false">{{ _('Clients') }}</a></li>
+            {% endif -%}
+            <li {% if is_moderator and not is_admin %}class="active"{% endif %}><a href="#clients" data-toggle="tab" aria-expanded="false">{{ _('Clients') }}</a></li>
             <li><a href="#list-templates" data-toggle="tab" aria-expanded="false">{{ _('Templates') }}</a></li>
           </ul>
           <div id="config-tab-content" class="tab-content">
+            {% if not is_moderator and is_admin -%}
             <div class="tab-pane fade active in" id="config">
               <div id="waiting-container" class="row">
                 <i class="fa fa-fw fa-spin fa-refresh" aria-hidden="true"></i>&nbsp;{{ _('Loading, Please wait...') }}
@@ -426,7 +429,8 @@
                 </table>
               </div>
             </div>
-            <div class="tab-pane fade" id="clients">
+            {% endif -%}
+            <div class="tab-pane fade {% if is_moderator and not is_admin %}active in{% endif %}" id="clients">
               <div style="padding-top: 80px; margin-top: -45px;"></div>
               <div id="table-clients" class="table-responsive row">
                 <table class="table table-striped table-hover nowrap" width="100%" datatable="ng" dt-options="dtOptions" dt-column-defs="dtColumnDefs" id="table-list-clients">

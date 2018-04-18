@@ -179,6 +179,10 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$timeout', '$scrollspy', 'DTOp
 			DTColumnDefBuilder.newColumnDef(2).notSortable(),
 		];
 	$scope.loadConfig = function() {
+		{% if is_moderator and not is_admin -%}
+		// We don't have rights to load this part, just return
+		return;
+		{% endif -%}
 		{% if client -%}
 			{% if template -%}
 		$http.get('{{ url_for("api.client_settings", client=client, conf=conf, template=True, server=server) }}', { headers: { 'X-From-UI': true } })
