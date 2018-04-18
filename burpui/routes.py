@@ -257,6 +257,7 @@ def cli_settings(server=None, client=None, conf=None):
     return render_template(
         'settings.html',
         settings=True,
+        client_mode=True,
         template=template,
         client=client,
         server=server,

@@ -57,7 +57,7 @@
           <br />
 
           <ul class="nav nav-tabs" id="config-nav">
-            {% if not is_moderator and is_admin -%}
+            {% if (not is_moderator and is_admin) or client_mode -%}
             <li class="active"><a href="#config" data-toggle="tab" aria-expanded="true">{{ _('Config') }}</a></li>
             <li><a href="#raw" data-toggle="tab" aria-expanded="false">{{ _('Raw content') }}</a></li>
             <li><a href="#hierarchy" data-toggle="tab" aria-expanded="false">{{ _('Hierarchy') }}</a></li>
@@ -66,7 +66,7 @@
             <li><a href="#list-templates" data-toggle="tab" aria-expanded="false">{{ _('Templates') }}</a></li>
           </ul>
           <div id="config-tab-content" class="tab-content">
-            {% if not is_moderator and is_admin -%}
+            {% if (not is_moderator and is_admin) or client_mode -%}
             <div class="tab-pane fade active in" id="config">
               <div id="waiting-container" class="row">
                 <i class="fa fa-fw fa-spin fa-refresh" aria-hidden="true"></i>&nbsp;{{ _('Loading, Please wait...') }}
