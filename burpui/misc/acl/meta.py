@@ -430,7 +430,7 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
                              any([x in advanced.get('ro', {}).get(y, [])
                                   for y in server_match])
                              for x in client_match
-                            ]):
+                             ]):
                         return False
 
                     # both agent and client are defined as rw
@@ -440,7 +440,7 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
                              any([x in advanced.get('rw', {}).get(y, [])
                                   for y in server_match])
                              for x in client_match
-                            ]):
+                             ]):
                         return True
 
                 if server_match and \
@@ -454,7 +454,7 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
                              any([x in advanced.get('rw', {}).get(y, [])
                                   for y in server_match])
                              for x in client_match
-                            ]):
+                             ]):
                         return True
 
                     # both server and client are explicitly defined as ro
@@ -464,7 +464,7 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
                              any([x in advanced.get('ro', {}).get(y, [])
                                  for y in server_match])
                              for x in client_match
-                            ]):
+                             ]):
                         return False
 
                     # agent is ro
