@@ -321,7 +321,7 @@ var _groups_table = $('#table-groups').DataTable( {
 			data: 'backends',
 			render: function ( data, type, row ) {
 				if (type === 'filter' || type === 'sort') {
-					return data;
+					return data.join(',');
 				}
 				var ret = '';
 				$.each(data, function(i, back) {
@@ -334,7 +334,7 @@ var _groups_table = $('#table-groups').DataTable( {
 			data: null,
 			render: function ( data, type, row ) {
 				if (type === 'filter' || type === 'sort') {
-					return data.roles;
+					return data.roles.join(',');
 				}
 				var ret = '';
 				$.each(data.roles, function(i, role) {
@@ -364,7 +364,7 @@ var _groups_table = $('#table-groups').DataTable( {
 			data: 'grants',
 			render: function ( data, type, row ) {
 				if (type === 'filter' || type === 'sort') {
-					return data;
+					return data.join(',');
 				}
 				var htmlGrants = '';
 				var tooltipGrants = '';
@@ -428,7 +428,7 @@ var _users_table = $('#table-users').DataTable( {
 			data: 'backends',
 			render: function ( data, type, row ) {
 				if (type === 'filter' || type === 'sort') {
-					return data;
+					return data.join(',');
 				}
 				var ret = '';
 				$.each(data, function(i, back) {
@@ -441,7 +441,7 @@ var _users_table = $('#table-users').DataTable( {
 			data: null,
 			render: function ( data, type, row ) {
 				if (type === 'filter' || type === 'sort') {
-					return data.roles;
+					return data.roles.join(',');
 				}
 				var ret = '';
 				$.each(data.roles, function(i, role) {
@@ -466,7 +466,7 @@ var _users_table = $('#table-users').DataTable( {
 					$.each(data, function(i, group) {
 						ret.push(group.name);
 					});
-					return ret;
+					return ret.join(',');
 				}
 				var ret = '';
 				$.each(data, function(i, group) {
@@ -487,7 +487,7 @@ var _users_table = $('#table-users').DataTable( {
 			data: 'grants',
 			render: function ( data, type, row ) {
 				if (type === 'filter' || type === 'sort') {
-					return data;
+					return data.join(',');
 				}
 				var htmlGrants = '';
 				var tooltipGrants = '';

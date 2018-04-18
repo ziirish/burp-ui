@@ -113,6 +113,9 @@ var _users_table = $('#table-users').DataTable( {
 		{
 			data: 'backends',
 			render: function ( data, type, row ) {
+				if (type === 'filter' || type === 'sort') {
+					return data.join(',');
+				}
 				var ret = '';
 				$.each(data, function(i, back) {
 					ret += '<span class="label label-default">'+back+'</span>&nbsp;';

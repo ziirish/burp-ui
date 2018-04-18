@@ -136,7 +136,7 @@ var _clients_table = $('#table-clients').DataTable( {
 			data: 'labels',
 			render: function (data, type, row) {
 				if (type === 'filter' || type === 'sort') {
-					return data;
+					return data.join(',');
 				}
 				var ret = '';
 				if (!data) {
