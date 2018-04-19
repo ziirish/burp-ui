@@ -160,11 +160,17 @@ $('{{ selector }}').on('length.dt', function(e, settings, len) {
 // extends DataTables sorting
 jQuery.extend( jQuery.fn.dataTableExt.oSort, {
   "timestamp-pre": function ( a ) {
+    // legacy code
     var $obj = $(a);
     var title = $obj.attr('title');
     if (typeof title !== typeof undefined && title !== false)
       return moment(title, moment.ISO_8601).valueOf();
-    return moment().valueOf();
+
+    // we are using the filter the "right" way here
+    if (moment(a, moment.ISO_8601).isValid())
+      return ''+moment(a, moment.ISO_8601).valueOf();
+    // return some string that should be "last"
+    return 'zzzzzzzzzzzzzzzzzzzz'+a;
   },
   "timestamp-asc": function ( a, b ) {
     return ((a < b) ? -1 : ((a > b) ? 1 : 0));

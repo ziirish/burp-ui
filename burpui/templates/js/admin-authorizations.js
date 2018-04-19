@@ -311,7 +311,7 @@ var _groups_table = $('#table-groups').DataTable( {
 				if (type === 'sort') {
 					if (data === 'moderator') {
 						// make the 'moderator' group appear last
-						return 'ZZZZZZZZZZZZZZZZZZZZZZZZZZZ';
+						return 'zzzzzzzzzzzzzzzzzzzzzzzzzzz';
 					}
 				}
 				return data;
