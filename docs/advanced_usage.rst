@@ -97,6 +97,8 @@ parameters:
     ignore_labels = "color:.*", "custom:.*"
     # format label using sed-like syntax
     format_labels = "s/^os:\s*//"
+    # default strip leading path value for file restorations
+    default_strip = 0
 
 
 Each option is commented, but here is a more detailed documentation:
@@ -105,6 +107,7 @@ Each option is commented, but here is a more detailed documentation:
 - *liverefresh*: Time in seconds between two refresh of the *live-monitor* page.
 - *ignore_labels*: List of labels to ignore from parsing (regex are supported).
 - *format_labels*: List of *sed-like* expressions to transform labels. Example: ``"s/^os:\s*//", "s/i/o/"`` will transform the label ``os: Windows`` into ``Wondows``.
+- *default_strip*: Number of leading paths to strip by default while restoring files.
 
 Production
 ----------

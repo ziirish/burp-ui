@@ -27,8 +27,9 @@ G_PORT = 5000
 G_BIND = u'::'
 G_REFRESH = 180
 G_LIVEREFRESH = 5
-G_IGNORE_LABELS = []
-G_FORMAT_LABELS = []
+G_IGNORE_LABELS = ["color:.*"]
+G_FORMAT_LABELS = ["s/^os:\s*//"]
+G_DEFAULT_STRIP = 0
 G_SSL = False
 G_SINGLE = True
 G_SSLCERT = u''
@@ -88,6 +89,7 @@ class BUIServer(Flask):
             'liverefresh': G_LIVEREFRESH,
             'ignore_labels': G_IGNORE_LABELS,
             'format_labels': G_FORMAT_LABELS,
+            'default_strip': G_DEFAULT_STRIP,
         },
         'Security': {
             'scookie': G_SCOOKIE,
@@ -236,6 +238,11 @@ class BUIServer(Flask):
         )
         self.config['LIVEREFRESH'] = self.conf.safe_get(
             'liverefresh',
+            'integer',
+            'UI'
+        )
+        self.config['DEFAULT_STRIP'] = self.conf.safe_get(
+            'default_strip',
             'integer',
             'UI'
         )
