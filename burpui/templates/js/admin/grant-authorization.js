@@ -71,7 +71,7 @@ app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBu
 		};
 		if ($scope.isAdmin !== $scope.orig.admin) {
 			disableSubmit();
-			var url = '{{ url_for("api.acl_admins", backend=backend, member=grant) }}';
+			var url = '{{ url_for("api.acl_admin", backend=backend, member=grant) }}';
 			var method = 'PUT';
 			if (!$scope.isAdmin) {
 				method = 'DELETE';

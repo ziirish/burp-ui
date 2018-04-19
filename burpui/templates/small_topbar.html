@@ -36,6 +36,7 @@
           <div class="btn-group btn-group-justified  hidden-md hidden-lg">
             <a class="btn btn-default {% if authentications %}active{% endif %}" href="{{ url_for('view.admin_authentications') }}"><i class="fa fa-fw fa-id-card-o" aria-hidden="true"></i>&nbsp;{{ _('Authentication') }}</a>
             <a class="btn btn-default {% if authorizations %}active{% endif %}" href="{{ url_for('view.admin_authorizations') }}"><i class="fa fa-fw fa-lock" aria-hidden="true"></i>&nbsp;{{ _('Authorization') }}</a>
+            <a class="btn btn-default {% if backends or onebackend %}active{% endif %}" href="{{ url_for('view.admin_backends') }}"><i class="fa fa-fw fa-database" aria-hidden="true"></i>&nbsp;{{ _('Backends') }}</a>
           </div>
           <br />
           {% endif -%}

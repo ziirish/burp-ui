@@ -72,6 +72,10 @@ is_admin_fields = ns.model('IsAdmin', {
 admin_members_fields = ns.model('AdminMembers', {
     'members': fields.List(fields.String, required=True, description='Admin members'),
 })
+admins_fields = ns.model('Admins', {
+    'members': fields.List(fields.String, required=True, description='Admin members'),
+    'backend': fields.String(required=True, description='Backend name'),
+})
 session_fields = ns.model('Sessions', {
     'uuid': fields.String(description='Session id'),
     'ip': fields.String(description='IP address'),
@@ -168,17 +172,66 @@ class AclIsAdmin(Resource):
         return {'admin': member in loader.admins}
 
 
+@ns.route('/acl/admins',
+          '/acl/<backend>/admins',
+          endpoint='acl_admins')
+@ns.doc(
+    params={
+        'backend': 'Backend name',
+    }
+)
+class AclAdminss(Resource):
+    """The :class:`burpui.api.admin.AclAdminss` resource allows you to
+    retrieve a list of admins.
+
+    This resource is part of the :mod:`burpui.api.admin` module.
+    """
+
+    @api.acl_admin_or_moderator_required(message="Not allowed to view groups list")
+    @ns.marshal_list_with(admins_fields, code=200, description='Success')
+    @ns.doc(
+        responses={
+            403: 'Insufficient permissions',
+            404: 'No backend found',
+        },
+    )
+    def get(self, name=None, backend=None):
+        """Returns a list of admins
+
+        **GET** method provided by the webservice.
+
+        :returns: Moderators
+        """
+        try:
+            handler = getattr(bui, 'acl_handler')
+        except AttributeError:
+            handler = None
+
+        if not handler or len(handler.backends) == 0:
+            self.abort(404, "No acl backend found")
+        ret = []
+        for _, loader in iteritems(handler.backends):
+            append = {
+                'members': loader.admins,
+                'backend': loader.name
+            }
+            if (backend and backend == append['backend']) or backend is None:
+                return [append]
+            ret.append(append)
+        return ret
+
+
 @ns.route('/acl/admin',
           '/acl/<backend>/admin',
           '/acl/<backend>/admin/<member>',
-          endpoint='acl_admins')
+          endpoint='acl_admin')
 @ns.doc(
     params={
         'backend': 'ACL backend',
         'member': 'Admin member',
     }
 )
-class AclAdmins(Resource):
+class AclAdmin(Resource):
     """The :class:`burpui.api.admin.AclAdmins` resource allows you to
     retrieve a list of admins and add/delete them if your
     acl backend support those actions.
@@ -186,7 +239,7 @@ class AclAdmins(Resource):
     This resource is part of the :mod:`burpui.api.admin` module.
     """
     parser = ns.parser()
-    parser.add_argument('memberName', required=False, help='Moderator member')
+    parser.add_argument('memberNames', required=False, help='Admin members', action='append')
     parser.add_argument('backendName', required=False, help='Backend name')
 
     @api.acl_admin_or_moderator_required(message="Not allowed to view admins list")
@@ -248,7 +301,7 @@ class AclAdmins(Resource):
 
         loader = handler.backends[backend]
 
-        member = member or args['memberName']
+        members = [member] if member else (args['memberNames'] or [])
 
         if loader.add_admin is False:
             self.abort(
@@ -257,11 +310,16 @@ class AclAdmins(Resource):
                 "".format(backend)
             )
 
-        success, message, code = loader.add_admin(
-            member
-        )
-        status = 201 if success else 200
-        return [[code, message]], status
+        ret = []
+        status = 200
+
+        for member in members:
+            success, message, code = loader.add_admin(
+                member
+            )
+            status = 201 if success else 200
+            ret.append([code, message])
+        return ret, status
 
     @api.disabled_on_demo()
     @api.acl_admin_required(message="Not allowed to remove admin members")
@@ -291,7 +349,7 @@ class AclAdmins(Resource):
 
         loader = handler.backends[backend]
 
-        member = member or args['memberName']
+        members = [member] if member else (args['memberNames'] or [])
 
         if loader.del_admin is False:
             self.abort(
@@ -300,11 +358,16 @@ class AclAdmins(Resource):
                 "".format(backend)
             )
 
-        success, message, code = loader.del_admin(
-            member
-        )
-        status = 201 if success else 200
-        return [[code, message]], status
+        ret = []
+        status = 200
+
+        for member in members:
+            success, message, code = loader.del_admin(
+                member
+            )
+            status = 201 if success else 200
+            ret.append([code, message])
+        return ret, status
 
 
 @ns.route('/acl/isModerator/<member>',
@@ -1223,7 +1286,7 @@ class AclBackends(Resource):
     This resource is part of the :mod:`burpui.api.admin` module.
     """
 
-    @api.acl_admin_required(message="Not allowed to view backends list")
+    @api.acl_admin_or_moderator_required(message="Not allowed to view backends list")
     @ns.marshal_list_with(acl_backend_fields, code=200, description='Success')
     @ns.doc(
         responses={
@@ -1532,7 +1595,7 @@ class AuthBackends(Resource):
     This resource is part of the :mod:`burpui.api.admin` module.
     """
 
-    @api.acl_admin_required(message="Not allowed to view backends list")
+    @api.acl_admin_or_moderator_required(message="Not allowed to view backends list")
     @ns.marshal_list_with(auth_backend_fields, code=200, description='Success')
     @ns.doc(
         responses={

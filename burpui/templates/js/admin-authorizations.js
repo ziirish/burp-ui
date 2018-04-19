@@ -88,7 +88,7 @@ app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBu
 		}
 		if ($scope.isAdmin) {
 			var l = $http({
-				url: '{{ url_for("api.acl_admins") }}',
+				url: '{{ url_for("api.acl_admin") }}',
 				method: 'PUT',
 			  params: {
 					memberName: '@'+$scope.name,
@@ -151,7 +151,7 @@ app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBu
 		var locals = [];
 		if ($scope.isAdmin) {
 			var l = $http({
-				url: '{{ url_for("api.acl_admins") }}',
+				url: '{{ url_for("api.acl_admin") }}',
 				method: 'PUT',
 			  params: {
 					memberName: $scope.name,
@@ -303,6 +303,9 @@ var _groups_table = $('#table-groups').DataTable( {
 		if (data.id === 'moderator') {
 			row.className += ' warning';
 		}
+		if (data.id === 'admin') {
+			row.className += ' danger';
+		}
 	},
 	columns: [
 		{
@@ -312,6 +315,10 @@ var _groups_table = $('#table-groups').DataTable( {
 					if (data === 'moderator') {
 						// make the 'moderator' group appear last
 						return 'zzzzzzzzzzzzzzzzzzzzzzzzzzz';
+					}
+					if (data === 'admin') {
+						// make the 'admin' group appear last
+						return 'zzzzzzzzzzzzzzzzzzzzzzzzzzzz';
 					}
 				}
 				return data;
@@ -379,7 +386,7 @@ var _groups_table = $('#table-groups').DataTable( {
 			data: null,
 			orderable: false,
 			render: function ( data, type, row ) {
-				return '<button data-member="'+data.id+'" class="btn btn-xs btn-danger btn-delete-group" title="{{ _("Remove") }}"'+(data.id === 'moderator' ? 'disabled' : '')+'><i class="fa fa-trash" aria-hidden="true"></i></button>&nbsp;<button data-member="'+data.id+'" class="btn btn-xs btn-info btn-edit-group" title="{{ _("Edit") }}"><i class="fa fa-pencil" aria-hidden="true"></i></button>';
+				return '<button data-member="'+data.id+'" class="btn btn-xs btn-danger btn-delete-group" title="{{ _("Remove") }}"'+((data.id === 'moderator' || data.id === 'admin') ? 'disabled' : '')+'><i class="fa fa-trash" aria-hidden="true"></i></button>&nbsp;<button data-member="'+data.id+'" class="btn btn-xs btn-info btn-edit-group" title="{{ _("Edit") }}"><i class="fa fa-pencil" aria-hidden="true"></i></button>';
 			}
 		},
 	],
@@ -712,6 +719,35 @@ var _authorization_groups = function() {
 		});
 	});
 	__top_promises.push(t);
+	t = $.getJSON('{{ url_for("api.acl_admins") }}').done(function (admins) {
+		if ('admin' in _groups) {
+			delete _groups['admin'];
+		}
+		$.each(admins, function(i, admin) {
+			__groupnames.push('admin');
+			if (_groups['admin']) {
+				if (_groups['admin']['backends'].indexOf(admin.backend) === -1) {
+					_groups['admin']['backends'].push(admin.backend);
+				}
+				if (_groups['admin']['raw'].indexOf(admin) === -1) {
+					_groups['admin']['raw'].push(admin);
+				}
+				_groups['admin']['members'] = _.uniq(_.concat(_groups['admin']['members'], admin.members));
+			} else {
+				_groups['admin'] = {
+					id: 'admin',
+					backends: [admin.backend],
+					roles: [],
+					admin_by: [],
+					admin_by: [],
+					members: admin.members,
+					grants: [],
+					raw: [admin],
+				};
+			}
+		});
+	});
+	__top_promises.push(t);
 	if (redraw) {
 		$.when.apply( $, __globals_promises ).always(function() {
 			$.when.apply( $, __promises ).always(function() {
@@ -803,7 +839,7 @@ $('#perform-delete').on('click', function(e) {
 			var user = _users[user_id];
 			if (user['roles'].indexOf('admin') !== -1) {
 				$.ajax({
-					url: "{{ url_for('api.acl_admins') }}",
+					url: "{{ url_for('api.acl_admin') }}",
 					data: {
 						memberName: user_id,
 						backendName: backend,
