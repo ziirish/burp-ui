@@ -704,6 +704,7 @@ Here are the default grants:
 
 Since *v0.6.0*, you can define advanced grants through the ``rw`` and ``ro``
 keyword.
+
 - ``ro`` means you can only see backup stats and reports (this is great for
   monitoring teams/tools)
 - ``rw`` means you can interact with the server in some way. For the *regular*
