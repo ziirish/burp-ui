@@ -661,25 +661,27 @@ Now you can add *basic acl* specific options:
     # List of moderators. Users listed here will inherit the grants of the
     # group '@moderator'
     +moderator = user5,user6
+    @moderator = '{"agents":{"ro":["agent1"]}}'
     # Please note the double-quotes and single-quotes on the following lines are
     # mandatory!
     # You can also overwrite the default behavior by specifying which clients a
     # user can access
-    @moderator = '{"agents":{"ro":["agent1"]}}'
-    user3 = '["client4", "client5"]'
+    # Suppose you are running single-agent mode (the default), you only need to
+    # specify a list of clients a user can access:
+    user3 = '{"clients": {"ro": ["prod*"], "rw": ["dev*", "test1"]}}'
     # In case you are not in a single mode, you can also specify which clients
     # a user can access on a specific Agent
-    user4 = '{"agent1": ["client6", "client7"], "agent2": ["client8"]}'
-    # You can define read-only and/or read-write grants for moderators using:
-    user5 = '{"agents": ["www*"], "clients": {"ro": ["desk*"], "rw": ["desk1"]}}'
+    user4 = '{"agents": {"agent1": ["client6", "client7"], "agent2": ["client8"]}}'
+    # You can define read-only and/or read-write grants using:
+    user5 = '{"agents": {"www*": {"ro": ["desk*"], "rw": ["desk1"]}}}'
     # Finally, you can define groups using the syntax "@groupname" and adding
     # members using "+groupname". Note: groups can inherit groups!
     @group1 = '{"agents": {"ro": ["*"]}}'
     @group2 = '{"clients": {"rw": ["dev*"]}}'
     +group1 = @group2
-    +group2 = user7
-    # As a result, user7 will be granted the following rights:
-    # '{"agents": {"ro": ["*"]}, "clients": {"rw": ["dev*"]}}'
+    +group2 = user5
+    # As a result, user5 will be granted the following rights:
+    # '{"ro": {"agents": ["*", "agent1"], "www*": ["desk*"]}, "rw": {"clients": ["dev*"], "www*": ["desk1"]}}
 
 
 .. warning:: The double-quotes and single-quotes are **MANDATORY**
@@ -692,14 +694,22 @@ Here are the default grants:
 1. *admin* => you can do anything
 2. *non admin* => you can only see the client that matches your username
 3. *custom* => you can manually assign username to clients using the syntax
-   ``username = client1,client2`` or
-   ``username = '{"agent1": ["client1-1"], "agent2": ["client2-3", "client2-4"]}'``
+   ``username = '{"agents": {"agent1": ["client1-1"], "agent2": ["client2-3", "client2-4"]}}'``
    (if you are running a multi-agent setup)
 4. *moderators* => can edit the Burp server configurations of any agent unless
    told other wise (with ``ro`` rights), but cannot restore files unless told
    otherwise (with ``rw`` rights). Besides, moderators can create new users.
    They can also delete backups if they have ``rw`` rights on the client.
 
+
+Since *v0.6.0*, you can define advanced grants through the ``rw`` and ``ro``
+keyword.
+- ``ro`` means you can only see backup stats and reports (this is great for
+  monitoring teams/tools)
+- ``rw`` means you can interact with the server in some way. For the *regular*
+  users, ``rw`` means you can perform file restorations.
+  For moderators, ``rw`` means you can delete backups (if burp thinks they are
+  deletable), you can also create/update/delete client configuration files.
 
 .. _Burp: http://burp.grke.org/
 .. _Burp-UI: https://git.ziirish.me/ziirish/burp-ui

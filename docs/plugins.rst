@@ -158,6 +158,8 @@ The plugin will be automatically loaded.
 ACL engine has built-in ``Groups`` support, to take full advantage of this
 feature, it is recommended to use the ``meta_grants`` object as shown bellow:
 
+.. note:: The grant syntax is explained in the `ACL <advanced_usage.html#acl>`__ documentation
+
 .. code-block:: python
     :linenos:
 
@@ -174,7 +176,7 @@ feature, it is recommended to use the ``meta_grants`` object as shown bellow:
 
             _groups = {
                 'gp1': {
-                    'grants': 'server1, server2',
+                    'grants': '["server1", "server2"]',  # this needs to be a string
                     'members': ['user1'],
                 },
             }
@@ -203,4 +205,4 @@ feature, it is recommended to use the ``meta_grants`` object as shown bellow:
 You can omit either the ``meta_grants.set_grant`` or the
 ``meta_grants.set_group`` part if you like. For instance to define the grants
 of a given group using another ACL backend, and using your plugin to manage
-groups membership.
+groups membership only.
