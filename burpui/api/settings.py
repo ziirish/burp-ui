@@ -74,7 +74,7 @@ class ServerSettings(Resource):
         parser = bui.client.get_parser(agent=server)
         return parser.remove_conf(conf)
 
-    @api.acl_admin_or_moderator_required(message='Sorry, you don\'t have rights to access the setting panel')
+    @api.acl_admin_required(message='Sorry, you don\'t have rights to access the setting panel')
     @ns.doc(
         responses={
             200: 'Success',
@@ -370,6 +370,11 @@ class NewTemplateSettings(Resource):
     )
     def put(self, server=None):
         """Creates a new template"""
+        if not current_user.is_anonymous and \
+                current_user.acl.is_moderator() and \
+                not current_user.acl.is_server_rw(server):
+            self.abort(403, 'You don\'t have rights on this server')
+
         newtemplate = self.parser.parse_args()['newtemplate']
         if not newtemplate:
             self.abort(400, 'No template name provided')
@@ -418,6 +423,11 @@ class NewClientSettings(Resource):
     )
     def put(self, server=None):
         """Creates a new client"""
+        if not current_user.is_anonymous and \
+                current_user.acl.is_moderator() and \
+                not current_user.acl.is_server_rw(server):
+            self.abort(403, 'You don\'t have rights on this server')
+
         newclient = self.parser.parse_args()['newclient']
         if not newclient:
             self.abort(400, 'No client name provided')
@@ -486,6 +496,11 @@ class ClientSettings(Resource):
     )
     def post(self, server=None, client=None, conf=None):
         """Saves a given client configuration"""
+        if not current_user.is_anonymous and \
+                current_user.acl.is_moderator() and \
+                not current_user.acl.is_server_rw(server):
+            self.abort(403, 'You don\'t have rights on this server')
+
         args = self.parser_post.parse_args()
         template = args.get('template', False)
         noti = bui.client.store_conf_cli(request.form, client, conf, template, server)
@@ -561,6 +576,11 @@ class ClientSettings(Resource):
     )
     def delete(self, server=None, client=None, conf=None):
         """Deletes a given client"""
+        if not current_user.is_anonymous and \
+                current_user.acl.is_moderator() and \
+                not current_user.acl.is_server_rw(server):
+            self.abort(403, 'You don\'t have rights on this server')
+
         args = self.parser_delete.parse_args()
         delcert = args.get('delcert', False)
         revoke = args.get('revoke', False)

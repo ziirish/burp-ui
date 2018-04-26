@@ -65,7 +65,7 @@ class ACLloader(BUIaclLoader):
                 'priority',
                 'integer',
                 section=self.section,
-                defaults={self.section: {'priority': self.priority}}
+                defaults=self.priority
             )
             adms = self.conf.safe_get(
                 'admin',
@@ -77,10 +77,14 @@ class ACLloader(BUIaclLoader):
                 'force_list',
                 section=self.section
             )
+            default_moderator = None
+            if self.conf.get('STANDALONE'):
+                default_moderator = '{"agents": {"rw": "local"}}'
             self.moderator = self.conf.safe_get(
                 '@moderator',
                 'force_string',
-                section=self.section
+                section=self.section,
+                defaults=default_moderator
             ) or {}
             meta_grants.set_moderator_grants(self.moderator)
             for opt in self.conf.options.get(self.section).keys():

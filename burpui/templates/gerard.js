@@ -10,7 +10,7 @@ var AJAX_CACHE = true;
 var _ajax_setup = function() {
 	$.ajaxSetup({
 		headers: { 'X-From-UI': true, 'X-Session-Tag': SESSION_TAG },
-		data: { '_session': SESSION_TAG },
+		data: { '_session': SESSION_TAG, '_extra': _EXTRA },
 	});
 };
 _ajax_setup();

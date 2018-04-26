@@ -1,3 +1,6 @@
+{% if current_user and current_user.is_authenticated and (current_user.is_admin or current_user.is_moderator) -%}
+{% set extra_features = True %}
+{% endif -%}
 
 /***
  * Here is the 'client' part
@@ -135,6 +138,7 @@ var _client_table = $('#table-client').DataTable( {
 				return '<i class="fa fa-fw fa-'+(data?'lock':'globe')+'" aria-hidden="true"></i>&nbsp;'+(data?"{{ _('Encrypted backup') }}":"{{ _('Unencrypted backup') }}");
 			}
 		},
+		{% if extra_features -%}
 		{
 			data: null,
 			orderable: false,
@@ -146,6 +150,7 @@ var _client_table = $('#table-client').DataTable( {
 				return '<button class="btn btn-danger btn-xs btn-delete-backup no-link" data-backup="' + data.number + '" ' + disable + '><i class="fa fa-trash" aria-hidden="true"></i>&nbsp;{{ _("Delete") }}</button>';
 			}
 		}
+		{% endif -%}
 	]
 });
 var first = true;

@@ -426,7 +426,7 @@ class DoServerRestore(Resource):
         # Manage ACL
         if not current_user.is_anonymous and \
                 not current_user.acl.is_admin() and \
-                not current_user.acl.is_client_rw(name, server) and \
+                not current_user.acl.is_client_rw(to, server) and \
                 not current_user.acl.is_client_allowed(to, server):
             self.abort(
                 403,

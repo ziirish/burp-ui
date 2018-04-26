@@ -9,6 +9,7 @@
 """
 from .interface import BUIacl
 from ...utils import make_list
+from ...config import config
 
 from six import iteritems, itervalues
 
@@ -532,8 +533,12 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
 
     def is_server_rw(self, username=None, server=None):
         """See :func:`burpui.misc.acl.interface.BUIacl.is_server_rw`"""
-        if not username or not server:  # pragma: no cover
+        if not username:  # pragma: no cover
             return False
+
+        # special case single-agent mode
+        if not server and config.get('STANDALONE'):
+            server = 'local'
 
         (is_admin, _) = self.is_admin(username)
         if self.is_server_allowed(username, server):

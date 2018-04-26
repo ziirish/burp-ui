@@ -294,7 +294,7 @@ class BUIConfig(dict):
             'boolean': False,
         }
         section = section or self.section
-        # if the defaults argument is not a list, assume it's a single value
+        # if the defaults argument is not a dict, assume it's a single value
         if defaults and not isinstance(defaults, dict):
             defaults = {section: {key: defaults}}
         defaults = defaults or self.defaults
