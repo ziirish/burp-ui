@@ -18,6 +18,7 @@ from ..utils import NOTIF_INFO
 from six import iteritems
 from flask_babel import gettext as _, refresh
 from flask import jsonify, request, url_for, current_app, g, session
+from flask_login import current_user
 from ..datastructures import ImmutableMultiDict
 
 bui = current_app  # type: BUIServer
