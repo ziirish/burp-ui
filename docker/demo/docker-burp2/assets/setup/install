@@ -16,11 +16,10 @@ apt-get install -y burp-server burp-client libssl-dev
 cd
 
 # Install burp-ui
-pip install --upgrade pip
+# FIXME: pip 10 is kind of broken
+#pip install --upgrade pip
 pip install --upgrade setuptools
 pip install gevent
-#pip install "requests[security]"
-#pip install --upgrade cffi
 pip install --upgrade $BURPUI
 pip install ujson
 
