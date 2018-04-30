@@ -24,13 +24,14 @@ cd
 
 # Install burp-ui
 # FIXME: pip 10 is kind of broken
-pip install --upgrade pip
+#pip install --upgrade pip
 pip install --upgrade setuptools
 pip install gevent
 pip install --upgrade $BURPUI
 pip install ujson
-#pip install ipaddress
-#pip install enum34
+# seems required for an unknown reason
+pip install ipaddress
+pip install enum34
 
 # Create burp-ui User
 useradd -m -s /bin/bash -d /var/lib/burpui -c 'Burp-UI daemon user' -u 5337 burpui
