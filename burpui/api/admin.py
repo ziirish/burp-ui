@@ -625,7 +625,7 @@ class AclModerator(Resource):
 
         **POST** method provided by the webservice.
         """
-        args = self.parser.parse_args()
+        args = self.parser_mod.parse_args()
         try:
             handler = getattr(bui, 'acl_handler')
         except AttributeError:

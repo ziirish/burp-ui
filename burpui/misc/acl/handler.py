@@ -34,7 +34,7 @@ class ACLloader(BUIaclLoader):
                 'assume_rw',
                 'boolean',
                 section=self.section,
-                defaults={self.section: {'assume_rw': True}}
+                defaults=True
             )
             opts['legacy'] = self.conf.safe_get(
                 'legacy',
@@ -45,7 +45,12 @@ class ACLloader(BUIaclLoader):
                 'implicit_link',
                 'boolean',
                 section=self.section,
-                defaults={self.section: {'implicit_link': True}}
+                defaults=True
+            )
+            opts['inverse_inheritance'] = self.conf.safe_get(
+                'inverse_inheritance',
+                'boolean',
+                section=self.section
             )
             meta_grants.options = opts
         if self.app.acl_engine and 'none' not in self.app.acl_engine:

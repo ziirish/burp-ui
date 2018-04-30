@@ -624,6 +624,11 @@ The *ACL* engine has some settings as bellow:
     extended = false
     # If you don't explicitly specify ro/rw grants, what should we assume?
     assume_rw = true
+    # The inheritance order maters, it means depending the order you choose,
+    # the ACL engine won't handle the grants the same way.
+    # By default, ACL inherited by groups will have lower priority, unless you
+    # choose otherwise
+    inverse_inheritance = false
     # Enable 'legacy' behavior
     # Since v0.6.0, if you don't specify the agents name explicitly, users will be
     # granted on every agents where a client matches user's ACL. If you enable the
@@ -710,12 +715,34 @@ Here are the default grants:
 Since *v0.6.0*, you can define advanced grants through the ``rw`` and ``ro``
 keyword.
 
+
 - ``ro`` means you can only see backup stats and reports (this is great for
   monitoring teams/tools)
 - ``rw`` means you can interact with the server in some way. For the *regular*
   users, ``rw`` means you can perform file restorations.
   For moderators, ``rw`` means you can delete backups (if burp thinks they are
   deletable), you can also create/update/delete client configuration files.
+
+
+About the ``inverse_inheritance`` option, here is a concrete example. We assume
+you have this piece of configuration:
+
+::
+
+    [ACL]
+    inverse_inheritance = false
+
+    [BASIC:ACL]
+    example = '{"agents": {"test": {"rw": ["demo"]}}}'
+    @gp_ro = '{"agents": {"*": {"ro": ["*"]}}}'
+    +gp_ro = example
+
+
+Then the client ``demo`` on the ``test`` agent will be granted ``rw`` rights,
+anything else will be ``ro``.
+Now if you set ``inverse_inheritance = true``, the ``@gp_ro`` grants will have
+the highest priority, meaning the client ``demo`` on the ``test`` agent will be
+granted ``ro`` rights like any other client.
 
 .. _Burp: http://burp.grke.org/
 .. _Burp-UI: https://git.ziirish.me/ziirish/burp-ui

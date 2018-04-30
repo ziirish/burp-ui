@@ -288,7 +288,7 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
             clients, agents, advanced = self._parse_clients(grants)
             self._clients_cache[username] = clients
             self._agents_cache[username] = agents
-            self._advanced_cache[username] = advanced
+            self._advanced_cache[username] = [advanced]
 
             def __merge_grants_with(grp, prt):
                 if grp not in self._parsed_grants:
@@ -301,10 +301,9 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
                     self._agents_cache[username],
                     self._agents_cache.get(grp, [])
                 )
-                self._advanced_cache[username] = self._merge_data(
-                    self._advanced_cache[username],
-                    self._advanced_cache.get(grp, [])
-                )
+                tmp = self._advanced_cache.get(grp, False)
+                if tmp is not False:
+                    self._advanced_cache[username] += tmp
 
             # moderator is also a group
             for gname, group in iteritems(self.groups):
@@ -331,15 +330,18 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
             self._extract_grants(username)
         return self._agents_cache.get(username, [])
 
-    def _extract_advanced(self, username):
+    def _extract_advanced(self, username, idx=None):
         if username not in self._parsed_grants:
             self._extract_grants(username)
-        return self._advanced_cache.get(username, {})
+        ret = self._advanced_cache.get(username, [])
+        if idx is not None:
+            return ret[idx]
+        if self.opt('inverse_inheritance'):
+            return reversed(ret)
+        return ret
 
-    def _extract_advanced_mode(self, username, mode, kind):
-        if username not in self._parsed_grants:
-            self._extract_grants(username)
-        return self._advanced_cache.get(username, {}).get(mode, {}).get(kind, [])
+    def _extract_advanced_mode(self, username, mode, kind, idx=None):
+        return self._extract_advanced(username, idx).get(mode, {}).get(kind, [])
 
     def _client_match(self, username, client):
         clients = self._extract_clients(username)
@@ -392,6 +394,8 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
 
         (is_admin, _) = self.is_admin(username)
 
+        ret = is_admin or self.opt('assume_rw', True) or self.opt('legacy')
+
         if self.is_client_allowed(username, client, server):
             # legacy mode: assume rw for everyone
             if self.opt('legacy'):
@@ -408,82 +412,90 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
                 if not server_match and not client_match:
                     return is_admin or self.opt('assume_rw', True)
 
-                # the whole agent is rw and we did not find explicit entry for
-                # client_match
-                if client_match is False:
-                    if server_match and \
-                            any([x in advanced.get('rw', {}) or
-                                 x in advanced.get('rw', {}).get('agents', [])
-                                 for x in server_match]):
-                        return True
-                    if server in advanced.get('rw', {}) or \
-                            server in advanced.get('rw', {}).get('agents', []):
-                        return True
+                for adv in advanced:
+                    for adv2 in advanced:
+                        # the whole agent is rw and we did not find explicit entry for
+                        # client_match
+                        if client_match is False:
+                            if server_match and \
+                                    any([x in adv.get('rw', {}) or
+                                         x in adv.get('rw', {}).get('agents', [])
+                                         for x in server_match]):
+                                return True
+                            if server in adv.get('rw', {}) or \
+                                    server in adv.get('rw', {}).get('agents', []):
+                                return True
 
-                if server_match and \
-                        any([x in advanced.get('rw', {}) or
-                             x in advanced.get('rw', {}).get('agents', [])
-                             for x in server_match]):
-                    # the agent is rw but the client is explicitly defined as ro
-                    if client_match and \
-                        any([x in advanced.get('ro', []) or
-                             x in advanced.get('ro', {}).get('clients', []) or
-                             any([x in advanced.get('ro', {}).get(y, [])
-                                  for y in server_match])
-                             for x in client_match
-                             ]):
-                        return False
+                        if server_match and \
+                                any([x in adv.get('rw', {}) or
+                                     x in adv.get('rw', {}).get('agents', [])
+                                     for x in server_match]):
+                            # both agent and client are defined as rw
+                            if client_match and \
+                                any([x in adv2.get('rw', []) or
+                                     x in adv2.get('rw', {}).get('clients', []) or
+                                     any([x in adv2.get('rw', {}).get(y, [])
+                                          for y in server_match])
+                                     for x in client_match
+                                     ]):
+                                return True
 
-                    # both agent and client are defined as rw
-                    if client_match and \
-                        any([x in advanced.get('rw', []) or
-                             x in advanced.get('rw', {}).get('clients', []) or
-                             any([x in advanced.get('rw', {}).get(y, [])
-                                  for y in server_match])
-                             for x in client_match
-                             ]):
-                        return True
+                            # the agent is rw but the client is explicitly defined as ro
+                            if client_match and \
+                                any([x in adv2.get('ro', []) or
+                                     x in adv2.get('ro', {}).get('clients', []) or
+                                     any([x in adv2.get('ro', {}).get(y, [])
+                                          for y in server_match])
+                                     for x in client_match
+                                     ]):
+                                return False
 
-                if server_match and \
-                        any([x in advanced.get('ro', {}) or
-                             x in advanced.get('ro', {}).get('agents', [])
-                             for x in server_match]):
-                    # the agent is ro, but the client is explicitly defined as rw
-                    if client_match and \
-                        any([x in advanced.get('rw', {}).get('clients', []) or
-                             x in advanced.get('rw', []) or
-                             any([x in advanced.get('rw', {}).get(y, [])
-                                  for y in server_match])
-                             for x in client_match
-                             ]):
-                        return True
+                        if server_match and \
+                                any([x in adv.get('ro', {}) or
+                                     x in adv.get('ro', {}).get('agents', [])
+                                     for x in server_match]):
+                            # the agent is ro, but the client is explicitly defined as rw
+                            if client_match and \
+                                any([x in adv2.get('rw', {}).get('clients', []) or
+                                     x in adv2.get('rw', []) or
+                                     any([x in adv2.get('rw', {}).get(y, [])
+                                          for y in server_match])
+                                     for x in client_match
+                                     ]):
+                                return True
 
-                    # both server and client are explicitly defined as ro
-                    if client_match and \
-                        any([x in advanced.get('ro', {}).get('clients', []) or
-                             x in advanced.get('ro', []) or
-                             any([x in advanced.get('ro', {}).get(y, [])
-                                 for y in server_match])
-                             for x in client_match
-                             ]):
-                        return False
+                            # both server and client are explicitly defined as ro
+                            if client_match and \
+                                any([x in adv2.get('ro', {}).get('clients', []) or
+                                     x in adv2.get('ro', []) or
+                                     any([x in adv2.get('ro', {}).get(y, [])
+                                         for y in server_match])
+                                     for x in client_match
+                                     ]):
+                                return False
 
-                    # agent is ro
-                    return is_admin or self.opt('assume_rw', True)
+            for adv in advanced:
+                # client is explicitly defined as rw
+                rw_clients = adv.get('rw', {}).get('clients', [])
+                if client_match and \
+                        any([x in rw_clients for x in client_match]):
+                    return True
 
-            # client is explicitly defined as ro
-            ro_clients = advanced.get('ro', {}).get('clients', [])
-            if client_match and \
-                    any([x in ro_clients for x in client_match]):
-                return False
+                if client and \
+                        client in rw_clients:
+                    return True
 
-            if client and \
-                    client in ro_clients:
-                return False
+                # client is explicitly defined as ro
+                ro_clients = adv.get('ro', {}).get('clients', [])
+                if client_match and \
+                        any([x in ro_clients for x in client_match]):
+                    return False
 
-        if self.opt('legacy'):
-            return True
-        return is_admin or self.opt('assume_rw', True)
+                if client and \
+                        client in ro_clients:
+                    return False
+
+        return ret
 
     def is_client_allowed(self, username=None, client=None, server=None):
         """See :func:`burpui.misc.acl.interface.BUIacl.is_client_allowed`"""
@@ -508,25 +520,28 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
                 if self.opt('implicit_link', True) and not advanced:
                     advanced = False
 
-                if advanced is not False and \
-                        all([x not in advanced for x in server_match]) and \
-                        any([x in self._extract_advanced_mode(username, 'ro', 'agents') or
-                             x in self._extract_advanced_mode(username, 'rw', 'agents')
-                             for x in server_match]):
-                    return True
-
                 if advanced is not False:
-                    tmp = set(advanced.get(server, []))
-                    for srv in server_match:
-                        tmp |= set(advanced.get(srv, []))
-                    advanced = list(tmp)
-                if advanced is not False and \
-                        client_match is not False and \
-                        (any([x in advanced for x in client_match]) or
-                         client in advanced):
-                    return True
+                    for idx, adv in enumerate(advanced):
+                        if all([x not in adv for x in server_match]) and \
+                                any([x in y
+                                     for x in server_match
+                                     for y in self._extract_advanced_mode(username, 'ro', 'agents', idx)
+                                     ]) or \
+                                any([x in y
+                                     for x in server_match
+                                     for y in self._extract_advanced_mode(username, 'rw', 'agents', idx)
+                                     ]):
+                            return True
 
-                if advanced is not False:
+                        tmp = set(adv.get(server, []))
+                        for srv in server_match:
+                            tmp |= set(adv.get(srv, []))
+                        adv2 = list(tmp)
+                        if client_match is not False and \
+                                (any([x in adv2 for x in client_match]) or
+                                 client in adv2):
+                            return True
+
                     return False
 
         return client_match is not False or is_admin
@@ -541,6 +556,9 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
             server = 'local'
 
         (is_admin, _) = self.is_admin(username)
+
+        ret = is_admin or self.opt('assume_rw', True) or self.opt('legacy')
+
         if self.is_server_allowed(username, server):
             server_match = self._server_match(username, server)
             if not server_match:
@@ -548,12 +566,16 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
 
             advanced = self._extract_advanced(username)
 
-            if any([x in advanced.get('rw', {}).get('agents', []) for x in server_match]):
-                return True
+            for adv in advanced:
+                # server is explicitly defined as ro
+                if any([x in adv.get('ro', {}).get('agents', []) for x in server_match]):
+                    return False
 
-        if self.opt('legacy'):
-            return True
-        return is_admin or self.opt('assume_rw', True)
+                # server is explicitly defined as rw
+                if any([x in adv.get('rw', {}).get('agents', []) for x in server_match]):
+                    return True
+
+        return ret
 
     def is_server_allowed(self, username=None, server=None):
         """See :func:`burpui.misc.acl.interface.BUIacl.is_server_allowed`"""
