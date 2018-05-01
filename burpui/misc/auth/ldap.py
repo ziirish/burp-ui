@@ -3,6 +3,7 @@ from six import viewitems
 from flask_login import AnonymousUserMixin
 
 from .interface import BUIhandler, BUIuser, BUIloader
+from ...utils import __
 
 import ssl
 
@@ -218,6 +219,8 @@ class LdapLoader(BUIloader):
 
 
 class UserHandler(BUIhandler):
+    __doc__ = __('Connects to a LDAP database to authenticate users. Handles '
+                 'searching for and binding as.')
     priority = 50
 
     """The :class:`burpui.misc.auth.ldap.UserHandler` class maintains a list of

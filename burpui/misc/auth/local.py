@@ -5,6 +5,7 @@ import sys
 
 from flask_login import AnonymousUserMixin
 from .interface import BUIhandler, BUIuser, BUIloader
+from ...utils import __
 
 
 class LocalLoader(BUIloader):
@@ -91,6 +92,7 @@ class LocalLoader(BUIloader):
 
 
 class UserHandler(BUIhandler):
+    __doc__ = __('Authenticate users against local PAM database.')
     priority = 0
 
     """See :class:`burpui.misc.auth.interface.BUIhandler`"""
