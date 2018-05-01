@@ -76,9 +76,6 @@ build:doc:
   script:
   - sed -i -e "s,^#\(.*\)@AUTOFLASK@\(.*\)$,\1sphinxcontrib.autohttp.flask\2," docs/conf.py
   - apt-get update && apt-get install -y unzip
-  - wget https://bitbucket.org/birkenfeld/sphinx-contrib/get/8e295053a27d.zip
-  - unzip 8e295053a27d.zip
-  - (cd birkenfeld-sphinx-contrib-8e295053a27d/httpdomain/ && python setup.py build && python setup.py install)
   - pip install -U -r docs/requirements.txt
   - make doc
   tags:
@@ -132,7 +129,7 @@ build:docker:stable:
   - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/pgsql:10
   - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/burp:2.0.54
   only:
-  - stable
+  - stable@ziirish/burp-ui
   tags:
   - registry
 
