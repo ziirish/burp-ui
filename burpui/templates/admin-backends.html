@@ -9,13 +9,32 @@
           </ul>
           <br />
           <div class="form-container">
-            <legend>{{ _('Backends list') }}</legend>
+            <legend>{{ _('Authentication Backends list') }}</legend>
+            <div class="table-responsive" id="table-auth-backends-container">
+              <table class="table table-striped table-hover nowrap" id="table-auth-backends" width="100%">
+                <thead>
+                  <tr>
+                    <th>{{ _('Backend') }}</th>
+                    <th>{{ _('Description') }}</th>
+                    <th>{{ _('Priority') }}</th>
+                    <th>{{ _('Type') }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="form-container">
+            <legend>{{ _('Authorization Backends list') }}</legend>
             <div class="table-responsive" id="table-backends-container">
               <table class="table table-striped table-hover nowrap" id="table-backends" width="100%">
                 <thead>
                   <tr>
                     <th>{{ _('Backend') }}</th>
                     <th>{{ _('Description') }}</th>
+                    <th>{{ _('Priority') }}</th>
+                    <th>{{ _('Type') }}</th>
                   </tr>
                 </thead>
                 <tbody>

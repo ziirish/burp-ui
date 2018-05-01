@@ -89,6 +89,8 @@ session_fields = ns.model('Sessions', {
 acl_backend_fields = ns.model('AclBackends', {
     'name': fields.String(required=True, description='Backend name'),
     'description': fields.String(required=True, description='Backend description'),
+    'type': fields.String(required=False, description='Backend type'),
+    'priority': fields.Integer(required=False, description='Backend priority'),
     'add_grant': fields.Boolean(required=False, default=False, description='Support grant creation'),
     'mod_grant': fields.Boolean(required=False, default=False, description='Support grant edition'),
     'del_grant': fields.Boolean(required=False, default=False, description='Support grant deletion'),
@@ -105,6 +107,9 @@ acl_backend_fields = ns.model('AclBackends', {
 })
 auth_backend_fields = ns.model('Backends', {
     'name': fields.String(required=True, description='Backend name'),
+    'description': fields.String(required=True, description='Backend description'),
+    'type': fields.String(required=False, description='Backend type'),
+    'priority': fields.Integer(required=False, description='Backend priority'),
     'add': fields.Boolean(required=False, default=False, description='Support user creation'),
     'mod': fields.Boolean(required=False, default=False, description='Support user edition'),
     'del': fields.Boolean(required=False, default=False, description='Support user deletion'),
@@ -1272,6 +1277,8 @@ class AclBackend(Resource):
         back = {}
         back['name'] = backend
         back['description'] = gettext(loader.__doc__)
+        back['type'] = 'authorization'
+        back['priority'] = getattr(loader, 'priority', -1)
         for method in ['add_grant', 'del_grant', 'mod_grant', 'add_group', 'del_group', 'mod_group', 'add_group_member', 'del_group_member', 'add_moderator', 'del_moderator', 'mod_moderator', 'add_admin', 'del_admin']:
             back[method] = getattr(loader, method, False) is not False
 
@@ -1313,6 +1320,8 @@ class AclBackends(Resource):
             back = {}
             back['name'] = name
             back['description'] = gettext(backend.__doc__)
+            back['type'] = 'authorization'
+            back['priority'] = getattr(backend, 'priority', -1)
             for method in ['add_grant', 'del_grant', 'mod_grant', 'add_group', 'del_group', 'mod_group', 'add_group_member', 'del_group_member', 'add_moderator', 'del_moderator', 'mod_moderator', 'add_admin', 'del_admin']:
                 back[method] = getattr(backend, method, False) is not False
             ret.append(back)
@@ -1578,6 +1587,9 @@ class AuthBackend(Resource):
         back = handler.backends[backend]
         ret = {
             'name': backend,
+            'description': gettext(back.__doc__),
+            'type': 'authentication',
+            'priority': getattr(back, 'priority', -1),
             'add': getattr(back, 'add_user', False) is not False,
             'del': getattr(back, 'del_user', False) is not False,
             'mod': getattr(back, 'change_password', False) is not False,
@@ -1621,6 +1633,9 @@ class AuthBackends(Resource):
         for name, backend in iteritems(handler.backends):
             ret.append({
                 'name': name,
+                'description': gettext(backend.__doc__),
+                'type': 'authentication',
+                'priority': backend.priority,
                 'add': backend.add_user is not False,
                 'del': backend.del_user is not False,
                 'mod': backend.change_password is not False,

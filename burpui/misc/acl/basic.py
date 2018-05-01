@@ -1,11 +1,13 @@
 # -*- coding: utf8 -*-
+from six import iteritems
+
 from .meta import meta_grants, BUIaclGrant
-from .interface import BUIaclLoader, __
-from ...utils import NOTIF_OK, NOTIF_WARN, NOTIF_ERROR
+from .interface import BUIaclLoader
+from ...utils import NOTIF_OK, NOTIF_WARN, NOTIF_ERROR, __
 
 
 class ACLloader(BUIaclLoader):
-    __doc__ = __("""Uses the Burp-UI configuration file to load its rules""")
+    __doc__ = __("Uses the Burp-UI configuration file to load its rules.")
     section = name = 'BASIC:ACL'
     priority = 100
 
@@ -178,6 +180,13 @@ class ACLloader(BUIaclLoader):
         del self.conf.options[self.section][name]
         self.conf.options.write()
         self.load_acl(True)
+        if name in self.admins:
+            self.del_admin(name)
+        if name in self.moderators:
+            self.del_moderator(name)
+        for group, members in iteritems(self._groups):
+            if name in members:
+                self.del_group_member(group, name)
         message = "grant '{}' successfully removed".format(name)
         return True, message, NOTIF_OK
 
@@ -236,6 +245,13 @@ class ACLloader(BUIaclLoader):
             del self.conf.options[self.section][gmembers]
         self.conf.options.write()
         self.load_acl(True)
+        if gname in self.admins:
+            self.del_admin(gname)
+        if gname in self.moderators:
+            self.del_moderator(gname)
+        for group, members in iteritems(self._groups):
+            if gname in members:
+                self.del_group_member(group, gname)
         message = "grant '{}' successfully removed".format(name)
         return True, message, NOTIF_OK
 

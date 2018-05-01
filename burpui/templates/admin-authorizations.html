@@ -219,7 +219,7 @@
                       <div class="col-lg-3 col-lg-offset-2">
                         <div class="checkbox">
                           <label>
-                            <input type="checkbox" ng-model="$parent.isAdmin"> {{ _("Is Admin") }}
+                            <input type="checkbox" ng-model="isAdmin"> {{ _("Is Admin") }}
                           </label>
                         </div>
                       </div>
@@ -228,14 +228,21 @@
                       <div class="col-lg-3 col-lg-offset-2">
                         <div class="checkbox">
                         <label>
-                          <input type="checkbox" ng-model="$parent.isModerator"> {{ _("Is Moderator") }}
+                          <input type="checkbox" ng-model="isModerator"> {{ _("Is Moderator") }}
                         </label>
                         </div>
                       </div>
                     </div>
                     <div class="form-group">
-                      <div class="col-lg-10 col-lg-offset-2">
+                      <div class="col-lg-2 col-lg-offset-2">
                         <button class="btn btn-success" type="submit" ng-disabled="!pctrl.grantAdd.$valid || !validGrantInput"><i class="fa fa-plus" aria-hidden="true"></i>&nbsp;{{ _('Create') }}</button>
+                      </div>
+                      <div class="col-lg-8">
+                        <div class="checkbox">
+                          <label>
+                            <input type="checkbox" ng-model="dismiss"> {{ _("Close modal after success") }}
+                          </label>
+                        </div>
                       </div>
                     </div>
                   </fieldset>

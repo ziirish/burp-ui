@@ -361,8 +361,8 @@ class BurpuiACLTestCase(TestCase):
             rv = self.login('admin', 'admin')
             response = self.client.get(url_for('api.auth_users'))
             response2 = self.client.get(url_for('api.auth_backends'))
-            self.assertEqual(sorted(response.json, key=lambda k: k['name']), sorted([{u'id': u'admin', u'name': u'admin', u'backend': u'BASIC'}, {u'id': u'user1', u'name': u'user1', u'backend': u'BASIC'}], key=lambda k: k['name']))
-            self.assertEqual(sorted(response2.json, key=lambda k: k['name']), sorted([{u'add': True, u'del': True, u'name': u'BASIC', u'mod': True}], key=lambda k: k['name']))
+            self.assertEqual(sorted(response.json, key=lambda k: k['name']), sorted([{'id': 'admin', 'name': 'admin', 'backend': 'BASIC'}, {'id': 'user1', 'name': 'user1', 'backend': 'BASIC'}], key=lambda k: k['name']))
+            self.assertEqual(sorted(response2.json, key=lambda k: k['name']), sorted([{'add': True, 'del': True, 'name': 'BASIC', 'description': 'Uses the Burp-UI configuration file to load its rules.', 'priority': 100, 'type': 'authentication', 'mod': True}], key=lambda k: k['name']))
 
     def test_change_password(self):
         with self.client:

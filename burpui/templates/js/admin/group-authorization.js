@@ -75,6 +75,14 @@ app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBu
 		});
 	_g_promises.push(g);
 
+	g = $http.get('{{ url_for("api.auth_users") }}', { headers: { 'X-From-UI': true } })
+		.then(function (response) {
+			_.forEach(response.data, function(user) {
+				vm.updateGroup.backendUsers.push(user);
+			});
+		});
+	_g_promises.push(g);
+
 	{% if group not in  ['moderator', 'admin'] -%}
 	$http.get('{{ url_for("api.acl_is_admin", backend=backend, member=gpname) }}', { headers: { 'X-From-UI': true } })
 		.then(function (response) {
@@ -98,6 +106,7 @@ app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBu
 				vm.updateGroup.backendUsers.push({ id: name });
 			});
 		}
+		vm.updateGroup.backendUsers = _.uniqBy(vm.updateGroup.backendUsers, 'id');
 	});
 
 	$scope.doUpdateGroup = function(e) {

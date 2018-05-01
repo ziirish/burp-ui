@@ -55,7 +55,10 @@ var _bytes_human_readable = function(bytes, si) {
 
 // NOTE: only escapes a " if it's not already escaped
 function escapeDoubleQuotes(str) {
-	return str.replace(/\\([\s\S])|(")/g,"\\$1$2"); // thanks @slevithan!
+	if (str) {
+		return str.replace(/\\([\s\S])|(")/g,"\\$1$2"); // thanks @slevithan!
+	}
+	return '';
 }
 
 var notifAll = function(messages, forward) {

@@ -24,10 +24,11 @@ app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBu
 	$scope.isLoading = false;
 	$scope.validGrantInput = true;
 	$scope.grantValue = '';
-	$scope.loadingMembers = false;
+	$scope.loadingMembers = true;
 	$scope.mode = undefined;
 	$scope.isAdmin = false;
 	$scope.isModerator = false;
+	$scope.dismiss = true;
 	vm.grantAdd = {};
 	vm.grantAdd.groupMembers = [];
 	vm.grantAdd.backendUsers = [];
@@ -91,7 +92,7 @@ app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBu
 				url: '{{ url_for("api.acl_admin") }}',
 				method: 'PUT',
 			  params: {
-					memberName: '@'+$scope.name,
+					memberNames: '@'+$scope.name,
 					backendName: $scope.acl_backend,
 				},
 				headers: { 'X-From-UI': true },
@@ -107,7 +108,7 @@ app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBu
 				url: '{{ url_for("api.acl_moderator") }}',
 				method: 'PUT',
 			  params: {
-					memberName: '@'+$scope.name,
+					memberNames: '@'+$scope.name,
 					backendName: $scope.acl_backend,
 				},
 				headers: { 'X-From-UI': true },
@@ -120,6 +121,7 @@ app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBu
 		}
 		$q.all(locals).finally(function() {
 			_authorization_groups();
+			_authorization_users();
 		});
 		// mandatory: we need to pass the response to the next function
 		return response;
@@ -149,12 +151,13 @@ app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBu
 	};
 	$scope.addGrantCallback = function(response) {
 		var locals = [];
+		var reload_groups = false;
 		if ($scope.isAdmin) {
 			var l = $http({
 				url: '{{ url_for("api.acl_admin") }}',
 				method: 'PUT',
 			  params: {
-					memberName: $scope.name,
+					memberNames: $scope.name,
 					backendName: $scope.acl_backend,
 				},
 				headers: { 'X-From-UI': true },
@@ -162,6 +165,7 @@ app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBu
 			.catch(buiFail)
 			.then(function(resp2) {
 				notifAll(resp2.data);
+				reload_groups = true;
 			});
 			locals.push(l);
 		}
@@ -170,7 +174,7 @@ app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBu
 				url: '{{ url_for("api.acl_moderator") }}',
 				method: 'PUT',
 			  params: {
-					memberName: $scope.name,
+					memberNames: $scope.name,
 					backendName: $scope.acl_backend,
 				},
 				headers: { 'X-From-UI': true },
@@ -178,11 +182,15 @@ app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBu
 			.catch(buiFail)
 			.then(function(resp2) {
 				notifAll(resp2.data);
+				reload_groups = true;
 			});
 			locals.push(l);
 		}
     $q.all(locals).finally(function() {
 			_authorization_users();
+			if (reload_groups) {
+				_authorization_groups();
+			}
 		});
 		return response;
 	};
@@ -223,10 +231,23 @@ app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBu
 						vm.grantAdd.backendUsers.push(group);
 					});
 				});
-			locals.push(g);
+			locals.push(l);
+
+			l = $http.get(
+				'{{ url_for("api.auth_users") }}',
+				{
+					headers: { 'X-From-UI': true }
+				})
+				.then(function (response) {
+					_.forEach(response.data, function(user) {
+						vm.grantAdd.backendUsers.push(user);
+					});
+				});
+			locals.push(l);
 
 			$q.all(locals).finally(function() {
 				$scope.loadingMembers = false;
+				vm.grantAdd.backendUsers = _.uniqBy(vm.grantAdd.backendUsers, 'id');
 			});
 		}
 	};
@@ -268,7 +289,9 @@ app.controller('AdminCtrl', ['$scope', '$http', '$q', '$scrollspy', 'DTOptionsBu
 				vm.grantAdd.name.$setPristine();
 				vm.grantAdd.name.$setUntouched();
 				vm.grantAdd.acl_backend.$setValidity('valid', ($scope.acl_backend != "placeholder"));
-				$('#create-grant-modal').modal('toggle');
+				if ($scope.dismiss) {
+					$('#create-grant-modal').modal('toggle');
+				}
 			}
 		})
 		.finally(function() {

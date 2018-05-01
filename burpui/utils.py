@@ -301,6 +301,11 @@ def utc_to_local(timestamp):
         return timestamp
 
 
+def __(string):
+    """dummy function to fake the translation"""
+    return string
+
+
 class ReverseProxied(object):
     '''Wrap the application in this middleware and configure the
     front-end server to add these headers, to let you quietly bind
