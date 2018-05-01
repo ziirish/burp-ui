@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2018-04-13 17:37+0200\n"
+"POT-Creation-Date: 2018-05-01 15:07+0200\n"
 "PO-Revision-Date: 2017-03-07 12:04-0300\n"
 "Last-Translator: Pablo Estigarribia <pablodav@gmail.com>\n"
 "Language: es\n"
@@ -48,43 +48,53 @@ msgstr "Idiomas"
 msgid "Remember me"
 msgstr "Recordar sesión"
 
-#: burpui/routes.py:277 burpui/routes.py:284
+#: burpui/routes.py:280 burpui/routes.py:287
 msgid "Sorry, there are no running backups"
 msgstr "Lo sentimos, no hay respaldos ejecutándose."
 
-#: burpui/routes.py:304 burpui/routes.py:342
+#: burpui/routes.py:307 burpui/routes.py:345
 msgid "Sorry, there are no restore file found for this client"
 msgstr "Lo sentimos, no hay archivo de restore encontrado para este cliente"
 
-#: burpui/routes.py:501
+#: burpui/routes.py:504
 msgid "Logged in successfully"
 msgstr "Sesión iniciada con éxito"
 
-#: burpui/routes.py:513
+#: burpui/routes.py:516
 msgid "Wrong username or password"
 msgstr "El nombre de usuario o la contraseña son incorrectos."
 
-#: burpui/routes.py:521
+#: burpui/routes.py:524
 msgid "Wrong CSRF token, please try again"
 msgstr "Token CSRF incorrecto, por favor intente de nuevo"
 
-#: burpui/api/settings.py:387 burpui/api/settings.py:389
+#: burpui/api/settings.py:393 burpui/api/settings.py:395
 #, python-format
 msgid "<a href=\"%(url)s\">Click here</a> to edit '%(template)s' configuration"
 msgstr ""
 
-#: burpui/api/settings.py:435 burpui/api/settings.py:437
+#: burpui/api/settings.py:446 burpui/api/settings.py:448
 #, python-format
 msgid "<a href=\"%(url)s\">Click here</a> to edit '%(client)s' configuration"
 msgstr ""
 
-#: burpui/api/settings.py:478 burpui/api/settings.py:494
-#: burpui/api/settings.py:553 burpui/api/settings.py:604
+#: burpui/api/settings.py:489 burpui/api/settings.py:510
+#: burpui/api/settings.py:569 burpui/api/settings.py:625
 msgid "Sorry, you don't have rights to access the setting panel"
 msgstr ""
 
-#: burpui/misc/acl/basic.py:8
-msgid "Uses the Burp-UI configuration file to load its rules"
+#: burpui/misc/acl/basic.py:10 burpui/misc/auth/basic.py:230
+msgid "Uses the Burp-UI configuration file to load its rules."
+msgstr ""
+
+#: burpui/misc/auth/ldap.py:222
+msgid ""
+"Connects to a LDAP database to authenticate users. Handles searching for "
+"and binding as."
+msgstr ""
+
+#: burpui/misc/auth/local.py:95
+msgid "Authenticate users against local PAM database."
 msgstr ""
 
 #: burpui/misc/parser/burp2.py:77
@@ -1474,7 +1484,7 @@ msgstr ""
 #: burpui/templates/admin-authentications.html:21
 #: burpui/templates/admin-authorizations.html:21
 #: burpui/templates/admin-authorizations.html:54
-#: burpui/templates/client-browse.html:48 burpui/templates/settings.html:69
+#: burpui/templates/client-browse.html:48 burpui/templates/settings.html:72
 msgid "Loading, Please wait..."
 msgstr "Cargando, por favor espere..."
 
@@ -1516,12 +1526,12 @@ msgstr ""
 
 #: burpui/templates/admin-authentications.html:63
 #: burpui/templates/admin-authentications.html:83
-#: burpui/templates/admin-authentications.html:132
+#: burpui/templates/admin-authentications.html:139
 #: burpui/templates/admin-authorizations.html:99
 #: burpui/templates/admin-authorizations.html:119
 #: burpui/templates/admin-authorizations.html:142
 #: burpui/templates/admin-authorizations.html:162
-#: burpui/templates/admin-authorizations.html:245
+#: burpui/templates/admin-authorizations.html:252
 #: burpui/templates/admin/authentication.html:26
 #: burpui/templates/admin/sessions.html:49
 #: burpui/templates/client-browse.html:142 burpui/templates/user.html:58
@@ -1539,9 +1549,9 @@ msgstr "Confirmar"
 #: burpui/templates/admin-authentications.html:84
 #: burpui/templates/admin-authorizations.html:120
 #: burpui/templates/admin-authorizations.html:163
-#: burpui/templates/js/admin-authentications.js:123
-#: burpui/templates/js/admin-authorizations.js:382
-#: burpui/templates/js/admin-authorizations.js:511
+#: burpui/templates/js/admin-authentications.js:130
+#: burpui/templates/js/admin-authorizations.js:412
+#: burpui/templates/js/admin-authorizations.js:541
 msgid "Edit"
 msgstr ""
 
@@ -1556,6 +1566,7 @@ msgstr ""
 #: burpui/templates/admin-authentications.html:113
 #: burpui/templates/admin-authorizations.html:190
 #: burpui/templates/admin-backends.html:17
+#: burpui/templates/admin-backends.html:34
 msgid "Backend"
 msgstr ""
 
@@ -1564,12 +1575,17 @@ msgstr ""
 msgid "Create"
 msgstr ""
 
+#: burpui/templates/admin-authentications.html:130
+#: burpui/templates/admin-authorizations.html:243
+msgid "Close modal after success"
+msgstr ""
+
 #: burpui/templates/admin-authorizations.html:12
 #: burpui/templates/admin-authorizations.html:35
 #: burpui/templates/admin-authorizations.html:68
 #: burpui/templates/admin-authorizations.html:201
 #: burpui/templates/admin/grant-authorization.html:19
-#: burpui/templates/admin/group-authorization.html:18
+#: burpui/templates/admin/group-authorization.html:19
 msgid "Grants"
 msgstr ""
 
@@ -1614,7 +1630,7 @@ msgid "Groups list"
 msgstr ""
 
 #: burpui/templates/admin-authorizations.html:64
-#: burpui/templates/js/admin-authorizations.js:50
+#: burpui/templates/js/admin-authorizations.js:51
 msgid "Group name"
 msgstr ""
 
@@ -1634,43 +1650,58 @@ msgstr ""
 
 #: burpui/templates/admin-authorizations.html:205
 #: burpui/templates/admin/grant-authorization.html:23
-#: burpui/templates/admin/group-authorization.html:22
+#: burpui/templates/admin/group-authorization.html:23
 msgid "You need to enter a valid JSON expression. Example:"
 msgstr ""
 
 #: burpui/templates/admin-authorizations.html:208
-#: burpui/templates/admin/group-authorization.html:25
+#: burpui/templates/admin/group-authorization.html:27
 msgid "Group members"
 msgstr ""
 
 #: burpui/templates/admin-authorizations.html:210
-#: burpui/templates/admin/group-authorization.html:27
+#: burpui/templates/admin/group-authorization.html:29
 msgid "Choose a person"
 msgstr ""
 
 #: burpui/templates/admin-authorizations.html:211
-#: burpui/templates/admin/group-authorization.html:28
+#: burpui/templates/admin/group-authorization.html:30
 msgid "Select person..."
 msgstr ""
 
 #: burpui/templates/admin-authorizations.html:222
 #: burpui/templates/admin/grant-authorization.html:29
-#: burpui/templates/admin/group-authorization.html:40
+#: burpui/templates/admin/group-authorization.html:42
 msgid "Is Admin"
 msgstr ""
 
 #: burpui/templates/admin-authorizations.html:231
 #: burpui/templates/admin/grant-authorization.html:38
-#: burpui/templates/admin/group-authorization.html:49
+#: burpui/templates/admin/group-authorization.html:51
 msgid "Is Moderator"
 msgstr ""
 
 #: burpui/templates/admin-backends.html:12
-msgid "Backends list"
+msgid "Authentication Backends list"
 msgstr ""
 
 #: burpui/templates/admin-backends.html:18
+#: burpui/templates/admin-backends.html:35
 msgid "Description"
+msgstr ""
+
+#: burpui/templates/admin-backends.html:19
+#: burpui/templates/admin-backends.html:36
+msgid "Priority"
+msgstr ""
+
+#: burpui/templates/admin-backends.html:20
+#: burpui/templates/admin-backends.html:37
+msgid "Type"
+msgstr ""
+
+#: burpui/templates/admin-backends.html:29
+msgid "Authorization Backends list"
 msgstr ""
 
 #: burpui/templates/backup-report.html:9 burpui/templates/client-browse.html:9
@@ -1819,8 +1850,8 @@ msgstr "GID"
 msgid "Size"
 msgstr "Tamaño"
 
-#: burpui/templates/client-browse.html:58 burpui/templates/client.html:23
-#: burpui/templates/client.html:35
+#: burpui/templates/client-browse.html:58 burpui/templates/client.html:25
+#: burpui/templates/client.html:32
 msgid "Date"
 msgstr "Fecha"
 
@@ -1878,7 +1909,7 @@ msgstr "ninguno"
 msgid "Whether to overwrite existing files"
 msgstr "Sobrescribir los archivos existentes"
 
-#: burpui/templates/client-browse.html:119 burpui/templates/client.html:62
+#: burpui/templates/client-browse.html:119 burpui/templates/client.html:61
 msgid "Cancel restore"
 msgstr "Cancelar restauración"
 
@@ -1911,59 +1942,59 @@ msgstr "Se ha producido un error al procesar la restauración."
 msgid "Statistics"
 msgstr "Estadísticas"
 
-#: burpui/templates/client.html:17 burpui/templates/js/settings.js:358
-#: burpui/templates/settings.html:444 burpui/templates/settings.html:478
+#: burpui/templates/client.html:20 burpui/templates/js/settings.js:362
+#: burpui/templates/settings.html:448 burpui/templates/settings.html:482
 msgid "edit"
 msgstr ""
 
-#: burpui/templates/client.html:19
+#: burpui/templates/client.html:22
 msgid "Backups"
 msgstr "Respaldos"
 
-#: burpui/templates/client.html:21
+#: burpui/templates/client.html:24
 msgid "Toggle column:"
 msgstr "Fijar columna:"
 
-#: burpui/templates/client.html:22 burpui/templates/client.html:34
+#: burpui/templates/client.html:25 burpui/templates/client.html:31
 msgid "Number"
 msgstr "Número"
 
-#: burpui/templates/client.html:24 burpui/templates/client.html:36
+#: burpui/templates/client.html:25 burpui/templates/client.html:33
 #: burpui/templates/live-monitor.html:56 burpui/templates/live-monitor.html:62
 msgid "Bytes received"
 msgstr "Bytes recibidos"
 
-#: burpui/templates/client.html:25 burpui/templates/client.html:37
+#: burpui/templates/client.html:25 burpui/templates/client.html:34
 msgid "Estimated size"
 msgstr "Tamaño estimado"
 
-#: burpui/templates/client.html:26 burpui/templates/client.html:38
+#: burpui/templates/client.html:25 burpui/templates/client.html:35
 msgid "Deletable"
 msgstr "Eliminable"
 
-#: burpui/templates/client.html:27 burpui/templates/client.html:39
+#: burpui/templates/client.html:25 burpui/templates/client.html:36
 #: burpui/templates/clients.html:17 burpui/templates/servers.html:18
 msgid "Status"
 msgstr "Estados"
 
-#: burpui/templates/client.html:28 burpui/templates/client.html:40
-#: burpui/templates/js/client.js:146
+#: burpui/templates/client.html:25 burpui/templates/client.html:38
+#: burpui/templates/js/client.js:150
 msgid "Delete"
 msgstr "Borrar"
 
-#: burpui/templates/client.html:47
+#: burpui/templates/client.html:46
 msgid "<strong>Sorry!</strong> There are no backups for this client."
 msgstr "<strong>¡Lo siento!</strong> No hay respaldos para este cliente."
 
-#: burpui/templates/client.html:54
+#: burpui/templates/client.html:53
 msgid "Edit restore"
 msgstr "Editar restauración"
 
-#: burpui/templates/client.html:57
+#: burpui/templates/client.html:56
 msgid "Schedule backup"
 msgstr "Programar respaldo"
 
-#: burpui/templates/client.html:65
+#: burpui/templates/client.html:64
 msgid "Cancel backup"
 msgstr "Cancelar respaldo"
 
@@ -2015,13 +2046,13 @@ msgid "Number of backups"
 msgstr "Número de respaldos"
 
 #: burpui/templates/clients.html:15 burpui/templates/servers.html:17
-#: burpui/templates/settings.html:63 burpui/templates/topbar.html:29
+#: burpui/templates/settings.html:65 burpui/templates/topbar.html:29
 #: burpui/templates/topbar.html:36
 msgid "Clients"
 msgstr "Clientes"
 
 #: burpui/templates/clients.html:22 burpui/templates/servers.html:16
-#: burpui/templates/settings.html:435 burpui/templates/settings.html:469
+#: burpui/templates/settings.html:439 burpui/templates/settings.html:473
 msgid "Name"
 msgstr "Nombre"
 
@@ -2053,8 +2084,8 @@ msgstr ""
 "{{ ::client.client }}<span ng-if=\"client.agent\"> en {{ ::client.agent "
 "}}</span>"
 
-#: burpui/templates/live-monitor.html:21 burpui/templates/settings.html:435
-#: burpui/templates/settings.html:469
+#: burpui/templates/live-monitor.html:21 burpui/templates/settings.html:439
+#: burpui/templates/settings.html:473
 msgid "Path"
 msgstr "Ruta (path)"
 
@@ -2153,114 +2184,114 @@ msgstr ""
 msgid "Template %(name)s"
 msgstr ""
 
-#: burpui/templates/settings.html:60
+#: burpui/templates/settings.html:61
 msgid "Config"
 msgstr ""
 
-#: burpui/templates/settings.html:61
+#: burpui/templates/settings.html:62
 msgid "Raw content"
 msgstr ""
 
-#: burpui/templates/settings.html:62
+#: burpui/templates/settings.html:63
 msgid "Hierarchy"
 msgstr ""
 
-#: burpui/templates/settings.html:64 burpui/templates/settings.html:345
+#: burpui/templates/settings.html:66 burpui/templates/settings.html:348
 #: burpui/templates/sideconfig.html:14
 msgid "Templates"
 msgstr ""
 
-#: burpui/templates/settings.html:87 burpui/templates/sideconfig.html:5
+#: burpui/templates/settings.html:90 burpui/templates/sideconfig.html:5
 msgid "Booleans"
 msgstr "Booleano"
 
-#: burpui/templates/settings.html:105 burpui/templates/settings.html:147
-#: burpui/templates/settings.html:184 burpui/templates/settings.html:286
+#: burpui/templates/settings.html:108 burpui/templates/settings.html:150
+#: burpui/templates/settings.html:187 burpui/templates/settings.html:289
 msgid "Select an option"
 msgstr "Seleccionar una opción"
 
-#: burpui/templates/settings.html:126 burpui/templates/sideconfig.html:6
+#: burpui/templates/settings.html:129 burpui/templates/sideconfig.html:6
 msgid "Strings"
 msgstr "Cadenas texto"
 
-#: burpui/templates/settings.html:168 burpui/templates/sideconfig.html:7
+#: burpui/templates/settings.html:171 burpui/templates/sideconfig.html:7
 msgid "Integers"
 msgstr "Enteros"
 
-#: burpui/templates/settings.html:206 burpui/templates/sideconfig.html:9
+#: burpui/templates/settings.html:209 burpui/templates/sideconfig.html:9
 msgid "Pairs"
 msgstr ""
 
-#: burpui/templates/settings.html:226
+#: burpui/templates/settings.html:229
 msgid "add {{ $parent.pair_associations[id] }}"
 msgstr ""
 
-#: burpui/templates/settings.html:238
+#: burpui/templates/settings.html:241
 msgid "Select a pair member"
 msgstr ""
 
-#: burpui/templates/settings.html:260 burpui/templates/sideconfig.html:11
+#: burpui/templates/settings.html:263 burpui/templates/sideconfig.html:11
 msgid "Multi"
 msgstr "Multi"
 
-#: burpui/templates/settings.html:307
+#: burpui/templates/settings.html:310
 msgid "Source external configuration files"
 msgstr "Archivos de configuración fuente externos"
 
-#: burpui/templates/settings.html:313
+#: burpui/templates/settings.html:316
 msgid "source config"
 msgstr "configuración fuente"
 
-#: burpui/templates/settings.html:336
+#: burpui/templates/settings.html:339
 msgid "source new config"
 msgstr ""
 
-#: burpui/templates/settings.html:351
+#: burpui/templates/settings.html:354
 msgid "template"
 msgstr ""
 
-#: burpui/templates/settings.html:367
+#: burpui/templates/settings.html:370
 msgid "Select a template"
 msgstr ""
 
 #: burpui/templates/admin/authentication.html:25
 #: burpui/templates/admin/grant-authorization.html:45
-#: burpui/templates/admin/group-authorization.html:57
-#: burpui/templates/settings.html:391 burpui/templates/user.html:57
+#: burpui/templates/admin/group-authorization.html:59
+#: burpui/templates/settings.html:394 burpui/templates/user.html:57
 #: burpui/templates/user.html:91
 msgid "Save"
 msgstr ""
 
-#: burpui/templates/settings.html:396
+#: burpui/templates/settings.html:399
 #, python-format
 msgid "Remove '%(client)s'"
 msgstr "Remover '%(client)s'"
 
-#: burpui/templates/settings.html:400
+#: burpui/templates/settings.html:403
 msgid "Do not remove the configuration:"
 msgstr "No remover la configuración:"
 
-#: burpui/templates/settings.html:401
+#: burpui/templates/settings.html:404
 msgid "Remove associated certificate:"
 msgstr "Remover certificado asociado"
 
-#: burpui/templates/settings.html:402
+#: burpui/templates/settings.html:405
 msgid "Revoke associated certificate:"
 msgstr "Revocar certificado asociado:"
 
-#: burpui/templates/settings.html:407
+#: burpui/templates/settings.html:410
 msgid "Remove file"
 msgstr ""
 
-#: burpui/templates/settings.html:423
+#: burpui/templates/settings.html:426
 msgid "File"
 msgstr ""
 
-#: burpui/templates/settings.html:452 burpui/templates/settings.html:454
+#: burpui/templates/settings.html:456 burpui/templates/settings.html:458
 msgid "Create new client"
 msgstr "Crear nuevo cliente"
 
-#: burpui/templates/settings.html:486 burpui/templates/settings.html:488
+#: burpui/templates/settings.html:490 burpui/templates/settings.html:492
 msgid "Create new template"
 msgstr ""
 
@@ -2277,7 +2308,7 @@ msgstr ""
 msgid "Authorizations"
 msgstr ""
 
-#: burpui/templates/sideadmin.html:7
+#: burpui/templates/sideadmin.html:7 burpui/templates/small_topbar.html:39
 msgid "Backends"
 msgstr ""
 
@@ -2310,7 +2341,7 @@ msgid "User settings navigation"
 msgstr "Ajustes de usuario"
 
 #: burpui/templates/admin/sessions.html:13
-#: burpui/templates/js/admin-authentications.js:123
+#: burpui/templates/js/admin-authentications.js:130
 #: burpui/templates/sideuser.html:5 burpui/templates/user.html:11
 msgid "Sessions"
 msgstr "Sesiones"
@@ -2467,71 +2498,71 @@ msgstr ""
 msgid "%(user)s's sessions"
 msgstr ""
 
-#: burpui/templates/js/admin-authentications.js:44
-#: burpui/templates/js/admin-authorizations.js:247
-#: burpui/templates/js/settings.js:642 burpui/templates/js/settings.js:672
+#: burpui/templates/js/admin-authentications.js:45
+#: burpui/templates/js/admin-authorizations.js:268
+#: burpui/templates/js/settings.js:666 burpui/templates/js/settings.js:696
 msgid "Creating..."
 msgstr ""
 
-#: burpui/templates/js/admin-authentications.js:123
-#: burpui/templates/js/admin-authorizations.js:382
-#: burpui/templates/js/admin-authorizations.js:511
+#: burpui/templates/js/admin-authentications.js:130
+#: burpui/templates/js/admin-authorizations.js:412
+#: burpui/templates/js/admin-authorizations.js:541
 msgid "Remove"
 msgstr ""
 
-#: burpui/templates/js/admin-authentications.js:192
-#: burpui/templates/js/admin-authorizations.js:763
+#: burpui/templates/js/admin-authentications.js:199
+#: burpui/templates/js/admin-authorizations.js:822
 msgid "Please select the backend(s) from which to remove the user:"
 msgstr ""
 
-#: burpui/templates/js/admin-authentications.js:194
-#: burpui/templates/js/admin-authorizations.js:765
+#: burpui/templates/js/admin-authentications.js:201
+#: burpui/templates/js/admin-authorizations.js:824
 msgid "The backend does not support user removal"
 msgstr ""
 
-#: burpui/templates/js/admin-authentications.js:249
-#: burpui/templates/js/admin-authorizations.js:852
-#: burpui/templates/js/admin-authorizations.js:929
+#: burpui/templates/js/admin-authentications.js:256
+#: burpui/templates/js/admin-authorizations.js:911
+#: burpui/templates/js/admin-authorizations.js:988
 msgid "Please select the backend from which to edit the user from:"
 msgstr ""
 
-#: burpui/templates/js/admin-authentications.js:251
-#: burpui/templates/js/admin-authorizations.js:854
-#: burpui/templates/js/admin-authorizations.js:931
+#: burpui/templates/js/admin-authentications.js:258
+#: burpui/templates/js/admin-authorizations.js:913
+#: burpui/templates/js/admin-authorizations.js:990
 msgid "Please select a backend"
 msgstr ""
 
-#: burpui/templates/js/admin-authorizations.js:48
+#: burpui/templates/js/admin-authorizations.js:49
 msgid "Create Group"
 msgstr ""
 
-#: burpui/templates/js/admin-authorizations.js:49
+#: burpui/templates/js/admin-authorizations.js:50
 msgid "Create new Group"
 msgstr ""
 
-#: burpui/templates/js/admin-authorizations.js:129
+#: burpui/templates/js/admin-authorizations.js:131
 msgid "Create Grant"
 msgstr ""
 
-#: burpui/templates/js/admin-authorizations.js:130
+#: burpui/templates/js/admin-authorizations.js:132
 msgid "Create new Grant"
 msgstr ""
 
-#: burpui/templates/js/admin-authorizations.js:131
+#: burpui/templates/js/admin-authorizations.js:133
 msgid "Grant/User name"
 msgstr ""
 
-#: burpui/templates/js/admin-authorizations.js:343
-#: burpui/templates/js/admin-authorizations.js:450
-#: burpui/templates/js/admin-authorizations.js:475
+#: burpui/templates/js/admin-authorizations.js:373
+#: burpui/templates/js/admin-authorizations.js:480
+#: burpui/templates/js/admin-authorizations.js:505
 msgid "Inherited by: "
 msgstr ""
 
-#: burpui/templates/js/admin-authorizations.js:878
+#: burpui/templates/js/admin-authorizations.js:937
 msgid "Please select the backend(s) from which to remove the group:"
 msgstr ""
 
-#: burpui/templates/js/admin-authorizations.js:880
+#: burpui/templates/js/admin-authorizations.js:939
 msgid "The backend does not support group removal"
 msgstr ""
 
@@ -2556,40 +2587,40 @@ msgstr "Cargando"
 msgid "Nodes loaded"
 msgstr "Nodos cargados"
 
-#: burpui/templates/js/client.js:13 burpui/templates/js/client.js:20
-#: burpui/templates/js/client.js:30 burpui/templates/js/clients.js:11
+#: burpui/templates/js/client.js:16 burpui/templates/js/client.js:23
+#: burpui/templates/js/client.js:33 burpui/templates/js/clients.js:11
 #: burpui/templates/js/clients.js:17
 msgid "client crashed"
 msgstr "falló cliente"
 
-#: burpui/templates/js/client.js:14 burpui/templates/js/client.js:21
-#: burpui/templates/js/client.js:31 burpui/templates/js/clients.js:12
+#: burpui/templates/js/client.js:17 burpui/templates/js/client.js:24
+#: burpui/templates/js/client.js:34 burpui/templates/js/clients.js:12
 #: burpui/templates/js/clients.js:18
 msgid "server crashed"
 msgstr "falló servidor"
 
-#: burpui/templates/js/client.js:15 burpui/templates/js/client.js:22
-#: burpui/templates/js/client.js:32 burpui/templates/js/client.js:210
+#: burpui/templates/js/client.js:18 burpui/templates/js/client.js:25
+#: burpui/templates/js/client.js:35 burpui/templates/js/client.js:215
 #: burpui/templates/js/clients.js:13 burpui/templates/js/clients.js:19
 #: burpui/templates/js/clients.js:115 burpui/templates/js/clients.js:120
 msgid "running"
 msgstr "ejecutándose"
 
-#: burpui/templates/js/client.js:16 burpui/templates/js/client.js:23
-#: burpui/templates/js/client.js:33 burpui/templates/js/clients.js:20
-#: burpui/templates/js/clients.js:165
+#: burpui/templates/js/client.js:19 burpui/templates/js/client.js:26
+#: burpui/templates/js/client.js:36 burpui/templates/js/clients.js:20
+#: burpui/templates/js/clients.js:172
 msgid "idle"
 msgstr "inactivo"
 
-#: burpui/templates/js/client.js:135
+#: burpui/templates/js/client.js:138
 msgid "Encrypted backup"
 msgstr "Respaldo cifrado"
 
-#: burpui/templates/js/client.js:135
+#: burpui/templates/js/client.js:138
 msgid "Unencrypted backup"
 msgstr "Respaldo sin cifrar"
 
-#: burpui/templates/js/client.js:350
+#: burpui/templates/js/client.js:355
 msgid "Delete task launched"
 msgstr "Eliminar tarea iniciada"
 
@@ -2601,7 +2632,7 @@ msgstr "nunca"
 msgid "now"
 msgstr "ahora"
 
-#: burpui/templates/js/clients.js:163
+#: burpui/templates/js/clients.js:170
 msgid "view"
 msgstr "ver"
 
@@ -2630,10 +2661,14 @@ msgid "reset list"
 msgstr ""
 
 #: burpui/templates/js/admin/authentication.js:11
-#: burpui/templates/js/settings.js:267 burpui/templates/js/user.js:61
+#: burpui/templates/js/settings.js:271 burpui/templates/js/user.js:61
 #: burpui/templates/js/user.js:87
 msgid "Saving..."
 msgstr "Guardando..."
+
+#: burpui/templates/js/settings.js:605 burpui/templates/js/settings.js:632
+msgid "Deleting..."
+msgstr ""
 
 #: burpui/templates/js/user.js:73
 msgid "Preferences successfuly saved"
@@ -2669,7 +2704,7 @@ msgid "Loading, please wait..."
 msgstr ""
 
 #: burpui/templates/js/admin/grant-authorization.js:65
-#: burpui/templates/js/admin/group-authorization.js:108
+#: burpui/templates/js/admin/group-authorization.js:121
 msgid "Updating"
 msgstr ""
 
@@ -2725,4 +2760,13 @@ msgstr ""
 
 #~ msgid "config:"
 #~ msgstr "configuración:"
+
+#~ msgid "Backends list"
+#~ msgstr ""
+
+#~ msgid "Uses the Burp-UI configuration file to load its rules"
+#~ msgstr ""
+
+#~ msgid "Authenticate users against local PAM database"
+#~ msgstr ""
 
