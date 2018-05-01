@@ -8,6 +8,7 @@ Current
 - **BREAKING**: the *Burp1* and *Burp2* configuration sections have been merged into one single *Burp* section
 - **BREAKING**: the *running* backups are now displayed in ``green`` instead of ``blue``
 - **BREAKING**: the docker postgresql image was upgraded from 9.6 to 10.1, you'll have to manually upgrade/migrate your data `following this documentation <https://github.com/tianon/docker-postgres-upgrade>`_
+- **BREAKING**: the ``docker-compose.yml`` file now uses the ``version: '2'`` format
 - Add: new plugins system to allow users to write their own modules
 - Add: `Italian translation <https://git.ziirish.me/ziirish/burp-ui/merge_requests/74>`_ thanks to Enrico
 - Add: new `client configuration templates <https://git.ziirish.me/ziirish/burp-ui/issues/155>`_
@@ -29,6 +30,12 @@ Current
 - Fix: issue `#236 <https://git.ziirish.me/ziirish/burp-ui/issues/236>`_
 - Fix: issue `#242 <https://git.ziirish.me/ziirish/burp-ui/issues/242>`_
 - Fix: issue `#245 <https://git.ziirish.me/ziirish/burp-ui/issues/245>`_
+- Fix: issue `#246 <https://git.ziirish.me/ziirish/burp-ui/issues/246>`_
+- Fix: issue `#247 <https://git.ziirish.me/ziirish/burp-ui/issues/247>`_
+- Fix: issue `#248 <https://git.ziirish.me/ziirish/burp-ui/issues/248>`_
+- Fix: issue `#251 <https://git.ziirish.me/ziirish/burp-ui/issues/251>`_
+- Fix: issue `#257 <https://git.ziirish.me/ziirish/burp-ui/issues/257>`_
+- Fix: issue `#262 <https://git.ziirish.me/ziirish/burp-ui/issues/262>`_
 - `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/v0.5.0...master>`__
 
 0.5.1 (05/26/2017)

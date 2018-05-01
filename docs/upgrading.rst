@@ -29,12 +29,18 @@ v0.6.0
   you'll have to manually upgrade/migrate your data `following this
   documentation <https://github.com/tianon/docker-postgres-upgrade>`_.
 
+- **BREAKING** - The ``docker-compose.yml`` file now uses the ``version: '2'``
+  format.
+
 - **New** - Plugin system to enhance ACL and Authentication backends. See the
   `Plugins <plugins.html>`__ documentation for details.
 
 - **New** - WebSocket support for better/smarter notifications.
 
 - **New** - Client configuration templates.
+
+- **New** - Administration panel to manage both Authentications and
+  Authorizations.
 
 v0.5.0
 ------

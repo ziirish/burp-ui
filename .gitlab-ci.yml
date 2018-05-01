@@ -79,7 +79,7 @@ build:doc:
   - wget https://bitbucket.org/birkenfeld/sphinx-contrib/get/8e295053a27d.zip
   - unzip 8e295053a27d.zip
   - (cd birkenfeld-sphinx-contrib-8e295053a27d/httpdomain/ && python setup.py build && python setup.py install)
-  - pip install -r docs/requirements.txt
+  - pip install -U -r docs/requirements.txt
   - make doc
   tags:
   - build
