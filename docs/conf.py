@@ -33,8 +33,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.coverage',
     'sphinx.ext.viewcode',
-#    '@AUTOFLASK@',
-#    'sphinxcontrib.autohttp.flask',
+    'sphinxcontrib.autohttp.flask',
 ]
 
 # Add any paths that contain templates here, relative to this directory.

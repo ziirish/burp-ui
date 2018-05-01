@@ -12,6 +12,6 @@ It is composed by two classes.
    :members:
    :inherited-members:
 
-.. autoclass:: burpui.misc.acl.grants.BUIgrantHandler
+.. autoclass:: burpui.misc.acl.meta.BUIgrantHandler
     :members:
     :inherited-members:
