@@ -93,24 +93,30 @@ class Burp(Burp1):
 
         BUIbackend.__init__(self, server, conf)
 
+        self._burp_client_ok = False
+        version = ''
         # check the burp version because this backend only supports clients
         # newer than BURP_MINIMAL_VERSION
         try:
             if not self.burpbin:
-                raise Exception('No Burp binary found!')
-            cmd = [self.burpbin, '-v']
-            version = subprocess.check_output(
-                cmd,
-                universal_newlines=True
-            ).rstrip()
-            if version < BURP_MINIMAL_VERSION and getattr(self.app, 'strict', True):
-                raise Exception(
-                    'Your burp version ({}) does not fit the minimal'
-                    ' requirements: {}'.format(version, BURP_MINIMAL_VERSION)
-                )
+                self.logger.critical('No Burp binary found!')
+            else:
+                cmd = [self.burpbin, '-v']
+                version = subprocess.check_output(
+                    cmd,
+                    universal_newlines=True
+                ).rstrip()
+                if version < BURP_MINIMAL_VERSION and \
+                        getattr(self.app, 'strict', True):
+                    self.logger.critical(
+                        'Your burp version ({}) does not fit the minimal'
+                        ' requirements: {}'.format(version, BURP_MINIMAL_VERSION)
+                    )
+                elif version >= BURP_MINIMAL_VERSION:
+                    self._burp_client_ok = True
         except subprocess.CalledProcessError as exp:
             if getattr(self.app, 'strict', True):
-                raise Exception(
+                self.logger.critical(
                     'Unable to determine your burp version: {}'.format(str(exp))
                 )
 
@@ -167,6 +173,8 @@ class Burp(Burp1):
 
     def _spawn_burp(self, verbose=False):
         """Launch the burp client process"""
+        if not self._burp_client_ok:
+            raise BUIserverException('No suitable burp client found')
         cmd = [self.burpbin, '-c', self.burpconfcli, '-a', 'm']
         self.proc = subprocess.Popen(
             cmd,

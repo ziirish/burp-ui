@@ -885,6 +885,8 @@ class Burp(BUIbackend):
             return None, 'Missing \'strip\' binary'
         if not self.burpbin:
             return None, 'Missing \'burp\' binary'
+        if not self.tmpdir:
+            return None, 'Missing \'tmpdir\''
         flist = json.loads(files)
         if password:
             tmphandler, tmpfile = tempfile.mkstemp()

@@ -168,7 +168,7 @@ class BUIbackend(with_metaclass(ABCMeta, object)):
             if not self.burpbin and self._vers == 2 and \
                     getattr(self.app, 'strict', True):
                 # The burp binary is mandatory for this backend
-                raise Exception(
+                self.logger.critical(
                     'This backend *CAN NOT* work without a burp binary'
                 )
 
@@ -187,15 +187,19 @@ class BUIbackend(with_metaclass(ABCMeta, object)):
             )
             if tmpdir == G_TMPDIR and \
                     getattr(self.app, 'strict', True):
-                raise IOError(
+                self.logger.critical(
                     "Cannot use '{}' as tmpdir".format(tmpdir)
                 )
+                self.tmpdir = None
+                return
             tmpdir = G_TMPDIR
             if os.path.exists(tmpdir) and not os.path.isdir(tmpdir) and \
                     getattr(self.app, 'strict', True):
-                raise IOError(
+                self.logger.critical(
                     "Cannot use '{}' as tmpdir".format(tmpdir)
                 )
+                self.tmpdir = None
+                return
         if tmpdir and not os.path.exists(tmpdir):
             os.makedirs(tmpdir)
 
