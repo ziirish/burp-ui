@@ -731,7 +731,7 @@ var _authorization_groups = function() {
 				_groups['moderator'] = {
 					id: 'moderator',
 					backends: [moderator.backend],
-					roles: [],
+					roles: ['moderator'],
 					admin_by: [],
 					moderator_by: [],
 					members: moderator.members,
@@ -760,7 +760,7 @@ var _authorization_groups = function() {
 				_groups['admin'] = {
 					id: 'admin',
 					backends: [admin.backend],
-					roles: [],
+					roles: ['admin'],
 					admin_by: [],
 					admin_by: [],
 					members: admin.members,
