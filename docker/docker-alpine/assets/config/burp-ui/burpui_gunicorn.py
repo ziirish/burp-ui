@@ -79,7 +79,7 @@ worker_connections = 1000
 timeout = 300
 keepalive = 2
 
-preload = False
+preload = True
 
 #
 #   spew - Install a trace function that spews every line of Python
