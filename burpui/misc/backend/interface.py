@@ -201,7 +201,12 @@ class BUIbackend(with_metaclass(ABCMeta, object)):
                 self.tmpdir = None
                 return
         if tmpdir and not os.path.exists(tmpdir):
-            os.makedirs(tmpdir)
+            try:
+                os.makedirs(tmpdir)
+            except OSError as exp:
+                self.logger.critical(str(exp))
+                self.tmpdir = None
+                return
 
         self.tmpdir = tmpdir
 
