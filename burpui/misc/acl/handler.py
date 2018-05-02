@@ -28,7 +28,8 @@ class ACLloader(BUIaclLoader):
             opts['extended'] = self.conf.safe_get(
                 'extended',
                 'boolean',
-                section=self.section
+                section=self.section,
+                defaults=True
             )
             opts['assume_rw'] = self.conf.safe_get(
                 'assume_rw',
