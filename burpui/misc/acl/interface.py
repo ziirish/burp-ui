@@ -120,7 +120,7 @@ class BUIacl(with_metaclass(ABCMeta, object)):
         :returns: A list of clients
         :rtype: list
 
-        ..deprecated:: 0.6.0
+        .. deprecated:: 0.6.0
         """
         return []  # pragma: no cover
 
@@ -134,7 +134,7 @@ class BUIacl(with_metaclass(ABCMeta, object)):
         :returns: A list of servers
         :rtype: list
 
-        ..deprecated:: 0.6.0
+        .. deprecated:: 0.6.0
         """
         return []  # pragma: no cover
 

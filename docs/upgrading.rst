@@ -18,6 +18,10 @@ v0.6.0
   with the ``legacy`` option. See the
   `BASIC ACL <advanced_usage.html#basic-acl>`__ documentation for details.
 
+- **Breaking** - A new ``[ACL]`` section has been created in order to control
+  the new ACL engine behavior. See the `ACL <advanced_usage.html#acl>`__
+  documentation for details.
+
 - **Breaking** - The *Burp1* and *Burp2* configuration sections have been merged
   into one single *Burp* section. See the
   `Versions <advanced_usage.html#versions>`__ documentation for details.
@@ -29,7 +33,7 @@ v0.6.0
   you'll have to manually upgrade/migrate your data `following this
   documentation <https://github.com/tianon/docker-postgres-upgrade>`_.
 
-- **BREAKING** - The ``docker-compose.yml`` file now uses the ``version: '2'``
+- **Breaking** - The ``docker-compose.yml`` file now uses the ``version: '2'``
   format.
 
 - **New** - Plugin system to enhance ACL and Authentication backends. See the

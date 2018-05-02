@@ -5,6 +5,7 @@ Current
 -------
 
 - **BREAKING**: the *BASIC* ``ACL`` engine will now grant users on all agents if they are not explicitly defined
+- **BREAKING**: a new ``[ACL]`` section has been created in order to control the new ACL engine behavior
 - **BREAKING**: the *Burp1* and *Burp2* configuration sections have been merged into one single *Burp* section
 - **BREAKING**: the *running* backups are now displayed in ``green`` instead of ``blue``
 - **BREAKING**: the docker postgresql image was upgraded from 9.6 to 10.1, you'll have to manually upgrade/migrate your data `following this documentation <https://github.com/tianon/docker-postgres-upgrade>`_

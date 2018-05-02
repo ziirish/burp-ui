@@ -99,6 +99,11 @@ Please refer to the `ACL API <acl.html>`_ page for more details.
             def groups(self):
                 return None
 
+            def reload(self):
+                """This method is used to reload the rules in case of config
+                change for instance"""
+                pass
+
 
         class CustomACL(interface.BUIacl):
 
@@ -184,10 +189,18 @@ feature, it is recommended to use the ``meta_grants`` object as shown bellow:
             def __init__(self, app):
                 self.app = app
                 self.admin = 'toto'
+                self.init_rules()
+                self._acl = meta_grants
+                # We need to register our backend in order to be notified of
+                # configuration changes in other registered backends.
+                # This will then call our 'reload' function in order to re-apply
+                # our grants.
+                meta_grants.register_backend(self.name, self)
+
+            def init_rules(self):
                 for gname, content in iteritems(self._groups):
                     meta_grants.set_group(gname, content['members'])
                     meta_grants.set_grant(gname, content['grants'])
-                self._acl = meta_grants
 
             @property
             def acl(self):
@@ -200,6 +213,11 @@ feature, it is recommended to use the ``meta_grants`` object as shown bellow:
             @property
             def groups(self):
                 return self._groups
+
+            def reload(self):
+                """This method is used to reload the rules in case of config
+                change for instance"""
+                self.init_rules()
 
 
 You can omit either the ``meta_grants.set_grant`` or the
