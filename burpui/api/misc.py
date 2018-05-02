@@ -182,7 +182,7 @@ class Live(Resource):
                     'phase': 2,
                     'path': '/etc/some/configuration',
                     '...': '...',
-                },
+                }
               },
               {
                 'client': 'client12',
@@ -191,9 +191,10 @@ class Live(Resource):
                     'phase': 3,
                     'path': '/etc/some/other/configuration',
                     '...': '...',
-                },
-              },
+                }
+              }
             ]
+
 
         The output is filtered by the :mod:`burpui.misc.acl` module so that you
         only see stats about the clients you are authorized to.
