@@ -9,15 +9,10 @@
 """
 import os
 import re
-import json
 import codecs
-import shutil
-import datetime
 import logging
 import configobj
 import validate
-
-from .desc import __version__, __release__
 
 
 class BUIConfig(dict):
