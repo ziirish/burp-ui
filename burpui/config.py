@@ -59,30 +59,14 @@ class BUIConfig(dict):
         self.validator = validate.Validator()
         try:
             self.conf = configobj.ConfigObj(config, encoding='utf-8')
-            self.last = datetime.datetime.now()
             self.mtime = os.path.getmtime(self.conffile)
         except configobj.ConfigObjError as exp:
-            # We were unable to parse the config, maybe we need to
-            # convert/update it
-            self.logger.warning(
-                'Unable to parse the configuration... Trying to convert it'
-            )
-            # if conversion is successful, give it another try
-            if self._convert(config):
-                # This time, if it fails, the exception will be forwarded
-                try:
-                    self.conf = configobj.ConfigObj(config)
-                except configobj.ConfigObjError as exp2:
-                    if explain:
-                        self._explain(exp2)
-                    else:
-                        raise exp2
+            # We were unable to parse the config
+            self.logger.critical('Unable to convert configuration')
+            if explain:
+                self._explain(exp)
             else:
-                self.logger.critical('Unable to convert configuration')
-                if explain:
-                    self._explain(exp)
-                else:
-                    raise exp
+                raise exp
 
     @property
     def options(self):
@@ -196,62 +180,6 @@ class BUIConfig(dict):
     def default_section(self, section):
         """Set the default section"""
         self.section = section
-
-    def _convert(self, config):
-        """Convert an old config to a new one"""
-        sav = '{}.back'.format(config)
-        current_section = None
-
-        if os.path.exists(sav):
-            self.logger.error(
-                'Looks like the configuration file has already been converted'
-            )
-            return False
-
-        try:
-            shutil.copy(config, sav)
-        except IOError as exp:
-            self.logger.error(str(exp))
-            return False
-
-        try:
-            with codecs.open(sav, 'r', 'utf-8', errors='ignore') as ori:
-                with codecs.open(config, 'w', 'utf-8', errors='ignore') as new:
-                    # We add some headers
-                    new.write('# Auto-generated file from a previous version\n')
-                    new.write('# @version@ - {}\n'.format(__version__))
-                    new.write('# @release@ - {}\n'.format(__release__))
-                    for line in ori.readlines():
-                        line = line.rstrip('\n')
-                        search = re.search(r'^\s*(#?)\s*\[([^\]]+)\]\s*', line)
-                        if search:
-                            if not search.group(1):
-                                current_section = search.group(2)
-                        # if we find old style config lines, we convert them
-                        elif re.match(r'^\s*\S+\s*:\s*.+$', line) and \
-                                re.match(r'^\s*[^\[]', line):
-                            key, val = re.split(r'\s*:\s*', line, 1)
-                            # We support *objects* but we need to serialize them
-                            try:
-                                jsn = json.loads(val)
-                                # special case, we re-format the admin value
-                                if current_section == 'BASIC:ACL' and \
-                                        key == 'admin' and \
-                                        isinstance(jsn, list):
-                                    val = ','.join(jsn)
-                                elif isinstance(jsn, list) or \
-                                        isinstance(jsn, dict):
-                                    val = "'{}'".format(json.dumps(jsn))
-                            except ValueError:
-                                pass
-                            line = '{} = {}'.format(key, val)
-
-                        new.write('{}\n'.format(line))
-
-        except IOError as exp:
-            self.logger.error(str(exp))
-            return False
-        return True
 
     @staticmethod
     def _explain(exception):
