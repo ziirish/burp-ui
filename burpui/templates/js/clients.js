@@ -124,19 +124,16 @@ var _clients_table = $('#table-clients').DataTable( {
 			}
 		},
 		{
-			data: null,
+			data: 'last',
 			type: 'timestamp',
 			render: function (data, type, row ) {
 				if (type === 'filter' || type === 'sort') {
-					if (!(data.last in __status || data.last in __date)) {
-						return data.last;
-					}
-					// sort by name when date is not valid
-					return data.name;
+					return data;
 				}
-				if (!(data.last in __status || data.last in __date))
-					return '<span data-toggle="tooltip" title="'+data.last+'">'+moment(data.last, moment.ISO_8601).format({{ g.date_format|tojson }})+'</span>';
-				return data.last
+				if (!(data in __status || data in __date)) {
+					return '<span data-toggle="tooltip" title="'+data+'">'+moment(data, moment.ISO_8601).format({{ g.date_format|tojson }})+'</span>';
+				}
+				return data;
 			}
 		},
 		{

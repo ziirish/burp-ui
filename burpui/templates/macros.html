@@ -170,6 +170,9 @@ jQuery.extend( jQuery.fn.dataTableExt.oSort, {
     if (moment(a, moment.ISO_8601).isValid())
       return ''+moment(a, moment.ISO_8601).valueOf();
     // return some string that should be "last"
+    if (a === '{{ _("now") }}') {
+      return 'zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz'+a;
+    }
     return 'zzzzzzzzzzzzzzzzzzzz'+a;
   },
   "timestamp-asc": function ( a, b ) {

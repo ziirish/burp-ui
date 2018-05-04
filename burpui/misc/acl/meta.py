@@ -340,7 +340,7 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
             return reversed(ret)
         return ret
 
-    def _extract_advanced_mode(self, username, mode, kind, idx=None):
+    def _extract_advanced_mode(self, username, mode, kind, idx):
         return self._extract_advanced(username, idx).get(mode, {}).get(kind, [])
 
     def _client_match(self, username, client):
