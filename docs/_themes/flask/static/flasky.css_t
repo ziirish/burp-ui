@@ -575,3 +575,9 @@ a:hover tt {
 .revsys-inline {
     display: none!important;
 }
+
+/* custom */
+
+.strike {
+    text-decoration: line-through;
+}

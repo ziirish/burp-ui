@@ -1,3 +1,6 @@
+.. role:: strike
+    :class: strike
+
 Upgrading
 =========
 
@@ -35,6 +38,9 @@ v0.6.0
 
 - **Breaking** - The ``docker-compose.yml`` file now uses the ``version: '2'``
   format.
+
+- **Breaking** - The old config file format with colons (:) as separator is no
+  more supported.
 
 - **New** - Plugin system to enhance ACL and Authentication backends. See the
   `Plugins <plugins.html>`__ documentation for details.
@@ -119,8 +125,8 @@ v0.3.0
 
 - **Breaking** -  Configuration file format changed. Colons (:) must be replaced
   by equals (=). Besides, some settings containing spaces should be surrounded
-  by quotes. *Note*: The conversion is mostly automatic, but you should keep an
-  eye on it though.
+  by quotes. :strike:`*Note*: The conversion is mostly automatic, but you should
+  keep an eye on it though.`
 
 - **New** - Basic authentication backend now supports hashed passwords (*Note*:
   plain text passwords are now deprecated and the support will be dropped in

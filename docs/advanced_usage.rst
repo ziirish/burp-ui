@@ -744,6 +744,33 @@ Now if you set ``inverse_inheritance = true``, the ``@gp_ro`` grants will have
 the highest priority, meaning the client ``demo`` on the ``test`` agent will be
 granted ``ro`` rights like any other client.
 
+
+Please also note the order of your rules matters (although the UI is unable to
+re-order your rules).
+For instance, this:
+
+::
+
+    [BASIC:ACL]
+    user1 =
+    @gp1 = '{"clients": {"rw": ["tata", "titi"]}}'
+    +gp1 = user1
+    @gp2 = '{"clients": {"ro": ["*"]}, "agents": {"rw": "local"}}'
+    +gp2 = @gp1
+
+
+Is not the same as:
+
+::
+
+    [BASIC:ACL]
+    user1 =
+    @gp2 = '{"clients": {"ro": ["*"]}, "agents": {"rw": "local"}}'
+    +gp2 = @gp1
+    @gp1 = '{"clients": {"rw": ["tata", "titi"]}}'
+    +gp1 = user1
+
+
 .. _Burp: http://burp.grke.org/
 .. _Burp-UI: https://git.ziirish.me/ziirish/burp-ui
 .. _burpui.cfg: https://git.ziirish.me/ziirish/burp-ui/blob/master/share/burpui/etc/burpui.sample.cfg
