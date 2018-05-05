@@ -54,6 +54,7 @@ class ACLloader(BUIaclLoader):
                 section=self.section
             )
             meta_grants.options = opts
+            meta_grants.init_app(app)
         if self.app.acl_engine and 'none' not in self.app.acl_engine:
             me, _ = os.path.splitext(os.path.basename(__file__))
             back = self.app.acl_engine

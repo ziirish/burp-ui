@@ -50,7 +50,13 @@ class BUIaclLoader(with_metaclass(ABCMeta, object)):
         :param app: Application context
         :type app: :class:`burpui.server.BUIServer`
         """
-        pass  # pragma: no cover
+        self.app = None
+        if app:  # pragma: no cover
+            self.init_app(app)
+
+    def init_app(self, app):
+        """Register the given app"""
+        self.app = app
 
     @abstractmethod
     def reload(self):
@@ -80,6 +86,21 @@ class BUIacl(with_metaclass(ABCMeta, object)):
     """The :class:`burpui.misc.acl.interface.BUIacl` class represents the ACL
     engine.
     """
+
+    def __init__(self, app=None):
+        """:func:`burpui.misc.acl.interface.BUIacl.__init__` instanciate
+        the ACL.
+
+        :param app: Application context
+        :type app: :class:`burpui.server.BUIServer`
+        """
+        self.app = None
+        if app:  # pragma: no cover
+            self.init_app(app)
+
+    def init_app(self, app):
+        """Register the given app"""
+        self.app = app
 
     @abstractmethod
     def is_admin(self, username=None):

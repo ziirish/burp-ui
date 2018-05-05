@@ -10,6 +10,7 @@
 from .interface import BUIacl
 from ...utils import make_list
 from ...config import config
+from ...ext.cache import cache
 
 from six import iteritems, itervalues
 
@@ -172,14 +173,10 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
     _grants = {}
     _groups = {}
 
-    _parsed_grants = []
-
-    _clients_cache = {}
-    _agents_cache = {}
-    _advanced_cache = {}
-
     _options = {}
     _backends = {}
+
+    _name = 'meta_grant'
 
     @property
     def id(self):
@@ -216,10 +213,7 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
         """a configuration change occurred, we reload our grants and groups"""
         self._grants.clear()
         self._groups.clear()
-        self._parsed_grants = []
-        self._clients_cache.clear()
-        self._agents_cache.clear()
-        self._advanced_cache.clear()
+        self._reset_cached()
         self._id += 1
         for name, backend in iteritems(self._backends):
             if name == reset_from:
@@ -277,8 +271,27 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
                 groups.append((group.name, inh))
         return groups
 
+    def _gen_key(self, username):
+        return '{}-{}'.format(self._name, username)
+
+    def _set_cached(self, username, value):
+        key = self._gen_key(username)
+        return cache.cache.set(key, value)
+
+    def _get_cached(self, username):
+        key = self._gen_key(username)
+        return cache.cache.get(key)
+
+    def _reset_cached(self):
+        cache.clear()
+
+    def _is_cached(self, username):
+        key = self._gen_key(username)
+        return cache.cache.has(key)
+
     def _extract_grants(self, username, parent=None):
-        if username not in self._parsed_grants:
+        if not self._is_cached(username):
+            data = {}
 
             if username in self.grants:
                 grants = self.grants[username].grants
@@ -286,24 +299,23 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
                 grants = []
 
             clients, agents, advanced = self._parse_clients(grants)
-            self._clients_cache[username] = clients
-            self._agents_cache[username] = agents
-            self._advanced_cache[username] = [advanced]
+            data['clients'] = clients
+            data['agents'] = agents
+            data['advanced'] = [advanced] if advanced else []
 
             def __merge_grants_with(grp, prt):
-                if grp not in self._parsed_grants:
-                    self._extract_grants(grp, prt)
-                self._clients_cache[username] = self._merge_data(
-                    self._clients_cache[username],
-                    self._clients_cache.get(grp, [])
+                data2 = self._extract_grants(grp, prt)
+                data['clients'] = self._merge_data(
+                    data['clients'],
+                    data2['clients']
                 )
-                self._agents_cache[username] = self._merge_data(
-                    self._agents_cache[username],
-                    self._agents_cache.get(grp, [])
+                data['agents'] = self._merge_data(
+                    data['agents'],
+                    data2['agents']
                 )
-                tmp = self._advanced_cache.get(grp, False)
-                if tmp is not False:
-                    self._advanced_cache[username] += tmp
+                tmp = data2['advanced']
+                if tmp:
+                    data['advanced'] += tmp
 
             # moderator is also a group
             for gname, group in iteritems(self.groups):
@@ -318,22 +330,20 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
                 if ret and gname != username and parent and gname not in parent:
                     __merge_grants_with(gname, parent)
 
-            self._parsed_grants.append(username)
+            self._set_cached(username, data)
+            return data
+        return self._get_cached(username)
 
     def _extract_clients(self, username):
-        if username not in self._parsed_grants:
-            self._extract_grants(username)
-        return self._clients_cache.get(username, [])
+        ret = self._extract_grants(username)
+        return ret.get('clients', [])
 
     def _extract_agents(self, username):
-        if username not in self._parsed_grants:
-            self._extract_grants(username)
-        return self._agents_cache.get(username, [])
+        ret = self._extract_grants(username)
+        return ret.get('advanced', [])
 
     def _extract_advanced(self, username, idx=None):
-        if username not in self._parsed_grants:
-            self._extract_grants(username)
-        ret = self._advanced_cache.get(username, [])
+        ret = self._extract_grants(username).get('advanced', [])
         if idx is not None:
             return ret[idx]
         if self.opt('inverse_inheritance'):
