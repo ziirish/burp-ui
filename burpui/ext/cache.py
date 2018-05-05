@@ -10,4 +10,8 @@
 from flask_caching import Cache
 
 
-cache = Cache(config={'CACHE_TYPE': 'null', 'CACHE_NO_NULL_WARNING': True})
+cache = Cache(config={
+    'CACHE_TYPE': 'simple',
+    'CACHE_THRESHOLD': 50,
+    'CACHE_DEFAULT_TIMEOUT': 7200
+})
