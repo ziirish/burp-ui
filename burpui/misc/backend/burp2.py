@@ -38,17 +38,15 @@ try:
     import gevent
     from gevent.lock import RLock
 
-    G_LOCK = RLock()
     WITH_GEVENT = True
 except ImportError:
-    class DummyLock(object):
+    class RLock(object):
         def __enter__(self):
             return self
 
         def __exit__(*x):
             pass
 
-    G_LOCK = DummyLock()
     WITH_GEVENT = False
 
 
@@ -90,6 +88,8 @@ class Burp(Burp1):
         self.client_version = None
         self.server_version = None
         self.batch_list_supported = False
+
+        self.plock = RLock()
 
         BUIbackend.__init__(self, server, conf)
 
@@ -317,7 +317,7 @@ class Burp(Burp1):
             self.logger.info("query: '{}'".format(query))
             query = '{0}\n'.format(query)
 
-            with G_LOCK:
+            with self.plock:
                 self._cleanup_cache()
                 # return cached results
                 if cache and query in self._status_cache:
