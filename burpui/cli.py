@@ -204,6 +204,53 @@ def create_user(backend, password, ask, verbose, name):
 
 
 @app.cli.command()
+@click.option('-p', '--password', help='Password to assign to user.',
+              default=None)
+@click.option('-u', '--username', help='Provide the username to get the full '
+              'configuration line.',
+              default=None)
+@click.option('-b', '--batch', default=False, is_flag=True,
+              help='Don\'t be extra verbose so that you can use the output '
+              'directly in your scripts. Requires both -u and -p.')
+def hash_password(password, username, batch):
+    """Hash a given password to fill the configuration file."""
+    from werkzeug.security import generate_password_hash
+
+    if batch and (not username or not password):
+        click.echo(click.style(
+            'You need to provide both a username and a password using the '
+            '-u and -p flags!',
+            fg='red')
+        )
+        sys.exit(1)
+
+    askpass = False
+    if not password:
+        askpass = True
+        import getpass
+        password = getpass.getpass()
+
+    hashed = generate_password_hash(password)
+    if not batch:
+        click.echo("'{}' hashed into: {}".format(
+            password if not askpass else '*' * 8,
+            hashed)
+        )
+    if username:
+        if not batch:
+            click.echo(click.style(
+                '#8<{}'.format('-' * 77),
+                fg='blue')
+            )
+        click.echo('{} = {}'.format(username, hashed))
+        if not batch:
+            click.echo(click.style(
+                '#8<{}'.format('-' * 77),
+                fg='blue')
+            )
+
+
+@app.cli.command()
 @click.argument('language')
 def init_translation(language):
     """Initialize a new translation for the given language."""
