@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2018-05-01 15:07+0200\n"
+"POT-Creation-Date: 2018-05-07 16:20+0200\n"
 "PO-Revision-Date: 2016-08-25 15:19+0200\n"
 "Last-Translator: Ziirish <hi+burpui@ziirish.me>\n"
 "Language: fr\n"
@@ -1183,7 +1183,6 @@ msgstr ""
 #: burpui/templates/admin-authorizations.html:142
 #: burpui/templates/admin-authorizations.html:162
 #: burpui/templates/admin-authorizations.html:252
-#: burpui/templates/admin/authentication.html:26
 #: burpui/templates/admin/sessions.html:49
 #: burpui/templates/client-browse.html:142 burpui/templates/user.html:58
 #: burpui/templates/user.html:92 burpui/templates/user.html:121
@@ -1787,19 +1786,26 @@ msgstr "Tout sélectionner"
 msgid "Deselect all"
 msgstr "Tout dé-sélectionner"
 
+#: burpui/templates/js/clients.js:22 burpui/templates/js/clients.js:30
+#: burpui/templates/macros.html:173
+msgid "now"
+msgstr "maintenant"
+
 #: burpui/templates/notifications.html:18
 msgid ""
 "\n"
 "                <strong>Hello!</strong> Welcome to Burp-UI's demo.\n"
-"                You can login with either <em>admin</em> / <em>admin</em>"
-" or with <em>demo</em> / <em>demo</em>.\n"
+"                You can login with either <em>admin</em> / "
+"<em>admin</em>, <em>moderator</em> / <em>moderator</em> or with "
+"<em>demo</em> / <em>demo</em>.\n"
 "                "
 msgstr ""
 "\n"
 "                <strong>Bonjour !</strong> Bienvenue sur la demo de Burp-"
 "UI.\n"
 "                Vous pouvez vous connecter avec les comptes "
-"<em>admin</em> / <em>admin</em> ou <em>demo</em> / <em>demo</em>.\n"
+"<em>admin</em> / <em>admin</em>, <em>moderator</em> / <em>moderator</em> "
+"ou <em>demo</em> / <em>demo</em>.\n"
 
 #: burpui/templates/servers-report.html:10
 msgid "Global report"
@@ -2269,7 +2275,7 @@ msgstr "en cours"
 
 #: burpui/templates/js/client.js:19 burpui/templates/js/client.js:26
 #: burpui/templates/js/client.js:36 burpui/templates/js/clients.js:20
-#: burpui/templates/js/clients.js:172
+#: burpui/templates/js/clients.js:169
 msgid "idle"
 msgstr "en attente"
 
@@ -2289,11 +2295,7 @@ msgstr "Tâche de suppression lancée"
 msgid "never"
 msgstr "jamais"
 
-#: burpui/templates/js/clients.js:22 burpui/templates/js/clients.js:30
-msgid "now"
-msgstr "maintenant"
-
-#: burpui/templates/js/clients.js:170
+#: burpui/templates/js/clients.js:167
 msgid "view"
 msgstr "voir"
 

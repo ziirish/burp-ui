@@ -47,6 +47,9 @@ G_CELERY = False
 G_SCOOKIE = True
 G_DEMO = False
 G_DSN = u''
+G_PIWIK_URL = u''
+G_PIWIK_SCRIPT = u'piwik.php'
+G_PIWIK_ID = 0
 G_APPSECRET = u'random'
 G_COOKIETIME = 14
 G_SESSIONTIME = 5
@@ -83,6 +86,9 @@ class BUIServer(Flask):
             'plugins': G_PLUGINS,
             'demo': G_DEMO,
             'dsn': G_DSN,
+            'piwik_url': G_PIWIK_URL,
+            'piwik_script': G_PIWIK_SCRIPT,
+            'piwik_id': G_PIWIK_ID,
         },
         'UI': {
             'refresh': G_REFRESH,
@@ -181,6 +187,9 @@ class BUIServer(Flask):
             'boolean'
         )
         self.config['BUI_DSN'] = self.conf.safe_get('dsn')
+        self.config['BUI_PIWIK_URL'] = self.conf.safe_get('piwik_url')
+        self.config['BUI_PIWIK_SCRIPT'] = self.conf.safe_get('piwik_script')
+        self.config['BUI_PIWIK_ID'] = self.conf.safe_get('piwik_id', 'integer')
         self.bind = self.config['BUI_BIND'] = self.conf.safe_get('bind')
         version = self.conf.safe_get('version', 'integer')
         if unittest and version != 1:

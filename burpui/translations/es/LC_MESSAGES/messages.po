@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2018-05-01 15:07+0200\n"
+"POT-Creation-Date: 2018-05-07 16:20+0200\n"
 "PO-Revision-Date: 2017-03-07 12:04-0300\n"
 "Last-Translator: Pablo Estigarribia <pablodav@gmail.com>\n"
 "Language: es\n"
@@ -1532,7 +1532,6 @@ msgstr ""
 #: burpui/templates/admin-authorizations.html:142
 #: burpui/templates/admin-authorizations.html:162
 #: burpui/templates/admin-authorizations.html:252
-#: burpui/templates/admin/authentication.html:26
 #: burpui/templates/admin/sessions.html:49
 #: burpui/templates/client-browse.html:142 burpui/templates/user.html:58
 #: burpui/templates/user.html:92 burpui/templates/user.html:121
@@ -2132,19 +2131,20 @@ msgstr "Seleccionar todo"
 msgid "Deselect all"
 msgstr "Quitar selección"
 
+#: burpui/templates/js/clients.js:22 burpui/templates/js/clients.js:30
+#: burpui/templates/macros.html:173
+msgid "now"
+msgstr "ahora"
+
 #: burpui/templates/notifications.html:18
 msgid ""
 "\n"
 "                <strong>Hello!</strong> Welcome to Burp-UI's demo.\n"
-"                You can login with either <em>admin</em> / <em>admin</em>"
-" or with <em>demo</em> / <em>demo</em>.\n"
+"                You can login with either <em>admin</em> / "
+"<em>admin</em>, <em>moderator</em> / <em>moderator</em> or with "
+"<em>demo</em> / <em>demo</em>.\n"
 "                "
 msgstr ""
-"\n"
-" <strong> ¡Hola! </strong> Bienvenido a burp-UI de demostración. \n"
-"Puede ingresar con <em> admin </em> / <em> admin </em> o con <em> demo "
-"</em> / <em> demo</em>.   \n"
-"                "
 
 #: burpui/templates/servers-report.html:10
 msgid "Global report"
@@ -2608,7 +2608,7 @@ msgstr "ejecutándose"
 
 #: burpui/templates/js/client.js:19 burpui/templates/js/client.js:26
 #: burpui/templates/js/client.js:36 burpui/templates/js/clients.js:20
-#: burpui/templates/js/clients.js:172
+#: burpui/templates/js/clients.js:169
 msgid "idle"
 msgstr "inactivo"
 
@@ -2628,11 +2628,7 @@ msgstr "Eliminar tarea iniciada"
 msgid "never"
 msgstr "nunca"
 
-#: burpui/templates/js/clients.js:22 burpui/templates/js/clients.js:30
-msgid "now"
-msgstr "ahora"
-
-#: burpui/templates/js/clients.js:170
+#: burpui/templates/js/clients.js:167
 msgid "view"
 msgstr "ver"
 
@@ -2769,4 +2765,21 @@ msgstr ""
 
 #~ msgid "Authenticate users against local PAM database"
 #~ msgstr ""
+
+#~ msgid ""
+#~ "\n"
+#~ "                <strong>Hello!</strong> Welcome to Burp-UI's demo.\n"
+#~ "                You can login with "
+#~ "either <em>admin</em> / <em>admin</em> "
+#~ "<em>moderator</em> / <em>moderator</em> or "
+#~ "with <em>demo</em> / <em>demo</em>.\n"
+#~ "                "
+#~ msgstr ""
+#~ "\n"
+#~ " <strong> ¡Hola! </strong> Bienvenido a burp-UI de demostración. \n"
+#~ "Puede ingresar con <em> admin </em> "
+#~ "/ <em> admin </em>, <em>moderator</em> /"
+#~ " <em>moderator</em> o con <em> demo "
+#~ "</em> / <em> demo </em>.   \n"
+#~ "                "
 

@@ -35,6 +35,9 @@ appStart () {
   rand=$(dd if=/dev/urandom bs=256 count=1 2>/dev/null | base64 | sed ':a;N;$!ba;s/\n//g')
   sed -i -r "s'@RANDOM@'$rand'" /etc/burp/burpui.cfg
   sed -i -r "s'@DSN@'$SENTRY_DSN'" /etc/burp/burpui.cfg
+  sed -i -r "s'@PIWIK_URL@'$SPIWIK_URL'" /etc/burp/burpui.cfg
+  sed -i -r "s'@PIWIK_SCRIPT@'$PIWIK_SCRIPT'" /etc/burp/burpui.cfg
+  sed -i -r "s'@PIWIK_ID@'$PIWIK_ID'" /etc/burp/burpui.cfg
 
   # patch demo with piwik
   REP=$(cat ${CONFIG_DIR}/patch/piwik.patch)

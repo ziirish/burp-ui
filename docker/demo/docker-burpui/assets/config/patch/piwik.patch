@@ -4,12 +4,12 @@
       _paq.push(['trackPageView']);
       _paq.push(['enableLinkTracking']);
       (function() {
-        var u="//ziirish.info/piwik/";
-        _paq.push(['setTrackerUrl', u+'piwik.php']);
-        _paq.push(['setSiteId', 4]);
+        var u="{{ config.BUI_PIWIK_URL }}";
+        _paq.push(['setTrackerUrl', u+'{{ config.BUI_PIWIK_SCRIPT }}']);
+        _paq.push(['setSiteId', {{ config.BUI_PIWIK_ID }}]);
         var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
         g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'piwik.js'; s.parentNode.insertBefore(g,s);
       })();
     </script>
-    <noscript><p><img src="//ziirish.info/piwik/piwik.php?idsite=4" style="border:0;" alt="" /></p></noscript>
+    <noscript><p><img src="{{ config.BUI_PIWIK_URL }}{{ config.BUI_PIWIK_SCRIPT }}?idsite={{ config.BUI_PIWIK_ID }}" style="border:0;" alt="" /></p></noscript>
     <!-- End Piwik Code -->
