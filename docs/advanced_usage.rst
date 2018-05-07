@@ -613,7 +613,7 @@ The *ACL* engine has some settings as bellow:
 
     # acl engine global options
     [ACL]
-    # Enable extended matching rules (disabled by default)
+    # Enable extended matching rules (enabled by default)
     # If the rule is a string like 'user1 = desk*', it will match any client that
     # matches 'desk*' no mater what agent it is attached to.
     # If it is a coma separated list of strings like 'user1 = desk*,laptop*' it
@@ -621,7 +621,7 @@ The *ACL* engine has some settings as bellow:
     # If it is a dict like:
     # user1 = '{"agents": ["srv*", "www*"], "clients": ["desk*", "laptop*"]}'
     # It will also validate against the agent name.
-    extended = false
+    extended = true
     # If you don't explicitly specify ro/rw grants, what should we assume?
     assume_rw = true
     # The inheritance order maters, it means depending the order you choose,
@@ -629,6 +629,10 @@ The *ACL* engine has some settings as bellow:
     # By default, ACL inherited by groups will have lower priority, unless you
     # choose otherwise
     inverse_inheritance = false
+    # If you specify agents and clients separately, should we link them implicitly?
+    # For instance, '{"agents": ["agent1", "agent2"], "clients": ["client1", "client2"]}'
+    # will become: '{"agents": {"agent1": ["client1", "client2"], "agent2": ["client1", "client2"]}}'
+    implicit_link = true
     # Enable 'legacy' behavior
     # Since v0.6.0, if you don't specify the agents name explicitly, users will be
     # granted on every agents where a client matches user's ACL. If you enable the
