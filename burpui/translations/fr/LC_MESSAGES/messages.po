@@ -61,7 +61,7 @@ msgstr "Connecté avec succès"
 
 #: burpui/routes.py:516
 msgid "Wrong username or password"
-msgstr "Mauvais nom d&#39;utilisateur ou mot de passe"
+msgstr "Mauvais nom d'utilisateur ou mot de passe"
 
 #: burpui/routes.py:524
 msgid "Wrong CSRF token, please try again"
