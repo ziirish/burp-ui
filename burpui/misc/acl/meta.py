@@ -340,7 +340,7 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
 
     def _extract_agents(self, username):
         ret = self._extract_grants(username)
-        return ret.get('advanced', [])
+        return ret.get('agents', [])
 
     def _extract_advanced(self, username, idx=None):
         ret = self._extract_grants(username).get('advanced', [])
