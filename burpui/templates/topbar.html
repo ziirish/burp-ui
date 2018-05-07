@@ -18,7 +18,7 @@
             </li>
             {% if not login -%}
               {% if not config.STANDALONE -%}
-            <li class="detail {% if not server and not about and not me and not admin %}active{% endif %}">
+            <li class="detail {% if not server and not about and not me and not admin and not live %}active{% endif %}">
               <a href="{{ url_for('view.home') }}">
                 <span class="glyphicon glyphicon-hdd" aria-hidden="true"></span><span class="dtl">&nbsp;{{ _('Servers') }}</span>
               </a>
