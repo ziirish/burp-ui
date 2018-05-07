@@ -53,6 +53,9 @@ demo-bui:
     - 127.0.0.1:5005:8000
   environment:
     - SENTRY_DSN
+    - PIWIK_URL
+    - PIWIK_SCRIPT
+    - PIWIK_ID
   links:
     - demo-redis
     - demo-burp1
