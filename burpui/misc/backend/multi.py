@@ -2,7 +2,6 @@
 import re
 import socket
 import errno
-import time
 import json
 import struct
 import traceback
