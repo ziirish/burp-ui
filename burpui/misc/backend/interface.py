@@ -42,10 +42,6 @@ class BUIbackend(with_metaclass(ABCMeta, object)):
     :type conf: str
     """
 
-    # cache the running clients
-    running = []
-    # do we need to refresh the cache?
-    refresh = None
     # Defaults config parameters
     defaults = {}
 

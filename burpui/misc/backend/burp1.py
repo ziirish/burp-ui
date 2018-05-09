@@ -561,12 +561,6 @@ class Burp(BUIbackend):
     def get_counters(self, name=None, agent=None):  # pragma: no cover (hard to test, requires a running backup)
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_counters`"""
         res = {}
-        if agent:
-            if not name or name not in self.running[agent]:
-                return res
-        else:
-            if not name or name not in self.running:
-                return res
         filemap = self.status('c:{0}\n'.format(name))
         if not filemap:
             return res
@@ -595,6 +589,10 @@ class Burp(BUIbackend):
                                 count += 1
                                 continue
                     count += 1
+
+        # the client was not running
+        if not res:
+            return res
 
         if 'bytes' not in res:
             res['bytes'] = 0
@@ -644,8 +642,6 @@ class Burp(BUIbackend):
         for cli in cls:
             if self.is_backup_running(cli['name']):
                 res.append(cli['name'])
-        self.running = res
-        self.refresh = time.time()
         return res
 
     def get_all_clients(self, agent=None):

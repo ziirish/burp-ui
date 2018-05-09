@@ -533,12 +533,6 @@ class Burp(Burp1):
     def get_counters(self, name=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_counters`"""
         ret = {}
-        if agent:
-            if not name or name not in self.running[agent]:
-                return ret
-        else:
-            if not name or name not in self.running:
-                return ret
         query = self.status('c:{0}\n'.format(name), cache=False)
         # check the status returned something
         if not query:
@@ -680,8 +674,6 @@ class Burp(Burp1):
         for client in clients:
             if client['state'] in ['running']:
                 ret.append(client['name'])
-        self.running = ret
-        self.refresh = time.time()
         return ret
 
     def _status_human_readable(self, status):
@@ -808,8 +800,6 @@ class Burp(Burp1):
                     if 'action' in child and child['action'] == 'backup':
                         ret['phase'] = child['phase']
                         break
-            if name not in self.running:
-                self.is_one_backup_running()
             counters = self.get_counters(name)
             if 'percent' in counters:
                 ret['percent'] = counters['percent']

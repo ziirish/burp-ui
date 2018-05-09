@@ -183,7 +183,6 @@ class Burp(BUIbackend):
         self.acl_handler = server.acl_handler
         self.servers = {}
         self.app.config['SERVERS'] = []
-        self.running = {}
         if conf:
             for sect in conf.options.keys():
                 r = re.match('^Agent:(.+)$', sect)
@@ -233,7 +232,6 @@ class Burp(BUIbackend):
                 r = self.servers[agent].is_one_backup_running(agent)
             except BUIserverException:
                 pass
-            self.running[agent] = r
         else:
             r = {}
             for name, serv in iteritems(self.servers):
@@ -241,9 +239,6 @@ class Burp(BUIbackend):
                     r[name] = serv.is_one_backup_running()
                 except BUIserverException:
                     r[name] = []
-
-            self.running = r
-        self.refresh = time.time()
         return r
 
     def _get_version(self, method=None):
