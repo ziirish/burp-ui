@@ -189,6 +189,7 @@ def manage():
     from burpui.utils import lookup_file
 
     parser = ArgumentParser('bui-manage')
+    parser.add_argument('-v', '--verbose', dest='log', help='increase output verbosity (e.g., -vv is more verbose than -v)', action='count')
     parser.add_argument('-c', '--config', dest='config', help='burp-ui configuration file', metavar='<CONFIG>')
     parser.add_argument('-i', '--migrations', dest='migrations', help='migrations directory', metavar='<MIGRATIONSDIR>')
     parser.add_argument('-m', '--mode', dest='mode', help='application mode', metavar='<agent|server|worker|manage|legacy>')
@@ -216,6 +217,7 @@ def manage():
 
     env['BUI_MODE'] = 'manage'
     env['BUI_CONFIG'] = conf
+    env['BUI_VERBOSE'] = str(options.log)
     if migrations:
         env['BUI_MIGRATIONS'] = migrations
     if os.path.isdir('burpui') and os.path.isfile('burpui/cli.py'):
