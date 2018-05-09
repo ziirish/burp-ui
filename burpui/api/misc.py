@@ -560,7 +560,7 @@ class History(Resource):
         for moment in moments.keys():
             if moment in args:
                 try:
-                    if moment in args and args[moment] is not None:
+                    if args[moment] is not None:
                         moments[moment] = arrow.get(args[moment]).timestamp
                 except arrow.parser.ParserError:
                     pass
@@ -764,15 +764,17 @@ class History(Resource):
         filtered = False
         if data:
             if bui.standalone:
-                events = data.get(client)
+                events = data.get(client, [None])
             else:
-                events = data.get(server, {}).get(client)
+                events = data.get(server, {}).get(client, [None])
         if not events:
             events = bui.client.get_client_filtered(client, start=moments['start'], end=moments['end'], agent=server)
             filtered = True
 
         ret = []
         for ev in events:
+            if not ev:
+                continue
             if data and not filtered:
                 # events are sorted by date DESC
                 if moments['start'] and ev['date'] < moments['start']:
