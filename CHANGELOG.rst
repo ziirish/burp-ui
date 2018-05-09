@@ -38,7 +38,9 @@ Current
 - Fix: issue `#251 <https://git.ziirish.me/ziirish/burp-ui/issues/251>`_
 - Fix: issue `#257 <https://git.ziirish.me/ziirish/burp-ui/issues/257>`_
 - Fix: issue `#262 <https://git.ziirish.me/ziirish/burp-ui/issues/262>`_
-- `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/v0.5.0...master>`__
+- Fix: issue `#263 <https://git.ziirish.me/ziirish/burp-ui/issues/263>`_
+- Fix: issue `#264 <https://git.ziirish.me/ziirish/burp-ui/issues/264>`_
+- `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/0.5.0...0.6.0>`__
 
 0.5.1 (05/26/2017)
 ------------------
