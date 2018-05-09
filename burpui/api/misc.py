@@ -787,13 +787,3 @@ class History(Resource):
             ret.append(ev)
 
         return ret
-
-
-# @ns.route('/testacl',
-#           '/testacl/<client>',
-#           '/<server>/testacl',
-#           '/<server>/testacl/<client>',
-#           endpoint='testacl')
-# class TestAcl(Resource):
-#     def get(self, client=None, server=None):
-#         return current_user.acl.is_client_rw(client, server)
