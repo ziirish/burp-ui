@@ -59,10 +59,11 @@ The tool provides some inline help too:
       --help  Show this message and exit.
 
     Commands:
-    compile_translation  Compile translations.
+      compile_translation  Compile translations.
       create_user          Create a new user.
       db                   Perform database migrations.
       diag                 Check Burp-UI is correctly setup.
+      hash_password        Hash a given password to fill the...
       init_translation     Initialize a new translation for the given...
       legacy               Legacy server for backward compatibility.
       run                  Runs a local development server for the...
@@ -147,6 +148,59 @@ Examples:
     [+] Success: True
 
 
+Hashing passwords
+-----------------
+
+Since *v0.3.0*, the `BASIC <advanced_usage.html#basic>`_ authentication backend
+supports hashed passwords.
+Support for *legacy* plain-text passwords **will be removed in *v0.7.0***.
+
+In order to automate user creation using external scripts, a new ``bui-manage``
+subcommand has been introduced in  *v0.6.0*.
+
+Usage:
+
+::
+
+	Usage: flask hash_password [OPTIONS]
+
+	  Hash a given password to fill the configuration file.
+
+	Options:
+	  -p, --password TEXT  Password to assign to user.
+	  -u, --username TEXT  Provide the username to get the full configuration
+						   line.
+	  -b, --batch          Don't be extra verbose so that you can use the output
+						   directly in your scripts. Requires both -u and -p.
+	  --help               Show this message and exit.
+
+
+
+Examples:
+
+::
+
+	$ bui-manage hash_password --password demo --username demo --batch
+	demo = pbkdf2:sha256:50000$w5jD2WT1$d89cd4da1b6c3c3f05173faaf3feea802eee7b5b9a378ae8987d5ac6676d166b
+
+	$ bui-manage hash_password --password demo --username demo
+	'demo' hashed into: pbkdf2:sha256:50000$feQoDIIp$d42e056b75092beda52736ce792c6518061b21d6e1b2c755fdd71a764184ebd9
+	#8<-----------------------------------------------------------------------------
+	demo = pbkdf2:sha256:50000$feQoDIIp$d42e056b75092beda52736ce792c6518061b21d6e1b2c755fdd71a764184ebd9
+	#8<-----------------------------------------------------------------------------
+
+	$ bui-manage hash_password -u demo
+	Password:
+	'********' hashed into: pbkdf2:sha256:50000$MNHOgtdr$22d64b17bb8135be3ad61249d649e89ed96a5d4878b23e4889be24dfc062c126
+	#8<-----------------------------------------------------------------------------
+	demo = pbkdf2:sha256:50000$MNHOgtdr$22d64b17bb8135be3ad61249d649e89ed96a5d4878b23e4889be24dfc062c126
+	#8<-----------------------------------------------------------------------------
+
+	$ bui-manage hash_password
+	Password:
+	'********' hashed into: pbkdf2:sha256:50000$eWzSCvSW$9df9cdf854461a5f927708475e0470ad648f8cd0613ca61f8cee639db165ab53
+
+
 Configure
 ---------
 
@@ -171,6 +225,7 @@ The available options are:
       -h, --host TEXT            Address of the status server (defaults to "::1")
       -r, --redis TEXT           Redis URL to connect to
       -d, --database TEXT        Database to connect to for persistent storage
+      -p, --plugins TEXT         Plugins location
       -n, --dry                  Dry mode. Do not edit the files but display
                                  changes
       --help                     Show this message and exit.
