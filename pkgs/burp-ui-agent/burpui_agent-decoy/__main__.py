@@ -38,7 +38,8 @@ def parse_args(name=None):
     options = parser.parse_args()
 
     if options.version:
-        from burpui_agent import __title__, __version__, __release__
+        from burpui_agent import __title__
+        from burpui_agent.desc import __version__, __release__
         ver = '{}: v{}'.format(mname or __title__, __version__)
         if options.log:
             ver = '{} ({})'.format(ver, __release__)
