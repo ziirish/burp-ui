@@ -1,8 +1,8 @@
 Changelog
 =========
 
-Current
--------
+0.6.0 (05/14/2018)
+------------------
 
 - **BREAKING**: the *BASIC* ``ACL`` engine will now grant users on all agents if they are not explicitly defined
 - **BREAKING**: a new ``[ACL]`` section has been created in order to control the new ACL engine behavior

@@ -7,6 +7,7 @@ Is there a demo somewhere?
 Yes, you can play with `Burp-UI`_ at `demo.burp-ui.org`_. Credentials are:
 
 - *admin* / *admin* to play with `Burp-UI`_ as an administrator
+- *moderator* / *moderator* to play with `Burp-UI`_ as a moderator
 - *demo* / *demo* to play with `Burp-UI`_ as a regular user
 
 How to start using Burp-UI?

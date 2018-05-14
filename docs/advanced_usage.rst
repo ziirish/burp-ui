@@ -284,7 +284,7 @@ That's all you need to do for this mode to work.
 Multi-Agent
 ^^^^^^^^^^^
 
-This mode allows you access multiple `Burp`_ servers through the `bui-agent`_.
+This mode allows you to access multiple `Burp`_ servers through the `bui-agent`_.
 The architecture is available on the bui-agent
 `page <buiagent.html#architecture>`__.
 

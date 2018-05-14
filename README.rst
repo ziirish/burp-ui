@@ -35,6 +35,7 @@ You can now play with ``Burp-UI`` at
 Credentials:
 
 - *admin* / *admin* to play with ``Burp-UI`` as an administrator
+- *moderator* / *moderator* to play with ``Burp-UI`` as a moderator
 - *demo* / *demo* to play with ``Burp-UI`` as a regular user
 
 What's that?

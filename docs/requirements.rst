@@ -14,7 +14,7 @@ Python
 
 `Burp-UI`_ is built against python 2.7. The support for python 2.6 has been
 removed since it is not supported anymore by the CPython core team.
-Unit tests are ran against python 2.7 and python 3.4. If you encounter
+Unit tests are ran against python 2.7 and python 3.6. If you encounter
 compilation errors with one of these version, feel free to report them.
 
 Libraries
@@ -41,7 +41,7 @@ them using the following command:
 Redis
 -----
 
-If you wish to use redis for Caching and/or managing uses sessions, you need
+If you wish to use redis for Caching and/or managing user sessions, you need
 additional dependencies:
 
 ::

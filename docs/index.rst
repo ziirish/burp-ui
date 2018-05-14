@@ -20,6 +20,7 @@ Documentation
 
    introduction
    requirements
+   architecture
    installation
    basic_usage
    running
@@ -31,7 +32,6 @@ Documentation
    gunicorn
    docker
    buiagent
-   architecture
    contributing
    changelog
    faq
