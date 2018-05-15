@@ -255,6 +255,7 @@ var refresh_status = function( is_running ) {
 			}, {{ config.LIVEREFRESH * 1000 }});
 		} else {
 			_cache_id = new Date().getTime();
+			auto_refresh_function();
 		}
 	};
 	if (_get_running) {

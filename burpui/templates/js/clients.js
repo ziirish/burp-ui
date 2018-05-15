@@ -253,7 +253,7 @@ var refresh_status = function( is_running ) {
 				}, {{ config.LIVEREFRESH * 1000 }});
 			} else {
 				_cache_id = new Date().getTime();
-				schedule_refresh();
+				auto_refresh_function();
 			}
 		});
 	};
