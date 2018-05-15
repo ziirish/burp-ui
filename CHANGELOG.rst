@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Current
+-------
+
+- `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/0.6.0...master>`__
+
 0.6.0 (05/14/2018)
 ------------------
 
