@@ -538,8 +538,10 @@ class Burp(BUIbackend):
         cls = []
         bkp = []
         for cli in clients:
+            if not cli:
+                continue
             client = self.get_client(cli['name'])
-            if not client:
+            if not client or not client[-1]:
                 continue
             stats = self.get_backup_logs(client[-1]['number'], cli['name'])
             os = stats['os'] if 'os' in stats else "unknown"

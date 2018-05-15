@@ -889,7 +889,7 @@ class Burp(Burp1):
 
         if WITH_GEVENT:
             gevent.joinall(threads)
-            ret = [x.value for x in threads]
+            ret = [x.value for x in threads if x.value]
 
         # Here we need to reverse the array so the backups are sorted by num
         # ASC
