@@ -50,6 +50,7 @@ app.controller('LiveCtrl', function($scope, $http, $timeout) {
 		}
 	};
 
+	var last_status = 404;
 	$scope.load = function() {
 		$http.get(counters, { headers: { 'X-From-UI': true } })
 		.then(function(response) {
@@ -60,23 +61,26 @@ app.controller('LiveCtrl', function($scope, $http, $timeout) {
 				$scope.clients = [];
 				$scope.clients.push(data);
 			}
-			if (status === 404) {
+			if ($scope.clients.length == 0) {
+				var message = "{{ _('No more backup running') }}";
 				$scope.stopTimer();
-				notif(NOTIF_INFO, "{{ _('Backup complete. Will redirect you in 5 seconds') }}");
-				$timeout(function() {
+				$http.post('{{ url_for("api.alert") }}', {'message': message}, { headers: { 'X-From-UI': true } })
+				.then(function(response2) {
 					document.location = '{{ url_for("view.home") }}';
-				}, 5000);
+				});
 				return;
 			}
-			if ($scope.clients.length == 0) {
-				$http.post('{{ url_for("api.alert") }}', {'message': "{{ _('No more backup running') }}"}, { headers: { 'X-From-UI': true } });
-				document.location = '{{ url_for("view.home") }}';
-			}
+			last_status = response.status;
 			timer = $timeout($scope.load, {{ config.LIVEREFRESH * 1000 }});
 		}, function(response) {
 			var data = response.data;
 			$scope.stopTimer();
-			errorsHandler(data);
+			if (response.status === 404 && response.status !== last_status) {
+				$scope.stopTimer();
+				notif(NOTIF_INFO, "{{ _('Backup complete') }}");
+			} else {
+				errorsHandler(data);
+			}
 			notif(NOTIF_INFO, "{{ _('Will redirect you in 5 seconds') }}");
 			$timeout(function() {
 				document.location = '{{ url_for("view.home") }}';

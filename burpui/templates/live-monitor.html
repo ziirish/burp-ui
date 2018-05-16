@@ -1,5 +1,6 @@
 {% extends "layout.html" %}
 {% block body %}
+        {% include "notifications.html" %}
         <div class="main">
           <ul class="breadcrumb" style="margin-bottom: 5px;">
             <li><a href="{{ url_for('view.home') }}">{{ _('Home') }}</a></li>

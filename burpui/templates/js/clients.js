@@ -58,6 +58,7 @@ var _cache_id = _EXTRA;
 
 {{ macros.timestamp_filter() }}
 
+var __init_complete = false;
 var _clients_table = $('#table-clients').DataTable( {
 	{{ macros.translate_datatable() }}
 	{{ macros.get_page_length() }}
@@ -97,6 +98,9 @@ var _clients_table = $('#table-clients').DataTable( {
 			row.className += ' '+__date[data.last];
 		}
 		row.className += ' clickable';
+	},
+	initComplete: function( settings, json ) {
+		__init_complete = true;
 	},
 	columns: [
 		{
@@ -176,6 +180,9 @@ var _clients_table = $('#table-clients').DataTable( {
 var first = true;
 
 var _clients = function() {
+	if (!__init_complete) {
+		return;
+	}
 	if (first) {
 		first = false;
 	} else {
@@ -253,7 +260,9 @@ var refresh_status = function( is_running ) {
 				}, {{ config.LIVEREFRESH * 1000 }});
 			} else {
 				_cache_id = new Date().getTime();
-				auto_refresh_function();
+				if (__init_complete && is_running) {
+					auto_refresh_function(true);
+				}
 			}
 		});
 	};

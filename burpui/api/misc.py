@@ -115,18 +115,20 @@ class Counters(Resource):
                 not current_user.acl.is_admin() and \
                 not current_user.acl.is_client_allowed(client, server):
             self.abort(403, "Not allowed to view '{}' counters".format(client))
-        bui.client.is_one_backup_running()
-        if isinstance(bui.client.running, dict):
+        running = bui.client.is_one_backup_running()
+        if isinstance(running, dict):
             if server and client not in bui.client.running[server]:
                 self.abort(404, "'{}' not found in the list of running clients for '{}'".format(client, server))
             else:
                 found = False
-                for (k, a) in iteritems(bui.client.running):
-                    found = found or (client in a)
+                for (_, cls) in iteritems(running):
+                    if client in cls:
+                        found = True
+                        break
                 if not found:
                     api.bort(404, "'{}' not found in running clients".format(client))
         else:
-            if client not in bui.client.running:
+            if client not in running:
                 self.abort(404, "'{}' not found in running clients".format(client))
         try:
             counters = bui.client.get_counters(client, agent=server)

@@ -274,16 +274,13 @@ def cli_settings(server=None, client=None, conf=None):
 def live_monitor(server=None, name=None):
     """Live status monitor view"""
     server = server or request.args.get('serverName')
-    bui.client.is_one_backup_running()
+    running = bui.client.is_one_backup_running()
     if bui.standalone:
-        if not bui.client.running:
+        if not running:
             flash(_('Sorry, there are no running backups'), 'warning')
             return redirect(url_for('.home'))
     else:
-        run = False
-        for a in bui.client.servers:
-            run = run or (a in bui.client.running and bui.client.running[a])
-        if not run:
+        if not any([x for _, x in iteritems(running)]):
             flash(_('Sorry, there are no running backups'), 'warning')
             return redirect(url_for('.home'))
 

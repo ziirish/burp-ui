@@ -225,20 +225,20 @@ class Burp(BUIbackend):
     @implement
     def is_one_backup_running(self, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.is_one_backup_running`"""
-        r = []
+        res = []
         if agent:
             try:
-                r = self.servers[agent].is_one_backup_running(agent)
+                res = self.servers[agent].is_one_backup_running(agent)
             except BUIserverException:
                 pass
         else:
-            r = {}
+            res = {}
             for name, serv in iteritems(self.servers):
                 try:
-                    r[name] = serv.is_one_backup_running()
+                    res[name] = serv.is_one_backup_running()
                 except BUIserverException:
-                    r[name] = []
-        return r
+                    res[name] = []
+        return res
 
     def _get_version(self, method=None):
         """get versions"""

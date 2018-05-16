@@ -109,6 +109,8 @@ var notif = function(type, message, timeout) {
 			i = '<i class="fa fa-fw fa-exclamation-circle" aria-hidden="true"></i>&nbsp;';
 			break;
 		case NOTIF_INFO:
+			t = 'info';
+			i = '<i class="fa fa-fw fa-info-circle" aria-hidden="true"></i>&nbsp;';
 		default:
 			t = 'info';
 			i = '<i class="fa fa-fw fa-info-circle" aria-hidden="true"></i>&nbsp;';
@@ -131,6 +133,9 @@ var anim = function(elem, timeout) {
 };
 
 var errorsHandler = function(json) {
+	if (!json) {
+		return false;
+	}
 	if ('notif' in json) {
 		message = json.notif;
 	} else if ('message' in json) {
@@ -429,7 +434,7 @@ var cancel_refresh = function() {
 		auto_refresh = undefined;
 	}
 }
-var auto_refresh_function = function() {
+var auto_refresh_function = function(oneshot) {
 	{% if clients -%}
 	_clients();
 	{% endif -%}
@@ -439,8 +444,10 @@ var auto_refresh_function = function() {
 	{% if servers and overview -%}
 	_servers();
 	{% endif -%}
-	cancel_refresh()
-	schedule_refresh();
+	if (!oneshot) {
+		cancel_refresh()
+		schedule_refresh();
+	}
 };
 {% endif -%}
 
