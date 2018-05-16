@@ -504,7 +504,16 @@ $(function() {
 			return;
 		}
 		if (!$(this).closest('table').hasClass('collapsed')) {
-			window.location = $(this).find('a').attr('href');
+			var $that = $(this);
+			var callback = function() {
+				window.location = $that.find('a').attr('href');
+			};
+			if (typeof __refresh_running !== "undefined") {
+				_cache_id = new Date().getTime();
+				$.getJSON('{{ url_for("api.ping") }}', callback);
+			} else {
+				callback();
+			}
 		}
 	});
 	$( document ).on('click', 'td.child', function(e) {
@@ -514,7 +523,23 @@ $(function() {
 		}
 		$before = $(this).parent().prev();
 		if ($before.hasClass('clickable')) {
-			window.location = $before.find('a').attr('href');
+			var callback = function() {
+				window.location = $before.find('a').attr('href');
+			};
+			if (typeof __refresh_running !== "undefined") {
+				_cache_id = new Date().getTime();
+				$.getJSON('{{ url_for("api.ping") }}', callback);
+			} else {
+				callback();
+			}
+		}
+	});
+	$( document ).on('click', 'a', function(e) {
+		if (typeof __refresh_running !== "undefined") {
+			e.preventDefault();
+			var target = this.href;
+			_cache_id = new Date().getTime();
+			$.getJSON('{{ url_for("api.ping") }}', function() { window.location = target; });
 		}
 	});
 

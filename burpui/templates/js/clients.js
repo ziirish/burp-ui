@@ -254,6 +254,7 @@ var refresh_status = function( is_running ) {
 			if (_clients_running.length > 0) {
 				if (__refresh_running) {
 					clearTimeout(__refresh_running);
+					__refresh_running = undefined;
 				}
 				__refresh_running = setTimeout(function() {
 					refresh_status(true);

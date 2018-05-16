@@ -11,6 +11,7 @@ import re
 import math
 import uuid
 
+from six import iteritems
 from flask import request, render_template, redirect, url_for, abort, \
     flash, Blueprint, session, current_app, g
 from flask_login import login_user, login_required, logout_user, current_user

@@ -117,7 +117,7 @@ class Counters(Resource):
             self.abort(403, "Not allowed to view '{}' counters".format(client))
         running = bui.client.is_one_backup_running()
         if isinstance(running, dict):
-            if server and client not in bui.client.running[server]:
+            if server and client not in running[server]:
                 self.abort(404, "'{}' not found in the list of running clients for '{}'".format(client, server))
             else:
                 found = False
@@ -375,29 +375,52 @@ class About(Resource):
     def get(self, server=None):
         """Returns various informations about Burp-UI"""
         args = self.parser.parse_args()
-        r = {}
+        res = {}
         server = server or args['serverName']
-        r['version'] = api.version
-        r['release'] = api.release
-        r['api'] = url_for('api.doc')
-        r['burp'] = []
+        res['version'] = api.version
+        res['release'] = api.release
+        res['api'] = url_for('api.doc')
+        res['burp'] = []
         cli = bui.client.get_client_version(server)
         srv = bui.client.get_server_version(server)
         multi = {}
         if isinstance(cli, dict):
-            for (name, v) in iteritems(cli):
-                multi[name] = {'client': v}
+            for (name, val) in iteritems(cli):
+                multi[name] = {'client': val}
         if isinstance(srv, dict):
-            for (name, v) in iteritems(srv):
-                multi[name]['server'] = v
+            for (name, val) in iteritems(srv):
+                multi[name]['server'] = val
         if not multi:
-            r['burp'].append({'client': cli, 'server': srv})
+            res['burp'].append({'client': cli, 'server': srv})
         else:
-            for (name, v) in iteritems(multi):
-                a = v
-                a.update({'name': name})
-                r['burp'].append(a)
-        return r
+            for (name, val) in iteritems(multi):
+                tmp = val
+                tmp.update({'name': name})
+                res['burp'].append(tmp)
+        return res
+
+
+@ns.route('/ping', endpoint='ping')
+class Ping(Resource):
+    """The :class:`burpui.api.misc.Ping` resource allows you to ping the API.
+    It is actually a Dummy endpoint that does nothing"""
+    # Login not required on this view
+    login_required = False
+
+    ping_fields = ns.model('Ping', {
+        'alive': fields.Boolean(required=True, description="API alive?"),
+    })
+
+    @ns.marshal_list_with(ping_fields, code=200, description='Success')
+    @ns.doc(
+        responses={
+            200: 'Success',
+            403: 'Insufficient permissions',
+        },
+    )
+    def get(self):
+        """Tells if the API is alive"""
+        return {'alive': True}
 
 
 @ns.route('/history',

@@ -255,6 +255,7 @@ var refresh_status = function( is_running ) {
 	var _inner_callback_setup = function() {
 		if (__refresh_running) {
 			clearTimeout(__refresh_running);
+			__refresh_running = undefined;
 		}
 		if (_client_running) {
 			__refresh_running = setTimeout(function() {
