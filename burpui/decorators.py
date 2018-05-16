@@ -42,12 +42,8 @@ def browser_cache(expires=None):
 
             if expires is None:
                 headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0'
-                headers['Expires'] = '-1'
             else:
-                expires_time = now + datetime.timedelta(seconds=expires)
-
-                headers['Cache-Control'] = 'public'
-                headers['Expires'] = format_date_time(time.mktime(expires_time.timetuple()))
+                headers['Cache-Control'] = 'private, max-age={}'.format(expires)
 
             return resp, code, headers
         return cache_func
