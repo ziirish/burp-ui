@@ -281,7 +281,7 @@ def live_monitor(server=None, name=None):
             flash(_('Sorry, there are no running backups'), 'warning')
             return redirect(url_for('.home'))
     else:
-        if not any([x for _, x in iteritems(running)]):
+        if not any([x for y, x in iteritems(running)]):
             flash(_('Sorry, there are no running backups'), 'warning')
             return redirect(url_for('.home'))
 
