@@ -4,6 +4,9 @@ Changelog
 Current
 -------
 
+- Improvement: Don't cache any data when there is a running backup
+- Fix: cannot display bui-agent version
+- Fix: live-monitor was broken do to a missing cache
 - `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/0.6.0...master>`__
 
 0.6.0 (05/14/2018)
