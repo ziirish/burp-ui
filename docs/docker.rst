@@ -37,11 +37,14 @@ provided. There are a few variables supported to setup your system:
    file. It defaults to "/etc/burp/burp-server.conf".
  - **DATABASE_URL** - Specify the URL of the database to connect to. It defaults
    to "sqlite:////var/lib/burpui/store.db".
+ - **GUNICORN_WORKERS** - How many gunicorn workers to spawn. Defaults to the
+   number of CPU cores/sockets/threads found.
  - **REDIS_SERVER** - Specify the address of the redis server. It defaults to
    "redis:6379".
  - **BURP_SERVER_ADDR** - Specify the address of the burp-server status port.
-   If set to "auto" (the default), we will use the address of the docker host.
+   If set to "auto", we will use the address of the docker host.
    Make sure your status port is listening on this interface.
+   Defaults to "burp-server" which is the burp container in the stack.
  - **TIMEZONE** - Specify the timezone of your burp-server. It defaults to
    Europe/Paris.
 
@@ -125,7 +128,7 @@ You can run these commands:
     -----------------------------------------------------------------------------------
     burpui_burpui_1   /app/init app:start              Up      127.0.0.1:5000->5000/tcp
     burpui_redis_1    docker-entrypoint.sh redis ...   Up      6379/tcp
-    # docker exec -it burpui_burpui_1 /bin/bash
+    # docker exec -it burpui_burpui_1 /bin/ash
     root@59d883806fc7:/# su - burpui
     $ /usr/sbin/burp -c /tmp/burp.conf -a m
     { "logline": "Could not find ssl_cert_ca /etc/burp/ssl_cert_ca-client-bui.pem: No such file or directory" }

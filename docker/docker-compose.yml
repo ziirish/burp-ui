@@ -41,7 +41,7 @@ services:
 
   burpui:
     restart: always
-    image: registry.ziirish.me/ziirish/burp-ui:latest
+    image: registry.ziirish.me/ziirish/burp-ui:stable
     depends_on:
       - burp-server
       - redis

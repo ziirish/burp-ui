@@ -1,8 +1,8 @@
 Changelog
 =========
 
-Current
--------
+0.6.1 (05/17/2018)
+------------------
 
 - Improvement: Don't cache any data when there is a running backup
 - Fix: cannot display bui-agent version
