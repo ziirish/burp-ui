@@ -41,6 +41,8 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
                    - cli (bool): Are we running the CLI. Default is False.
                    - reverse_proxy (bool): Are we behind a reverse-proxy.
                    Default is True if gunicorn is True
+                   - websocket_server (bool): Are we running the websocket
+                   server. Default is False
     :type kwargs: dict
 
     :returns: A :class:`burpui.server.BUIServer` object
@@ -381,7 +383,8 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
     app.login_manager.init_app(app)
 
     # Create WebSocket server
-    create_websocket(app, websocket_server, celery_worker, gunicorn, cli)
+    if create_websocket(app, websocket_server, celery_worker, gunicorn, cli):
+        return app
 
     # Create celery app if enabled
     create_celery(app, warn=False)
@@ -464,8 +467,6 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
                 session_manager.delete_session()
         return response
 
-    return app
-
     if app.demo and SENTRY_AVAILABLE:
         @app.errorhandler(500)
         def internal_server_error(error):
@@ -475,6 +476,8 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
                 event_id=g.sentry_event_id,
                 public_dsn=sentry.client.get_public_dsn('https')
             )
+
+    return app
 
 
 init = create_app

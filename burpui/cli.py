@@ -43,7 +43,7 @@ if VERBOSE:
 
 # UNITTEST is used to skip the burp-2 requirements for modes != server
 UNITTEST = os.getenv('BUI_MODE') not in ['server', 'manage', 'celery', 'legacy', 'ws']
-CLI = os.getenv('BUI_MODE') not in ['server', 'legacy', 'ws']
+CLI = os.getenv('BUI_MODE') not in ['server', 'legacy']
 
 try:
     app = create_app(

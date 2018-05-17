@@ -215,7 +215,7 @@ def create_websocket(myapp, websocket_server=False, celery_worker=False,
     :type myapp: :class:`burpui.server.BUIServer`
     """
     if cli and not websocket_server:
-        return
+        return False
     broker = myapp.ws_broker
     if broker is not False:
         if not broker or broker is True:
@@ -251,7 +251,7 @@ def create_websocket(myapp, websocket_server=False, celery_worker=False,
     # myapp.config['WS_ASYNC_MODE'] = 'threading' if not gunicorn else None
 
     if celery_worker:
-        return
+        return False
 
     # if you are not a celery worker, we can patch the flask server
     try:
@@ -269,6 +269,9 @@ def create_websocket(myapp, websocket_server=False, celery_worker=False,
     if myapp.config['WITH_WS'] or websocket_server:
         from .ws.namespace import BUINamespace
         socketio.on_namespace(BUINamespace('/ws'))
+        return True
+
+    return False
 
 
 def create_celery(myapp, warn=True):
