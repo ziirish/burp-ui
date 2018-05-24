@@ -270,7 +270,7 @@ class BUIAgent(BUIbackend, BUIlogging):
                                 import hashlib
                                 from base64 import b64decode
                                 pickles = to_bytes(j['args'])
-                                key = u'{}{}'.format(self.password, j['func'])
+                                key = '{}{}'.format(self.password, j['func'])
                                 key = to_bytes(key)
                                 bytes_pickles = pickles
                                 digest = hmac.new(key, bytes_pickles, hashlib.sha1).hexdigest()

@@ -28,18 +28,6 @@ from ..._compat import unquote, to_unicode, to_bytes
 
 from shlex import quote
 
-G_BURPPORT = 4972
-G_BURPHOST = u'::1'
-G_BURPBIN = u'/usr/sbin/burp'
-G_STRIPBIN = u'/usr/sbin/vss_strip'
-G_BURPCONFCLI = u''
-G_BURPCONFSRV = u'/etc/burp/burp-server.conf'
-G_TMPDIR = u'/tmp/bui'
-G_ZIP64 = False
-G_INCLUDES = [u'/etc/burp']
-G_ENFORCE = False
-G_REVOKE = True
-
 
 class Burp(BUIbackend):
     """The :class:`burpui.misc.backend.burp1.Burp` class provides a consistent
@@ -889,13 +877,13 @@ class Burp(BUIbackend):
             return None, 'Wrong call'
         if os.path.isdir(tmpdir):
             shutil.rmtree(tmpdir)
-        full_reg = u''
+        full_reg = ''
 
         def _escape(s):
             return re.sub(r"[(){}\[\].*?|^$\\+-]", r"\\\g<0>", s)
 
         for restore in flist['restore']:
-            reg = u''
+            reg = ''
             if restore['folder'] and restore['key'] != '/':
                 reg += '^' + _escape(restore['key']) + '/|'
             else:

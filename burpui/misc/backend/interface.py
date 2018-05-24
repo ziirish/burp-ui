@@ -16,16 +16,16 @@ from abc import ABCMeta, abstractmethod
 from six import with_metaclass
 
 G_BURPPORT = 4972
-G_BURPHOST = u'::1'
-G_BURPBIN = u'/usr/sbin/burp'
-G_STRIPBIN = u'/usr/sbin/vss_strip'
-G_STRIPBIN2 = u'/usr/bin/vss_strip'
-G_BURPCONFCLI = u'/etc/burp/burp.conf'
-G_BURPCONFSRV = u'/etc/burp/burp-server.conf'
-G_TMPDIR = u'/tmp/bui'
+G_BURPHOST = '::1'
+G_BURPBIN = '/usr/sbin/burp'
+G_STRIPBIN = '/usr/sbin/vss_strip'
+G_STRIPBIN2 = '/usr/bin/vss_strip'
+G_BURPCONFCLI = '/etc/burp/burp.conf'
+G_BURPCONFSRV = '/etc/burp/burp-server.conf'
+G_TMPDIR = '/tmp/bui'
 G_TIMEOUT = 15
 G_ZIP64 = False
-G_INCLUDES = [u'/etc/burp']
+G_INCLUDES = ['/etc/burp']
 G_ENFORCE = False
 G_REVOKE = True
 

@@ -395,15 +395,15 @@ class Parser(Doc):
         See :func:`burpui.misc.parser.interface.BUIparser.read_client_conf`
         """
         res = {
-            u'common': [],
-            u'boolean': [],
-            u'integer': [],
-            u'multi': [],
-            u'includes': [],
-            u'includes_ext': [],
-            u'templates': [],
-            u'hierarchy': [],
-            u'raw': None,
+            'common': [],
+            'boolean': [],
+            'integer': [],
+            'multi': [],
+            'includes': [],
+            'includes_ext': [],
+            'templates': [],
+            'hierarchy': [],
+            'raw': None,
         }
         if not client and not conf:
             return res
@@ -426,18 +426,18 @@ class Parser(Doc):
             return self.filescache[mconf]['dict']
 
         res2 = {}
-        res2[u'common'] = parsed.string
-        res2[u'boolean'] = parsed.boolean
-        res2[u'integer'] = parsed.integer
-        res2[u'multi'] = parsed.multi
-        res2[u'templates'] = parsed.template
-        res2[u'includes'] = [
+        res2['common'] = parsed.string
+        res2['boolean'] = parsed.boolean
+        res2['integer'] = parsed.integer
+        res2['multi'] = parsed.multi
+        res2['templates'] = parsed.template
+        res2['includes'] = [
             x
             for x in parsed.flatten('include', False).keys()
         ]
-        res2[u'includes_ext'] = parsed.include
-        res2[u'hierarchy'] = config.tree
-        res2[u'raw'] = str(parsed)
+        res2['includes_ext'] = parsed.include
+        res2['hierarchy'] = config.tree
+        res2['raw'] = str(parsed)
 
         res.update(res2)
         self.filescache[mconf] = {
@@ -452,15 +452,15 @@ class Parser(Doc):
         """
         mconf = None
         res = {
-            u'common': [],
-            u'boolean': [],
-            u'integer': [],
-            u'multi': [],
-            u'pair': [],
-            u'includes': [],
-            u'includes_ext': [],
-            u'hierarchy': [],
-            u'raw': None,
+            'common': [],
+            'boolean': [],
+            'integer': [],
+            'multi': [],
+            'pair': [],
+            'includes': [],
+            'includes_ext': [],
+            'hierarchy': [],
+            'raw': None,
         }
         if not conf:
             mconf = self.conf
@@ -474,18 +474,18 @@ class Parser(Doc):
             return self.filescache[mconf]['dict']
 
         res2 = {}
-        res2[u'common'] = parsed.string
-        res2[u'boolean'] = parsed.boolean
-        res2[u'integer'] = parsed.integer
-        res2[u'multi'] = parsed.multi
-        res2[u'pair'] = parsed.pair
-        res2[u'includes'] = [
+        res2['common'] = parsed.string
+        res2['boolean'] = parsed.boolean
+        res2['integer'] = parsed.integer
+        res2['multi'] = parsed.multi
+        res2['pair'] = parsed.pair
+        res2['includes'] = [
             x
             for x in parsed.flatten('include', False).keys()
         ]
-        res2[u'includes_ext'] = parsed.include
-        res2[u'hierarchy'] = self.server_conf.tree
-        res2[u'raw'] = str(parsed)
+        res2['includes_ext'] = parsed.include
+        res2['hierarchy'] = self.server_conf.tree
+        res2['raw'] = str(parsed)
 
         res.update(res2)
         self.filescache[mconf] = {

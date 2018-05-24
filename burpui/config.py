@@ -183,7 +183,7 @@ class BUIConfig(dict):
         :param exception: Exception object
         :type exception: :class:`configobj.ConfigObjError`
         """
-        message = u'\n'
+        message = '\n'
         for error in exception.errors:
             message += error.message + '\n'
 

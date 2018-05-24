@@ -543,7 +543,7 @@ class NClient(BUIbackend):
         if vers and vers >= AGENT_VERSION_CAST:
             # convert the data to our custom ImmutableMultiDict
             data = ImmutableMultiDict(data.to_dict(False))
-        key = u'{}{}'.format(self.password, 'store_conf_srv')
+        key = '{}{}'.format(self.password, 'store_conf_srv')
         key = to_bytes(key)
         pickles = to_unicode(b64encode(pickle.dumps({'data': data, 'conf': conf}, 2)))
         bytes_pickles = to_bytes(pickles)

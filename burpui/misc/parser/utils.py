@@ -400,11 +400,11 @@ class OptionMulti(Option):
 
     def dump(self, start=0, strict=True):
         """Return the option representation to store in configuration file"""
-        ret = u''
+        ret = ''
         if start > len(self.value):
             return ret
         res = [self.dump_index(i, strict) for i in range(start, len(self.value))]
-        ret = u'\n'.join(res)
+        ret = '\n'.join(res)
         return ret.rstrip('\n')
 
     def dump_index(self, index, strict=True):
@@ -506,7 +506,7 @@ class OptionPair(Option, dict):
 
     def dump(self, start=0, strict=True):
         """Return the option representation to store in configuration file"""
-        ret = u''
+        ret = ''
         try:
             self_length = len(self.value[self.name])
         except KeyError:
@@ -533,7 +533,7 @@ class OptionPair(Option, dict):
         except KeyError:
             length = -1
         if index >= length:
-            return u''
+            return ''
         return self.value.get(name).dump_index(index, strict)
 
     def parse(self, key=None):
@@ -792,7 +792,7 @@ class File(dict):
         return getattr(self.parser, '{}_{}'.format(typ, self.mode), [])
 
     def _type_for_option(self, opt):
-        if opt == u'.':
+        if opt == '.':
             return 'include'
 
         for typ in ['boolean', 'integer', 'multi', 'string', 'pair']:
@@ -870,7 +870,7 @@ class File(dict):
             else:
                 opt = self.options.get(key)
             opt.append(key, value)
-        elif key == u'.':
+        elif key == '.':
             key = value
             if self._parsing_templates:
                 opt = OptionTpl(self.parser, key, value)
@@ -893,7 +893,7 @@ class File(dict):
 
     def __repr__(self):
         self._refresh_types()
-        ret = u''
+        ret = ''
         for key, opts in iteritems(self.types):
             ret += '{} =>\n'.format(key)
             for key2, opt in iteritems(opts):
@@ -903,7 +903,7 @@ class File(dict):
         return ret.rstrip('\n')
 
     def __str__(self):
-        ret = u''
+        ret = ''
         for key, val in iteritems(self.options):
             if key in self.associations:
                 continue
@@ -1058,9 +1058,9 @@ class File(dict):
                 key = res.group(1)
                 reset = res.group(2)
                 val = res.group(3)
-                if key == u'compression':
+                if key == 'compression':
                     val = val.replace('zlib', 'gzip')
-                elif key == u'ssl_compression':
+                elif key == 'ssl_compression':
                     val = val.replace('gzip', 'zlib')
                 self[key] = val
                 if key in self:
@@ -1652,7 +1652,7 @@ class Config(File):
 
     def __repr__(self):
         self._refresh()
-        ret = u''
+        ret = ''
         for key, fil in iteritems(self.files):
             ret += '>' * 5 + key + '<' * 5 + '\n'
             ret += repr(fil) + '\n'

@@ -185,9 +185,9 @@ class Burp(Burp1):
             bufsize=0
         )
         if not self._proc_is_alive():
-            details = u''
+            details = ''
             if verbose:
-                details = u':\n'
+                details = ':\n'
                 out, _ = self.proc.communicate()
                 details += to_unicode(out)
             raise OSError('Unable to spawn burp process{}'.format(details))
@@ -278,7 +278,7 @@ class Burp(Burp1):
 
     def _read_proc_stdout(self, timeout):
         """reads the burp process stdout and returns a document or None"""
-        doc = u''
+        doc = ''
         jso = None
         while True:
             try:
@@ -292,7 +292,7 @@ class Burp(Burp1):
                 # if the string is a valid json and looks like a logline, we
                 # simply ignore it
                 if jso and self._is_ignored(jso):
-                    doc = u''
+                    doc = ''
                     continue
                 elif jso:
                     break
@@ -915,7 +915,7 @@ class Burp(Burp1):
         if not name or not backup:
             return ret
         if not root:
-            top = u''
+            top = ''
         else:
             top = to_unicode(root)
 
