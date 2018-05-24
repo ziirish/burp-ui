@@ -28,7 +28,6 @@ BUI_DEFAULTS = {
         'port': 5000,
         'bind': '::',
         'ssl': False,
-        'single': True,
         'sslcert': '',
         'sslkey': '',
         'version': 2,
@@ -159,10 +158,7 @@ class BUIServer(Flask):
             'ssl',
             'boolean'
         )
-        self.config['STANDALONE'] = self.conf.safe_get(
-            'single',
-            'boolean'
-        )
+        self.config['STANDALONE'] = self.config['BACKEND'] != 'multi'
         self.config['BUI_SSLCERT'] = self.conf.safe_get(
             'sslcert'
         )
@@ -318,7 +314,8 @@ class BUIServer(Flask):
             'appsecret',
             section='Security'
         )
-        days = self.conf.safe_get('cookietime', 'integer', section='Security')
+        days = self.conf.safe_get('cookietime', 'integer', section='Security') \
+                or 14
         self.config['REMEMBER_COOKIE_DURATION'] = \
             self.config['PERMANENT_SESSION_LIFETIME'] = timedelta(
                 days=days
@@ -328,7 +325,7 @@ class BUIServer(Flask):
             'sessiontime',
             'integer',
             section='Security'
-        )
+        ) or 5
         self.config['SESSION_INACTIVE'] = timedelta(days=days)
 
         self.logger.info('backend: {}'.format(self.config['BACKEND']))

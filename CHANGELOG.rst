@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Current
+-------
+
+- **BREAKING**: the *single* and *version* options within the ``[Global]`` section have been removed in favor of a new unified *backend* option
+
 0.6.1 (05/17/2018)
 ------------------
 

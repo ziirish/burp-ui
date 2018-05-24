@@ -732,8 +732,8 @@ class Doc(BUIparser):
                                         " treated as fatal errors. The"
                                         " default is off."),
         'server_script_arg': __("Goes with server_script and overrides"
-                                 " server_script_pre_arg and"
-                                 " server_script_post_arg."),
+                                " server_script_pre_arg and"
+                                " server_script_post_arg."),
         'server_script_notify': __("Turn on to send a notification emails"
                                    " when the server pre and post scripts"
                                    " return non-zero. The output of the"

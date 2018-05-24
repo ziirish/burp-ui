@@ -31,12 +31,11 @@ The `burpui.cfg`_ configuration file contains a ``[Global]`` section as follow:
 ::
 
     [Global]
-    # burp server version 1 or 2
-    version = 2
-    # Handle multiple bui-servers or not
-    # If set to 'false', you will need to declare at least one 'Agent' section (see
-    # bellow)
-    single = true
+    # burp backend to load either one of 'burp1', 'burp2', or 'multi'.
+    # If you choose 'multi', you will have to declare at lease one 'Agent' section
+    # You can also use whatever custom backend you like if it is located in the
+    # 'plugins' directory and if it implements the right interface.
+    backend = burp2
     # authentication plugin (mandatory)
     # list the misc/auth directory to see the available backends
     # to disable authentication you can set "auth = none"
@@ -59,22 +58,14 @@ The `burpui.cfg`_ configuration file contains a ``[Global]`` section as follow:
 
 Each option is commented, but here is a more detailed documentation:
 
-- *version*: What version of `Burp`_ this `Burp-UI`_ instance manages. Can
-  either be *1* or *2*. This parameter determines which backend is loaded at
-  runtime.
+- *backend*: What `Burp`_ backend to load. Can either be one of *burp1*,
+  *burp2*, or *multi*, or can be whatever custom backend you like as long as it
+  implements the proper interface.
+  If providing a custom backend name, it must be located in the *plugins*
+  directory. You can also specify a custom external module by providing the
+  *dot-string* notation (example: *my.custom.backend*).
 
-  (see `Versions`_ for more details)
-- *single*: `Burp-UI`_ can run in two different modes. If it runs in
-  single mode (meaning you set this parameter to *true*), you can only
-  address **one** `Burp`_ server of the version specified by the previous
-  parameter.
-
-  If this option is set to *false*, `Burp-UI`_ will run as a *proxy* allowing
-  you to address multiple `Burp`_ servers. In this mode, you need to configure
-  **at least one** *Agent* section in your configuration file. You also need to
-  run one ``bui-agent`` per server.
-
-  (see `Modes`_ for more details)
+  (see `Backends`_ for more details)
 - *auth*: What `Authentication`_ backend to use.
 - *acl*: What `ACL`_ module to use.
 - *prefix*: You can host `Burp-UI`_ behind a sub-root path. See the `gunicorn
@@ -253,57 +244,90 @@ application:
 
 Some of these options are also available in the `bui-agent`_ configuration file.
 
-Modes
------
 
-`Burp-UI`_ provides two modes:
+Backends
+--------
 
-- `Single`_
-- `Multi-Agent`_
+`Burp-UI`_ ships with three different backends:
 
-These modes allow you to either access a single `Burp`_ server or multiple
-`Burp`_ servers hosted on separated hosts.
+- `Burp1`_
+- `Burp2`_
+- `Multi`_
+
+These backends allow you to either connect to a `Burp`_ server version 1.x.x or
+2.x.x.
+
+.. note::
+    If you are using a `Burp`_ server version 2.x.x you **have** to use the
+    `Burp2`_ backend, no matter what `Burp`_'s protocol you are using.
 
 
-Single
-^^^^^^
+Burp1
+^^^^^
 
-This mode is the **default** and the easiest one. It can be activated by setting
-the *single* parameter in the ``[Global]`` section of your `burpui.cfg`_
-file to *true*:
+.. note::
+    Make sure you have read and understood the `requirements
+    <requirements.html#burp1>`__ first.
+
+The *burp-1* backend can be enabled by setting the *backend* option to *burp1* in
+the ``[Global]`` section of your `burpui.cfg`_ file:
 
 ::
 
     [Global]
-    single = true
+    backend = burp1
 
 
-That's all you need to do for this mode to work.
+Now you can refer to the `Options`_ section for further setup.
 
 
-Multi-Agent
-^^^^^^^^^^^
+Burp2
+^^^^^
 
-This mode allows you to access multiple `Burp`_ servers through the `bui-agent`_.
+.. note::
+    Make sure you have read and understood the `requirements
+    <requirements.html#burp2>`__ first.
+
+.. note::
+    The `gunicorn <gunicorn.html#daemon>`__ documentation may help you
+    configuring your system.
+
+The *burp-2* backend can be enabled by setting the *backend* option to *burp2* in
+the ``[Global]`` section of your `burpui.cfg`_ file:
+
+::
+
+    [Global]
+    backend = burp2
+
+
+Now you can refer to the `Options`_ section for further setup.
+
+
+Multi
+^^^^^
+
+The *multi* backend allows you to connect to different *bui-agents*. It can be
+enabled by setting the *backend* option to *multi* in the ``[Global]`` section
+of your `burpui.cfg`_ file:
+
+::
+
+    [Global]
+    backend = multi
+
+
+This backend allows you to access multiple `Burp`_ servers through the `bui-agent`_.
 The architecture is available on the bui-agent
 `page <buiagent.html#architecture>`__.
 
 
-To enable this mode, you need to set the *single* parameter of the
-``[Global]`` section of your `burpui.cfg`_ file to *false*:
-
-::
-
-    [Global]
-    single = false
-
-
-Once this mode is enabled, you have to create **one** ``[Agent]`` section
+Once this backend is enabled, you have to create **one** ``[Agent]`` section
 **per** agent you want to connect to in your `burpui.cfg`_ file:
 
 ::
 
-    # If you set single to 'false', add at least one section like this per
+    # If you set backend to 'multi', add at least one section like this per
     # bui-agent
     [Agent:agent1]
     # bui-agent address
@@ -329,64 +353,6 @@ Once this mode is enabled, you have to create **one** ``[Agent]`` section
 .. note:: The sections must be called ``[Agent:<label>]`` (case sensitive)
 
 To configure your agents, please refer to the `bui-agent`_ page.
-
-
-Versions
---------
-
-`Burp-UI`_ ships with two different backends:
-
-- `Burp1`_
-- `Burp2`_
-
-These backends allow you to either connect to a `Burp`_ server version 1.x.x or
-2.x.x.
-
-.. note::
-    If you are using a `Burp`_ server version 2.x.x you **have** to use the
-    `Burp2`_ backend, no matter what `Burp`_'s protocol you are using.
-
-
-Burp1
-^^^^^
-
-.. note::
-    Make sure you have read and understood the `requirements
-    <requirements.html#burp1>`__ first.
-
-The *burp-1* backend can be enabled by setting the *version* option to *1* in
-the ``[Global]`` section of your `burpui.cfg`_ file:
-
-::
-
-    [Global]
-    version = 1
-
-
-Now you can refer to the `Options`_ section for further setup.
-
-
-Burp2
-^^^^^
-
-.. note::
-    Make sure you have read and understood the `requirements
-    <requirements.html#burp2>`__ first.
-
-.. note::
-    The `gunicorn <gunicorn.html#daemon>`__ documentation may help you
-    configuring your system.
-
-The *burp-2* backend can be enabled by setting the *version* option to *2* in
-the ``[Global]`` section of your `burpui.cfg`_ file:
-
-::
-
-    [Global]
-    version = 2
-
-
-Now you can refer to the `Options`_ section for further setup.
 
 
 Options

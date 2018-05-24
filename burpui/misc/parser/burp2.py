@@ -103,88 +103,88 @@ class Parser(Burp1):
     doc = Burp1.doc
     doc.update({
         'acl': __("If acl support is compiled into burp, this allows you to"
-                   " decide whether or not to backup acls at runtime. The"
-                   " default is '1'."),
+                  " decide whether or not to backup acls at runtime. The"
+                  " default is '1'."),
         'xattr': __("If xattr support is compiled into burp, this allows you"
-                     " to decide whether or not to backup xattrs at runtime."
-                     " The default is '1'."),
+                    " to decide whether or not to backup xattrs at runtime."
+                    " The default is '1'."),
         'randomise': __("When running a timed backup, sleep for a random"
-                         " number of seconds (between 0 and the number given)"
-                         " before contacting the server. Alternatively, this"
-                         " can be specified by the '-q' command line option."),
+                        " number of seconds (between 0 and the number given)"
+                        " before contacting the server. Alternatively, this"
+                        " can be specified by the '-q' command line option."),
         'manual_delete': __("This can be overridden by the clientconfdir"
-                             " configuration files in clientconfdir on the"
-                             " server. When the server needs to delete old"
-                             " backups, or rubble left over from generating"
-                             " reverse patches with librsync=1, it will"
-                             " normally delete them in place. If you use the"
-                             " 'manual_delete' option, the files will be moved"
-                             " to the path specified for deletion at a later"
-                             " point. You will then need to configure a cron"
-                             " job, or similar, to delete the files yourself."
-                             " Do not specify a path that is not on the same"
-                             " filesystem as the client storage directory."),
+                            " configuration files in clientconfdir on the"
+                            " server. When the server needs to delete old"
+                            " backups, or rubble left over from generating"
+                            " reverse patches with librsync=1, it will"
+                            " normally delete them in place. If you use the"
+                            " 'manual_delete' option, the files will be moved"
+                            " to the path specified for deletion at a later"
+                            " point. You will then need to configure a cron"
+                            " job, or similar, to delete the files yourself."
+                            " Do not specify a path that is not on the same"
+                            " filesystem as the client storage directory."),
         'label': __("You can have multiple labels, and they can be"
-                     " overridden in the client configuration files in"
-                     " clientconfdir on the server. They will appear as an"
-                     " array of strings in the server status monitor JSON"
-                     " output. The idea is to provide a mechanism for"
-                     " arbitrary values to be passed to clients of the server"
-                     " status monitor."),
+                    " overridden in the client configuration files in"
+                    " clientconfdir on the server. They will appear as an"
+                    " array of strings in the server status monitor JSON"
+                    " output. The idea is to provide a mechanism for"
+                    " arbitrary values to be passed to clients of the server"
+                    " status monitor."),
         'status_address': __("Defines the main TCP address that the server "
-                              "listens on for status requests. The default  "
-                              "is  special  value  'localhost'  that includes "
-                              "both '::1' (if available) and '127.0.0.1' "
-                              "(always)."),
+                             "listens on for status requests. The default  "
+                             "is  special  value  'localhost'  that includes "
+                             "both '::1' (if available) and '127.0.0.1' "
+                             "(always)."),
         'glob_after_script_pre': __("Set this to 0 if you do not want"
-                                     " include_glob settings to be evaluated"
-                                     " after the pre script is run. The"
-                                     " default is 1."),
+                                    " include_glob settings to be evaluated"
+                                    " after the pre script is run. The"
+                                    " default is 1."),
         'enabled': __("Set this to 0 if you want to disable all clients. The"
-                       " default is 1. This option can be overridden"
-                       " per-client in the client configuration files in"
-                       " clientconfdir on the server."),
+                      " default is 1. This option can be overridden"
+                      " per-client in the client configuration files in"
+                      " clientconfdir on the server."),
         'cname_fqdn': __("Whether to keep fqdn cname (like"
-                          " 'testclient.example.com') when looking-up in"
-                          " clientconfdir. This also affects the fqdn lookup"
-                          " on the client (see client configuration options"
-                          " for details). The default is 1. When set to 0, the"
-                          " fqdn provided by the client while authenticating"
-                          " will be stripped ('testclient.example.com'"
-                          " becomes 'testclient')."),
+                         " 'testclient.example.com') when looking-up in"
+                         " clientconfdir. This also affects the fqdn lookup"
+                         " on the client (see client configuration options"
+                         " for details). The default is 1. When set to 0, the"
+                         " fqdn provided by the client while authenticating"
+                         " will be stripped ('testclient.example.com'"
+                         " becomes 'testclient')."),
         'cname_lowercase': __("Whether to force lowercase cname when"
-                               " looking-up in clientconfdir. This also"
-                               " affects the fqdn lookup on the client (see"
-                               " client configuration options for details)."
-                               " The default is 0. When set to 1 the name"
-                               " provided by the client while authenticating"
-                               " will be lowercased."),
+                              " looking-up in clientconfdir. This also"
+                              " affects the fqdn lookup on the client (see"
+                              " client configuration options for details)."
+                              " The default is 0. When set to 1 the name"
+                              " provided by the client while authenticating"
+                              " will be lowercased."),
         'port': __("Defines the main TCP port that the server listens on. "
-                    "Specify multiple 'port' entries on separate lines in "
-                    "order to listen on multiple ports. Each port can be "
-                    "configured with its own 'max_children' value."),
+                   "Specify multiple 'port' entries on separate lines in "
+                   "order to listen on multiple ports. Each port can be "
+                   "configured with its own 'max_children' value."),
         'max_children': __("Defines the number of child processes to fork "
-                            "(the number of clients that can simultaneously "
-                            "connect. The default is 5. Specify multiple "
-                            "'max_children' entries on separate lines if you "
-                            "have configured multiple port entries."),
+                           "(the number of clients that can simultaneously "
+                           "connect. The default is 5. Specify multiple "
+                           "'max_children' entries on separate lines if you "
+                           "have configured multiple port entries."),
         'status_port': __("Defines the TCP port that the server listens on "
-                           "for status requests. Comment this out to have no "
-                           "status server. Specify multiple 'status_port' "
-                           "entries on separate lines in order to listen on "
-                           "multiple ports. Each port can be configured with "
-                           "its own 'max_status_children' value."),
+                          "for status requests. Comment this out to have no "
+                          "status server. Specify multiple 'status_port' "
+                          "entries on separate lines in order to listen on "
+                          "multiple ports. Each port can be configured with "
+                          "its own 'max_status_children' value."),
         'max_status_children': __("Defines the number of status child "
-                                   "processes to fork (the number of status "
-                                   "clients that can simultaneously connect. "
-                                   "The default is 5. Specify multiple "
-                                   "'max_status_children' entries on separate "
-                                   "lines if you have configured multiple "
-                                   "status_port entries."),
+                                  "processes to fork (the number of status "
+                                  "clients that can simultaneously connect. "
+                                  "The default is 5. Specify multiple "
+                                  "'max_status_children' entries on separate "
+                                  "lines if you have configured multiple "
+                                  "status_port entries."),
         'rblk_memory_max': __("The maximum amount of data from the disk "
-                               "cached in server memory during a protocol2 "
-                               "restore/verify. The default is 256Mb. This "
-                               "option can be overriden per-client in the "
-                               "client configuration files in clientconfdir "
-                               "on the server."),
+                              "cached in server memory during a protocol2 "
+                              "restore/verify. The default is 256Mb. This "
+                              "option can be overriden per-client in the "
+                              "client configuration files in clientconfdir "
+                              "on the server."),
     })
