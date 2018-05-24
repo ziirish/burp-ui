@@ -9,16 +9,11 @@ jQuery/Bootstrap
 
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 """
-import sys
 import warnings
 
 from .app import init
 
 warnings.simplefilter('always', RuntimeWarning)
-
-if sys.version_info < (3, 0):  # pragma: no cover
-    reload(sys)
-    sys.setdefaultencoding('utf-8')
 
 
 # backward compatibility

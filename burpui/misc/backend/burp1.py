@@ -24,13 +24,9 @@ from ..parser.burp1 import Parser
 from ...utils import human_readable as _hr, BUIcompress, utc_to_local
 from ...security import sanitize_string
 from ...exceptions import BUIserverException
-from ..._compat import unquote, PY3, to_unicode, to_bytes
+from ..._compat import unquote, to_unicode, to_bytes
 
-if PY3:  # pragma: no cover
-    from shlex import quote
-else:
-    from pipes import quote
-    from itertools import imap as map
+from shlex import quote
 
 G_BURPPORT = 4972
 G_BURPHOST = u'::1'

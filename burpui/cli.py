@@ -317,7 +317,7 @@ def compile_translation():
               help='Dry mode. Do not edit the files but display changes')
 def setup_burp(bconfcli, bconfsrv, client, host, redis, database, plugins, dry):
     """Setup burp client for burp-ui."""
-    if app.vers != 2:
+    if app.config['BACKEND'] != 'burp2':
         click.echo(
             click.style(
                 'Sorry, you can only setup the Burp 2 client',
@@ -327,7 +327,7 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database, plugins, dry):
         )
         sys.exit(1)
 
-    if not app.standalone:
+    if not app.config['STANDALONE']:
         click.echo(
             click.style(
                 'Sorry, only the standalone mode is supported',
@@ -782,7 +782,7 @@ password = abcdefgh
               help='Show you some tips')
 def diag(client, host, tips):
     """Check Burp-UI is correctly setup."""
-    if app.vers != 2:
+    if app.config['BACKEND'] != 'burp2':
         click.echo(
             click.style(
                 'Sorry, you can only setup the Burp 2 client',
@@ -792,7 +792,7 @@ def diag(client, host, tips):
         )
         sys.exit(1)
 
-    if not app.standalone:
+    if not app.config['STANDALONE']:
         click.echo(
             click.style(
                 'Sorry, only the standalone mode is supported',
@@ -1124,15 +1124,13 @@ def sysinfo(verbose, load):
         except Exception as e:
             msg = str(e)
 
-    backend_version = app.vers
-    if not app.standalone:
-        backend_version = 'multi'
+    backend_version = app.config['BACKEND']
 
     colors = {
         'True': 'green',
         'False': 'red',
     }
-    embedded_ws = str(app.websocket)
+    embedded_ws = str(app.config['WITH_WS'])
     available_ws = str(WS_AVAILABLE)
 
     click.echo('Python version:      {}.{}.{}'.format(sys.version_info[0], sys.version_info[1], sys.version_info[2]))
@@ -1140,13 +1138,13 @@ def sysinfo(verbose, load):
     click.echo('OS:                  {}:{} ({})'.format(platform.system(), platform.release(), os.name))
     if platform.system() == 'Linux':
         click.echo('Distribution:        {} {} {}'.format(*platform.dist()))
-    click.echo('Single mode:         {}'.format(app.standalone))
+    click.echo('Single mode:         {}'.format(app.config['STANDALONE']))
     click.echo('Backend version:     {}'.format(backend_version))
     click.echo('WebSocket embedded:  {}'.format(click.style(embedded_ws, fg=colors[embedded_ws])))
     click.echo('WebSocket available: {}'.format(click.style(available_ws, colors[available_ws])))
     click.echo('Config file:         {}'.format(app.config.conffile))
     if load:
-        if not app.standalone and not msg:
+        if not app.config['STANDALONE'] and not msg:
             click.echo('Agents:')
             for agent, obj in iteritems(app.client.servers):
                 client_version = server_version = 'unknown'

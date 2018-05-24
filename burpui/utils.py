@@ -18,19 +18,14 @@ import logging
 
 from uuid import UUID
 from inspect import currentframe, getouterframes
-from ._compat import PY3, string_types
 
 NOTIF_OK = 0
 NOTIF_WARN = 1
 NOTIF_ERROR = 2
 NOTIF_INFO = 3
 
-if PY3:
-    long = int  # pragma: no cover
-    basestring = str  # pragma: no cover
 
-
-class human_readable(long):
+class human_readable(int):
     """define a human_readable class to allow custom formatting
     format specifiers supported :
         em : formats the size as bits in IEC format i.e. 1024 bits (128 bytes) = 1Kib
@@ -48,7 +43,7 @@ class human_readable(long):
             if fmt[-1].lower() in \
                     ['b', 'c', 'd', 'o', 'x', 'n', 'e', 'f', 'g', '%']:
                 # Numeric format.
-                return long(self).__format__(fmt)
+                return int(self).__format__(fmt)
             else:
                 return str(self).__format__(fmt)
 
@@ -82,81 +77,44 @@ class human_readable(long):
         return "{0:{1}}".format(t, width) if width != "" else t
 
 
-if PY3:  # pragma: no cover
-    class BUIlogger(logging.Logger):
-        padding = 0
-        """Logger class for more convenience"""
-        def makeRecord(self, name, level, fn, lno, msg,
-                       args, exc_info, func=None, extra=None, sinfo=None):
-            """
-            Try to guess where was call the function
-            """
-            cf = currentframe()
-            caller = getouterframes(cf)
-            cpt = 0
-            size = len(caller)
-            me = __file__
-            if me.endswith('.pyc'):
-                me = me[:-1]
-            # It's easy to get the _logger parent function because it's the
-            # following frame
-            while cpt < size - 1:
-                (_, filename, _, function_name, _, _) = caller[cpt]
-                if function_name == '_logger' and filename == me:
-                    cpt += 1
-                    break
+class BUIlogger(logging.Logger):
+    padding = 0
+    """Logger class for more convenience"""
+    def makeRecord(self, name, level, fn, lno, msg,
+                   args, exc_info, func=None, extra=None, sinfo=None):
+        """
+        Try to guess where was call the function
+        """
+        cf = currentframe()
+        caller = getouterframes(cf)
+        cpt = 0
+        size = len(caller)
+        me = __file__
+        if me.endswith('.pyc'):
+            me = me[:-1]
+        # It's easy to get the _logger parent function because it's the
+        # following frame
+        while cpt < size - 1:
+            (_, filename, _, function_name, _, _) = caller[cpt]
+            if function_name == '_logger' and filename == me:
                 cpt += 1
-            cpt += self.padding
-            (frame, filename, line_number, function_name, lines, index) = \
-                caller[cpt]
-            return super(BUIlogger, self).makeRecord(
-                name,
-                level,
-                filename,
-                line_number,
-                msg,
-                args,
-                exc_info,
-                func=function_name,
-                extra=extra,
-                sinfo=sinfo
-            )
-else:
-    class BUIlogger(logging.Logger):
-        padding = 0
-        """Logger class for more convenience"""
-        def makeRecord(self, name, level, fn, lno, msg,
-                       args, exc_info, func=None, extra=None):
-            """Try to guess where was call the function"""
-            cf = currentframe()
-            caller = getouterframes(cf)
-            cpt = 0
-            size = len(caller)
-            me = __file__
-            if me.endswith('.pyc'):
-                me = me[:-1]
-            # It's easy to get the _logger parent function because it's the
-            # following frame
-            while cpt < size - 1:
-                (_, filename, _, function_name, _, _) = caller[cpt]
-                if function_name == '_logger' and filename == me:
-                    cpt += 1
-                    break
-                cpt += 1
-            cpt += self.padding
-            (frame, filename, line_number, function_name, lines, index) = \
-                caller[cpt]
-            return super(BUIlogger, self).makeRecord(
-                name,
-                level,
-                filename,
-                line_number,
-                msg,
-                args,
-                exc_info,
-                func=function_name,
-                extra=extra
-            )
+                break
+            cpt += 1
+        cpt += self.padding
+        (frame, filename, line_number, function_name, lines, index) = \
+            caller[cpt]
+        return super(BUIlogger, self).makeRecord(
+            name,
+            level,
+            filename,
+            line_number,
+            msg,
+            args,
+            exc_info,
+            func=function_name,
+            extra=extra,
+            sinfo=sinfo
+        )
 
 
 class BUIlogging(object):
@@ -217,7 +175,7 @@ class BUIcompress():
                 # because zipfile does not seem to support them natively
                 vfile = zipfile.ZipInfo()
                 vfile.filename = arcname  # That's the name of the actual file
-                vfile.external_attr |= 0o120000 << long(16)  # symlink file type
+                vfile.external_attr |= 0o120000 << int(16)  # symlink file type
                 vfile.compress_type = zipfile.ZIP_STORED
                 # os.readlink gives us the target of the symlink
                 self.arch.writestr(vfile, os.readlink(path))
@@ -238,7 +196,7 @@ def is_uuid(string):
 
 
 def lookup_file(name=None, guess=True, directory=False, check=True):
-    if name and isinstance(name, basestring):
+    if name and isinstance(name, str):
         if os.path.isfile(name) or name == '/dev/null':
             return name
         elif directory and os.path.isdir(name):
@@ -247,7 +205,7 @@ def lookup_file(name=None, guess=True, directory=False, check=True):
             if check:
                 raise IOError('File not found: \'{}\''.format(name))
             return name
-    if name and isinstance(name, basestring):
+    if name and isinstance(name, str):
         names = [name]
     elif name:
         names = name
@@ -345,7 +303,7 @@ class ReverseProxied(object):
         self.app = app
 
     def __call__(self, environ, start_response):
-        script_name = environ.get('HTTP_X_SCRIPT_NAME', self.app.prefix)
+        script_name = environ.get('HTTP_X_SCRIPT_NAME', self.app.config['BUI_PREFIX'])
         if script_name:
             if script_name.startswith('/'):
                 environ['SCRIPT_NAME'] = script_name
@@ -369,4 +327,4 @@ def make_list(data):
         return data
     if data is None:
         return []
-    return list(data) if not isinstance(data, string_types) else [data]
+    return list(data) if not isinstance(data, str) else [data]

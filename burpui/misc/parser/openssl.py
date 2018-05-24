@@ -11,14 +11,9 @@ import codecs
 import logging
 import subprocess
 
-from ..._compat import PY3
-
 from hashlib import md5
 from six import iteritems
 from OpenSSL import crypto
-
-if PY3:
-    long = int
 
 
 class OSSLAuth(object):
@@ -88,7 +83,7 @@ class OSSLAuth(object):
 
         revoked = self.crl.get_revoked() or []
         for rvk in revoked:
-            if client_crt.get_serial_number() == long(rvk.get_serial(), 16):
+            if client_crt.get_serial_number() == int(rvk.get_serial(), 16):
                 return True
 
         return False

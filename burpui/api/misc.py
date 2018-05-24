@@ -622,7 +622,7 @@ class History(Resource):
                 ret.append(feed)
             return ret
 
-        if bui.standalone:
+        if bui.config['STANDALONE']:
             if data:
                 clients_list = data.keys()
             else:
@@ -788,7 +788,7 @@ class History(Resource):
         events = []
         filtered = False
         if data:
-            if bui.standalone:
+            if bui.config['STANDALONE']:
                 events = data.get(client, [None])
             else:
                 events = data.get(server, {}).get(client, [None])

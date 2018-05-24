@@ -21,7 +21,6 @@ from time import gmtime, strftime, sleep
 # Try to load modules from our current env first
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
 
-from burpui._compat import PY3  # noqa
 from burpui.config import config  # noqa
 from burpui.ext.async import celery  # noqa
 from burpui.ext.cache import cache  # noqa
@@ -36,9 +35,6 @@ try:
 except ImportError:
     WS_AVAILABLE = False
 
-if not PY3:
-    from itertools import imap as map
-
 if config.get('WITH_SQL'):
     from burpui.ext.sql import db
 else:
@@ -51,10 +47,6 @@ ME = __name__
 LOCK_EXPIRE = 60 * 30  # Lock expires in 30 minutes
 
 BEAT_SCHEDULE = {
-    'ping-backend-hourly': {
-        'task': '{}.ping_backend'.format(ME),
-        'schedule': crontab(minute='15'),  # run every hour
-    },
     'backup-running-4-minutely': {
         'task': '{}.backup_running'.format(ME),
         'schedule': timedelta(seconds=15),  # run every 15 seconds
@@ -129,24 +121,6 @@ def wait_for(lock_name, value, wait=10, timeout=LOCK_EXPIRE):
     return old_lock
 
 
-@celery.task(ignore_result=True)
-def ping_backend():
-    if bui.standalone:
-        bui.client.status()
-    else:
-        def __status(server):
-            (serv, back) = server
-            try:
-                return bui.client.status(agent=serv)
-            except BUIserverException:
-                return False
-
-        list(map(
-            __status,
-            iteritems(bui.client.servers)
-        ))
-
-
 @celery.task(bind=True, ignore_result=True)
 def backup_running(self):
     # run one at the time, if one task was already running, we just discard
@@ -182,7 +156,7 @@ def get_all_backups(self):
         return None
     try:
         backups = {}
-        if bui.standalone:
+        if bui.config['STANDALONE']:
             for cli in bui.client.get_all_clients():
                 backups[cli['name']] = bui.client.get_client(cli['name'])
         else:
@@ -203,7 +177,7 @@ def get_all_clients_reports(self):
         return None
     try:
         reports = {}
-        if bui.standalone:
+        if bui.config['STANDALONE']:
             reports = bui.client.get_clients_report(bui.client.get_all_clients())
         else:
             for serv in bui.client.servers:

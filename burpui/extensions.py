@@ -11,10 +11,7 @@ import os
 import re
 import warnings
 
-from ._compat import PY3, to_unicode
-
-if PY3:  # pragma: no cover
-    basestring = str
+from ._compat import to_unicode
 
 
 def parse_db_setting(string):
@@ -284,7 +281,7 @@ def create_celery(myapp, warn=True):
         from .exceptions import BUIserverException
         host, oport, pwd = get_redis_server(myapp)
         odb = 2
-        if isinstance(myapp.use_celery, basestring):
+        if isinstance(myapp.use_celery, str):
             try:
                 (_, _, pwd, host, port, db) = parse_db_setting(myapp.use_celery)
                 if not port:

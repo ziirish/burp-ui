@@ -34,13 +34,18 @@ try:
 except ImportError:
     USE_SENDFILE = False
 
-G_PORT = 10000
-G_BIND = u'::'
-G_SSL = False
-G_VERSION = 2
-G_SSLCERT = u''
-G_SSLKEY = u''
-G_PASSWORD = u'password'
+
+BUI_DEFAULTS = {
+    'Global': {
+        'port': 10000,
+        'bind': '::',
+        'ssl': False,
+        'sslcert': '',
+        'sslkey': '',
+        'backend': 'burp2',
+        'password': 'password',
+    },
+}
 
 DISCLOSURE = 5
 
@@ -55,21 +60,24 @@ class BurpHandler(BUIbackend):
     foreign = BUIbackend.__abstractmethods__
     BUIbackend.__abstractmethods__ = frozenset()
 
-    def __init__(self, vers=2, logger=None, conf=None):
-        self.vers = vers
+    def __init__(self, backend='burp2', logger=None, conf=None):
+        self.backend = backend
         self.logger = logger
 
         top = __name__
-        if '.' in top:
-            top = top.split('.')[0]
-        module = '{0}.misc.backend.burp{1}'.format(top, self.vers)
+        if '.' in self.backend:
+            module = self.backend
+        else:
+            if '.' in top:
+                top = top.split('.')[0]
+            module = '{0}.misc.backend.{1}'.format(top, self.backend)
         try:
             sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
             mod = __import__(module, fromlist=['Burp'])
             Client = mod.Burp
             self.backend = Client(conf=conf)
         except Exception as e:
-            self.logger.error('{}\n\nFailed loading backend for Burp version {}: {}'.format(traceback.format_exc(), self.vers, str(e)))
+            self.logger.error('{}\n\nFailed loading backend {}: {}'.format(traceback.format_exc(), self.backend, str(e)))
             sys.exit(2)
 
     def __getattribute__(self, name):
@@ -90,17 +98,6 @@ class BurpHandler(BUIbackend):
 
 class BUIAgent(BUIbackend, BUIlogging):
     BUIbackend.__abstractmethods__ = frozenset()
-    defaults = {
-        'Global': {
-            'port': G_PORT,
-            'bind': G_BIND,
-            'ssl': G_SSL,
-            'sslcert': G_SSLCERT,
-            'sslkey': G_SSLKEY,
-            'version': G_VERSION,
-            'password': G_PASSWORD,
-        },
-    }
 
     def __init__(self, conf=None, level=0, logfile=None, debug=False):
         self.debug = debug
@@ -143,18 +140,18 @@ class BUIAgent(BUIbackend, BUIlogging):
 
         # Raise exception if errors are encountered during parsing
         self.conf = config
-        self.conf.parse(conf, True, self.defaults)
+        self.conf.parse(conf, True, BUI_DEFAULTS)
         self.conf.default_section('Global')
         self.port = self.conf.safe_get('port', 'integer')
         self.bind = self.conf.safe_get('bind')
-        self.vers = self.conf.safe_get('version', 'integer')
+        self.backend = self.conf.safe_get('backend')
         self.ssl = self.conf.safe_get('ssl', 'boolean')
         self.sslcert = self.conf.safe_get('sslcert')
         self.sslkey = self.conf.safe_get('sslkey')
         self.password = self.conf.safe_get('password')
         self.conf.setdefault('BUI_AGENT', True)
 
-        self.client = BurpHandler(self.vers, self.logger, self.conf)
+        self.client = BurpHandler(self.backend, self.logger, self.conf)
         pool = Pool(10000)
         if not self.ssl:
             self.server = StreamServer((self.bind, self.port), self.handle, spawn=pool)
@@ -277,7 +274,7 @@ class BUIAgent(BUIbackend, BUIlogging):
                                 key = to_bytes(key)
                                 bytes_pickles = pickles
                                 digest = hmac.new(key, bytes_pickles, hashlib.sha1).hexdigest()
-                                if digest != j['digest']:
+                                if not hmac.compare_digest(digest, j['digest']):
                                     raise BUIserverException('Integrity check failed: {} != {}'.format(digest, j['digest']))
                                 # We need to replace the burpui datastructure
                                 # module by our own since it's the same but

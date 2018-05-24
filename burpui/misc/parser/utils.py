@@ -948,17 +948,11 @@ class File(dict):
         self._dirty = True
         return self.options.pop(*args)
 
-    def __cmp__(self, dic):
-        return cmp(self.options, dic)
-
     def __contains__(self, item):
         return item in self.options
 
     def __iter__(self):
         return iter(self.options)
-
-    def __unicode__(self):
-        return unicode(self.__repr__())
 
     @property
     def raw(self):
@@ -1707,10 +1701,6 @@ class Config(File):
         self._dirty = True
         return self.get_default(True).pop(*args)
 
-    def __cmp__(self, dic):
-        self._refresh()
-        return cmp(self.options, dic)
-
     def __contains__(self, item):
         self._refresh()
         return item in self.options
@@ -1718,6 +1708,3 @@ class Config(File):
     def __iter__(self):
         self._refresh()
         return iter(self.options)
-
-    def __unicode__(self):
-        return unicode(repr(self))

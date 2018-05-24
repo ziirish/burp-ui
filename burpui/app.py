@@ -421,7 +421,7 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
         g.now = round(time.time())
         g.date_format = session.get('dateFormat', 'llll')
         # make sure to store secure cookie if required
-        if app.scookie:
+        if app.config['BUI_SCOOKIE']:
             criteria = [
                 request.is_secure,
                 request.headers.get('X-Forwarded-Proto', 'http') == 'https'

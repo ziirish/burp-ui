@@ -65,7 +65,7 @@ class ServersStats(Resource):
         r = []
         check = False
 
-        if bui.standalone:
+        if bui.config['STANDALONE']:
             return r
 
         if not current_user.is_anonymous and not current_user.acl.is_admin():

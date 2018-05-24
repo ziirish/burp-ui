@@ -83,7 +83,7 @@ And here is the main site
 def calendar(server=None, client=None):
     server = server or request.args.get('serverName')
     client = client or request.args.get('clientName')
-    if not bui.standalone:
+    if not bui.config['STANDALONE']:
         servers = not server and not client
         clients = bool(server)
         cli = bool(client)
@@ -276,7 +276,7 @@ def live_monitor(server=None, name=None):
     """Live status monitor view"""
     server = server or request.args.get('serverName')
     running = bui.client.is_one_backup_running()
-    if bui.standalone:
+    if bui.config['STANDALONE']:
         if not running:
             flash(_('Sorry, there are no running backups'), 'warning')
             return redirect(url_for('.home'))
@@ -549,7 +549,7 @@ def about():
 @login_required
 def home():
     """Home page"""
-    if bui.standalone:
+    if bui.config['STANDALONE']:
         return redirect(url_for('.clients'))
     else:
         server = request.args.get('serverName')

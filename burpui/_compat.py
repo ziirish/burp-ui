@@ -8,55 +8,12 @@
 
 """
 import re
-import sys
 
-try:
-    import cPickle as pickle  # noqa
-except ImportError:
-    import pickle  # noqa
+import pickle  # noqa
 
-if sys.version_info[0] >= 3:
-    PY3 = True
-    from urllib.parse import unquote, quote, urlparse, urljoin  # noqa
-    text_type = str
-    string_types = (str,)
-
-    def iterkeys(d, *args, **kwargs):
-        return iter(d.keys(*args, **kwargs))
-
-    def itervalues(d, *args, **kwargs):
-        return iter(d.values(*args, **kwargs))
-
-    def iteritems(d, *args, **kwargs):
-        return iter(d.items(*args, **kwargs))
-
-    def iterlists(d, *args, **kwargs):
-        return iter(d.lists(*args, **kwargs))
-
-    def iterlistvalues(d, *args, **kwargs):
-        return iter(d.listvalues(*args, **kwargs))
-
-else:
-    PY3 = False
-    from urllib import unquote, quote  # noqa
-    from urlparse import urlparse, urljoin  # noqa
-    text_type = unicode
-    string_types = (str, unicode)
-
-    def iterkeys(d, *args, **kwargs):
-        return d.iterkeys(*args, **kwargs)
-
-    def itervalues(d, *args, **kwargs):
-        return d.itervalues(*args, **kwargs)
-
-    def iteritems(d, *args, **kwargs):
-        return d.iteritems(*args, **kwargs)
-
-    def iterlists(d, *args, **kwargs):
-        return d.iterlists(*args, **kwargs)
-
-    def iterlistvalues(d, *args, **kwargs):
-        return d.iterlistvalues(*args, **kwargs)
+from urllib.parse import unquote, quote, urlparse, urljoin  # noqa
+text_type = str
+string_types = (str,)
 
 
 def to_bytes(text):
@@ -72,7 +29,7 @@ def to_unicode(input_bytes, encoding='utf-8'):
         input_bytes = input_bytes.decode(encoding)
     elif re.match(r'\\u[0-9a-f]{4}', input_bytes):
         input_bytes = input_bytes.decode('unicode-escape')
-    return input_bytes or u''
+    return input_bytes or ''
 
 
 # maps module name -> attribute name -> original item

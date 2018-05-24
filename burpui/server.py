@@ -23,45 +23,60 @@ from flask import Flask
 from six import iteritems
 
 
-G_PORT = 5000
-G_BIND = u'::'
-G_REFRESH = 180
-G_LIVEREFRESH = 5
-G_IGNORE_LABELS = ["color:.*"]
-G_FORMAT_LABELS = ["s/^os:\s*//"]
-G_DEFAULT_STRIP = 0
-G_SSL = False
-G_SINGLE = True
-G_SSLCERT = u''
-G_SSLKEY = u''
-G_VERSION = 2
-G_AUTH = [u'basic']
-G_ACL = u'none'
-G_STORAGE = u''
-G_CACHE = u''
-G_SESSION = u''
-G_REDIS = u''
-G_LIMITER = False
-G_RATIO = u'60/minute'
-G_CELERY = False
-G_SCOOKIE = True
-G_DEMO = False
-G_DSN = u''
-G_PIWIK_URL = u''
-G_PIWIK_SCRIPT = u'piwik.php'
-G_PIWIK_ID = 0
-G_APPSECRET = u'random'
-G_COOKIETIME = 14
-G_SESSIONTIME = 5
-G_DATABASE = u''
-G_PREFIX = u''
-G_PLUGINS = []
-G_NO_SERVER_RESTORE = False
-G_WS_ENABLED = True
-G_WS_EMBEDDED = False
-G_WS_BROKER = u'redis'
-G_WS_URL = u''
-G_WS_DEBUG = False
+BUI_DEFAULTS = {
+    'Global': {
+        'port': 5000,
+        'bind': '::',
+        'ssl': False,
+        'single': True,
+        'sslcert': '',
+        'sslkey': '',
+        'version': 2,
+        'backend': 'burp2',
+        'auth': ['basic'],
+        'acl': 'none',
+        'prefix': '',
+        'plugins': [],
+        'demo': False,
+        'dsn': '',
+        'piwik_url': '',
+        'piwik_script': 'piwik.php',
+        'piwik_id': 0,
+    },
+    'UI': {
+        'refresh': 180,
+        'liverefresh': 5,
+        'ignore_labels': ["color:.*"],
+        'format_labels': ["s/^os:\s*//"],
+        'default_strip': 0,
+    },
+    'Security': {
+        'scookie': True,
+        'appsecret': 'random',
+        'cookietime': 14,
+        'sessiontime': 5,
+    },
+    'Production': {
+        'storage': '',
+        'session': '',
+        'cache': '',
+        'redis': '',
+        'celery': False,
+        'database': '',
+        'limiter': False,
+        'ratio': '60/minute',
+    },
+    'WebSocket': {
+        'enabled': True,
+        'embedded': False,
+        'broker': 'redis',
+        'url': '',
+        'debug': False,
+    },
+    'Experimental': {
+        'noserverrestore': False,
+    }
+}
 
 
 class BUIServer(Flask):
@@ -69,61 +84,6 @@ class BUIServer(Flask):
     The :class:`burpui.server.BUIServer` class provides the ``Burp-UI`` server.
     """
     gunicorn = False
-
-    defaults = {
-        'Global': {
-            'port': G_PORT,
-            'bind': G_BIND,
-            'ssl': G_SSL,
-            'standalone': G_SINGLE,
-            'single': G_SINGLE,
-            'sslcert': G_SSLCERT,
-            'sslkey': G_SSLKEY,
-            'version': G_VERSION,
-            'auth': G_AUTH,
-            'acl': G_ACL,
-            'prefix': G_PREFIX,
-            'plugins': G_PLUGINS,
-            'demo': G_DEMO,
-            'dsn': G_DSN,
-            'piwik_url': G_PIWIK_URL,
-            'piwik_script': G_PIWIK_SCRIPT,
-            'piwik_id': G_PIWIK_ID,
-        },
-        'UI': {
-            'refresh': G_REFRESH,
-            'liverefresh': G_LIVEREFRESH,
-            'ignore_labels': G_IGNORE_LABELS,
-            'format_labels': G_FORMAT_LABELS,
-            'default_strip': G_DEFAULT_STRIP,
-        },
-        'Security': {
-            'scookie': G_SCOOKIE,
-            'appsecret': G_APPSECRET,
-            'cookietime': G_COOKIETIME,
-            'sessiontime': G_SESSIONTIME,
-        },
-        'Production': {
-            'storage': G_STORAGE,
-            'session': G_SESSION,
-            'cache': G_CACHE,
-            'redis': G_REDIS,
-            'celery': G_CELERY,
-            'database': G_DATABASE,
-            'limiter': G_LIMITER,
-            'ratio': G_RATIO,
-        },
-        'WebSocket': {
-            'enabled': G_WS_ENABLED,
-            'embedded': G_WS_EMBEDDED,
-            'broker': G_WS_BROKER,
-            'url': G_WS_URL,
-            'debug': G_WS_DEBUG,
-        },
-        'Experimental': {
-            'noserverrestore': G_NO_SERVER_RESTORE,
-        }
-    }
 
     def __init__(self):
         """The :class:`burpui.server.BUIServer` class provides the ``Burp-UI``
@@ -175,10 +135,10 @@ class BUIServer(Flask):
             raise IOError('No configuration file found')
 
         # Raise exception if errors are encountered during parsing
-        self.conf.parse(conf, True, self.defaults)
+        self.conf.parse(conf, True, BUI_DEFAULTS)
         self.conf.default_section('Global')
 
-        self.port = self.config['BUI_PORT'] = self.conf.safe_get(
+        self.config['BUI_PORT'] = self.conf.safe_get(
             'port',
             'integer'
         )
@@ -190,42 +150,32 @@ class BUIServer(Flask):
         self.config['BUI_PIWIK_URL'] = self.conf.safe_get('piwik_url')
         self.config['BUI_PIWIK_SCRIPT'] = self.conf.safe_get('piwik_script')
         self.config['BUI_PIWIK_ID'] = self.conf.safe_get('piwik_id', 'integer')
-        self.bind = self.config['BUI_BIND'] = self.conf.safe_get('bind')
+        self.config['BUI_BIND'] = self.conf.safe_get('bind')
         version = self.conf.safe_get('version', 'integer')
         if unittest and version != 1:
             version = 1
-        self.vers = self.config['BUI_VERS'] = version
-        self.ssl = self.config['BUI_SSL'] = self.conf.safe_get(
+        self.config['BACKEND'] = self.conf.safe_get('backend')
+        self.config['BUI_SSL'] = self.conf.safe_get(
             'ssl',
             'boolean'
         )
-        # option standalone has been renamed for less confusion
-        key = 'standalone' if 'standalone' in \
-            self.conf.conf.get(self.conf.section, {}) else 'single'
-        if key == 'standalone':
-            # TODO: remove the compatibility in v0.7.0
-            self.logger.warning(
-                'The "standalone" option is DEPRECATED and has been replaced '
-                'by the "single" option. Please update your conf before we '
-                'remove the compatibility in v0.7.0'
-            )
-        self.standalone = self.config['STANDALONE'] = self.conf.safe_get(
-            key,
+        self.config['STANDALONE'] = self.conf.safe_get(
+            'single',
             'boolean'
         )
-        self.sslcert = self.config['BUI_SSLCERT'] = self.conf.safe_get(
+        self.config['BUI_SSLCERT'] = self.conf.safe_get(
             'sslcert'
         )
-        self.sslkey = self.config['BUI_SSLKEY'] = self.conf.safe_get(
+        self.config['BUI_SSLKEY'] = self.conf.safe_get(
             'sslkey'
         )
-        self.prefix = self.config['BUI_PREFIX'] = self.conf.safe_get(
+        prefix = self.config['BUI_PREFIX'] = self.conf.safe_get(
             'prefix'
         )
-        if self.prefix and not self.prefix.startswith('/'):
-            if self.prefix.lower() != 'none':
+        if prefix and not prefix.startswith('/'):
+            if prefix.lower() != 'none':
                 self.logger.warning("'prefix' must start with a '/'!")
-            self.prefix = self.config['BUI_PREFIX'] = ''
+            self.config['BUI_PREFIX'] = ''
 
         self.plugins = self.config['BUI_PLUGINS'] = self.conf.safe_get(
             'plugins',
@@ -295,7 +245,7 @@ class BUIServer(Flask):
         )
         if isinstance(self.limiter, bool) and not self.limiter:
             self.limiter = self.config['BUI_LIMITER'] = 'none'
-        self.ratio = self.config['BUI_RATIO'] = self.conf.safe_get(
+        self.config['BUI_RATIO'] = self.conf.safe_get(
             'ratio',
             section='Production'
         )
@@ -328,7 +278,7 @@ class BUIServer(Flask):
             'boolean',
             section='WebSocket'
         )
-        self.websocket = self.config['WITH_WS'] = self.conf.safe_get(
+        self.config['WITH_WS'] = self.conf.safe_get(
             'embedded',
             'boolean',
             section='WebSocket'
@@ -347,7 +297,8 @@ class BUIServer(Flask):
             'url',
             section='WebSocket'
         )
-        if self.config.get('WS_URL', '').lower() == 'none' or self.websocket:
+        if self.config.get('WS_URL', '').lower() == 'none' or \
+                self.config.get('WITH_WS', False):
             self.config['WS_URL'] = None
 
         # Experimental options
@@ -358,7 +309,7 @@ class BUIServer(Flask):
         )
 
         # Security options
-        self.scookie = self.config['BUI_SCOOKIE'] = self.conf.safe_get(
+        self.config['BUI_SCOOKIE'] = self.conf.safe_get(
             'scookie',
             'boolean',
             section='Security'
@@ -367,8 +318,7 @@ class BUIServer(Flask):
             'appsecret',
             section='Security'
         )
-        days = self.conf.safe_get('cookietime', 'integer', section='Security') \
-            or G_COOKIETIME
+        days = self.conf.safe_get('cookietime', 'integer', section='Security')
         self.config['REMEMBER_COOKIE_DURATION'] = \
             self.config['PERMANENT_SESSION_LIFETIME'] = timedelta(
                 days=days
@@ -378,18 +328,18 @@ class BUIServer(Flask):
             'sessiontime',
             'integer',
             section='Security'
-        ) or G_SESSIONTIME
+        )
         self.config['SESSION_INACTIVE'] = timedelta(days=days)
 
-        self.logger.info('burp version: {}'.format(self.vers))
-        self.logger.info('listen port: {}'.format(self.port))
-        self.logger.info('bind addr: {}'.format(self.bind))
-        self.logger.info('use ssl: {}'.format(self.ssl))
-        self.logger.info('standalone: {}'.format(self.standalone))
-        self.logger.info('sslcert: {}'.format(self.sslcert))
-        self.logger.info('sslkey: {}'.format(self.sslkey))
-        self.logger.info('prefix: {}'.format(self.prefix))
-        self.logger.info('secure cookie: {}'.format(self.scookie))
+        self.logger.info('backend: {}'.format(self.config['BACKEND']))
+        self.logger.info('listen port: {}'.format(self.config['BUI_PORT']))
+        self.logger.info('bind addr: {}'.format(self.config['BUI_BIND']))
+        self.logger.info('use ssl: {}'.format(self.config['BUI_SSL']))
+        self.logger.info('standalone: {}'.format(self.config['STANDALONE']))
+        self.logger.info('sslcert: {}'.format(self.config['BUI_SSLCERT']))
+        self.logger.info('sslkey: {}'.format(self.config['BUI_SSLKEY']))
+        self.logger.info('prefix: {}'.format(self.config['BUI_PREFIX']))
+        self.logger.info('secure cookie: {}'.format(self.config['BUI_SCOOKIE']))
         self.logger.info(
             'cookietime: {}'.format(self.config['REMEMBER_COOKIE_DURATION'])
         )
@@ -461,25 +411,30 @@ class BUIServer(Flask):
 
         self.logger.info('acl: {}'.format(self.acl_engine))
 
-        if self.standalone:
-            module = 'burpui.misc.backend.burp{0}'.format(self.vers)
+        backend = self.config['BACKEND']
+        if '.' in backend:
+            module = backend
         else:
-            module = 'burpui.misc.backend.multi'
+            module = 'burpui.misc.backend.{}'.format(backend)
 
         # This is used for development purpose only
         from .misc.backend.burp1 import Burp as BurpGeneric
         self.client = BurpGeneric(dummy=True)
         self.strict = strict
         try:
-            # Try to load submodules from our current environment
-            # first
-            sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-            mod = __import__(module, fromlist=['Burp'])
-            Client = mod.Burp
-            self.client = Client(self, conf=self.conf)
+            # lookup plugins first
+            mod = self.plugin_manager.get_plugin_by_name(backend)
+            if mod:
+                self.client = mod.Burp(self, conf=self.conf)
+            else:
+                # Try to load submodules from our current environment
+                # first
+                sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+                mod = __import__(module, fromlist=['Burp'])
+                self.client = mod.Burp(self, conf=self.conf)
         except Exception as e:
-            msg = 'Failed loading backend for Burp version {0}: {1}'.format(
-                self.vers,
+            msg = 'Failed loading backend {0}: {1}'.format(
+                self.backend,
                 str(e)
             )
             if strict:
@@ -522,16 +477,16 @@ class BUIServer(Flask):
         if not self.init:
             self.setup()
 
-        if self.ssl:
-            self.sslcontext = (self.sslcert, self.sslkey)
+        if self.config['BUI_SSL']:
+            self.sslcontext = (self.config['BUI_SSLCERT'], self.config['BUI_SSLKEY'])
 
         if self.sslcontext:
             self.config['SSL'] = True
             self.run(
-                host=self.bind,
-                port=self.port,
+                host=self.config['BUI_BIND'],
+                port=self.config['BUI_PORT'],
                 debug=self.config['DEBUG'],
                 ssl_context=self.sslcontext
             )
         else:
-            self.run(host=self.bind, port=self.port, debug=self.config['DEBUG'])
+            self.run(host=self.config['BUI_BIND'], port=self.config['BUI_PORT'], debug=self.config['DEBUG'])

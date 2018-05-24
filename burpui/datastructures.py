@@ -12,7 +12,7 @@
 from copy import deepcopy
 from itertools import repeat
 
-from ._compat import iterkeys, itervalues, iteritems, iterlists, PY3
+from six import iterkeys, itervalues, iteritems, iterlists
 
 
 def is_immutable(self):
@@ -39,36 +39,7 @@ def iter_multi_items(mapping):
 
 
 def native_itermethods(names):
-    if PY3:
-        return lambda x: x
-
-    def setviewmethod(cls, name):
-        viewmethod_name = 'view%s' % name
-
-        def viewmethod(self, *a, **kw):
-            return ViewItems(self, name, 'view_%s' % name, *a, **kw)
-
-        viewmethod.__doc__ = \
-            '"""`%s()` object providing a view on %s"""' % (viewmethod_name, name)
-        setattr(cls, viewmethod_name, viewmethod)
-
-    def setitermethod(cls, name):
-        itermethod = getattr(cls, name)
-        setattr(cls, 'iter%s' % name, itermethod)
-
-        def listmethod(self, *a, **kw):
-            return list(itermethod(self, *a, **kw))
-
-        listmethod.__doc__ = \
-            'Like :py:meth:`iter%s`, but returns a list.' % name
-        setattr(cls, name, listmethod)
-
-    def wrap(cls):
-        for name in names:
-            setitermethod(cls, name)
-            setviewmethod(cls, name)
-        return cls
-    return wrap
+    return lambda x: x
 
 
 class _Missing(object):

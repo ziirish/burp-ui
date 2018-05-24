@@ -13,10 +13,6 @@ import json
 
 from flask_restplus import Resource as ResourcePlus
 from flask_restplus.errors import abort
-from ..._compat import PY3
-
-if PY3:
-    basestring = str
 
 
 class Resource(ResourcePlus):
@@ -33,7 +29,7 @@ class Resource(ResourcePlus):
 
         See: :func:`~flask_restplus.errors.abort`
         """
-        if message and not isinstance(message, basestring):
+        if message and not isinstance(message, str):
             try:
                 message = json.dumps(message)  # pragma: no cover
             except:

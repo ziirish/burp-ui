@@ -8,23 +8,12 @@ stages:
 
 test:lint:
   stage: test
-  image: python:2.7
+  image: python:3.6
   script:
   - pip install flake8 pylint
   - make flake8
   tags:
   - lint
-  except:
-  - tags
-
-test:py2.7:
-  stage: test
-  image: python:2.7
-  script:
-  - pip install tox
-  - tox -e py27
-  tags:
-  - docker
   except:
   - tags
 
@@ -39,22 +28,6 @@ test:py3.6:
   except:
   - tags
 
-build:py2:
-  stage: build
-  image: python:2.7
-  script:
-  - /bin/bash tests/run_build.sh
-  tags:
-  - build
-  only:
-  - master@ziirish/burp-ui
-  - demo@ziirish/burp-ui
-  artifacts:
-    paths:
-    - dist/
-    - meta/
-    expire_in: 2 mos
-
 build:py3:
   stage: build
   image: python:3.6
@@ -64,6 +37,7 @@ build:py3:
   - build
   only:
   - master@ziirish/burp-ui
+  - demo@ziirish/burp-ui
   artifacts:
     paths:
     - dist/

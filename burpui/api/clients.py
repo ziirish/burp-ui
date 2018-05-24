@@ -308,7 +308,7 @@ class ClientsReport(Resource):
 
     def _check_acl(self, server):
         # Manage ACL
-        if (not bui.standalone and not current_user.is_anonymous and
+        if (not bui.config['STANDALONE'] and not current_user.is_anonymous and
                 (not current_user.acl.is_admin() and
                  not current_user.acl.is_server_allowed(server))):
             self.abort(403, 'Sorry, you don\'t have any rights on this server')
@@ -392,7 +392,7 @@ class ClientsReport(Resource):
             if not current_user.is_anonymous and not current_user.acl.is_admin():
                 clients = [x for x in clients if current_user.acl.is_client_allowed(x['name'], server)]
             return bui.client.get_clients_report(clients, server)
-        if bui.standalone:
+        if bui.config['STANDALONE']:
             ret = res
         else:
             ret = res.get(server, {})
@@ -481,7 +481,7 @@ class ClientsStats(Resource):
 
         server = server or self.parser.parse_args()['serverName']
         try:
-            if (not bui.standalone and not current_user.is_anonymous and
+            if (not bui.config['STANDALONE'] and not current_user.is_anonymous and
                     (not current_user.acl.is_admin() and
                      not current_user.acl.is_server_allowed(server))):
                 self.abort(403, 'Sorry, you don\'t have any rights on this server')
@@ -603,7 +603,7 @@ class AllClients(Resource):
                 ret = [{'name': x, 'agent': server} for x in clients]
             return ret
 
-        if bui.standalone:
+        if bui.config['STANDALONE']:
             try:
                 clients = [x['name'] for x in bui.client.get_all_clients()]
             except BUIserverException:
