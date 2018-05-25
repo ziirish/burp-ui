@@ -315,7 +315,7 @@ class BUIServer(Flask):
             section='Security'
         )
         days = self.conf.safe_get('cookietime', 'integer', section='Security') \
-                or 14
+            or 14
         self.config['REMEMBER_COOKIE_DURATION'] = \
             self.config['PERMANENT_SESSION_LIFETIME'] = timedelta(
                 days=days

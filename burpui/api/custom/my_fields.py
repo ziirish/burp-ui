@@ -116,7 +116,8 @@ class Wildcard(fields.List):
         if isinstance(obj, dict):
             self._flat = obj.items()
         else:
-            self._flat.extend(inspect.getmembers(obj, match_attributes))
+            attributes = inspect.getmembers(obj, lambda a: not(inspect.isroutine(a)))
+            self._flat = [x for x in attributes if match_attributes(x)]
 
         self._idx = 0
         self._cache = []
@@ -127,7 +128,7 @@ class Wildcard(fields.List):
     def key(self):
         return self._last
 
-    def output(self, key, obj):
+    def output(self, key, obj, ordered=False, **kwargs):
         flat = self._flatten(obj)
         value = None
         reg = fnmatch.translate(key)
@@ -152,7 +153,8 @@ class Wildcard(fields.List):
         return self.container.format(value)
 
 
-def match_attributes(attr):
-    return not(inspect.isroutine(attr) or
-               (attr.__name__.startswith('__') and
-                attr.__name__.endswith('__')))
+def match_attributes(attribute):
+    attr_name, _ = attribute
+    if attr_name.startswith('__') and attr_name.endswith('__'):
+        return False
+    return True
