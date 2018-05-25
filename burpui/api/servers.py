@@ -191,7 +191,10 @@ class ServersReport(Resource):
                 }
                 if check and not current_user.acl.is_server_allowed(serv):
                     continue
-                clients = bui.client.get_all_clients(agent=serv)
+                try:
+                    clients = bui.client.get_all_clients(agent=serv)
+                except BUIserverException:
+                    continue
                 if check:
                     clients = [x for x in clients if current_user.acl.is_client_allowed(x['name'], serv)]
 
