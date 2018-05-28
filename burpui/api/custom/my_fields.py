@@ -99,9 +99,8 @@ class LocalizedString(fields.String):
         return fields.String.format(self, _(value))
 
 
-class Wildcard(fields.List):
+class Wildcard(fields.Raw):
     exclude = []
-    _exclude = ['__dict__', '__doc__', '__module__', '__weakref__']
     # keep a track of the last object
     _idx = 0
     # cache the flat object
@@ -109,6 +108,18 @@ class Wildcard(fields.List):
     _obj = None
     _cache = []
     _last = None
+
+    def __init__(self, cls_or_instance, **kwargs):
+        super(Wildcard, self).__init__(**kwargs)
+        error_msg = 'The type of the wildcard elements must be a subclass of fields.Raw'
+        if isinstance(cls_or_instance, type):
+            if not issubclass(cls_or_instance, fields.Raw):
+                raise fields.MarshallingError(error_msg)
+            self.container = cls_or_instance()
+        else:
+            if not isinstance(cls_or_instance, fields.Raw):
+                raise fields.MarshallingError(error_msg)
+            self.container = cls_or_instance
 
     def _flatten(self, obj):
         if obj == self._obj and self._flat:
@@ -151,6 +162,19 @@ class Wildcard(fields.List):
             return None
 
         return self.container.format(value)
+
+    def schema(self):
+        schema = super(Wildcard, self).schema()
+        schema['type'] = 'object'
+        schema['additionalProperties'] = self.container.__schema__
+        return schema
+
+    def clone(self, mask=None):
+        kwargs = self.__dict__.copy()
+        model = kwargs.pop('container')
+        if mask:
+            model = mask.apply(model)
+        return self.__class__(model, **kwargs)
 
 
 def match_attributes(attribute):
