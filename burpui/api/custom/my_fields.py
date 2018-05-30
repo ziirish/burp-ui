@@ -100,13 +100,11 @@ class LocalizedString(fields.String):
 
 
 class Wildcard(fields.Raw):
-    exclude = []
-    # keep a track of the last object
-    _idx = 0
+    exclude = set()
     # cache the flat object
     _flat = None
     _obj = None
-    _cache = []
+    _cache = set()
     _last = None
 
     def __init__(self, cls_or_instance, **kwargs):
@@ -122,16 +120,26 @@ class Wildcard(fields.Raw):
             self.container = cls_or_instance
 
     def _flatten(self, obj):
-        if obj == self._obj and self._flat:
+        if obj is None:
+            return None
+        if obj == self._obj and self._flat is not None:
             return self._flat
         if isinstance(obj, dict):
-            self._flat = obj.items()
+            # self._flat needs to implement pop()
+            self._flat = [x for x in obj.items()]
         else:
-            attributes = inspect.getmembers(obj, lambda a: not(inspect.isroutine(a)))
-            self._flat = [x for x in attributes if match_attributes(x)]
 
-        self._idx = 0
-        self._cache = []
+            def __match_attributes(attribute):
+                attr_name, attr_obj = attribute
+                if inspect.isroutine(attr_obj) or \
+                        (attr_name.startswith('__') and attr_name.endswith('__')):
+                    return False
+                return True
+
+            attributes = inspect.getmembers(obj)
+            self._flat = [x for x in attributes if __match_attributes(x)]
+
+        self._cache = set()
         self._obj = obj
         return self._flat
 
@@ -139,26 +147,37 @@ class Wildcard(fields.Raw):
     def key(self):
         return self._last
 
+    def reset(self):
+        self.exclude = set()
+        self._flat = None
+        self._obj = None
+        self._cache = set()
+        self._last = None
+
     def output(self, key, obj, ordered=False, **kwargs):
-        flat = self._flatten(obj)
         value = None
         reg = fnmatch.translate(key)
 
-        for idx, (objkey, val) in enumerate(flat):
-            if idx < self._idx:
-                continue
-            if objkey not in self._cache and \
-                    objkey not in self.exclude and \
-                    re.match(reg, objkey, re.IGNORECASE):
-                value = val
-                self._cache.append(objkey)
-                self._last = objkey
-                self._idx = idx
-                break
+        if self._flatten(obj):
+            while True:
+                try:
+                    # we are using pop() so that we don't
+                    # loop over the whole object every time dropping the
+                    # complexity to O(n)
+                    (objkey, val) = self._flat.pop()
+                    if objkey not in self._cache and \
+                            objkey not in self.exclude and \
+                            re.match(reg, objkey, re.IGNORECASE):
+                        value = val
+                        self._cache.add(objkey)
+                        self._last = objkey
+                        break
+                except IndexError:
+                    break
 
         if value is None:
             if self.default is not None:
-                return self.default
+                return self.container.format(self.default)
             return None
 
         return self.container.format(value)
@@ -175,10 +194,3 @@ class Wildcard(fields.Raw):
         if mask:
             model = mask.apply(model)
         return self.__class__(model, **kwargs)
-
-
-def match_attributes(attribute):
-    attr_name, _ = attribute
-    if attr_name.startswith('__') and attr_name.endswith('__'):
-        return False
-    return True

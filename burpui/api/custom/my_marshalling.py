@@ -66,11 +66,11 @@ def marshal(data, fields, envelope=None, skip_none=False, mask=None, ordered=Fal
                 field = make(val)
                 # exclude already parsed keys from the wildcard
                 is_wildcard = isinstance(field, Wildcard)
-                if is_wildcard and keys:
-                    for tmp in keys:
-                        if tmp not in field.exclude:
-                            field.exclude.append(tmp)
-                    keys = []
+                if is_wildcard:
+                    field.reset()
+                    if keys:
+                        field.exclude |= set(keys)
+                        keys = []
                 value = field.output(dkey, data, ordered=ordered)
                 if is_wildcard:
 
@@ -83,7 +83,8 @@ def marshal(data, fields, envelope=None, skip_none=False, mask=None, ordered=Fal
                     _append(key, value)
                     while True:
                         value = field.output(dkey, data, ordered=ordered)
-                        if value is None or value == field.default:
+                        if value is None or \
+                                value == field.container.format(field.default):
                             break
                         key = field.key
                         _append(key, value)
