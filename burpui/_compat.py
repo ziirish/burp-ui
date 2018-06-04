@@ -7,8 +7,6 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
-import re
-
 import pickle  # noqa
 
 from urllib.parse import unquote, quote, urlparse, urljoin  # noqa
