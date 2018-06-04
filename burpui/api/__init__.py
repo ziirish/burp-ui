@@ -20,7 +20,6 @@ from flask_login import current_user
 from importlib import import_module
 from functools import wraps
 
-from .custom.namespace import Namespace
 from .._compat import to_bytes
 from ..desc import __version__, __release__, __url__, __doc__
 from ..server import BUIServer  # noqa
@@ -189,15 +188,6 @@ class Api(ApiPlus):
             return decorated
         return decorator
 
-    def namespace(self, *args, **kwargs):
-        """A namespace factory
-
-        :returns Namespace: a new namespace instance
-        """
-        ns = Namespace(*args, **kwargs)
-        self.add_namespace(ns)
-        return ns
-
 
 apibp = Blueprint('api', __name__, url_prefix='/api')
 api = Api(
@@ -217,4 +207,5 @@ def handle_bui_server_exception(error):
     :param error: Custom exception
     :type error: :class:`burpui.exceptions.BUIserverException`
     """
+    bui.logger.error(error)
     return {'message': error.description}, error.code

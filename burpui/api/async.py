@@ -478,7 +478,6 @@ class AsyncRunningBackup(RunningBackup):
         RunningBackup.running_fields,
         code=200,
         description='Success',
-        strict=False
     )
     def get(self, server=None):
         """Tells if a backup is running right now
@@ -570,7 +569,6 @@ class AsyncHistory(History):
         History.history_fields,
         code=200,
         description='Success',
-        strict=False,
         as_list=True
     )
     @ns.expect(History.parser)
@@ -650,7 +648,6 @@ class AsyncClientsReport(ClientsReport):
         ClientsReport.report_fields,
         code=200,
         description='Success',
-        strict=False
     )
     @ns.expect(ClientsReport.parser)
     @ns.doc(

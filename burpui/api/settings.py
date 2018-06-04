@@ -10,8 +10,7 @@
 from . import api
 from ..server import BUIServer  # noqa
 from ..ext.cache import cache
-from .custom import Resource
-from .custom.inputs import boolean
+from .custom import Resource, inputs
 from .._compat import unquote
 from ..utils import NOTIF_INFO
 
@@ -476,14 +475,14 @@ class NewClientSettings(Resource):
 )
 class ClientSettings(Resource):
     parser_delete = ns.parser()
-    parser_delete.add_argument('revoke', type=boolean, help='Whether to revoke the certificate or not', default=False, nullable=True)
-    parser_delete.add_argument('delcert', type=boolean, help='Whether to delete the certificate or not', default=False, nullable=True)
-    parser_delete.add_argument('keepconf', type=boolean, help='Whether to keep the conf or not', default=False, nullable=True)
-    parser_delete.add_argument('template', type=boolean, help='Whether we work on a template or not', default=False, nullable=True)
+    parser_delete.add_argument('revoke', type=inputs.boolean, help='Whether to revoke the certificate or not', default=False, nullable=True)
+    parser_delete.add_argument('delcert', type=inputs.boolean, help='Whether to delete the certificate or not', default=False, nullable=True)
+    parser_delete.add_argument('keepconf', type=inputs.boolean, help='Whether to keep the conf or not', default=False, nullable=True)
+    parser_delete.add_argument('template', type=inputs.boolean, help='Whether we work on a template or not', default=False, nullable=True)
     parser_post = ns.parser()
-    parser_post.add_argument('template', type=boolean, help='Whether we work on a template or not', default=False, nullable=True)
+    parser_post.add_argument('template', type=inputs.boolean, help='Whether we work on a template or not', default=False, nullable=True)
     parser_get = ns.parser()
-    parser_get.add_argument('template', type=boolean, help='Whether we work on a template or not', default=False, nullable=True)
+    parser_get.add_argument('template', type=inputs.boolean, help='Whether we work on a template or not', default=False, nullable=True)
 
     @api.disabled_on_demo()
     @api.acl_admin_or_moderator_required(message=_('Sorry, you don\'t have rights to access the setting panel'))

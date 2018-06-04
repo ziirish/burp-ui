@@ -8,12 +8,14 @@
 
 
 """
+# Monkey patching flask-restplus to handle our own marshalling/wildcard implementation
+
 from flask_restplus import fields
 from .my_marshalling import marshal
 
 
 class Nested(fields.Nested):
-    def output(self, key, obj, ordered=False):
+    def output(self, key, obj, ordered=False, **kwargs):
         value = fields.get_value(key if self.attribute is None else self.attribute, obj)
         if value is None:
             if self.allow_null:
@@ -21,4 +23,4 @@ class Nested(fields.Nested):
             elif self.default is not None:
                 return self.default
 
-        return marshal(value, self.nested, ordered=ordered)
+        return marshal(value, self.nested, skip_none=self.skip_none, ordered=ordered)

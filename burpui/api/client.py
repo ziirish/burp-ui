@@ -12,8 +12,7 @@ import re
 
 from . import api, cache_key, force_refresh
 from ..server import BUIServer  # noqa
-from .custom import fields, Resource
-from .custom.inputs import boolean
+from .custom import fields, Resource, inputs
 from ..decorators import browser_cache
 from ..ext.cache import cache
 from ..exceptions import BUIserverException
@@ -141,7 +140,7 @@ class ClientTree(Resource):
     )
     parser.add_argument(
         'recursive',
-        type=boolean,
+        type=inputs.boolean,
         help='Returns the whole tree instead of just the sub-tree',
         nullable=True,
         required=False,
@@ -149,7 +148,7 @@ class ClientTree(Resource):
     )
     parser.add_argument(
         'selected',
-        type=boolean,
+        type=inputs.boolean,
         help='Make the returned path selected at load time. Only works' +
              ' if \'recursive\' is True',
         nullable=True,
@@ -158,7 +157,7 @@ class ClientTree(Resource):
     )
     parser.add_argument(
         'init',
-        type=boolean,
+        type=inputs.boolean,
         help='First call to load the root of the tree',
         nullable=True,
         required=False,

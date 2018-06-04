@@ -27,8 +27,6 @@ def to_unicode(input_bytes, encoding='utf-8'):
     """Decodes input_bytes to text if needed."""
     if not isinstance(input_bytes, string_types):
         input_bytes = input_bytes.decode(encoding)
-    elif re.match(r'\\u[0-9a-f]{4}', input_bytes):
-        input_bytes = input_bytes.decode('unicode-escape')
     return input_bytes or ''
 
 

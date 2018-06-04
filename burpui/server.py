@@ -213,7 +213,10 @@ class BUIServer(Flask):
         )
         self.format_labels = []
         for format_label in format_labels:
-            search = re.search(r'^s(?P<separator>.)(?P<regex>.*?)(?P=separator)(?P<replace>.*?)(?P=separator)$', format_label)
+            search = re.search(
+                r'^s(?P<separator>.)(?P<regex>.*?)(?P=separator)(?P<replace>.*?)(?P=separator)$',
+                format_label
+            )
             if search:
                 self.format_labels.append((search.group('regex'), search.group('replace')))
 

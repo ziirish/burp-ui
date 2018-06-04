@@ -8,6 +8,7 @@ devel.sh
 .tox
 .coverage
 .coveragerc
+.ropeproject
 .pylintrc
 dist
 _build

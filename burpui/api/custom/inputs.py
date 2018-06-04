@@ -8,5 +8,10 @@
 
 
 """
+import inspect
+import flask_restplus.inputs
 from flask_restplus.inputs import *  # noqa # pylint: disable=locally-disabled, wildcard-import, unused-wildcard-import
 from .my_inputs import boolean  # noqa
+
+ALL = inspect.getmembers(flask_restplus.inputs, inspect.isfunction)
+__all__ = [x for x, _ in ALL if not x.startswith('_')] + ['boolean']

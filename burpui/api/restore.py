@@ -12,8 +12,7 @@ import struct
 
 from . import api
 from ..server import BUIServer  # noqa
-from .custom import fields, Resource
-from .custom.inputs import boolean
+from .custom import fields, Resource, inputs
 from ..exceptions import BUIserverException
 
 from zlib import adler32
@@ -372,7 +371,7 @@ class DoServerRestore(Resource):
     parser.add_argument('list-sc', required=True, help='List of files/directories to restore', nullable=False)
     parser.add_argument('strip-sc', type=int, help='Number of elements to strip in the path', default=0, nullable=True)
     parser.add_argument('prefix-sc', help='Prefix to the restore path', nullable=True)
-    parser.add_argument('force-sc', type=boolean, help='Whether to overwrite existing files', default=False, nullable=True)
+    parser.add_argument('force-sc', type=inputs.boolean, help='Whether to overwrite existing files', default=False, nullable=True)
     parser.add_argument('restoreto-sc', help='Restore files on an other client', nullable=True)
 
     @api.disabled_on_demo()

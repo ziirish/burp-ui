@@ -29,9 +29,9 @@ def boolean(value):
     """
     try:
         return boolean_ori(value)
-    except ValueError as e:
+    except ValueError as exp:
         if not value:
             return False
-        if value.lower() == 'on':
+        if isinstance(value, str) and value.lower() == 'on':
             return True
-        raise e
+        raise exp
