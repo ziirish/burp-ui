@@ -1,16 +1,16 @@
 Burp-UI
 =======
 
-.. image:: https://git.ziirish.me/ziirish/burp-ui/badges/stable/build.svg
+.. image:: https://git.ziirish.me/ziirish/burp-ui/badges/master/build.svg
     :target: https://git.ziirish.me/ziirish/burp-ui/pipelines
     :alt: Build Status
 
-.. image:: https://git.ziirish.me/ziirish/burp-ui/badges/stable/coverage.svg
+.. image:: https://git.ziirish.me/ziirish/burp-ui/badges/master/coverage.svg
     :target: https://git.ziirish.me/ziirish/burp-ui/pipelines
     :alt: Test coverage
 
-.. image:: https://readthedocs.org/projects/burp-ui/badge/?version=stable
-    :target: https://readthedocs.org/projects/burp-ui/?badge=stable
+.. image:: https://readthedocs.org/projects/burp-ui/badge/?version=latest
+    :target: https://readthedocs.org/projects/burp-ui/?badge=latest
     :alt: Documentation Status
 
 .. contents::
@@ -21,8 +21,8 @@ Introduction
 Screenshots
 ^^^^^^^^^^^
 
-.. image:: https://git.ziirish.me/ziirish/burp-ui/raw/stable/docs/_static/burp-ui.gif
-    :target: https://git.ziirish.me/ziirish/burp-ui/blob/stable/docs/_static/burp-ui.gif
+.. image:: https://git.ziirish.me/ziirish/burp-ui/raw/master/docs/_static/burp-ui.gif
+    :target: https://git.ziirish.me/ziirish/burp-ui/blob/master/docs/_static/burp-ui.gif
 
 Demo
 ^^^^
@@ -143,7 +143,7 @@ would not exist without `Burp`_.
 .. _Flask: http://flask.pocoo.org/
 .. _License: https://git.ziirish.me/ziirish/burp-ui/blob/master/LICENSE
 .. _Burp: http://burp.grke.org/
-.. _burpui.cfg: https://git.ziirish.me/ziirish/burp-ui/blob/stable/share/burpui/etc/burpui.sample.cfg
-.. _burp-ui.readthedocs.io: https://burp-ui.readthedocs.io/en/stable/
-.. _FAQ: https://burp-ui.readthedocs.io/en/stable/faq.html
-.. _Contributing: https://burp-ui.readthedocs.io/en/stable/contributing.html
+.. _burpui.cfg: https://git.ziirish.me/ziirish/burp-ui/blob/master/share/burpui/etc/burpui.sample.cfg
+.. _burp-ui.readthedocs.io: https://burp-ui.readthedocs.io/en/latest/
+.. _FAQ: https://burp-ui.readthedocs.io/en/latest/faq.html
+.. _Contributing: https://burp-ui.readthedocs.io/en/latest/contributing.html
