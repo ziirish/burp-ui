@@ -8,7 +8,6 @@
 
 """
 import ujson
-from six import viewkeys
 
 __implements__ = ['dumps', 'loads']
 ori_dumps = None
@@ -30,7 +29,7 @@ IMPLEMENTED_LOADS_KWARGS = [
 def dumps(*args, **kwargs):
     keys = []
     if kwargs:
-        keys = viewkeys(kwargs)
+        keys = kwargs.keys()
     for key in keys:
         if key not in IMPLEMENTED_DUMPS_KWARGS:
             return ori_dumps(*args, **kwargs)
@@ -43,7 +42,7 @@ def dumps(*args, **kwargs):
 def loads(*args, **kwargs):
     keys = []
     if kwargs:
-        keys = viewkeys(kwargs)
+        keys = kwargs.keys()
     for key in keys:
         if key not in IMPLEMENTED_LOADS_KWARGS:
             return ori_loads(*args, **kwargs)

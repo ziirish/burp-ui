@@ -11,7 +11,6 @@ jQuery/Bootstrap
 import sys
 import os
 
-from six import iteritems
 from flask import current_app
 from datetime import timedelta, datetime
 from celery.schedules import crontab
@@ -137,7 +136,7 @@ def backup_running(self):
         if WS_AVAILABLE:
             running = False
             if isinstance(res, dict):
-                for _, run in iteritems(res):
+                for run in res.values():
                     if len(run) > 0:
                         running = True
                         break

@@ -12,8 +12,6 @@ from ...utils import make_list
 from ...config import config
 from ...ext.cache import cache
 
-from six import iteritems, itervalues
-
 import re
 import json
 import fnmatch
@@ -48,7 +46,7 @@ class BUImetaGrant(object):
                 return [d1, d2]
 
         res = d1
-        for key2, val2 in iteritems(d2):
+        for key2, val2 in d2.items():
             if key2 in res:
                 res[key2] = self._merge_data(val2, res[key2])
             else:
@@ -72,7 +70,7 @@ class BUImetaGrant(object):
                 else:
                     advanced[mode] = {'clients': make_list(data)}
             return make_list(data), agents, advanced
-        for key, val in iteritems(data):
+        for key, val in data.items():
             if key in ['agents', 'clients', 'ro', 'rw']:
                 continue
             cl1, ag1, ad1 = self._parse_clients(val, parent=key)
@@ -127,7 +125,7 @@ class BUImetaGrant(object):
             if mode:
                 advanced[mode] = {'agents': make_list(data)}
             return make_list(data), clients, advanced
-        for key, val in iteritems(data):
+        for key, val in data.items():
             if key in ['agents', 'clients', 'ro', 'rw']:
                 continue
             cl1, ag1, ad1 = self._parse_clients(data)
@@ -215,7 +213,7 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
         self._groups.clear()
         self._reset_cached()
         self._id += 1
-        for name, backend in iteritems(self._backends):
+        for name, backend in self._backends.items():
             if name == reset_from:
                 continue
             backend.reload()
@@ -265,7 +263,7 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
 
     def get_member_groups(self, member):
         groups = []
-        for group in itervalues(self._groups):
+        for group in self._groups.values():
             (ret, inh) = group.is_member(member)
             if ret and group.name not in self._gp_hidden:
                 groups.append((group.name, inh))
@@ -318,7 +316,7 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
                     data['advanced'] += tmp
 
             # moderator is also a group
-            for gname, group in iteritems(self.groups):
+            for gname, group in self.groups.items():
                 # no grants need to be parsed for admins
                 if gname == self._gp_admin_name:
                     continue

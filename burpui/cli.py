@@ -22,7 +22,6 @@ if os.getenv('BUI_MODE') in ['server', 'ws'] or 'websocket' in sys.argv:
 
 from .app import create_app  # noqa
 from .exceptions import BUIserverException  # noqa
-from six import iteritems  # noqa
 
 try:
     from flask_socketio import SocketIO  # noqa
@@ -45,21 +44,16 @@ if VERBOSE:
 UNITTEST = os.getenv('BUI_MODE') not in ['server', 'manage', 'celery', 'legacy', 'ws']
 CLI = os.getenv('BUI_MODE') not in ['server', 'legacy']
 
-try:
-    app = create_app(
-        conf=os.environ.get('BUI_CONFIG'),
-        verbose=VERBOSE,
-        logfile=os.environ.get('BUI_LOGFILE'),
-        debug=DEBUG,
-        gunicorn=False,
-        unittest=UNITTEST,
-        cli=CLI,
-        websocket_server=(os.getenv('BUI_MODE') == 'ws' or 'websocket' in sys.argv)
-    )
-except:
-    import traceback
-    traceback.print_exc()
-    sys.exit(1)
+app = create_app(
+    conf=os.environ.get('BUI_CONFIG'),
+    verbose=VERBOSE,
+    logfile=os.environ.get('BUI_LOGFILE'),
+    debug=DEBUG,
+    gunicorn=False,
+    unittest=UNITTEST,
+    cli=CLI,
+    websocket_server=(os.getenv('BUI_MODE') == 'ws' or 'websocket' in sys.argv)
+)
 
 try:
     from .app import create_db
@@ -1146,7 +1140,7 @@ def sysinfo(verbose, load):
     if load:
         if not app.config['STANDALONE'] and not msg:
             click.echo('Agents:')
-            for agent, obj in iteritems(app.client.servers):
+            for agent, obj in app.client.servers.items():
                 client_version = server_version = 'unknown'
                 try:
                     app.client.status(agent=agent)
@@ -1188,7 +1182,7 @@ def sysinfo(verbose, load):
             if section in app.config.options:
                 click.echo()
                 click.echo('    8<{}BEGIN[{}]'.format('-' * (67 - len(section)), section))
-                for key, val in iteritems(app.config.options.get(section, {})):
+                for key, val in app.config.options.get(section, {}).items():
                     click.echo('    {} = {}'.format(key, val))
                 click.echo('    8<{}END[{}]'.format('-' * (69 - len(section)), section))
 

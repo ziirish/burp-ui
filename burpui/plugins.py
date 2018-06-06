@@ -8,7 +8,6 @@
 
 """
 from pluginbase import PluginBase
-from six import iteritems
 
 
 class PluginManager(object):
@@ -71,7 +70,7 @@ class PluginManager(object):
 
     def get_plugins_by_type(self, plugin_type):
         ret = {}
-        for name, plugin in iteritems(self.plugins):
+        for name, plugin in self.plugins.items():
             current_type = getattr(plugin, '__type__', None)
             if not current_type:
                 self.app.logger.warning(

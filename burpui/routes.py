@@ -11,7 +11,6 @@ import re
 import math
 import uuid
 
-from six import iteritems
 from flask import request, render_template, redirect, url_for, abort, \
     flash, Blueprint, session, current_app, g
 from flask_login import login_user, login_required, logout_user, current_user
@@ -281,7 +280,7 @@ def live_monitor(server=None, name=None):
             flash(_('Sorry, there are no running backups'), 'warning')
             return redirect(url_for('.home'))
     else:
-        if not any([x for y, x in iteritems(running)]):
+        if not any([x for y, x in running.items()]):
             flash(_('Sorry, there are no running backups'), 'warning')
             return redirect(url_for('.home'))
 

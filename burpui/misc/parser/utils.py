@@ -15,7 +15,6 @@ from copy import copy
 from hashlib import md5
 from collections import OrderedDict
 from glob import glob
-from six import iteritems, viewkeys
 
 from ...utils import NOTIF_ERROR, NOTIF_OK, NOTIF_WARN
 from ...security import sanitize_string
@@ -542,7 +541,7 @@ class OptionPair(Option, dict):
                 return []
             return self.value[key].parse()
         ret = {}
-        for key, opts in iteritems(self.value):
+        for key, opts in self.value.items():
             ret[key] = opts.parse()
         return ret
 
@@ -647,11 +646,11 @@ class File(dict):
 
     @property
     def changed(self):
-        for key, val in iteritems(self.types['include']):
+        for key, val in self.types['include'].items():
             if val.dirty:
                 self._changed = True
                 return self._changed
-        for key, val in iteritems(self.types['template']):
+        for key, val in self.types['template'].items():
             if val.dirty:
                 self._changed = True
                 return self._changed
@@ -678,7 +677,7 @@ class File(dict):
         if ret and not self.dirty:
             return ret
         ret.clear()
-        for key, val in iteritems(self.options):
+        for key, val in self.options.items():
             if isinstance(val, OptionMulti) and not raw:
                 ret.setlist(key, val.parse())
             elif isinstance(val, OptionPair) and not raw:
@@ -703,7 +702,7 @@ class File(dict):
 
     def clean(self):
         self._dirty = False
-        for _, opt in iteritems(self.options):
+        for opt in self.options.values():
             opt.clean()
 
     def get_name(self):
@@ -722,11 +721,11 @@ class File(dict):
                     'value': opt.parse() if parse else opt,
                     'reset': opt.get_reset()
                 }
-                for key, opt in iteritems(self.types[typ])
+                for key, opt in self.types[typ].items()
             ]
         ret = OrderedDict()
         if typ in self.types:
-            for key, opt in iteritems(self.types[typ]):
+            for key, opt in self.types[typ].items():
                 ret[key] = opt.parse() if parse else opt
         return ret
 
@@ -740,7 +739,7 @@ class File(dict):
     @property
     def dirty(self):
         if not self._dirty:
-            self._dirty = any([x.dirty for _, x in iteritems(self.options)])
+            self._dirty = any([x.dirty for x in self.options.values()])
         return self._dirty
 
     @property
@@ -779,10 +778,10 @@ class File(dict):
 
     def _refresh_types(self):
         if self._dirty:
-            for key in viewkeys(self.types):
+            for key in self.types.keys():
                 self.types[key] = OrderedDict()
 
-            for key, opt in iteritems(self.options):
+            for key, opt in self.options.items():
                 if key not in self.associations:
                     self.types[opt.type][key] = opt
 
@@ -894,9 +893,9 @@ class File(dict):
     def __repr__(self):
         self._refresh_types()
         ret = ''
-        for key, opts in iteritems(self.types):
+        for key, opts in self.types.items():
             ret += '{} =>\n'.format(key)
-            for key2, opt in iteritems(opts):
+            for key2, opt in opts.items():
                 if key2 in self.associations:
                     continue
                 ret += '\t' + repr(opt) + '\n'
@@ -904,7 +903,7 @@ class File(dict):
 
     def __str__(self):
         ret = ''
-        for key, val in iteritems(self.options):
+        for key, val in self.options.items():
             if key in self.associations:
                 continue
             tmp = str(val)
@@ -973,7 +972,7 @@ class File(dict):
 
     def _dump_resets(self):
         ret = {}
-        for key, val in iteritems(self.options):
+        for key, val in self.options.items():
             resets = val.get_resets()
             if resets:
                 ret[key] = resets
@@ -1138,7 +1137,7 @@ class File(dict):
 
         orig = self.raw
         oldkeys = [self._get_line_key(x) for x in orig]
-        newkeys = list(set(viewkeys(data)) - set(oldkeys))
+        newkeys = list(set(data.keys()) - set(oldkeys))
 
         multi_index_map = {}
         pair_index_map = {}
@@ -1318,11 +1317,11 @@ class File(dict):
                         _dump(line, comment=(key in written and not self._line_is_comment(line)))
 
                 # write the rest of the multi settings
-                for key, idx in iteritems(multi_index_map):
+                for key, idx in multi_index_map.items():
                     if key not in already_multi and idx < self[key].len():
                         fil.write('{}\n'.format(self[key].dump(idx)))
                 # write the rest of the pair settings
-                for key, idx in iteritems(pair_index_map):
+                for key, idx in pair_index_map.items():
                     if key not in already_pair and idx < self[key].len():
                         fil.wrrite('{}\n'.format(self[key].dump(idx)))
                 # Write the rest of file inclusions
@@ -1435,7 +1434,7 @@ class Config(File):
 
     @property
     def changed(self):
-        for path, conf in iteritems(self.files):
+        for path, conf in self.files.items():
             if conf.changed:
                 return True
         return False
@@ -1443,15 +1442,15 @@ class Config(File):
     def _parse(self):
 
         orig = self.files.copy()
-        for root, conf in iteritems(orig):
+        for root, conf in orig.items():
             conf.parse()
-            for key, val in iteritems(conf.flatten('include', False)):
+            for key, val in conf.flatten('include', False).items():
                 for path in val:
                     if not os.path.isabs(path):
                         path = os.path.join(os.path.dirname(root), path)
                     self.add_file(path, root)
                     self._includes.append(path)
-            for key, path in iteritems(conf.flatten('template', False)):
+            for key, path in conf.flatten('template', False).items():
                 if not os.path.isabs(path):
                     path = os.path.join(os.path.dirname(root), path)
                 self.add_file(path, root)
@@ -1471,7 +1470,7 @@ class Config(File):
 
         removed = []
         orig = self.files
-        for path, conf in iteritems(orig):
+        for path, conf in orig.items():
             if conf.parent and ((conf.name not in self._includes and
                conf.name not in self._templates) or conf.name in removed):
                 removed.append(path)
@@ -1503,31 +1502,31 @@ class Config(File):
 
         # retrieve the offset of the default conf
         offset = 0
-        for idx, (path, _) in enumerate(iteritems(self.files)):
+        for idx, path in enumerate(self.files.keys()):
             if path == dflt.name:
                 offset = idx
                 break
 
-        for idx, (top, conf) in enumerate(iteritems(self.files)):
+        for idx, (top, conf) in enumerate(self.files.items()):
             if idx < offset:
                 continue
             if idx > offset:
                 break
             node = __new_node(conf.name)
-            for key, val in iteritems(conf.flatten('include', False)):
+            for key, val in conf.flatten('include', False).items():
                 for path in val:
                     if not os.path.isabs(path):
                         path = os.path.join(os.path.dirname(top), path)
                     node['children'].append(__new_node(path, node['full']))
             temp[conf.name] = node
-        self._tree = [x for _, x in iteritems(temp)]
+        self._tree = [x for x in temp.values()]
         return self._tree
 
     def store(self, conf=None, dest=None, insecure=False):
         ret = []
         if conf and conf in self.files:
             return self.files[conf].store(dest, insecure)
-        for name, conf in iteritems(self.files):
+        for name, conf in self.files.items():
             ret += conf.store(insecure=insecure)
         return ret
 
@@ -1536,7 +1535,7 @@ class Config(File):
 
     def clone(self):
         cpy = Config(self.name, self.parser, self.mode)
-        for path, parsed in iteritems(self.files):
+        for path, parsed in self.files.items():
             if path == self.name:
                 continue
             cpy.add_file(path)
@@ -1586,24 +1585,24 @@ class Config(File):
     def _refresh(self):
         if self._dirty or \
                 any([x.dirty
-                     for _, x in iteritems(self.files)]):
+                     for x in self.files.values()]):
 
             # cleanup "caches"
             self.options.clear()
             del self.options
             self.options = OrderedDict()
-            for key in viewkeys(self.types):
+            for key in self.types.keys():
                 del self.types[key]
                 self.types[key] = OrderedDict()
 
             # now update caches with new values
-            for _, fil in iteritems(self.files):
+            for fil in self.files.values():
                 self.options.update(fil.options)
                 self.associations = self.associations.union(fil.associations)
                 # FIXME: find a way to cache efficiently
                 # fil.clean()
 
-            for key, val in iteritems(self.options):
+            for key, val in self.options.items():
                 if key not in self.associations:
                     self.types[val.type][key] = val
 
@@ -1653,7 +1652,7 @@ class Config(File):
     def __repr__(self):
         self._refresh()
         ret = ''
-        for key, fil in iteritems(self.files):
+        for key, fil in self.files.items():
             ret += '>' * 5 + key + '<' * 5 + '\n'
             ret += repr(fil) + '\n'
         return ret.rstrip('\n')

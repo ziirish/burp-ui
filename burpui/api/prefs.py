@@ -7,7 +7,6 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
-from six import viewkeys
 from flask import session, current_app, request
 from flask_login import current_user
 from werkzeug.datastructures import MultiDict
@@ -85,7 +84,7 @@ class PrefsUI(Resource):
             data = getattr(request, loc, None)
             if data:
                 req.update(data)
-        for key in viewkeys(args):
+        for key in args.keys():
             if key not in req:
                 continue
             temp = args.get(key)
@@ -117,7 +116,7 @@ class PrefsUI(Resource):
         args = self.parser.parse_args()
         ret = {}
         sess = session
-        for key in viewkeys(args):
+        for key in args.keys():
             ret[key] = sess.get(key)
         return ret
 
@@ -150,7 +149,7 @@ class PrefsUI(Resource):
         args = self.parser.parse_args()
         sess = session
         ret = {}
-        for key in viewkeys(args):
+        for key in args.keys():
             temp = args.get(key)
             if temp:
                 del sess[key]

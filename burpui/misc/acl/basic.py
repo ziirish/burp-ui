@@ -1,6 +1,4 @@
 # -*- coding: utf8 -*-
-from six import iteritems
-
 from .meta import meta_grants, BUIaclGrant
 from .interface import BUIaclLoader
 from ...utils import NOTIF_OK, NOTIF_WARN, NOTIF_ERROR, __
@@ -184,7 +182,7 @@ class ACLloader(BUIaclLoader):
             self.del_admin(name)
         if name in self.moderators:
             self.del_moderator(name)
-        for group, members in iteritems(self._groups):
+        for group, members in self._groups.items():
             if name in members:
                 self.del_group_member(group, name)
         message = "grant '{}' successfully removed".format(name)
@@ -249,7 +247,7 @@ class ACLloader(BUIaclLoader):
             self.del_admin(gname)
         if gname in self.moderators:
             self.del_moderator(gname)
-        for group, members in iteritems(self._groups):
+        for group, members in self._groups.items():
             if gname in members:
                 self.del_group_member(group, gname)
         message = "grant '{}' successfully removed".format(name)

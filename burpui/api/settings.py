@@ -14,7 +14,6 @@ from .custom import Resource, inputs
 from .._compat import unquote
 from ..utils import NOTIF_INFO
 
-from six import iteritems
 from flask_babel import gettext as _, refresh
 from flask import jsonify, request, url_for, current_app, g, session
 from flask_login import current_user
@@ -267,12 +266,12 @@ class ServerSettings(Resource):
             'pair_associations': '_pair_associations_parser_{}'.format(server),
         }
         cache_results = {}
-        for name, key in iteritems(cache_keys):
+        for name, key in cache_keys.items():
             if not cache.cache.has(key):
                 if name in ['doc', 'placeholders']:
                     _tmp = bui.client.get_parser_attr(name, server).copy()
                     _tmp2 = {}
-                    for k, v in iteritems(_tmp):
+                    for k, v in _tmp.items():
                         _tmp2[k] = _(v)
                     cache_results[name] = _tmp2
                 else:
@@ -538,12 +537,12 @@ class ClientSettings(Resource):
             'defaults': '_defaults_parser_{}'.format(server),
         }
         cache_results = {}
-        for name, key in iteritems(cache_keys):
+        for name, key in cache_keys.items():
             if not cache.cache.has(key):
                 if name in ['doc', 'placeholders']:
                     _tmp = bui.client.get_parser_attr(name, server).copy()
                     _tmp2 = {}
-                    for k, v in iteritems(_tmp):
+                    for k, v in _tmp.items():
                         _tmp2[k] = _(v)
                     cache_results[name] = _tmp2
                 else:

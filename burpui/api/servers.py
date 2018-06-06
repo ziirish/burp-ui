@@ -10,7 +10,6 @@ from ..exceptions import BUIserverException
 
 from flask import current_app
 from flask_login import current_user
-from six import iteritems
 
 bui = current_app  # type: BUIServer
 ns = api.namespace('servers', 'Servers methods')
@@ -211,7 +210,7 @@ class ServersReport(Resource):
                     else:
                         os[stats['stats']['os']] = 1
 
-                for key, val in iteritems(os):
+                for key, val in os.items():
                     out['stats']['os'][key] = val
 
                 for bkp in j['backups']:

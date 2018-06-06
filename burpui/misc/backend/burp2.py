@@ -16,7 +16,6 @@ import json
 import datetime
 
 from select import select
-from six import iteritems, viewkeys
 
 from .burp1 import Burp as Burp1
 from .interface import BUIbackend
@@ -500,7 +499,7 @@ class Burp(Burp1):
                 backup[name] = counter['count']
             else:
                 backup[name] = {}
-                for (key, val) in iteritems(counts):
+                for (key, val) in counts.items():
                     if val in counter:
                         backup[name][key] = counter[val]
                     else:
@@ -618,7 +617,7 @@ class Burp(Burp1):
 
         if 'bytes' not in ret:
             ret['bytes'] = 0
-        if set(['time_start', 'estimated_bytes', 'bytes']) <= set(viewkeys(ret)):
+        if set(['time_start', 'estimated_bytes', 'bytes']) <= set(ret.keys()):
             try:
                 diff = time.time() - int(ret['time_start'])
                 byteswant = int(ret['estimated_bytes'])

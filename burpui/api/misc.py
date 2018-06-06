@@ -15,7 +15,6 @@ from ..decorators import browser_cache
 from ..ext.cache import cache
 from ..ext.i18n import LANGUAGES
 
-from six import iteritems
 from flask import flash, url_for, current_app, session
 from flask_login import current_user
 
@@ -121,7 +120,7 @@ class Counters(Resource):
                 self.abort(404, "'{}' not found in the list of running clients for '{}'".format(client, server))
             else:
                 found = False
-                for (_, cls) in iteritems(running):
+                for (_, cls) in running.items():
                     if client in cls:
                         found = True
                         break
@@ -229,7 +228,7 @@ class Live(Resource):
         else:
             running = bui.client.is_one_backup_running()
         if isinstance(running, dict):
-            for (serv, clients) in iteritems(running):
+            for (serv, clients) in running.items():
                 for client in clients:
                     # ACL
                     if has_acl and not is_admin and \
@@ -385,15 +384,15 @@ class About(Resource):
         srv = bui.client.get_server_version(server)
         multi = {}
         if isinstance(cli, dict):
-            for (name, val) in iteritems(cli):
+            for (name, val) in cli.items():
                 multi[name] = {'client': val}
         if isinstance(srv, dict):
-            for (name, val) in iteritems(srv):
+            for (name, val) in srv.items():
                 multi[name]['server'] = val
         if not multi:
             res['burp'].append({'client': cli, 'server': srv})
         else:
-            for (name, val) in iteritems(multi):
+            for (name, val) in multi.items():
                 tmp = val
                 tmp.update({'name': name})
                 res['burp'].append(tmp)
@@ -653,7 +652,7 @@ class History(Resource):
                     grants[serv] = [x for x in all_clients if current_user.acl.is_client_allowed(x, serv)]
                 else:
                     grants[serv] = 'all'
-            for (serv, clients) in iteritems(grants):
+            for (serv, clients) in grants.items():
                 if not isinstance(clients, list):
                     if data and serv in data:
                         clients = data[serv].keys()

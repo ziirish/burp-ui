@@ -15,7 +15,6 @@ from ..utils import NOTIF_OK
 from .custom import fields, Resource
 #  from ..exceptions import BUIserverException
 
-from six import iteritems
 from flask import current_app
 from flask_login import current_user
 from flask_babel import gettext
@@ -215,7 +214,7 @@ class AclAdminss(Resource):
         if not handler or len(handler.backends) == 0:
             self.abort(404, "No acl backend found")
         ret = []
-        for _, loader in iteritems(handler.backends):
+        for _, loader in handler.backends.items():
             append = {
                 'members': loader.admins,
                 'backend': loader.name
@@ -454,7 +453,7 @@ class AclModerators(Resource):
         if not handler or len(handler.backends) == 0:
             self.abort(404, "No acl backend found")
         ret = []
-        for _, loader in iteritems(handler.backends):
+        for _, loader in handler.backends.items():
             append = {
                 'grant': loader.moderator,
                 'members': loader.moderators,
@@ -899,10 +898,10 @@ class AclGroups(Resource):
         if not handler or len(handler.backends) == 0:
             self.abort(404, "No acl backend found")
         ret = []
-        for _, loader in iteritems(handler.backends):
+        for _, loader in handler.backends.items():
             groups = loader.groups
             if groups:
-                for _id, group in iteritems(groups):
+                for _id, group in groups.items():
                     append = {
                         'id': _id.lstrip('@'),
                         'grant': group.get('grants', ''),
@@ -1097,10 +1096,10 @@ class AclGrants(Resource):
         if not handler or len(handler.backends) == 0:
             self.abort(404, "No acl backend found")
         ret = []
-        for _, loader in iteritems(handler.backends):
+        for _, loader in handler.backends.items():
             grants = loader.grants
             if grants:
-                for _id, grant in iteritems(grants):
+                for _id, grant in grants.items():
                     append = {
                         'id': _id,
                         'grant': json.dumps(grant),
@@ -1316,7 +1315,7 @@ class AclBackends(Resource):
         if not handler or len(handler.backends) == 0:
             self.abort(404, "No authentication backend found")
         ret = []
-        for name, backend in iteritems(handler.backends):
+        for name, backend in handler.backends.items():
             back = {}
             back['name'] = name
             back['description'] = gettext(backend.__doc__)
@@ -1383,7 +1382,7 @@ class AuthUsers(Resource):
         if not handler or len(handler.backends) == 0:
             self.abort(404, "No authentication backend found")
         ret = []
-        for _, backend in iteritems(handler.backends):
+        for _, backend in handler.backends.items():
             loader = backend.loader
             try:
                 users = getattr(loader, 'users')
@@ -1402,7 +1401,7 @@ class AuthUsers(Resource):
                                 return append
                         ret.append(append)
                 elif isinstance(users, dict):
-                    for user, _ in iteritems(users):
+                    for user, _ in users.items():
                         append = {
                             'id': backend.user(user).get_id(),
                             'name': user,
@@ -1630,7 +1629,7 @@ class AuthBackends(Resource):
         if not handler or len(handler.backends) == 0:
             self.abort(404, "No authentication backend found")
         ret = []
-        for name, backend in iteritems(handler.backends):
+        for name, backend in handler.backends.items():
             ret.append({
                 'name': name,
                 'description': gettext(backend.__doc__),

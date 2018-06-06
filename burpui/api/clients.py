@@ -15,7 +15,6 @@ from ..ext.cache import cache
 from ..exceptions import BUIserverException
 from ..decorators import browser_cache
 
-from six import iteritems
 from flask import current_app
 from flask_login import current_user
 
@@ -187,7 +186,7 @@ class RunningBackup(Resource):
                 res = [x for x in res if x in allowed]
         running = False
         if isinstance(res, dict):
-            for (_, run) in iteritems(res):
+            for (_, run) in res.items():
                 running = running or (len(run) > 0)
                 if running:
                     break
@@ -627,7 +626,7 @@ class AllClients(Resource):
             else:
                 for serv in bui.client.servers:
                     grants[serv] = 'all'
-            for (serv, clients) in iteritems(grants):
+            for (serv, clients) in grants.items():
                 if not isinstance(clients, list):
                     clients = clients_cache.get(serv, [])
                 ret += [{'name': x, 'agent': serv} for x in clients]

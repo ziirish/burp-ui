@@ -13,8 +13,6 @@ import logging
 
 from abc import ABCMeta, abstractmethod
 
-from six import with_metaclass
-
 G_BURPPORT = 4972
 G_BURPHOST = '::1'
 G_BURPBIN = '/usr/sbin/burp'
@@ -30,7 +28,7 @@ G_ENFORCE = False
 G_REVOKE = True
 
 
-class BUIbackend(with_metaclass(ABCMeta, object)):
+class BUIbackend(object, metaclass=ABCMeta):
     """The :class:`burpui.misc.backend.interface.BUIbackend` class provides
     a consistent interface backend for any ``burp`` server.
 

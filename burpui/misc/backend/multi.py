@@ -6,7 +6,6 @@ import json
 import struct
 import traceback
 
-from six import iteritems
 from werkzeug.datastructures import ImmutableMultiDict as _ImmutableMultiDict
 
 from .interface import BUIbackend
@@ -233,7 +232,7 @@ class Burp(BUIbackend):
                 pass
         else:
             res = {}
-            for name, serv in iteritems(self.servers):
+            for name, serv in self.servers.items():
                 try:
                     res[name] = serv.is_one_backup_running()
                 except BUIserverException:
@@ -248,7 +247,7 @@ class Burp(BUIbackend):
 
         r = {}
 
-        for name, serv in iteritems(self.servers):
+        for name, serv in self.servers.items():
             func = getattr(serv, method)
             try:
                 r[name] = func()

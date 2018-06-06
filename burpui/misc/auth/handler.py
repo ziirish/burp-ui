@@ -8,7 +8,6 @@ from ..acl.interface import BUIacl
 
 from importlib import import_module
 from flask import session
-from six import iteritems
 from collections import OrderedDict
 from flask_login import AnonymousUserMixin
 
@@ -42,7 +41,7 @@ class UserAuthHandler(BUIhandler):
                 except:
                     import traceback
                     self.errors[au] = traceback.format_exc()
-        for name, plugin in iteritems(self.app.plugin_manager.get_plugins_by_type('auth')):
+        for name, plugin in self.app.plugin_manager.get_plugins_by_type('auth').items():
             try:
                 obj = plugin.UserHandler(self.app)
                 backends.append(obj)
@@ -55,7 +54,7 @@ class UserAuthHandler(BUIhandler):
                 'No backend found for \'{}\':\n{}'.format(self.app.auth,
                                                           self.errors)
             )
-        for name, err in iteritems(self.errors):
+        for name, err in self.errors.items():
             self.app.logger.error(
                 'Unable to load module {}:\n{}'.format(repr(name), err)
             )
@@ -237,7 +236,7 @@ class UserHandler(BUIuser):
         if not self.name:
             return
 
-        for _, back in iteritems(self.backends):
+        for _, back in self.backends.items():
             user = back.user(self.name)
             if not user:
                 continue
@@ -286,7 +285,7 @@ class UserHandler(BUIuser):
         """See :func:`burpui.misc.auth.interface.BUIuser.login`"""
         if not self.real:
             self.authenticated = False
-            for name, back in iteritems(self.backends):
+            for name, back in self.backends.items():
                 u = back.user(self.name)
                 if not u:
                     continue

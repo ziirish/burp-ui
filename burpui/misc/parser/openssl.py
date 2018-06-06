@@ -12,7 +12,6 @@ import logging
 import subprocess
 
 from hashlib import md5
-from six import iteritems
 from OpenSSL import crypto
 
 
@@ -192,7 +191,7 @@ class OSSLConf(object):
 
                 dic[key] = val
 
-        for key, val in iteritems(dic):
+        for key, val in dic.items():
             self.conf[key] = dic[key] = val = self._translate(dic, key, val)
 
         self.md5 = chksum

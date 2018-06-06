@@ -11,7 +11,6 @@ import json
 import codecs
 
 from glob import glob
-from six import iteritems
 
 from .doc import Doc
 from .utils import Config
@@ -82,7 +81,7 @@ class Parser(Doc):
     def clients_conf(self):
         if self._clientconfdir_changed():
             self._load_conf_clients()
-        for client, conf in iteritems(self._clients_conf):
+        for client, conf in self._clients_conf.items():
             if conf.changed:
                 conf.parse(True)
         return self._clients_conf

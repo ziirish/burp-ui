@@ -17,8 +17,6 @@ import shutil
 import subprocess
 import tempfile
 
-from six import iteritems, viewkeys
-
 from .interface import BUIbackend
 from ..parser.burp1 import Parser
 from ...utils import human_readable as _hr, BUIcompress, utc_to_local
@@ -471,7 +469,7 @@ class Burp(BUIbackend):
 
             found = False
             # this method is not optimal, but it is easy to read and to maintain
-            for (key, regex) in iteritems(lookup_easy):
+            for (key, regex) in lookup_easy.items():
                 reg = re.search(regex, line)
                 if reg:
                     found = True
@@ -498,7 +496,7 @@ class Burp(BUIbackend):
             if found:
                 continue
 
-            for (key, regex) in iteritems(lookup_complex):
+            for (key, regex) in lookup_complex.items():
                 reg = re.search(regex, line)
                 if reg:
                     # self.logger.debug("match[1]: '{0}'".format(reg.group(1)))
@@ -582,7 +580,7 @@ class Burp(BUIbackend):
 
         if 'bytes' not in res:
             res['bytes'] = 0
-        if set(['start', 'estimated_bytes', 'bytes_in']) <= set(viewkeys(res)):
+        if set(['start', 'estimated_bytes', 'bytes_in']) <= set(res.keys()):
             try:
                 diff = time.time() - int(res['start'])
                 byteswant = int(res['estimated_bytes'])

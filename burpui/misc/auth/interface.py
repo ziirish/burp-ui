@@ -9,7 +9,6 @@
 """
 from flask_login import UserMixin, AnonymousUserMixin
 from abc import ABCMeta, abstractmethod, abstractproperty
-from six import with_metaclass
 
 import logging
 
@@ -18,7 +17,7 @@ class BUIloader:
     logger = logging.getLogger('burp-ui')
 
 
-class BUIhandler(with_metaclass(ABCMeta, object)):
+class BUIhandler(object, metaclass=ABCMeta):
     """The :class:`burpui.misc.auth.interface.BUIhandler` class maintains a list
     of ``Burp-UI`` users.
 
@@ -65,7 +64,7 @@ class BUIhandler(with_metaclass(ABCMeta, object)):
         return None
 
 
-class BUIuser(with_metaclass(ABCMeta, UserMixin)):
+class BUIuser(UserMixin, metaclass=ABCMeta):
     """The :class:`burpui.misc.auth.interface.BUIuser` class extends the
     :class:`flask_login:flask_login.UserMixin` class.
     """

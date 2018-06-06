@@ -20,7 +20,6 @@ from .plugins import PluginManager
 
 from datetime import timedelta
 from flask import Flask
-from six import iteritems
 
 
 BUI_DEFAULTS = {
@@ -371,7 +370,7 @@ class BUIServer(Flask):
         if self.auth and 'none' not in self.auth:
             try:
                 self.uhandler = UserAuthHandler(self)
-                for back, err in iteritems(self.uhandler.errors):
+                for back, err in self.uhandler.errors.items():
                     self.logger.critical(
                         'Unable to load \'{}\' authentication backend:\n{}'
                         .format(back, err)

@@ -12,8 +12,6 @@
 from copy import deepcopy
 from itertools import repeat
 
-from six import iterkeys, itervalues, iteritems, iterlists
-
 
 def is_immutable(self):
     raise TypeError('%r objects are immutable' % self.__class__.__name__)
@@ -24,10 +22,10 @@ def iter_multi_items(mapping):
     without dropping any from more complex structures.
     """
     if isinstance(mapping, MultiDict):
-        for item in iteritems(mapping, multi=True):
+        for item in mapping.items(multi=True):
             yield item
     elif isinstance(mapping, dict):
-        for key, value in iteritems(mapping):
+        for key, value in mapping.items():
             if isinstance(value, (tuple, list)):
                 for value in value:
                     yield key, value
@@ -74,7 +72,7 @@ class ImmutableDictMixin(object):
         return type(self), (dict(self),)
 
     def _iter_hashitems(self):
-        return iteritems(self)
+        return self.items()
 
     def __hash__(self):
         if self._hash_cache is not None:
@@ -114,10 +112,10 @@ class ImmutableMultiDictMixin(ImmutableDictMixin):
     """
 
     def __reduce_ex__(self, protocol):
-        return type(self), (list(iteritems(self, multi=True)),)
+        return type(self), (list(self.items(multi=True)),)
 
     def _iter_hashitems(self):
-        return iteritems(self, multi=True)
+        return self.items(multi=True)
 
     def add(self, key, value):
         is_immutable(self)
@@ -238,10 +236,10 @@ class MultiDict(TypeConversionDict):
 
     def __init__(self, mapping=None):
         if isinstance(mapping, MultiDict):
-            dict.__init__(self, ((k, l[:]) for k, l in iterlists(mapping)))
+            dict.__init__(self, ((k, l[:]) for k, l in mapping.lists()))
         elif isinstance(mapping, dict):
             tmp = {}
-            for key, value in iteritems(mapping):
+            for key, value in mapping.items():
                 if isinstance(value, (tuple, list)):
                     if len(value) == 0:
                         continue
@@ -384,7 +382,7 @@ class MultiDict(TypeConversionDict):
                       contain pairs for the first value of each key.
         """
 
-        for key, values in iteritems(dict, self):
+        for key, values in dict.items(self):
             if multi:
                 for value in values:
                     yield key, value
@@ -395,17 +393,17 @@ class MultiDict(TypeConversionDict):
         """Return a list of ``(key, values)`` pairs, where values is the list
         of all values associated with the key."""
 
-        for key, values in iteritems(dict, self):
+        for key, values in dict.items(self):
             yield key, list(values)
 
     def keys(self):
-        return iterkeys(dict, self)
+        return dict.keys(self)
 
     __iter__ = keys
 
     def values(self):
         """Returns an iterator of the first value on every key's value list."""
-        for values in itervalues(dict, self):
+        for values in dict.values(self):
             yield values[0]
 
     def listvalues(self):
@@ -417,7 +415,7 @@ class MultiDict(TypeConversionDict):
         True
         """
 
-        return itervalues(dict, self)
+        return dict.values(self)
 
     def copy(self):
         """Return a shallow copy of this object."""
@@ -438,7 +436,7 @@ class MultiDict(TypeConversionDict):
         :return: a :class:`dict`
         """
         if flat:
-            return dict(iteritems(self))
+            return dict(self.items())
         return dict(self.lists())
 
     def update(self, other_dict):
@@ -518,7 +516,7 @@ class MultiDict(TypeConversionDict):
         return self.deepcopy(memo=memo)
 
     def __repr__(self):
-        return '%s(%r)' % (self.__class__.__name__, list(iteritems(self, multi=True)))
+        return '%s(%r)' % (self.__class__.__name__, list(self.items(multi=True)))
 
 
 class _omd_bucket(object):
@@ -581,8 +579,8 @@ class OrderedMultiDict(MultiDict):
         if not isinstance(other, MultiDict):
             return NotImplemented
         if isinstance(other, OrderedMultiDict):
-            iter1 = iteritems(self, multi=True)
-            iter2 = iteritems(other, multi=True)
+            iter1 = self.items(multi=True)
+            iter2 = other.items(multi=True)
             try:
                 for k1, v1 in iter1:
                     k2, v2 = next(iter2)
@@ -597,7 +595,7 @@ class OrderedMultiDict(MultiDict):
             return False
         if len(self) != len(other):
             return False
-        for key, values in iterlists(self):
+        for key, values in self.lists():
             if other.getlist(key) != values:
                 return False
         return True
@@ -608,10 +606,10 @@ class OrderedMultiDict(MultiDict):
         return not self.__eq__(other)
 
     def __reduce_ex__(self, protocol):
-        return type(self), (list(iteritems(self, multi=True)),)
+        return type(self), (list(self.items(multi=True)),)
 
     def __getstate__(self):
-        return list(iteritems(self, multi=True))
+        return list(self.items(multi=True))
 
     def __setstate__(self, values):
         dict.clear(self)
@@ -631,12 +629,12 @@ class OrderedMultiDict(MultiDict):
         self.pop(key)
 
     def keys(self):
-        return (key for key, value in iteritems(self))
+        return (key for key, value in self.items())
 
     __iter__ = keys
 
     def values(self):
-        return (value for key, value in iteritems(self))
+        return (value for key, value in self.items())
 
     def items(self, multi=False):
         ptr = self._first_bucket
@@ -662,7 +660,7 @@ class OrderedMultiDict(MultiDict):
             ptr = ptr.next
 
     def listvalues(self):
-        for key, values in iterlists(self):
+        for key, values in self.lists():
             yield values
 
     def add(self, key, value):
@@ -776,7 +774,7 @@ class ImmutableOrderedMultiDict(ImmutableMultiDictMixin, OrderedMultiDict):
     """
 
     def _iter_hashitems(self):
-        return enumerate(iteritems(self, multi=True))
+        return enumerate(self.items(multi=True))
 
     def copy(self):
         """Return a shallow mutable copy of this object.  Keep in mind that

@@ -18,7 +18,6 @@ from ..ext.cache import cache
 from ..exceptions import BUIserverException
 from ..utils import NOTIF_ERROR
 
-from six import iteritems
 from flask_restplus.marshalling import marshal
 from flask import current_app, request
 from flask_login import current_user
@@ -325,7 +324,7 @@ class ClientTree(Resource):
                     # /!\ after marshalling, 'fullname' will be 'key'
                     tree[entry['fullname']] = marshal(entry, node_fields)
 
-                for key, entry in iteritems(tree):
+                for key, entry in tree.items():
                     parent = entry['parent']
                     if not entry['children']:
                         entry['children'] = None
@@ -476,7 +475,7 @@ class ClientTreeAll(Resource):
             redo = True
             while redo:
                 redo = False
-                for key, entry in iteritems(tree):
+                for key, entry in tree.items():
                     parent = entry['parent']
                     if not entry['children']:
                         entry['children'] = None

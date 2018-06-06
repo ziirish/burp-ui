@@ -115,7 +115,6 @@ setup(
         'gevent',
         'arrow==0.12.0',
         'tzlocal==1.5.1',
-        'six==1.11.0',
         'pyOpenSSL>=17.5.0',
         'configobj==5.0.6',
         'pyasn1>=0.2.3',

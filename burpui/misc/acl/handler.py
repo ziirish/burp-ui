@@ -5,7 +5,6 @@ from .interface import BUIacl, BUIaclLoader
 from .meta import meta_grants
 
 from importlib import import_module
-from six import iteritems
 from collections import OrderedDict
 
 
@@ -70,7 +69,7 @@ class ACLloader(BUIaclLoader):
                 except:
                     import traceback
                     self.errors[au] = traceback.format_exc()
-        for name, plugin in iteritems(self.app.plugin_manager.get_plugins_by_type('acl')):
+        for name, plugin in self.app.plugin_manager.get_plugins_by_type('acl').items():
             try:
                 obj = plugin.ACLloader(self.app)
                 backends.append(obj)
@@ -83,7 +82,7 @@ class ACLloader(BUIaclLoader):
                 'No backend found for \'{}\':\n{}'.format(self.app.acl_engine,
                                                           self.errors)
             )
-        for name, err in iteritems(self.errors):
+        for name, err in self.errors.items():
             self.app.logger.error(
                 'Unable to load module {}:\n{}'.format(repr(name), err)
             )
@@ -120,7 +119,7 @@ class ACLhandler(BUIacl):
 
     def _iterate_through_loader(self, method, *args, **kwargs):
         ret = None
-        for _, acl_engine in iteritems(self.loader.backends):
+        for _, acl_engine in self.loader.backends.items():
             func = getattr(acl_engine.acl, method)
             ret = func(*args, **kwargs)
             if isinstance(ret, tuple):

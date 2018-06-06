@@ -8,12 +8,11 @@
 
 """
 from abc import ABCMeta, abstractmethod, abstractproperty
-from six import with_metaclass
 
 import logging
 
 
-class BUIaclLoader(with_metaclass(ABCMeta, object)):
+class BUIaclLoader(object, metaclass=ABCMeta):
     """The :class:`burpui.misc.acl.interface.BUIaclLoader` class is used to
     load the actual ACL backend"""
 
@@ -82,7 +81,7 @@ class BUIaclLoader(with_metaclass(ABCMeta, object)):
         return None  # pragma: no cover
 
 
-class BUIacl(with_metaclass(ABCMeta, object)):
+class BUIacl(object, metaclass=ABCMeta):
     """The :class:`burpui.misc.acl.interface.BUIacl` class represents the ACL
     engine.
     """

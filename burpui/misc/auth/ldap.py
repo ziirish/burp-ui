@@ -1,5 +1,4 @@
 # -*- coding: utf8 -*-
-from six import viewitems
 from flask_login import AnonymousUserMixin
 
 from .interface import BUIhandler, BUIuser, BUIloader
@@ -82,7 +81,7 @@ class LdapLoader(BUIloader):
             ) or handler.priority
         except:
             pass
-        for (opt, key) in viewitems(mapping):
+        for (opt, key) in mapping.items():
             setattr(self, opt, conf.safe_get(key, 'force_string', section=self.section))
 
         if self.validate and self.validate.lower() in ['none', 'optional', 'required']:
