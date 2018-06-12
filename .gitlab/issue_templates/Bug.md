@@ -47,8 +47,8 @@ burp-2.1.18
 
 ```
 $ bui-manage sysinfo
-Python version:      3.6.1
-Burp-UI version:     0.5.0 (stable)
+Python version:      3.6.5
+Burp-UI version:     0.6.1 (stable)
 Single mode:         True
 Backend version:     2
 WebSocket embedded:  False

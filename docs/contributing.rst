@@ -136,8 +136,10 @@ A Bug Report template is available directly in the Issue Tracker:
 The template illustrate the commands to run in order to provide as much details
 as you can in order to help reproduce the issue.
 
-If you are running ``Burp-UI`` bellow *v0.5.0*, you can get those informations
-using the following commands:
+Any un-complete bug report will likely be **ignored**.
+
+If you are running ``Burp-UI`` <= *v0.5.0*, you can get those informations using
+the following commands:
 
 ::
 
@@ -156,6 +158,8 @@ Questions
 
 Ask questions in the `discussion forum <https://forum.burp-ui.org/>`__. Do not
 use the issue tracker for this purpose.
+
+You can also join the ``#burp-ui`` room on irc.freenode.org.
 
 ``Burp-UI`` has extensive online documentation please read the `doc
 <https://burp-ui.readthedocs.io/en/latest/>`__.

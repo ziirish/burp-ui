@@ -292,11 +292,15 @@ Example:
 
     bui-manage sysinfo
 
-    Python version:  2.7.9
-    Burp-UI version: 0.6.0 (stable)
-    Single mode:     True
-    Backend version: 2
-    Config file:     share/burpui/etc/burpui.sample.cfg
+    Python version:      3.6.5
+    Burp-UI version:     0.6.1 (stable)
+    OS:                  Linux:4.16.0-1-amd64 (posix)
+    Distribution:        debian buster/sid
+    Single mode:         True
+    Backend version:     2
+    WebSocket embedded:  False
+    WebSocket available: True
+    Config file:         share/burpui/etc/burpui.sample.cfg
 
 
 You can also add the ``-v`` flag while running ``sysinfo`` but please **MAKE
@@ -307,20 +311,29 @@ Example:
 ::
 
     bui-manage sysinfo -v
-    Python version:  2.7.9
-    Burp-UI version: 0.6.0 (stable)
-    Single mode:     True
-    Backend version: 2
-    Config file:     share/burpui/etc/burpui.sample.cfg
+
+    Python version:      3.6.5
+    Burp-UI version:     0.6.1 (stable)
+    OS:                  Linux:4.16.0-1-amd64 (posix)
+    Distribution:        debian buster/sid
+    Single mode:         True
+    Backend version:     2
+    WebSocket embedded:  False
+    WebSocket available: True
+    Config file:         share/burpui/etc/burpui.sample.cfg
     >>>>> Extra verbose informations:
     !!! PLEASE MAKE SURE NO SENSITIVE DATA GET EXPOSED !!!
 
-        [Burp] section:
-        8<---------------------------------------------------------------------BEGIN
-        8<-----------------------------------------------------------------------END
+        8<-------------------------------------------------------------BEGIN[Global]
+        version = 2
+        single = true
+        auth = basic
+        acl = basic
+        prefix = none
+        plugins = none
+        8<---------------------------------------------------------------END[Global]
 
-        [Production] section:
-        8<---------------------------------------------------------------------BEGIN
+        8<---------------------------------------------------------BEGIN[Production]
         storage = default
         session = default
         cache = default
@@ -329,17 +342,21 @@ Example:
         database = none
         limiter = false
         ratio = 60/minute
-        8<-----------------------------------------------------------------------END
+        8<-----------------------------------------------------------END[Production]
 
-        [Global] section:
-        8<---------------------------------------------------------------------BEGIN
-        version = 2
-        single = true
-        auth = basic
-        acl = basic
-        prefix = none
-        plugins = none
-        8<-----------------------------------------------------------------------END
+        8<---------------------------------------------------------------BEGIN[Burp]
+        bconfcli = /etc/burp/burp.conf
+        stripbin = /usr/bin/vss_strip
+        bconfsrv = /etc/burp/burp-server.conf
+        tmpdir = /tmp/bui/
+        8<-----------------------------------------------------------------END[Burp]
+
+        8<----------------------------------------------------------BEGIN[WebSocket]
+        enabled = true
+        embedded = false
+        url = document.domain + ':5001'
+        debug = true
+        8<------------------------------------------------------------END[WebSocket]
 
 
 Diag

@@ -84,6 +84,8 @@ I have closed the *github tracker* to have a unique tracker system.
 
 Also please, read the `Contributing`_ page before reporting any issue to make
 sure we have all the informations to help you.
+Bug report that don't comply with the rules will likely be **ignored** because
+my spare time is quite limited.
 
 See also
 --------
