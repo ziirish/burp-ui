@@ -4,7 +4,6 @@ import socket
 import errno
 import json
 import struct
-import traceback
 
 from werkzeug.datastructures import ImmutableMultiDict as _ImmutableMultiDict
 
@@ -465,33 +464,33 @@ class NClient(BUIbackend):
                     lengthbuf = sock.recv(8)
                     length, = struct.unpack('!Q', lengthbuf)
                     res = to_unicode(gsock.recvall(length))
-                except IOError as e:
-                    if not restarted and e.errno == errno.EPIPE:
+                except IOError as exc:
+                    if not restarted and exc.errno == errno.EPIPE:
                         self.logger.warning('Broken pipe, restarting the request')
                         return self.do_command(data, True)
-                    elif e.errno == errno.ECONNRESET:
-                        self.logger.error('!!! {} !!!\nPlease check your SSL configuration on both sides!'.format(str(e)))
+                    elif exc.errno == errno.ECONNRESET:
+                        self.logger.error('!!! {} !!!\nPlease check your SSL configuration on both sides!'.format(str(exc)))
                     else:
-                        self.logger.error('!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
-                    raise e
-                except socket.timeout as e:
+                        self.logger.error('!!! {} !!!'.format(str(exc)), exc_info=True)
+                    raise exc
+                except socket.timeout as exc:
                     if self.app.gunicorn and not restarted:
                         self.logger.warning('Socket timed-out, restarting the request')
                         return self.do_command(data, True)
-                    self.logger.error('!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
-                    raise e
+                    self.logger.error('!!! {} !!!'.format(str(exc)), exc_info=exc)
+                    raise exc
                 # catch all
-                except Exception as e:
-                    self.logger.error('!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
+                except Exception as exc:
+                    self.logger.error('!!! {} !!!'.format(str(exc)), exc_info=exc)
                     if data['func'] == 'restore_files':
-                        err = str(e)
-                    elif isinstance(e, BUIserverException):
-                        raise e
+                        err = str(exc)
+                    elif isinstance(exc, BUIserverException):
+                        raise exc
                     else:
-                        raise BUIserverException(str(e))
-        except Exception as e:
-            self.logger.error('!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
-            raise BUIserverException(str(e))
+                        raise BUIserverException(str(exc))
+        except Exception as exc:
+            self.logger.error('!!! {} !!!'.format(str(exc)), exc_info=exc)
+            raise BUIserverException(str(exc))
 
         if data['func'] == 'restore_files':
             if err:

@@ -125,13 +125,14 @@ class Api(ApiPlus):
                         self.logger.debug('Loading API module: {}'.format(mod))
                         try:
                             import_module(mod, __name__)
-                        except:  # pragma: no cover
-                            import traceback
+                        except Exception as exc:  # pragma: no cover
                             self.logger.critical(
                                 'Unable to load {}:\n{}'.format(
                                     mod,
-                                    traceback.format_exc()
-                                )
+                                    exc,
+                                ),
+                                exc_info=exc,
+                                stack_info=True
                             )
                     else:
                         self.logger.warning(

@@ -14,7 +14,6 @@ import time
 import sys
 import json
 import logging
-import traceback
 
 from gevent.lock import RLock
 from gevent.pool import Pool
@@ -24,7 +23,6 @@ from logging.handlers import RotatingFileHandler
 from .exceptions import BUIserverException
 from .misc.backend.interface import BUIbackend
 from ._compat import pickle, to_bytes, to_unicode
-from .utils import BUIlogging
 from .config import config
 from .desc import __version__
 
@@ -76,8 +74,8 @@ class BurpHandler(BUIbackend):
             mod = __import__(module, fromlist=['Burp'])
             Client = mod.Burp
             self.backend = Client(conf=conf)
-        except Exception as e:
-            self.logger.error('{}\n\nFailed loading backend {}: {}'.format(traceback.format_exc(), self.backend, str(e)))
+        except Exception as exc:
+            self.logger.error('Failed loading backend {}: {}'.format(self.backend, str(exc)), exc_info=exc, stack_info=True)
             sys.exit(2)
 
     def __getattribute__(self, name):
@@ -96,7 +94,7 @@ class BurpHandler(BUIbackend):
         return object.__getattribute__(self, name)
 
 
-class BUIAgent(BUIbackend, BUIlogging):
+class BUIAgent(BUIbackend):
     BUIbackend.__abstractmethods__ = frozenset()
 
     def __init__(self, conf=None, level=0, logfile=None, debug=False):
@@ -104,14 +102,12 @@ class BUIAgent(BUIbackend, BUIlogging):
         self.padding = 1
         level = level or 0
         if level > logging.NOTSET:
-            logging.addLevelName(DISCLOSURE, 'DISCLOSURE')
             levels = [
                 logging.CRITICAL,
                 logging.ERROR,
                 logging.WARNING,
                 logging.INFO,
                 logging.DEBUG,
-                DISCLOSURE
             ]
             if level >= len(levels):
                 level = len(levels) - 1
@@ -133,8 +129,8 @@ class BUIAgent(BUIbackend, BUIlogging):
             handler.setLevel(lvl)
             handler.setFormatter(logging.Formatter(LOG_FORMAT))
             self.logger.addHandler(handler)
-            self._logger('info', 'conf: ' + conf)
-            self._logger('info', 'level: ' + logging.getLevelName(lvl))
+            self.logger.info('conf: {}'.format(conf))
+            self.logger.info('level: {}'.format(logging.getLevelName(lvl)))
         if not conf:
             raise IOError('No configuration file found')
 
@@ -176,14 +172,14 @@ class BUIAgent(BUIbackend, BUIlogging):
                     return
                 length, = struct.unpack('!Q', lengthbuf)
                 data = self.recvall(length)
-                self._logger('info', 'recv: {}'.format(data))
+                self.logger.info('recv: {}'.format(data))
                 txt = to_unicode(data)
-                self._logger('info', 'recv2: {}'.format(txt))
+                self.logger.info('recv2: {}'.format(txt))
                 if txt == 'RE':
                     return
                 j = json.loads(txt)
                 if j['password'] != self.password:
-                    self._logger('warning', '-----> Wrong Password <-----')
+                    self.logger.warning('-----> Wrong Password <-----')
                     self.request.sendall(b'KO')
                     return
                 try:
@@ -201,7 +197,7 @@ class BUIAgent(BUIbackend, BUIlogging):
                             self.request.sendall(b'ER')
                             self.request.sendall(struct.pack('!Q', len(err)))
                             self.request.sendall(to_bytes(err))
-                            self._logger('error', 'Restoration failed')
+                            self.logger.error('Restoration failed')
                             return
                     elif j['func'] == 'get_file':
                         path = j['path']
@@ -216,7 +212,7 @@ class BUIAgent(BUIbackend, BUIlogging):
                             self.request.sendall(b'ER')
                             self.request.sendall(struct.pack('!Q', len(err)))
                             self.request.sendall(to_bytes(err))
-                            self._logger('error', err)
+                            self.logger.error(err)
                             return
                         size = os.path.getsize(path)
                         self.request.sendall(b'OK')
@@ -227,7 +223,7 @@ class BUIAgent(BUIbackend, BUIlogging):
                                     buf = f.read(1024)
                                     if not buf:
                                         break
-                                    self._logger('info', 'sending {} Bytes'.format(len(buf)))
+                                    self.logger.info('sending {} Bytes'.format(len(buf)))
                                     self.request.sendall(buf)
                             else:
                                 offset = 0
@@ -256,7 +252,7 @@ class BUIAgent(BUIbackend, BUIlogging):
                             self.request.sendall(b'ER')
                             self.request.sendall(struct.pack('!Q', len(err)))
                             self.request.sendall(to_bytes(err))
-                            self._logger('error', err)
+                            self.logger.error(err)
                             return
                         res = json.dumps(False)
                         if os.path.isfile(path):
@@ -288,28 +284,28 @@ class BUIAgent(BUIbackend, BUIlogging):
                             res = json.dumps(getattr(self.client, j['func'])(**j['args']))
                         else:
                             res = json.dumps(getattr(self.client, j['func'])())
-                    self._logger('info', 'result: {}'.format(res))
+                    self.logger.info('result: {}'.format(res))
                     self.request.sendall(b'OK')
-                except (BUIserverException, Exception) as e:
+                except (BUIserverException, Exception) as exc:
                     self.request.sendall(b'ER')
-                    res = str(e)
-                    self._logger('error', traceback.format_exc())
-                    self._logger('warning', 'Forwarding Exception: {}'.format(res))
+                    res = str(exc)
+                    self.logger.error(res, exc_info=exc)
+                    self.logger.warning('Forwarding Exception: {}'.format(res))
                     self.request.sendall(struct.pack('!Q', len(res)))
                     self.request.sendall(to_bytes(res))
                     return
                 self.request.sendall(struct.pack('!Q', len(res)))
                 self.request.sendall(to_bytes(res))
-            except AttributeError as e:
-                self._logger('warning', '{}\nWrong method => {}'.format(traceback.format_exc(), str(e)))
+            except AttributeError as exc:
+                self.logger.warning('Wrong method => {}'.format(str(exc)), exc_info=exc)
                 self.request.sendall(b'KO')
-            except Exception as e:
-                self._logger('error', '!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
+            except Exception as exc:
+                self.logger.error('!!! {} !!!'.format(str(exc)), exc_info=exc)
             finally:
                 try:
                     self.request.close()
-                except Exception as e:
-                    self._logger('error', '!!! {} !!!\n{}'.format(str(e), traceback.format_exc()))
+                except Exception as exc:
+                    self.logger.error('!!! {} !!!'.format(str(exc)), exc_info=exc)
 
     def recvall(self, length=1024):
         buf = b''
@@ -325,12 +321,3 @@ class BUIAgent(BUIbackend, BUIlogging):
             buf += newbuf
             received += len(newbuf)
         return buf
-
-    def _logger(self, level, message):
-        # hide password from logs
-        msg = message
-        if not self.logger:
-            return
-        if self.logger.getEffectiveLevel() != DISCLOSURE:
-            msg = re.sub(r'([\'"])password\1(\s*:\s*)([\'"])[^\3]+?\3', r'\1password\1\2\3*****\3', message)
-        super(BUIAgent, self)._logger(level, msg)

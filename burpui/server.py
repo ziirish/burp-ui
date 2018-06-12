@@ -11,7 +11,6 @@ import os
 import re
 import sys
 import logging
-import traceback
 
 from .misc.auth.handler import UserAuthHandler
 from .misc.acl.handler import ACLloader
@@ -431,14 +430,13 @@ class BUIServer(Flask):
                 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
                 mod = __import__(module, fromlist=['Burp'])
                 self.client = mod.Burp(self, conf=self.conf)
-        except Exception as e:
+        except Exception as exc:
             msg = 'Failed loading backend {0}: {1}'.format(
                 self.backend,
-                str(e)
+                str(exc)
             )
             if strict:
-                self.logger.critical(traceback.format_exc())
-                self.logger.critical(msg)
+                self.logger.critical(msg, exc_info=exc, stack_info=True)
                 sys.exit(2)
             else:
                 raise Exception(msg)
