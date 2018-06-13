@@ -14,10 +14,8 @@ import sys
 import datetime
 import zipfile
 import tarfile
-import logging
 
 from uuid import UUID
-from inspect import currentframe, getouterframes
 
 NOTIF_OK = 0
 NOTIF_WARN = 1

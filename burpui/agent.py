@@ -9,7 +9,6 @@
 """
 import os
 import struct
-import re
 import time
 import sys
 import json
