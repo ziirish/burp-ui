@@ -28,7 +28,6 @@ BUI_DEFAULTS = {
         'ssl': False,
         'sslcert': '',
         'sslkey': '',
-        'version': 2,
         'backend': 'burp2',
         'auth': ['basic'],
         'acl': 'none',
@@ -148,10 +147,9 @@ class BUIServer(Flask):
         self.config['BUI_PIWIK_SCRIPT'] = self.conf.safe_get('piwik_script')
         self.config['BUI_PIWIK_ID'] = self.conf.safe_get('piwik_id', 'integer')
         self.config['BUI_BIND'] = self.conf.safe_get('bind')
-        version = self.conf.safe_get('version', 'integer')
-        if unittest and version != 1:
-            version = 1
         self.config['BACKEND'] = self.conf.safe_get('backend')
+        if unittest:
+            self.config['BACKEND'] = 'burp1'
         self.config['BUI_SSL'] = self.conf.safe_get(
             'ssl',
             'boolean'
