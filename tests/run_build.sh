@@ -14,6 +14,7 @@ echo "test requirements"
 pip install -r requirements.txt
 pip install wheel
 
+
 echo "building dist"
 $PYTHON setup.py sdist bdist_wheel bdist_egg
 mkdir meta
