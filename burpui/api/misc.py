@@ -24,6 +24,19 @@ import re
 bui = current_app  # type: BUIServer
 ns = api.namespace('misc', 'Misc methods')
 
+
+def clear_cache(pattern=None):
+    """Clear the cache, you can also provide a pattern to only clean matching keys"""
+    if pattern is None:
+        cache.clear()
+    else:
+        if hasattr(cache.cache, '_client') and hasattr(cache.cache._client, 'keys'):
+            if hasattr(cache.cache, 'key_prefix') and cache.cache.key_prefix:
+                pattern = cache.cache.key_prefix + pattern
+            keys = cache.cache._client.keys(pattern)
+            cache.cache._client.delete(keys)
+
+
 counters_fields = ns.model('Counters', {
     'phase': fields.String(description='Backup phase'),
     'Total': fields.List(fields.Integer, description='new/deleted/scanned/unchanged/total', attribute='total'),

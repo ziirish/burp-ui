@@ -503,6 +503,15 @@ class ClientSettings(Resource):
         args = self.parser_post.parse_args()
         template = args.get('template', False)
         noti = bui.client.store_conf_cli(request.form, client, conf, template, server)
+        # clear cache
+        cache.clear()
+        # clear client-side cache through the _extra META variable
+        try:
+            _extra = session.get('_extra', g.now)
+            _extra = int(_extra)
+        except ValueError:
+            _extra = 0
+        session['_extra'] = '{}'.format(_extra + 1)
         return {'notif': noti}
 
     @api.acl_admin_or_moderator_required(message=_('Sorry, you don\'t have rights to access the setting panel'))
