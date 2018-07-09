@@ -72,7 +72,7 @@ class BurpuiAPIBasicHTTPTestCase(TestCase):
         os.unlink(self.logfile)
 
     def create_app(self):
-        conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test2.cfg')
+        conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'configs/test2.cfg')
         _, self.logfile = tempfile.mkstemp()
         bui = BUIinit(conf, 1, self.logfile, gunicorn=False, unittest=True)
         bui.config['DEBUG'] = False
@@ -104,7 +104,7 @@ class BurpuiAPITestCase(TestCase):
         print ('\nTest 3 Finished!\n')
 
     def create_app(self):
-        conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test2.cfg')
+        conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'configs/test2.cfg')
         bui = BUIinit(logfile='/dev/null', gunicorn=False, unittest=True)
         bui.setup(conf, True)
         bui.config['TESTING'] = True
@@ -253,7 +253,7 @@ class BurpuiRoutesTestCase(TestCase):
 
     def create_app(self):
         with patch('socket.socket'):
-            conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test4.cfg')
+            conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'configs/test4.cfg')
             bui = BUIinit(conf, logfile='/dev/null', gunicorn=False, unittest=True)
             bui.setup(conf, True)
             bui.config['TESTING'] = True
@@ -335,7 +335,7 @@ class BurpuiACLTestCase(TestCase):
         return self.client.get(url_for('view.logout'), follow_redirects=True)
 
     def create_app(self):
-        conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test6.cfg')
+        conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'configs/test6.cfg')
         bui = BUIinit(conf, False, '/dev/null', gunicorn=False, unittest=True)
         bui.config['TESTING'] = True
         bui.config['LIVESERVER_PORT'] = 5001
@@ -409,10 +409,10 @@ class BurpuiTestInit(TestCase):
     def create_app(self):
         kwargs = {'verbose': 0, 'logfile': '/dev/null', 'gunicorn': False, 'unittest': True}
         root = os.path.dirname(os.path.realpath(__file__))
-        conf1 = os.path.join(root, 'test7-1.cfg')
-        conf2 = os.path.join(root, 'test7-2.cfg')
-        conf4 = os.path.join(root, 'test7-4.cfg')
-        conf5 = os.path.join(root, 'test7-5.cfg')
+        conf1 = os.path.join(root, 'configs/test7-1.cfg')
+        conf2 = os.path.join(root, 'configs/test7-2.cfg')
+        conf4 = os.path.join(root, 'configs/test7-4.cfg')
+        conf5 = os.path.join(root, 'configs/test7-5.cfg')
         BUIinit(conf1, **kwargs)
         BUIinit(conf2, **kwargs)
         BUIinit(conf4, **kwargs)
@@ -428,7 +428,7 @@ class BurpuiTestInit(TestCase):
         _, self.tmpFile = tempfile.mkstemp()
         self.assertRaises(IOError, BUIinit, 'thisfileisnotlikelytoexist', True, self.tmpFile, gunicorn=False, unittest=True)
         self.assertRaises(IOError, BUIinit, 'thisfileisnotlikelytoexist', False, self.tmpFile, gunicorn=False, unittest=True)
-        conf3 = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test7-3.cfg')
+        conf3 = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'configs/test7-3.cfg')
         self.assertRaises(ImportError, BUIinit, conf3, 12, '/dev/null', gunicorn=False, unittest=True)
 
 
@@ -456,7 +456,7 @@ class BurpuiRedisTestCase(TestCase):
     @patch('redis.StrictRedis', mockredis.mock_strict_redis_client)
     @patch('redis.Redis', mock_redis_client)
     def create_app(self):
-        conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test8.cfg')
+        conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'configs/test8.cfg')
         bui = BUIinit(conf, False, '/dev/null', gunicorn=False, unittest=True)
         bui.config['TESTING'] = True
         bui.config['LIVESERVER_PORT'] = 5001
@@ -521,7 +521,7 @@ class BurpuiRedisTestCase(TestCase):
 #        ), follow_redirects=True)
 #
 #    def create_app(self):
-#        conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test7.cfg')
+#        conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'configs/test7.cfg')
 #        app.config['TESTING'] = True
 #        app.config['LOGIN_DISABLED'] = True
 #        app.config['CFG'] = conf

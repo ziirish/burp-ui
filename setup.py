@@ -244,6 +244,8 @@ with open(os.path.join(ROOT, 'requirements.txt')) as f:
 
 dev_requires = ['flake8', 'pylint']
 test_requires = [
+    'pytest',
+    'pytest-cov',
     'Flask-Testing',
     'nose',
     'coverage',

@@ -10,6 +10,7 @@ devel.sh
 .coveragerc
 .ropeproject
 .pylintrc
+.pytest_cache
 dist
 _build
 .tags
