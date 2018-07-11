@@ -478,6 +478,3 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
             )
 
     return app
-
-
-init = create_app

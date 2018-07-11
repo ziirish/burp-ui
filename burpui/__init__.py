@@ -11,10 +11,10 @@ jQuery/Bootstrap
 """
 import warnings
 
-from .app import init
+from .app import create_app
 
 warnings.simplefilter('always', RuntimeWarning)
 
 
 # backward compatibility
-create_app = init
+init = create_app

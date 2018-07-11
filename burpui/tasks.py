@@ -20,6 +20,7 @@ from time import gmtime, strftime, sleep
 # Try to load modules from our current env first
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
 
+from burpui._compat import to_unicode
 from burpui.config import config  # noqa
 from burpui.ext.async import celery  # noqa
 from burpui.ext.cache import cache  # noqa
@@ -268,12 +269,12 @@ def perform_restore(self, client, backup,
         if not archive:
             if not err:
                 err = 'Something went wrong while restoring'
-            self.update_state(state='FAILURE', meta={'error': err})
+            self.update_state(state='FAILURE', meta={'error': to_unicode(err)})
             logger.error('FAILURE: {}'.format(err))
         else:
             ret = {
                 'filename': filename,
-                'path': archive,
+                'path': to_unicode(archive),
                 'user': user,
                 'server': server,
                 'admin': admin
