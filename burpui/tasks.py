@@ -20,7 +20,7 @@ from time import gmtime, strftime, sleep
 # Try to load modules from our current env first
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
 
-from burpui._compat import to_unicode
+from burpui._compat import to_unicode  # noqa
 from burpui.config import config  # noqa
 from burpui.ext.async import celery  # noqa
 from burpui.ext.cache import cache  # noqa
