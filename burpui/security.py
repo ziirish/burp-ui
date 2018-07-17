@@ -49,13 +49,15 @@ def basic_login_from_request(request, app):
             refresh = False
             if 'login' in session and session['login'] != auth.username:
                 refresh = True
-                session.clear()
-                session['login'] = auth.username
             session['language'] = request.headers.get('X-Language', 'en')
             user = app.uhandler.user(auth.username, refresh)
-            if user.active and user.login(auth.password):
+            if user and user.active and user.login(auth.password):
                 from flask_login import login_user
                 from .sessions import session_manager
+                if 'login' in session and session['login'] != auth.username:
+                    session.clear()
+                    session['login'] = auth.username
+                    session['language'] = request.headers.get('X-Language', 'en')
                 login_user(user)
                 if request.headers.get('X-Reuse-Session', False):
                     session_manager.store_session(
