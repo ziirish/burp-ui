@@ -19,14 +19,12 @@ from select import select
 
 from .burp1 import Burp as Burp1
 from .interface import BUIbackend
+from .burp.utils import Monitor
 from ..parser.burp2 import Parser
 from ...utils import human_readable as _hr, utc_to_local
 from ...security import sanitize_string
 from ...exceptions import BUIserverException
 from ..._compat import to_bytes, to_unicode
-
-if sys.version_info < (3, 3):
-    TimeoutError = OSError
 
 BURP_MINIMAL_VERSION = 'burp-2.0.18'
 BURP_LIST_BATCH = '2.0.48'
@@ -69,10 +67,6 @@ class Burp(Burp1):
     _vers = 2
     # cache to store the guessed OS
     _os_cache = {}
-    # cache status results
-    _status_cache = {}
-    _last_status_cleanup = datetime.datetime.now()
-    _time_to_cache = datetime.timedelta(seconds=3)
 
     def __init__(self, server=None, conf=None):
         """
@@ -83,165 +77,36 @@ class Burp(Burp1):
         :param conf: Configuration to use
         :type conf: :class:`burpui.config.BUIConfig`
         """
-        self.proc = None
-        self.client_version = None
-        self.server_version = None
-        self.batch_list_supported = False
 
         self.plock = RLock()
 
         BUIbackend.__init__(self, server, conf)
 
-        self._burp_client_ok = False
-        version = ''
-        # check the burp version because this backend only supports clients
-        # newer than BURP_MINIMAL_VERSION
-        try:
-            if not self.burpbin:
-                self.logger.critical('No Burp binary found!')
-            else:
-                cmd = [self.burpbin, '-v']
-                version = subprocess.check_output(
-                    cmd,
-                    universal_newlines=True
-                ).rstrip()
-                if version < BURP_MINIMAL_VERSION and \
-                        getattr(self.app, 'strict', True):
-                    self.logger.critical(
-                        'Your burp version ({}) does not fit the minimal'
-                        ' requirements: {}'.format(version, BURP_MINIMAL_VERSION)
-                    )
-                elif version >= BURP_MINIMAL_VERSION:
-                    self._burp_client_ok = True
-        except subprocess.CalledProcessError as exp:
-            if getattr(self.app, 'strict', True):
-                self.logger.critical(
-                    'Unable to determine your burp version: {}'.format(str(exp))
-                )
-
-        self.client_version = version.replace('burp-', '')
-
+        self.monitor = Monitor(self.burpbin, self.burpconfcli, self.app, self.timeout)
         self.parser = Parser(self)
+
+        self.batch_list_supported = self.monitor.batch_list_supported
 
         self.logger.info('burp binary: {}'.format(self.burpbin))
         self.logger.info('strip binary: {}'.format(self.stripbin))
         self.logger.info('burp conf cli: {}'.format(self.burpconfcli))
         self.logger.info('burp conf srv: {}'.format(self.burpconfsrv))
         self.logger.info('command timeout: {}'.format(self.timeout))
-        self.logger.info('burp version: {}'.format(self.client_version))
         self.logger.info('tmpdir: {}'.format(self.tmpdir))
         self.logger.info('zip64: {}'.format(self.zip64))
         self.logger.info('includes: {}'.format(self.includes))
         self.logger.info('enforce: {}'.format(self.enforce))
         self.logger.info('revoke: {}'.format(self.revoke))
-        if self.app and not self.app.config['BUI_CLI']:
-            try:
-                # make the connection
-                self._spawn_burp(True)
-                self.status()
-            except BUIserverException:
-                pass
-            except OSError as exp:
-                msg = str(exp)
-                self.logger.critical(msg)
+        self.logger.info(f'client version: {self.client_version}')
+        self.logger.info(f'server version: {self.server_version}')
 
-    def __exit__(self, typ, value, traceback):
-        """try not to leave child process server side"""
-        self._terminate_burp()
-        self._kill_burp()
+    @property
+    def client_version(self):
+        return self.monitor.client_version
 
-    def _kill_burp(self):
-        """Terminate the process"""
-        if self._proc_is_alive():
-            try:
-                self.proc.terminate()
-            except Exception:
-                pass
-        if self._proc_is_alive():
-            try:
-                self.proc.kill()
-            except Exception:
-                pass
-
-    def _terminate_burp(self):
-        """Terminate cleanly the process"""
-        if self._proc_is_alive():
-            self.proc.stdin.close()
-            self.proc.communicate()
-            self.proc.wait()
-
-    def _spawn_burp(self, verbose=False):
-        """Launch the burp client process"""
-        if not self._burp_client_ok:
-            raise BUIserverException('No suitable burp client found')
-        cmd = [self.burpbin, '-c', self.burpconfcli, '-a', 'm']
-        self.proc = subprocess.Popen(
-            cmd,
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            shell=False,
-            bufsize=0
-        )
-        if not self._proc_is_alive():
-            details = ''
-            if verbose:
-                details = ':\n'
-                out, _ = self.proc.communicate()
-                details += to_unicode(out)
-            raise OSError('Unable to spawn burp process{}'.format(details))
-        _, write, _ = select([], [self.proc.stdin], [], self.timeout)
-        if self.proc.stdin not in write:
-            self._kill_burp()
-            raise OSError('Unable to setup burp client')
-        self.proc.stdin.write(to_bytes('j:pretty-print-off\n'))
-        jso = self._read_proc_stdout(self.timeout)
-        if self._is_warning(jso):
-            self.logger.info(jso['warning'])
-        # try to switch to new JSON status
-        if self.client_version < BURP_STATUS_FORMAT_V2:
-            self.proc.stdin.write(to_bytes('j:peer_version=2.1.10\n'))
-            jso = self._read_proc_stdout(self.timeout)
-            if self._is_warning(jso):
-                self.logger.info(jso['warning'])
-
-    def _proc_is_alive(self):
-        """Check if the burp client process is still alive"""
-        if self.proc:
-            return self.proc.poll() is None
-        return False
-
-    def _is_ignored(self, jso):
-        """We ignore the 'logline' lines"""
-        if not jso:
-            return True
-        if not self.server_version:
-            if 'logline' in jso:
-                ret = re.search(
-                    r'^Server version: (\d+\.\d+\.\d+).*$',
-                    jso['logline']
-                )
-                if ret:
-                    self.server_version = ret.group(1)
-                    if self.server_version >= BURP_LIST_BATCH:
-                        self.batch_list_supported = True
-        return 'logline' in jso
-
-    @staticmethod
-    def _is_warning(jso):
-        """Returns True if the document is a warning"""
-        if not jso:
-            return False
-        return 'warning' in jso
-
-    @staticmethod
-    def _is_valid_json(doc):
-        """Determine if the retrieved string is a valid json document or not"""
-        try:
-            jso = json.loads(doc)
-            return jso
-        except ValueError:
-            return None
+    @property
+    def server_version(self):
+        return self.monitor.server_version
 
     @staticmethod
     def _human_st_mode(mode):
@@ -275,83 +140,10 @@ class Burp(Burp1):
 
         return hur
 
-    def _read_proc_stdout(self, timeout):
-        """reads the burp process stdout and returns a document or None"""
-        doc = ''
-        jso = None
-        while True:
-            try:
-                if not self._proc_is_alive():
-                    raise Exception('process died while reading its output')
-                read, _, _ = select([self.proc.stdout], [], [], timeout)
-                if self.proc.stdout not in read:
-                    raise TimeoutError('Read operation timed out')
-                doc += to_unicode(self.proc.stdout.readline()).rstrip('\n')
-                jso = self._is_valid_json(doc)
-                # if the string is a valid json and looks like a logline, we
-                # simply ignore it
-                if jso and self._is_ignored(jso):
-                    doc = ''
-                    continue
-                elif jso:
-                    break
-            except (TimeoutError, IOError, Exception) as exp:
-                # the os throws an exception if there is no data or timeout
-                self.logger.warning(str(exp))
-                self._kill_burp()
-                return None
-        return jso
-
-    def _cleanup_cache(self):
-        now = datetime.datetime.now()
-        if now - self._last_status_cleanup > self._time_to_cache:
-            self._status_cache.clear()
-            self._last_status_cleanup = now
-
     def status(self, query='c:\n', timeout=None, cache=True, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.status`"""
-        try:
-            timeout = timeout or self.timeout
-            query = sanitize_string(query.rstrip())
-            self.logger.info("query: '{}'".format(query))
-            query = '{0}\n'.format(query)
-
-            with self.plock:
-                self._cleanup_cache()
-                # return cached results
-                if cache and query in self._status_cache:
-                    return self._status_cache[query]
-
-                if not self._proc_is_alive():
-                    self._spawn_burp()
-
-                _, write, _ = select([], [self.proc.stdin], [], self.timeout)
-                if self.proc.stdin not in write:
-                    raise TimeoutError('Write operation timed out')
-                self.proc.stdin.write(to_bytes(query))
-                jso = self._read_proc_stdout(timeout)
-                if self._is_warning(jso):
-                    self.logger.warning(jso['warning'])
-                    self.logger.debug('Nothing interesting to return')
-                    return None
-
-                self.logger.debug('=> {}'.format(jso))
-
-                if cache:
-                    self._status_cache[query] = jso
-
-                return jso
-        except TimeoutError as exp:
-            msg = 'Cannot send command: {}'.format(str(exp))
-            self.logger.error(msg)
-            self._kill_burp()
-            raise BUIserverException(msg)
-        except (OSError, Exception) as exp:
-            msg = 'Cannot launch burp process: {}'.format(str(exp))
-            self.logger.error(msg)
-            if getattr(self.app, 'strict', True):
-                raise BUIserverException(msg)
-        return None
+        with self.plock:
+            return self.monitor.status(query, timeout, cache)
 
     def get_backup_logs(self, number, client, forward=False, agent=None):
         """See
