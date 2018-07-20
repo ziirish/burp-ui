@@ -114,12 +114,11 @@ def server(options=None, unknown=None):
 
 
 def agent(options=None):
-    from gevent import monkey
+    import trio
     from burpui.agent import BUIAgent as Agent
     from burpui.utils import lookup_file
     from burpui._compat import patch_json
 
-    monkey.patch_all()
     patch_json()
 
     if not options:
@@ -133,7 +132,7 @@ def agent(options=None):
     check_config(conf)
 
     agent = Agent(conf, options.log, options.logfile, options.debug)
-    agent.run()
+    trio.run(agent.run)
 
 
 def celery():

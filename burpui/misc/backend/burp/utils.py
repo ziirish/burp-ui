@@ -166,11 +166,11 @@ class Monitor(object):
             self._kill_burp()
             raise OSError('Unable to setup burp client')
         self.proc.stdin.write(to_bytes('j:pretty-print-off\n'))
-        jso = self._read_proc_stdout(self.timeout)
+        self._read_proc_stdout(self.timeout)
         # try to switch to new JSON status
         if self.client_version < BURP_STATUS_FORMAT_V2:
             self.proc.stdin.write(to_bytes('j:peer_version=2.1.10\n'))
-            jso = self._read_proc_stdout(self.timeout)
+            self._read_proc_stdout(self.timeout)
 
     def _proc_is_alive(self):
         """Check if the burp client process is still alive"""

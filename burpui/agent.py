@@ -9,14 +9,11 @@
 """
 import os
 import struct
-import time
 import sys
 import json
 import logging
+import trio
 
-from gevent.lock import RLock
-from gevent.pool import Pool
-from gevent.server import StreamServer
 from logging.handlers import RotatingFileHandler
 
 from .exceptions import BUIserverException
@@ -25,11 +22,12 @@ from ._compat import pickle, to_bytes, to_unicode
 from .config import config
 from .desc import __version__
 
-try:
-    from sendfile import sendfile
-    USE_SENDFILE = True
-except ImportError:
-    USE_SENDFILE = False
+# TODO: sendfile is not yet supported by trio
+# try:
+#     from sendfile import sendfile
+#     USE_SENDFILE = True
+# except ImportError:
+#     USE_SENDFILE = False
 
 
 BUI_DEFAULTS = {
@@ -43,10 +41,6 @@ BUI_DEFAULTS = {
         'password': 'password',
     },
 }
-
-DISCLOSURE = 5
-
-lock = RLock()
 
 
 class BurpHandler(BUIbackend):
@@ -147,176 +141,170 @@ class BUIAgent(BUIbackend):
         self.conf.setdefault('BUI_AGENT', True)
 
         self.client = BurpHandler(self.backend, self.logger, self.conf)
-        pool = Pool(10000)
-        if not self.ssl:
-            self.server = StreamServer((self.bind, self.port), self.handle, spawn=pool)
-        else:
-            self.server = StreamServer((self.bind, self.port), self.handle, keyfile=self.sslkey, certfile=self.sslcert, spawn=pool)
 
-    def run(self):
+    async def run(self):
         try:
-            self.server.serve_forever()
+            self.logger.debug(f'Starting server on {self.bind}:{self.port}')
+            # await trio.serve_tcp(self.handle, self.port, host=self.bind)
+            await trio.serve_tcp(self.handle, self.port)
         except KeyboardInterrupt:
+            self.logger.debug('Stopping server')
             sys.exit(0)
 
-    def handle(self, request, address):
+    async def handle(self, server_stream: trio.StapledStream):
         """self.request is the client connection"""
-        with lock:
+        self.logger.debug('handle request')
+        try:
+            err = None
+            res = ''
+            lengthbuf = await server_stream.receive_some(8)
+            if not lengthbuf:
+                return
+            length, = struct.unpack('!Q', lengthbuf)
+            data = await server_stream.receive_some(length)
+            self.logger.info(f'recv: {data!r}')
+            txt = to_unicode(data)
+            if txt == 'RE':
+                return
+            j = json.loads(txt)
+            if j['password'] != self.password:
+                self.logger.warning('-----> Wrong Password <-----')
+                await server_stream.send_all(b'ok')
+                return
             try:
-                self.request = request
-                err = None
-                res = ''
-                lengthbuf = self.request.recv(8)
-                if not lengthbuf:
-                    return
-                length, = struct.unpack('!Q', lengthbuf)
-                data = self.recvall(length)
-                self.logger.info('recv: {}'.format(data))
-                txt = to_unicode(data)
-                self.logger.info('recv2: {}'.format(txt))
-                if txt == 'RE':
-                    return
-                j = json.loads(txt)
-                if j['password'] != self.password:
-                    self.logger.warning('-----> Wrong Password <-----')
-                    self.request.sendall(b'KO')
-                    return
-                try:
-                    if j['func'] == 'proxy_parser':
-                        parser = self.client.get_parser()
-                        if j['args']:
-                            res = json.dumps(getattr(parser, j['method'])(**j['args']))
-                        else:
-                            res = json.dumps(getattr(parser, j['method'])())
-                    elif j['func'] == 'agent_version':
-                        res = json.dumps(__version__)
-                    elif j['func'] == 'restore_files':
-                        res, err = getattr(self.client, j['func'])(**j['args'])
-                        if err:
-                            self.request.sendall(b'ER')
-                            self.request.sendall(struct.pack('!Q', len(err)))
-                            self.request.sendall(to_bytes(err))
-                            self.logger.error('Restoration failed')
-                            return
-                    elif j['func'] == 'get_file':
-                        path = j['path']
-                        path = os.path.normpath(path)
-                        err = None
-                        if not path.startswith('/'):
-                            err = 'The path must be absolute! ({})'.format(path)
-                        if not path.startswith(self.client.tmpdir):
-                            err = 'You are not allowed to access this path: ' \
-                                  '({})'.format(path)
-                        if err:
-                            self.request.sendall(b'ER')
-                            self.request.sendall(struct.pack('!Q', len(err)))
-                            self.request.sendall(to_bytes(err))
-                            self.logger.error(err)
-                            return
-                        size = os.path.getsize(path)
-                        self.request.sendall(b'OK')
-                        self.request.sendall(struct.pack('!Q', size))
-                        with open(path, 'rb') as f:
-                            if not USE_SENDFILE:
-                                while True:
-                                    buf = f.read(1024)
-                                    if not buf:
-                                        break
-                                    self.logger.info('sending {} Bytes'.format(len(buf)))
-                                    self.request.sendall(buf)
-                            else:
-                                offset = 0
-                                while True:
-                                    sent = sendfile(self.request.fileno(), f.fileno(), offset, size)
-                                    if sent == 0:
-                                        break
-                                    offset += sent
-                        os.unlink(path)
-                        lengthbuf = self.request.recv(8)
-                        length, = struct.unpack('!Q', lengthbuf)
-                        data = self.recvall(length)
-                        txt = to_unicode(data)
-                        if txt == 'RE':
-                            return
-                    elif j['func'] == 'del_file':
-                        path = j['path']
-                        path = os.path.normpath(path)
-                        err = None
-                        if not path.startswith('/'):
-                            err = 'The path must be absolute! ({})'.format(path)
-                        if not path.startswith(self.client.tmpdir):
-                            err = 'You are not allowed to access this path: ' \
-                                  '({})'.format(path)
-                        if err:
-                            self.request.sendall(b'ER')
-                            self.request.sendall(struct.pack('!Q', len(err)))
-                            self.request.sendall(to_bytes(err))
-                            self.logger.error(err)
-                            return
-                        res = json.dumps(False)
-                        if os.path.isfile(path):
-                            os.unlink(path)
-                            res = json.dumps(True)
+                if j['func'] == 'proxy_parser':
+                    parser = self.client.get_parser()
+                    if j['args']:
+                        res = json.dumps(getattr(parser, j['method'])(**j['args']))
                     else:
-                        if j['args']:
-                            if 'pickled' in j and j['pickled']:
-                                # de-serialize arguments if needed
-                                import hmac
-                                import hashlib
-                                from base64 import b64decode
-                                pickles = to_bytes(j['args'])
-                                key = '{}{}'.format(self.password, j['func'])
-                                key = to_bytes(key)
-                                bytes_pickles = pickles
-                                digest = hmac.new(key, bytes_pickles, hashlib.sha1).hexdigest()
-                                if not hmac.compare_digest(digest, j['digest']):
-                                    raise BUIserverException('Integrity check failed: {} != {}'.format(digest, j['digest']))
-                                # We need to replace the burpui datastructure
-                                # module by our own since it's the same but
-                                # burpui may not be installed
-                                mod = __name__
-                                if '.' in mod:
-                                    mod = mod.split('.')[0]
-                                data = b64decode(pickles)
-                                data = data.replace(b'burpui.datastructures', to_bytes('{}.datastructures'.format(mod)))
-                                j['args'] = pickle.loads(data)
-                            res = json.dumps(getattr(self.client, j['func'])(**j['args']))
-                        else:
-                            res = json.dumps(getattr(self.client, j['func'])())
-                    self.logger.info('result: {}'.format(res))
-                    self.request.sendall(b'OK')
-                except (BUIserverException, Exception) as exc:
-                    self.request.sendall(b'ER')
-                    res = str(exc)
-                    self.logger.error(res, exc_info=exc)
-                    self.logger.warning('Forwarding Exception: {}'.format(res))
-                    self.request.sendall(struct.pack('!Q', len(res)))
-                    self.request.sendall(to_bytes(res))
-                    return
-                self.request.sendall(struct.pack('!Q', len(res)))
-                self.request.sendall(to_bytes(res))
-            except AttributeError as exc:
-                self.logger.warning('Wrong method => {}'.format(str(exc)), exc_info=exc)
-                self.request.sendall(b'KO')
-            except Exception as exc:
-                self.logger.error('!!! {} !!!'.format(str(exc)), exc_info=exc)
-            finally:
-                try:
-                    self.request.close()
-                except Exception as exc:
-                    self.logger.error('!!! {} !!!'.format(str(exc)), exc_info=exc)
+                        res = json.dumps(getattr(parser, j['method'])())
+                elif j['func'] == 'agent_version':
+                    res = json.dumps(__version__)
+                elif j['func'] == 'restore_files':
+                    res, err = getattr(self.client, j['func'])(**j['args'])
+                    if err:
+                        await server_stream.send_all(b'ER')
+                        await server_stream.send_all(struct.pack('!Q', len(err)))
+                        await server_stream.send_all(to_bytes(err))
+                        self.logger.error('Restoration failed')
+                        return
+                elif j['func'] == 'get_file':
+                    path = j['path']
+                    path = os.path.normpath(path)
+                    err = None
+                    if not path.startswith('/'):
+                        err = f'The path must be absolute! ({path})'
+                    if not path.startswith(self.client.tmpdir):
+                        err = f'You are not allowed to access this path: ' \
+                              f'({path})'
+                    if err:
+                        await server_stream.send_all(b'ER')
+                        await server_stream.send_all(struct.pack('!Q', len(err)))
+                        await server_stream.send_all(to_bytes(err))
+                        self.logger.error(err)
+                        return
+                    count = 0
+                    size = os.path.getsize(path)
+                    await server_stream.send_all(b'OK')
+                    await server_stream.send_all(struct.pack('!Q', size))
+                    async with await trio.open_file(path, 'rb') as f:
+                        while True:
+                            buf = await f.read(1024)
+                            if not buf:
+                                break
+                            buflen = len(buf)
+                            count += buflen
+                            percent = count / size * 100
+                            self.logger.info(f'sending {buflen} Bytes - {percent:.1f}%')
+                            await server_stream.send_all(buf)
+                    os.unlink(path)
+                    lengthbuf = await server_stream.receive_some(8)
+                    length, = struct.unpack('!Q', lengthbuf)
+                    data = await self.receive_all(server_stream, length)
+                    txt = to_unicode(data)
+                    if txt == 'RE':
+                        return
+                elif j['func'] == 'del_file':
+                    path = j['path']
+                    path = os.path.normpath(path)
+                    err = None
+                    if not path.startswith('/'):
+                        err = f'The path must be absolute! ({path})'
+                    if not path.startswith(self.client.tmpdir):
+                        err = f'You are not allowed to access this path: ' \
+                              f'({path})'
+                    if err:
+                        await server_stream.send_all(b'ER')
+                        await server_stream.send_all(struct.pack('!Q', len(err)))
+                        await server_stream.send_all(to_bytes(err))
+                        self.logger.error(err)
+                        return
+                    res = json.dumps(False)
+                    if os.path.isfile(path):
+                        os.unlink(path)
+                        res = json.dumps(True)
+                else:
+                    if j['args']:
+                        if 'pickled' in j and j['pickled']:
+                            # de-serialize arguments if needed
+                            import hmac
+                            import hashlib
+                            from base64 import b64decode
+                            pickles = to_bytes(j['args'])
+                            key = '{}{}'.format(self.password, j['func'])
+                            key = to_bytes(key)
+                            bytes_pickles = pickles
+                            digest = hmac.new(key, bytes_pickles, hashlib.sha1).hexdigest()
+                            if not hmac.compare_digest(digest, j['digest']):
+                                raise BUIserverException('Integrity check failed: {} != {}'.format(digest, j['digest']))
+                            # We need to replace the burpui datastructure
+                            # module by our own since it's the same but
+                            # burpui may not be installed
+                            mod = __name__
+                            if '.' in mod:
+                                mod = mod.split('.')[0]
+                            data = b64decode(pickles)
+                            data = data.replace(b'burpui.datastructures', to_bytes(f'{mod}.datastructures'))
+                            j['args'] = pickle.loads(data)
+                        res = json.dumps(getattr(self.client, j['func'])(**j['args']))
+                    else:
+                        res = json.dumps(getattr(self.client, j['func'])())
+                self.logger.info(f'result: {res}')
+                await server_stream.send_all(b'OK')
+            except (BUIserverException, Exception) as exc:
+                await server_stream.send_all(b'ER')
+                res = str(exc)
+                self.logger.error(res, exc_info=exc)
+                self.logger.warning(f'Forwarding Exception: {res}')
+                await server_stream.send_all(struct.pack('!Q', len(res)))
+                await server_stream.send_all(to_bytes(res))
+                return
+            await server_stream.send_all(struct.pack('!Q', len(res)))
+            await server_stream.send_all(to_bytes(res))
+        except AttributeError as exc:
+            self.logger.warning(f'Wrong method => {exc}', exc_info=exc)
+            await server_stream.send_all(b'KO')
+        except Exception as exc:
+            self.logger.error(f'!!! {exc} !!!', exc_info=exc)
 
-    def recvall(self, length=1024):
+    async def receive_all(self, stream, length=1024):
         buf = b''
         bsize = 1024
         received = 0
+        tries = 0
         if length < bsize:
             bsize = length
         while received < length:
-            newbuf = self.request.recv(bsize)
+            newbuf = await stream.receive_some(bsize)
             if not newbuf:
-                time.sleep(0.1)
+                # 3 successive read failure => raise exception
+                if tries > 3:
+                    raise Exception('Unable to read full response')
+                tries += 1
+                await trio.sleep(0.1)
                 continue
+            # reset counter
+            tries = 0
             buf += newbuf
             received += len(newbuf)
         return buf

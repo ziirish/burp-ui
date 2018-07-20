@@ -305,7 +305,6 @@ setup(
         'extra': ['ujson'],
         'gunicorn': ['gevent', 'gunicorn'],
         'gunicorn-extra': ['redis', 'Flask-Session==0.3.1'],
-        'agent': ['gevent'],
         'ci': test_requires,
         'dev': dev_requires,
         'celery': ['Celery', 'redis'],

@@ -112,7 +112,7 @@ setup(
         (confdir, [os.path.join(confdir, 'buiagent.sample.cfg')]),
     ],
     install_requires=[
-        'gevent',
+        'trio==0.4.0',
         'arrow==0.12.0',
         'tzlocal==1.5.1',
         'pyOpenSSL>=17.5.0',
@@ -121,7 +121,6 @@ setup(
         'cffi>=1.10.0',
     ],
     classifiers=[
-        'Framework :: Flask',
         'Intended Audience :: System Administrators',
         'Natural Language :: English',
         'License :: OSI Approved :: BSD License',
