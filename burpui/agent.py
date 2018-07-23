@@ -300,11 +300,9 @@ class BUIAgent(BUIbackend):
 
     async def receive_all(self, stream, length=1024):
         buf = b''
-        bsize = 1024
+        bsize = min(1024, length)
         received = 0
         tries = 0
-        if length < bsize:
-            bsize = length
         while received < length:
             newbuf = await stream.receive_some(bsize)
             if not newbuf:

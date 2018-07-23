@@ -1,4 +1,5 @@
 # -*- coding: utf8 -*-
+import trio
 
 # This is a submodule we can also use "from ..api import api"
 from . import api, cache_key, force_refresh
@@ -72,7 +73,7 @@ class ServersStats(Resource):
 
         for serv in bui.client.servers:
             try:
-                alive = bui.client.servers[serv].ping()
+                alive = trio.run(bui.client.servers[serv].ping)
             except BUIserverException:
                 alive = False
 

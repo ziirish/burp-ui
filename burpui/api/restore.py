@@ -9,6 +9,7 @@
 """
 import select
 import struct
+import trio
 
 from . import api
 from ..server import BUIServer  # noqa
@@ -157,7 +158,7 @@ class Restore(Resource):
                 if not socket:
                     self.abort(500)
 
-                lengthbuf = socket.recv(8)
+                lengthbuf = trio.run(socket.receive_some, 8)
                 length, = struct.unpack('!Q', lengthbuf)
 
                 bui.client.logger.debug('Need to get {} Bytes : {}'.format(length, socket))
@@ -176,15 +177,14 @@ class Restore(Resource):
                         read, _, _ = select.select([sock], [], [], 5)
                         if not read:
                             raise Exception('Socket timed-out')
-                        buf += sock.recv(bsize)
+                        buf += trio.run(sock.receive_some, bsize)
                         if not buf:
                             continue
                         received += len(buf)
                         self.logger.debug('{}/{}'.format(received, size))
                         yield buf
-                    sock.sendall(struct.pack('!Q', 2))
-                    sock.sendall(b'RE')
-                    sock.close()
+                    trio.run(sock.send_all, struct.pack('!Q', 2))
+                    trio.run(sock.send_all, b'RE')
 
                 headers = Headers()
                 headers.add('Content-Disposition',
