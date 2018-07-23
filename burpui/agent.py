@@ -10,6 +10,7 @@
 import os
 import struct
 import sys
+import ssl
 import json
 import logging
 import trio
@@ -142,11 +143,21 @@ class BUIAgent(BUIbackend):
 
         self.client = BurpHandler(self.backend, self.logger, self.conf)
 
+    def _ssl_context(self):
+        if not self.ssl:
+            return None
+        ctx = ssl.SSLContext()
+        ctx.load_cert_chain(self.sslcert, self.sslkey)
+        return ctx
+
     async def run(self):
         try:
             self.logger.debug(f'Starting server on {self.bind}:{self.port}')
-            # await trio.serve_tcp(self.handle, self.port, host=self.bind)
-            await trio.serve_tcp(self.handle, self.port)
+            ctx = self._ssl_context()
+            if ctx:
+                await trio.serve_ssl_over_tcp(self.handle, self.port, ctx, host=self.bind)
+            else:
+                await trio.serve_tcp(self.handle, self.port, host=self.bind)
         except KeyboardInterrupt:
             self.logger.debug('Stopping server')
             sys.exit(0)
