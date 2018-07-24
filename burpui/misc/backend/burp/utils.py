@@ -30,7 +30,7 @@ class Monitor(object):
 
     :param app: ``Burp-UI`` server instance in order to access logger
                    and/or some global settings
-    :type app: :class:`burpui.server.BUIServer`
+    :type app: :class:`burpui.engines.server.BUIServer`
 
     :param burpbin: Burp binary path
     :type burpbin: str
@@ -52,7 +52,7 @@ class Monitor(object):
         """
         :param app: ``Burp-UI`` server instance in order to access logger
                        and/or some global settings
-        :type app: :class:`burpui.server.BUIServer`
+        :type app: :class:`burpui.engines.server.BUIServer`
 
         :param burpbin: Burp binary path
         :type burpbin: str

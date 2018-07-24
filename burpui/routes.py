@@ -17,7 +17,7 @@ from flask_login import login_user, login_required, logout_user, current_user
 from flask_babel import gettext as _, refresh as refresh_babel
 
 from .desc import __url__, __doc__
-from .server import BUIServer  # noqa
+from .engines.server import BUIServer  # noqa
 from .sessions import session_manager
 from ._compat import quote
 from .forms import LoginForm

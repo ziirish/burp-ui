@@ -22,7 +22,7 @@ from functools import wraps
 
 from .._compat import to_bytes
 from ..desc import __version__, __release__, __url__, __doc__
-from ..server import BUIServer  # noqa
+from ..engines.server import BUIServer  # noqa
 from ..exceptions import BUIserverException
 from ..config import config
 

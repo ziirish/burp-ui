@@ -17,11 +17,11 @@ import trio
 
 from logging.handlers import RotatingFileHandler
 
-from .exceptions import BUIserverException
-from .misc.backend.interface import BUIbackend
-from ._compat import pickle, to_bytes, to_unicode
-from .config import config
-from .desc import __version__
+from ..exceptions import BUIserverException
+from ..misc.backend.interface import BUIbackend
+from .._compat import pickle, to_bytes, to_unicode
+from ..config import config
+from ..desc import __version__
 
 # TODO: sendfile is not yet supported by trio
 # try:

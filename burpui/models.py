@@ -11,7 +11,7 @@ import datetime
 
 from .ext.sql import db
 from flask import current_app, session
-from .server import BUIServer  # noqa
+from .engines.server import BUIServer  # noqa
 
 app = current_app  # type: BUIServer
 

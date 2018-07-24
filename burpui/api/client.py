@@ -11,7 +11,7 @@ import os
 import re
 
 from . import api, cache_key, force_refresh
-from ..server import BUIServer  # noqa
+from ..engines.server import BUIServer  # noqa
 from .custom import fields, Resource, inputs
 from ..decorators import browser_cache
 from ..ext.cache import cache

@@ -29,7 +29,7 @@ class SessionManager(object):
         """Initialize the wrapper
 
         :param app: Application context
-        :type app: :class:`burpui.server.BUIServer`
+        :type app: :class:`burpui.engines.server.BUIServer`
         """
         self.app = app
         self.prefix = self.app.config.get('SESSION_KEY_PREFIX', 'session:')

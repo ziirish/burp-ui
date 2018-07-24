@@ -18,7 +18,7 @@ class BasicLoader(BUIloader):
         the configuration file.
 
         :param app: Instance of the app we are running in
-        :type app: :class:`burpui.server.BUIServer`
+        :type app: :class:`burpui.engines.server.BUIServer`
 
         :param handler: Instance of handler
         :type handler: :class:`burpui.misc.auth.interface.BUIhandler`

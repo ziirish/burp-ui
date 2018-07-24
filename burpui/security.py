@@ -37,7 +37,7 @@ def basic_login_from_request(request, app):
     :type request: :class:`flask.Request`
 
     :param app: The application context
-    :type app: :class:`burpui.server.BUIServer`
+    :type app: :class:`burpui.engines.server.BUIServer`
     """
     if app.auth != 'none':
         if request.headers.get('X-From-UI', False):

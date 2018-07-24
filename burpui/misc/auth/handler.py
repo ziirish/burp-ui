@@ -20,7 +20,7 @@ class UserAuthHandler(BUIhandler):
         """See :func:`burpui.misc.auth.interface.BUIhandler.__init__`
 
         :param app: Instance of the app we are running in
-        :type app: :class:`burpui.server.BUIServer`
+        :type app: :class:`burpui.engines.server.BUIServer`
         """
         self.app = app
         self.users = {}
@@ -218,7 +218,7 @@ class UserHandler(BUIuser):
     def __init__(self, app, backends=None, name=None, id=None):
         """
         :param app: Application context
-        :type app: :class:`burpui.server.BUIServer`
+        :type app: :class:`burpui.engines.server.BUIServer`
         """
         self.id = id
         self.app = app

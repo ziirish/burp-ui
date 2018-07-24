@@ -12,10 +12,10 @@ import re
 import sys
 import logging
 
-from .misc.auth.handler import UserAuthHandler
-from .misc.acl.handler import ACLloader
-from .config import config
-from .plugins import PluginManager
+from ..misc.auth.handler import UserAuthHandler
+from ..misc.acl.handler import ACLloader
+from ..config import config
+from ..plugins import PluginManager
 
 from datetime import timedelta
 from flask import Flask
@@ -77,12 +77,12 @@ BUI_DEFAULTS = {
 
 class BUIServer(Flask):
     """
-    The :class:`burpui.server.BUIServer` class provides the ``Burp-UI`` server.
+    The :class:`burpui.engines.server.BUIServer` class provides the ``Burp-UI`` server.
     """
     gunicorn = False
 
     def __init__(self):
-        """The :class:`burpui.server.BUIServer` class provides the ``Burp-UI``
+        """The :class:`burpui.engines.server.BUIServer` class provides the ``Burp-UI``
         server.
 
         :param app: The Flask application to launch
@@ -109,7 +109,7 @@ class BUIServer(Flask):
         return self._logger
 
     def setup(self, conf=None, unittest=False, cli=False):
-        """The :func:`burpui.server.BUIServer.setup` functions is used to setup
+        """The :func:`burpui.engines.server.BUIServer.setup` functions is used to setup
         the whole server by parsing the configuration file and loading the
         different backends.
 
@@ -414,7 +414,7 @@ class BUIServer(Flask):
             module = 'burpui.misc.backend.{}'.format(backend)
 
         # This is used for development purpose only
-        from .misc.backend.burp1 import Burp as BurpGeneric
+        from ..misc.backend.burp1 import Burp as BurpGeneric
         self.client = BurpGeneric(dummy=True)
         self.strict = strict
         try:
@@ -447,7 +447,7 @@ class BUIServer(Flask):
         """
         if self.acl_engine and 'none' not in self.acl_engine:
             # refresh acl to detect config changes
-            from .misc.acl.interface import BUIacl  # noqa
+            from ..misc.acl.interface import BUIacl  # noqa
             acl = self.acl_handler.acl  # type: BUIacl
             return acl
         return None
@@ -463,7 +463,7 @@ class BUIServer(Flask):
         return Flask.get_send_file_max_age(self, name)
 
     def manual_run(self):
-        """The :func:`burpui.server.BUIServer.manual_run` functions is used to
+        """The :func:`burpui.engines.server.BUIServer.manual_run` functions is used to
         actually launch the ``Burp-UI`` server.
 
         .. deprecated:: 0.4.0

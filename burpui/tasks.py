@@ -25,7 +25,7 @@ from burpui.config import config  # noqa
 from burpui.ext.async import celery  # noqa
 from burpui.ext.cache import cache  # noqa
 from burpui.sessions import session_manager  # noqa
-from burpui.server import BUIServer  # noqa
+from burpui.engines.server import BUIServer  # noqa
 from burpui.exceptions import BUIserverException  # noqa
 from burpui.api.client import ClientTreeAll  # noqa
 

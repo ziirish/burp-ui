@@ -58,12 +58,11 @@ def main():
 
 
 def agent(options=None):
-    from gevent import monkey
-    from burpui_agent.agent import BUIAgent as Agent
+    import trio
+    from burpui_agent.engines.agent import BUIAgent as Agent
     from burpui_agent.utils import lookup_file
     from burpui_agent._compat import patch_json
 
-    monkey.patch_all()
     patch_json()
 
     if not options:
@@ -77,7 +76,7 @@ def agent(options=None):
     check_config(conf)
 
     agent = Agent(conf, options.log, options.logfile, options.debug)
-    agent.run()
+    trio.run(agent.run)
 
 
 def check_config(conf):

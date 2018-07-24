@@ -8,7 +8,7 @@
 
 """
 from . import api
-from ..server import BUIServer  # noqa
+from ..engines.server import BUIServer  # noqa
 from ..ext.cache import cache
 from .custom import Resource, inputs
 from .._compat import unquote

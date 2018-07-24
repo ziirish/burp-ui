@@ -37,7 +37,7 @@ class LdapLoader(BUIloader):
         connection to the LDAP server.
 
         :param app: Instance of the app we are running in
-        :type app: :class:`burpui.server.BUIServer`
+        :type app: :class:`burpui.engines.server.BUIServer`
         """
         self.app = app
         conf = self.app.conf
@@ -233,7 +233,7 @@ class UserHandler(BUIhandler):
         handler instance
 
         :param app: Instance of the app we are running in
-        :type app: :class:`burpui.server.BUIServer`
+        :type app: :class:`burpui.engines.server.BUIServer`
         """
         self.ldap = LdapLoader(app, self)
         self.users = {}

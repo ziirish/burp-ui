@@ -156,7 +156,7 @@ class Burp(BUIbackend):
 
     :param server: ``Burp-UI`` server instance in order to access logger
                    and/or some global settings
-    :type server: :class:`burpui.server.BUIServer`
+    :type server: :class:`burpui.engines.server.BUIServer`
 
     :param conf: Configuration file to use
     :type conf: str
@@ -171,7 +171,7 @@ class Burp(BUIbackend):
     def __init__(self, server=None, conf=None):
         """
         :param server: Application context
-        :type server: :class:`burpui.server.BUIServer`
+        :type server: :class:`burpui.engines.server.BUIServer`
 
         :param conf: Configuration
         :type conf: :class:`burpui.config.BUIConfig`
@@ -337,7 +337,7 @@ class NClient(BUIbackend):
     the :class:`burpui.misc.backend.interface.BUIbackend` class.
 
     :param app: The application context
-    :type app: :class:`burpui.server.BUIServer`
+    :type app: :class:`burpui.engines.server.BUIServer`
 
     :param host: Address of the remote agent
     :type host: str

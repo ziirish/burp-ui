@@ -16,7 +16,7 @@ from .misc import History
 from .custom import Resource
 from .client import node_fields
 from .clients import RunningBackup, ClientsReport, RunningClients
-from ..server import BUIServer  # noqa
+from ..engines.server import BUIServer  # noqa
 from ..ext.cache import cache
 from ..config import config
 from ..decorators import browser_cache

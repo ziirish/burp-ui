@@ -2,7 +2,7 @@
 
 # This is a submodule we can also use "from ..api import api"
 from . import api, cache_key, force_refresh
-from ..server import BUIServer  # noqa
+from ..engines.server import BUIServer  # noqa
 from .custom import fields, Resource
 from ..ext.cache import cache
 from ..decorators import browser_cache

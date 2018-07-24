@@ -34,7 +34,7 @@ class BUIbackend(object, metaclass=ABCMeta):
 
     :param server: ``Flask`` server instance in order to access logger
                    and/or some global settings
-    :type server: :class:`burpui.server.BUIServer`
+    :type server: :class:`burpui.engines.server.BUIServer`
 
     :param conf: Configuration file to use
     :type conf: str
@@ -48,7 +48,7 @@ class BUIbackend(object, metaclass=ABCMeta):
     def __init__(self, server=None, conf=None):  # pragma: no cover
         """
         :param server: Application context
-        :type server: :class:`burpui.server.BUIServer`
+        :type server: :class:`burpui.engines.server.BUIServer`
         """
         self.app = server
         self.zip64 = G_ZIP64

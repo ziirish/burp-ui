@@ -8,7 +8,7 @@
 
 """
 from . import api
-from ..server import BUIServer  # noqa
+from ..engines.server import BUIServer  # noqa
 from .custom import Resource
 from ..exceptions import BUIserverException
 

@@ -51,7 +51,7 @@ class Burp(Burp1):
 
     :param server: ``Burp-UI`` server instance in order to access logger
                    and/or some global settings
-    :type server: :class:`burpui.server.BUIServer`
+    :type server: :class:`burpui.engines.server.BUIServer`
 
     :param conf: Configuration to use
     :type conf: :class:`burpui.config.BUIConfig`
@@ -66,7 +66,7 @@ class Burp(Burp1):
         """
         :param server: ``Burp-UI`` server instance in order to access logger
                        and/or some global settings
-        :type server: :class:`burpui.server.BUIServer`
+        :type server: :class:`burpui.engines.server.BUIServer`
 
         :param conf: Configuration to use
         :type conf: :class:`burpui.config.BUIConfig`

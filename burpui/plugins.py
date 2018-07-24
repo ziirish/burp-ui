@@ -14,7 +14,7 @@ class PluginManager(object):
     """The :class:`burpui.plugins.PluginManager` class is a plugin manager.
 
     :param app: Instance of the app we are running in
-    :type app: :class:`burpui.server.BUIServer`
+    :type app: :class:`burpui.engines.server.BUIServer`
 
     :param searchpath: The places to look for plugins
     :type searchpath: list

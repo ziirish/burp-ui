@@ -53,7 +53,7 @@ def create_db(myapp, cli=False, unittest=False, create=True, celery_worker=False
     """Create the SQLAlchemy instance if possible
 
     :param myapp: Application context
-    :type myapp: :class:`burpui.server.BUIServer`
+    :type myapp: :class:`burpui.engines.server.BUIServer`
     """
     if myapp.config['WITH_SQL']:
         try:
@@ -209,7 +209,7 @@ def create_websocket(myapp, websocket_server=False, celery_worker=False,
     """Create the websocket server if possible
 
     :param myapp: Application context
-    :type myapp: :class:`burpui.server.BUIServer`
+    :type myapp: :class:`burpui.engines.server.BUIServer`
     """
     if cli and not websocket_server:
         return False
@@ -275,7 +275,7 @@ def create_celery(myapp, warn=True):
     """Create the Celery app if possible
 
     :param myapp: Application context
-    :type myapp: :class:`burpui.server.BUIServer`
+    :type myapp: :class:`burpui.engines.server.BUIServer`
     """
     if myapp.config['WITH_CELERY']:  # pragma: no cover
         from .exceptions import BUIserverException

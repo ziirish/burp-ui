@@ -14,7 +14,7 @@ import os
 import sys
 
 # Try to load modules from our current env first
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..'))
 
 
 def init_app(conf):

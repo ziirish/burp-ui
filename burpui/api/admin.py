@@ -8,7 +8,7 @@
 
 """
 from . import api
-from ..server import BUIServer  # noqa
+from ..engines.server import BUIServer  # noqa
 from ..sessions import session_manager
 from ..misc.acl.meta import meta_grants
 from ..utils import NOTIF_OK

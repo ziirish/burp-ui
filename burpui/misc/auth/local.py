@@ -19,7 +19,7 @@ class LocalLoader(BUIloader):
         the configuration file.
 
         :param app: Instance of the app we are running in
-        :type app: :class:`burpui.server.BUIServer`
+        :type app: :class:`burpui.engines.server.BUIServer`
         """
         self.app = app
         self.users = None

@@ -115,7 +115,7 @@ def server(options=None, unknown=None):
 
 def agent(options=None):
     import trio
-    from burpui.agent import BUIAgent as Agent
+    from burpui.engines.agent import BUIAgent as Agent
     from burpui.utils import lookup_file
     from burpui._compat import patch_json
 
@@ -176,7 +176,7 @@ def celery():
         'celery',
         celery_mode,
         '-A',
-        'worker.celery'
+        'engines.worker.celery'
     ]
     args += unknown
     args += [x for x in options.remaining if x != '--']

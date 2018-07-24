@@ -15,7 +15,7 @@ class ACLloader(BUIaclLoader):
         """See :func:`burpui.misc.acl.interface.BUIaclLoader.__init__`
 
         :param app: Application context
-        :type app: :class:`burpui.server.BUIServer`
+        :type app: :class:`burpui.engines.server.BUIServer`
         """
         self.app = app
         self.conf = self.app.conf

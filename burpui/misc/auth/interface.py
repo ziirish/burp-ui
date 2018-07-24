@@ -22,7 +22,7 @@ class BUIhandler(object, metaclass=ABCMeta):
     of ``Burp-UI`` users.
 
     :param app: Instance of the app we are running in
-    :type app: :class:`burpui.server.BUIServer`
+    :type app: :class:`burpui.engines.server.BUIServer`
     """
 
     priority = 0

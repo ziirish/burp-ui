@@ -12,7 +12,7 @@ from flask_login import current_user
 from werkzeug.datastructures import MultiDict
 
 from . import api
-from ..server import BUIServer  # noqa
+from ..engines.server import BUIServer  # noqa
 from ..ext.i18n import LANGUAGES
 from .custom import Resource
 

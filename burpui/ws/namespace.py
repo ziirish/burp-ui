@@ -10,7 +10,7 @@
 from flask import current_app, request
 from flask_socketio import Namespace, emit
 
-from ..server import BUIServer  # noqa
+from ..engines.server import BUIServer  # noqa
 
 bui = current_app  # type: BUIServer
 

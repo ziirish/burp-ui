@@ -45,7 +45,7 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
                    server. Default is False
     :type kwargs: dict
 
-    :returns: A :class:`burpui.server.BUIServer` object
+    :returns: A :class:`burpui.engines.server.BUIServer` object
     """
     from flask import g, request, session, render_template
     from flask_login import LoginManager
@@ -53,7 +53,7 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
     from flask_babel import gettext
     from .utils import ReverseProxied, lookup_file, is_uuid
     from .security import basic_login_from_request
-    from .server import BUIServer as BurpUI
+    from .engines.server import BUIServer as BurpUI
     from .sessions import session_manager
     from .ext.cache import cache
     from .ext.i18n import babel, get_locale

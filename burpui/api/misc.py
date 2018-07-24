@@ -8,7 +8,7 @@
 
 """
 from . import api, cache_key, force_refresh
-from ..server import BUIServer  # noqa
+from ..engines.server import BUIServer  # noqa
 from .custom import fields, Resource
 from ..exceptions import BUIserverException
 from ..decorators import browser_cache

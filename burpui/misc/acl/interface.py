@@ -47,7 +47,7 @@ class BUIaclLoader(object, metaclass=ABCMeta):
         the loader.
 
         :param app: Application context
-        :type app: :class:`burpui.server.BUIServer`
+        :type app: :class:`burpui.engines.server.BUIServer`
         """
         self.app = None
         if app:  # pragma: no cover
@@ -91,7 +91,7 @@ class BUIacl(object, metaclass=ABCMeta):
         the ACL.
 
         :param app: Application context
-        :type app: :class:`burpui.server.BUIServer`
+        :type app: :class:`burpui.engines.server.BUIServer`
         """
         self.app = None
         if app:  # pragma: no cover
