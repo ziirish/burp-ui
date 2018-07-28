@@ -48,7 +48,7 @@ class Monitor(object):
     _last_status_cleanup = datetime.datetime.now()
     _time_to_cache = datetime.timedelta(seconds=3)
 
-    def __init__(self, burpbin, burpconf, app=None, timeout=5):
+    def __init__(self, burpbin, burpconf, app=None, timeout=5, ident=None):
         """
         :param app: ``Burp-UI`` server instance in order to access logger
                        and/or some global settings
@@ -71,6 +71,7 @@ class Monitor(object):
         self.client_version = None
         self.server_version = None
         self.batch_list_supported = False
+        self.ident = ident or id(self)
 
         self._burp_client_ok = False
         version = ''
@@ -112,6 +113,7 @@ class Monitor(object):
 
     def _exit(self):
         """try not to leave child process server side"""
+        self.logger.debug(f'Exiting {self.ident}')
         self._terminate_burp()
         self._kill_burp()
 
@@ -248,7 +250,7 @@ class Monitor(object):
         try:
             timeout = timeout or self.timeout
             query = sanitize_string(query.rstrip())
-            self.logger.info(f"query: '{query}'")
+            self.logger.info(f"{self.ident} - query: '{query}'")
             query = '{0}\n'.format(query)
 
             self._cleanup_cache()

@@ -1,6 +1,6 @@
 # -*- coding: utf8 -*-
 """
-.. module:: burpui.agent
+.. module:: burpui.engines.agent
     :platform: Unix
     :synopsis: Burp-UI agent module.
 
@@ -39,7 +39,7 @@ BUI_DEFAULTS = {
         'sslcert': '',
         'sslkey': '',
         'backend': 'burp2',
-        'password': 'password',
+        'password': 'azerty',
     },
 }
 
@@ -91,8 +91,7 @@ class BurpHandler(BUIbackend):
 class BUIAgent(BUIbackend):
     BUIbackend.__abstractmethods__ = frozenset()
 
-    def __init__(self, conf=None, level=0, logfile=None, debug=False):
-        self.debug = debug
+    def __init__(self, conf=None, level=0, logfile=None):
         self.padding = 1
         level = level or 0
         if level > logging.NOTSET:
@@ -172,7 +171,7 @@ class BUIAgent(BUIbackend):
             if not lengthbuf:
                 return
             length, = struct.unpack('!Q', lengthbuf)
-            data = await server_stream.receive_some(length)
+            data = await self.receive_all(server_stream, length)
             self.logger.info(f'recv: {data!r}')
             txt = to_unicode(data)
             if txt == 'RE':
@@ -180,7 +179,7 @@ class BUIAgent(BUIbackend):
             j = json.loads(txt)
             if j['password'] != self.password:
                 self.logger.warning('-----> Wrong Password <-----')
-                await server_stream.send_all(b'ok')
+                await server_stream.send_all(b'KO')
                 return
             try:
                 if j['func'] == 'proxy_parser':
@@ -287,9 +286,7 @@ class BUIAgent(BUIbackend):
                 res = str(exc)
                 self.logger.error(res, exc_info=exc)
                 self.logger.warning(f'Forwarding Exception: {res}')
-                await server_stream.send_all(struct.pack('!Q', len(res)))
-                await server_stream.send_all(to_bytes(res))
-                return
+
             await server_stream.send_all(struct.pack('!Q', len(res)))
             await server_stream.send_all(to_bytes(res))
         except AttributeError as exc:
@@ -298,13 +295,12 @@ class BUIAgent(BUIbackend):
         except Exception as exc:
             self.logger.error(f'!!! {exc} !!!', exc_info=exc)
 
-    async def receive_all(self, stream, length=1024):
+    async def receive_all(self, stream: trio.StapledStream, length=1024, bsize=None):
         buf = b''
-        bsize = 1024
+        bsize = bsize if bsize is not None else 1024
+        bsize = min(bsize, length)
         received = 0
         tries = 0
-        if length < bsize:
-            bsize = length
         while received < length:
             newbuf = await stream.receive_some(bsize)
             if not newbuf:

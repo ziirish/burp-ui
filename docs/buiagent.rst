@@ -126,8 +126,8 @@ Each option is commented, but here is a more detailed documentation:
   `Burp-UI versions <advanced_usage.html#versions>`__ for more details)
 - *password*: The shared secret between the `Burp-UI`_ server and `bui-agent`_.
 
-As with `Burp-UI`_, you need a specific section depending on the *version*
-value. Please refer to the `Burp-UI versions <advanced_usage.html#versions>`__
+As with `Burp-UI`_, you need a specific ``[Burp]`` section.
+Please refer to the `Burp-UI versions <advanced_usage.html#options>`__
 section for more details.
 
 Example

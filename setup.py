@@ -288,6 +288,7 @@ setup(
             'bui-celery=burpui.__main__:celery',
             'bui-manage=burpui.__main__:manage',
             'bui-agent-legacy=burpui.__main__:agent',
+            'bui-monitor=burpui.__main__:monitor',
             'burp-ui-legacy=burpui.__main__:legacy',
         ],
     },

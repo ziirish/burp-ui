@@ -32,6 +32,7 @@ Documentation
    gunicorn
    docker
    buiagent
+   buimonitor
    contributing
    changelog
    faq

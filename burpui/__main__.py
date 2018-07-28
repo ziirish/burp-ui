@@ -33,7 +33,7 @@ def parse_args(mode=True, name=None):
     parser.add_argument('-i', '--migrations', dest='migrations', help='migrations directory', metavar='<MIGRATIONSDIR>')
     parser.add_argument('remaining', nargs=REMAINDER)
     if mode:
-        parser.add_argument('-m', '--mode', dest='mode', help='application mode', metavar='<agent|server|celery|manage|legacy>')
+        parser.add_argument('-m', '--mode', dest='mode', help='application mode', metavar='<agent|server|celery|manage|monitor|legacy>')
 
     options, unknown = parser.parse_known_args()
     if mode and options.mode and options.mode not in ['celery', 'manage', 'server']:
@@ -65,6 +65,8 @@ def main():
         celery()
     elif options.mode == 'manage':
         manage()
+    elif options.mode == 'monitor':
+        monitor(options)
     elif options.mode == 'legacy':
         legacy(options, unknown)
     else:
@@ -131,8 +133,30 @@ def agent(options=None):
         conf = lookup_file(conf)
     check_config(conf)
 
-    agent = Agent(conf, options.log, options.logfile, options.debug)
+    agent = Agent(conf, options.log, options.logfile)
     trio.run(agent.run)
+
+
+def monitor(options=None):
+    import trio
+    from burpui.engines.monitor import MonitorPool
+    from burpui.utils import lookup_file
+    from burpui._compat import patch_json
+
+    patch_json()
+
+    if not options:
+        options, _ = parse_args(mode=False, name='bui-agent')
+
+    conf = ['buimonitor.cfg', 'buimonitor.sample.cfg']
+    if options.config:
+        conf = lookup_file(options.config, guess=False)
+    else:
+        conf = lookup_file(conf)
+    check_config(conf)
+
+    monitor = MonitorPool(conf, options.log, options.logfile)
+    trio.run(monitor.run)
 
 
 def celery():
