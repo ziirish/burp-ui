@@ -16,7 +16,6 @@ from .custom import fields, Resource, inputs
 from ..decorators import browser_cache
 from ..ext.cache import cache
 from ..exceptions import BUIserverException
-from ..utils import NOTIF_ERROR
 
 from flask_restplus.marshalling import marshal
 from flask import current_app, request

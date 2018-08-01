@@ -19,7 +19,6 @@ import logging
 from .burp2 import Burp as Burp2
 from .burp1 import Burp as Burp1
 from .interface import BUIbackend
-from .burp.utils import Monitor
 from ..parser.burp2 import Parser
 from ...utils import human_readable as _hr, utc_to_local
 from ...exceptions import BUIserverException
