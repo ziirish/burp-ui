@@ -14,3 +14,4 @@ pyOpenSSL>=17.5.0
 configobj==5.0.6
 pyasn1>=0.2.3
 cffi>=1.10.0
+async_generator

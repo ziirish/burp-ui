@@ -823,25 +823,9 @@ class ClientReport(Resource):
                 self.abort(500, str(exp))
         else:
             try:
-                client = bui.client.get_client(name, agent=server)
+                json = bui.client.get_backup_logs(-1, name, agent=server)
             except BUIserverException as exp:
                 self.abort(500, str(exp))
-            err = []
-            for back in client:
-                try:
-                    json.append(
-                        bui.client.get_backup_logs(
-                            back['number'],
-                            name,
-                            agent=server
-                        )
-                    )
-                except BUIserverException as exp:
-                    temp = [NOTIF_ERROR, str(exp)]
-                    if temp not in err:
-                        err.append(temp)
-            if err:
-                self.abort(500, err)
         return json
 
     @api.disabled_on_demo()

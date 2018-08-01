@@ -12,8 +12,10 @@ import trio
 import json
 import struct
 import logging
+import datetime
 
 from itertools import count
+from async_generator import asynccontextmanager
 from logging.handlers import RotatingFileHandler
 
 from ..exceptions import BUIserverException
@@ -41,6 +43,11 @@ BUI_DEFAULTS = {
 
 class MonitorPool:
     logger = logging.getLogger('burp-ui')  # type: logging.Logger
+
+    # cache status results
+    _status_cache = {}
+    _last_status_cleanup = datetime.datetime.now()
+    _time_to_cache = datetime.timedelta(seconds=5)
 
     def __init__(self, conf=None, level=0, logfile=None, debug=False):
         self.debug = debug
@@ -105,6 +112,12 @@ class MonitorPool:
         ctx.load_cert_chain(self.sslcert, self.sslkey)
         return ctx
 
+    def _cleanup_cache(self):
+        now = datetime.datetime.now()
+        if now - self._last_status_cleanup > self._time_to_cache:
+            self._status_cache.clear()
+            self._last_status_cleanup = now
+
     async def receive_all(self, stream: trio.StapledStream, length=1024, bsize=None):
         buf = b''
         bsize = bsize if bsize is not None else 1024
@@ -126,6 +139,18 @@ class MonitorPool:
             received += len(newbuf)
         return buf
 
+    @asynccontextmanager
+    async def get_mon(self, ident) -> Monitor:
+        self.logger.info(f'{ident} - Waiting for a monitor...')
+        t1 = trio.current_time()
+        mon = await self.monitor_pool.get()  # type: Monitor
+        t2 = trio.current_time()
+        t = t2 - t1
+        self.logger.info(f'{ident} - Waited {t:.3f}s')
+        yield mon
+        self.logger.info(f'{ident} - Releasing monitor')
+        await self.monitor_pool.put(mon)
+
     async def handle(self, server_stream: trio.StapledStream):
         ident = next(CONNECTION_COUNTER)
         self.logger.info(f'{ident} - handle_request: started')
@@ -145,21 +170,27 @@ class MonitorPool:
             await server_stream.send_all(b'KO')
             return
         try:
-            if req.get('func') == 'monitor_version':
+            func = req.get('func')
+            if func == 'monitor_version':
                 response = json.dumps(__version__)
+            elif func in ['client_version', 'server_version']:
+                async with self.get_mon(ident) as mon:
+                    response = json.dumps(getattr(mon, func, ''))
             else:
                 query = req['query']
-                self.logger.info(f'{ident} - Waiting for a monitor...')
-                t1 = trio.current_time()
-                mon = await self.monitor_pool.get()  # type: Monitor
-                t2 = trio.current_time()
-                t = t2 - t1
-                self.logger.info(f'{ident} - Waited {t:.3f}s')
+                cache = req.get('cache', True)
 
-                response = mon.status(query, timeout=self.timeout, cache=req.get('cache', True))
-                response = json.dumps(response)
-                self.logger.info(f'{ident} - Releasing monitor')
-                await self.monitor_pool.put(mon)
+                self._cleanup_cache()
+                # return cached results
+                if cache and query in self._status_cache:
+                    response = self._status_cache[query]
+                else:
+                    async with self.get_mon(ident) as mon:
+                        response = mon.status(query, timeout=self.timeout, cache=False)
+                    response = json.dumps(response)
+
+                    if cache:
+                        self._status_cache[query] = response
             self.logger.debug(f'{ident} - Sending: {response}')
             await server_stream.send_all(b'OK')
         except BUIserverException as exc:

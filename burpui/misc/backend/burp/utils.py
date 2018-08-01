@@ -250,7 +250,7 @@ class Monitor(object):
         try:
             timeout = timeout or self.timeout
             query = sanitize_string(query.rstrip())
-            self.logger.info(f"{self.ident} - query: '{query}'")
+            self.logger.info(f"{self.ident} - query: '{query}' (cache: {cache})")
             query = '{0}\n'.format(query)
 
             self._cleanup_cache()
@@ -261,7 +261,7 @@ class Monitor(object):
             if not self._proc_is_alive():
                 self._spawn_burp()
 
-            _, write, _ = select([], [self.proc.stdin], [], self.timeout)
+            _, write, _ = select([], [self.proc.stdin], [], timeout)
             if self.proc.stdin not in write:
                 raise TimeoutError('Write operation timed out')
             self.proc.stdin.write(to_bytes(query))
@@ -271,7 +271,7 @@ class Monitor(object):
                 self.logger.debug('Nothing interesting to return')
                 return None
 
-            self.logger.debug(f'=> {jso}')
+            self.logger.debug(f'{self.ident} => {jso}')
 
             if cache:
                 self._status_cache[query] = jso

@@ -1,0 +1,13 @@
+[Unit]
+Description=Burp-UI monitor service
+After=network.target
+
+[Service]
+User=burpui
+Group=burpui
+RuntimeDirectory=bui-monitor
+RuntimeDirectoryMode=0770
+ExecStart=/usr/bin/bui-monitor -c /etc/burp/bui-monitor.cfg
+
+[Install]
+WantedBy=multi-user.target

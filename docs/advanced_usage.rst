@@ -7,7 +7,7 @@ Advanced usage
 `Burp`_ from the stable to the latest versions. `Burp`_ exists in two major
 versions: 1.x.x and 2.x.x.
 
-Both `Versions`_ are supported by `Burp-UI`_ thanks to its modular design.
+Both versions are supported by `Burp-UI`_ thanks to its modular design.
 The consequence is you have various options in the configuration file to suite
 everybody needs.
 
@@ -31,8 +31,13 @@ The `burpui.cfg`_ configuration file contains a ``[Global]`` section as follow:
 ::
 
     [Global]
-    # burp backend to load either one of 'burp1', 'burp2', or 'multi'.
-    # If you choose 'multi', you will have to declare at lease one 'Agent' section
+    # burp backend to load either one of 'burp1', 'burp2', 'async' or 'multi'.
+    # If you choose 'multi', you will have to declare at lease one 'Agent' section.
+    # If you choose 'async', you need to configure the [Async] section.
+    # If you choose either 'burp1' or 'burp2', you need to configure the [Burp]
+    # section.
+    # The [Burp] section is also used with the 'async' backend for the restoration
+    # process.
     # You can also use whatever custom backend you like if it is located in the
     # 'plugins' directory and if it implements the right interface.
     backend = burp2
@@ -253,6 +258,7 @@ Backends
 - `Burp1`_
 - `Burp2`_
 - `Multi`_
+- `Async`_
 
 These backends allow you to either connect to a `Burp`_ server version 1.x.x or
 2.x.x.
@@ -353,6 +359,46 @@ Once this backend is enabled, you have to create **one** ``[Agent]`` section
 .. note:: The sections must be called ``[Agent:<label>]`` (case sensitive)
 
 To configure your agents, please refer to the `bui-agent`_ page.
+
+
+Async
+^^^^^
+
+The *async* backend allows you to connect to the *bui-monitor* pool. It can be
+enabled by setting the *backend* option to *async* in the ``[Global]`` section
+of your `burpui.cfg`_ file:
+
+::
+
+    [Global]
+    backend = async
+
+
+This backend allows you to access `Burp`_ servers through the `bui-monitor`_
+pool.
+The architecture is available on the bui-monitor
+`page <buimonitor.html#architecture>`__.
+
+
+Once this backend is enabled, you have to configure the ``[Async]`` section.
+
+::
+
+    # async backend specific options
+    [Async]
+    # address of the monitor pool
+    host = ::1
+    # port of the monitor pool
+    port = 11111
+    # how many time to wait for the monitor pool to answer (in seconds)
+    timeout = 15
+    # monitor pool password
+    password = password123456
+    # enable SSL
+    ssl = true
+
+
+To configure your monitor pool, please refer to the `bui-monitor`_ page.
 
 
 Options
