@@ -18,10 +18,7 @@ from select import select
 from ...._compat import to_bytes, to_unicode
 from ....exceptions import BUIserverException
 from ....security import sanitize_string
-
-BURP_MINIMAL_VERSION = 'burp-2.0.18'
-BURP_LIST_BATCH = '2.0.48'
-BURP_STATUS_FORMAT_V2 = '2.1.10'
+from .constant import BURP_LIST_BATCH, BURP_MINIMAL_VERSION, BURP_STATUS_FORMAT_V2
 
 
 class Monitor(object):
@@ -236,8 +233,8 @@ class Monitor(object):
                 # the os throws an exception if there is no data or timeout
                 self.logger.warning(str(exp))
                 self._kill_burp()
-                return None
-        return jso
+                return None, None
+        return jso, doc
 
     def _cleanup_cache(self):
         now = datetime.datetime.now()
@@ -245,18 +242,19 @@ class Monitor(object):
             self._status_cache.clear()
             self._last_status_cleanup = now
 
-    def status(self, query='c:\n', timeout=None, cache=True):
+    def status(self, query='c:\n', timeout=None, cache=True, raw=False):
         """Send the given query to the status port and parses the output"""
         try:
             timeout = timeout or self.timeout
             query = sanitize_string(query.rstrip())
-            self.logger.info(f"{self.ident} - query: '{query}' (cache: {cache})")
+            self.logger.info(f"{self.ident} - query: '{query}' (cache: {cache}, raw: {raw})")
             query = '{0}\n'.format(query)
 
             self._cleanup_cache()
             # return cached results
-            if cache and query in self._status_cache:
-                return self._status_cache[query]
+            key = f'{query}-{raw}'
+            if cache and key in self._status_cache:
+                return self._status_cache[key]
 
             if not self._proc_is_alive():
                 self._spawn_burp()
@@ -265,18 +263,23 @@ class Monitor(object):
             if self.proc.stdin not in write:
                 raise TimeoutError('Write operation timed out')
             self.proc.stdin.write(to_bytes(query))
-            jso = self._read_proc_stdout(timeout)
+            jso, doc = self._read_proc_stdout(timeout)
             if self._is_warning(jso):
                 self.logger.warning(jso['warning'])
                 self.logger.debug('Nothing interesting to return')
                 return None
 
-            self.logger.debug(f'{self.ident} => {jso}')
+            if raw:
+                res = doc
+            else:
+                res = jso
+
+            self.logger.debug(f'{self.ident} => {res}')
 
             if cache:
-                self._status_cache[query] = jso
+                self._status_cache[key] = res
 
-            return jso
+            return res
         except TimeoutError as exp:
             msg = 'Cannot send command: {}'.format(str(exp))
             self.logger.error(msg)

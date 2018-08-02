@@ -172,10 +172,10 @@ class MonitorPool:
         try:
             func = req.get('func')
             if func == 'monitor_version':
-                response = json.dumps(__version__)
-            elif func in ['client_version', 'server_version']:
+                response = __version__
+            elif func in ['client_version', 'server_version', 'batch_list_supported']:
                 async with self.get_mon(ident) as mon:
-                    response = json.dumps(getattr(mon, func, ''))
+                    response = getattr(mon, func, '')
             else:
                 query = req['query']
                 cache = req.get('cache', True)
@@ -186,8 +186,7 @@ class MonitorPool:
                     response = self._status_cache[query]
                 else:
                     async with self.get_mon(ident) as mon:
-                        response = mon.status(query, timeout=self.timeout, cache=False)
-                    response = json.dumps(response)
+                        response = mon.status(query, timeout=self.timeout, cache=False, raw=True)
 
                     if cache:
                         self._status_cache[query] = response

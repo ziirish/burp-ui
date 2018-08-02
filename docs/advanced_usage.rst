@@ -364,7 +364,7 @@ To configure your agents, please refer to the `bui-agent`_ page.
 Async
 ^^^^^
 
-The *async* backend allows you to connect to the *bui-monitor* pool. It can be
+The *async* backend allows you to connect to the `bui-monitor`_ pool. It can be
 enabled by setting the *backend* option to *async* in the ``[Global]`` section
 of your `burpui.cfg`_ file:
 
@@ -396,6 +396,9 @@ Once this backend is enabled, you have to configure the ``[Async]`` section.
     password = password123456
     # enable SSL
     ssl = true
+    # number of operations to process concurrently
+    # the value should not exceed the pool size you set in the bui-monitor.cfg file
+    concurrency = 2
 
 
 To configure your monitor pool, please refer to the `bui-monitor`_ page.
@@ -791,3 +794,4 @@ Is not the same as:
 .. _Burp-UI: https://git.ziirish.me/ziirish/burp-ui
 .. _burpui.cfg: https://git.ziirish.me/ziirish/burp-ui/blob/master/share/burpui/etc/burpui.sample.cfg
 .. _bui-agent: buiagent.html
+.. _bui-monitor: buimonitor.html

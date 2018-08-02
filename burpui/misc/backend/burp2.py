@@ -15,15 +15,11 @@ import json
 from .burp1 import Burp as Burp1
 from .interface import BUIbackend
 from .burp.utils import Monitor
+from .burp.constant import BURP_REVERSE_COUNTERS
 from ..parser.burp2 import Parser
 from ...utils import human_readable as _hr, utc_to_local
 from ...exceptions import BUIserverException
 from ..._compat import to_unicode
-
-BURP_MINIMAL_VERSION = 'burp-2.0.18'
-BURP_LIST_BATCH = '2.0.48'
-BURP_STATUS_FORMAT_V2 = '2.1.10'
-BURP_REVERSE_COUNTERS = '2.1.6'
 
 try:
     import gevent

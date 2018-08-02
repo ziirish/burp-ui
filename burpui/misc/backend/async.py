@@ -9,7 +9,6 @@
 """
 import re
 import os
-import time
 import json
 import ssl
 import trio
@@ -24,11 +23,6 @@ from ...utils import human_readable as _hr, utc_to_local
 from ...exceptions import BUIserverException
 from ..._compat import to_unicode, to_bytes
 
-BURP_MINIMAL_VERSION = 'burp-2.0.18'
-BURP_LIST_BATCH = '2.0.48'
-BURP_STATUS_FORMAT_V2 = '2.1.10'
-BURP_REVERSE_COUNTERS = '2.1.6'
-
 BUI_DEFAULTS = {
     'Async': {
         'host': '::1',
@@ -36,6 +30,7 @@ BUI_DEFAULTS = {
         'ssl': True,
         'password': 'password123456',
         'timeout': 15,
+        'concurrency': 2,
     },
 }
 
@@ -130,7 +125,7 @@ class Async:
         }
         req = json.dumps(req)
         result = await self._process(req)
-        return json.loads(result)
+        return result
 
     async def receive_all(self, length=1024, bsize=None):
         buf = b''
@@ -178,6 +173,7 @@ class Burp(Burp2):
 
     _client_version = None
     _server_version = None
+    _batch_list_supported = None
 
     def __init__(self, server=None, conf=None):
         """
@@ -194,8 +190,7 @@ class Burp(Burp2):
         self.parser = Parser(self)
         self.conf = conf
 
-        # self.batch_list_supported = self.monitor.batch_list_supported
-        self.batch_list_supported = True
+        self.concurrency = conf.safe_get('concurrency', 'integer', section='Async', defaults=BUI_DEFAULTS)
 
         self.logger.info('burp conf cli: {}'.format(self.burpconfcli))
         self.logger.info('burp conf srv: {}'.format(self.burpconfsrv))
@@ -205,6 +200,7 @@ class Burp(Burp2):
         self.logger.info('includes: {}'.format(self.includes))
         self.logger.info('enforce: {}'.format(self.enforce))
         self.logger.info('revoke: {}'.format(self.revoke))
+        self.logger.info('concurrency: {}'.format(self.concurrency))
 
     @property
     def client_version(self):
@@ -217,6 +213,12 @@ class Burp(Burp2):
         if self._server_version is None:
             self._server_version = trio.run(self._async_request, 'server_version')
         return self._server_version
+
+    @property
+    def batch_list_supported(self):
+        if self._batch_list_supported is None:
+            self._batch_list_supported = trio.run(self._async_request, 'batch_list_supported')
+        return self._batch_list_supported
 
     async def _async_status(self, query='c:\n', timeout=None, cache=True):
         async_client = Async(self.conf)
@@ -269,7 +271,7 @@ class Burp(Burp2):
         backups = await self._async_get_client(client)
         # queue = trio.Queue(len(backups))
         queue = []
-        limit = trio.CapacityLimiter(5)
+        limit = trio.CapacityLimiter(self.concurrency)
         async with trio.open_nursery() as nursery:
             for back in backups:
                 nursery.start_soon(self._async_get_backup_logs, back['number'], client, forward, queue, limit)
@@ -436,180 +438,14 @@ class Burp(Burp2):
 
         return backup
 
-    # TODO: support old clients
-    # NOTE: this should now be partly done since we fallback to the Burp1 code
-    # def _parse_backup_log(self, fh, number, client=None, agent=None):
-    #    """
-    #    parse_backup_log parses the log.gz of a given backup and returns a
-    #    dict containing different stats used to render the charts in the
-    #    reporting view
-    #    """
-    #    return {}
-
     # def get_clients_report(self, clients, agent=None):
 
-    def get_counters(self, name=None, agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.get_counters`"""
-        ret = {}
-        query = self.status('c:{0}\n'.format(name), cache=False)
-        # check the status returned something
-        if not query:
-            return ret
+    # inherited
+    # def get_counters(self, name=None, agent=None):
 
-        try:
-            client = query['clients'][0]
-        except KeyError:
-            self.logger.warning('Client not found')
-            return ret
+    # def is_backup_running(self, name=None, agent=None):
 
-        # check the client is currently backing-up
-        if 'run_status' not in client or client['run_status'] != 'running':
-            return ret
-
-        backup = None
-        phases = ['working', 'finishing']
-        try:
-            for child in client['children']:
-                if 'action' in child and child['action'] == 'backup':
-                    backup = child
-                    break
-        except KeyError:
-            for back in client['backups']:
-                if 'flags' in back and any([x in back['flags'] for x in phases]):
-                    backup = back
-                    break
-        # check we found a working backup
-        if not backup:
-            return ret
-
-        # list of single counters (type CNTR_SINGLE_FIELD in cntr.c)
-        single = [
-            'bytes_estimated',
-            'bytes',
-            'bytes_received',
-            'bytes_sent',
-            'time_start',
-            'time_end',
-            'warnings',
-            'errors'
-        ]
-
-        # translation table to be compatible with burp1
-        def translate(cntr):
-            translate_table = {'bytes_estimated': 'estimated_bytes'}
-            try:
-                return translate_table[cntr]
-            except KeyError:
-                return cntr
-
-        for counter in backup.get('counters', {}):
-            name = translate(counter['name'])
-            if counter['name'] not in single:
-                # Prior burp-2.1.6 some counters are reversed
-                # See https://github.com/grke/burp/commit/adeb3ad68477303991a393fa7cd36bc94ff6b429
-                if self.server_version and self.server_version < BURP_REVERSE_COUNTERS:
-                    ret[name] = [
-                        counter['count'],
-                        counter['same'],     # reversed
-                        counter['changed'],  # reversed
-                        counter['deleted'],
-                        counter['scanned']
-                    ]
-                else:
-                    ret[name] = [
-                        counter['count'],
-                        counter['changed'],
-                        counter['same'],
-                        counter['deleted'],
-                        counter['scanned']
-                    ]
-            else:
-                ret[name] = counter['count']
-
-        if 'phase' in backup:
-            ret['phase'] = backup['phase']
-        else:
-            for phase in phases:
-                if phase in backup.get('flags', []):
-                    ret['phase'] = phase
-                    break
-
-        if 'bytes' not in ret:
-            ret['bytes'] = 0
-        if set(['time_start', 'estimated_bytes', 'bytes']) <= set(ret.keys()):
-            try:
-                diff = time.time() - int(ret['time_start'])
-                byteswant = int(ret['estimated_bytes'])
-                bytesgot = int(ret['bytes'])
-                bytespersec = bytesgot / diff
-                bytesleft = byteswant - bytesgot
-                ret['speed'] = bytespersec
-                if bytespersec > 0:
-                    timeleft = int(bytesleft / bytespersec)
-                    ret['timeleft'] = timeleft
-                else:
-                    ret['timeleft'] = -1
-            except:
-                ret['timeleft'] = -1
-        try:
-            ret['percent'] = round(
-                float(ret['bytes']) / float(ret['estimated_bytes']) * 100
-            )
-        except:
-            # You know... division by 0
-            ret['percent'] = 0
-
-        return ret
-
-    def is_backup_running(self, name=None, agent=None):
-        """See
-        :func:`burpui.misc.backend.interface.BUIbackend.is_backup_running`
-        """
-        if not name:
-            return False
-        try:
-            query = self.status('c:{0}\n'.format(name))
-        except BUIserverException:
-            return False
-        if not query:
-            return False
-        try:
-            return query['clients'][0]['run_status'] in ['running']
-        except KeyError:
-            self.logger.warning('Client not found')
-            return False
-        return False
-
-    def is_one_backup_running(self, agent=None):
-        """See
-        :func:`burpui.misc.backend.interface.BUIbackend.is_one_backup_running`
-        """
-        ret = []
-        try:
-            clients = self.get_all_clients()
-        except BUIserverException:
-            return ret
-        for client in clients:
-            if client['state'] in ['running']:
-                ret.append(client['name'])
-        return ret
-
-    def _status_human_readable(self, status):
-        """The label has changed in burp2, we override it to be compatible with
-        burp1's format
-
-        :param status: The status returned by the burp2 server
-        :type status: str
-
-        :returns: burp1 status compatible
-        """
-        if not status:
-            return None
-        if status == 'c crashed':
-            return 'client crashed'
-        if status == 's crashed':
-            return 'server crashed'
-        return status
+    # def is_one_backup_running(self, agent=None):
 
     async def _async_get_last_backup(self, name):
         """Return the last backup of a given client
@@ -696,65 +532,9 @@ class Burp(Burp2):
         """
         return trio.run(self._async_guess_os, name)
 
-    def get_all_clients(self, agent=None):
-        """See
-        :func:`burpui.misc.backend.interface.BUIbackend.get_all_clients`
-        """
-        ret = []
-        query = self.status()
-        if not query or 'clients' not in query:
-            return ret
-        clients = query['clients']
-        for client in clients:
-            cli = {}
-            cli['name'] = client['name']
-            cli['state'] = self._status_human_readable(client['run_status'])
-            infos = client['backups']
-            if cli['state'] in ['running']:
-                cli['last'] = 'now'
-            elif not infos:
-                cli['last'] = 'never'
-            else:
-                infos = infos[0]
-                cli['last'] = infos['timestamp']
-            ret.append(cli)
-        return ret
+    # def get_all_clients(self, agent=None):
 
-    def get_client_status(self, name=None, agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.get_client_status`"""
-        ret = {}
-        if not name:
-            return ret
-        query = self.status('c:{0}\n'.format(name))
-        if not query:
-            return ret
-        try:
-            client = query['clients'][0]
-        except (KeyError, IndexError):
-            self.logger.warning('Client not found')
-            return ret
-        ret['state'] = self._status_human_readable(client['run_status'])
-        infos = client['backups']
-        if ret['state'] in ['running']:
-            try:
-                ret['phase'] = client['phase']
-            except KeyError:
-                for child in client.get('children', []):
-                    if 'action' in child and child['action'] == 'backup':
-                        ret['phase'] = child['phase']
-                        break
-            counters = self.get_counters(name)
-            if 'percent' in counters:
-                ret['percent'] = counters['percent']
-            else:
-                ret['percent'] = 0
-            ret['last'] = 'now'
-        elif not infos:
-            ret['last'] = 'never'
-        else:
-            infos = infos[0]
-            ret['last'] = infos['timestamp']
-        return ret
+    # def get_client_status(self, name=None, agent=None):
 
     async def _async_get_client(self, name=None):
         return await self._async_get_client_filtered(name)
@@ -803,7 +583,7 @@ class Burp(Burp2):
 
         # queue = trio.Queue(len(backups))
         queue = []
-        limiter = trio.CapacityLimiter(5)
+        limiter = trio.CapacityLimiter(self.concurrency)
 
         async with trio.open_nursery() as nursery:
             for idx, backup in enumerate(backups):
@@ -852,18 +632,7 @@ class Burp(Burp2):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_client_filtered`"""
         return trio.run(self._async_get_client_filtered, name, limit, page, start, end)
 
-    def is_backup_deletable(self, name=None, backup=None, agent=None):
-        """Check if a given backup is deletable"""
-        if not name or not backup:
-            return False
-        query = self.status('c:{0}:b:{1}\n'.format(name, backup))
-        if not query:
-            return False
-        try:
-            flags = query['clients'][0]['backups'][0]['flags']
-            return 'deletable' in flags
-        except KeyError:
-            return False
+    # def is_backup_deletable(self, name=None, backup=None, agent=None):
 
     async def _async_get_tree(self, name=None, backup=None, root=None, level=-1):
         ret = []
@@ -925,19 +694,9 @@ class Burp(Burp2):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_tree`"""
         return trio.run(self._async_get_tree, name, backup, root, level)
 
-    def get_client_version(self, agent=None):
-        """See
-        :func:`burpui.misc.backend.interface.BUIbackend.get_client_version`
-        """
-        return self.client_version
+    # def get_client_version(self, agent=None):
 
-    def get_server_version(self, agent=None):
-        """See
-        :func:`burpui.misc.backend.interface.BUIbackend.get_server_version`
-        """
-        if not self.server_version:
-            self.status()
-        return self.server_version
+    # def get_server_version(self, agent=None):
 
     async def _async_get_client_labels(self, client=None):
         """See

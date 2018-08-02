@@ -89,7 +89,7 @@ section as below:
 	# set it to '127.0.0.1' if you want to listen on local IPv4 address
 	bind = ::1
 	# Pool size: number of 'burp -a m' process to load
-	pool = 5
+	pool = 2
 	# enable SSL
 	ssl = true
 	# ssl cert
@@ -119,10 +119,65 @@ Each option is commented, but here is a more detailed documentation:
 - *sslkey*: What SSL key to use when SSL is enabled.
 - *password*: The shared secret between the `Burp-UI`_ server and `bui-monitor`_.
 
-As with `Burp-UI`_, you need the ``[Burp]`` section to specify `Burp`_ client options. There are fewer options because we only launch client processes.
+As with `Burp-UI`_, you need the ``[Burp]`` section to specify `Burp`_ client
+options. There are fewer options because we only launch client processes.
+
+.. warning:: Please note there seem to be an issue Burp side when you request
+             concurrently too much status monitor processes. I'll tend to say
+             the pool size should not exeed the number of CPU cores available
+             on your machine.
+
+Benchmark
+---------
+
+On my development VM which has 2 vCPUs I noticed the `async`_ backend which
+interacts with the `bui-monitor`_ was twice faster than the `burp2`_ backend.
+
+The test script was something like:
+
+::
+
+    #!/bin/bash
+
+    for client in client1 client2 client3 client4 client6 client6
+    do
+        echo "----------------------------$client--------------------------"
+        (time curl -u user:password burp-ui.server:5000/api/client/stats/$client) &
+        (time curl -u user:password burp-ui.server:5000/api/client/stats/$client) &
+    done
+
+
+The server was launched with gunicorn:
+
+::
+
+    # for the async backend
+    gunicorn -b 0.0.0.0:5000 -w 2 'burpui:create_app(conf="path/to/burpui.cfg")'
+    # for the burp2 backend
+    gunicorn -k gevent -b 0.0.0.0:5000 -w 2 'burpui:create_app(conf="path/to/burpui.cfg")'
+
+
+.. info:: The `async`_ backend is not compatible with gevent hence the different
+          launching command.
+
+Here are the results:
+
+::
+
+    # with burp2 backend
+    bash /tmp/bench.sh  0.10s user 0.06s system 0% cpu 20.377 total
+    bash /tmp/bench.sh  0.11s user 0.04s system 0% cpu 21.447 total
+    # with async backend
+    bash /tmp/bench.sh  0.12s user 0.04s system 1% cpu 10.267 total
+    bash /tmp/bench.sh  0.11s user 0.05s system 1% cpu 9.735 total
+
+
+My feeling is, the more you have CPU cores, the more performance improvements
+you'll notice over the `burp2`_ backend because we let the kernel handle the I/O
+parallelization with the `async`_ backend and `bui-monitor`_.
 
 Service
-=======
+-------
 
 I have no plan to implement daemon features, but there are a lot of tools
 available to help you achieve such a behavior.

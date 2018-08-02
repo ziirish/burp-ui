@@ -152,7 +152,7 @@ http://front:5000/ for instance, and the `Burp-UI`_ instance (front) will
 *proxify* the requests to the two agents for you.
 
 Service
-=======
+-------
 
 I have no plan to implement daemon features, but there are a lot of tools
 available to help you achieve such a behavior.
