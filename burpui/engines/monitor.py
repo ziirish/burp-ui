@@ -152,58 +152,63 @@ class MonitorPool:
         await self.monitor_pool.put(mon)
 
     async def handle(self, server_stream: trio.StapledStream):
-        ident = next(CONNECTION_COUNTER)
-        self.logger.info(f'{ident} - handle_request: started')
-        t0 = trio.current_time()
-        lengthbuf = await server_stream.receive_some(8)
-        if not lengthbuf:
-            return
-        length, = struct.unpack('!Q', lengthbuf)
-        data = await self.receive_all(server_stream, length)
-        self.logger.info(f'{ident} - recv: {data!r}')
-        txt = to_unicode(data)
-        if txt == 'RE':
-            return
-        req = json.loads(txt)
-        if req['password'] != self.password:
-            self.logger.warning(f'{ident} -----> Wrong Password <-----')
-            await server_stream.send_all(b'KO')
-            return
         try:
-            func = req.get('func')
-            if func == 'monitor_version':
-                response = __version__
-            elif func in ['client_version', 'server_version', 'batch_list_supported']:
-                async with self.get_mon(ident) as mon:
-                    response = getattr(mon, func, '')
-            else:
-                query = req['query']
-                cache = req.get('cache', True)
-
-                self._cleanup_cache()
-                # return cached results
-                if cache and query in self._status_cache:
-                    response = self._status_cache[query]
-                else:
+            ident = next(CONNECTION_COUNTER)
+            self.logger.info(f'{ident} - handle_request: started')
+            t0 = trio.current_time()
+            lengthbuf = await server_stream.receive_some(8)
+            if not lengthbuf:
+                return
+            length, = struct.unpack('!Q', lengthbuf)
+            data = await self.receive_all(server_stream, length)
+            self.logger.info(f'{ident} - recv: {data!r}')
+            txt = to_unicode(data)
+            if txt == 'RE':
+                return
+            req = json.loads(txt)
+            if req['password'] != self.password:
+                self.logger.warning(f'{ident} -----> Wrong Password <-----')
+                await server_stream.send_all(b'KO')
+                return
+            try:
+                func = req.get('func')
+                if func == 'monitor_version':
+                    response = __version__
+                elif func in ['client_version', 'server_version', 'batch_list_supported']:
                     async with self.get_mon(ident) as mon:
-                        response = mon.status(query, timeout=self.timeout, cache=False, raw=True)
+                        response = getattr(mon, func, '')
+                        if func in ['batch_list_supported']:
+                            response = json.dumps(response)
+                else:
+                    query = req['query']
+                    cache = req.get('cache', True)
 
-                    if cache:
-                        self._status_cache[query] = response
-            self.logger.debug(f'{ident} - Sending: {response}')
-            await server_stream.send_all(b'OK')
-        except BUIserverException as exc:
-            await server_stream.send_all(b'ER')
-            response = str(exc)
-            self.logger.error(response, exc_info=exc)
-            self.logger.warning(f'Forwarding Exception: {response}')
+                    self._cleanup_cache()
+                    # return cached results
+                    if cache and query in self._status_cache:
+                        response = self._status_cache[query]
+                    else:
+                        async with self.get_mon(ident) as mon:
+                            response = mon.status(query, timeout=self.timeout, cache=False, raw=True)
 
-        await server_stream.send_all(struct.pack('!Q', len(response)))
-        await server_stream.send_all(to_bytes(response))
+                        if cache:
+                            self._status_cache[query] = response
+                self.logger.debug(f'{ident} - Sending: {response}')
+                await server_stream.send_all(b'OK')
+            except BUIserverException as exc:
+                await server_stream.send_all(b'ER')
+                response = str(exc)
+                self.logger.error(response, exc_info=exc)
+                self.logger.warning(f'Forwarding Exception: {response}')
 
-        t3 = trio.current_time()
-        t = t3 - t0
-        self.logger.info(f'{ident} - Completed in {t:.3f}s')
+            await server_stream.send_all(struct.pack('!Q', len(response)))
+            await server_stream.send_all(to_bytes(response))
+
+            t3 = trio.current_time()
+            t = t3 - t0
+            self.logger.info(f'{ident} - Completed in {t:.3f}s')
+        except Exception as exc:
+            self.logger.error(f'Unexpected error: {exc}')
 
     async def launch_monitor(self, id):
         self.logger.info(f'Starting client n°{id}')

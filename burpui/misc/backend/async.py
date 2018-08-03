@@ -217,7 +217,7 @@ class Burp(Burp2):
     @property
     def batch_list_supported(self):
         if self._batch_list_supported is None:
-            self._batch_list_supported = trio.run(self._async_request, 'batch_list_supported')
+            self._batch_list_supported = json.loads(trio.run(self._async_request, 'batch_list_supported'))
         return self._batch_list_supported
 
     async def _async_status(self, query='c:\n', timeout=None, cache=True):
