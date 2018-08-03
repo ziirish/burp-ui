@@ -14,6 +14,7 @@ import logging
 
 from ..misc.auth.handler import UserAuthHandler
 from ..misc.acl.handler import ACLloader
+from ..misc.audit.handler import BUIauditLoader
 from ..config import config
 from ..plugins import PluginManager
 
@@ -30,7 +31,8 @@ BUI_DEFAULTS = {
         'sslkey': '',
         'backend': 'burp2',
         'auth': ['basic'],
-        'acl': 'none',
+        'acl': ['none'],
+        'audit': ['none'],
         'prefix': '',
         'plugins': [],
         'demo': False,
@@ -178,6 +180,11 @@ class BUIServer(Flask):
 
         self.auth = self.config['BUI_AUTH'] = self.conf.safe_get(
             'auth',
+            'string_lower_list'
+        )
+
+        self.audit_backends = self.config['BUI_AUDIT'] = self.conf.safe_get(
+            'audit',
             'string_lower_list'
         )
 
@@ -345,6 +352,7 @@ class BUIServer(Flask):
         self.logger.info('refresh: {}'.format(self.config['REFRESH']))
         self.logger.info('liverefresh: {}'.format(self.config['LIVEREFRESH']))
         self.logger.info('auth: {}'.format(self.auth))
+        self.logger.info('audit: {}'.format(self.audit_backends))
         self.logger.info('celery: {}'.format(self.use_celery))
         self.logger.info('redis: {}'.format(self.redis))
         self.logger.info('limiter: {}'.format(self.limiter))
@@ -364,6 +372,14 @@ class BUIServer(Flask):
         if self.plugins:
             self.plugin_manager.load_all()
 
+        try:
+            self.audit = BUIauditLoader(self)
+        except ImportError as exc:
+            self.logger.critical(
+                f'Import Exception, module \'{self.audit_backends}\': {exc}'
+            )
+            raise exc
+
         if self.auth and 'none' not in self.auth:
             try:
                 self.uhandler = UserAuthHandler(self)
@@ -372,14 +388,14 @@ class BUIServer(Flask):
                         'Unable to load \'{}\' authentication backend:\n{}'
                         .format(back, err)
                     )
-            except ImportError as e:
+            except ImportError as exc:
                 self.logger.critical(
                     'Import Exception, module \'{0}\': {1}'.format(
                         self.auth,
-                        str(e)
+                        str(exc)
                     )
                 )
-                raise e
+                raise exc
             self.acl_engine = self.config['BUI_ACL'] = self.conf.safe_get(
                 'acl',
                 'string_lower_list'
@@ -394,14 +410,14 @@ class BUIServer(Flask):
         if self.acl_engine and 'none' not in self.acl_engine:
             try:
                 self.acl_handler = ACLloader(self)
-            except Exception as e:
+            except Exception as exc:
                 self.logger.critical(
                     'Import Exception, module \'{0}\': {1}'.format(
                         self.acl_engine,
-                        str(e)
+                        str(exc)
                     )
                 )
-                raise e
+                raise exc
         else:
             self.acl_handler = False
 
@@ -438,6 +454,8 @@ class BUIServer(Flask):
                 sys.exit(2)
             else:
                 raise Exception(msg)
+
+        self.audit.logger.info('Burp-UI server started')
 
     @property
     def acl(self):

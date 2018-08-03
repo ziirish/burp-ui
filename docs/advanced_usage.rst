@@ -47,10 +47,14 @@ The `burpui.cfg`_ configuration file contains a ``[Global]`` section as follow:
     # you can also chain multiple backends. Example: "auth = ldap,basic"
     # the order will be respected unless you manually set a higher backend priority
     auth = basic
-    # acl plugin
+    # acl plugin (chainable, see 'auth' plugin option)
     # list misc/acl directory to see the available backends
     # default is no ACL
     acl = basic
+    # audit logger plugin (chainable, see 'auth' plugin option)
+    # list the misc/audit directory to see the available backends
+    # default is no audit log
+    audit = basic
     # You can change the prefix if you are behind a reverse-proxy under a custom
     # root path. For example: /burpui
     # You can also configure your reverse-proxy to announce the prefix through the
@@ -64,8 +68,8 @@ The `burpui.cfg`_ configuration file contains a ``[Global]`` section as follow:
 Each option is commented, but here is a more detailed documentation:
 
 - *backend*: What `Burp`_ backend to load. Can either be one of *burp1*,
-  *burp2*, or *multi*, or can be whatever custom backend you like as long as it
-  implements the proper interface.
+  *burp2*, *async* or *multi*, or can be whatever custom backend you like as
+  long as it implements the proper interface.
   If providing a custom backend name, it must be located in the *plugins*
   directory. You can also specify a custom external module by providing the
   *dot-string* notation (example: *my.custom.backend*).
@@ -73,6 +77,7 @@ Each option is commented, but here is a more detailed documentation:
   (see `Backends`_ for more details)
 - *auth*: What `Authentication`_ backend to use.
 - *acl*: What `ACL`_ module to use.
+- *audit*: What `Audit`_ module to use.
 - *prefix*: You can host `Burp-UI`_ behind a sub-root path. See the `gunicorn
   <gunicorn.html#sub-root-path>`__ page for details.
 - *plugins*: Specify a list of paths to look for external plugins. See the
@@ -208,7 +213,7 @@ tested:
     # enable zip64 feature. Python doc says:
     # « ZIP64 extensions are disabled by default because the default zip and unzip
     # commands on Unix (the InfoZIP utilities) don’t support these extensions. »
-    zip64 = false
+    zip64 = true
 
 
 These options are also available in the `bui-agent`_ configuration file.
@@ -788,6 +793,59 @@ Is not the same as:
     +gp2 = @gp1
     @gp1 = '{"clients": {"rw": ["tata", "titi"]}}'
     +gp1 = user1
+
+
+Audit
+-----
+
+`Burp-UI`_ implements some mechanisms to log *important* actions in a dedicated
+logging target.
+
+- `Basic Audit`_
+
+To disable the *audit* backend, set the *audit* option of the ``[Global]``
+section of your `burpui.cfg`_ file to *none*:
+
+::
+
+    [Global]
+    audit = none
+
+Basic Audit
+^^^^^^^^^^^
+
+
+The *basic* audit backend can be enabled by setting the *audit* option of the
+``[Global]`` section of your `burpui.cfg`_ file to *basic*:
+
+::
+
+    [Global]
+    audit = basic
+
+
+Now you can add *basic audit* specific options:
+
+::
+
+    # Basic audit backend options
+    [BASIC:AUDIT]
+    # Backend priority. Higher is first
+    priority = 100
+    # debug level (CRITICAL, ERROR, WARNING, INFO, DEBUG)
+    # the default is the same as your global application level
+    level = WARNING
+    # path to a file to log into
+    logfile = none
+    # maximum logfile size
+    max_bytes = 30 * 1024 * 1024
+    # number of files to keep
+    rotate = 5
+
+
+.. note::
+    The *basic* audit backend inherit the global application logger, so you may
+    see *duplicates* log entry depending of both your loggers debug level.
 
 
 .. _Burp: http://burp.grke.org/

@@ -88,6 +88,11 @@ class Restore(Resource):
         stp = args['strip']
         fmt = args['format'] or 'zip'
         pwd = args['pass']
+        server_log = f' on {server}' if server else ''
+        args_log = args.copy()
+        # don't leak secrets in logs
+        del args_log['pass']
+        bui.audit.logger.info(f'{current_user} requested restoration of backup n°{backup} for {name}{server_log}: {args_log}')
         resp = None
         # Check params
         if not lst or not name or not backup:

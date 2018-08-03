@@ -264,6 +264,10 @@ class UserHandler(BUIuser):
     def is_moderator(self):
         return self.acl.is_moderator()
 
+    @property
+    def backend(self):
+        return getattr(self.real, 'backend')
+
     def _load_prefs(self):
         session['login'] = self.name
         if self.app.config['WITH_SQL']:

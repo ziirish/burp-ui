@@ -358,6 +358,11 @@ class AsyncRestore(Resource):
         strip = args['strip']
         fmt = args['format'] or 'zip'
         passwd = args['pass']
+        server_log = f' on {server}' if server else ''
+        args_log = args.copy()
+        # don't leak secrets in logs
+        del args_log['pass']
+        bui.audit.logger.info(f'{current_user} requested restoration of backup n°{backup} for {name}{server_log}: {args_log}')
         room = None
         if WS_AVAILABLE:
             room = request.sid

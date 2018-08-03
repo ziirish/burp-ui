@@ -120,10 +120,13 @@ class BUIuser(UserMixin, metaclass=ABCMeta):
 
     def __str__(self):
         msg = UserMixin.__str__(self)
-        return '{} (id: {}, admin: {}, authenticated: {}, active: {})'.format(
+        return '{} (id: {}, name: {}, backend: {}, admin: {}, moderator: {}, authenticated: {}, active: {})'.format(
             msg,
             self.get_id(),
+            self.name,
+            self.backend,
             self.is_admin,
+            self.is_moderator,
             self.is_authenticated,
             self.is_active
         )
