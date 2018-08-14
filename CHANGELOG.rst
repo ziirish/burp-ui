@@ -5,6 +5,8 @@ Current
 -------
 
 - **BREAKING**: the *single* and *version* options within the ``[Global]`` section have been removed in favor of a new unified *backend* option
+- Add: new `audit logging <https://git.ziirish.me/ziirish/burp-ui/issues/260>`_ system
+- Add: new ``bui-monitor`` processes pool + ``async`` backend to parallelize some requests
 - Fix: issue `#268 <https://git.ziirish.me/ziirish/burp-ui/issues/268>`_
 - `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/0.6.0...master>`__
 

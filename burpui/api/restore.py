@@ -88,11 +88,10 @@ class Restore(Resource):
         stp = args['strip']
         fmt = args['format'] or 'zip'
         pwd = args['pass']
-        server_log = f' on {server}' if server else ''
         args_log = args.copy()
         # don't leak secrets in logs
         del args_log['pass']
-        bui.audit.logger.info(f'{current_user} requested restoration of backup n°{backup} for {name}{server_log}: {args_log}')
+        bui.audit.logger.info(f'requested restoration of backup n°{backup} for {name} with {args_log}', server=server)
         resp = None
         # Check params
         if not lst or not name or not backup:
@@ -118,6 +117,7 @@ class Restore(Resource):
 
         archive, err = bui.client.restore_files(name, backup, lst, stp, fmt, pwd, server)
         if not archive:
+            bui.audit.logger.error(f'restoration failed: {err}')
             if err:
                 if (not current_user.is_anonymous and
                         not current_user.acl.is_admin() or
@@ -211,6 +211,7 @@ class Restore(Resource):
             except Exception as exp:
                 bui.client.logger.error(str(exp))
                 self.abort(500, str(exp))
+        bui.audit.logger.info(f'sending file {archive}')
         return resp
 
 
@@ -337,6 +338,7 @@ class ServerRestore(Resource):
 
         :returns: Status message (success or failure)
         """
+        bui.audit.logger.info(f"attempt to remove 'restore' file for {name}", server=server)
         if not name:
             self.abort(400, 'Missing options')
         # Manage ACL

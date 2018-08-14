@@ -144,7 +144,7 @@ def create_db(myapp, cli=False, unittest=False, create=True, celery_worker=False
                         rev = subprocess.Popen(
                             cmd,
                             stdout=subprocess.PIPE,
-                            stderr=subprocess.STDOUT
+                            stderr=subprocess.DEVNULL
                         )
                         (out, _) = rev.communicate()
                         if rev.returncode != 0:

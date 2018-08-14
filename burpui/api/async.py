@@ -165,7 +165,9 @@ class AsyncGetFile(Resource):
     def get(self, task_id, server=None):
         """Returns the generated archive"""
         task = perform_restore.AsyncResult(task_id)
+        bui.audit.logger.debug(f'downloading file for task {task_id}')
         if task.state != 'SUCCESS':
+            bui.audit.logger.info(f'unable to complete task: {task.state}')
             if task.state == 'FAILURE':
                 err = task.result.get('error')
                 if err != 'encrypted' and not task.result.get('admin'):
@@ -183,8 +185,11 @@ class AsyncGetFile(Resource):
         dst_server = task.result.get('server')
         filename = task.result.get('filename')
 
+        bui.audit.logger.info(f'restored file {filename} ({path}) for user {user}', server=dst_server)
+
         if (current_user.name != user or (dst_server and dst_server != server)) and \
                 not current_user.acl.is_admin():
+            bui.audit.logger.error('cannot send file: unauthorized access')
             self.abort(403, 'Unauthorized access')
 
         if db:
@@ -358,11 +363,10 @@ class AsyncRestore(Resource):
         strip = args['strip']
         fmt = args['format'] or 'zip'
         passwd = args['pass']
-        server_log = f' on {server}' if server else ''
         args_log = args.copy()
         # don't leak secrets in logs
         del args_log['pass']
-        bui.audit.logger.info(f'{current_user} requested restoration of backup n°{backup} for {name}{server_log}: {args_log}')
+        bui.audit.logger.info(f'requested restoration of backup n°{backup} for {name}: {args_log}', server=server)
         room = None
         if WS_AVAILABLE:
             room = request.sid

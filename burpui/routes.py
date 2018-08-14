@@ -511,12 +511,14 @@ def login():
             return abort(400)
         else:
             flash(_('Wrong username or password'), 'danger')
-            bui.logger.critical(
-                'Wrong username or password attempted by {} at {}'.format(
-                    repr(sanitize_string(form.username.data, paranoid=True)),
-                    request.remote_addr
-                )
-            )
+            sanitized_user = repr(sanitize_string(form.username.data, paranoid=True))
+            msg = f'Wrong username or password attempted by {sanitized_user} at {request.remote_addr}'
+            if user:
+                audit = f'Wrong password for {sanitized_user} at {request.remote_addr}'
+            else:
+                audit = f'Unknown username {sanitized_user} at {request.remote_addr}'
+            bui.logger.critical(msg)
+            bui.audit.logger.critical(audit)
     elif form.is_submitted():
         flash(_('Wrong CSRF token, please try again'), 'warning')
     return render_template('login.html', form=form, login=True)

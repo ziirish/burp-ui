@@ -74,7 +74,7 @@ class BUIauditLogger(BUIauditLoggerInterface):
     def __init__(self, loader):
         self.loader = loader
         self._level = self.loader.level
-        LOG_FORMAT = '[%(asctime)s] AUDIT %(levelname)s: %(message)s'
+        LOG_FORMAT = '[%(asctime)s] AUDIT %(levelname)s in %(from)s: %(message)s'
 
         if self.loader.logfile and self.loader.logfile.lower() != 'none':
             from logging.handlers import RotatingFileHandler

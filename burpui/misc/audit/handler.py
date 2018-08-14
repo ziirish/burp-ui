@@ -1,10 +1,12 @@
 # -*- coding: utf8 -*-
 import os
+import inspect
 
 from .interface import BUIaudit, BUIauditLogger as BUIauditLoggerInterface
 
 from importlib import import_module
 from collections import OrderedDict
+from flask_login import current_user
 
 
 class BUIauditLoader(BUIaudit):
@@ -56,7 +58,7 @@ class BUIauditLoader(BUIaudit):
         self._logger = BUIauditLogger(self)
 
     @property
-    def logger(self):
+    def logger(self) -> BUIauditLoggerInterface:
         return self._logger
 
 
@@ -66,5 +68,32 @@ class BUIauditLogger(BUIauditLoggerInterface):
         self.loader = loader
 
     def log(self, level, message, *args, **kwargs):
+        server_log = ''
+        if 'server' in kwargs:
+            server = kwargs['server']
+            del kwargs['server']
+            if server:
+                server_log = f' on {server}'
+        if current_user and not current_user.is_anonymous:
+            msg = f'{current_user} -> {message}{server_log}'
+        else:
+            msg = f'{message}{server_log}'
+        caller = ''
+        stack = inspect.stack()
+        exclude = [
+            'interface.py',
+            'handler.py',
+        ]
+        for frame in stack:
+            if any([frame.filename.endswith(x) for x in exclude]):
+                continue
+            caller = f'{frame.function} [{frame.filename}:{frame.lineno}]'
+            break
+        if 'extra' in kwargs and isinstance(kwargs['extra'], dict):
+            kwargs['extra']['from'] = caller
+        else:
+            kwargs['extra'] = {
+                'from': caller
+            }
         for back in self.loader.backends.values():
-            back.logger.log(level, message, *args, **kwargs)
+            back.logger.log(level, msg, *args, **kwargs)
