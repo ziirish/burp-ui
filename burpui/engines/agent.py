@@ -244,9 +244,10 @@ class BUIAgent(BUIbackend):
                         err = f'You are not allowed to access this path: ' \
                               f'({path})'
                     if err:
+                        berr = to_bytes(err)
                         await server_stream.send_all(b'ER')
-                        await server_stream.send_all(struct.pack('!Q', len(err)))
-                        await server_stream.send_all(to_bytes(err))
+                        await server_stream.send_all(struct.pack('!Q', len(berr)))
+                        await server_stream.send_all(berr)
                         self.logger.error(err)
                         return
                     res = json.dumps(False)
@@ -287,8 +288,9 @@ class BUIAgent(BUIbackend):
                 self.logger.error(res, exc_info=exc)
                 self.logger.warning(f'Forwarding Exception: {res}')
 
+            res = to_bytes(res)
             await server_stream.send_all(struct.pack('!Q', len(res)))
-            await server_stream.send_all(to_bytes(res))
+            await server_stream.send_all(res)
         except AttributeError as exc:
             self.logger.warning(f'Wrong method => {exc}', exc_info=exc)
             await server_stream.send_all(b'KO')

@@ -194,21 +194,34 @@ class MonitorPool:
                         if cache:
                             self._status_cache[query] = response
                 self.logger.debug(f'{ident} - Sending: {response}')
-                await server_stream.send_all(b'OK')
+                if response:
+                    await server_stream.send_all(b'OK')
+                else:
+                    await server_stream.send_all(b'KO')
             except BUIserverException as exc:
                 await server_stream.send_all(b'ER')
                 response = str(exc)
                 self.logger.error(response, exc_info=exc)
                 self.logger.warning(f'Forwarding Exception: {response}')
 
-            await server_stream.send_all(struct.pack('!Q', len(response)))
-            await server_stream.send_all(to_bytes(response))
+            if response:
+                response = to_bytes(response)
+                await server_stream.send_all(struct.pack('!Q', len(response)))
+                await server_stream.send_all(response)
 
             t3 = trio.current_time()
             t = t3 - t0
             self.logger.info(f'{ident} - Completed in {t:.3f}s')
         except Exception as exc:
             self.logger.error(f'Unexpected error: {exc}')
+            await server_stream.send_all(b'ER')
+            response = str(exc)
+            self.logger.error(response, exc_info=exc)
+            self.logger.warning(f'Forwarding Exception: {response}')
+
+            response = to_bytes(response)
+            await server_stream.send_all(struct.pack('!Q', len(response)))
+            await server_stream.send_all(response)
 
     async def launch_monitor(self, id):
         self.logger.info(f'Starting client n°{id}')

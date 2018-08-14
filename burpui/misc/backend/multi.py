@@ -414,11 +414,11 @@ class NClient(BUIbackend):
         return res
 
     def setup(self, sock, gsock, data):
+        data = to_bytes(data)
         length = struct.pack('!Q', len(data))
         sock.sendall(length)
-        data = to_unicode(data)
-        sock.sendall(to_bytes(data))
-        self.logger.debug("Sending: {}".format(data))
+        sock.sendall(data)
+        self.logger.debug(f"Sending: {data!r}")
         tmp = to_unicode(sock.recv(2))
         self.logger.debug("recv: '{}'".format(tmp))
         if 'ER' == tmp:

@@ -71,10 +71,11 @@ class Async:
 
     async def _do_process(self, data):
         res = '[]'
+        data = to_bytes(data)
         length = struct.pack('!Q', len(data))
         await self.client_stream.send_all(length)
         self.logger.debug(f'Sending: {data!r}')
-        await self.client_stream.send_all(to_bytes(data))
+        await self.client_stream.send_all(data)
         tmp = await self.client_stream.receive_some(2)
         tmp = to_unicode(tmp)
         if tmp == 'ER':
