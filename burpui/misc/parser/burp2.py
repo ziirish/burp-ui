@@ -18,18 +18,45 @@ class Parser(Burp1):
     """Extends :class:`burpui.misc.parser.burp1.Parser`"""
     pver = 2
 
-    pair_srv = [
-        'port',
-        'max_children',
-        'status_port',
-        'max_status_children',
-    ]
-    pair_associations = {
-        'port': 'max_children',
-        'max_children': 'port',
-        'status_port': 'max_status_children',
-        'max_status_children': 'status_port',
-    }
+    _pari_srv = None
+    _pair_associations = None
+
+    @property
+    def pair_associations(self):
+        if self._pair_associations is None:
+            self._pair_associations = {
+                'port': 'max_children',
+                'max_children': 'port',
+                'status_port': 'max_status_children',
+                'max_status_children': 'status_port',
+            }
+            if self.backend and getattr(self.backend, 'server_version', '') >= '2.1.10':
+                self._pair_associations = {
+                    'listen': 'max_children',
+                    'max_children': 'listen',
+                    'listen_status': 'max_status_children',
+                    'max_status_children': 'listen_status',
+                }
+        return self._pair_associations
+
+    @property
+    def pair_srv(self):
+        if self._pari_srv is None:
+            self._pair_srv = [
+                'port',
+                'max_children',
+                'status_port',
+                'max_status_children',
+            ]
+            if self.backend and getattr(self.backend, 'server_version', '') >= '2.1.10':
+                self._pari_srv = [
+                    'listen',
+                    'max_children',
+                    'listen_status',
+                    'max_status_children',
+                ]
+        return self._pair_srv
+
     integer_srv = Burp1.integer_srv
     for rem in ['port', 'max_children', 'status_port', 'max_status_children']:
         integer_srv.remove(rem)
@@ -77,6 +104,8 @@ class Parser(Burp1):
         'randomise': __("max secs"),
         'manual_delete': __("path"),
         'label': __("some informations"),
+        'listen': __("[address]:[port]"),
+        'listen_status': __("[address]:[port]"),
         'status_address': __("address|localhost"),
         'glob_after_script_pre': "0|1",
         'enabled': "0|1",
@@ -131,6 +160,18 @@ class Parser(Burp1):
                     " output. The idea is to provide a mechanism for"
                     " arbitrary values to be passed to clients of the server"
                     " status monitor."),
+        'listen': __("Defines the main TCP address and port that the server listens"
+                     " on. The default is either '::' or '0.0.0.0', dependent upon"
+                     " compile time options. Specify multiple 'listen' entries on"
+                     " separate lines in order to listen on multiple addresses and"
+                     " ports. Each pair can be configured with its own 'max_children'"
+                     " value."),
+        'listen_status': __("Defines the main TCP address and port that the server"
+                            " listens on for status requests. Specify multiple"
+                            " 'listen_status' entries on separate lines in order to"
+                            " listen on multiple addresses and ports. Each pair can"
+                            " be configured with its own 'max_status_children' value."
+                            " Comment out to have no status server."),
         'status_address': __("Defines the main TCP address that the server "
                              "listens on for status requests. The default  "
                              "is  special  value  'localhost'  that includes "

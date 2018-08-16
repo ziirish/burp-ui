@@ -915,3 +915,11 @@ class Doc(BUIparser):
                                           " automatically switch to 'use'."
                                           " </li></ul>"),
     }
+
+    @property
+    def all(self):
+        return sorted(list(set(self.boolean_srv) | set(self.files) |
+                           set(self.integer_srv) | set(self.multi_srv) |
+                           set(self.string_srv) | set(self.boolean_cli) |
+                           set(self.integer_cli) | set(self.multi_cli) |
+                           set(self.string_cli)))

@@ -6,7 +6,8 @@ Current
 
 - **BREAKING**: the *single* and *version* options within the ``[Global]`` section have been removed in favor of a new unified *backend* option
 - Add: new `audit logging <https://git.ziirish.me/ziirish/burp-ui/issues/260>`_ system
-- Add: new ``bui-monitor`` processes pool + ``async`` backend to parallelize some requests
+- Add: new ``bui-monitor`` processes pool + ``async`` backend to parallelize some requests `#278 <https://git.ziirish.me/ziirish/burp-ui/issues/278>`_ 
+- Add: new `listen` and `listen_status` options in burp-2.2.10 `#279 <https://git.ziirish.me/ziirish/burp-ui/issues/279>`_ 
 - Fix: issue `#268 <https://git.ziirish.me/ziirish/burp-ui/issues/268>`_
 - `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/0.6.0...master>`__
 
