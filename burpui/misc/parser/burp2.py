@@ -18,7 +18,7 @@ class Parser(Burp1):
     """Extends :class:`burpui.misc.parser.burp1.Parser`"""
     pver = 2
 
-    _pari_srv = None
+    _pair_srv = None
     _pair_associations = None
 
     @property
@@ -41,7 +41,7 @@ class Parser(Burp1):
 
     @property
     def pair_srv(self):
-        if self._pari_srv is None:
+        if self._pair_srv is None:
             self._pair_srv = [
                 'port',
                 'max_children',
@@ -49,7 +49,7 @@ class Parser(Burp1):
                 'max_status_children',
             ]
             if self.backend and getattr(self.backend, 'server_version', '') >= '2.1.10':
-                self._pari_srv = [
+                self._pair_srv = [
                     'listen',
                     'max_children',
                     'listen_status',
