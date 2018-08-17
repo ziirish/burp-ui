@@ -54,7 +54,7 @@ services:
   # Additionally, you can override some default settings
   #  environment:
   #    - BURPUI_CONFIG=/etc/burp/burpui.cfg
-  #    - BURPUI_MONITOR_CONFIG=/etc/burp/bui-monitor.cfg
+  #    - BURPUI_MONITOR_CONFIG=/etc/burp/buimonitor.cfg
   #    - BURPUI_VERBOSE=0
   #    - BURPUI_CLIENT_NAME=bui
   #    - BURPUI_UID=5337
