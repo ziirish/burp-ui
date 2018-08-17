@@ -16,7 +16,7 @@ apk add --no-cache --virtual .build-deps \
 	postgresql-dev \
 	make
 
-apk add --no-cache mariadb-client-libs libpq
+apk add --no-cache mariadb-connector-c libpq
 
 # Install burp-ui
 cd /burp-ui
