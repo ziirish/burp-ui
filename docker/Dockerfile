@@ -1,4 +1,4 @@
-FROM python:3.6-alpine3.7
+FROM python:3.7-alpine3.8
 
 RUN apk add --no-cache supervisor logrotate librsync libressl tzdata nginx \
 	&& apk add --no-cache --virtual .fetch-deps \
@@ -46,8 +46,6 @@ RUN apk add --no-cache supervisor logrotate librsync libressl tzdata nginx \
 	)" \
 	&& apk add --virtual .python-rundeps $runDeps \
 	&& apk del .build-deps \
-# needed for the bui-cli tool
-	&& ln -sf /usr/bin/nc /bin/nc \
 # do some cleanup
 	&& rm -rf /usr/src/burp /usr/src/uthash ~/.cache
 

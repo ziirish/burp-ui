@@ -54,6 +54,7 @@ services:
   # Additionally, you can override some default settings
   #  environment:
   #    - BURPUI_CONFIG=/etc/burp/burpui.cfg
+  #    - BURPUI_MONITOR_CONFIG=/etc/burp/bui-monitor.cfg
   #    - BURPUI_VERBOSE=0
   #    - BURPUI_CLIENT_NAME=bui
   #    - BURPUI_UID=5337
@@ -61,10 +62,13 @@ services:
   #    - BURPUI_PLUGINS=none
   #    - BURPUI_WS_WORKERS=2
   #    - BURPUI_RP_SCHEME=https
+  #    - BURPUI_BACKEND=async
   #    - BURP_CLIENT_CONFIG=/tmp/burp.conf
   #    - BURP_SERVER_CONFIG=/etc/burp/burp-server.conf
   #    - DATABASE_URL=postgresql://burpui:burpui@pgsql/burpuidb
   #    - GUNICORN_WORKERS=2
+  #    - GUNICORN_WORKER_CLASS=sync
   #    - REDIS_SERVER=redis:6379
   #    - BURP_SERVER_ADDR=burp-server
+  #    - ASYNC_POOL_SIZE=2
   #    - TIMEZONE=Europe/Paris

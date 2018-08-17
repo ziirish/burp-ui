@@ -307,14 +307,21 @@ def compile_translation():
               help='Database to connect to for persistent storage')
 @click.option('-p', '--plugins', default=None,
               help='Plugins location')
+@click.option('-m', '--monitor', default=None,
+              help='bui-monitor configuration file')
+@click.option('-C', '--concurrency', default=None, type=click.INT,
+              help='Number of concurrent async process to spawn')
+@click.option('-B', '--backend', default=None,
+              help='Switch to another backend', type=click.Choice(['burp2', 'async']))
 @click.option('-n', '--dry', is_flag=True,
               help='Dry mode. Do not edit the files but display changes')
-def setup_burp(bconfcli, bconfsrv, client, host, redis, database, plugins, dry):
+def setup_burp(bconfcli, bconfsrv, client, host, redis, database,
+               plugins, monitor, concurrency, backend, dry):
     """Setup burp client for burp-ui."""
-    if app.config['BACKEND'] != 'burp2':
+    if app.config['BACKEND'] not in ['burp2', 'async']:
         click.echo(
             click.style(
-                'Sorry, you can only setup the Burp 2 client',
+                'Sorry, you can only setup the burp2 and the async backends',
                 fg='red'
             ),
             err=True
@@ -331,6 +338,22 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database, plugins, dry):
         )
         sys.exit(1)
 
+    if concurrency:
+        from multiprocessing import cpu_count
+        if concurrency > cpu_count():
+            click.echo(
+                click.style(
+                    'Warning: setting a concurrency level higher than the available CPU'
+                    ' count might cause you some troubles',
+                    fg='yellow'
+                )
+            )
+
+    is_async = app.config['BACKEND'] == 'async' or (backend and backend == 'async')
+
+    if backend and app.config['BACKEND'] != backend:
+        app.config['BACKEND'] = backend
+
     try:
         msg = app.load_modules(True)
     except Exception as e:
@@ -341,8 +364,24 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database, plugins, dry):
 
     from .misc.parser.utils import Config
     from .app import get_redis_server
+    from .config import BUIConfig
     import difflib
     import tempfile
+
+    if monitor:
+        monconf = BUIConfig(monitor)
+        monconf_orig = []
+        mon_orig = mon_source = monitor
+
+        if dry:
+            try:
+                with open(monitor) as fil:
+                    monconf_orig = fil.readlines()
+            except:
+                pass
+
+            (_, temp) = tempfile.mkstemp()
+            monconf.options.filename = temp
 
     parser = app.client.get_parser()
     orig = source = None
@@ -376,17 +415,24 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database, plugins, dry):
         refresh = True
     if (database or redis) and not app.conf.lookup_section('Production', source):
         refresh = True
+    if concurrency and not app.conf.lookup_section('Async', source):
+        refresh = True
 
     if refresh:
         app.conf._refresh(True)
 
-    def _edit_conf(key, val, attr, section='Burp', obj=app.client):
+    if monitor and not monconf.lookup_section('Global', mon_source):
+        monconf._refresh(True)
+
+    def _edit_conf(key, val, attr, section='Burp', obj=app.client, conf=app.conf):
         if val and (((key not in app.conf.options[section]) or
                     (key in app.conf.options[section] and
                     val != app.conf.options[section][key])) and
-                    getattr(obj, attr) != val):
-            app.conf.options[section][key] = val
-            app.conf.options.write()
+                    ((obj and getattr(obj, attr) != val) or (not obj))):
+            conf.options[section][key] = val
+            conf.options.write()
+            if obj:
+                setattr(obj, attr, val)
             click.echo(
                 click.style(
                     'Adding new option: "{}={}" to section [{}]'.format(
@@ -413,9 +459,29 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database, plugins, dry):
     refresh |= _edit_conf('bconfcli', bconfcli, 'burpconfcli')
     refresh |= _edit_conf('bconfsrv', bconfsrv, 'burpconfsrv')
     refresh |= _edit_conf('plugins', plugins, 'plugins', 'Global', app)
+    if backend:
+        refresh |= _edit_conf('backend', backend, None, 'Global', None)
+    if is_async and concurrency:
+        refresh |= _edit_conf('concurrency', concurrency, None, 'Async', None)
 
     if refresh:
         app.conf._refresh(True)
+
+    if monitor and concurrency:
+        if _edit_conf('pool', concurrency, None, 'Global', None, monconf):
+            monconf._refresh(True)
+
+    if monitor and app.config['BACKEND'] == 'async':
+        mon_password = monconf.options['Global'].get('password')
+        back_password = app.conf.options['Async'].get('password')
+
+        if mon_password != back_password:
+            click.echo(
+                click.style(
+                    'Backend password does not match monitor password',
+                    fg='yellow'
+                )
+            )
 
     if redis:
         try:
@@ -513,6 +579,26 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database, plugins, dry):
         if out:
             click.echo_via_pager(out)
 
+    if dry and monitor:
+        temp = monconf.options.filename
+        monconf.options.filename = mon_orig
+        after = []
+        try:
+            if not os.path.exists(temp) or os.path.getsize(temp) == 0:
+                after = monconf_orig
+            else:
+                with open(temp) as fil:
+                    after = fil.readlines()
+                os.unlink(temp)
+        except:
+            pass
+        diff = difflib.unified_diff(monconf_orig, after, fromfile=mon_orig, tofile='{}.new'.format(mon_orig))
+        out = ''
+        for line in diff:
+            out += _color_diff(line)
+        if out:
+            click.echo_via_pager(out)
+
     bconfcli = bconfcli or app.conf.options['Burp'].get('bconfcli') or \
         getattr(app.client, 'burpconfcli')
     bconfsrv = bconfsrv or app.conf.options['Burp'].get('bconfsrv') or \
@@ -533,6 +619,7 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database, plugins, dry):
     confsrv.set_default(bconfsrv)
     confsrv.parse()
 
+    # TODO: support upcoming 'listen' and 'listen_status' options
     if host not in ['::1', '127.0.0.1']:
         bind = confsrv.get('status_address')
         if (bind and bind not in [host, '::', '0.0.0.0']) or not bind:
@@ -776,10 +863,10 @@ password = abcdefgh
               help='Show you some tips')
 def diag(client, host, tips):
     """Check Burp-UI is correctly setup."""
-    if app.config['BACKEND'] != 'burp2':
+    if app.config['BACKEND'] not in ['burp2', 'async']:
         click.echo(
             click.style(
-                'Sorry, you can only setup the Burp 2 client',
+                'Sorry, you can only diag the burp2 and the async backends',
                 fg='red'
             ),
             err=True
@@ -1118,7 +1205,7 @@ def sysinfo(verbose, load):
         except Exception as e:
             msg = str(e)
 
-    backend_version = app.config['BACKEND']
+    backend = app.config['BACKEND']
 
     colors = {
         'True': 'green',
@@ -1133,7 +1220,7 @@ def sysinfo(verbose, load):
     if platform.system() == 'Linux':
         click.echo('Distribution:        {} {} {}'.format(*platform.dist()))
     click.echo('Single mode:         {}'.format(app.config['STANDALONE']))
-    click.echo('Backend version:     {}'.format(backend_version))
+    click.echo('Backend:             {}'.format(backend))
     click.echo('WebSocket embedded:  {}'.format(click.style(embedded_ws, fg=colors[embedded_ws])))
     click.echo('WebSocket available: {}'.format(click.style(available_ws, colors[available_ws])))
     click.echo('Config file:         {}'.format(app.config.conffile))

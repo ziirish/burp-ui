@@ -98,6 +98,19 @@ stdout_logfile=/var/log/supervisor/%(program_name)s.log
 stderr_logfile=/var/log/supervisor/%(program_name)s.log
 EOF
 
+# configure monitor worker template
+cat > /etc/supervisor.d/bui-monitor.ini.sample <<EOF
+[program:bui-monitor]
+priority=20
+directory=/tmp
+command=/usr/local/bin/bui-monitor -c @BURPUI_MONITOR_CONFIG@
+user=burpui
+autostart=false
+autorestart=true
+stdout_logfile=/var/log/supervisor/%(program_name)s.log
+stderr_logfile=/var/log/supervisor/%(program_name)s.log
+EOF
+
 # configure gunicorn worker template
 cat > /etc/supervisor.d/gunicorn.ini.sample <<EOF
 [program:gunicorn]

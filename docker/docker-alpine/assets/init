@@ -4,6 +4,26 @@ set -e
 SETUP_DIR="/app/setup"
 CONFIG_DIR="${SETUP_DIR}/config"
 
+BURPUI_CONFIG=${BURPUI_CONFIG:-/etc/burp/burpui.cfg}
+BURPUI_MONITOR_CONFIG=${BURPUI_MONITOR_CONFIG:-/etc/burp/bui-monitor.cfg}
+BURPUI_CLIENT_NAME=${BURPUI_CLIENT_NAME:-bui}
+BURPUI_VERBOSE=${BURPUI_VERBOSE:-0}
+BURPUI_UID=${BURPUI_UID:-5337}
+BURPUI_GID=${BURPUI_GID:-5337}
+BURPUI_PLUGINS=${BURPUI_PLUGINS:-none}
+BURPUI_WS_WORKERS=${BURPUI_WS_WORKERS:-$(getconf _NPROCESSORS_ONLN)}
+BURPUI_RP_SCHEME=${BURPUI_RP_SCHEME:-https}
+BURPUI_BACKEND=${BURPUI_BACKEND:-async}
+BURP_CLIENT_CONFIG=${BURP_CLIENT_CONFIG:-/tmp/burp.conf}
+BURP_SERVER_CONFIG=${BURP_SERVER_CONFIG:-/etc/burp/burp-server.conf}
+BURP_SERVER_ADDR=${BURP_SERVER_ADDR:-burp-server}
+REDIS_SERVER=${REDIS_SERVER:-redis:6379}
+DATABASE_URL=${DATABASE_URL:-postgresql://burpui:burpui@pgsql/burpuidb}
+GUNICORN_WORKERS=${GUNICORN_WORKERS:-$(getconf _NPROCESSORS_ONLN)}
+GUNICORN_WORKER_CLASS=${GUNICORN_WORKER_CLASS:-sync}
+ASYNC_POOL_SIZE=${ASYNC_POOL_SIZE:-$(getconf _NPROCESSORS_ONLN)}
+TIMEZONE=${TIMEZONE:-Europe/Paris}
+
 trap appStop SIGINT SIGTERM
 
 doas() {
@@ -13,22 +33,6 @@ doas() {
 }
 
 appStart () {
-
-  BURPUI_CONFIG=${BURPUI_CONFIG:-/etc/burp/burpui.cfg}
-  BURPUI_CLIENT_NAME=${BURPUI_CLIENT_NAME:-bui}
-  BURPUI_VERBOSE=${BURPUI_VERBOSE:-0}
-  BURPUI_UID=${BURPUI_UID:-5337}
-  BURPUI_GID=${BURPUI_GID:-5337}
-  BURPUI_PLUGINS=${BURPUI_PLUGINS:-none}
-  BURPUI_WS_WORKERS=${BURPUI_WS_WORKERS:-$(getconf _NPROCESSORS_ONLN)}
-  BURPUI_RP_SCHEME=${BURPUI_RP_SCHEME:-https}
-  BURP_CLIENT_CONFIG=${BURP_CLIENT_CONFIG:-/tmp/burp.conf}
-  BURP_SERVER_CONFIG=${BURP_SERVER_CONFIG:-/etc/burp/burp-server.conf}
-  BURP_SERVER_ADDR=${BURP_SERVER_ADDR:-burp-server}
-  REDIS_SERVER=${REDIS_SERVER:-redis:6379}
-  DATABASE_URL=${DATABASE_URL:-postgresql://burpui:burpui@pgsql/burpuidb}
-  GUNICORN_WORKERS=${GUNICORN_WORKERS:-$(getconf _NPROCESSORS_ONLN)}
-  TIMEZONE=${TIMEZONE:-Europe/Paris}
 
   [ -e /usr/share/zoneinfo/$TIMEZONE ] && {
     cp /usr/share/zoneinfo/$TIMEZONE /etc/localtime
@@ -54,17 +58,25 @@ appStart () {
     chown burpui: $BURPUI_CONFIG
   }
 
+  [ -e "$BURPUI_MONITOR_CONFIG" ] || {
+    cp /usr/local/share/burpui/etc/buimonitor.sample.cfg $BURPUI_MONITOR_CONFIG
+    chown burpui: $BURPUI_MONITOR_CONFIG
+  }
+
   # wait for redis to be up
   sleep 3
 
   LOGFILE=$(doas burpui mktemp)
   echo "Setting up burp & burp-ui:"
-  echo "bui-manage -c $BURPUI_CONFIG setup_burp -b $BURP_CLIENT_CONFIG -s $BURP_SERVER_CONFIG -h $BURP_SERVER_ADDR -c $BURPUI_CLIENT_NAME -r $REDIS_SERVER -d $DATABASE_URL -p $BURPUI_PLUGINS"
-  doas burpui "bui-manage -c $BURPUI_CONFIG setup_burp -b $BURP_CLIENT_CONFIG -s $BURP_SERVER_CONFIG -h $BURP_SERVER_ADDR -c $BURPUI_CLIENT_NAME -r $REDIS_SERVER -d $DATABASE_URL -p $BURPUI_PLUGINS 2>&1 | tee $LOGFILE"
+  COMMAND="bui-manage -c $BURPUI_CONFIG setup_burp --burp-conf-cli $BURP_CLIENT_CONFIG --burp-conf-serv $BURP_SERVER_CONFIG --host $BURP_SERVER_ADDR --client $BURPUI_CLIENT_NAME --redis $REDIS_SERVER --database $DATABASE_URL --plugins $BURPUI_PLUGINS --monitor $BURPUI_MONITOR_CONFIG --concurrency $ASYNC_POOL_SIZE --backend $BURPUI_BACKEND"
+  echo $COMMAND
+  doas burpui "$COMMAND 2>&1 | tee $LOGFILE"
   ret=$?
 
+  ASYNC="True"
   CELERY="True"
   grep -q "Unable to contact the redis server" $LOGFILE && CELERY=""
+  [ "$GUNICORN_WORKER_CLASS" != "sync" ] || [ "$BURPUI_BACKEND" != "async" ] && ASYNC=""
 
   [ "$ret" != "0" ] && {
     echo
@@ -111,12 +123,12 @@ EOF
   }
 
   # You can change log verbosity at runtime
-  sed -r "s'@BURPUI_CONFIG@'$BURPUI_CONFIG'" /etc/supervisor.d/gunicorn.ini.sample >/etc/supervisor.d/gunicorn.ini
-  sed -i -r "s'@BURPUI_VERBOSE@'$BURPUI_VERBOSE'" /etc/supervisor.d/gunicorn.ini
+  sed -r "s'@BURPUI_CONFIG@'$BURPUI_CONFIG';s'@BURPUI_VERBOSE@'$BURPUI_VERBOSE'" /etc/supervisor.d/gunicorn.ini.sample >/etc/supervisor.d/gunicorn.ini
 
   sed -r "s'@BURPUI_CONFIG@'$BURPUI_CONFIG'" /etc/supervisor.d/bui-celery.ini.sample >/etc/supervisor.d/bui-celery.ini
+  sed -r "s'@BURPUI_MONITOR_CONFIG@'$BURPUI_MONITOR_CONFIG'" /etc/supervisor.d/bui-monitor.ini.sample >/etc/supervisor.d/bui-monitor.ini
 
-  sed -r "s'@GUNICORN_WORKERS@'$GUNICORN_WORKERS'" /etc/burp-ui/burpui_gunicorn.py.sample >/etc/burp-ui/burpui_gunicorn.py
+  sed -r "s'@GUNICORN_WORKERS@'$GUNICORN_WORKERS';s'@GUNICORN_WORKER_CLASS@'$GUNICORN_WORKER_CLASS'" /etc/burp-ui/burpui_gunicorn.py.sample >/etc/burp-ui/burpui_gunicorn.py
 
   sed -r "s'@HTTP_SCHEME@'$BURPUI_RP_SCHEME'" ${CONFIG_DIR}/nginx/nginx.conf >/etc/nginx/nginx.conf
 
@@ -148,6 +160,11 @@ EOF
     supervisorctl start bui-celery >/dev/null
   }
 
+  [ -n "$ASYNC" ] && {
+    echo "Starting bui-monitor..."
+    supervisorctl start bui-monitor >/dev/null
+  }
+
   echo "Starting gunicorn..."
   supervisorctl start gunicorn >/dev/null
 
@@ -173,13 +190,19 @@ appStop() {
   echo ""
   echo "Stopping nginx..."
   supervisorctl stop nginx >/dev/null
-  [ "$WEBSOCKET" == "True" ] && {
-    for i in $(seq $BURPUI_WS_WORKERS)
-    do
-      echo "Stopping websocket worker $i..."
-      supervisorctl stop websocket-$i
-    done
-  }
+
+  echo "Stopping bui-celery..."
+  supervisorctl stop bui-celery &>/dev/null || true
+
+  echo "Stopping bui-monitor..."
+  supervisorctl stop bui-monitor &>/dev/null || true
+
+  for i in $(seq $BURPUI_WS_WORKERS)
+  do
+    echo "Stopping websocket worker $i..."
+    supervisorctl stop websocket-$i &>/dev/null || true
+  done
+
   echo "Stopping gunicorn..."
   supervisorctl stop gunicorn >/dev/null
   echo "Stopping crond..."

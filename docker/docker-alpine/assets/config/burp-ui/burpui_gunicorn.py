@@ -74,7 +74,7 @@ backlog = 2048
 #
 
 workers = @GUNICORN_WORKERS@ * 2
-worker_class = 'gevent'
+worker_class = '@GUNICORN_WORKER_CLASS@'
 worker_connections = 1000
 timeout = 300
 keepalive = 2
@@ -187,6 +187,7 @@ proc_name = None
 #       A callable that takes a server instance as the sole argument.
 #
 
-def post_fork(server, worker):
-    from psycogreen.gevent import patch_psycopg
-    patch_psycopg()
+if worker_class == 'gevent':
+    def post_fork(server, worker):
+        from psycogreen.gevent import patch_psycopg
+        patch_psycopg()
