@@ -429,17 +429,18 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database,
                     (key in app.conf.options[section] and
                     val != app.conf.options[section][key])) and
                     ((obj and getattr(obj, attr) != val) or (not obj))):
+            adding = key not in conf.options[section]
             conf.options[section][key] = val
             conf.options.write()
             if obj:
                 setattr(obj, attr, val)
+            if adding:
+                msg = f'Adding new option "{key}={val}" to section [{section}]'
+            else:
+                msg = f'Updating option "{key}={val}" in section [{section}]'
             click.echo(
                 click.style(
-                    'Adding new option: "{}={}" to section [{}]'.format(
-                        key,
-                        val,
-                        section
-                    ),
+                    msg,
                     fg='blue'
                 )
             )
@@ -468,7 +469,10 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database,
         app.conf._refresh(True)
 
     if monitor and concurrency:
-        if _edit_conf('pool', concurrency, None, 'Global', None, monconf):
+        refresh = False
+        refresh |= _edit_conf('pool', concurrency, None, 'Global', None, monconf)
+        refresh |= _edit_conf('bconfcli', bconfcli, None, 'Burp', None, monconf)
+        if refresh:
             monconf._refresh(True)
 
     if monitor and app.config['BACKEND'] == 'async':
