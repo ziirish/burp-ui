@@ -7,4 +7,6 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
-from celery import current_app as celery
+from celery import current_app
+
+celery = current_app
