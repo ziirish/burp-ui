@@ -1,8 +1,8 @@
 # -*- coding: utf8 -*-
 """
-.. module:: burpui.misc.backend.async
+.. module:: burpui.misc.backend.parallel
     :platform: Unix
-    :synopsis: Burp-UI async backend module.
+    :synopsis: Burp-UI parallel backend module.
 
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
@@ -24,7 +24,7 @@ from ...exceptions import BUIserverException
 from ..._compat import to_unicode, to_bytes
 
 BUI_DEFAULTS = {
-    'Async': {
+    'Parallel': {
         'host': '::1',
         'port': 11111,
         'ssl': True,
@@ -35,35 +35,38 @@ BUI_DEFAULTS = {
 }
 
 
-class Async:
+class Parallel:
     logger = logging.getLogger('burp-ui')  # type: logging.Logger
 
     def __init__(self, conf):
-        """Async client
+        """Parallel client
 
         :param conf: Configuration to use
         :type conf: :class:`burpui.config.BUIConfig`
         """
 
-        self.host = conf.safe_get('host', section='Async', defaults=BUI_DEFAULTS)
-        self.port = conf.safe_get('port', 'integer', section='Async', defaults=BUI_DEFAULTS)
-        self.ssl = conf.safe_get('ssl', 'boolean', section='Async', defaults=BUI_DEFAULTS)
-        self.password = conf.safe_get('password', section='Async', defaults=BUI_DEFAULTS)
-        self.timeout = conf.safe_get('timeout', 'integer', section='Async', defaults=BUI_DEFAULTS)
+        self.host = conf.safe_get('host', section='Parallel', defaults=BUI_DEFAULTS)
+        self.port = conf.safe_get('port', 'integer', section='Parallel', defaults=BUI_DEFAULTS)
+        self.ssl = conf.safe_get('ssl', 'boolean', section='Parallel', defaults=BUI_DEFAULTS)
+        self.password = conf.safe_get('password', section='Parallel', defaults=BUI_DEFAULTS)
+        self.timeout = conf.safe_get('timeout', 'integer', section='Parallel', defaults=BUI_DEFAULTS)
 
         self.logger.info(f'Monitor {self.host}:{self.port} - ssl: {self.ssl}')
 
         self.connected = False
 
     async def conn(self):
-        if self.ssl:
-            ctx = ssl.SSLContext()
-            ctx.verify_mode = ssl.CERT_NONE
-            ctx.check_hostname = False
-            ctx.load_default_certs()
-            self.client_stream = await trio.open_ssl_over_tcp_stream(self.host, self.port, ssl_context=ctx)
-        else:
-            self.client_stream = await trio.open_tcp_stream(self.host, self.port)
+        try:
+            if self.ssl:
+                ctx = ssl.SSLContext()
+                ctx.verify_mode = ssl.CERT_NONE
+                ctx.check_hostname = False
+                ctx.load_default_certs()
+                self.client_stream = await trio.open_ssl_over_tcp_stream(self.host, self.port, ssl_context=ctx)
+            else:
+                self.client_stream = await trio.open_tcp_stream(self.host, self.port)
+        except OSError as exc:
+            raise BUIserverException(str(exc))
 
         self.logger.debug('Connected')
         self.connected = True
@@ -152,7 +155,7 @@ class Async:
 
 # Some functions are the same as in Burp1 backend
 class Burp(Burp2):
-    """The :class:`burpui.misc.backend.async.Burp` class provides a consistent
+    """The :class:`burpui.misc.backend.parallel.Burp` class provides a consistent
     backend for ``burp-2`` servers through the bui-monitor pool. It is also able to
     perform some operations asynchronously to speedup the whole API.
 
@@ -191,7 +194,7 @@ class Burp(Burp2):
         self.parser = Parser(self)
         self.conf = conf
 
-        self.concurrency = conf.safe_get('concurrency', 'integer', section='Async', defaults=BUI_DEFAULTS)
+        self.concurrency = conf.safe_get('concurrency', 'integer', section='Parallel', defaults=BUI_DEFAULTS)
 
         self.logger.info('burp conf cli: {}'.format(self.burpconfcli))
         self.logger.info('burp conf srv: {}'.format(self.burpconfsrv))
@@ -222,12 +225,18 @@ class Burp(Burp2):
         return self._batch_list_supported
 
     async def _async_status(self, query='c:\n', timeout=None, cache=True):
-        async_client = Async(self.conf)
-        return await async_client.status(query, timeout, cache)
+        async_client = Parallel(self.conf)
+        try:
+            return await async_client.status(query, timeout, cache)
+        except OSError as exc:
+            raise BUIserverException(str(exc))
 
     async def _async_request(self, func, *args, **kwargs):
-        async_client = Async(self.conf)
-        return await async_client.request(func, *args, **kwargs)
+        async_client = Parallel(self.conf)
+        try:
+            return await async_client.request(func, *args, **kwargs)
+        except OSError as exc:
+            raise BUIserverException(str(exc))
 
     def status(self, query='c:\n', timeout=None, cache=True, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.status`"""
@@ -262,7 +271,6 @@ class Burp(Burp2):
             res = await _do_stuff()
 
         if store is not None:
-            # await store.put(res)
             store.append(res)
         else:
             return res
@@ -270,18 +278,12 @@ class Burp(Burp2):
     async def _async_get_all_backup_logs(self, client, forward=False):
         ret = []
         backups = await self._async_get_client(client)
-        # queue = trio.Queue(len(backups))
         queue = []
         limit = trio.CapacityLimiter(self.concurrency)
         async with trio.open_nursery() as nursery:
             for back in backups:
                 nursery.start_soon(self._async_get_backup_logs, back['number'], client, forward, queue, limit)
 
-        # while not queue.empty():
-        #     tmp = await queue.get()
-        #     ret.append(tmp)
-
-        # ret = sorted(ret, key=lambda x: x['number'])
         ret = sorted(queue, key=lambda x: x['number'])
         return ret
 
@@ -323,7 +325,7 @@ class Burp(Burp2):
         return 1
 
     async def _async_parse_backup_stats(self, number, client, forward=False, agent=None):
-        """The :func:`burpui.misc.backend.burp2.Burp._async_parse_backup_stats`
+        """The :func:`burpui.misc.backend.parallel.Burp._async_parse_backup_stats`
         function is used to parse the burp logs.
 
         :param number: Backup number to work on
@@ -579,10 +581,8 @@ class Burp(Burp2):
                     append = False
 
                 if append:
-                    # await ret.put(back)
                     ret.append(back)
 
-        # queue = trio.Queue(len(backups))
         queue = []
         limiter = trio.CapacityLimiter(self.concurrency)
 
@@ -619,13 +619,8 @@ class Burp(Burp2):
                 elif limit > 0 and idx >= limit:
                     break
 
-        # while not queue.empty():
-        #     tmp = await queue.get()
-        #     ret.append(tmp)
-
         # Here we need to reverse the array so the backups are sorted by num
         # ASC
-        # ret = sorted(ret, key=lambda x: x['number'])
         ret = sorted(queue, key=lambda x: x['number'])
         return ret
 

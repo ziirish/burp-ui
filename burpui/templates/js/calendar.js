@@ -29,7 +29,7 @@ $(document).ready(function() {
 
 	fetchEvents = function(start, end) {
 		{% if config.WITH_CELERY -%}
-		var feed_url = '{{ url_for("api.async_history", client=cname, server=server) }}?start='+start+'&end='+end;
+		var feed_url = '{{ url_for("api.task_history", client=cname, server=server) }}?start='+start+'&end='+end;
 		{% else -%}
 		var feed_url = '{{ url_for("api.history", client=cname, server=server) }}?start='+start+'&end='+end;
 		{% endif -%}

@@ -207,7 +207,7 @@ var _client = function() {
 var __refresh_running = undefined;
 var refresh_status = function( is_running ) {
 	{% if config.WITH_CELERY %}
-	{% set api_running_clients = "api.async_running_clients" %}
+	{% set api_running_clients = "api.task_running_clients" %}
 	{% else %}
 	{% set api_running_clients = "api.running_clients" %}
 	{% endif %}

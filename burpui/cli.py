@@ -310,18 +310,18 @@ def compile_translation():
 @click.option('-m', '--monitor', default=None,
               help='bui-monitor configuration file')
 @click.option('-C', '--concurrency', default=None, type=click.INT,
-              help='Number of concurrent async process to spawn')
+              help='Number of concurrent parallel processes to spawn')
 @click.option('-B', '--backend', default=None,
-              help='Switch to another backend', type=click.Choice(['burp2', 'async']))
+              help='Switch to another backend', type=click.Choice(['burp2', 'parallel']))
 @click.option('-n', '--dry', is_flag=True,
               help='Dry mode. Do not edit the files but display changes')
 def setup_burp(bconfcli, bconfsrv, client, host, redis, database,
                plugins, monitor, concurrency, backend, dry):
     """Setup burp client for burp-ui."""
-    if app.config['BACKEND'] not in ['burp2', 'async']:
+    if app.config['BACKEND'] not in ['burp2', 'parallel']:
         click.echo(
             click.style(
-                'Sorry, you can only setup the burp2 and the async backends',
+                "Sorry, you can only setup the 'burp2' and the 'parallel' backends",
                 fg='red'
             ),
             err=True
@@ -349,7 +349,7 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database,
                 )
             )
 
-    is_async = app.config['BACKEND'] == 'async' or (backend and backend == 'async')
+    is_parallel = app.config['BACKEND'] == 'parallel' or (backend and backend == 'parallel')
 
     if backend and app.config['BACKEND'] != backend:
         app.config['BACKEND'] = backend
@@ -415,7 +415,7 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database,
         refresh = True
     if (database or redis) and not app.conf.lookup_section('Production', source):
         refresh = True
-    if concurrency and not app.conf.lookup_section('Async', source):
+    if concurrency and not app.conf.lookup_section('Parallel', source):
         refresh = True
 
     if refresh:
@@ -462,8 +462,8 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database,
     refresh |= _edit_conf('plugins', plugins, 'plugins', 'Global', app)
     if backend:
         refresh |= _edit_conf('backend', backend, None, 'Global', None)
-    if is_async and concurrency:
-        refresh |= _edit_conf('concurrency', concurrency, None, 'Async', None)
+    if is_parallel and concurrency:
+        refresh |= _edit_conf('concurrency', concurrency, None, 'Parallel', None)
 
     if refresh:
         app.conf._refresh(True)
@@ -475,9 +475,9 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database,
         if refresh:
             monconf._refresh(True)
 
-    if monitor and app.config['BACKEND'] == 'async':
+    if monitor and app.config['BACKEND'] == 'parallel':
         mon_password = monconf.options['Global'].get('password')
-        back_password = app.conf.options['Async'].get('password')
+        back_password = app.conf.options['Parallel'].get('password')
 
         if mon_password != back_password:
             click.echo(
@@ -867,10 +867,10 @@ password = abcdefgh
               help='Show you some tips')
 def diag(client, host, tips):
     """Check Burp-UI is correctly setup."""
-    if app.config['BACKEND'] not in ['burp2', 'async']:
+    if app.config['BACKEND'] not in ['burp2', 'parallel']:
         click.echo(
             click.style(
-                'Sorry, you can only diag the burp2 and the async backends',
+                "Sorry, you can only diag the 'burp2' and the 'parallel' backends",
                 fg='red'
             ),
             err=True

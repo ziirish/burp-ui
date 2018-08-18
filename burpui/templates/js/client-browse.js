@@ -213,7 +213,7 @@ $( document ).ready(function() {
 	var _check_task_schedule = undefined;
 	$('#cancel-running-restore').on('click', function(e) {
 		var task_id = $(this).data('task_id');
-		var url = '{{ url_for("api.async_status", task_type="restore", task_id="", server=server) }}'+task_id;
+		var url = '{{ url_for("api.task_status", task_type="restore", task_id="", server=server) }}'+task_id;
 		if (!task_id) {
 			return;
 		}
@@ -235,7 +235,7 @@ $( document ).ready(function() {
 
 		{% if config.WITH_CELERY -%}
 		var check_task = function(task_id) {
-			$.getJSON('{{ url_for("api.async_status", task_type="restore", task_id="", server=server) }}'+task_id)
+			$.getJSON('{{ url_for("api.task_status", task_type="restore", task_id="", server=server) }}'+task_id)
 				.done(function(data) {
 					if (data.state != 'SUCCESS') {
 						_check_task_schedule = setTimeout(function() {
@@ -346,10 +346,10 @@ $( document ).ready(function() {
 				});
 		};
 		{% if config.WITH_CELERY -%}
-		var url = "{{ url_for('api.async_client_tree_all', name=cname, backup=nbackup, server=server) }}";
+		var url = "{{ url_for('api.task_client_tree_all', name=cname, backup=nbackup, server=server) }}";
 		var _task_status_schedule = undefined;
 		var task_status = function(task_id) {
-			$.getJSON('{{ url_for("api.async_status", task_type="browse", task_id="", server=server) }}'+task_id)
+			$.getJSON('{{ url_for("api.task_status", task_type="browse", task_id="", server=server) }}'+task_id)
 				.fail(buiFail)
 				.done(function(data) {
 					if (data.state != 'SUCCESS') {

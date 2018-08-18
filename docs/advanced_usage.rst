@@ -31,12 +31,12 @@ The `burpui.cfg`_ configuration file contains a ``[Global]`` section as follow:
 ::
 
     [Global]
-    # burp backend to load either one of 'burp1', 'burp2', 'async' or 'multi'.
+    # burp backend to load either one of 'burp1', 'burp2', 'parallel' or 'multi'.
     # If you choose 'multi', you will have to declare at lease one 'Agent' section.
-    # If you choose 'async', you need to configure the [Async] section.
+    # If you choose 'parallel', you need to configure the [Parallel] section.
     # If you choose either 'burp1' or 'burp2', you need to configure the [Burp]
     # section.
-    # The [Burp] section is also used with the 'async' backend for the restoration
+    # The [Burp] section is also used with the 'parallel' backend for the restoration
     # process.
     # You can also use whatever custom backend you like if it is located in the
     # 'plugins' directory and if it implements the right interface.
@@ -68,7 +68,7 @@ The `burpui.cfg`_ configuration file contains a ``[Global]`` section as follow:
 Each option is commented, but here is a more detailed documentation:
 
 - *backend*: What `Burp`_ backend to load. Can either be one of *burp1*,
-  *burp2*, *async* or *multi*, or can be whatever custom backend you like as
+  *burp2*, *parallel* or *multi*, or can be whatever custom backend you like as
   long as it implements the proper interface.
   If providing a custom backend name, it must be located in the *plugins*
   directory. You can also specify a custom external module by providing the
@@ -263,7 +263,7 @@ Backends
 - `Burp1`_
 - `Burp2`_
 - `Multi`_
-- `Async`_
+- `Parallel`_
 
 These backends allow you to either connect to a `Burp`_ server version 1.x.x or
 2.x.x.
@@ -366,17 +366,17 @@ Once this backend is enabled, you have to create **one** ``[Agent]`` section
 To configure your agents, please refer to the `bui-agent`_ page.
 
 
-Async
-^^^^^
+Parallel
+^^^^^^^^
 
-The *async* backend allows you to connect to the `bui-monitor`_ pool. It can be
-enabled by setting the *backend* option to *async* in the ``[Global]`` section
+The *parallel* backend allows you to connect to the `bui-monitor`_ pool. It can be
+enabled by setting the *backend* option to *parallel* in the ``[Global]`` section
 of your `burpui.cfg`_ file:
 
 ::
 
     [Global]
-    backend = async
+    backend = parallel
 
 
 This backend allows you to access `Burp`_ servers through the `bui-monitor`_
@@ -385,12 +385,12 @@ The architecture is available on the bui-monitor
 `page <buimonitor.html#architecture>`__.
 
 
-Once this backend is enabled, you have to configure the ``[Async]`` section.
+Once this backend is enabled, you have to configure the ``[Parallel]`` section.
 
 ::
 
-    # async backend specific options
-    [Async]
+    # parallel backend specific options
+    [Parallel]
     # address of the monitor pool
     host = ::1
     # port of the monitor pool

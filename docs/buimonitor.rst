@@ -17,9 +17,9 @@ beforehand.
 Also, this wasn't very scalable.
 
 If you choose to use the `bui-monitor`_ pool with the appropriate backend (the
-`async`_ one), you can now take advantage of some requests parallelisation.
+`parallel`_ one), you can now take advantage of some requests parallelisation.
 
-Cherry on the cake, the `async`_ backend is available within both the *local*
+Cherry on the cake, the `parallel`_ backend is available within both the *local*
 `Burp-UI`_ process but also within the `bui-agent`_!
 
 
@@ -130,7 +130,7 @@ options. There are fewer options because we only launch client processes.
 Benchmark
 ---------
 
-On my development VM which has 2 vCPUs I noticed the `async`_ backend which
+On my development VM which has 2 vCPUs I noticed the `parallel`_ backend which
 interacts with the `bui-monitor`_ was twice faster than the `burp2`_ backend.
 
 The test script was something like:
@@ -151,13 +151,13 @@ The server was launched with gunicorn:
 
 ::
 
-    # for the async backend
+    # for the parallel backend
     gunicorn -b 0.0.0.0:5000 -w 2 'burpui:create_app(conf="path/to/burpui.cfg")'
     # for the burp2 backend
     gunicorn -k gevent -b 0.0.0.0:5000 -w 2 'burpui:create_app(conf="path/to/burpui.cfg")'
 
 
-.. info:: The `async`_ backend is not compatible with gevent hence the different
+.. info:: The `parallel`_ backend is not compatible with gevent hence the different
           launching command.
 
 Here are the results:
@@ -167,14 +167,14 @@ Here are the results:
     # with burp2 backend
     bash /tmp/bench.sh  0.10s user 0.06s system 0% cpu 20.377 total
     bash /tmp/bench.sh  0.11s user 0.04s system 0% cpu 21.447 total
-    # with async backend
+    # with parallel backend
     bash /tmp/bench.sh  0.12s user 0.04s system 1% cpu 10.267 total
     bash /tmp/bench.sh  0.11s user 0.05s system 1% cpu 9.735 total
 
 
 My feeling is, the more you have CPU cores, the more performance improvements
 you'll notice over the `burp2`_ backend because we let the kernel handle the I/O
-parallelization with the `async`_ backend and `bui-monitor`_.
+parallelization with the `parallel`_ backend and `bui-monitor`_.
 
 Service
 -------
@@ -200,5 +200,5 @@ this:
 .. _bui-agent: buiagent.html
 .. _bui-monitor: buimonitor.html
 .. _burp2: advanced_usage.html#burp2
-.. _async: advanced_usage.html#async
+.. _parallel: advanced_usage.html#parallel
 .. _celery: http://www.celeryproject.org/

@@ -190,7 +190,7 @@ var buiFail = function(xhr, stat, err) {
 };
 
 {% if config.WITH_CELERY -%}
-{% set api_running_backup = "api.async_running_backup" %}
+{% set api_running_backup = "api.task_running_backup" %}
 {% else -%}
 {% set api_running_backup = "api.running_backup" %}
 {% endif -%}

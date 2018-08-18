@@ -101,7 +101,7 @@ class Api(ApiPlus):
     release = __release__
     __doc__ = __doc__
     __url__ = __url__
-    CELERY_REQUIRED = ['async']
+    CELERY_REQUIRED = ['tasks']
 
     def load_all(self):
         if config['WITH_LIMIT']:

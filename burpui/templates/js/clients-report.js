@@ -31,7 +31,7 @@ var _clients = function() {
 		aggreg = $('#aggreg').val();
 	}
 	{% if config.WITH_CELERY -%}
-	url = '{{ url_for("api.async_clients_report", server=server) }}';
+	url = '{{ url_for("api.task_clients_report", server=server) }}';
 	{% else -%}
 	url = '{{ url_for("api.clients_report", server=server) }}';
 	{% endif -%}
