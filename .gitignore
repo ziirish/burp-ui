@@ -11,6 +11,7 @@ devel.sh
 .ropeproject
 .pylintrc
 .pytest_cache
+.python-version
 dist
 _build
 .tags
