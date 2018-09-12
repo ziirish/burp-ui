@@ -18,7 +18,8 @@ from select import select
 from ...._compat import to_bytes, to_unicode
 from ....exceptions import BUIserverException
 from ....security import sanitize_string
-from .constant import BURP_LIST_BATCH, BURP_MINIMAL_VERSION, BURP_STATUS_FORMAT_V2
+from .constant import BURP_LIST_BATCH, BURP_MINIMAL_VERSION, BURP_STATUS_FORMAT_V2, \
+    BURP_STATUS_DELIMITER
 
 
 class Monitor(object):
@@ -68,6 +69,7 @@ class Monitor(object):
         self.client_version = None
         self.server_version = None
         self.batch_list_supported = False
+        self.status_delimiter = False
         self.ident = ident or id(self)
 
         self._burp_client_ok = False
@@ -170,6 +172,9 @@ class Monitor(object):
         if self.client_version < BURP_STATUS_FORMAT_V2:
             self.proc.stdin.write(to_bytes('j:peer_version=2.1.10\n'))
             self._read_proc_stdout(self.timeout)
+        if self.status_delimiter:
+            self.proc.stdin.write(to_bytes('j:response-markers-on\n'))
+            self._read_proc_stdout(self.timeout, 'j:response-markers-on')
 
     def _proc_is_alive(self):
         """Check if the burp client process is still alive"""
@@ -177,7 +182,7 @@ class Monitor(object):
             return self.proc.poll() is None
         return False
 
-    def _is_ignored(self, jso):
+    def _is_ignored(self, jso, watching=None):
         """We ignore the 'logline' lines"""
         if not jso:
             return True
@@ -191,6 +196,11 @@ class Monitor(object):
                     self.server_version = ret.group(1)
                     if self.server_version >= BURP_LIST_BATCH:
                         self.batch_list_supported = True
+                    if self.server_version >= BURP_STATUS_DELIMITER:
+                        self.status_delimiter = True
+        if self.status_delimiter and watching is None and \
+                ('response-start' in jso or 'response-end' in jso):
+            return True
         return 'logline' in jso
 
     @staticmethod
@@ -209,10 +219,14 @@ class Monitor(object):
         except ValueError:
             return None
 
-    def _read_proc_stdout(self, timeout):
+    def _read_proc_stdout(self, timeout, watching=None):
         """reads the burp process stdout and returns a document or None"""
         doc = ''
+        tmp = ''
         jso = None
+        cache = {}
+        if watching:
+            watching = watching.rstrip()
         while True:
             try:
                 if not self._proc_is_alive():
@@ -220,15 +234,35 @@ class Monitor(object):
                 read, _, _ = select([self.proc.stdout], [], [], timeout)
                 if self.proc.stdout not in read:
                     raise TimeoutError('Read operation timed out')
-                doc += to_unicode(self.proc.stdout.readline()).rstrip('\n')
-                jso = self._is_valid_json(doc)
+                tmp += to_unicode(self.proc.stdout.readline()).rstrip('\n')
+                jso = self._is_valid_json(tmp)
                 # if the string is a valid json and looks like a logline, we
                 # simply ignore it
-                if jso and self._is_ignored(jso):
-                    doc = ''
+                if jso and self._is_ignored(jso, watching):
+                    tmp = ''
                     continue
                 elif jso:
-                    break
+                    if not self.status_delimiter or (self.status_delimiter and watching is None):
+                        doc = tmp
+                        break
+                    start = jso.get('response-start')
+                    end = jso.get('response-end')
+                    if not start and not end:
+                        cache['raw'] = tmp
+                        cache['json'] = jso
+                    elif start and start != watching:
+                        doc = ''
+                        jso = None
+                        break
+                    elif end and end != watching:
+                        doc = ''
+                        jso = None
+                        break
+                    elif end:
+                        doc = cache.get('raw', '')
+                        jso = cache.get('json')
+                        break
+                    tmp = ''
             except (TimeoutError, IOError, Exception) as exp:
                 # the os throws an exception if there is no data or timeout
                 self.logger.warning(str(exp))
@@ -263,7 +297,7 @@ class Monitor(object):
             if self.proc.stdin not in write:
                 raise TimeoutError('Write operation timed out')
             self.proc.stdin.write(to_bytes(query))
-            jso, doc = self._read_proc_stdout(timeout)
+            jso, doc = self._read_proc_stdout(timeout, query)
             if self._is_warning(jso):
                 self.logger.warning(jso['warning'])
                 self.logger.debug('Nothing interesting to return')
