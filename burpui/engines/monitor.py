@@ -141,6 +141,12 @@ class MonitorPool:
 
     @asynccontextmanager
     async def get_mon(self, ident) -> Monitor:
+        if self.monitor_pool.empty():
+            async with trio.open_nursery() as nursery:
+                for i in range(self.pool):
+                    nursery.start_soon(self.launch_monitor, i + 1)
+            if self.monitor_pool.empty():
+                raise OSError('Unable to run burp client')
         self.logger.info(f'{ident} - Waiting for a monitor...')
         t1 = trio.current_time()
         mon = await self.monitor_pool.get()  # type: Monitor
@@ -225,10 +231,13 @@ class MonitorPool:
 
     async def launch_monitor(self, id):
         self.logger.info(f'Starting client n°{id}')
-        mon = Monitor(self.burpbin, self.bconfcli, timeout=self.timeout, ident=id)
-        # warm up monitor
-        mon.status()
-        await self.monitor_pool.put(mon)
+        try:
+            mon = Monitor(self.burpbin, self.bconfcli, timeout=self.timeout, ident=id)
+            # warm up monitor
+            mon.status()
+            await self.monitor_pool.put(mon)
+        except (BUIserverException, OSError):
+            pass
 
     async def cleanup_monitor(self):
         while not self.monitor_pool.empty():
