@@ -451,6 +451,7 @@ class DoServerRestore(Resource):
                 to,
                 server
             )
+            bui.audit.logger.info(f'requested server-initiated restoration from {name} to {to}', server=server)
             return json, 201
         except BUIserverException as e:
             self.abort(500, str(e))

@@ -870,6 +870,7 @@ class ClientReport(Resource):
         msg = bui.client.delete_backup(name, backup, server)
         if msg:
             self.abort(500, msg)
+        bui.audit.logger.info(f'requested the deletion of backup {backup} for {name}', server=server)
         return 202, ''
 
 

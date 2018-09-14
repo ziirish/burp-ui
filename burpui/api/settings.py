@@ -53,6 +53,7 @@ class ServerSettings(Resource):
     def post(self, conf=None, server=None):
         """Saves the server configuration"""
         noti = bui.client.store_conf_srv(request.form, conf, server)
+        bui.audit.logger.info(f'updated burp-server configuration ({conf})', server=server)
         return {'notif': noti}, 200
 
     @api.disabled_on_demo()
@@ -71,6 +72,7 @@ class ServerSettings(Resource):
         except:
             pass
         parser = bui.client.get_parser(agent=server)
+        bui.audit.logger.info(f'requested removal of {conf}', server=server)
         return parser.remove_conf(conf)
 
     @api.acl_admin_required(message='Sorry, you don\'t have rights to access the setting panel')
@@ -388,11 +390,13 @@ class NewTemplateSettings(Resource):
         #    return redirect(request.referrer)
         noti = bui.client.store_conf_cli(ImmutableMultiDict(), newtemplate, None, True, server)
         if server:
-            noti.append([NOTIF_INFO, _('<a href="%(url)s">Click here</a> to edit \'%(template)s\' configuration', url=url_for('view.cli_settings', server=server, client=newtemplate, template=True), template=newtemplate)])
+            url = url_for('view.cli_settings', server=server, client=newtemplate, template=True)
         else:
-            noti.append([NOTIF_INFO, _('<a href="%(url)s">Click here</a> to edit \'%(template)s\' configuration', url=url_for('view.cli_settings', client=newtemplate, template=True), template=newtemplate)])
+            url = url_for('view.cli_settings', client=newtemplate, template=True)
+        noti.append([NOTIF_INFO, _('<a href="%(url)s">Click here</a> to edit \'%(template)s\' configuration', url=url, template=newtemplate)])
         # clear the cache when we add a new client
         cache.clear()
+        bui.audit.logger.info(f'created new template {newtemplate}', server=server)
         return {'notif': noti}, 201
 
 
@@ -441,9 +445,10 @@ class NewClientSettings(Resource):
         #    return redirect(request.referrer)
         noti = bui.client.store_conf_cli(ImmutableMultiDict(), newclient, None, agent=server)
         if server:
-            noti.append([NOTIF_INFO, _('<a href="%(url)s">Click here</a> to edit \'%(client)s\' configuration', url=url_for('view.cli_settings', server=server, client=newclient), client=newclient)])
+            url = url_for('view.cli_settings', server=server, client=newclient)
         else:
-            noti.append([NOTIF_INFO, _('<a href="%(url)s">Click here</a> to edit \'%(client)s\' configuration', url=url_for('view.cli_settings', client=newclient), client=newclient)])
+            url = url_for('view.cli_settings', client=newclient)
+        noti.append([NOTIF_INFO, _('<a href="%(url)s">Click here</a> to edit \'%(client)s\' configuration', url=url, client=newclient)])
         # clear the cache when we add a new client
         cache.clear()
         # clear client-side cache through the _extra META variable
@@ -456,6 +461,8 @@ class NewClientSettings(Resource):
         if bui.config['WITH_CELERY']:
             from ..tasks import force_scheduling_now
             force_scheduling_now()
+
+        bui.audit.logger.info(f'created new client configuration {newclient}', server=server)
         return {'notif': noti}, 201
 
 
@@ -512,6 +519,8 @@ class ClientSettings(Resource):
         except ValueError:
             _extra = 0
         session['_extra'] = '{}'.format(_extra + 1)
+
+        bui.audit.logger.info(f'updated client configuration {client} ({conf})', server=server)
         return {'notif': noti}
 
     @api.acl_admin_or_moderator_required(message=_('Sorry, you don\'t have rights to access the setting panel'))
@@ -609,6 +618,8 @@ class ClientSettings(Resource):
                 from ..tasks import force_scheduling_now
                 force_scheduling_now()
         parser = bui.client.get_parser(agent=server)
+
+        bui.audit.logger.info(f'deleted client configuration {client} ({conf}), delete certificate: {delcert}, revoke certificate: {revoke}, keep a backup of the configuration: {keepconf}', server=server)
         return parser.remove_client(client, keepconf, delcert, revoke, template), 200
 
 

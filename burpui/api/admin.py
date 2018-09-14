@@ -323,6 +323,8 @@ class AclAdmin(Resource):
             )
             status = 201 if success else 200
             ret.append([code, message])
+
+        bui.audit.logger.info(f'granted {members} as admin')
         return ret, status
 
     @api.disabled_on_demo()
@@ -371,6 +373,8 @@ class AclAdmin(Resource):
             )
             status = 201 if success else 200
             ret.append([code, message])
+
+        bui.audit.logger.info(f'removed admin grants of {members}')
         return ret, status
 
 
@@ -566,6 +570,8 @@ class AclModerator(Resource):
             )
             ret.append([code, message])
             status = 201 if success else 200
+
+        bui.audit.logger.info(f'granted {members} as moderator')
         return ret, status
 
     @api.disabled_on_demo()
@@ -613,6 +619,8 @@ class AclModerator(Resource):
             )
             ret.append([code, message])
             status = 201 if success else 200
+
+        bui.audit.logger.info(f'removed moderator grant of {members}')
         return ret, status
 
     @api.disabled_on_demo()
@@ -655,6 +663,8 @@ class AclModerator(Resource):
             grants
         )
         status = 201 if success else 200
+
+        bui.audit.logger.info(f'updated moderator grants to: {grants}')
         return [[code, message]], status
 
 
@@ -763,6 +773,8 @@ class AclGroup(Resource):
             )
             ret.append([code, message])
             status = 201 if success else 200
+
+        bui.audit.logger.info(f'added {members} in group {name}')
         return ret, status
 
     @api.disabled_on_demo()
@@ -810,6 +822,8 @@ class AclGroup(Resource):
             )
             ret.append([code, message])
             status = 201 if success else 200
+
+        bui.audit.logger.info(f'removed {members} from group {name}')
         return ret, status
 
 
@@ -955,6 +969,8 @@ class AclGroups(Resource):
             args['grant']
         )
         status = 201 if success else 200
+
+        bui.audit.logger.info(f'created new group {args["group"]} with grants: {args["grant"]}')
         return [[code, message]], status
 
     @api.disabled_on_demo()
@@ -997,6 +1013,8 @@ class AclGroups(Resource):
             name
         )
         status = 201 if success else 200
+
+        bui.audit.logger.info(f'removed group {name}')
         return [[code, message]], status
 
     @api.disabled_on_demo()
@@ -1040,6 +1058,8 @@ class AclGroups(Resource):
             args['grant']
         )
         status = 201 if success else 200
+
+        bui.audit.logger.info(f'updated group {name} with: {args["grant"]}')
         return [[code, message]], status
 
 
@@ -1152,6 +1172,8 @@ class AclGrants(Resource):
             args['content']
         )
         status = 201 if success else 200
+
+        bui.audit.logger.info(f'added grant {args["grant"]} with: {args["content"]}')
         return [[code, message]], status
 
     @api.disabled_on_demo()
@@ -1194,6 +1216,8 @@ class AclGrants(Resource):
             name
         )
         status = 201 if success else 200
+
+        bui.audit.logger.info(f'removed grant {name}')
         return [[code, message]], status
 
     @api.disabled_on_demo()
@@ -1237,6 +1261,8 @@ class AclGrants(Resource):
             args['content']
         )
         status = 201 if success else 200
+
+        bui.audit.logger.info(f'updated grant {name} with: {args["content"]}')
         return [[code, message]], status
 
 
@@ -1456,6 +1482,8 @@ class AuthUsers(Resource):
             args['password']
         )
         status = 201 if success else 200
+
+        bui.audit.logger.info(f'created new user: {username}')
         return [[code, message]], status
 
     @api.disabled_on_demo()
@@ -1498,6 +1526,8 @@ class AuthUsers(Resource):
             name
         )
         status = 201 if success else 200
+
+        bui.audit.logger.info(f'removed user: {name}')
         return [[code, message]], status
 
     @api.disabled_on_demo()
@@ -1549,6 +1579,8 @@ class AuthUsers(Resource):
             args.get('old_password')
         )
         status = 201 if success else 200
+
+        bui.audit.logger.info(f'changed password of user {name}')
         return [[code, message]], status
 
 
@@ -1749,4 +1781,6 @@ class MySessions(Resource):
                 self.abort(403, 'Insufficient permissions')
         if session_manager.invalidate_session_by_id(store.uuid):
             session_manager.delete_session_by_id(store.uuid)
+
+        bui.audit.logger.info(f'removed session {store.id} of {store.user}')
         return [NOTIF_OK, 'Session {} successfully revoked'.format(id)], 201

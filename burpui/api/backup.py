@@ -104,6 +104,7 @@ class ServerBackup(Resource):
                 not current_user.acl.is_client_rw(name, server):
             self.abort(403, 'You are not allowed to cancel a backup for this client')
         try:
+            bui.audit.logger.info(f'requested server-initiated backup cancellation of {name}', server=server)
             return bui.client.cancel_server_backup(name, server)
         except BUIserverException as e:
             self.abort(500, str(e))
@@ -144,6 +145,7 @@ class ServerBackup(Resource):
                 'You are not allowed to schedule a backup for this client'
             )
         try:
+            bui.audit.logger.info(f'requested server-initiated backup scheduling for {name}', server=server)
             json = bui.client.server_backup(name, server)
             return json, 201
         except BUIserverException as e:
