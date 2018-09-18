@@ -78,11 +78,22 @@ class Monitor(object):
         # newer than BURP_MINIMAL_VERSION
         try:
             if self.burpbin:
-                cmd = [self.burpbin, '-v']
-                version = subprocess.check_output(
-                    cmd,
-                    universal_newlines=True
-                ).rstrip()
+                # the '--version' flag changed in burp 2.2.12
+                cmd = [self.burpbin, '-V']
+                version = None
+                try:
+                    version = subprocess.check_output(
+                        cmd,
+                        universal_newlines=True
+                    ).rstrip()
+                except subprocess.CalledProcessError:
+                    pass
+                if version is None:
+                    cmd = [self.burpbin, '-v']
+                    version = subprocess.check_output(
+                        cmd,
+                        universal_newlines=True
+                    ).rstrip()
                 if version < BURP_MINIMAL_VERSION and \
                         getattr(self.app, 'strict', True):
                     self.logger.critical(
