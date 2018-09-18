@@ -19,7 +19,7 @@ from async_generator import asynccontextmanager
 from logging.handlers import RotatingFileHandler
 
 from ..exceptions import BUIserverException
-from ..misc.backend.burp.utils import Monitor
+from ..misc.backend.utils.burp2 import Monitor
 from ..config import config
 from .._compat import to_bytes, to_unicode
 from ..desc import __version__

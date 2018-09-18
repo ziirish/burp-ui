@@ -1,6 +1,6 @@
 # -*- coding: utf8 -*-
 """
-.. module:: burpui.misc.backend.burp.utils
+.. module:: burpui.misc.backend.utils.burp2
     :platform: Unix
     :synopsis: Burp-UI burp utils module.
 
@@ -23,7 +23,7 @@ from .constant import BURP_LIST_BATCH, BURP_MINIMAL_VERSION, BURP_STATUS_FORMAT_
 
 
 class Monitor(object):
-    """The :class:`burpui.misc.backend.burp.utils.Monitor` class provides a ``burp-2``
+    """The :class:`burpui.misc.backend.utils.burp2.Monitor` class provides a ``burp-2``
     Monitor object to interact with the server.
 
     :param app: ``Burp-UI`` server instance in order to access logger
