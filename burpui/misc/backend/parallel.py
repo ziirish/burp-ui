@@ -291,15 +291,12 @@ class Burp(Burp2):
         """See
         :func:`burpui.misc.backend.interface.BUIbackend.get_backup_logs`
         """
-        ret = {}
         if not client or not number:
-            return ret if number != -1 else []
+            return {} if number and number != -1 else []
 
         if number == -1:
-            ret = trio.run(self._async_get_all_backup_logs, client, forward)
-        else:
-            ret = trio.run(self._async_get_backup_logs, number, client, forward)
-        return ret
+            return trio.run(self._async_get_all_backup_logs, client, forward)
+        return trio.run(self._async_get_backup_logs, number, client, forward)
 
     def _guess_backup_protocol(self, number, client):
         """The :func:`burpui.misc.backend.burp2.Burp._guess_backup_protocol`

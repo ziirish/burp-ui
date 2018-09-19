@@ -25,7 +25,6 @@ try:
     import gevent
     from gevent.lock import RLock
 
-    WITH_GEVENT = True
 except ImportError:
     class RLock(object):
         def __enter__(self):
@@ -33,8 +32,6 @@ except ImportError:
 
         def __exit__(*x):
             pass
-
-    WITH_GEVENT = False
 
 
 # Some functions are the same as in Burp1 backend
@@ -135,7 +132,7 @@ class Burp(Burp1):
         with self.plock:
             return self.monitor.status(query, timeout, cache)
 
-    def get_backup_logs(self, number, client, forward=False, agent=None):
+    def _get_backup_logs(self, number, client, forward=False):
         """See
         :func:`burpui.misc.backend.interface.BUIbackend.get_backup_logs`
         """
@@ -654,12 +651,9 @@ class Burp(Burp1):
                     return None
                 return res
 
-            if WITH_GEVENT:
-                threads.append(gevent.spawn(__get_log, name, backup, back))
-            else:
-                with_log = __get_log(name, backup, back)
-                if with_log:
-                    ret.append(with_log)
+            with_log = __get_log(name, backup, back)
+            if with_log:
+                ret.append(with_log)
 
             # stop after "limit" elements
             if page and page > 1 and limit > 0:
@@ -667,10 +661,6 @@ class Burp(Burp1):
                     break
             elif limit > 0 and idx >= limit:
                 break
-
-        if WITH_GEVENT:
-            gevent.joinall(threads)
-            ret = [x.value for x in threads if x.value]
 
         # Here we need to reverse the array so the backups are sorted by num
         # ASC

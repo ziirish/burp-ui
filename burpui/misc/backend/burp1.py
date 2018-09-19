@@ -237,8 +237,17 @@ class Burp(BUIbackend):
             self.logger.error('Cannot contact burp server at {0}:{1}'.format(self.host, self.port))
             raise BUIserverException('Cannot contact burp server at {0}:{1}'.format(self.host, self.port))
 
-    def get_backup_logs(self, number, client, forward=False, agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.get_backup_logs`"""
+    def _get_all_backup_logs(self, client, forward=False):
+        ret = []
+        backups = self.get_client(client)
+        queue = []
+        for back in backups:
+            queue.append(self._get_backup_logs(back['number'], client, forward))
+
+        ret = sorted(queue, key=lambda x: x['number'])
+        return ret
+
+    def _get_backup_logs(self, number, client, forward=False):
         if not client or not number:
             return {}
 
@@ -264,6 +273,15 @@ class Burp(BUIbackend):
         if 'files_enc' in ret and ret['files_enc']['total'] > 0:
             ret['encrypted'] = True
         return ret
+
+    def get_backup_logs(self, number, client, forward=False, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.get_backup_logs`"""
+        if not client or not number:
+            return {} if number and number != -1 else []
+
+        if number == -1:
+            return self._get_all_backup_logs(client, forward)
+        return self._get_backup_logs(number, client, forward)
 
     def _parse_backup_stats(self, number, client, forward=False, stats=None, agent=None):
         """The :func:`burpui.misc.backend.burp1.Burp._parse_backup_stats`
