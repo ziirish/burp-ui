@@ -110,7 +110,7 @@ def wait_for(lock_name, value, wait=10, timeout=LOCK_EXPIRE):
             )
         )
         old_lock = acquire_lock.lock
-        # The lock should be released after LOCK_EXPLIRE max
+        # The lock should be released after LOCK_EXPIRE max
         while not acquire_lock(lock_name, value, timeout):
             sleep(wait)
 

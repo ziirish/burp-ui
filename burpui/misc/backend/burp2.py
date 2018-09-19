@@ -22,7 +22,6 @@ from ...exceptions import BUIserverException
 from ..._compat import to_unicode
 
 try:
-    import gevent
     from gevent.lock import RLock
 
 except ImportError:
@@ -608,7 +607,6 @@ class Burp(Burp1):
         except (KeyError, IndexError):
             self.logger.warning('Client not found')
             return ret
-        threads = []
         for idx, backup in enumerate(backups):
             # skip the first elements if we are in a page
             if page and page > 1 and limit > 0:
