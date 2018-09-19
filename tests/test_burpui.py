@@ -263,10 +263,10 @@ class BurpuiRoutesTestCase(TestCase):
             bui.login_manager.init_app(bui)
             return bui
 
-    def test_live_monitor(self):
-        with patch('burpui.misc.backend.burp1.Burp.status', side_effect=mock_status):
-            response = self.client.get(url_for('view.live_monitor'), follow_redirects=True)
-            assert 'Sorry, there are no running backups' in response.data.decode('utf-8')
+#    def test_live_monitor(self):
+#        with patch('burpui.misc.backend.burp1.Burp.status', side_effect=mock_status):
+#            response = self.client.get(url_for('view.live_monitor'), follow_redirects=True)
+#            assert 'Sorry, there are no running backups' in response.data.decode('utf-8')
 
     def test_get_clients(self):
         with patch('burpui.misc.backend.burp1.Burp.status', side_effect=mock_status):
