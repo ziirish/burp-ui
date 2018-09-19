@@ -220,14 +220,18 @@ class MonitorPool:
             self.logger.info(f'{ident} - Completed in {t:.3f}s')
         except Exception as exc:
             self.logger.error(f'Unexpected error: {exc}')
-            await server_stream.send_all(b'ER')
             response = str(exc)
             self.logger.error(response, exc_info=exc)
-            self.logger.warning(f'Forwarding Exception: {response}')
+            try:
+                await server_stream.send_all(b'ER')
+                self.logger.warning(f'Forwarding Exception: {response}')
 
-            response = to_bytes(response)
-            await server_stream.send_all(struct.pack('!Q', len(response)))
-            await server_stream.send_all(response)
+                response = to_bytes(response)
+                await server_stream.send_all(struct.pack('!Q', len(response)))
+                await server_stream.send_all(response)
+            except trio.BrokenStreamError:
+                # Broken Pipe, we cannot forward the error
+                pass
 
     async def launch_monitor(self, id):
         self.logger.info(f'Starting client n°{id}')
