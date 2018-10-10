@@ -10,6 +10,7 @@
 from . import api, cache_key, force_refresh
 from ..engines.server import BUIServer  # noqa
 from .custom import fields, Resource
+from ..filter import mask
 from ..exceptions import BUIserverException
 from ..decorators import browser_cache
 from ..ext.cache import cache
@@ -236,16 +237,16 @@ class Live(Resource):
         if server:
             running = bui.client.is_one_backup_running(server)
             # ACL
-            if has_acl and not is_admin:
-                running = [x for x in running if current_user.acl.is_client_allowed(x, server)]
+            if mask.has_filters(current_user):
+                running = [x for x in running if mask.is_client_allowed(current_user, x, server)]
         else:
             running = bui.client.is_one_backup_running()
         if isinstance(running, dict):
             for (serv, clients) in running.items():
                 for client in clients:
                     # ACL
-                    if has_acl and not is_admin and \
-                            not current_user.acl.is_client_allowed(client, serv):
+                    if mask.has_filters(current_user) and \
+                            not mask.is_client_allowed(current_user, client, serv):
                         continue
                     data = {}
                     data['client'] = client
@@ -258,8 +259,8 @@ class Live(Resource):
         else:
             for client in running:
                 # ACL
-                if has_acl and not is_admin and \
-                        not current_user.acl.is_client_allowed(client, server):
+                if mask.has_filters(current_user) and \
+                        not mask.is_client_allowed(current_user, client, server):
                     continue
                 data = {}
                 data['client'] = client
@@ -564,35 +565,26 @@ class History(Resource):
         args = self.parser.parse_args()
         client = client or args['clientName']
         server = server or args['serverName']
-        is_admin = True
-        has_acl = not current_user.is_anonymous
 
-        if has_acl:
-            is_admin = current_user.acl.is_admin()
-
-        if server and has_acl and not is_admin and \
-                not current_user.acl.is_server_allowed(server):
+        if server and mask.has_filters(current_user) and \
+                not mask.is_server_allowed(current_user, server):
             self.abort(403, "You are not allowed to view this server infos")
 
-        if client and has_acl and not is_admin and \
-                not current_user.acl.is_client_allowed(client, server):
+        if client and mask.has_filters(current_user) and \
+                not mask.is_client_allowed(current_user, client, server):
             self.abort(403, "You are not allowed to view this client infos")
 
     def _get_backup_history(self, client=None, server=None, data=None):
         import arrow
         ret = []
         args = self.parser.parse_args()
-        is_admin = True
         client = client or args['clientName']
         server = server or args['serverName']
         moments = {
             'start': None,
             'end': None
         }
-        has_acl = not current_user.is_anonymous
-
-        if has_acl:
-            is_admin = current_user.acl.is_admin()
+        has_filters = mask.has_filters(current_user)
 
         for moment in moments.keys():
             if moment in args:
@@ -621,8 +613,8 @@ class History(Resource):
             else:
                 clients = bui.client.get_all_clients(agent=server)
             # manage ACL
-            if has_acl and not is_admin:
-                clients = [x for x in clients if current_user.acl.is_client_allowed(x['name'], server)]
+            if has_filters:
+                clients = [x for x in clients if mask.is_client_allowed(current_user, x['name'], server)]
             for cl in clients:
                 (color, text) = self.gen_colors(cl['name'], server)
                 feed = {
@@ -642,8 +634,8 @@ class History(Resource):
                     clients_list = [x['name'] for x in bui.client.get_all_clients()]
                 except BUIserverException:
                     clients_list = []
-                if has_acl and not is_admin:
-                    clients_list = [x for x in clients_list if current_user.acl.is_client_allowed(x)]
+                if has_filters:
+                    clients_list = [x for x in clients_list if mask.is_client_allowed(current_user, x)]
             for cl in clients_list:
                 (color, text) = self.gen_colors(cl)
                 feed = {
@@ -657,12 +649,12 @@ class History(Resource):
         else:
             grants = {}
             for serv in bui.client.servers:
-                if has_acl and not is_admin:
+                if has_filters:
                     try:
                         all_clients = [x['name'] for x in bui.client.get_all_clients(serv)]
                     except BUIserverException:
                         all_clients = []
-                    grants[serv] = [x for x in all_clients if current_user.acl.is_client_allowed(x, serv)]
+                    grants[serv] = [x for x in all_clients if mask.is_client_allowed(current_user, x, serv)]
                 else:
                     grants[serv] = 'all'
             for (serv, clients) in grants.items():

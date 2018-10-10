@@ -246,6 +246,7 @@ dev_requires = ['flake8', 'pylint']
 test_requires = [
     'pytest',
     'pytest-cov',
+    'pytest-flask',
     'Flask-Testing',
     'nose',
     'coverage',

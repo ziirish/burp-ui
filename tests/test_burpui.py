@@ -7,11 +7,7 @@ import unittest
 import tempfile
 import mockredis
 
-if sys.version_info >= (3, 0):
-    from urllib.request import urlopen
-else:
-    from urllib2 import urlopen
-
+from urllib.request import urlopen
 from flask_testing import LiveServerTestCase, TestCase
 from mock import patch
 from flask import url_for, session
@@ -251,15 +247,22 @@ class BurpuiRoutesTestCase(TestCase):
     def tearDown(self):
         print ('\nTest 4 Finished!\n')
 
+    def login(self, username, password):
+        return self.client.post(url_for('view.login'), data=dict(
+            username=username,
+            password=password,
+            language='en'
+        ), follow_redirects=True)
+
     def create_app(self):
         with patch('socket.socket'):
             conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'configs/test4.cfg')
             bui = BUIinit(conf, logfile='/dev/null', gunicorn=False, unittest=True)
             bui.setup(conf, True)
             bui.config['TESTING'] = True
-            bui.config['LOGIN_DISABLED'] = True
             bui.config['LIVESERVER_PORT'] = 5001
             bui.config['SECRET_KEY'] = 'toto'
+            bui.config['WTF_CSRF_ENABLED'] = False
             bui.login_manager.init_app(bui)
             return bui
 
@@ -270,8 +273,12 @@ class BurpuiRoutesTestCase(TestCase):
 
     def test_get_clients(self):
         with patch('burpui.misc.backend.burp1.Burp.status', side_effect=mock_status):
-            response = self.client.get(url_for('api.clients_stats'))
-            self.assertEqual(sorted(response.json, key=lambda k: k['name']), sorted([{u'state': u'idle', u'last': u'never', u'name': u'testclient', u'phase': None, u'percent': 0, u'labels': []}], key=lambda k: k['name']))
+            with self.client:
+                rv = self.login('admin', 'admin')
+                print(rv)
+                response = self.client.get(url_for('api.clients_stats'))
+                print(response)
+                self.assertEqual(sorted(response.json, key=lambda k: k['name']), sorted([{u'state': u'idle', u'last': u'never', u'name': u'testclient', u'phase': None, u'percent': 0, u'labels': []}], key=lambda k: k['name']))
 
 
 class BurpuiLoginTestCase(TestCase):

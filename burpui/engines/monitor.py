@@ -229,7 +229,7 @@ class MonitorPool:
                 response = to_bytes(response)
                 await server_stream.send_all(struct.pack('!Q', len(response)))
                 await server_stream.send_all(response)
-            except trio.BrokenStreamError:
+            except trio.BrokenResourceError:
                 # Broken Pipe, we cannot forward the error
                 pass
 
