@@ -8,6 +8,7 @@ Current
 - Add: new `audit logging <https://git.ziirish.me/ziirish/burp-ui/issues/260>`_ system
 - Add: new ``bui-monitor`` processes pool + ``async`` backend to parallelize some requests `#278 <https://git.ziirish.me/ziirish/burp-ui/issues/278>`_ 
 - Add: new `listen` and `listen_status` options in burp-2.2.10 `#279 <https://git.ziirish.me/ziirish/burp-ui/issues/279>`_ 
+- Add: allow to hide selected clients/servers `#282 <https://git.ziirish.me/ziirish/burp-ui/issues/282>`_
 - Fix: issue `#268 <https://git.ziirish.me/ziirish/burp-ui/issues/268>`_
 - `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/0.6.0...master>`__
 
