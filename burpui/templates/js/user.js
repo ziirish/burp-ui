@@ -2,7 +2,11 @@
  * The User page is managed with AngularJS for some parts.
  * Following is the AngularJS Application and Controller.
  */
-var app = angular.module('MainApp', ['ngSanitize', 'frapontillo.bootstrap-switch', 'mgcrea.ngStrap']);
+var app = angular.module('MainApp', ['ngSanitize', 'frapontillo.bootstrap-switch', 'mgcrea.ngStrap', 'ui.select']);
+
+app.config(function(uiSelectConfig) {
+	uiSelectConfig.theme = 'bootstrap';
+});
 
 app.directive('compareTo', function() {
 	return {
@@ -30,10 +34,15 @@ app.controller('UserCtrl', function($timeout, $scope, $http, $scrollspy) {
 		confPassword: ''
 	};
 	$scope.prefs = {};
+	$scope.all_clients = [];
+	$scope.hide_client = {};
+	$scope.hide_disabled = true;
 
 	// Get the available pageLength
 	var table = $('#table-sessions').DataTable();
 	var settings = table.settings();
+	var table_hidden = $('#table-hidden').DataTable();
+	var settings_hidden = table_hidden.settings();
 	$scope.lengthMenu = settings[0].aLengthMenu;
 
 	// Available languages
@@ -53,6 +62,30 @@ app.controller('UserCtrl', function($timeout, $scope, $http, $scrollspy) {
 			$scope.prefs.pageLength = table.page.len();
 		});
 
+	$http.get("{{ url_for('api.clients_all') }}?_session=" + SESSION_TAG, { headers: { 'X-From-UI': true } })
+		.then(function(response) {
+			$scope.all_clients = response.data;
+			$scope.hide_disabled = false;
+			load_d3($scope.all_clients);
+		});
+
+	$scope.groupClientsFn = function(item) {
+		if (!item.agent)
+			return '{{ _("Clients") }}';
+		return item.agent;
+	};
+
+	$scope.hideSelected = function() {
+		console.log($scope.hide_client.selected);
+		$http.put("{{ url_for('api.prefs_ui_hide') }}", $scope.hide_client.selected, { headers: { 'X-From-UI': true } })
+			.then(function(response) {
+				notif(NOTIF_SUCCESS, "{{ _('Client will be hidden') }}");
+				AJAX_CACHE = false;
+				_hidden();
+				$scope.hide_client = {};
+			}, buiFail);
+	};
+
 	$scope.submitChangePrefs = function(e) {
 		e.preventDefault();
 		var form = $(e.target);
@@ -61,6 +94,7 @@ app.controller('UserCtrl', function($timeout, $scope, $http, $scrollspy) {
 		submit.html('<i class="fa fa-fw fa-spinner fa-pulse" aria-hidden="true"></i>&nbsp;{{ _("Saving...") }}');
 		submit.attr('disabled', true);
 		table.page.len($scope.prefs.pageLength).draw();
+		table_hidden.page.len($scope.prefs.pageLength).draw();
 		/* submit the data */
 		$.ajax({
 			url: form.attr('action'),
@@ -151,6 +185,7 @@ app.controller('UserCtrl', function($timeout, $scope, $http, $scrollspy) {
 {% import 'macros.html' as macros %}
 
 var _cache_id = _EXTRA;
+var first = true;
 
 {{ macros.timestamp_filter() }}
 
@@ -313,19 +348,6 @@ var _sessions_table = $('#table-sessions').DataTable( {
 		},
 	],
 });
-var first = true;
-
-var _sessions = function() {
-	if (first) {
-		first = false;
-	} else {
-		if (!AJAX_CACHE) {
-			_cache_id = new Date().getTime();
-		}
-		_sessions_table.ajax.reload( null, false );
-		AJAX_CACHE = true;
-	}
-};
 
 var _events_callback = function() {
 	$('[data-toggle="tooltip"]').tooltip();
@@ -404,6 +426,149 @@ $('#perform-revoke').on('click', function(e) {
 	}
 	revoke_session($me.data('id'), true);
 });
+
+/**
+ * The hidden part is handled by datatables
+ * The resulting JSON looks like:
+ *
+ * [
+ *   {
+ *     'client': 'cobalt',
+ *     'server': null
+ *   },
+ *   {
+ *     'client': null,
+ *     'server': 'BURP1'
+ *   }
+ * ]
+ */
+
+var _hidden_table = $('#table-hidden').DataTable( {
+	{{ macros.translate_datatable() }}
+	{{ macros.get_page_length() }}
+	responsive: true,
+	processing: true,
+	fixedHeader: true,
+	select: {
+		style: 'os',
+	},
+	ajax: {
+		url: '{{ url_for("api.prefs_ui_hide") }}',
+		headers: { 'X-From-UI': true },
+		cache: AJAX_CACHE,
+		error: buiFail,
+		data: function (request) {
+			request._extra = _cache_id;
+		},
+		dataSrc: function (data) {
+			return data;
+		}
+	},
+	dom: "<'row'<'col-sm-6'l><'col-sm-6'f>>" +
+		"<'row'<'col-sm-12'tr>>" +
+		"<'row'<'col-sm-5'><'col-sm-7'p>>" +
+		"<'row'<'col-sm-5'i>>" +
+		"<'row'B>",
+	buttons: [
+		{
+			text: '<i class="fa fa-check-square-o" aria-hidden="true"></i>',
+			titleAttr: '{{ _("Select all") }}',
+			extend: 'selectAll',
+		},
+		{
+			text: '<i class="fa fa-filter" aria-hidden="true"></i>&nbsp;<i class="fa fa-check-square-o" aria-hidden="true"></i>',
+			titleAttr: '{{ _("Select all filtered") }}',
+			extend: 'selectAll',
+			action: function ( e, dt, node, config ) {
+				dt.rows( { search: 'applied' } ).select();
+			}
+		},
+		{
+			text: '<i class="fa fa-square-o" aria-hidden="true"></i>',
+			titleAttr: '{{ _("Deselect all") }}',
+			extend: 'selectNone',
+		},
+		{
+			text : '<i class="fa fa-filter" aria-hidden="true"></i>&nbsp;<i class="fa fa-square-o" aria-hidden="true"></i>',
+			titleAttr: '{{ _("Deselect all filtered") }}',
+			extend: 'selectNone',
+			action: function ( e, dt, node, config ) {
+				dt.rows( { search: 'applied' } ).deselect();
+			}
+		},
+		{
+			text: '<span aria-label="{{ _("Show") }}"><i class="fa fa-eye" aria-hidden="true"></i></span>',
+			titleAttr: '{{ _("Show selected") }}',
+			className: 'btn-info',
+			action: function ( e, dt, node, config ) {
+				var rows = dt.rows( { selected: true } ).data();
+				var promises = [];
+				$.each(rows, function(i, row) {
+					var p = $.ajax({
+						url: "{{ url_for('api.prefs_ui_hide') }}",
+						type: 'DELETE',
+						data: {
+							'name': row.client,
+							'agent': row.server,
+						}
+					}).fail(buiFail);
+					promises.push(p);
+				});
+				$.when.apply( $, promises ).always(function() {
+					AJAX_CACHE = false;
+					_hidden();
+					_hidden_table.buttons( [3, 4] ).enable( false );
+				}).then(function() {
+					notif(NOTIF_SUCCESS, "{{ _('The selected hosts will be shown again') }}");
+				});
+			},
+			enabled: false
+		}
+	],
+	order: [[1, 'desc']],
+	rowId: 'client',
+	columns: [
+		{ data: 'client' },
+		{ data: 'server' },
+	],
+});
+
+var select_hidden_event = function( e, dt, type, indexes ) {
+	var selectedRows = _hidden_table.rows( { selected: true } ).count();
+	_hidden_table.buttons( [3, 4] ).enable( selectedRows > 0 );
+};
+
+_hidden_table.on('select.dt', select_hidden_event);
+_hidden_table.on('deselect.dt', select_hidden_event);
+
+var _sessions = function() {
+	if (!AJAX_CACHE) {
+		_cache_id = new Date().getTime();
+	}
+	_sessions_table.ajax.reload( null, false );
+	AJAX_CACHE = true;
+};
+
+var _hidden = function() {
+	if (!AJAX_CACHE) {
+		_cache_id = new Date().getTime();
+	}
+	_hidden_table.ajax.reload( null, false );
+	AJAX_CACHE = true;
+};
+
+var _me = function() {
+	if (first) {
+		first = false;
+	} else {
+		if (!AJAX_CACHE) {
+			_cache_id = new Date().getTime();
+		}
+		_sessions_table.ajax.reload( null, false );
+		_hidden_table.ajax.reload( null, false );
+		AJAX_CACHE = true;
+	}
+};
 
 // adapted from http://bl.ocks.org/d3noob/8375092
 // ************** Generate the tree diagram	 *****************
@@ -535,58 +700,54 @@ function click(d) {
 	update_tree(d);
 }
 
-d3.json("{{ url_for('api.clients_all') }}?_session=" + SESSION_TAG)
-	.header('X-From-UI', true)
-	.get(function(error, data) {
-		if (! error) {
-			root = {
-				{% if config.STANDALONE -%}
-				"name": "{{ _('clients') }}",
-				{% else -%}
-				"name": "{{ _('servers') }}",
-				{% endif -%}
-				"parent": "null",
-				"children": []
-			};
-			var children = {};
+function load_d3(data) {
+	root = {
+		{% if config.STANDALONE -%}
+		"name": "{{ _('clients') }}",
+		{% else -%}
+		"name": "{{ _('servers') }}",
+		{% endif -%}
+		"parent": "null",
+		"children": []
+	};
+	var children = {};
 
-			$.each(data, function(i, node) {
-				if (! node.agent) {
-					root.children.push({
-						'name': node.name,
-						'parent': "{{ _('clients') }}"
-					});
-					return;
-				}
-				if (! (node.agent in children)) {
-					children[node.agent] = {
-						'name': node.agent,
-						'parent': "{{ _('servers') }}",
-						'children': []
-					};
-				}
-				children[node.agent]['children'].push({
-					'name': node.name,
-					'parent': node.agent
-				});
+	$.each(data, function(i, node) {
+		if (! node.agent) {
+			root.children.push({
+				'name': node.name,
+				'parent': "{{ _('clients') }}"
 			});
-
-			$.each(children, function(i, nodes) {
-				root.children.push(nodes);
-			});
-
-			function collapse(d) {
-				if (d.children) {
-					d._children = d.children;
-					d._children.forEach(collapse);
-					d.children = null;
-				}
-			}
-
-			root.children.forEach(collapse);
-			root.x0 = height / 2;
-			root.y0 = 0;
-
-			update_tree(root);
+			return;
 		}
+		if (! (node.agent in children)) {
+			children[node.agent] = {
+				'name': node.agent,
+				'parent': "{{ _('servers') }}",
+				'children': []
+			};
+		}
+		children[node.agent]['children'].push({
+			'name': node.name,
+			'parent': node.agent
+		});
 	});
+
+	$.each(children, function(i, nodes) {
+		root.children.push(nodes);
+	});
+
+	function collapse(d) {
+		if (d.children) {
+			d._children = d.children;
+			d._children.forEach(collapse);
+			d.children = null;
+		}
+	}
+
+	root.children.forEach(collapse);
+	root.x0 = height / 2;
+	root.y0 = 0;
+
+	update_tree(root);
+}

@@ -127,37 +127,6 @@ class BUIacl(object, metaclass=ABCMeta):
         """
         return False  # pragma: no cover
 
-    def clients(self, username=None, server=None):
-        """:func:`burpui.misc.acl.interface.BUIacl.clients` returns a list of
-        allowed clients for a given user.
-
-        :param username: Username to check
-        :type username: str
-
-        :param server: Server name. Used in multi-agent mode
-        :type server: str
-
-        :returns: A list of clients
-        :rtype: list
-
-        .. deprecated:: 0.6.0
-        """
-        return []  # pragma: no cover
-
-    def servers(self, username=None):
-        """:func:`burpui.misc.acl.interface.BUIacl.servers` returns a list of
-        allowed servers for a given user.
-
-        :param username: Username to check
-        :type username: str
-
-        :returns: A list of servers
-        :rtype: list
-
-        .. deprecated:: 0.6.0
-        """
-        return []  # pragma: no cover
-
     @abstractmethod
     def is_client_rw(self, username=None, client=None, server=None):
         """:func:`burpui.misc.acl.interface.BUIacl.is_client_rw` tells us

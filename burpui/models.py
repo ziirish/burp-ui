@@ -82,7 +82,7 @@ class Pref(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user = db.Column(db.String(256))
     key = db.Column(db.String(256), nullable=False)
-    value = db.Column(db.String(256))
+    value = db.Column(db.Text)
 
     def __init__(self, user, key, value=None):
         self.user = user
@@ -95,3 +95,28 @@ class Pref(db.Model):
             self.key,
             self.value
         )
+
+
+class Hidden(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user = db.Column(db.String(256), nullable=False)
+    client = db.Column(db.String(4096))
+    server = db.Column(db.String(4096))
+
+    def __init__(self, user, client=None, server=None):
+        self.user = user
+        self.client = client
+        self.server = server
+
+    def __repr__(self):
+        return '<Hidden {}: {} ({})'.format(
+            self.user,
+            self.client,
+            self.server
+        )
+
+
+def lazy_loading():
+    """This function is used so the above classes/tables are detected by alembic.
+    It does nothing except allowing us to compile this module"""
+    pass

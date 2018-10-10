@@ -55,6 +55,7 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
     from .security import basic_login_from_request
     from .engines.server import BUIServer as BurpUI
     from .sessions import session_manager
+    from .filter import mask
     from .ext.cache import cache
     from .ext.i18n import babel, get_locale
     from .misc.auth.handler import BUIanon
@@ -366,6 +367,8 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
 
     # Initialize Session Manager
     session_manager.init_app(app)
+    # Initialize filter
+    mask.init_app(app)
 
     # And the login_manager
     app.login_manager = LoginManager()

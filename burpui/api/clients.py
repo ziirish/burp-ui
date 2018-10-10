@@ -14,6 +14,7 @@ from .client import ClientLabels
 from ..ext.cache import cache
 from ..exceptions import BUIserverException
 from ..decorators import browser_cache
+from ..filter import mask
 
 from flask import current_app
 from flask_login import current_user
@@ -73,10 +74,9 @@ class RunningClients(Resource):
 
     def _running_clients(self, res, client, server):
         if client:
-            if not current_user.is_anonymous and \
-                    not current_user.acl.is_admin() and \
-                    not current_user.acl.is_client_allowed(client, server):
-                return []
+            if mask.has_filters(current_user):
+                if not mask.is_client_allowed(current_user, client):
+                    return []
 
             if bui.client.is_backup_running(client, server):
                 return [client]
@@ -85,7 +85,7 @@ class RunningClients(Resource):
 
         running = res or bui.client.is_one_backup_running(server)
         # Manage ACL
-        if not current_user.is_anonymous and not current_user.acl.is_admin():
+        if mask.has_filters(current_user):
             if isinstance(running, dict):
                 ret = {}
 
@@ -94,7 +94,7 @@ class RunningClients(Resource):
                         clients = [x['name'] for x in bui.client.get_all_clients(serv)]
                     except BUIserverException:
                         clients = []
-                    allowed = [x for x in clients if current_user.acl.is_client_allowed(x, serv)]
+                    allowed = [x for x in clients if mask.is_client_allowed(current_user, x, serv)]
                     return [x for x in running[serv] if x in allowed]
 
                 if server:
@@ -108,7 +108,7 @@ class RunningClients(Resource):
                     clients = [x['name'] for x in bui.client.get_all_clients(server)]
                 except BUIserverException:
                     clients = []
-                allowed = [x for x in clients if current_user.acl.is_client_allowed(x, server)]
+                allowed = [x for x in clients if mask.is_client_allowed(current_user, x, server)]
                 running = [x for x in running if x in allowed]
         elif server and isinstance(running, dict):
             return running.get(server, [])
@@ -166,7 +166,7 @@ class RunningBackup(Resource):
     def _is_one_backup_running(self, res, server):
         """Check if a backup is running"""
         # Manage ACL
-        if not current_user.is_anonymous and not current_user.acl.is_admin():
+        if mask.has_filters(current_user):
             if isinstance(res, dict):
                 new = {}
                 for serv in bui.client.servers:
@@ -174,7 +174,7 @@ class RunningBackup(Resource):
                         clients = [x['name'] for x in bui.client.get_all_clients(serv)]
                     except BUIserverException:
                         clients = []
-                    allowed = [x for x in clients if current_user.acl.is_client_allowed(x, serv)]
+                    allowed = [x for x in clients if mask.is_client_allowed(current_user, x, serv)]
                     new[serv] = [x for x in res[serv] if x in allowed]
                 res = new
             else:
@@ -182,7 +182,7 @@ class RunningBackup(Resource):
                     clients = [x['name'] for x in bui.client.get_all_clients(server)]
                 except BUIserverException:
                     clients = []
-                allowed = [x for x in clients if current_user.acl.is_client_allowed(x, server)]
+                allowed = [x for x in clients if mask.is_client_allowed(current_user, x, server)]
                 res = [x for x in res if x in allowed]
         running = False
         if isinstance(res, dict):
@@ -388,16 +388,16 @@ class ClientsReport(Resource):
                 clients = bui.client.get_all_clients(agent=server)
             except BUIserverException as e:
                 self.abort(500, str(e))
-            if not current_user.is_anonymous and not current_user.acl.is_admin():
-                clients = [x for x in clients if current_user.acl.is_client_allowed(x['name'], server)]
+            if mask.has_filters(current_user):
+                clients = [x for x in clients if mask.is_client_allowed(current_user, x['name'], server)]
             return bui.client.get_clients_report(clients, server)
         if bui.config['STANDALONE']:
             ret = res
         else:
             ret = res.get(server, {})
-        if not current_user.is_anonymous and not current_user.acl.is_admin():
-            ret['backups'] = [x for x in ret.get('backups', []) if current_user.acl.is_client_allowed(x.get('name'), server)]
-            ret['clients'] = [x for x in ret.get('clients', []) if current_user.acl.is_client_allowed(x.get('name'), server)]
+        if mask.has_filters(current_user):
+            ret['backups'] = [x for x in ret.get('backups', []) if mask.is_client_allowed(current_user, x.get('name'), server)]
+            ret['clients'] = [x for x in ret.get('clients', []) if mask.is_client_allowed(current_user, x.get('name'), server)]
         return ret
 
 
@@ -485,8 +485,8 @@ class ClientsStats(Resource):
                      not current_user.acl.is_server_allowed(server))):
                 self.abort(403, 'Sorry, you don\'t have any rights on this server')
             jso = bui.client.get_all_clients(agent=server)
-            if not current_user.is_anonymous and not current_user.acl.is_admin():
-                jso = [x for x in jso if current_user.acl.is_client_allowed(x['name'], server)]
+            if mask.has_filters(current_user):
+                jso = [x for x in jso if mask.is_client_allowed(current_user, x['name'], server)]
         except BUIserverException as e:
             self.abort(500, str(e))
         ret = []

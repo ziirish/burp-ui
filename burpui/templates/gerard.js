@@ -488,7 +488,7 @@ $(function() {
 		_servers();
 		{% endif -%}
 		{% if me -%}
-		_sessions();
+		_me();
 		{% endif -%}
 		{% if admin -%}
 		_admin();
@@ -559,7 +559,7 @@ $(function() {
 	_servers();
 	{% endif -%}
 	{% if me -%}
-	_sessions();
+	_me();
 	{% endif -%}
 	{% if admin -%}
 	_admin();

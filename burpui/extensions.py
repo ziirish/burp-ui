@@ -60,6 +60,8 @@ def create_db(myapp, cli=False, unittest=False, create=True, celery_worker=False
             from .ext.sql import db
             from sqlalchemy.exc import OperationalError
             from sqlalchemy_utils.functions import database_exists
+            from .models import lazy_loading
+            lazy_loading()
             myapp.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
             if not database_exists(myapp.config['SQLALCHEMY_DATABASE_URI']) and \
                     not cli and not unittest and not celery_worker:
@@ -111,19 +113,6 @@ def create_db(myapp, cli=False, unittest=False, create=True, celery_worker=False
                     try:
                         import subprocess
 
-                        # get the current revision from alembic_version
-                        res = db.engine.execute(
-                            'select version_num from alembic_version'
-                        )
-                        if not res:
-                            raise Exception(
-                                'Alembic does not seem to be setup'
-                            )
-                        current = None
-                        for row in res:
-                            current = to_unicode(row['version_num'])
-                            break
-
                         # get current head using alembic/FLask-Migrate
                         local = os.path.join(
                             os.getcwd(),
@@ -139,7 +128,7 @@ def create_db(myapp, cli=False, unittest=False, create=True, celery_worker=False
                             '-l',
                             os.devnull,
                             'db',
-                            'heads'
+                            'current'
                         ]
                         rev = subprocess.Popen(
                             cmd,
@@ -153,14 +142,14 @@ def create_db(myapp, cli=False, unittest=False, create=True, celery_worker=False
                                 'database:\n{}'.format(out)
                             )
 
-                        latest = to_unicode(out).split()[0]
+                        current = to_unicode(out)
 
                         # now we compare the revision numbers
-                        if latest != current:
+                        if 'head' not in current:
                             myapp.logger.critical(
-                                'Your database seems out of sync ({} != {}), '
+                                'Your database seems out of sync, '
                                 'you may want to run \'bui-manage db '
-                                'upgrade\'.'.format(latest, current)
+                                'upgrade\'.'
                             )
                             myapp.logger.critical(
                                 'Disabling SQL support for now.'

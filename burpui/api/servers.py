@@ -4,6 +4,7 @@
 from . import api, cache_key, force_refresh
 from ..engines.server import BUIServer  # noqa
 from .custom import fields, Resource
+from ..filter import mask
 from ..ext.cache import cache
 from ..decorators import browser_cache
 from ..exceptions import BUIserverException
@@ -67,7 +68,7 @@ class ServersStats(Resource):
         if bui.config['STANDALONE']:
             return r
 
-        if not current_user.is_anonymous and not current_user.acl.is_admin():
+        if not current_user.is_anonymous and mask.has_filters(current_user):
             check = True
 
         for serv in bui.client.servers:
@@ -81,8 +82,8 @@ class ServersStats(Resource):
             except BUIserverException:
                 clients = []
 
-            if check and current_user.acl.is_server_allowed(serv):
-                allowed_clients = [x for x in clients if current_user.acl.is_client_allowed(x['name'], serv)]
+            if check and mask.is_server_allowed(current_user, serv):
+                allowed_clients = [x for x in clients if mask.is_client_allowed(current_user, x['name'], serv)]
                 r.append({
                     'name': serv,
                     'clients': len(allowed_clients),
@@ -172,7 +173,7 @@ class ServersReport(Resource):
         """
         r = {}
         check = False
-        if not current_user.is_anonymous and not current_user.acl.is_admin():
+        if not current_user.is_anonymous and mask.has_filters(current_user):
             check = True
 
         backups = []
@@ -188,14 +189,14 @@ class ServersReport(Resource):
                     },
                     'number': 0
                 }
-                if check and not current_user.acl.is_server_allowed(serv):
+                if check and not mask.is_server_allowed(current_user, serv):
                     continue
                 try:
                     clients = bui.client.get_all_clients(agent=serv)
                 except BUIserverException:
                     continue
                 if check:
-                    clients = [x for x in clients if current_user.acl.is_client_allowed(x['name'], serv)]
+                    clients = [x for x in clients if mask.is_client_allowed(current_user, x['name'], serv)]
 
                 j = bui.client.get_clients_report(clients, serv)
                 if 'clients' not in j or 'backups' not in j:

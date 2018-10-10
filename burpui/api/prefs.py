@@ -14,10 +14,111 @@ from werkzeug.datastructures import MultiDict
 from . import api
 from ..engines.server import BUIServer  # noqa
 from ..ext.i18n import LANGUAGES
-from .custom import Resource
+from .custom import fields, Resource
 
 bui = current_app  # type: BUIServer
 ns = api.namespace('preferences', 'Preferences methods')
+
+
+@ns.route('/ui/hide',
+          endpoint='prefs_ui_hide')
+class PrefsUIHide(Resource):
+    """The :class:`burpui.api.prefs.PrefsUI` resource allows you to
+    set your UI preferences.
+
+    This resource is part of the :mod:`burpui.api.prefs` module.
+    """
+    parser = ns.parser()
+    parser.add_argument('name', dest='client', help='Client to hide')
+    parser.add_argument('agent', dest='server', help='Server to hide')
+
+    hidden_model = ns.model('HiddenModel', {
+        'client': fields.String(description='Hidden client name'),
+        'server': fields.String(description='Hidden server name')
+    })
+
+    @ns.marshal_list_with(hidden_model, description='Success', code=200)
+    @ns.doc(
+        responses={
+            200: 'Success',
+            403: 'Insufficient permissions',
+        },
+    )
+    def get(self):
+        """Returns a list of hidden clients/servers
+
+        **GET** method provided by the webservice.
+
+        :returns: list
+        """
+        if bui.config['WITH_SQL'] and not bui.config['BUI_DEMO'] and not current_user.is_anonymous:
+            from ..models import Hidden
+            return Hidden.query.filter_by(user=current_user.name).all()
+        return []
+
+    @ns.expect(parser)
+    @ns.marshal_with(hidden_model, description='Success', code=200)
+    @ns.doc(
+        responses={
+            200: 'Success, object not recorder',
+            201: 'Success, object recorded',
+            403: 'Insufficient permissions',
+            500: 'Internal server error',
+        },
+    )
+    def put(self):
+        """Hide a client/server
+
+        **PUT** method provided by the webservice.
+
+        :returns: Object to hide
+        """
+        ret = []
+        args = self.parser.parse_args()
+        if bui.config['WITH_SQL'] and not bui.config['BUI_DEMO'] and not current_user.is_anonymous:
+            from ..ext.sql import db
+            from ..models import Hidden
+            client = args.get('client') or None
+            server = args.get('server') or None
+            hidden = Hidden.query.filter_by(client=client, server=server, user=current_user.name).first()
+            if not hidden:
+                hide = Hidden(current_user.name, client, server)
+                db.session.add(hide)
+                try:
+                    db.session.commit()
+                except:
+                    db.session.rollback()
+                    self.abort(500, 'Internal server error')
+                return hide, 201
+            return hidden
+        return ret
+
+    @ns.expect(parser)
+    @ns.doc(
+        responses={
+            204: 'Success',
+            403: 'Insufficient permissions',
+            500: 'Internal server error',
+        },
+    )
+    def delete(self):
+        """Make a client/server visible again
+
+        **DELETE** method provided by the webservice.
+        """
+        args = self.parser.parse_args()
+        if bui.config['WITH_SQL'] and not bui.config['BUI_DEMO'] and not current_user.is_anonymous:
+            from ..ext.sql import db
+            from ..models import Hidden
+            hide = Hidden.query.filter_by(client=(args.get('client') or None), server=(args.get('server') or None), user=current_user.name).first()
+            if hide:
+                db.session.delete(hide)
+                try:
+                    db.session.commit()
+                except:
+                    db.session.rollback()
+                    self.abort(500, 'Internal server error')
+        return None, 204
 
 
 @ns.route('/ui',
@@ -103,7 +204,6 @@ class PrefsUI(Resource):
         responses={
             200: 'Success',
             403: 'Insufficient permissions',
-            404: 'No backend found',
         },
     )
     def get(self):
@@ -126,8 +226,6 @@ class PrefsUI(Resource):
             201: 'Success',
             403: 'Not allowed',
             400: 'Missing parameters',
-            404: 'Backend not found',
-            500: 'Backend does not support this operation',
         },
     )
     def put(self):
@@ -140,8 +238,6 @@ class PrefsUI(Resource):
             200: 'Success',
             403: 'Not allowed',
             400: 'Missing parameters',
-            404: 'Backend not found',
-            500: 'Backend does not support this operation',
         },
     )
     def delete(self):
@@ -174,8 +270,6 @@ class PrefsUI(Resource):
             200: 'Success',
             403: 'Not allowed',
             400: 'Missing parameters',
-            404: 'Backend not found',
-            500: 'Backend does not support this operation',
         },
     )
     def post(self):

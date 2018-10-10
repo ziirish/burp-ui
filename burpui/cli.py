@@ -56,7 +56,7 @@ app = create_app(
 )
 
 try:
-    from .app import create_db
+    from .extensions import create_db
     from .ext.sql import db
     from flask_migrate import Migrate
 
