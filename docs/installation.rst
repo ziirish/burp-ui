@@ -27,6 +27,11 @@ By default, ``burp-ui`` listens on localhost on port 5000.
 
 You can then point your browser to http://127.0.0.1:5000/
 
+.. note::
+    If you wish to try out the latest development release, you can have a look
+    at the `Development <development.html#development>`_ section of this
+    documentation.
+
 Upgrade
 -------
 

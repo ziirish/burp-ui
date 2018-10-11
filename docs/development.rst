@@ -15,8 +15,7 @@ To do so, run the following commands:
     virtualenv /opt/bui-venv
     source /opt/bui-venv/bin/activate
     cd /tmp
-    # the .tar.gz works with both python 2 and python 3
-    wget https://git.ziirish.me/ziirish/burp-ui/builds/artifacts/master/download?job=build:py2 -O burp-ui_build.zip
+    wget https://git.ziirish.me/ziirish/burp-ui/builds/artifacts/master/download?job=build:py3 -O burp-ui_build.zip
     unzip burp-ui_build.zip
     pip install --upgrade dist/burp-ui-*.tar.gz
     # Now if you want to test the latest bui-agent run this command:
