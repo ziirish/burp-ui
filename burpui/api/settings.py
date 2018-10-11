@@ -10,13 +10,14 @@
 from . import api
 from ..engines.server import BUIServer  # noqa
 from ..ext.cache import cache
-from .custom import Resource, inputs
+from .custom import Resource
 from .._compat import unquote
 from ..utils import NOTIF_INFO
 
 from flask_babel import gettext as _, refresh
 from flask import jsonify, request, url_for, current_app, g, session
 from flask_login import current_user
+from flask_restplus import inputs
 from ..datastructures import ImmutableMultiDict
 
 bui = current_app  # type: BUIServer

@@ -12,12 +12,13 @@ import re
 
 from . import api, cache_key, force_refresh
 from ..engines.server import BUIServer  # noqa
-from .custom import fields, Resource, inputs
+from .custom import fields, Resource
 from ..decorators import browser_cache
 from ..ext.cache import cache
 from ..exceptions import BUIserverException
 
 from flask_restplus.marshalling import marshal
+from flask_restplus import inputs
 from flask import current_app, request
 from flask_login import current_user
 

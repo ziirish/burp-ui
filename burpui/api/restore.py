@@ -12,7 +12,7 @@ import struct
 
 from . import api
 from ..engines.server import BUIServer  # noqa
-from .custom import fields, Resource, inputs
+from .custom import fields, Resource
 from ..exceptions import BUIserverException
 
 from zlib import adler32
@@ -20,6 +20,7 @@ from time import gmtime, strftime, time
 from flask import Response, send_file, make_response, after_this_request, \
     current_app
 from flask_login import current_user
+from flask_restplus import inputs
 from werkzeug.datastructures import Headers
 from werkzeug.exceptions import HTTPException
 
