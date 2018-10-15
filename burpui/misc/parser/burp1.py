@@ -33,9 +33,6 @@ class Parser(Doc):
         :type backend: :class:`burpui.misc.backend.burp1.Burp`
         """
         self.backend = backend
-        self.conf = getattr(backend, 'burpconfsrv', None)
-        self.confcli = getattr(backend, 'burpconfcli', None)
-        self.logger.info('Parser initialized with: {}'.format(self.conf))
         self.clients = []
         self._server_conf = {}
         self._client_conf = {}
@@ -50,6 +47,13 @@ class Parser(Doc):
         self.filescache = {}
         self._configs = {}
         self.root = None
+        if self.backend:
+            self.init_app()
+
+    def init_app(self, confsrv=None, confcli=None):
+        self.conf = confsrv or getattr(self.backend, 'burpconfsrv', None)
+        self.confcli = confcli or getattr(self.backend, 'burpconfcli', None)
+        self.logger.info('Parser initialized with: {}'.format(self.conf))
         if self.conf:
             self.root = os.path.dirname(self.conf)
         # first run to setup vars
@@ -86,13 +90,16 @@ class Parser(Doc):
                 conf.parse(True)
         return self._clients_conf
 
+    def _cleanup(self):
+        self._server_conf.clear()
+        self._client_conf.clear()
+        self._clients_conf.clear()
+
     def _refresh_cache(self, purge=False):
         """Force cache refresh"""
         # empty all the caches
         if purge:
-            self._server_conf.clear()
-            self._client_conf.clear()
-            self._clients_conf.clear()
+            self._cleanup()
         self._list_templates(True)
         self._list_clients(True)
 
@@ -150,6 +157,7 @@ class Parser(Doc):
 
     def _load_all_conf(self):
         """Load all configurations"""
+        self._cleanup()
         self._load_conf_srv()
         self._load_conf_cli()
         self._load_conf_clients()

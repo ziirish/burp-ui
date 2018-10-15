@@ -12,7 +12,7 @@ from flask_testing import LiveServerTestCase, TestCase
 from mock import patch
 from flask import url_for, session
 
-sys.path.append('{0}/..'.format(os.path.join(os.path.dirname(os.path.realpath(__file__)))))
+sys.path.append('{0}/../..'.format(os.path.join(os.path.dirname(os.path.realpath(__file__)))))
 
 from burpui import create_app as BUIinit
 
@@ -29,7 +29,7 @@ def mock_redis_client(**kwargs):
 class BurpuiLiveTestCase(LiveServerTestCase):
 
     def create_app(self):
-        conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../share/burpui/etc/burpui.sample.cfg')
+        conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../../share/burpui/etc/burpui.sample.cfg')
         bui = BUIinit(debug=12, logfile='/dev/null', gunicorn=False, unittest=True)
         bui.setup(conf, True)
         bui.config['DEBUG'] = False
@@ -68,7 +68,7 @@ class BurpuiAPIBasicHTTPTestCase(TestCase):
         os.unlink(self.logfile)
 
     def create_app(self):
-        conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'configs/test2.cfg')
+        conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../configs/test2.cfg')
         _, self.logfile = tempfile.mkstemp()
         bui = BUIinit(conf, 1, self.logfile, gunicorn=False, unittest=True)
         bui.config['DEBUG'] = False
@@ -100,7 +100,7 @@ class BurpuiAPITestCase(TestCase):
         print ('\nTest 3 Finished!\n')
 
     def create_app(self):
-        conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'configs/test2.cfg')
+        conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../configs/test2.cfg')
         bui = BUIinit(logfile='/dev/null', gunicorn=False, unittest=True)
         bui.setup(conf, True)
         bui.config['TESTING'] = True
@@ -256,7 +256,7 @@ class BurpuiRoutesTestCase(TestCase):
 
     def create_app(self):
         with patch('socket.socket'):
-            conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'configs/test4.cfg')
+            conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../configs/test4.cfg')
             bui = BUIinit(conf, logfile='/dev/null', gunicorn=False, unittest=True)
             bui.setup(conf, True)
             bui.config['TESTING'] = True
@@ -297,7 +297,7 @@ class BurpuiLoginTestCase(TestCase):
         ), follow_redirects=True)
 
     def create_app(self):
-        conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../share/burpui/etc/burpui.sample.cfg')
+        conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../../share/burpui/etc/burpui.sample.cfg')
         bui = BUIinit(conf, False, '/dev/null', gunicorn=False, unittest=True)
         bui.config['TESTING'] = True
         bui.config['LIVESERVER_PORT'] = 5001
@@ -342,7 +342,7 @@ class BurpuiACLTestCase(TestCase):
         return self.client.get(url_for('view.logout'), follow_redirects=True)
 
     def create_app(self):
-        conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'configs/test6.cfg')
+        conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../configs/test6.cfg')
         bui = BUIinit(conf, False, '/dev/null', gunicorn=False, unittest=True)
         bui.config['TESTING'] = True
         bui.config['LIVESERVER_PORT'] = 5001
@@ -463,7 +463,7 @@ class BurpuiRedisTestCase(TestCase):
     @patch('redis.StrictRedis', mockredis.mock_strict_redis_client)
     @patch('redis.Redis', mock_redis_client)
     def create_app(self):
-        conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'configs/test8.cfg')
+        conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../configs/test8.cfg')
         bui = BUIinit(conf, False, '/dev/null', gunicorn=False, unittest=True)
         bui.config['TESTING'] = True
         bui.config['LIVESERVER_PORT'] = 5001

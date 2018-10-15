@@ -86,7 +86,7 @@ class PrefsUIHide(Resource):
                 db.session.add(hide)
                 try:
                     db.session.commit()
-                except:
+                except:  # pragma: no cover
                     db.session.rollback()
                     self.abort(500, 'Internal server error')
                 return hide, 201
@@ -115,7 +115,7 @@ class PrefsUIHide(Resource):
                 db.session.delete(hide)
                 try:
                     db.session.commit()
-                except:
+                except:  # pragma: no cover
                     db.session.rollback()
                     self.abort(500, 'Internal server error')
         return None, 204
@@ -172,7 +172,7 @@ class PrefsUI(Resource):
                 db.session.add(pref)
             try:
                 db.session.commit()
-            except:
+            except:  # pragma: no cover
                 db.session.rollback()
 
     def _update_prefs(self):
@@ -193,7 +193,7 @@ class PrefsUI(Resource):
                 if key == 'language':
                     self._user_language(temp)
                 sess[key] = temp
-            elif key in sess:
+            elif key in sess:  # pragma: no cover
                 del sess[key]
             ret[key] = temp
             self._store_prefs(key, temp)
@@ -258,7 +258,7 @@ class PrefsUI(Resource):
                             key=key
                         ).delete()
                         db.session.commit()
-                    except:
+                    except:  # pragma: no cover
                         db.session.rollback()
             ret[key] = sess.get(key)
 
