@@ -68,7 +68,7 @@ appStart () {
 
   LOGFILE=$(doas burpui mktemp)
   echo "Setting up burp & burp-ui:"
-  COMMAND="bui-manage -c $BURPUI_CONFIG setup_burp --burp-conf-cli $BURP_CLIENT_CONFIG --burp-conf-serv $BURP_SERVER_CONFIG --host $BURP_SERVER_ADDR --client $BURPUI_CLIENT_NAME --redis $REDIS_SERVER --database $DATABASE_URL --plugins $BURPUI_PLUGINS --monitor $BURPUI_MONITOR_CONFIG --concurrency $ASYNC_POOL_SIZE --backend $BURPUI_BACKEND"
+  COMMAND="bui-manage -c $BURPUI_CONFIG setup-burp --burp-conf-cli $BURP_CLIENT_CONFIG --burp-conf-serv $BURP_SERVER_CONFIG --host $BURP_SERVER_ADDR --client $BURPUI_CLIENT_NAME --redis $REDIS_SERVER --database $DATABASE_URL --plugins $BURPUI_PLUGINS --monitor $BURPUI_MONITOR_CONFIG --concurrency $ASYNC_POOL_SIZE --backend $BURPUI_BACKEND"
   echo $COMMAND
   doas burpui "$COMMAND 2>&1 | tee $LOGFILE"
   ret=$?
