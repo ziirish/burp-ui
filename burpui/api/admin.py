@@ -1531,7 +1531,7 @@ class AuthUsers(Resource):
         return [[code, message]], status
 
     @api.disabled_on_demo()
-    @api.acl_own_or_admin(key='name', message="Not allowed to modify this user")
+    @api.acl_own_or_admin_or_moderator(key='name', message="Not allowed to modify this user")
     @ns.expect(parser_mod)
     @ns.doc(
         responses={
@@ -1547,12 +1547,12 @@ class AuthUsers(Resource):
         """Change user password"""
         args = self.parser_mod.parse_args()
         backend = backend or args['backend']
-        is_admin = True
+        is_moderator = True
 
         if not current_user.is_anonymous:
-            is_admin = current_user.acl.is_admin()
+            is_moderator = current_user.acl.is_admin() or current_user.acl.is_moderator()
 
-        if not is_admin and not args['old_password']:
+        if not is_moderator and not args['old_password']:
             self.abort(400, "Old password required")
 
         try:

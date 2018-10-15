@@ -176,6 +176,21 @@ class Api(ApiPlus):
             return decorated
         return decorator
 
+    def acl_own_or_admin_or_moderator(self, key='name', message='Access denied', code=403):
+        def decorator(func):
+            @wraps(func)
+            def decorated(resource, *args, **kwargs):
+                if key not in kwargs:  # pragma: no cover
+                    resource.abort(500, "key '{}' not found".format(key))
+                if kwargs[key] != current_user.name and \
+                        not current_user.is_anonymous and \
+                        not current_user.acl.is_admin() and \
+                        not current_user.acl.is_moderator():
+                    resource.abort(code, message)
+                return func(resource, *args, **kwargs)
+            return decorated
+        return decorator
+
     def disabled_on_demo(self):
         def decorator(func):
             @wraps(func)
