@@ -1611,7 +1611,7 @@ class Config(File):
     def _get(self, key, default=None, raw=False):
         self._refresh()
         try:
-            if key in self._options_for_type('pair'):
+            if key in self._options_for_type('pair') and not raw:
                 obj = self.options[key].get(key)
             else:
                 obj = self.options[key]

@@ -84,7 +84,8 @@ class Monitor(object):
                 try:
                     version = subprocess.check_output(
                         cmd,
-                        universal_newlines=True
+                        universal_newlines=True,
+                        stderr=subprocess.DEVNULL
                     ).rstrip()
                 except subprocess.CalledProcessError:
                     pass

@@ -9,9 +9,10 @@ import shutil
 sys.path.append('{0}/..'.format(os.path.join(os.path.dirname(os.path.realpath(__file__)))))
 
 from burpui import create_app as BUIinit  # noqa
-from burpui.misc.parser.burp1 import Parser  # noqa
+from burpui.misc.parser.burp2 import Parser  # noqa
 
 PWD = os.path.dirname(os.path.realpath(__file__))
+
 
 @pytest.fixture
 def app():
@@ -28,13 +29,15 @@ def app():
         db.session.commit()
     yield bui
 
+
 @pytest.fixture
 def parser(app):
     tmpdir = tempfile.mkdtemp()
+    shutil.rmtree(tmpdir)  # remove the dir since copytree will recreate it
     shutil.copytree(os.path.join(PWD, 'burp'), tmpdir)
     confsrv = os.path.join(tmpdir, 'burp-server.conf')
     confcli = os.path.join(tmpdir, 'burp.conf')
-    parser = Parser(app)
+    parser = Parser(app.client)
     parser.init_app(confsrv, confcli)
 
     yield parser

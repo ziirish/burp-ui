@@ -318,7 +318,7 @@ def compile_translation():
 def setup_burp(bconfcli, bconfsrv, client, host, redis, database,
                plugins, monitor, concurrency, backend, dry):
     """Setup burp client for burp-ui."""
-    if app.config['BACKEND'] not in ['burp2', 'parallel']:
+    if app.config['BACKEND'] not in ['burp2', 'parallel'] and not backend:
         click.echo(
             click.style(
                 "Sorry, you can only setup the 'burp2' and the 'parallel' backends",
@@ -360,7 +360,7 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database,
         msg = str(e)
 
     if msg:
-        _die(msg, 'setup_burp')
+        _die(msg, 'setup-burp')
 
     from .misc.parser.utils import Config
     from .app import get_redis_server

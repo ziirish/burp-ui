@@ -30,7 +30,7 @@ class Parser(Burp1):
                 'status_port': 'max_status_children',
                 'max_status_children': 'status_port',
             }
-            if self.backend and getattr(self.backend, 'server_version', '') >= '2.1.10':
+            if self.backend and (getattr(self.backend, 'server_version', None) or '') >= '2.1.10':
                 self._pair_associations = {
                     'listen': 'max_children',
                     'max_children': 'listen',
@@ -48,7 +48,7 @@ class Parser(Burp1):
                 'status_port',
                 'max_status_children',
             ]
-            if self.backend and getattr(self.backend, 'server_version', '') >= '2.1.10':
+            if self.backend and (getattr(self.backend, 'server_version', None) or '') >= '2.1.10':
                 self._pair_srv = [
                     'listen',
                     'max_children',
