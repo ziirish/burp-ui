@@ -59,18 +59,18 @@ The tool provides some inline help too:
       --help  Show this message and exit.
 
     Commands:
-      compile_translation  Compile translations.
-      create_user          Create a new user.
+      compile-translation  Compile translations.
+      create-user          Create a new user.
       db                   Perform database migrations.
       diag                 Check Burp-UI is correctly setup.
-      hash_password        Hash a given password to fill the...
-      init_translation     Initialize a new translation for the given...
+      hash-password        Hash a given password to fill the...
+      init-translation     Initialize a new translation for the given...
       legacy               Legacy server for backward compatibility.
       run                  Runs a local development server for the...
-      setup_burp           Setup burp client for burp-ui.
+      setup-burp           Setup burp client for burp-ui.
       shell                Runs a shell in the app context.
       sysinfo              Returns a couple of system informations to...
-      update_translation   Update translation files.
+      update-translation   Update translation files.
       websocket            Start a new websocket server.
 
 
@@ -119,7 +119,7 @@ You can create new users using the ``bui-manage`` file like this:
 
 ::
 
-    bui-manage create_user <new_username>
+    bui-manage create-user <new_username>
 
 
 By default, the script will create new users for the `Basic <advanced_usage.html#basic>`_
@@ -132,16 +132,16 @@ Examples:
 
 ::
 
-    bui-manage create_user user1
+    bui-manage create-user user1
     [*] Adding 'user1' user...
     [+] Generated password: 71VIanuJ
     [+] Success: True
 
-    bui-manage create_user -p toto user2
+    bui-manage create-user -p toto user2
     [*] Adding 'user2' user...
     [+] Success: True
 
-    bui-manage create_user -a user3     
+    bui-manage create-user -a user3     
     [*] Adding 'user3' user...
     Password: 
     Confirm: 
@@ -162,7 +162,7 @@ Usage:
 
 ::
 
-	Usage: flask hash_password [OPTIONS]
+	Usage: flask hash-password [OPTIONS]
 
 	  Hash a given password to fill the configuration file.
 
@@ -180,23 +180,23 @@ Examples:
 
 ::
 
-	$ bui-manage hash_password --password demo --username demo --batch
+	$ bui-manage hash-password --password demo --username demo --batch
 	demo = pbkdf2:sha256:50000$w5jD2WT1$d89cd4da1b6c3c3f05173faaf3feea802eee7b5b9a378ae8987d5ac6676d166b
 
-	$ bui-manage hash_password --password demo --username demo
+	$ bui-manage hash-password --password demo --username demo
 	'demo' hashed into: pbkdf2:sha256:50000$feQoDIIp$d42e056b75092beda52736ce792c6518061b21d6e1b2c755fdd71a764184ebd9
 	#8<-----------------------------------------------------------------------------
 	demo = pbkdf2:sha256:50000$feQoDIIp$d42e056b75092beda52736ce792c6518061b21d6e1b2c755fdd71a764184ebd9
 	#8<-----------------------------------------------------------------------------
 
-	$ bui-manage hash_password -u demo
+	$ bui-manage hash-password -u demo
 	Password:
 	'********' hashed into: pbkdf2:sha256:50000$MNHOgtdr$22d64b17bb8135be3ad61249d649e89ed96a5d4878b23e4889be24dfc062c126
 	#8<-----------------------------------------------------------------------------
 	demo = pbkdf2:sha256:50000$MNHOgtdr$22d64b17bb8135be3ad61249d649e89ed96a5d4878b23e4889be24dfc062c126
 	#8<-----------------------------------------------------------------------------
 
-	$ bui-manage hash_password
+	$ bui-manage hash-password
 	Password:
 	'********' hashed into: pbkdf2:sha256:50000$eWzSCvSW$9df9cdf854461a5f927708475e0470ad648f8cd0613ca61f8cee639db165ab53
 
@@ -211,9 +211,9 @@ The available options are:
 
 ::
 
-    bui-manage setup_burp --help
+    bui-manage setup-burp --help
 
-    Usage: flask setup_burp [OPTIONS]
+    Usage: flask setup-burp [OPTIONS]
 
       Setup burp client for burp-ui.
 
@@ -247,7 +247,7 @@ The docker image uses this script like this:
 
 ::
 
-    bui-manage -c $BURPUI_CONFIG setup_burp -b $BURP_CLIENT_CONFIG \
+    bui-manage -c $BURPUI_CONFIG setup-burp -b $BURP_CLIENT_CONFIG \
         -s $BURP_SERVER_CONFIG -h $BURP_SERVER_ADDR -c $BURPUI_CLIENT_NAME \
         -r $REDIS_SERVER -d $DATABASE_URL
 

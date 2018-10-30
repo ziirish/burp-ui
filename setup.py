@@ -153,7 +153,7 @@ class BuildStatic(Command):
     def run(self):
         os.chdir(ROOT)
         log.info('compiling translations')
-        call('{} ./burpui -m manage compile_translation'.format(sys.executable).split(), stderr=DEVNULL)
+        call('{} ./burpui -m manage compile-translation'.format(sys.executable).split(), stderr=DEVNULL)
         log.info('getting revision number')
         rev = 'stable'
         ci = os.getenv('CI')

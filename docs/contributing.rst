@@ -55,7 +55,7 @@ following command:
 
 ::
 
-    ./tools/bui-manage init_translation <country_code> # where <country_code> can be "de", "ru", etc.
+    ./tools/bui-manage init-translation <country_code> # where <country_code> can be "de", "ru", etc.
 
 
 Update translation
@@ -83,7 +83,7 @@ Then you can update the translation files with the following command:
 
 ::
 
-    ./tools/bui-manage update_translation
+    ./tools/bui-manage update-translation
 
 
 Translation
