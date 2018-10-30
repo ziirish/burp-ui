@@ -51,7 +51,7 @@ class DateTime(fields.DateTime):
                 return fields.DateTime.format(self, value)
         except (AttributeError, ValueError) as e:
             raise fields.MarshallingError(e)
-        except arrow.parser.ParserError as e:
+        except arrow.parser.ParserError:
             return _(str(value))
 
 
