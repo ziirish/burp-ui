@@ -298,9 +298,14 @@ class Burp(Burp2):
             return trio.run(self._async_get_all_backup_logs, client, forward)
         return trio.run(self._async_get_backup_logs, number, client, forward)
 
-    def _guess_backup_protocol(self, number, client):
-        """The :func:`burpui.misc.backend.burp2.Burp._guess_backup_protocol`
-        function helps you determine if the backup is protocol 2 or 1
+    async def _async_parse_backup_log(self, number, client):
+        query = await self._async_status('c:{0}:b:{1}:l:backup\n'.format(client, number))
+        return self._do_parse_backup_log(query, client)
+
+    def _parse_backup_log(self, number, client):
+        """The :func:`burpui.misc.backend.burp2.Burp._parse_backup_log`
+        function helps you determine if the backup is protocol 2 or 1 and various
+        useful details.
 
         :param number: Backup number to work on
         :type number: int
@@ -308,18 +313,9 @@ class Burp(Burp2):
         :param client: Client name to work on
         :type client: str
 
-        :returns: 1 or 2
+        :returns: a dict with some useful details
         """
-        query = self.status('c:{0}:b:{1}:l:backup\n'.format(client, number))
-        try:
-            log = query['clients'][0]['backups'][0]['logs']['backup']
-            for line in log:
-                if re.search(r'Protocol: 2$', line):
-                    return 2
-        except KeyError:
-            # Assume protocol 1 in all cases unless explicitly found Protocol 2
-            return 1
-        return 1
+        return trio.run(self._async_parse_backup_log, number, client)
 
     async def _async_parse_backup_stats(self, number, client, forward=False, agent=None):
         """The :func:`burpui.misc.backend.parallel.Burp._async_parse_backup_stats`
@@ -343,100 +339,10 @@ class Burp(Burp2):
         backup = {'os': await self._async_guess_os(client), 'number': int(number)}
         if forward:
             backup['name'] = client
-        translate = {
-            'time_start': 'start',
-            'time_end': 'end',
-            'time_taken': 'duration',
-            'bytes': 'totsize',
-            'bytes_received': 'received',
-            'bytes_estimated': 'estimated_bytes',
-            'files': 'files',
-            'files_encrypted': 'files_enc',
-            'directories': 'dir',
-            'soft_links': 'softlink',
-            'hard_links': 'hardlink',
-            'meta_data': 'meta',
-            'meta_data_encrypted': 'meta_enc',
-            'special_files': 'special',
-            'efs_files': 'efs',
-            'vss_headers': 'vssheader',
-            'vss_headers_encrypted': 'vssheader_enc',
-            'vss_footers': 'vssfooter',
-            'vss_footers_encrypted': 'vssfooter_enc',
-            'total': 'total',
-            'grand_total': 'total',
-        }
-        counts = {
-            'new': 'count',
-            'changed': 'changed',
-            'unchanged': 'same',
-            'deleted': 'deleted',
-            'total': 'scanned',
-            'scanned': 'scanned',
-        }
-        single = [
-            'time_start',
-            'time_end',
-            'time_taken',
-            'bytes_received',
-            'bytes_estimated',
-            'bytes'
-        ]
         query = await self._async_status(
             'c:{0}:b:{1}:l:backup_stats\n'.format(client, number)
         )
-        if not query:
-            return ret
-        try:
-            back = query['clients'][0]['backups'][0]
-        except KeyError:
-            self.logger.warning('No backup found')
-            return ret
-        if 'backup_stats' not in back['logs']:
-            self.logger.warning('No stats found for backup')
-            return ret
-        stats = None
-        try:
-            stats = json.loads(''.join(back['logs']['backup_stats']))
-        except:
-            stats = back['logs']['backup_stats']
-        if not stats:
-            return ret
-        # server was upgraded but backup comes from an older version
-        if 'counters' not in stats:
-            return Burp1._parse_backup_stats(
-                self,
-                number,
-                client,
-                forward,
-                stats
-            )
-        counters = stats['counters']
-        for counter in counters:
-            name = counter['name']
-            if name in translate:
-                name = translate[name]
-            if counter['name'] in single:
-                backup[name] = counter['count']
-            else:
-                backup[name] = {}
-                for (key, val) in counts.items():
-                    if val in counter:
-                        backup[name][key] = counter[val]
-                    else:
-                        backup[name][key] = 0
-        if 'start' in backup and 'end' in backup:
-            backup['duration'] = backup['end'] - backup['start']
-            # convert utc timestamp to local
-            # example: 1468850307 -> 1468857507
-            backup['start'] = utc_to_local(backup['start'])
-            backup['end'] = utc_to_local(backup['end'])
-
-        # Needed for graphs
-        if 'received' not in backup:
-            backup['received'] = 1
-
-        return backup
+        return self._do_parse_backup_stats(query, backup, number, client, forward, agent)
 
     # def get_clients_report(self, clients, agent=None):
 
@@ -646,42 +552,7 @@ class Burp(Burp2):
             'c:{0}:b:{1}:p:{2}\n'.format(name, backup, top),
             timeout
         )
-        if not query:
-            return ret
-        try:
-            backup = query['clients'][0]['backups'][0]
-        except KeyError:
-            return ret
-        for entry in backup['browse']['entries']:
-            data = {}
-            base = None
-            dirn = None
-            if top == '*':
-                base = os.path.basename(entry['name'])
-                dirn = os.path.dirname(entry['name'])
-            if entry['name'] == '.':
-                continue
-            else:
-                data['name'] = base or entry['name']
-            data['mode'] = self._human_st_mode(entry['mode'])
-            if re.match('^(d|l)', data['mode']):
-                data['type'] = 'd'
-                data['folder'] = True
-            else:
-                data['type'] = 'f'
-                data['folder'] = False
-            data['inodes'] = entry['nlink']
-            data['uid'] = entry['uid']
-            data['gid'] = entry['gid']
-            data['parent'] = dirn or top
-            data['size'] = '{0:.1eM}'.format(_hr(entry['size']))
-            data['date'] = entry['mtime']
-            data['fullname'] = os.path.join(top, entry['name']) if top != '*' \
-                else entry['name']
-            data['level'] = level
-            data['children'] = []
-            ret.append(data)
-        return ret
+        return self._format_tree(query, top, level)
 
     def get_tree(self, name=None, backup=None, root=None, level=-1, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_tree`"""

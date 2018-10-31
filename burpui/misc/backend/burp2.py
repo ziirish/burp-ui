@@ -12,6 +12,8 @@ import os
 import time
 import json
 
+from collections import OrderedDict
+
 from .burp1 import Burp as Burp1
 from .interface import BUIbackend
 from .utils.burp2 import Monitor
@@ -155,32 +157,53 @@ class Burp(Burp1):
             ret['encrypted'] = True
         return ret
 
-    def _guess_backup_protocol(self, number, client):
-        """The :func:`burpui.misc.backend.burp2.Burp._guess_backup_protocol`
-        function helps you determine if the backup is protocol 2 or 1
-
-        :param number: Backup number to work on
-        :type number: int
-
-        :param client: Client name to work on
-        :type client: str
-
-        :returns: 1 or 2
-        """
-        query = self.status('c:{0}:b:{1}:l:backup\n'.format(client, number))
+    @staticmethod
+    def _do_parse_backup_log(data, client):
+        # tests ordered as the logs order
+        ret = OrderedDict()
+        ret['client_version'] = None
+        ret['protocol'] = 1
+        ret['is_windows'] = False
+        ret['server_version'] = None
         try:
-            log = query['clients'][0]['backups'][0]['logs']['backup']
-            for line in log:
-                if re.search(r'Protocol: 2$', line):
-                    return 2
+            log = data['clients'][0]['backups'][0]['logs']['backup']
         except KeyError:
             # Assume protocol 1 in all cases unless explicitly found Protocol 2
-            return 1
-        return 1
+            return ret
+        # pre-compile regex since they'll be called on every log line
+        regex = {
+            'client_version': re.compile(r'Client version: (\d+\.\d+\.\d+)$'),
+            'server_version': re.compile(r"WARNING: Client '{}' version '\d+\.\d+\.\d+' does not match server version '(\d+\.\d+\.\d+)'. An upgrade is recommended.$".format(client)),
+            'protocol': re.compile(r'Protocol: (\d)$'),
+            'is_windows': re.compile(r'Client is Windows$'),
+        }
+        expressions_list = ret.keys()
+        catching_expressions = ['client_version', 'server_version', 'protocol']
+        casting_expressions = {
+            'protocol': int,
+        }
 
-    def _parse_backup_stats(self, number, client, forward=False, agent=None):
-        """The :func:`burpui.misc.backend.burp2.Burp._parse_backup_stats`
-        function is used to parse the burp logs.
+        def __dummy(val):
+            return val
+
+        for line in log:
+            for expression in expressions_list:
+                if expression in catching_expressions:
+                    catch = regex[expression].search(line)
+                    if catch:
+                        cast = casting_expressions.get(expression, __dummy)
+                        ret[expression] = cast(catch.group(1))
+                        break
+                else:
+                    if expression in regex and regex[expression].search(line):
+                        ret[expression] = True
+                        break
+        return ret
+
+    def _parse_backup_log(self, number, client):
+        """The :func:`burpui.misc.backend.burp2.Burp._parse_backup_log`
+        function helps you determine if the backup is protocol 2 or 1 and various
+        useful details.
 
         :param number: Backup number to work on
         :type number: int
@@ -188,18 +211,13 @@ class Burp(Burp1):
         :param client: Client name to work on
         :type client: str
 
-        :param forward: Is the client name needed in later process
-        :type forward: bool
-
-        :param agent: What server to ask (only in multi-agent mode)
-        :type agent: str
-
-        :returns: Dict containing the backup log
+        :returns: a dict with some useful details
         """
+        query = self.status('c:{0}:b:{1}:l:backup\n'.format(client, number))
+        return self._do_parse_backup_log(query, client)
+
+    def _do_parse_backup_stats(self, data, result, number, client, forward=False, agent=None):
         ret = {}
-        backup = {'os': self._guess_os(client), 'number': int(number)}
-        if forward:
-            backup['name'] = client
         translate = {
             'time_start': 'start',
             'time_end': 'end',
@@ -239,13 +257,10 @@ class Burp(Burp1):
             'bytes_estimated',
             'bytes'
         ]
-        query = self.status(
-            'c:{0}:b:{1}:l:backup_stats\n'.format(client, number)
-        )
-        if not query:
+        if not data:
             return ret
         try:
-            back = query['clients'][0]['backups'][0]
+            back = data['clients'][0]['backups'][0]
         except KeyError:
             self.logger.warning('No backup found')
             return ret
@@ -274,26 +289,53 @@ class Burp(Burp1):
             if name in translate:
                 name = translate[name]
             if counter['name'] in single:
-                backup[name] = counter['count']
+                result[name] = counter['count']
             else:
-                backup[name] = {}
+                result[name] = {}
                 for (key, val) in counts.items():
                     if val in counter:
-                        backup[name][key] = counter[val]
+                        result[name][key] = counter[val]
                     else:
-                        backup[name][key] = 0
-        if 'start' in backup and 'end' in backup:
-            backup['duration'] = backup['end'] - backup['start']
+                        result[name][key] = 0
+        if 'start' in result and 'end' in result:
+            result['duration'] = result['end'] - result['start']
             # convert utc timestamp to local
             # example: 1468850307 -> 1468857507
-            backup['start'] = utc_to_local(backup['start'])
-            backup['end'] = utc_to_local(backup['end'])
+            result['start'] = utc_to_local(result['start'])
+            result['end'] = utc_to_local(result['end'])
 
         # Needed for graphs
-        if 'received' not in backup:
-            backup['received'] = 1
+        if 'received' not in result:
+            result['received'] = 1
 
-        return backup
+        return result
+
+    def _parse_backup_stats(self, number, client, forward=False, agent=None):
+        """The :func:`burpui.misc.backend.burp2.Burp._parse_backup_stats`
+        function is used to parse the burp logs.
+
+        :param number: Backup number to work on
+        :type number: int
+
+        :param client: Client name to work on
+        :type client: str
+
+        :param forward: Is the client name needed in later process
+        :type forward: bool
+
+        :param agent: What server to ask (only in multi-agent mode)
+        :type agent: str
+
+        :returns: Dict containing the backup log
+        """
+        ret = {}
+        backup = {'os': self._guess_os(client), 'number': int(number)}
+        if forward:
+            backup['name'] = client
+        query = self.status(
+            'c:{0}:b:{1}:l:backup_stats\n'.format(client, number)
+        )
+        return self._do_parse_backup_stats(query, backup, number, client, forward, agent)
 
     # TODO: support old clients
     # NOTE: this should now be partly done since we fallback to the Burp1 code
@@ -678,30 +720,12 @@ class Burp(Burp1):
         except KeyError:
             return False
 
-    def get_tree(self, name=None, backup=None, root=None, level=-1, agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.get_tree`"""
+    def _format_tree(self, data, top, level):
         ret = []
-        if not name or not backup:
-            return ret
-        if not root:
-            top = ''
-        else:
-            top = to_unicode(root)
-
-        # we know this operation may take a while so we arbitrary increase the
-        # read timeout
-        timeout = None
-        if top == '*':
-            timeout = max(self.timeout, 300)
-
-        query = self.status(
-            'c:{0}:b:{1}:p:{2}\n'.format(name, backup, top),
-            timeout
-        )
-        if not query:
+        if not data:
             return ret
         try:
-            backup = query['clients'][0]['backups'][0]
+            backup = data['clients'][0]['backups'][0]
         except KeyError:
             return ret
         for entry in backup['browse']['entries']:
@@ -734,6 +758,27 @@ class Burp(Burp1):
             data['children'] = []
             ret.append(data)
         return ret
+
+    def get_tree(self, name=None, backup=None, root=None, level=-1, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.get_tree`"""
+        if not name or not backup:
+            return []
+        if not root:
+            top = ''
+        else:
+            top = to_unicode(root)
+
+        # we know this operation may take a while so we arbitrary increase the
+        # read timeout
+        timeout = None
+        if top == '*':
+            timeout = max(self.timeout, 300)
+
+        query = self.status(
+            'c:{0}:b:{1}:p:{2}\n'.format(name, backup, top),
+            timeout
+        )
+        return self._format_tree(query, top, level)
 
     def get_client_version(self, agent=None):
         """See
