@@ -21,6 +21,7 @@ mkdir meta
 cd pkgs
 for pkg in *
 do
+    [ "$pkg" = "burp-ui-tpl" -o -f "$pkg" ] && continue
     cd $pkg
     $PYTHON setup.py sdist bdist_wheel bdist_egg
     find dist -exec cp "{}" ../../meta/ \;
