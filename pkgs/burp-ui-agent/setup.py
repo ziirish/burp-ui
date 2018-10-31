@@ -48,9 +48,9 @@ if 'sdist' in sys.argv or 'bdist' in sys.argv:
     find = subprocess.Popen(r'find burpui_agent-decoy -type l', shell=True, stdout=subprocess.PIPE)
     (out, _) = find.communicate()
     for decoy in out.splitlines():
-        real = os.path.normpath(os.path.join(os.path.dirname(decoy), os.readlink(decoy)))
+        real = os.path.normpath(os.path.join(os.path.dirname(decoy), os.readlink(decoy))).decode('utf-8')
         # print '{} -> {}'.format(decoy, real)
-        target = os.path.join('burpui_agent', re.sub(r'.*/burpui/', '', real.decode('utf-8')))
+        target = os.path.join('burpui_agent', re.sub(r'.*/burpui/', '', real))
         dirname = os.path.dirname(target)
         if not os.path.isdir(dirname):
             # print 'mkdir {}'.format(dirname)
