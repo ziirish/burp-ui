@@ -328,7 +328,6 @@ class Burp(Burp1):
 
         :returns: Dict containing the backup log
         """
-        ret = {}
         backup = {'os': self._guess_os(client), 'number': int(number)}
         if forward:
             backup['name'] = client

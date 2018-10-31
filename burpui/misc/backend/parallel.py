@@ -8,7 +8,6 @@
 
 """
 import re
-import os
 import json
 import ssl
 import trio
@@ -16,10 +15,8 @@ import struct
 import logging
 
 from .burp2 import Burp as Burp2
-from .burp1 import Burp as Burp1
 from .interface import BUIbackend
 from ..parser.burp2 import Parser
-from ...utils import human_readable as _hr, utc_to_local
 from ...exceptions import BUIserverException
 from ..._compat import to_unicode, to_bytes
 
@@ -335,7 +332,6 @@ class Burp(Burp2):
 
         :returns: Dict containing the backup log
         """
-        ret = {}
         backup = {'os': await self._async_guess_os(client), 'number': int(number)}
         if forward:
             backup['name'] = client
