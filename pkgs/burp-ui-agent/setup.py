@@ -66,6 +66,7 @@ if 'sdist' in sys.argv or 'bdist' in sys.argv:
     files = subprocess.Popen(r'find burpui_agent-decoy -type f', shell=True, stdout=subprocess.PIPE)
     (out, _) = files.communicate()
     for src in out.splitlines():
+        src = src.decode('utf-8')
         dst = src.replace('burpui_agent-decoy', 'burpui_agent')
         dirname = os.path.dirname(dst)
         if not os.path.isdir(dirname):

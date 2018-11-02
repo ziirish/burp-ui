@@ -48,23 +48,5 @@ issues in the `bug-tracker <https://git.ziirish.me/ziirish/burp-ui/issues>`_.
 You will also find there the current opened issues.
 
 
-There are also a few issues unrelated to the code itself:
-
-1. SSH issue
-
-People that would like to clone the repository over SSH will face an
-authentication failure even if they added a valid SSH key in their user
-settings.
-The reason is I only have *one* public IP address so I must use port
-redirections to have multiple SSH instances running.
-To fix the issue, you should configure your SSH client by adding the following
-lines in your ``~/.ssh/config`` file:
-
-::
-
-   Host git.ziirish.me
-      Port 2222
-
-
 .. _Burp: http://burp.grke.org/
 .. _Burp-UI: https://git.ziirish.me/ziirish/burp-ui
