@@ -113,7 +113,7 @@ class Counters(Resource):
         **GET** method provided by the webservice.
 
         :param name: the client name if any. You can also use the GET parameter
-        'name' to achieve the same thing
+                     'name' to achieve the same thing
 
         :returns: Counters
         """
@@ -196,7 +196,7 @@ class Live(Resource):
                 'counters': {
                     'phase': 2,
                     'path': '/etc/some/configuration',
-                    '...': '...',
+                    '...': '...'
                 }
               },
               {
@@ -205,7 +205,7 @@ class Live(Resource):
                 'counters': {
                     'phase': 3,
                     'path': '/etc/some/other/configuration',
-                    '...': '...',
+                    '...': '...'
                 }
               }
             ]

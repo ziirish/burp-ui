@@ -215,7 +215,7 @@ class ServerSettings(Resource):
                 ]
               },
               "server_doc": {
-                "address": "Defines the main TCP address that the server listens on. The default is either '::' or '0.0.0.0', dependent upon compile time options.",
+                "address": "Defines the main TCP address...",
                 "...": "..."
               },
               "string": [
@@ -239,7 +239,9 @@ class ServerSettings(Resource):
                   "client",
                   "server"
                 ],
-                "...": []
+                "...": [
+                  "..."
+                ]
               }
             }
 

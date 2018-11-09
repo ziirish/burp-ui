@@ -55,7 +55,10 @@ class RunningClients(Resource):
         The *JSON* returned is:
         ::
 
-            [ 'client1', 'client2' ]
+            [
+              'client1',
+              'client2'
+            ]
 
 
         The output is filtered by the :mod:`burpui.misc.acl` module so that you
@@ -455,7 +458,9 @@ class ClientsStats(Resource):
                   "state": "idle",
                   "phase": "phase1",
                   "percent": 12,
-                  "labels": []
+                  "labels": [
+                    "toto"
+                  ]
                 },
                 {
                   "last": "never",
@@ -463,7 +468,9 @@ class ClientsStats(Resource):
                   "state": "idle",
                   "phase": "phase2",
                   "percent": 42,
-                  "labels": []
+                  "labels": [
+                    "titi"
+                  ]
                 }
               ]
             }

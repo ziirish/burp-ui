@@ -49,13 +49,13 @@ class ServersStats(Resource):
               {
                 'alive': true,
                 'clients': 2,
-                'name': 'burp1',
+                'name': 'burp1'
               },
               {
                 'alive': false,
                 'clients': 0,
-                'name': 'burp2',
-              },
+                'name': 'burp2'
+              }
             ]
 
 
@@ -160,7 +160,7 @@ class ServersReport(Resource):
                       "linux": 4
                     },
                     "total": 349705,
-                    "totsize": 119400711726,
+                    "totsize": 119400711726
                   }
                 }
               ]

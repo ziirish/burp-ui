@@ -157,7 +157,7 @@ The server was launched with gunicorn:
     gunicorn -k gevent -b 0.0.0.0:5000 -w 2 'burpui:create_app(conf="path/to/burpui.cfg")'
 
 
-.. info:: The `parallel`_ backend is not compatible with gevent hence the different
+.. note:: The `parallel`_ backend is not compatible with gevent hence the different
           launching command.
 
 Here are the results:
