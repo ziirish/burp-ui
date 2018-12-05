@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
-import pytest
-
 from flask import url_for
 
 

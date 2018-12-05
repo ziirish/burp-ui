@@ -6,8 +6,6 @@ import os
 import tempfile
 import shutil
 
-sys.path.append('{0}/..'.format(os.path.join(os.path.dirname(os.path.realpath(__file__)))))
-
 from burpui import create_app as BUIinit  # noqa
 from burpui.misc.parser.burp2 import Parser  # noqa
 
