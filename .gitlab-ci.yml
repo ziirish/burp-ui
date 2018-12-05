@@ -22,11 +22,15 @@ test:py3.6:
   image: python:3.6
   script:
   - pip install tox
+  - mkdir .reports
   - tox -e py36
   tags:
   - docker
   except:
   - tags
+  artifacts:
+    reports:
+      junit: .reports/burpui.junit.xml
 
 build:py3:
   stage: build
