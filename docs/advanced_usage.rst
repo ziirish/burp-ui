@@ -258,7 +258,7 @@ Some of these options are also available in the `bui-agent`_ configuration file.
 Backends
 --------
 
-`Burp-UI`_ ships with three different backends:
+`Burp-UI`_ ships with four different backends:
 
 - `Burp1`_
 - `Burp2`_
@@ -432,6 +432,15 @@ Options
     tmpdir = /tmp
     # how many time to wait for the monitor to answer (in seconds)
     timeout = 5
+    # since burp-2.1.10, timestamps have local offsets, if we detect a burp-server
+    # version greater than 2.1.10 we'll suppose every backup was made with that
+    # version. If this is not the case, you may end-up with wrongly computed backup
+    # dates in the clients overview. For that reason, you can enable the
+    # 'deep_inspection' option which will check every backup logs in order to
+    # find out which server version was used.
+    # The drawback is this process requires some extra work that may slow-down
+    # burp-ui.
+    deep_inspection = false
 
 
 Each option is commented, but here is a more detailed documentation:

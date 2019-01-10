@@ -17,22 +17,17 @@ from collections import OrderedDict
 from .burp1 import Burp as Burp1
 from .interface import BUIbackend
 from .utils.burp2 import Monitor
-from .utils.constant import BURP_REVERSE_COUNTERS
+from .utils.constant import BURP_REVERSE_COUNTERS, BURP_STATUS_FORMAT_V2
 from ..parser.burp2 import Parser
 from ...utils import human_readable as _hr, utc_to_local
 from ...exceptions import BUIserverException
 from ..._compat import to_unicode
 
+from threading import RLock as _RLock
 try:
     from gevent.lock import RLock
-
 except ImportError:
-    class RLock(object):
-        def __enter__(self):
-            return self
-
-        def __exit__(*x):
-            pass
+    RLock = _RLock
 
 
 # Some functions are the same as in Burp1 backend
@@ -133,11 +128,12 @@ class Burp(Burp1):
         with self.plock:
             return self.monitor.status(query, timeout, cache)
 
-    def _get_backup_logs(self, number, client, forward=False):
+    def _get_backup_logs(self, number, client, forward=False, deep=False):
         """See
         :func:`burpui.misc.backend.interface.BUIbackend.get_backup_logs`
         """
         ret = {}
+        ret2 = {}
         if not client or not number:
             return ret
 
@@ -151,6 +147,10 @@ class Burp(Burp1):
             return ret
         if 'backup_stats' in logs:
             ret = self._parse_backup_stats(number, client, forward)
+        if 'backup' in logs and deep:
+            ret2 = self._parse_backup_log(number, client)
+
+        ret.update(ret2)
 
         ret['encrypted'] = False
         if 'files_enc' in ret and ret['files_enc']['total'] > 0:
@@ -165,6 +165,8 @@ class Burp(Burp1):
         ret['protocol'] = 1
         ret['is_windows'] = False
         ret['server_version'] = None
+        if not data:
+            return ret
         try:
             log = data['clients'][0]['backups'][0]['logs']['backup']
         except KeyError:
@@ -177,7 +179,7 @@ class Burp(Burp1):
             'protocol': re.compile(r'Protocol: (\d)$'),
             'is_windows': re.compile(r'Client is Windows$'),
         }
-        expressions_list = ret.keys()
+        expressions_list = list(ret.keys())
         catching_expressions = ['client_version', 'server_version', 'protocol']
         casting_expressions = {
             'protocol': int,
@@ -187,16 +189,21 @@ class Burp(Burp1):
             return val
 
         for line in log:
-            for expression in expressions_list:
+            expressions = expressions_list
+            for expression in expressions:
                 if expression in catching_expressions:
                     catch = regex[expression].search(line)
                     if catch:
                         cast = casting_expressions.get(expression, __dummy)
                         ret[expression] = cast(catch.group(1))
+                        # don't search this expression twice
+                        expressions_list.remove(expression)
                         break
                 else:
                     if expression in regex and regex[expression].search(line):
                         ret[expression] = True
+                        # don't search this expression twice
+                        expressions_list.remove(expression)
                         break
         return ret
 
@@ -213,8 +220,8 @@ class Burp(Burp1):
 
         :returns: a dict with some useful details
         """
-        query = self.status('c:{0}:b:{1}:l:backup\n'.format(client, number))
-        return self._do_parse_backup_log(query, client)
+        data = self.status('c:{0}:b:{1}:l:backup\n'.format(client, number))
+        return self._do_parse_backup_log(data, client)
 
     def _do_parse_backup_stats(self, data, result, number, client, forward=False, agent=None):
         ret = {}
@@ -523,7 +530,7 @@ class Burp(Burp1):
             clients = self.status('c:{}'.format(name))
             client = clients['clients'][0]
             return client['backups'][0]
-        except (KeyError, BUIserverException):
+        except (KeyError, TypeError, BUIserverException):
             return None
 
     def _guess_os(self, name):
@@ -591,7 +598,15 @@ class Burp(Burp1):
                 cli['last'] = 'never'
             else:
                 infos = infos[0]
-                cli['last'] = infos['timestamp']
+                if self.server_version and self.server_version < BURP_STATUS_FORMAT_V2:
+                    cli['last'] = infos['timestamp']
+                # only do deep inspection when server >= BURP_STATUS_FORMAT_V2
+                elif self.deep_inspection:
+                    logs = self.get_backup_logs(infos['number'], client['name'])
+                    cli['last'] = logs['start']
+                else:
+                    cli['last'] = utc_to_local(infos['timestamp'])
+
             ret.append(cli)
         return ret
 

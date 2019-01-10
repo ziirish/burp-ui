@@ -10,6 +10,24 @@ Each section presents major/breaking changes, new requirements and new options.
 For a complete list of changes, you may refer to the
 `CHANGELOG <changelog.html>`_ page.
 
+v0.7.0
+------
+
+- **Breaking** - the *single* and *version* options within the ``[Global]``
+  section have been removed in favor of a new unified *backend* option. See the
+  `Backends <advanced_usage.html#backends>`__ section of the documentation for
+  details.
+- **Breaking** - there was a bug when using burp-server >= 2.1.10 where
+  timestamps where wrongly computed on the global clients view due to the fact
+  timestamps have offsets since burp-server 2.1.10. The new behaviour is to
+  suppose every timestamp have offset whenever we detect your current
+  burp-server version is >= 2.1.10. If backups were made with an older
+  burp-server, the timestamps will be wrong. You can avoid that by enabling
+  the ``deep_inspection`` option in the ``[Burp]`` section (see the
+  `Backend options <advanced_usage.html#options>`__ for details).
+  The drawback of enabling the ``deep_inspection`` is this requires some extra
+  work that may slow down burp-ui.
+
 v0.6.0
 ------
 

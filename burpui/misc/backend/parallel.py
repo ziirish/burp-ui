@@ -16,6 +16,7 @@ import logging
 
 from .burp2 import Burp as Burp2
 from .interface import BUIbackend
+from .utils.constant import BURP_STATUS_FORMAT_V2
 from ..parser.burp2 import Parser
 from ...exceptions import BUIserverException
 from ..._compat import to_unicode, to_bytes
@@ -48,7 +49,7 @@ class Parallel:
         self.password = conf.safe_get('password', section='Parallel', defaults=BUI_DEFAULTS)
         self.timeout = conf.safe_get('timeout', 'integer', section='Parallel', defaults=BUI_DEFAULTS)
 
-        self.logger.info(f'Monitor {self.host}:{self.port} - ssl: {self.ssl}')
+        self.logger.debug(f'Monitor {self.host}:{self.port} - ssl: {self.ssl}')
 
         self.connected = False
 
@@ -58,6 +59,10 @@ class Parallel:
                 ctx = ssl.SSLContext()
                 ctx.verify_mode = ssl.CERT_NONE
                 ctx.check_hostname = False
+                ctx.options |= (
+                    ssl.OP_NO_SSLv2 | ssl.OP_NO_SSLv3 | ssl.OP_NO_TLSv1 | ssl.OP_NO_TLSv1_1
+                )  # RFC 7540 Section 9.2: MUST be TLS >=1.2
+                ctx.options |= ssl.OP_NO_COMPRESSION  # RFC 7540 Section 9.2.1: MUST disable compression
                 ctx.load_default_certs()
                 self.client_stream = await trio.open_ssl_over_tcp_stream(self.host, self.port, ssl_context=ctx)
             else:
@@ -239,11 +244,14 @@ class Burp(Burp2):
         """See :func:`burpui.misc.backend.interface.BUIbackend.status`"""
         return trio.run(self._async_status, query, timeout, cache)
 
-    async def _async_get_backup_logs(self, number, client, forward=False, store=None, limit=None):
+    async def _async_get_backup_logs(self, number, client, forward=False, deep=False, store=None, limit=None):
         async def _do_stuff():
             nonlocal client
             nonlocal number
             nonlocal forward
+            nonlocal deep
+            bucket1 = []
+            bucket2 = []
             ret = {}
             query = await self._async_status('c:{0}:b:{1}\n'.format(client, number))
             if not query:
@@ -253,8 +261,16 @@ class Burp(Burp2):
             except KeyError:
                 self.logger.warning('No logs found')
                 return ret
-            if 'backup_stats' in logs:
-                ret = await self._async_parse_backup_stats(number, client, forward)
+            async with trio.open_nursery() as nursery:
+                if 'backup_stats' in logs:
+                    nursery.start_soon(self._async_parse_backup_stats, number, client, forward, None, bucket1)
+                if 'backup' in logs and deep:
+                    nursery.start_soon(self._async_parse_backup_log, number, client, bucket2)
+
+            if bucket1:
+                ret = bucket1[0]
+            if bucket2:
+                ret.update(bucket2[0])
 
             ret['encrypted'] = False
             if 'files_enc' in ret and ret['files_enc']['total'] > 0:
@@ -272,19 +288,19 @@ class Burp(Burp2):
         else:
             return res
 
-    async def _async_get_all_backup_logs(self, client, forward=False):
+    async def _async_get_all_backup_logs(self, client, forward=False, deep=False):
         ret = []
         backups = await self._async_get_client(client)
         queue = []
         limit = trio.CapacityLimiter(self.concurrency)
         async with trio.open_nursery() as nursery:
             for back in backups:
-                nursery.start_soon(self._async_get_backup_logs, back['number'], client, forward, queue, limit)
+                nursery.start_soon(self._async_get_backup_logs, back['number'], client, forward, deep, queue, limit)
 
         ret = sorted(queue, key=lambda x: x['number'])
         return ret
 
-    def get_backup_logs(self, number, client, forward=False, agent=None):
+    def get_backup_logs(self, number, client, forward=False, deep=False, agent=None):
         """See
         :func:`burpui.misc.backend.interface.BUIbackend.get_backup_logs`
         """
@@ -292,12 +308,15 @@ class Burp(Burp2):
             return {} if number and number != -1 else []
 
         if number == -1:
-            return trio.run(self._async_get_all_backup_logs, client, forward)
-        return trio.run(self._async_get_backup_logs, number, client, forward)
+            return trio.run(self._async_get_all_backup_logs, client, forward, deep)
+        return trio.run(self._async_get_backup_logs, number, client, forward, deep)
 
-    async def _async_parse_backup_log(self, number, client):
+    async def _async_parse_backup_log(self, number, client, bucket=None):
         query = await self._async_status('c:{0}:b:{1}:l:backup\n'.format(client, number))
-        return self._do_parse_backup_log(query, client)
+        res = self._do_parse_backup_log(query, client)
+        if bucket is not None:
+            bucket.append(res)
+        return res
 
     def _parse_backup_log(self, number, client):
         """The :func:`burpui.misc.backend.burp2.Burp._parse_backup_log`
@@ -314,7 +333,7 @@ class Burp(Burp2):
         """
         return trio.run(self._async_parse_backup_log, number, client)
 
-    async def _async_parse_backup_stats(self, number, client, forward=False, agent=None):
+    async def _async_parse_backup_stats(self, number, client, forward=False, agent=None, bucket=None):
         """The :func:`burpui.misc.backend.parallel.Burp._async_parse_backup_stats`
         function is used to parse the burp logs.
 
@@ -338,7 +357,10 @@ class Burp(Burp2):
         query = await self._async_status(
             'c:{0}:b:{1}:l:backup_stats\n'.format(client, number)
         )
-        return self._do_parse_backup_stats(query, backup, number, client, forward, agent)
+        ret = self._do_parse_backup_stats(query, backup, number, client, forward, agent)
+        if bucket is not None:
+            bucket.append(ret)
+        return ret
 
     # def get_clients_report(self, clients, agent=None):
 
@@ -434,7 +456,47 @@ class Burp(Burp2):
         """
         return trio.run(self._async_guess_os, name)
 
-    # def get_all_clients(self, agent=None):
+    async def _async_get_all_clients(self):
+        ret = []
+        query = await self._async_status()
+        if not query or 'clients' not in query:
+            return ret
+
+        async def __compute_client_data(client, limit, queue):
+            async with limit:
+                cli = {}
+                cli['name'] = client['name']
+                cli['state'] = self._status_human_readable(client['run_status'])
+                infos = client['backups']
+                if cli['state'] in ['running']:
+                    cli['last'] = 'now'
+                elif not infos:
+                    cli['last'] = 'never'
+                else:
+                    infos = infos[0]
+                    logs = await self._async_get_backup_logs(infos['number'], client['name'])
+                    cli['last'] = logs['start']
+                queue.append(cli)
+
+        clients = query['clients']
+        limiter = trio.CapacityLimiter(self.concurrency)
+
+        async with trio.open_nursery() as nursery:
+            for client in clients:
+                nursery.start_soon(__compute_client_data, client, limiter, ret)
+
+        return ret
+
+    def get_all_clients(self, agent=None):
+        """See
+        :func:`burpui.misc.backend.interface.BUIbackend.get_all_clients`
+        """
+        # don't need async processing if burp-server < BURP_STATUS_FORMAT_V2
+        if not self.deep_inspection or (self.server_version and
+                                        self.server_version < BURP_STATUS_FORMAT_V2):
+            return Burp2.get_all_clients(self)
+        # the deep inspection can take advantage of async processing
+        return trio.run(self._async_get_all_clients)
 
     # def get_client_status(self, name=None, agent=None):
 
