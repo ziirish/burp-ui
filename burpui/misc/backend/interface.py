@@ -22,6 +22,7 @@ G_BURPCONFCLI = '/etc/burp/burp.conf'
 G_BURPCONFSRV = '/etc/burp/burp-server.conf'
 G_TMPDIR = '/tmp/bui'
 G_TIMEOUT = 15
+G_DEEP_INSPECTION = False
 G_ZIP64 = True
 G_INCLUDES = ['/etc/burp']
 G_ENFORCE = False
@@ -62,6 +63,7 @@ class BUIbackend(object, metaclass=ABCMeta):
         self.includes = G_INCLUDES
         self.revoke = G_REVOKE
         self.enforce = G_ENFORCE
+        self.deep_inspection = G_DEEP_INSPECTION
         self.running = []
         burp_opts = {
             'bport': G_BURPPORT,
@@ -72,6 +74,7 @@ class BUIbackend(object, metaclass=ABCMeta):
             'bconfsrv': G_BURPCONFSRV,
             'timeout': G_TIMEOUT,
             'tmpdir': G_TMPDIR,
+            'deep_inspection': G_DEEP_INSPECTION,
         }
         self.defaults = {
             'Burp': burp_opts,
@@ -127,6 +130,11 @@ class BUIbackend(object, metaclass=ABCMeta):
             self.timeout = conf.safe_get(
                 'timeout',
                 'integer'
+            )
+
+            self.deep_inspection = conf.safe_get(
+                'deep_inspection',
+                'boolean'
             )
 
             # Experimental options
@@ -262,7 +270,7 @@ class BUIbackend(object, metaclass=ABCMeta):
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
     @abstractmethod
-    def get_backup_logs(self, number, client, forward=False, agent=None):
+    def get_backup_logs(self, number, client, forward=False, deep=False, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.get_backup_logs`
         function is used to retrieve the burp logs depending the burp-server
         version.
@@ -275,6 +283,9 @@ class BUIbackend(object, metaclass=ABCMeta):
 
         :param forward: Is the client name needed in later process
         :type forward: bool
+
+        :param deep: Enable deep log inspection
+        :type deep: bool
 
         :param agent: What server to ask (only in multi-agent mode)
         :type agent: str

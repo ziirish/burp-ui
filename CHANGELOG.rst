@@ -5,6 +5,7 @@ Current
 -------
 
 - **BREAKING**: the *single* and *version* options within the ``[Global]`` section have been removed in favor of a new unified *backend* option
+- **BREAKING**: a change introduced by `#284 <https://git.ziirish.me/ziirish/burp-ui/issues/284>`_ may return wrong timestamps for backups made with burp-server <= 2.1.10 if your current burp-server is >= 2.1.10
 - Add: new `audit logging <https://git.ziirish.me/ziirish/burp-ui/issues/260>`_ system
 - Add: new ``bui-monitor`` processes pool + ``async`` backend to parallelize some requests `#278 <https://git.ziirish.me/ziirish/burp-ui/issues/278>`_ 
 - Add: new `listen` and `listen_status` options in burp-2.2.10 `#279 <https://git.ziirish.me/ziirish/burp-ui/issues/279>`_ 
