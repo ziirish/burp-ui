@@ -1469,7 +1469,7 @@ class Config(File):
         self._parse()
 
         removed = []
-        orig = self.files
+        orig = self.files.copy()
         for path, conf in orig.items():
             if conf.parent and ((conf.name not in self._includes and
                conf.name not in self._templates) or conf.name in removed):

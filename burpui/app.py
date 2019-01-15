@@ -132,7 +132,9 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
         'debug: {}\n'.format(debug) +
         'unittest: {}\n'.format(unittest) +
         'cli: {}\n'.format(cli) +
-        'reverse_proxy: {}'.format(reverse_proxy)
+        'reverse_proxy: {}\n'.format(reverse_proxy) +
+        'celery_worker: {}\n'.format(celery_worker) +
+        'websocket_server: {}'.format(websocket_server)
     )
 
     if not unittest:  # pragma: no cover
@@ -169,7 +171,7 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
     logger.info('Using configuration: {}'.format(app.config['CFG']))
 
     app.setup(app.config['CFG'], unittest, cli)
-    if cli:
+    if cli and not websocket_server:
         return app
 
     if debug:
