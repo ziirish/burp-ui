@@ -98,15 +98,15 @@ class Monitor(object):
                 if version < BURP_MINIMAL_VERSION and \
                         getattr(self.app, 'strict', True):
                     self.logger.critical(
-                        'Your burp version ({}) does not fit the minimal'
-                        ' requirements: {}'.format(version, BURP_MINIMAL_VERSION)
+                        f'Your burp version ({version}) does not fit the minimal'
+                        f' requirements: {BURP_MINIMAL_VERSION}'
                     )
                 elif version >= BURP_MINIMAL_VERSION:
                     self._burp_client_ok = True
         except subprocess.CalledProcessError as exp:
             if getattr(self.app, 'strict', True):
                 self.logger.critical(
-                    'Unable to determine your burp version: {}'.format(str(exp))
+                    f'Unable to determine your burp version: {exp}'
                 )
 
         self.client_version = version.replace('burp-', '')
@@ -173,7 +173,7 @@ class Monitor(object):
                 details = ':\n'
                 out, _ = self.proc.communicate()
                 details += to_unicode(out)
-            raise OSError('Unable to spawn burp process{}'.format(details))
+            raise OSError(f'Unable to spawn burp process{details}')
         _, write, _ = select([], [self.proc.stdin], [], self.timeout)
         if self.proc.stdin not in write:
             self._kill_burp()
@@ -187,6 +187,10 @@ class Monitor(object):
         if self.status_delimiter:
             self.proc.stdin.write(to_bytes('j:response-markers-on\n'))
             self._read_proc_stdout(self.timeout, 'j:response-markers-on')
+
+    @property
+    def alive(self):
+        return self._proc_is_alive()
 
     def _proc_is_alive(self):
         """Check if the burp client process is still alive"""
@@ -242,7 +246,7 @@ class Monitor(object):
         while True:
             try:
                 if not self._proc_is_alive():
-                    raise Exception('process died while reading its output')
+                    raise OSError('process died while reading its output')
                 read, _, _ = select([self.proc.stdout], [], [], timeout)
                 if self.proc.stdout not in read:
                     raise TimeoutError('Read operation timed out')
@@ -275,7 +279,7 @@ class Monitor(object):
                         jso = cache.get('json')
                         break
                     tmp = ''
-            except (TimeoutError, IOError, Exception) as exp:
+            except (TimeoutError, IOError, OSError) as exp:
                 # the os throws an exception if there is no data or timeout
                 self.logger.warning(str(exp))
                 self._kill_burp()
@@ -327,12 +331,13 @@ class Monitor(object):
 
             return res
         except TimeoutError as exp:
-            msg = 'Cannot send command: {}'.format(str(exp))
+            msg = f'Cannot send command: {exp}'
             self.logger.error(msg)
             self._kill_burp()
-            raise BUIserverException(msg)
+            if getattr(self.app, 'strict', True):
+                raise BUIserverException(msg)
         except (OSError, Exception) as exp:
-            msg = 'Cannot launch burp process: {}'.format(str(exp))
+            msg = f'Cannot launch burp process: {exp}'
             self.logger.error(msg)
             if getattr(self.app, 'strict', True):
                 raise BUIserverException(msg)

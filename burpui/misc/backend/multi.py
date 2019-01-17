@@ -244,16 +244,24 @@ class Burp(BUIbackend):
         if not method:
             raise BUIserverException('Wrong method call')
 
-        r = {}
+        res = {}
 
         for name, serv in self.servers.items():
             func = getattr(serv, method)
             try:
-                r[name] = func()
+                res[name] = func()
             except BUIserverException:
-                r[name] = 'Unknown'
+                res[name] = 'Unknown'
 
-        return r
+        return res
+
+    def _get_statistics(self):
+        """get statistics"""
+        res = {}
+        for name, serv in self.servers.items():
+            res[name] = serv.statistics()
+
+        return res
 
     @implement
     def get_parser(self, agent=None):
@@ -276,6 +284,13 @@ class Burp(BUIbackend):
         if not agent:
             return self._get_version('get_server_version')
         return self.servers[agent].get_server_version()
+
+    @implement
+    def statistics(self, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.statistics"""
+        if not agent:
+            return self._get_statistics()
+        return self.servers[agent].statistics()
 
 
 class Gsocket():
@@ -485,10 +500,12 @@ class NClient(BUIbackend):
                     if data['func'] == 'restore_files':
                         err = str(exc)
                     elif isinstance(exc, BUIserverException):
-                        raise exc
+                        raise
                     else:
                         raise BUIserverException(str(exc))
         except Exception as exc:
+            if isinstance(exc, BUIserverException):
+                raise
             self.logger.error('!!! {} !!!'.format(str(exc)), exc_info=exc)
             raise BUIserverException(str(exc))
 

@@ -161,7 +161,7 @@ class MonitorPool:
             self._status_cache.clear()
             self._last_status_cleanup = now
 
-    async def receive_all(self, stream: trio.StapledStream, length=1024, bsize=None):
+    async def receive_all(self, stream: trio.abc.Stream, length=1024, bsize=None):
         buf = b''
         bsize = bsize if bsize is not None else 1024
         bsize = min(bsize, length)
@@ -172,7 +172,7 @@ class MonitorPool:
             if not newbuf:
                 # 3 successive read failure => raise exception
                 if tries > 3:
-                    raise Exception('Unable to read full response')
+                    raise IOError('Unable to read full response')
                 tries += 1
                 await trio.sleep(0.1)
                 continue
@@ -228,6 +228,26 @@ class MonitorPool:
                         response = getattr(mon, func, '')
                         if func in ['batch_list_supported']:
                             response = json.dumps(response)
+                elif func == 'statistics':
+                    tmp = []
+                    res = {
+                        'alive': False,
+                        'server_version': 'unknown',
+                        'client_version': 'unknown'
+                    }
+                    while not self.pool.empty():
+                        mon = await self.pool.get()
+                        tmp.append(mon)
+                        if mon.alive:
+                            res = {
+                                'alive': True,
+                                'server_version': getattr(mon, 'server_version', ''),
+                                'client_version': getattr(mon, 'client_version', '')
+                            }
+                            break
+                    for mon in tmp:
+                        await self.pool.put(mon)
+                    response = json.dumps(res)
                 else:
                     query = req['query']
                     cache = req.get('cache', True)

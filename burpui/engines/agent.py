@@ -68,6 +68,9 @@ class BurpHandler(BUIbackend):
             mod = __import__(module, fromlist=['Burp'])
             Client = mod.Burp
             self.backend = Client(conf=conf)
+            stats = self.backend.statistics()
+            if 'alive' not in stats or not stats['alive']:
+                raise BUIserverException('Cannot talk to burp server')
         except Exception as exc:
             self.logger.error('Failed loading backend {}: {}'.format(self.backend, str(exc)), exc_info=exc, stack_info=True)
             sys.exit(2)
