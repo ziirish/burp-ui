@@ -103,7 +103,7 @@ class Burp(BUIbackend):
         :param conf: Configuration to use
         :type conf: :class:`burpui.config.BUIConfig`
 
-        :param dummy: Does not instanciate the object (used for development
+        :param dummy: Does not instantiate the object (used for development
                       purpose)
         :type dummy: boolean
         """
@@ -112,7 +112,7 @@ class Burp(BUIbackend):
         self.client_version = None
         self.server_version = None
 
-        super(Burp, self).__init__(server, conf)
+        BUIbackend.__init__(self, server, conf)
 
         self.parser = Parser(self)
 
@@ -137,17 +137,20 @@ class Burp(BUIbackend):
         except:
             pass
 
-        self.logger.info('burp port: {}'.format(self.port))
-        self.logger.info('burp host: {}'.format(self.host))
-        self.logger.info('burp binary: {}'.format(self.burpbin))
-        self.logger.info('strip binary: {}'.format(self.stripbin))
-        self.logger.info('burp conf cli: {}'.format(self.burpconfcli))
-        self.logger.info('burp conf srv: {}'.format(self.burpconfsrv))
-        self.logger.info('tmpdir: {}'.format(self.tmpdir))
-        self.logger.info('zip64: {}'.format(self.zip64))
-        self.logger.info('includes: {}'.format(self.includes))
-        self.logger.info('enforce: {}'.format(self.enforce))
-        self.logger.info('revoke: {}'.format(self.revoke))
+        self.logger.info(f'burp port: {self.port}')
+        self.logger.info(f'burp host: {self.host}')
+        self.logger.info(f'burp binary: {self.burpbin}')
+        self.logger.info(f'strip binary: {self.stripbin}')
+        self.logger.info(f'burp conf cli: {self.burpconfcli}')
+        self.logger.info(f'burp conf srv: {self.burpconfsrv}')
+        self.logger.info(f'command timeout: {self.timeout}')
+        self.logger.info(f'tmpdir: {self.tmpdir}')
+        self.logger.info(f'zip64: {self.zip64}')
+        self.logger.info(f'includes: {self.includes}')
+        self.logger.info(f'enforce: {self.enforce}')
+        self.logger.info(f'revoke: {self.revoke}')
+        self.logger.info(f'client version: {self.client_version}')
+        self.logger.info(f'server version: {self.server_version}')
         try:
             # make the connection
             self.status()
@@ -204,6 +207,14 @@ class Burp(BUIbackend):
                     return True
                 self.logger.error('Cannot guess burp server address')
         return False
+
+    def statistics(self, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.statistics`"""
+        return {
+            'alive': self._test_burp_server_address(self.host),
+            'client_version': self.client_version,
+            'server_version': self.server_version
+        }
 
     def status(self, query='\n', timeout=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.status`"""
@@ -611,7 +622,7 @@ class Burp(BUIbackend):
                 res['timeleft'] = -1
         try:
             res['percent'] = round(float(res['bytes']) / float(res['estimated_bytes']) * 100)
-        except Exception:
+        except ZeroDivisionError:
             # You know... division by 0
             res['percent'] = 0
         return res

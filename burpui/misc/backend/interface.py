@@ -245,6 +245,27 @@ class BUIbackend(object, metaclass=ABCMeta):
     """
 
     @abstractmethod
+    def statistics(agent=None):
+        """The :func:`burpui.misc.backend.interface.BUIbackend.statistics` method should
+        return statistics about the current backend.
+
+        :param agent: What server to ask (only in multi-agent mode)
+        :type agent: str
+
+        :returns: A dict containing statistics about the backend
+        :rtype: dict
+
+        Example::
+
+            {
+                "alive": true,
+                "server_version": "2.1.12",
+                "client_version": "2.1.12"
+            }
+        """
+        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+
+    @abstractmethod
     def status(self, query='\n', timeout=None, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.status` method is
         used to send queries to the Burp server

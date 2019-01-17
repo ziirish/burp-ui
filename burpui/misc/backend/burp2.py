@@ -70,16 +70,16 @@ class Burp(Burp1):
 
         self.batch_list_supported = self.monitor.batch_list_supported
 
-        self.logger.info('burp binary: {}'.format(self.burpbin))
-        self.logger.info('strip binary: {}'.format(self.stripbin))
-        self.logger.info('burp conf cli: {}'.format(self.burpconfcli))
-        self.logger.info('burp conf srv: {}'.format(self.burpconfsrv))
-        self.logger.info('command timeout: {}'.format(self.timeout))
-        self.logger.info('tmpdir: {}'.format(self.tmpdir))
-        self.logger.info('zip64: {}'.format(self.zip64))
-        self.logger.info('includes: {}'.format(self.includes))
-        self.logger.info('enforce: {}'.format(self.enforce))
-        self.logger.info('revoke: {}'.format(self.revoke))
+        self.logger.info(f'burp binary: {self.burpbin}')
+        self.logger.info(f'strip binary: {self.stripbin}')
+        self.logger.info(f'burp conf cli: {self.burpconfcli}')
+        self.logger.info(f'burp conf srv: {self.burpconfsrv}')
+        self.logger.info(f'command timeout: {self.timeout}')
+        self.logger.info(f'tmpdir: {self.tmpdir}')
+        self.logger.info(f'zip64: {self.zip64}')
+        self.logger.info(f'includes: {self.includes}')
+        self.logger.info(f'enforce: {self.enforce}')
+        self.logger.info(f'revoke: {self.revoke}')
         self.logger.info(f'client version: {self.client_version}')
         self.logger.info(f'server version: {self.server_version}')
 
@@ -122,6 +122,14 @@ class Burp(Burp1):
                     hur += '-'
 
         return hur
+
+    def statistics(self, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.statistics`"""
+        return {
+            'alive': self.monitor.alive,
+            'server_version': self.server_version,
+            'client_version': self.client_version
+        }
 
     def status(self, query='c:\n', timeout=None, cache=True, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.status`"""
@@ -462,7 +470,7 @@ class Burp(Burp1):
             ret['percent'] = round(
                 float(ret['bytes']) / float(ret['estimated_bytes']) * 100
             )
-        except:
+        except ZeroDivisionError:
             # You know... division by 0
             ret['percent'] = 0
 

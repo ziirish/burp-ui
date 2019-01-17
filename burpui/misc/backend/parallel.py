@@ -226,6 +226,9 @@ class Burp(Burp2):
             self._batch_list_supported = json.loads(trio.run(self._async_request, 'batch_list_supported'))
         return self._batch_list_supported
 
+    def statistics(self, agent=None):
+        return json.loads(trio.run(self._async_request, 'statistics'))
+
     async def _async_status(self, query='c:\n', timeout=None, cache=True):
         async_client = Parallel(self.conf)
         try:
