@@ -484,7 +484,7 @@ class BurpuiRedisTestCase(TestCase):
             # create a second session
             rv = self.login('admin', 'admin')
             response = self.client.get(url_for('api.admin_me'))
-            self.assertEqual(response.json, {'id': 'admin', 'name': 'admin', 'backend': 'BASIC'})
+            self.assertEqual(response.json, {'id': 'admin', 'name': 'admin', 'backend': 'BASIC:AUTH'})
             sess = self.client.get(url_for('api.user_sessions'))
             self.assertGreater(len(sess.json), 0)
             self.assertIn('uuid', sess.json[0])
