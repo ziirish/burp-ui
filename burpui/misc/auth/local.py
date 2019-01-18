@@ -12,7 +12,7 @@ class LocalLoader(BUIloader):
     """The :class:`burpui.misc.auth.local.LocalLoader` class loads the *Local*
     users.
     """
-    section = name = 'LOCAL'
+    section = name = 'LOCAL:AUTH'
 
     def __init__(self, app=None, handler=None):
         """:func:`burpui.misc.auth.Local.localLoader.__init__` loads users from

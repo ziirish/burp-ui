@@ -366,13 +366,13 @@ class BurpuiACLTestCase(TestCase):
             rv = self.login('admin', 'admin')
             response = self.client.get(url_for('api.auth_users'))
             response2 = self.client.get(url_for('api.auth_backends'))
-            self.assertEqual(sorted(response.json, key=lambda k: k['name']), sorted([{'id': 'admin', 'name': 'admin', 'backend': 'BASIC'}, {'id': 'user1', 'name': 'user1', 'backend': 'BASIC'}], key=lambda k: k['name']))
-            self.assertEqual(sorted(response2.json, key=lambda k: k['name']), sorted([{'add': True, 'del': True, 'name': 'BASIC', 'description': 'Uses the Burp-UI configuration file to load its rules.', 'priority': 100, 'type': 'authentication', 'mod': True}], key=lambda k: k['name']))
+            self.assertEqual(sorted(response.json, key=lambda k: k['name']), sorted([{'id': 'admin', 'name': 'admin', 'backend': 'BASIC:AUTH'}, {'id': 'user1', 'name': 'user1', 'backend': 'BASIC:AUTH'}], key=lambda k: k['name']))
+            self.assertEqual(sorted(response2.json, key=lambda k: k['name']), sorted([{'add': True, 'del': True, 'name': 'BASIC:AUTH', 'description': 'Uses the Burp-UI configuration file to load its rules.', 'priority': 100, 'type': 'authentication', 'mod': True}], key=lambda k: k['name']))
 
     def test_change_password(self):
         with self.client:
             rv = self.login('user1', 'password')
-            response = self.client.post(url_for('api.auth_users', name='user1'), data={'backend': 'BASIC', 'old_password': 'plop', 'password': 'toto'}, headers={'X-Language': 'en'})
+            response = self.client.post(url_for('api.auth_users', name='user1'), data={'backend': 'BASIC:AUTH', 'old_password': 'plop', 'password': 'toto'}, headers={'X-Language': 'en'})
             self.assert_status(response, 200)
 
     def test_config_render_ko(self):
@@ -484,7 +484,7 @@ class BurpuiRedisTestCase(TestCase):
             # create a second session
             rv = self.login('admin', 'admin')
             response = self.client.get(url_for('api.admin_me'))
-            self.assertEqual(response.json, {'id': 'admin', 'name': 'admin', 'backend': 'BASIC'})
+            self.assertEqual(response.json, {'id': 'admin', 'name': 'admin', 'backend': 'BASIC:AUTH'})
             sess = self.client.get(url_for('api.user_sessions'))
             self.assertGreater(len(sess.json), 0)
             self.assertIn('uuid', sess.json[0])

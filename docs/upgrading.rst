@@ -27,6 +27,10 @@ v0.7.0
   `Backend options <advanced_usage.html#options>`__ for details).
   The drawback of enabling the ``deep_inspection`` is this requires some extra
   work that may slow down burp-ui.
+- **Breaking** - the authentication backends section have been renamed with the
+  ``:AUTH`` suffix (so ``BASIC`` becomes ``BASIC:AUTH``, etc.).
+  Please make sure you rename those sections accordingly so you won't be locked
+  out.
 
 v0.6.0
 ------
