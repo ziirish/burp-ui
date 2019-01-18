@@ -509,7 +509,7 @@ Now you can add *ldap* specific options:
 ::
 
     # ldapauth specific options
-    [LDAP]
+    [LDAP:AUTH]
     # Backend priority. Higher is first
     priority = 50
     # LDAP host
@@ -524,13 +524,6 @@ Now you can add *ldap* specific options:
     #  - optional (not required, but validated if provided)
     #  - required (required and validated)
     validate = none
-    # SSL or TLS version to use, can be one of the following:
-    #  - SSLv2
-    #  - SSLv3
-    #  - SSLv23
-    #  - TLSv1
-    #  - TLSv1_1 (Available only with openssl version 1.0.1+, requires python 2.7.9 or higher)
-    version = TLSv1
     # the file containing the certificates of the certification authorities
     cafile = none
     # Attribute to use when searching the LDAP repository
@@ -573,7 +566,7 @@ Now you can add *basic* specific options:
     # basicauth specific options
     # Note: in case you leave this section commented, the default login/password
     # is admin/admin
-    [BASIC]
+    [BASIC:AUTH]
     # Backend priority. Higher is first
     priority = 100
     admin = pbkdf2:sha1:1000$12345678$password
@@ -608,7 +601,7 @@ Now you can add *local* specific options:
     # localauth specific options
     # Note: if not running as root, then burp-ui must be run as group 'shadow' to
     # allow PAM to work
-    [LOCAL]
+    [LOCAL:AUTH]
     # Backend priority. Higher is first
     priority = 0
     # List of local users allowed to login. If you don't set this setting, users

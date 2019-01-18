@@ -11,7 +11,7 @@ class BasicLoader(BUIloader):
     """The :class:`burpui.misc.auth.basic.BasicLoader` class loads the *Basic*
     users.
     """
-    section = name = 'BASIC'
+    section = name = 'BASIC:AUTH'
 
     def __init__(self, app=None, handler=None):
         """:func:`burpui.misc.auth.basic.BasicLoader.__init__` loads users from

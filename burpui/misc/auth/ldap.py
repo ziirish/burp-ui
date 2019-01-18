@@ -12,25 +12,11 @@ except ImportError:
     raise ImportError('Unable to load \'ldap3\' module')
 
 
-def get_ssl_version(version):
-    SSL_SUPPORTED = ['SSLv2', 'SSLv3', 'SSLv23', 'TLSv1', 'TLSv1_1', 'TLSv1_2']
-    if version and version in SSL_SUPPORTED:
-        try:
-            return getattr(ssl, 'PROTOCOL_{}'.format(version))
-        except AttributeError:
-            idx = SSL_SUPPORTED.index(version) + 1
-            if idx == len(SSL_SUPPORTED):
-                return None
-            return get_ssl_version(SSL_SUPPORTED[idx])
-    else:
-        return None
-
-
 class LdapLoader(BUIloader):
     """The :class:`burpui.misc.auth.ldap.LdapLoader` handles searching for and
     binding as a :class:`burpui.misc.auth.ldap.LdapUser` user.
     """
-    section = name = 'LDAP'
+    section = name = 'LDAP:AUTH'
 
     def __init__(self, app=None, handler=None):
         """:func:`burpui.misc.auth.ldap.LdapLoader.__init__` establishes a
@@ -53,7 +39,6 @@ class LdapLoader(BUIloader):
                 'base': None,
                 'searchattr': 'uid',
                 'validate': 'none',
-                'version': None,
                 'cafile': None,
             }
         }
@@ -67,7 +52,6 @@ class LdapLoader(BUIloader):
             'binddn': 'binddn',
             'bindpw': 'bindpw',
             'validate': 'validate',
-            'version': 'version',
             'cafile': 'cafile'
         }
         conf.update_defaults(defaults)
@@ -88,9 +72,7 @@ class LdapLoader(BUIloader):
             self.validate = getattr(ssl, 'CERT_{}'.format(self.validate.upper()))
         else:
             self.validate = None
-        self.version = get_ssl_version(self.version)
-        if not self.version:
-            self.logger.warning('No SSL version chosen')
+        self.version = ssl.OP_NO_SSLv3
         self.users = []
         self.tls = None
         self.ssl = False
@@ -170,7 +152,7 @@ class LdapLoader(BUIloader):
                 self.ldap.search(self.base, query, attributes=['cn', self.attr])
                 r = self.ldap.response
             if not r:
-                raise Exception('no results')
+                raise ValueError('no results')
         except Exception as e:
             self.logger.error('Ooops, LDAP lookup failed: {0}'.format(str(e)))
             return None
