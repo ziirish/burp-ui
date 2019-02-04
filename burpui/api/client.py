@@ -457,66 +457,66 @@ class ClientTreeAll(Resource):
 
     @staticmethod
     def _get_tree_all(name, backup, server):
-            json = bui.client.get_tree(name, backup, '*', agent=server)
-            tree = {}
-            rjson = []
-            roots = []
+        json = bui.client.get_tree(name, backup, '*', agent=server)
+        tree = {}
+        rjson = []
+        roots = []
 
-            def __expand_json(js):
-                res = {}
-                for entry in js:
-                    # /!\ after marshalling, 'fullname' will be 'key'
-                    res[entry['fullname']] = marshal(entry, node_fields)
-                return res
+        def __expand_json(js):
+            res = {}
+            for entry in js:
+                # /!\ after marshalling, 'fullname' will be 'key'
+                res[entry['fullname']] = marshal(entry, node_fields)
+            return res
 
-            tree = __expand_json(json)
+        tree = __expand_json(json)
 
-            # TODO: we can probably improve this at some point
-            redo = True
-            while redo:
-                redo = False
-                for key, entry in tree.items():
-                    parent = entry['parent']
-                    if not entry['children']:
-                        entry['children'] = None
-                    if parent:
-                        if parent not in tree:
-                            parent2 = parent
-                            last = False
-                            while parent not in tree and not last:
-                                if not parent2:
-                                    last = True
-                                json = bui.client.get_tree(
-                                    name,
-                                    backup,
-                                    parent2,
-                                    agent=server
-                                )
-                                if parent2 == '/':
-                                    parent2 = ''
-                                else:
-                                    parent2 = os.path.dirname(parent2)
-                                tree2 = __expand_json(json)
-                                tree.update(tree2)
-                            roots = []
-                            redo = True
-                            break
-                        node = tree[parent]
-                        if not node['children']:
-                            node['children'] = []
-                        elif entry in node['children']:
-                            continue
-                        node['children'].append(entry)
-                        if node['folder']:
-                            node['lazy'] = False
-                            node['expanded'] = False
-                    else:
-                        roots.append(entry['key'])
+        # TODO: we can probably improve this at some point
+        redo = True
+        while redo:
+            redo = False
+            for key, entry in tree.items():
+                parent = entry['parent']
+                if not entry['children']:
+                    entry['children'] = None
+                if parent:
+                    if parent not in tree:
+                        parent2 = parent
+                        last = False
+                        while parent not in tree and not last:
+                            if not parent2:
+                                last = True
+                            json = bui.client.get_tree(
+                                name,
+                                backup,
+                                parent2,
+                                agent=server
+                            )
+                            if parent2 == '/':
+                                parent2 = ''
+                            else:
+                                parent2 = os.path.dirname(parent2)
+                            tree2 = __expand_json(json)
+                            tree.update(tree2)
+                        roots = []
+                        redo = True
+                        break
+                    node = tree[parent]
+                    if not node['children']:
+                        node['children'] = []
+                    elif entry in node['children']:
+                        continue
+                    node['children'].append(entry)
+                    if node['folder']:
+                        node['lazy'] = False
+                        node['expanded'] = False
+                else:
+                    roots.append(entry['key'])
 
-            for fullname in roots:
-                rjson.append(tree[fullname])
+        for fullname in roots:
+            rjson.append(tree[fullname])
 
-            return rjson
+        return rjson
 
 
 @ns.route('/report/<name>',
