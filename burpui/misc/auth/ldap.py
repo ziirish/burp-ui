@@ -29,7 +29,7 @@ class LdapLoader(BUIloader):
         conf = self.app.conf
         handler.name = self.name
         defaults = {
-            'LDAP': {
+            'LDAP:AUTH': {
                 'host': 'localhost',
                 'port': None,
                 'encryption': None,
