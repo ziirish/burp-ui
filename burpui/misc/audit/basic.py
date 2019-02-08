@@ -3,6 +3,7 @@ import re
 import logging
 
 from .interface import BUIaudit, BUIauditLogger as BUIauditLoggerInterface
+from ...tools.logging import logger as parent_logger
 
 
 class BUIauditLoader(BUIaudit):
@@ -69,7 +70,7 @@ class BUIauditLoader(BUIaudit):
 
 
 class BUIauditLogger(BUIauditLoggerInterface):
-    _logger = logging.getLogger('burp-ui.audit')  # type: logging.Logger
+    _logger = parent_logger.getChild('audit')  # type: logging.Logger
 
     def __init__(self, loader):
         self.loader = loader

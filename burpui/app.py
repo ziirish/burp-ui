@@ -13,8 +13,6 @@ import os
 import time
 import logging
 
-from logging import Formatter
-
 from .desc import __version__, __release__
 from .extensions import create_celery, create_db, create_websocket, \
     parse_db_setting, get_redis_server
@@ -52,6 +50,7 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
     from flask_bower import Bower
     from flask_babel import gettext
     from .utils import ReverseProxied, lookup_file, is_uuid
+    from .tools.logging import logger
     from .security import basic_login_from_request
     from .engines.server import BUIServer as BurpUI
     from .sessions import session_manager
@@ -59,8 +58,6 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
     from .ext.cache import cache
     from .ext.i18n import babel, get_locale
     from .misc.auth.handler import BUIanon
-
-    logger = logging.getLogger('burp-ui')
 
     gunicorn = kwargs.get('gunicorn', True)
     unittest = kwargs.get('unittest', False)
@@ -70,59 +67,22 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
     celery_worker = kwargs.get('celery_worker', False)
     websocket_server = kwargs.get('websocket_server', False)
 
-    # The debug argument used to be a boolean so we keep supporting this format
-    if isinstance(verbose, bool):
-        if verbose:
-            verbose = logging.DEBUG
-        else:
-            verbose = logging.CRITICAL
-    else:
-        levels = [
-            logging.CRITICAL,
-            logging.ERROR,
-            logging.WARNING,
-            logging.INFO,
-            logging.DEBUG
-        ]
-        if verbose >= len(levels):
-            verbose = len(levels) - 1
-        if not verbose:
-            verbose = 0
-        verbose = levels[verbose]
+    if not unittest:  # pragma: no cover
+        from ._compat import patch_json
+        patch_json()
 
-    if logfile:
-        from logging.handlers import RotatingFileHandler
-        handler = RotatingFileHandler(
-            logfile,
-            maxBytes=1024 * 1024 * 100,
-            backupCount=5
-        )
-    else:
-        from logging import StreamHandler
-        handler = StreamHandler()
+    # We initialize the core
+    app = BurpUI()
 
-    if verbose > logging.DEBUG:
-        LOG_FORMAT = (
-            '[%(asctime)s] %(levelname)s in '
-            '%(module)s.%(funcName)s: %(message)s'
-        )
-    else:
-        LOG_FORMAT = (
-            '-' * 27 +
-            '[%(asctime)s]' +
-            '-' * 28 + '\n' +
-            '%(levelname)s in %(module)s.%(funcName)s ' +
-            '[%(pathname)s:%(lineno)d]:\n' +
-            '%(message)s\n' +
-            '-' * 80
-        )
+    app.config['CFG'] = None
+    app.config['LOG_FILE'] = logfile
+    app.config['LOG_LEVEL'] = verbose
 
-    handler.setLevel(verbose)
-    handler.setFormatter(Formatter(LOG_FORMAT))
+    logger.init_app(app)
+    if verbose:
+        app.enable_logger()
 
-    logger.setLevel(verbose)
-
-    logger.addHandler(handler)
+    app.gunicorn = gunicorn
 
     logger.debug(
         'conf: {}\n'.format(conf) +
@@ -136,18 +96,6 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
         'celery_worker: {}\n'.format(celery_worker) +
         'websocket_server: {}'.format(websocket_server)
     )
-
-    if not unittest:  # pragma: no cover
-        from ._compat import patch_json
-        patch_json()
-
-    # We initialize the core
-    app = BurpUI()
-    if verbose:
-        app.enable_logger()
-    app.gunicorn = gunicorn
-
-    app.config['CFG'] = None
 
     # Some config
     app.config['BUI_CLI'] = cli

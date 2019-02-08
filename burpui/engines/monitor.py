@@ -17,12 +17,12 @@ import datetime
 
 from itertools import count
 from async_generator import asynccontextmanager
-from logging.handlers import RotatingFileHandler
 
 from ..exceptions import BUIserverException
 from ..misc.backend.utils.burp2 import Monitor
 from ..config import config
 from .._compat import to_bytes, to_unicode
+from ..tools.logging import logger
 from ..desc import __version__
 
 
@@ -84,46 +84,19 @@ class Pool:
 
 
 class MonitorPool:
-    logger = logging.getLogger('burp-ui')  # type: logging.Logger
+    logger = logger
 
     # cache status results
     _status_cache = {}
     _last_status_cleanup = datetime.datetime.now()
     _time_to_cache = datetime.timedelta(seconds=5)
 
-    def __init__(self, conf=None, level=0, logfile=None, debug=False):
-        self.debug = debug
+    def __init__(self, conf=None, level=0, logfile=None):
         level = level or 0
-        if level > logging.NOTSET:
-            levels = [
-                logging.CRITICAL,
-                logging.ERROR,
-                logging.WARNING,
-                logging.INFO,
-                logging.DEBUG,
-            ]
-            if level >= len(levels):
-                level = len(levels) - 1
-            lvl = levels[level]
-            self.logger.setLevel(lvl)
-            if lvl > logging.DEBUG:
-                LOG_FORMAT = '[%(asctime)s] %(levelname)s in %(module)s.%(funcName)s: %(message)s'
-            else:
-                LOG_FORMAT = (
-                    '-' * 80 + '\n' +
-                    '%(levelname)s in %(module)s.%(funcName)s [%(pathname)s:%(lineno)d]:\n' +
-                    '%(message)s\n' +
-                    '-' * 80
-                )
-            if logfile:
-                handler = RotatingFileHandler(logfile, maxBytes=1024 * 1024 * 100, backupCount=20)
-            else:
-                handler = logging.StreamHandler()
-            handler.setLevel(lvl)
-            handler.setFormatter(logging.Formatter(LOG_FORMAT))
-            self.logger.addHandler(handler)
-            self.logger.info(f'conf: {conf}')
-            self.logger.info('level: {}'.format(logging.getLevelName(lvl)))
+        self.logger.init_logger(config=dict(level=level, logfile=logfile))
+        lvl = logging.getLevelName(self.logger.getEffectiveLevel())
+        self.logger.info(f'conf: {conf}')
+        self.logger.info(f'level: {lvl}')
         if not conf:
             raise IOError('No configuration file found')
 

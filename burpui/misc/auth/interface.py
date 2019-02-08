@@ -10,11 +10,11 @@
 from flask_login import UserMixin, AnonymousUserMixin
 from abc import ABCMeta, abstractmethod, abstractproperty
 
-import logging
+from ...tools.logging import logger
 
 
 class BUIloader:
-    logger = logging.getLogger('burp-ui')
+    logger = logger
 
 
 class BUIhandler(object, metaclass=ABCMeta):
