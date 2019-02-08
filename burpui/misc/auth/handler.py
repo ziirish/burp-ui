@@ -307,6 +307,11 @@ class UserHandler(BUIuser):
                 self.back = None
                 return self.login(passwd)
             self.authenticated = self.real.login(passwd)
+            # allow to try another backend
+            if not self.authenticated:
+                self.real = None
+                self.back = None
+                return self.login(passwd)
         session['authenticated'] = self.authenticated
         session['language'] = self.language
         session['login'] = self.name
