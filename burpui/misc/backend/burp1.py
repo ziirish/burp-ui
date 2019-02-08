@@ -541,9 +541,7 @@ class Burp(BUIbackend):
 
     def get_clients_report(self, clients, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_clients_report`"""
-        ret = {}
-        cls = []
-        bkp = []
+        data = []
         for cli in clients:
             if not cli:
                 continue
@@ -551,19 +549,27 @@ class Burp(BUIbackend):
             if not client or not client[-1]:
                 continue
             stats = self.get_backup_logs(client[-1]['number'], cli['name'])
+            data.append((cli, client, stats))
+        return self._do_get_clients_report(data)
+
+    def _do_get_clients_report(self, data):
+        ret = {}
+        cls = []
+        bkp = []
+        for client, backups, stats in data:
             os = stats['os'] if 'os' in stats else "unknown"
             totsize = stats['totsize'] if 'totsize' in stats else 0
             total = stats['total']['total'] if \
                 'total' in stats and 'total' in stats['total'] else 0
             cls.append({
-                'name': cli['name'],
+                'name': client['name'],
                 'stats': {
                     'os': os,
                     'totsize': totsize,
                     'total': total
                 }
             })
-            bkp.append({'name': cli['name'], 'number': len(client)})
+            bkp.append({'name': client['name'], 'number': len(backups)})
         ret = {'clients': cls, 'backups': bkp}
         return ret
 

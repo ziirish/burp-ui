@@ -12,14 +12,17 @@ import json
 import ssl
 import trio
 import struct
-import logging
+
+from asyncio import iscoroutinefunction
 
 from .burp2 import Burp as Burp2
-from .interface import BUIbackend
+from .interface import BUIbackend, BUIBACKEND_INTERFACE_METHODS
 from .utils.constant import BURP_STATUS_FORMAT_V2
 from ..parser.burp2 import Parser
 from ...exceptions import BUIserverException
+from ...decorators import implement, usetriorun
 from ..._compat import to_unicode, to_bytes
+from ...tools.logging import logger
 
 BUI_DEFAULTS = {
     'Parallel': {
@@ -34,7 +37,7 @@ BUI_DEFAULTS = {
 
 
 class Parallel:
-    logger = logging.getLogger('burp-ui')  # type: logging.Logger
+    logger = logger
 
     def __init__(self, conf):
         """Parallel client
@@ -210,15 +213,11 @@ class Burp(Burp2):
 
     @property
     def client_version(self):
-        if self._client_version is None:
-            self._client_version = trio.run(self._async_request, 'client_version')
-        return self._client_version
+        return self.get_client_version()
 
     @property
     def server_version(self):
-        if self._server_version is None:
-            self._server_version = trio.run(self._async_request, 'server_version')
-        return self._server_version
+        return self.get_server_version()
 
     @property
     def batch_list_supported(self):
@@ -229,7 +228,17 @@ class Burp(Burp2):
     def statistics(self, agent=None):
         return json.loads(trio.run(self._async_request, 'statistics'))
 
-    async def _async_status(self, query='c:\n', timeout=None, cache=True):
+    def get_client_version(self, agent=None):
+        if self._client_version is None:
+            self._client_version = trio.run(self._async_request, 'client_version')
+        return self._client_version
+
+    def get_server_version(self, agent=None):
+        if self._server_version is None:
+            self._server_version = trio.run(self._async_request, 'server_version')
+        return self._server_version
+
+    async def _async_status(self, query='c:\n', timeout=None, cache=True, agent=None):
         async_client = Parallel(self.conf)
         try:
             return await async_client.status(query, timeout, cache)
@@ -243,6 +252,7 @@ class Burp(Burp2):
         except OSError as exc:
             raise BUIserverException(str(exc))
 
+    @usetriorun
     def status(self, query='c:\n', timeout=None, cache=True, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.status`"""
         return trio.run(self._async_status, query, timeout, cache)
@@ -365,14 +375,87 @@ class Burp(Burp2):
             bucket.append(ret)
         return ret
 
-    # def get_clients_report(self, clients, agent=None):
+    async def _async_get_clients_report(self, clients, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.get_clients_report`"""
+        async def __compute_client_report(cli, limit, queue):
+            async with limit:
+                if not cli:
+                    return
+                client = await self._async_get_client(cli['name'])
+                if not client or not client[-1]:
+                    return
+                stats = await self._async_get_backup_logs(client[-1]['number'], cli['name'])
+                queue.append((cli, client, stats))
 
-    # inherited
-    # def get_counters(self, name=None, agent=None):
+        data = []
+        limiter = trio.CapacityLimiter(self.concurrency)
 
-    # def is_backup_running(self, name=None, agent=None):
+        async with trio.open_nursery() as nursery:
+            for client in clients:
+                nursery.start_soon(__compute_client_report, client, limiter, data)
 
-    # def is_one_backup_running(self, agent=None):
+        return self._do_get_clients_report(data)
+
+    @usetriorun
+    def get_clients_report(self, clients, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.get_clients_report`"""
+        return trio.run(self._async_get_clients_report, clients)
+
+    async def _async_get_counters(self, name=None, agent=None):
+        ret = {}
+        query = await self._async_status('c:{0}\n'.format(name), cache=False)
+        # check the status returned something
+        if not query:
+            return ret
+
+        try:
+            client = query['clients'][0]
+        except KeyError:
+            self.logger.warning('Client not found')
+            return ret
+        return self._do_get_counters(client)
+
+    @usetriorun
+    def get_counters(self, name=None, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.get_counters`"""
+        return trio.run(self._async_get_counters, name)
+
+    async def _async_is_backup_running(self, name=None, agent=None):
+        """See
+        :func:`burpui.misc.backend.interface.BUIbackend.is_backup_running`
+        """
+        if not name:
+            return False
+        try:
+            query = await self._async_status('c:{0}\n'.format(name))
+        except BUIserverException:
+            return False
+        return self._do_is_backup_running(query)
+
+    @usetriorun
+    def is_backup_running(self, name=None, agent=None):
+        """See
+        :func:`burpui.misc.backend.interface.BUIbackend.is_backup_running`
+        """
+        return trio.run(self._async_is_backup_running, name)
+
+    async def _async_is_one_backup_running(self, agent=None):
+        """See
+        :func:`burpui.misc.backend.interface.BUIbackend.is_one_backup_running`
+        """
+        ret = []
+        try:
+            clients = await self._async_get_all_clients()
+        except BUIserverException:
+            return ret
+        return self._do_is_one_backup_running(clients)
+
+    @usetriorun
+    def is_one_backup_running(self, agent=None):
+        """See
+        :func:`burpui.misc.backend.interface.BUIbackend.is_one_backup_running`
+        """
+        return trio.run(self._async_is_one_backup_running)
 
     async def _async_get_last_backup(self, name):
         """Return the last backup of a given client
@@ -389,6 +472,7 @@ class Burp(Burp2):
         except (KeyError, BUIserverException):
             return None
 
+    @usetriorun
     def _get_last_backup(self, name):
         """Return the last backup of a given client
 
@@ -444,6 +528,7 @@ class Burp(Burp2):
         self._os_cache[name] = ret
         return ret
 
+    @usetriorun
     def _guess_os(self, name):
         """Return the OS of the given client based on the magic *os* label
 
@@ -459,7 +544,7 @@ class Burp(Burp2):
         """
         return trio.run(self._async_guess_os, name)
 
-    async def _async_get_all_clients(self):
+    async def _async_get_all_clients(self, agent=None):
         ret = []
         query = await self._async_status()
         if not query or 'clients' not in query:
@@ -501,16 +586,36 @@ class Burp(Burp2):
         # the deep inspection can take advantage of async processing
         return trio.run(self._async_get_all_clients)
 
-    # def get_client_status(self, name=None, agent=None):
+    async def _async_get_client_status(self, name=None, agent=None):
+        ret = {}
+        if not name:
+            return ret
+        query = await self._async_status('c:{0}\n'.format(name))
+        if not query:
+            return ret
+        try:
+            client = query['clients'][0]
+        except (KeyError, IndexError):
+            self.logger.warning('Client not found')
+            return ret
+        return self._do_get_client_status(client)
 
-    async def _async_get_client(self, name=None):
+    @usetriorun
+    def get_client_status(self, name=None, agent=None):
+        """See
+        :func:`burpui.misc.backend.interface.BUIbackend.get_client_status`
+        """
+        return trio.run(self._async_get_client_status, name)
+
+    async def _async_get_client(self, name=None, agent=None):
         return await self._async_get_client_filtered(name)
 
+    @usetriorun
     def get_client(self, name=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_client`"""
         return trio.run(self._async_get_client, name)
 
-    async def _async_get_client_filtered(self, name=None, limit=-1, page=None, start=None, end=None):
+    async def _async_get_client_filtered(self, name=None, limit=-1, page=None, start=None, end=None, agent=None):
         ret = []
         if not name:
             return ret
@@ -588,13 +693,27 @@ class Burp(Burp2):
         ret = sorted(queue, key=lambda x: x['number'])
         return ret
 
+    @usetriorun
     def get_client_filtered(self, name=None, limit=-1, page=None, start=None, end=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_client_filtered`"""
         return trio.run(self._async_get_client_filtered, name, limit, page, start, end)
 
-    # def is_backup_deletable(self, name=None, backup=None, agent=None):
+    async def _async_is_backup_deletable(self, name=None, backup=None, agent=None):
+        if not name or not backup:
+            return False
+        query = await self._async_status('c:{0}:b:{1}\n'.format(name, backup))
+        if not query:
+            return False
+        return self._do_is_backup_deletable(query)
 
-    async def _async_get_tree(self, name=None, backup=None, root=None, level=-1):
+    @usetriorun
+    def is_backup_deletable(self, name=None, backup=None, agent=None):
+        """See
+        :func:`burpui.misc.backend.interface.BUIbackend.is_backup_deletable`
+        """
+        return trio.run(self._async_is_backup_deletable, name, backup)
+
+    async def _async_get_tree(self, name=None, backup=None, root=None, level=-1, agent=None):
         ret = []
         if not name or not backup:
             return ret
@@ -615,15 +734,12 @@ class Burp(Burp2):
         )
         return self._format_tree(query, top, level)
 
+    @usetriorun
     def get_tree(self, name=None, backup=None, root=None, level=-1, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_tree`"""
         return trio.run(self._async_get_tree, name, backup, root, level)
 
-    # def get_client_version(self, agent=None):
-
-    # def get_server_version(self, agent=None):
-
-    async def _async_get_client_labels(self, client=None):
+    async def _async_get_client_labels(self, client=None, agent=None):
         """See
         :func:`burpui.misc.backend.interface.BUIbackend.get_client_labels`
         """
@@ -643,6 +759,7 @@ class Burp(Burp2):
         except KeyError:
             return ret
 
+    @usetriorun
     def get_client_labels(self, client=None, agent=None):
         """See
         :func:`burpui.misc.backend.interface.BUIbackend.get_client_labels`
@@ -669,3 +786,124 @@ class Burp(Burp2):
     # def store_conf_srv(self, data, agent=None):
 
     # def get_parser_attr(self, attr=None, agent=None):
+
+
+# Make every "Burp" method async
+class AsyncBurp(Burp):
+
+    # this method must not be async!
+    @implement
+    def statistics(self, agent=None):
+        return Burp.statistics(self)
+
+    # this method must not be async
+    @implement
+    def get_parser(self, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.get_parser`"""
+        return Burp.get_parser(self)
+
+    @property
+    def client_version(self):
+        return trio.run(self.get_client_version)
+
+    @property
+    def server_version(self):
+        return trio.run(self.get_server_version)
+
+    @implement
+    async def get_client_version(self, agent=None):
+        if self._client_version is None:
+            self._client_version = await self._async_request('client_version')
+        return self._client_version
+
+    @implement
+    async def get_server_version(self, agent=None):
+        if self._server_version is None:
+            self._server_version = await self._async_request('server_version')
+        return self._server_version
+
+    @implement
+    async def get_backup_logs(self, number, client, forward=False, deep=False, agent=None):
+        """See
+        :func:`burpui.misc.backend.interface.BUIbackend.get_backup_logs`
+        """
+        if not client or not number:
+            return {} if number and number != -1 else []
+
+        if number == -1:
+            return await self._async_get_all_backup_logs(client, forward, deep)
+        return await self._async_get_backup_logs(number, client, forward, deep)
+
+    @implement
+    async def get_all_clients(self, agent=None):
+        """See
+        :func:`burpui.misc.backend.interface.BUIbackend.get_all_clients`
+        """
+        return await self._async_get_all_clients()
+
+    def __getattribute__(self, name):
+        if name in BUIBACKEND_INTERFACE_METHODS or name in ['_guess_os']:
+            wrap = False
+            proxy = True
+            func = None
+            try:
+                func = object.__getattribute__(self, name)
+                proxy = not getattr(func, '__ismethodimplemented__', False)
+                wrap = getattr(func, '__isusingtriorun__', False)
+            except:
+                pass
+            if func and not callable(func):
+                self.logger.debug(f'{func} is not a function')
+                return func
+            self.logger.debug(f'async func: {func} - proxy: {proxy}, wrap: {wrap}')
+            if wrap:
+                realname = f'_async_{name}' if not name.startswith('_') else f'_async{name}'
+                realfunc = object.__getattribute__(self, realname)
+                return ProxyAsyncCall(realfunc, realname, self)
+            if proxy:
+                return ProxyAsyncCall(func, name, self)
+            elif func:
+                return func
+        return object.__getattribute__(self, name)
+
+
+class ProxyAsyncCall(object):
+    """Class to dispatch call of unknown methods in order to dynamically
+    implements their async variant."""
+    def __init__(self, func, name, proxy):
+        """
+        :param proxy: function to proxify
+        :type proxy: function
+
+        :param name: Name of the method to proxify
+        :type name: str
+
+        :param proxy: Object to proxify
+        :type proxy: :class:`Burp`
+        """
+        self.func = func
+        self.name = name
+        self.proxy = proxy
+
+    async def __call__(self, *args, **kwargs):
+        """This is where the proxy call (and the magic) occurs"""
+        # retrieve the original function prototype
+        proto = getattr(BUIbackend, self.name, None) or getattr(self.proxy, self.name)
+        args_name = list(proto.__code__.co_varnames)
+        # skip self
+        args_name.pop(0)
+        # we transform unnamed arguments to named ones
+        # example:
+        #     def my_function(toto, tata=None, titi=None):
+        #
+        #     x = my_function('blah', titi='blih')
+        #
+        # => {'toto': 'blah', 'titi': 'blih'}
+        encoded_args = {}
+        for idx, opt in enumerate(args):
+            encoded_args[args_name[idx]] = opt
+        encoded_args.update(kwargs)
+
+        if iscoroutinefunction(self.func):
+            return await self.func(**encoded_args)
+        return self.func(**encoded_args)

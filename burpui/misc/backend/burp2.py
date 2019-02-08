@@ -376,7 +376,11 @@ class Burp(Burp1):
         except KeyError:
             self.logger.warning('Client not found')
             return ret
+        return self._do_get_counters(client)
 
+    def _do_get_counters(self, data):
+        ret = {}
+        client = data
         # check the client is currently backing-up
         if 'run_status' not in client or client['run_status'] != 'running':
             return ret
@@ -486,13 +490,14 @@ class Burp(Burp1):
             query = self.status('c:{0}\n'.format(name))
         except BUIserverException:
             return False
-        if not query:
-            return False
-        try:
-            return query['clients'][0]['run_status'] in ['running']
-        except KeyError:
-            self.logger.warning('Client not found')
-            return False
+        return self._do_is_backup_running(query)
+
+    def _do_is_backup_running(self, data):
+        if data:
+            try:
+                return data['clients'][0]['run_status'] in ['running']
+            except KeyError:
+                pass
         return False
 
     def is_one_backup_running(self, agent=None):
@@ -504,7 +509,11 @@ class Burp(Burp1):
             clients = self.get_all_clients()
         except BUIserverException:
             return ret
-        for client in clients:
+        return self._do_is_one_backup_running(clients)
+
+    def _do_is_one_backup_running(self, data):
+        ret = []
+        for client in data:
             if client['state'] in ['running']:
                 ret.append(client['name'])
         return ret
@@ -631,6 +640,11 @@ class Burp(Burp1):
         except (KeyError, IndexError):
             self.logger.warning('Client not found')
             return ret
+        return self._do_get_client_status(client)
+
+    def _do_get_client_status(self, data):
+        ret = {}
+        client = data
         ret['state'] = self._status_human_readable(client['run_status'])
         infos = client['backups']
         if ret['state'] in ['running']:
@@ -641,7 +655,7 @@ class Burp(Burp1):
                     if 'action' in child and child['action'] == 'backup':
                         ret['phase'] = child['phase']
                         break
-            counters = self.get_counters(name)
+            counters = self._do_get_counters(client)
             if 'percent' in counters:
                 ret['percent'] = counters['percent']
             else:
@@ -736,6 +750,10 @@ class Burp(Burp1):
         query = self.status('c:{0}:b:{1}\n'.format(name, backup))
         if not query:
             return False
+        return self._do_is_backup_deletable(query)
+
+    def _do_is_backup_deletable(self, data):
+        query = data
         try:
             flags = query['clients'][0]['backups'][0]['flags']
             return 'deletable' in flags

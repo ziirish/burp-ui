@@ -9,9 +9,10 @@
 """
 import os
 import re
-import logging
 
 from abc import ABCMeta, abstractmethod
+
+from ...tools.logging import logger
 
 G_BURPPORT = 4972
 G_BURPHOST = '::1'
@@ -44,7 +45,7 @@ class BUIbackend(object, metaclass=ABCMeta):
     # Defaults config parameters
     defaults = {}
 
-    logger = logging.getLogger('burp-ui')
+    logger = logger
 
     def __init__(self, server=None, conf=None):  # pragma: no cover
         """
@@ -1143,3 +1144,6 @@ class BUIbackend(object, metaclass=ABCMeta):
         returns the version of the given agent.
         """
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+
+
+BUIBACKEND_INTERFACE_METHODS = BUIbackend.__abstractmethods__.copy()
