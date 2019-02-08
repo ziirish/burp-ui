@@ -81,8 +81,8 @@ class BUIauditLogger(BUIauditLoggerInterface):
         caller = ''
         stack = inspect.stack()
         exclude = [
-            'interface.py',
-            'handler.py',
+            'audit/interface.py',
+            'audit/handler.py',
         ]
         for frame in stack:
             if any([frame.filename.endswith(x) for x in exclude]):

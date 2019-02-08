@@ -10,8 +10,9 @@
 import os
 import re
 import sys
-import logging
+import logging  # noqa
 
+from ..tools.logging import logger
 from ..misc.auth.handler import UserAuthHandler
 from ..misc.acl.handler import ACLloader
 from ..misc.audit.handler import BUIauditLoader
@@ -92,7 +93,7 @@ class BUIServer(Flask):
         super(BUIServer, self).__init__('burpui')
         self.init = False
         # We cannot override the Flask's logger so we use our own
-        self._logger = logging.getLogger('burp-ui')
+        self._logger = logger
         self._logger.disabled = True
         self.conf = config
         # switch the flask config with our magic config object

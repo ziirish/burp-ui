@@ -9,7 +9,7 @@
 """
 from abc import ABCMeta, abstractmethod
 
-import logging
+from ...tools.logging import logger
 
 
 class BUIparser(object, metaclass=ABCMeta):
@@ -17,7 +17,7 @@ class BUIparser(object, metaclass=ABCMeta):
     interface for ``burp`` configuration files parser.
     """
 
-    logger = logging.getLogger('burp-ui')
+    logger = logger
 
     @abstractmethod
     def read_server_conf(self, conf=None):

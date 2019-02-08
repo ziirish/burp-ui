@@ -10,14 +10,15 @@
 import os
 import re
 import codecs
-import logging
 import configobj
 import validate
+
+from .tools.logging import logger
 
 
 class BUIConfig(dict):
     """Custom config parser"""
-    logger = logging.getLogger('burp-ui')
+    logger = logger
     mtime = 0
 
     def __init__(self, config=None, explain=False, defaults=None):

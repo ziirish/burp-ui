@@ -113,8 +113,8 @@ setup(
         (confdir, [os.path.join(confdir, 'buiagent.sample.cfg')]),
     ],
     install_requires=[
-        'trio==0.4.0',
-        'arrow==0.12.0',
+        'trio==0.10.0',
+        'arrow==0.12.1',
         'tzlocal==1.5.1',
         'pyOpenSSL>=17.5.0',
         'configobj==5.0.6',

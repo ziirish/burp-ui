@@ -12,7 +12,6 @@ import os
 import sys
 import uuid
 import hashlib
-import logging
 
 from flask import Blueprint, Response, request, current_app, session, abort
 from flask_restplus import Api as ApiPlus
@@ -25,6 +24,7 @@ from ..desc import __version__, __release__, __url__, __doc__
 from ..engines.server import BUIServer  # noqa
 from ..exceptions import BUIserverException
 from ..config import config
+from ..tools.logging import logger
 
 bui = current_app  # type: BUIServer
 EXEMPT_METHODS = set(['OPTIONS'])
@@ -95,7 +95,7 @@ def check_acl(func):
 
 class Api(ApiPlus):
     """Wrapper class around :class:`flask_restplus.Api`"""
-    logger = logging.getLogger('burp-ui')
+    logger = logger
     # TODO: should use global object instead of reference
     loaded = False
     release = __release__

@@ -20,8 +20,9 @@ ROOT = os.path.dirname(os.path.realpath(__file__))
 # Try to load modules from our current env first
 sys.path.insert(0, os.path.join(ROOT, '..'))
 
-logger = logging.getLogger('burp-ui')
-logger.setLevel(logging.CRITICAL)
+from burpui_agent.tools.logging import logger
+
+logger.init_logger(config=dict(level=logging.CRITICAL))
 
 
 def parse_args(name=None):
@@ -30,7 +31,6 @@ def parse_args(name=None):
         mname = 'bui-agent'
     parser = ArgumentParser(prog=mname)
     parser.add_argument('-v', '--verbose', dest='log', help='increase output verbosity (e.g., -vv is more verbose than -v)', action='count')
-    parser.add_argument('-d', '--debug', dest='debug', help='enable debug mode', action='store_true')
     parser.add_argument('-V', '--version', dest='version', help='print version and exit', action='store_true')
     parser.add_argument('-c', '--config', dest='config', help='burp-ui configuration file', metavar='<CONFIG>')
     parser.add_argument('-l', '--logfile', dest='logfile', help='output logs in defined file', metavar='<FILE>')
@@ -75,7 +75,7 @@ def agent(options=None):
         conf = lookup_file(conf)
     check_config(conf)
 
-    agent = Agent(conf, options.log, options.logfile, options.debug)
+    agent = Agent(conf, options.log, options.logfile)
     trio.run(agent.run)
 
 

@@ -7,12 +7,13 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
-import logging
 import inspect
 import json
 
 from flask_restplus import Resource as ResourcePlus
 from flask_restplus.errors import abort
+
+from ...tools.logging import logger
 
 
 class Resource(ResourcePlus):
@@ -21,7 +22,7 @@ class Resource(ResourcePlus):
     # per resource
     login_required = True
 
-    logger = logging.getLogger('burp-ui')
+    logger = logger
 
     def abort(self, code=500, message=None, **kwargs):
         """

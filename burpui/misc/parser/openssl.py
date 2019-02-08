@@ -8,11 +8,12 @@
 import os
 import re
 import codecs
-import logging
 import subprocess
 
 from hashlib import md5
 from OpenSSL import crypto
+
+from ...tools.logging import logger
 
 
 class OSSLAuth(object):
@@ -29,7 +30,7 @@ class OSSLAuth(object):
         :param global_conf: Global config
         :type global_conf: :class:`burpui.misc.parser.utils.Config`
         """
-        self.logger = logging.getLogger('burp-ui')
+        self.logger = logger
         self.name = ca_name
         self.ossl_conf = ossl_conf
         self.global_conf = global_conf
