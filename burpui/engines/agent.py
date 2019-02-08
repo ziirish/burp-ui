@@ -15,8 +15,6 @@ import json
 import logging
 import trio
 
-from logging.handlers import RotatingFileHandler
-
 from ..exceptions import BUIserverException
 from ..misc.backend.interface import BUIbackend
 from .._compat import pickle, to_bytes, to_unicode
@@ -53,20 +51,24 @@ class BurpHandler(BUIbackend):
     BUIbackend.__abstractmethods__ = frozenset()
 
     def __init__(self, backend='burp2', logger=None, conf=None):
-        self.backend = backend
+        self.backend_name = backend
+        self.is_async = backend == 'parallel'
         self.logger = logger
 
         top = __name__
-        if '.' in self.backend:
-            module = self.backend
+        if '.' in self.backend_name:
+            module = self.backend_name
         else:
             if '.' in top:
                 top = top.split('.')[0]
-            module = '{0}.misc.backend.{1}'.format(top, self.backend)
+            module = '{0}.misc.backend.{1}'.format(top, self.backend_name)
         try:
             sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
             mod = __import__(module, fromlist=['Burp'])
-            Client = mod.Burp
+            if self.is_async:
+                Client = mod.AsyncBurp
+            else:
+                Client = mod.Burp
             self.backend = Client(conf=conf)
             stats = self.backend.statistics()
             if 'alive' not in stats or not stats['alive']:
@@ -78,7 +80,7 @@ class BurpHandler(BUIbackend):
     def __getattribute__(self, name):
         # always return this value because we need it and if we don't do that
         # we'll end up with an infinite loop
-        if name == 'foreign' or name == 'backend':
+        if name in ['foreign', 'backend', 'logger', 'is_async']:
             return object.__getattribute__(self, name)
         # now we can retrieve the 'foreign' list and know if the object called
         # is in the backend
@@ -97,36 +99,10 @@ class BUIAgent(BUIbackend):
     def __init__(self, conf=None, level=0, logfile=None):
         self.padding = 1
         level = level or 0
-        if level > logging.NOTSET:
-            levels = [
-                logging.CRITICAL,
-                logging.ERROR,
-                logging.WARNING,
-                logging.INFO,
-                logging.DEBUG,
-            ]
-            if level >= len(levels):
-                level = len(levels) - 1
-            lvl = levels[level]
-            self.logger.setLevel(lvl)
-            if lvl > logging.DEBUG:
-                LOG_FORMAT = '[%(asctime)s] %(levelname)s in %(module)s.%(funcName)s: %(message)s'
-            else:
-                LOG_FORMAT = (
-                    '-' * 80 + '\n' +
-                    '%(levelname)s in %(module)s.%(funcName)s [%(pathname)s:%(lineno)d]:\n' +
-                    '%(message)s\n' +
-                    '-' * 80
-                )
-            if logfile:
-                handler = RotatingFileHandler(logfile, maxBytes=1024 * 1024 * 100, backupCount=20)
-            else:
-                handler = logging.StreamHandler()
-            handler.setLevel(lvl)
-            handler.setFormatter(logging.Formatter(LOG_FORMAT))
-            self.logger.addHandler(handler)
-            self.logger.info('conf: {}'.format(conf))
-            self.logger.info('level: {}'.format(logging.getLevelName(lvl)))
+        self.logger.init_logger(config=dict(level=level, logfile=logfile))
+        lvl = self.logger.getEffectiveLevel()
+        self.logger.info('conf: {}'.format(conf))
+        self.logger.info('level: {}'.format(logging.getLevelName(lvl)))
         if not conf:
             raise IOError('No configuration file found')
 
@@ -194,7 +170,10 @@ class BUIAgent(BUIbackend):
                 elif j['func'] == 'agent_version':
                     res = json.dumps(__version__)
                 elif j['func'] == 'restore_files':
-                    res, err = getattr(self.client, j['func'])(**j['args'])
+                    if self.client.is_async:
+                        res, err = await getattr(self.client, j['func'])(**j['args'])
+                    else:
+                        res, err = getattr(self.client, j['func'])(**j['args'])
                     if err:
                         await server_stream.send_all(b'ER')
                         await server_stream.send_all(struct.pack('!Q', len(err)))
@@ -258,6 +237,7 @@ class BUIAgent(BUIbackend):
                         os.unlink(path)
                         res = json.dumps(True)
                 else:
+                    callback = getattr(self.client, j['func'])
                     if j['args']:
                         if 'pickled' in j and j['pickled']:
                             # de-serialize arguments if needed
@@ -280,9 +260,16 @@ class BUIAgent(BUIbackend):
                             data = b64decode(pickles)
                             data = data.replace(b'burpui.datastructures', to_bytes(f'{mod}.datastructures'))
                             j['args'] = pickle.loads(data)
-                        res = json.dumps(getattr(self.client, j['func'])(**j['args']))
+
+                        if self.client.is_async:
+                            res = json.dumps(await callback(**j['args']))
+                        else:
+                            res = json.dumps(callback(**j['args']))
                     else:
-                        res = json.dumps(getattr(self.client, j['func'])())
+                        if self.client.is_async:
+                            res = json.dumps(await callback())
+                        else:
+                            res = json.dumps(callback())
                 self.logger.info(f'result: {res}')
                 await server_stream.send_all(b'OK')
             except (BUIserverException, Exception) as exc:

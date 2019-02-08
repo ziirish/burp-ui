@@ -11,8 +11,6 @@ import time
 import datetime
 
 from functools import wraps
-from wsgiref.handlers import format_date_time
-from flask_restplus.utils import unpack
 
 
 def browser_cache(expires=None):
@@ -31,6 +29,9 @@ def browser_cache(expires=None):
             return render_template('index.html')
 
     """
+    from wsgiref.handlers import format_date_time
+    from flask_restplus.utils import unpack
+
     def cache_decorator(view):
         @wraps(view)
         def cache_func(*args, **kwargs):
@@ -64,5 +65,25 @@ def implement(func):
     to indicate we don't want the default "magic" implementation and use the
     custom implementation instead.
     """
-    func.__ismethodimplemented__ = True
+    try:
+        func.__ismethodimplemented__ = True
+    except AttributeError:
+        # properties seem immutable
+        pass
+    return func
+
+
+def usetriorun(func):
+    """A decorator indicating the method uses trio.run
+
+    Such functions should always be written like this:
+
+    ::
+        def function(self, *args, **kwargs):
+            return trio.run(self._async_function, partial(*args, **kwargs))
+    """
+    try:
+        func.__isusingtriorun__ = True
+    except AttributeError:
+        pass
     return func

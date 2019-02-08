@@ -11,13 +11,13 @@ import re
 import subprocess
 import json
 import datetime
-import logging
 
 from select import select
 
 from ...._compat import to_bytes, to_unicode
 from ....exceptions import BUIserverException
 from ....security import sanitize_string
+from ....tools.logging import logger
 from .constant import BURP_LIST_BATCH, BURP_MINIMAL_VERSION, BURP_STATUS_FORMAT_V2, \
     BURP_STATUS_DELIMITER
 
@@ -39,7 +39,7 @@ class Monitor(object):
     :param timeout: Time to wait for an answer
     :type timeout: int
     """
-    logger = logging.getLogger('burp-ui')
+    logger = logger
 
     # cache status results
     _status_cache = {}
