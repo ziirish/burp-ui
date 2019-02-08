@@ -10,7 +10,7 @@
 import os
 import re
 import sys
-import logging
+import logging  # noqa
 
 from ..tools.logging import logger
 from ..misc.auth.handler import UserAuthHandler
