@@ -124,9 +124,9 @@ class BUIAgent(BUIbackend, BUIlogging):
                 LOG_FORMAT = '[%(asctime)s] %(levelname)s in %(module)s.%(funcName)s: %(message)s'
             else:
                 LOG_FORMAT = (
-                    '-' * 80 + '\n' +
-                    '%(levelname)s in %(module)s.%(funcName)s [%(pathname)s:%(lineno)d]:\n' +
-                    '%(message)s\n' +
+                    '-' * 80 + '\n'
+                    '%(levelname)s in %(module)s.%(funcName)s [%(pathname)s:%(lineno)d]:\n'
+                    '%(message)s\n'
                     '-' * 80
                 )
             if logfile:
