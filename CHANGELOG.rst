@@ -5,6 +5,7 @@ Changelog
 -----
 
 - Fix: support burp-2.2.16 `#291 <https://git.ziirish.me/ziirish/burp-ui/issues/291>`_
+- Fix: issue `#268 <https://git.ziirish.me/ziirish/burp-ui/issues/268>`_
 
 0.6.1 (05/17/2018)
 ------------------
@@ -12,7 +13,7 @@ Changelog
 - Improvement: Don't cache any data when there is a running backup
 - Fix: cannot display bui-agent version
 - Fix: live-monitor was broken do to a missing cache
-- `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/0.6.0...master>`__
+- `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/0.6.0...0.6.1>`__
 
 0.6.0 (05/14/2018)
 ------------------

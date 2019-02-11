@@ -108,7 +108,7 @@ var _client_table = $('#table-client').DataTable( {
 				if (type === 'filter' || type === 'sort') {
 					return data.number;
 				}
-				return '<a href="{{ url_for("view.client_browse", name=cname, server=server) }}/'+data.number+(data.encrypted?'&encrypted=1':'')+'" style="color: inherit; text-decoration: inherit;">'+pad(data.number, 7)+'</a>';
+				return '<a href="{{ url_for("view.client_browse", name=cname, server=server) }}/'+data.number+(data.encrypted?'?encrypted=1':'')+'" style="color: inherit; text-decoration: inherit;">'+pad(data.number, 7)+'</a>';
 			}
 		},
 		{
@@ -160,19 +160,6 @@ var _client_table = $('#table-client').DataTable( {
 var first = true;
 
 var _client = function() {
-	if (!__init_complete) {
-		return;
-	}
-	if (first) {
-		first = false;
-	} else {
-		if (!AJAX_CACHE) {
-			_cache_id = new Date().getTime();
-		}
-		_client_table.ajax.reload( null, false );
-		AJAX_CACHE = true;
-	}
-
 	url_restore = '{{ url_for("api.is_server_restore", name=cname, server=server) }}';
 	$.getJSON(url_restore, function(d) {
 		if (d.found) {
@@ -200,6 +187,19 @@ var _client = function() {
 	}).fail(function() {
 		$('#controls').hide();
 	});
+
+	if (!__init_complete) {
+		return;
+	}
+	if (first) {
+		first = false;
+	} else {
+		if (!AJAX_CACHE) {
+			_cache_id = new Date().getTime();
+		}
+		_client_table.ajax.reload( null, false );
+		AJAX_CACHE = true;
+	}
 };
 
 {{ macros.page_length('#table-client') }}
