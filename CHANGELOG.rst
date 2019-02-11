@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.6.2
+-----
+
+- Fix: support burp-2.2.16 `#291 <https://git.ziirish.me/ziirish/burp-ui/issues/291>`_
+
 0.6.1 (05/17/2018)
 ------------------
 
