@@ -33,6 +33,7 @@ BURP_MINIMAL_VERSION = 'burp-2.0.18'
 BURP_LIST_BATCH = '2.0.48'
 BURP_STATUS_FORMAT_V2 = '2.1.10'
 BURP_REVERSE_COUNTERS = '2.1.6'
+BURP_LISTEN_OPTION = '2.2.10'
 
 try:
     import gevent
@@ -85,8 +86,8 @@ class Burp(Burp1):
         :type conf: :class:`burpui.config.BUIConfig`
         """
         self.proc = None
-        self.client_version = None
-        self.server_version = None
+        self._client_version = None
+        self._server_version = None
         self.batch_list_supported = False
 
         self.plock = RLock()
@@ -131,7 +132,7 @@ class Burp(Burp1):
                     'Unable to determine your burp version: {}'.format(str(exp))
                 )
 
-        self.client_version = version.replace('burp-', '')
+        self._client_version = version.replace('burp-', '')
 
         self.parser = Parser(self)
 
@@ -156,6 +157,16 @@ class Burp(Burp1):
             except OSError as exp:
                 msg = str(exp)
                 self.logger.critical(msg)
+
+    @property
+    def server_version(self):
+        if self._server_version is None:
+            self.status()
+        return self._server_version
+
+    @property
+    def client_version(self):
+        return self._client_version
 
     def __exit__(self, typ, value, traceback):
         """try not to leave child process server side"""
@@ -227,15 +238,15 @@ class Burp(Burp1):
         """We ignore the 'logline' lines"""
         if not jso:
             return True
-        if not self.server_version:
+        if not self._server_version:
             if 'logline' in jso:
                 ret = re.search(
                     r'^Server version: (\d+\.\d+\.\d+).*$',
                     jso['logline']
                 )
                 if ret:
-                    self.server_version = ret.group(1)
-                    if self.server_version >= BURP_LIST_BATCH:
+                    self._server_version = ret.group(1)
+                    if self._server_version >= BURP_LIST_BATCH:
                         self.batch_list_supported = True
         return 'logline' in jso
 
@@ -600,7 +611,7 @@ class Burp(Burp1):
             if counter['name'] not in single:
                 # Prior burp-2.1.6 some counters are reversed
                 # See https://github.com/grke/burp/commit/adeb3ad68477303991a393fa7cd36bc94ff6b429
-                if self.server_version and self.server_version < BURP_REVERSE_COUNTERS:
+                if self._server_version and self._server_version < BURP_REVERSE_COUNTERS:
                     ret[name] = [
                         counter['count'],
                         counter['same'],     # reversed
@@ -981,14 +992,12 @@ class Burp(Burp1):
         """See
         :func:`burpui.misc.backend.interface.BUIbackend.get_client_version`
         """
-        return self.client_version
+        return self._client_version
 
     def get_server_version(self, agent=None):
         """See
         :func:`burpui.misc.backend.interface.BUIbackend.get_server_version`
         """
-        if not self.server_version:
-            self.status()
         return self.server_version
 
     def get_client_labels(self, client=None, agent=None):
