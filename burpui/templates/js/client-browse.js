@@ -159,7 +159,9 @@ $( document ).ready(function() {
 		}
 	};
 
-	toggleRestorationForms(tree);
+	$('#tree').on('fancytreeinit', function() {
+		toggleRestorationForms(tree);
+	});
 
 	$("input[name=search-tree]").keyup(function(e){
 		var n,

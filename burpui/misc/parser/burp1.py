@@ -34,8 +34,8 @@ class Parser(Doc):
         :type backend: :class:`burpui.misc.backend.burp1.Burp`
         """
         self.backend = backend
-        self.conf = backend.burpconfsrv
-        self.confcli = backend.burpconfcli
+        self.conf = getattr(backend, 'burpconfsrv', None)
+        self.confcli = getattr(backend, 'burpconfcli', None)
         self.logger.info('Parser initialized with: {}'.format(self.conf))
         self.clients = []
         self._server_conf = {}
