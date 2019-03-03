@@ -20,6 +20,7 @@ class Parser(Burp1):
 
     _pair_srv = None
     _pair_associations = None
+    _multi_srv = None
 
     @property
     def pair_associations(self):
@@ -57,6 +58,19 @@ class Parser(Burp1):
                 ]
         return self._pair_srv
 
+    @property
+    def multi_srv(self):
+        if self._multi_srv is None:
+            self._multi_srv = Burp1.multi_srv + [
+                u'label'
+            ]
+            if self.backend and getattr(self.backend, 'server_version', '') >= '2.2.10':
+                self._multi_srv += [
+                    u'status_port',
+                    u'port'
+                ]
+        return self._multi_srv
+
     integer_srv = Burp1.integer_srv
     for rem in ['port', 'max_children', 'status_port', 'max_status_children']:
         integer_srv.remove(rem)
@@ -67,9 +81,6 @@ class Parser(Burp1):
         u'status_port': u'integer',
         u'max_status_children': u'integer',
     })
-    multi_srv = Burp1.multi_srv + [
-        u'label',
-    ]
     string_srv = Burp1.string_srv + [
         u'manual_delete',
         u'rblk_memory_max',
