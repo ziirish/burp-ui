@@ -1186,9 +1186,9 @@ class File(dict):
             with codecs.open(dest, 'w', 'utf-8', errors='ignore') as fil:
                 # f.write('# Auto-generated configuration using Burp-UI\n')
                 data_keys = list(data.keys())
-                if len(self.template) > 0 or 'templates' in data:
+                if 'templates' in data:
                     _dump(' {}'.format(BEGIN_TEMPLATES), True)
-                    tpls = data.getlist('templates') or [x['value'] for x in self.template]
+                    tpls = data.getlist('templates')
                     for tpl in tpls:
                         self._write_key(fil, '.', tpl)
                     _dump(' {}'.format(END_TEMPLATES), True)
