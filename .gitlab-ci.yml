@@ -1,5 +1,13 @@
 variables:
+  GIT_DEPTH: 1
   GIT_SUBMODULE_STRATEGY: recursive
+  DOCKER_DRIVER: overlay2
+  DOCKER_HOST: tcp://localhost:2375
+
+image: docker:git
+
+services:
+  - docker:dind
 
 stages:
   - test
