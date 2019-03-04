@@ -4,6 +4,8 @@ Changelog
 0.6.2
 -----
 
+- Fix: wrong command suggestion `#296 <https://git.ziirish.me/ziirish/burp-ui/issues/296>`__
+- Fix: allow templates removal `#290 <https://git.ziirish.me/ziirish/burp-ui/issues/290>`__
 - Fix: support burp-2.2.16 `#291 <https://git.ziirish.me/ziirish/burp-ui/issues/291>`_
 - Fix: issue `#268 <https://git.ziirish.me/ziirish/burp-ui/issues/268>`_
 
