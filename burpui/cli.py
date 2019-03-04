@@ -337,7 +337,7 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database, plugins, dry):
         msg = str(e)
 
     if msg:
-        _die(msg, 'setup_burp')
+        _die(msg, 'setup-burp')
 
     from .misc.parser.utils import Config
     from .misc.backend.burp2 import BURP_LISTEN_OPTION
@@ -1024,7 +1024,7 @@ def diag(client, host, tips):
                 'modifications that will be applied. Once you are OK with '
                 'those, you can re-run the command without the \'--dry\' flag):'
             )
-            log('    > bui-manage setup_burp --host="{}" --client="{}" --dry'.format(host, client))
+            log('    > bui-manage setup-burp --host="{}" --client="{}" --dry'.format(host, client))
     else:
         ok(
             'Congratulations! It seems everything is alright. Burp-UI '
