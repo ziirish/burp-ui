@@ -66,9 +66,10 @@ class Burp(Burp1):
         BUIbackend.__init__(self, server, conf)
 
         self.monitor = Monitor(self.burpbin, self.burpconfcli, self.app, self.timeout)
-        self.parser = Parser(self)
 
         self.batch_list_supported = self.monitor.batch_list_supported
+
+        self.parser = Parser(self)
 
         self.logger.info(f'burp binary: {self.burpbin}')
         self.logger.info(f'strip binary: {self.stripbin}')

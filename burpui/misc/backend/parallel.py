@@ -45,7 +45,6 @@ class Parallel:
         :param conf: Configuration to use
         :type conf: :class:`burpui.config.BUIConfig`
         """
-
         self.host = conf.safe_get('host', section='Parallel', defaults=BUI_DEFAULTS)
         self.port = conf.safe_get('port', 'integer', section='Parallel', defaults=BUI_DEFAULTS)
         self.ssl = conf.safe_get('ssl', 'boolean', section='Parallel', defaults=BUI_DEFAULTS)
@@ -196,10 +195,10 @@ class Burp(Burp2):
 
         BUIbackend.__init__(self, server, conf)
 
-        self.parser = Parser(self)
         self.conf = conf
-
         self.concurrency = conf.safe_get('concurrency', 'integer', section='Parallel', defaults=BUI_DEFAULTS)
+
+        self.parser = Parser(self)
 
         self.logger.info('burp conf cli: {}'.format(self.burpconfcli))
         self.logger.info('burp conf srv: {}'.format(self.burpconfsrv))

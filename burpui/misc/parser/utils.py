@@ -1611,10 +1611,9 @@ class Config(File):
     def _get(self, key, default=None, raw=False):
         self._refresh()
         try:
-            if key in self._options_for_type('pair') and not raw:
-                obj = self.options[key].get(key)
-            else:
-                obj = self.options[key]
+            obj = self.options[key]
+            if obj.type in ['pair'] and not raw:
+                obj = obj.get(key)
         except KeyError:
             if default:
                 return default

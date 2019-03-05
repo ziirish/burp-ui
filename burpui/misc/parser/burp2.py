@@ -27,19 +27,19 @@ class Parser(Burp1):
     @property
     def pair_associations(self):
         if self._pair_associations is None:
-            if self.backend and (getattr(self.backend, 'server_version', None) or '') >= BURP_BIND_MULTIPLE:
-                self._pair_associations = {
-                    'port': 'max_children',
-                    'max_children': 'port',
-                    'status_port': 'max_status_children',
-                    'max_status_children': 'status_port',
-                }
-            elif self.backend and (getattr(self.backend, 'server_version', None) or '') >= BURP_LISTEN_OPTION:
+            if self.backend and (getattr(self.backend, 'server_version', None) or '') >= BURP_LISTEN_OPTION:
                 self._pair_associations = {
                     'listen': 'max_children',
                     'max_children': 'listen',
                     'listen_status': 'max_status_children',
                     'max_status_children': 'listen_status',
+                }
+            elif self.backend and (getattr(self.backend, 'server_version', None) or '') >= BURP_BIND_MULTIPLE:
+                self._pair_associations = {
+                    'port': 'max_children',
+                    'max_children': 'port',
+                    'status_port': 'max_status_children',
+                    'max_status_children': 'status_port',
                 }
             else:
                 self._pair_associations = {}
@@ -48,18 +48,18 @@ class Parser(Burp1):
     @property
     def pair_srv(self):
         if self._pair_srv is None:
-            if self.backend and (getattr(self.backend, 'server_version', None) or '') >= BURP_BIND_MULTIPLE:
-                self._pair_srv = [
-                    'port',
-                    'max_children',
-                    'status_port',
-                    'max_status_children',
-                ]
-            elif self.backend and (getattr(self.backend, 'server_version', None) or '') >= BURP_LISTEN_OPTION:
+            if self.backend and (getattr(self.backend, 'server_version', None) or '') >= BURP_LISTEN_OPTION:
                 self._pair_srv = [
                     'listen',
                     'max_children',
                     'listen_status',
+                    'max_status_children',
+                ]
+            elif self.backend and (getattr(self.backend, 'server_version', None) or '') >= BURP_BIND_MULTIPLE:
+                self._pair_srv = [
+                    'port',
+                    'max_children',
+                    'status_port',
                     'max_status_children',
                 ]
             else:
