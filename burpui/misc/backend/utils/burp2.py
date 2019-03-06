@@ -124,13 +124,13 @@ class Monitor(object):
 
     @property
     def client_version(self):
-        return self._client_version
+        return self._client_version or ''
 
     @property
     def server_version(self):
         if self._server_version is None:
             self.status()
-        return self._server_version
+        return self._server_version or ''
 
     def _exit(self):
         """try not to leave child process server side"""

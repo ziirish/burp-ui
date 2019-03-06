@@ -230,12 +230,12 @@ class Burp(Burp2):
     def get_client_version(self, agent=None):
         if self._client_version is None:
             self._client_version = trio.run(self._async_request, 'client_version')
-        return self._client_version
+        return self._client_version or ''
 
     def get_server_version(self, agent=None):
         if self._server_version is None:
             self._server_version = trio.run(self._async_request, 'server_version')
-        return self._server_version
+        return self._server_version or ''
 
     async def _async_status(self, query='c:\n', timeout=None, cache=True, agent=None):
         async_client = Parallel(self.conf)

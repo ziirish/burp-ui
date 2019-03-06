@@ -118,7 +118,7 @@ class BurpuiAPITestCase(TestCase):
 
     def test_no_clients(self):
         response = self.client.get(url_for('api.clients_stats'))
-        self.assertEquals(json.loads(response.data.decode('utf-8'))['message'], u'Cannot contact burp server at 127.0.0.1:9999')
+        self.assertEqual(json.loads(response.data.decode('utf-8'))['message'], u'Cannot contact burp server at 127.0.0.1:9999')
         self.assert500(response)
 
     def test_server_config_parsing(self):
@@ -149,7 +149,7 @@ class BurpuiAPITestCase(TestCase):
                     (u'suggest', self.bui.client.get_parser_attr('values')),
                     (u'placeholders', self.bui.client.get_parser_attr('placeholders')),
                     (u'defaults', self.bui.client.get_parser_attr('defaults'))))
-        self.assertEquals(response.json, asse)
+        self.assertEqual(response.json, asse)
 
     def test_client_config_parsing(self):
         rv = self.login('admin', 'admin')
@@ -177,7 +177,7 @@ class BurpuiAPITestCase(TestCase):
                     (u'suggest', self.bui.client.get_parser_attr('values')),
                     (u'placeholders', self.bui.client.get_parser_attr('placeholders')),
                     (u'defaults', self.bui.client.get_parser_attr('defaults'))))
-        self.assertEquals(response.json, asse)
+        self.assertEqual(response.json, asse)
 
     def test_restore(self):
         response = self.client.post(url_for('api.restore', name='dummy', backup=1), data=dict(strip=False))
@@ -185,7 +185,7 @@ class BurpuiAPITestCase(TestCase):
 
     def test_running_clients(self):
         response = self.client.get(url_for('api.running_clients'))
-        self.assertEquals(response.json, [])
+        self.assertEqual(response.json, [])
 
     def test_live_rendering(self):
         response = self.client.get(url_for('api.counters', client='toto'))
@@ -195,37 +195,37 @@ class BurpuiAPITestCase(TestCase):
 
     def test_servers_json(self):
         response = self.client.get(url_for('api.servers_stats'))
-        self.assertEquals(response.json, [])
+        self.assertEqual(response.json, [])
 
     def test_live(self):
         response = self.client.get(url_for('api.live'))
-        self.assertEquals(response.json, [])
+        self.assertEqual(response.json, [])
 
     def test_running(self):
         response = self.client.get(url_for('api.running_backup'))
-        self.assertEquals(response.json, dict(running=False))
+        self.assertEqual(response.json, dict(running=False))
 
     def test_client_tree(self):
         response = self.client.get(url_for('api.client_tree', name='toto', backup=1))
-        self.assertEquals(json.loads(response.data.decode('utf-8'))['message'], u'Cannot contact burp server at 127.0.0.1:9999')
+        self.assertEqual(json.loads(response.data.decode('utf-8'))['message'], u'Cannot contact burp server at 127.0.0.1:9999')
         self.assert500(response)
 
     def test_clients_report_json(self):
         response = self.client.get(url_for('api.clients_report'))
-        self.assertEquals(json.loads(response.data.decode('utf-8'))['message'], u'Cannot contact burp server at 127.0.0.1:9999')
+        self.assertEqual(json.loads(response.data.decode('utf-8'))['message'], u'Cannot contact burp server at 127.0.0.1:9999')
         self.assert500(response)
 
     def test_client_stat_json(self):
         response = self.client.get(url_for('api.client_stats', name='toto'))
-        self.assertEquals(json.loads(response.data.decode('utf-8'))['message'], u'Cannot contact burp server at 127.0.0.1:9999')
+        self.assertEqual(json.loads(response.data.decode('utf-8'))['message'], u'Cannot contact burp server at 127.0.0.1:9999')
         self.assert500(response)
         response = self.client.get(url_for('api.client_stats', name='toto', backup=1))
-        self.assertEquals(json.loads(response.data.decode('utf-8'))['message'], u'Cannot contact burp server at 127.0.0.1:9999')
+        self.assertEqual(json.loads(response.data.decode('utf-8'))['message'], u'Cannot contact burp server at 127.0.0.1:9999')
         self.assert500(response)
 
     def test_client_json(self):
         response = self.client.get(url_for('api.client_report', name='toto'))
-        self.assertEquals(json.loads(response.data.decode('utf-8'))['message'], u'Cannot contact burp server at 127.0.0.1:9999')
+        self.assertEqual(json.loads(response.data.decode('utf-8'))['message'], u'Cannot contact burp server at 127.0.0.1:9999')
         self.assert500(response)
 
 
@@ -536,12 +536,12 @@ class BurpuiRedisTestCase(TestCase):
 #    def test_server_config_parsing(self):
 #        rv = self.login('toto', 'toto')
 #        response = self.client.get(url_for('api.server_settings', server='dummy'))
-#        self.assertEquals(response.json, {u'message': u'Sorry, you don\'t have rights to access the setting panel'})
+#        self.assertEqual(response.json, {u'message': u'Sorry, you don\'t have rights to access the setting panel'})
 #
 #    def test_client_config_parsing(self):
 #        rv = self.login('toto', 'toto')
 #        response = self.client.get(url_for('api.client_settings', client='toto', server='dummy'))
-#        self.assertEquals(response.json, {u'message': u'Sorry, you don\'t have rights to access the setting panel'})
+#        self.assertEqual(response.json, {u'message': u'Sorry, you don\'t have rights to access the setting panel'})
 #
 #    def test_restore(self):
 #        rv = self.login('toto', 'toto')
