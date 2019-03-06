@@ -66,8 +66,8 @@ class Monitor(object):
         self.timeout = timeout
         self.app = app
         self.proc = None
-        self.client_version = None
-        self.server_version = None
+        self._client_version = None
+        self._server_version = None
         self.batch_list_supported = False
         self.status_delimiter = False
         self.ident = ident or id(self)
@@ -109,7 +109,7 @@ class Monitor(object):
                     f'Unable to determine your burp version: {exp}'
                 )
 
-        self.client_version = version.replace('burp-', '')
+        self._client_version = version.replace('burp-', '')
 
         if self.app and not self.app.config['BUI_CLI']:
             try:
@@ -121,6 +121,16 @@ class Monitor(object):
             except OSError as exp:
                 msg = str(exp)
                 self.logger.critical(msg)
+
+    @property
+    def client_version(self):
+        return self._client_version or ''
+
+    @property
+    def server_version(self):
+        if self._server_version is None:
+            self.status()
+        return self._server_version or ''
 
     def _exit(self):
         """try not to leave child process server side"""
@@ -202,14 +212,14 @@ class Monitor(object):
         """We ignore the 'logline' lines"""
         if not jso:
             return True
-        if not self.server_version:
+        if not self._server_version:
             if 'logline' in jso:
                 ret = re.search(
                     r'^Server version: (\d+\.\d+\.\d+).*$',
                     jso['logline']
                 )
                 if ret:
-                    self.server_version = ret.group(1)
+                    self._server_version = ret.group(1)
                     if self.server_version >= BURP_LIST_BATCH:
                         self.batch_list_supported = True
                     if self.server_version >= BURP_STATUS_DELIMITER:

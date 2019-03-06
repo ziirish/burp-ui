@@ -78,28 +78,53 @@ try:
 except ImportError:
     pass
 
+# Utilities functions
+
 
 def _die(error, appli=None):
     appli = " '{}'".format(appli) if appli else ''
-    click.echo(
-        click.style(
-            'Unable to initialize the application{}: {}'.format(appli, error),
-            fg='red'
-        ),
-        err=True
+    err(
+        'Unable to initialize the application{}: {}'.format(appli, error),
     )
     sys.exit(2)
+
+
+def _log(message, *args, **kwargs):
+    color = kwargs.get('color', None)
+    err = kwargs.get('err', False)
+    msg = message % args if args else message
+    if color is not None:
+        msg = click.style(msg, fg=color)
+    click.echo(msg, err=err)
+
+
+def log(message='', *args):
+    _log(message, *args)
+
+
+def ok(message='', *args):
+    _log(message, *args, color='green')
+
+
+def info(message='', *args):
+    _log(message, *args, color='blue')
+
+
+def warn(message='', *args):
+    _log(message, *args, color='yellow')
+
+
+def err(message='', *args, **kwargs):
+    err = kwargs.get('err', True)
+    _log(message, *args, color='red', err=err)
 
 
 @app.cli.command()
 def legacy():
     """Legacy server for backward compatibility."""
-    click.echo(
-        click.style(
-            'If you want to pass options, you should run \'python -m burpui '
-            '-m legacy [...]\' instead',
-            fg='yellow'
-        )
+    warn(
+        'If you want to pass options, you should run \'python -m burpui '
+        '-m legacy [...]\' instead',
     )
     app.manual_run()
 
@@ -143,7 +168,7 @@ def create_user(backend, password, ask, verbose, name):
     if msg:
         _die(msg, 'create_user')
 
-    click.echo(click.style('[*] Adding \'{}\' user...'.format(name), fg='blue'))
+    info('[*] Adding \'{}\' user...'.format(name))
     try:
         handler = getattr(app, 'uhandler')
     except AttributeError:
@@ -151,14 +176,13 @@ def create_user(backend, password, ask, verbose, name):
 
     if not handler or len(handler.backends) == 0 or \
             backend not in handler.backends:
-        click.echo(click.style('[!] No authentication backend found', fg='red'))
+        err('[!] No authentication backend found')
         sys.exit(1)
 
     back = handler.backends[backend]
 
     if back.add_user is False:
-        click.echo(click.style("[!] The '{}' backend does not support user "
-                               "creation".format(backend), fg='red'))
+        err("[!] The '{}' backend does not support user creation".format(backend))
         sys.exit(2)
 
     if not password:
@@ -167,7 +191,7 @@ def create_user(backend, password, ask, verbose, name):
             password = getpass.getpass()
             confirm = getpass.getpass('Confirm: ')
             if password != confirm:
-                click.echo(click.style("[!] Passwords mismatch", fg='red'))
+                err("[!] Passwords mismatch")
                 sys.exit(3)
         else:
             import random
@@ -181,19 +205,14 @@ def create_user(backend, password, ask, verbose, name):
                 next_index = random.randrange(len(alphabet))
                 mypw += alphabet[next_index]
             password = mypw
-            click.echo(
-                click.style(
-                    '[+] Generated password: {}'.format(password),
-                    fg='blue'
-                )
-            )
+            info('[+] Generated password: {}'.format(password))
 
     success, message, _ = back.add_user(name, password)
-    click.echo(click.style(
+    _log(
         '[+] Success: {}{}'.format(
             success, ' -> {}'.format(message) if verbose and message else ''
         ),
-        fg='green' if success else 'red')
+        color='green' if success else 'red'
     )
 
 
@@ -211,10 +230,9 @@ def hash_password(password, username, batch):
     from werkzeug.security import generate_password_hash
 
     if batch and (not username or not password):
-        click.echo(click.style(
+        err(
             'You need to provide both a username and a password using the '
             '-u and -p flags!',
-            fg='red')
         )
         sys.exit(1)
 
@@ -226,22 +244,16 @@ def hash_password(password, username, batch):
 
     hashed = generate_password_hash(password)
     if not batch:
-        click.echo("'{}' hashed into: {}".format(
+        log("'{}' hashed into: {}".format(
             password if not askpass else '*' * 8,
-            hashed)
-        )
+            hashed
+        ))
     if username:
         if not batch:
-            click.echo(click.style(
-                '#8<{}'.format('-' * 77),
-                fg='blue')
-            )
-        click.echo('{} = {}'.format(username, hashed))
+            info('#8<{}'.format('-' * 77))
+        log('{} = {}'.format(username, hashed))
         if not batch:
-            click.echo(click.style(
-                '#8<{}'.format('-' * 77),
-                fg='blue')
-            )
+            info('#8<{}'.format('-' * 77))
 
 
 @app.cli.command()
@@ -251,9 +263,7 @@ def init_translation(language):
     try:
         import babel  # noqa
     except ImportError:
-        click.echo(
-            click.style('Missing i18n requirements, giving up', fg='yellow')
-        )
+        warn('Missing i18n requirements, giving up')
         return
     os.chdir(os.path.join(ROOT, '..'))
     os.system('pybabel extract -F babel.cfg -k __ -k lazy_gettext -o messages.pot burpui')
@@ -267,9 +277,7 @@ def update_translation():
     try:
         import babel  # noqa
     except ImportError:
-        click.echo(
-            click.style('Missing i18n requirements, giving up', fg='yellow')
-        )
+        warn('Missing i18n requirements, giving up')
         return
     os.chdir(os.path.join(ROOT, '..'))
     os.system('pybabel extract -F babel.cfg -k __ -k lazy_gettext -o messages.pot burpui')
@@ -283,9 +291,7 @@ def compile_translation():
     try:
         import babel  # noqa
     except ImportError:
-        click.echo(
-            click.style('Missing i18n requirements, giving up', fg='yellow')
-        )
+        warn('Missing i18n requirements, giving up')
         return
     os.chdir(os.path.join(ROOT, '..'))
     os.system('pybabel compile -f -d burpui/translations')
@@ -319,34 +325,19 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database,
                plugins, monitor, concurrency, backend, dry):
     """Setup burp client for burp-ui."""
     if app.config['BACKEND'] not in ['burp2', 'parallel'] and not backend:
-        click.echo(
-            click.style(
-                "Sorry, you can only setup the 'burp2' and the 'parallel' backends",
-                fg='red'
-            ),
-            err=True
-        )
+        err("Sorry, you can only setup the 'burp2' and the 'parallel' backends")
         sys.exit(1)
 
     if not app.config['STANDALONE']:
-        click.echo(
-            click.style(
-                'Sorry, only the standalone mode is supported',
-                fg='red'
-            ),
-            err=True
-        )
+        err('Sorry, only the standalone mode is supported')
         sys.exit(1)
 
     if concurrency:
         from multiprocessing import cpu_count
         if concurrency > cpu_count():
-            click.echo(
-                click.style(
-                    'Warning: setting a concurrency level higher than the available CPU'
-                    ' count might cause you some troubles',
-                    fg='yellow'
-                )
+            warn(
+                'Warning: setting a concurrency level higher than the available CPU'
+                ' count might cause you some troubles'
             )
 
     is_parallel = app.config['BACKEND'] == 'parallel' or (backend and backend == 'parallel')
@@ -363,6 +354,7 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database,
         _die(msg, 'setup-burp')
 
     from .misc.parser.utils import Config
+    from .misc.backend.utils.constant import BURP_LISTEN_OPTION
     from .app import get_redis_server
     from .config import BUIConfig
     import difflib
@@ -384,6 +376,7 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database,
             monconf.options.filename = temp
 
     parser = app.client.get_parser()
+    server_version = app.client.get_server_version()
     orig = source = None
     conf_orig = []
     if dry:
@@ -400,12 +393,7 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database,
     # handle migration of old config files
     if app.conf.section_exists('Burp2'):
         if app.conf.rename_section('Burp2', 'Burp', source):
-            click.echo(
-                click.style(
-                    'Renaming old [Burp2] section',
-                    fg='blue'
-                )
-            )
+            info('Renaming old [Burp2] section')
             app.conf._refresh(True)
 
     refresh = False
@@ -438,12 +426,7 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database,
                 msg = f'Adding new option "{key}={val}" to section [{section}]'
             else:
                 msg = f'Updating option "{key}={val}" in section [{section}]'
-            click.echo(
-                click.style(
-                    msg,
-                    fg='blue'
-                )
-            )
+            info(msg)
             return True
         return False
 
@@ -521,12 +504,7 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database,
 
                 app.conf.options['Production']['cache'] = 'redis'
             else:
-                click.echo(
-                    click.style(
-                        'Unable to contact the redis server, disabling it',
-                        fg='yellow'
-                    )
-                )
+                warn('Unable to contact the redis server, disabling it')
                 app.conf.options['Production']['storage'] = 'default'
                 app.conf.options['Production']['cache'] = 'default'
                 if app.use_celery:
@@ -535,13 +513,10 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database,
             app.conf.options.write()
             app.conf._refresh(True)
         except ImportError:
-            click.echo(
-                click.style(
-                    'Unable to activate redis & celery. Did you ran the '
-                    '\'pip install burp-ui[celery]\' and '
-                    '\'pip install burp-ui[gunicorn-extra]\' commands first?',
-                    fg='yellow'
-                )
+            warn(
+                'Unable to activate redis & celery. Did you ran the '
+                '\'pip install burp-ui[celery]\' and '
+                '\'pip install burp-ui[gunicorn-extra]\' commands first?'
             )
 
     if database:
@@ -555,12 +530,9 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database,
                 app.conf.options.write()
                 app.conf._refresh(True)
         except ImportError:
-            click.echo(
-                click.style(
-                    'It looks like some dependencies are missing. Did you ran '
-                    'the \'pip install "burp-ui[sql]"\' command first?',
-                    fg='yellow'
-                )
+            warn(
+                'It looks like some dependencies are missing. Did you ran '
+                'the \'pip install "burp-ui[sql]"\' command first?'
             )
 
     if dry:
@@ -609,134 +581,11 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database,
         getattr(app.client, 'burpconfsrv')
     dest_bconfcli = bconfcli
 
-    if not os.path.exists(bconfsrv):
-        click.echo(
-            click.style(
-                'Unable to locate burp-server configuration, aborting!',
-                fg='red'
-            ),
-            err=True
-        )
-        sys.exit(1)
-
-    confsrv = Config(bconfsrv, parser, 'srv')
-    confsrv.set_default(bconfsrv)
-    confsrv.parse()
-
-    # TODO: support upcoming 'listen' and 'listen_status' options
-    if host not in ['::1', '127.0.0.1']:
-        bind = confsrv.get('status_address')
-        if (bind and bind not in [host, '::', '0.0.0.0']) or not bind:
-            click.echo(
-                click.style(
-                    'It looks like your burp server is not exposing it\'s '
-                    'status port in a way that is reachable by Burp-UI!',
-                    fg='yellow'
-                )
-            )
-            click.echo(
-                click.style(
-                    'You may want to set the \'status_address\' setting with '
-                    'either \'{}\', \'::\' or \'0.0.0.0\' in the {} file '
-                    'in order to make Burp-UI work'.format(host, bconfsrv),
-                    fg='blue'
-                )
-            )
-
-    status_port = confsrv.get('status_port', [4972])
-    if 'max_status_children' not in confsrv:
-        click.echo(
-            click.style(
-                'We need to set the number of \'max_status_children\'. '
-                'Setting it to 15.',
-                fg='blue'
-            )
-        )
-        confsrv['max_status_children'] = 15
-        status_port = status_port[0]
-    else:
-        max_status_children = confsrv.get('max_status_children')
-        found = False
-        for idx, value in enumerate(max_status_children):
-            if value >= 15:
-                found = True
-                if idx >= len(status_port):
-                    status_port = status_port[-1]
-                else:
-                    status_port = status_port[idx]
-                break
-        if not found:
-            click.echo(
-                click.style(
-                    'We need to raise the number of \'max_status_children\'. '
-                    'Raising it to 15 instead of {}.'.format(max_status_children),
-                    fg='yellow'
-                )
-            )
-            confsrv['max_status_children'][-1] = 15
-            status_port = status_port[-1]
-
-    if 'restore_client' not in confsrv:
-        confsrv['restore_client'] = client
-    else:
-        restore = confsrv.getlist('restore_client')
-        if client not in restore:
-            confsrv['restore_client'].append(client)
-
-    confsrv['monitor_browse_cache'] = True
-
-    ca_client_dir = confsrv.get('ca_csr_dir')
-    if ca_client_dir and not os.path.exists(ca_client_dir):
-        try:
-            os.makedirs(ca_client_dir)
-        except IOError as exp:
-            click.echo(
-                click.style(
-                    'Unable to create "{}" dir: {}'.format(ca_client_dir, exp),
-                    fg='yellow'
-                ),
-                err=True
-            )
-
-    if confsrv.dirty:
-        if dry:
-            (_, dstfile) = tempfile.mkstemp()
-        else:
-            dstfile = bconfsrv
-
-        confsrv.store(conf=bconfsrv, dest=dstfile, insecure=True)
-        if dry:
-            before = []
-            after = []
-            try:
-                with open(bconfsrv) as fil:
-                    before = fil.readlines()
-            except:
-                pass
-            try:
-                with open(dstfile) as fil:
-                    after = fil.readlines()
-                os.unlink(dstfile)
-            except:
-                pass
-            diff = difflib.unified_diff(before, after, fromfile=bconfsrv, tofile='{}.new'.format(bconfsrv))
-            out = ''
-            for line in diff:
-                out += _color_diff(line)
-            if out:
-                click.echo_via_pager(out)
-
-    if confsrv.get('clientconfdir'):
-        bconfagent = os.path.join(confsrv.get('clientconfdir'), client)
-    else:
-        click.echo(
-            click.style(
-                'Unable to find "clientconfdir" option, you will have to '
-                'setup the agent by your own',
-                fg='yellow'
-            )
-        )
-        bconfagent = os.devnull
+    is_burp_2_2_10_plus = False
+    listen_opt = 'status_address'
+    if server_version and server_version >= BURP_LISTEN_OPTION:
+        is_burp_2_2_10_plus = True
+        listen_opt = 'listen_status'
 
     if not os.path.exists(bconfcli):
         clitpl = """
@@ -784,9 +633,7 @@ exclude_comp=gz
         confcli['cname'] = client
     if confcli.get('server') != host:
         confcli['server'] = host
-    if confcli.get('status_port')[0] != status_port:
-        c_status_port = confcli.get_raw('status_port')
-        c_status_port[0] = status_port
+    c_status_port = confcli.get('status_port', [4972])[0]
 
     if confcli.dirty:
         if dry:
@@ -822,6 +669,129 @@ exclude_comp=gz
             if out:
                 click.echo_via_pager(out)
 
+    if not os.path.exists(bconfsrv):
+        err('Unable to locate burp-server configuration, aborting!')
+        sys.exit(1)
+
+    confsrv = Config(bconfsrv, parser, 'srv')
+    confsrv.set_default(bconfsrv)
+    confsrv.parse()
+
+    bind_index = -1
+
+    if host not in ['::1', '127.0.0.1']:
+        bind = confsrv.get(listen_opt)
+        if is_burp_2_2_10_plus:
+            bind_list = list(bind)
+            for idx, line in enumerate(bind_list):
+                if line.endswith(':{}'.format(c_status_port)):
+                    bind = line.split(':')[0]
+                    bind_index = idx
+                    break
+            else:
+                warn(
+                    'Unable to locate a \'listen_status\' associated to your client '
+                    '\'status_port\' ({})'.format(c_status_port)
+                )
+        if (bind and bind not in [host, '::', '0.0.0.0']) or not bind:
+            warn(
+                'It looks like your burp server is not exposing it\'s '
+                'status port in a way that is reachable by Burp-UI!'
+            )
+            info(
+                'You may want to set the \'{0}\' setting with '
+                'either \'{1}{3}\', \'::{3}\' or \'0.0.0.0{3}\' in the {2} file '
+                'in order to make Burp-UI work'.format(
+                    listen_opt,
+                    host,
+                    bconfsrv,
+                    ':{}'.format(c_status_port) if is_burp_2_2_10_plus else ''
+                )
+            )
+
+    status_port = confsrv.get('status_port', [4972])
+    if 'max_status_children' not in confsrv:
+        info(
+            'We need to set the number of \'max_status_children\'. '
+            'Setting it to 15.'
+        )
+        confsrv['max_status_children'] = 15
+    else:
+        max_status_children = confsrv.get('max_status_children', [])
+        do_warn = False
+        if not is_burp_2_2_10_plus:
+            for idx, value in enumerate(status_port):
+                if value == c_status_port:
+                    bind_index = idx
+                    break
+        if bind_index >= 0 and len(max_status_children) >= bind_index:
+            if max_status_children[bind_index] < 15:
+                confsrv['max_status_children'][bind_index] = 15
+                do_warn = True
+        else:
+            if max_status_children[-1] < 15:
+                confsrv['max_status_children'][-1] = 15
+                do_warn = True
+        if do_warn:
+            warn('We need to raise the number of \'max_status_children\'.')
+
+    if 'restore_client' not in confsrv:
+        confsrv['restore_client'] = client
+    else:
+        restore = confsrv.getlist('restore_client')
+        if client not in restore:
+            confsrv['restore_client'].append(client)
+
+    confsrv['monitor_browse_cache'] = True
+
+    ca_client_dir = confsrv.get('ca_csr_dir')
+    if ca_client_dir and not os.path.exists(ca_client_dir):
+        try:
+            os.makedirs(ca_client_dir)
+        except IOError as exp:
+            _log(
+                'Unable to create "{}" dir: {}'.format(ca_client_dir, exp),
+                color='yellow',
+                err=True
+            )
+
+    if confsrv.dirty:
+        if dry:
+            (_, dstfile) = tempfile.mkstemp()
+        else:
+            dstfile = bconfsrv
+
+        confsrv.store(conf=bconfsrv, dest=dstfile, insecure=True)
+        if dry:
+            before = []
+            after = []
+            try:
+                with open(bconfsrv) as fil:
+                    before = fil.readlines()
+            except:
+                pass
+            try:
+                with open(dstfile) as fil:
+                    after = fil.readlines()
+                os.unlink(dstfile)
+            except:
+                pass
+            diff = difflib.unified_diff(before, after, fromfile=bconfsrv, tofile='{}.new'.format(bconfsrv))
+            out = ''
+            for line in diff:
+                out += _color_diff(line)
+            if out:
+                click.echo_via_pager(out)
+
+    if confsrv.get('clientconfdir'):
+        bconfagent = os.path.join(confsrv.get('clientconfdir'), client)
+    else:
+        warn(
+            'Unable to find "clientconfdir" option, you will have to '
+            'setup the agent by your own'
+        )
+        bconfagent = os.devnull
+
     if not os.path.exists(bconfagent):
 
         agenttpl = """
@@ -847,13 +817,10 @@ password = abcdefgh
         confagent.parse()
 
         if confagent.get('password') != confcli.get('password'):
-            click.echo(
-                click.style(
-                    'It looks like the passwords in the {} and the {} files '
-                    'mismatch. Burp-UI will not work properly until you fix '
-                    'this'.format(bconfcli, bconfagent),
-                    fg='yellow'
-                )
+            warn(
+                'It looks like the passwords in the {} and the {} files '
+                'mismatch. Burp-UI will not work properly until you fix '
+                'this'.format(bconfcli, bconfagent)
             )
 
 
@@ -868,23 +835,11 @@ password = abcdefgh
 def diag(client, host, tips):
     """Check Burp-UI is correctly setup."""
     if app.config['BACKEND'] not in ['burp2', 'parallel']:
-        click.echo(
-            click.style(
-                "Sorry, you can only diag the 'burp2' and the 'parallel' backends",
-                fg='red'
-            ),
-            err=True
-        )
+        err("Sorry, you can only diag the 'burp2' and the 'parallel' backends")
         sys.exit(1)
 
     if not app.config['STANDALONE']:
-        click.echo(
-            click.style(
-                'Sorry, only the standalone mode is supported',
-                fg='red'
-            ),
-            err=True
-        )
+        err('Sorry, only the standalone mode is supported')
         sys.exit(1)
 
     try:
@@ -895,6 +850,7 @@ def diag(client, host, tips):
     if msg:
         _die(msg, 'diag')
 
+    from .misc.backend.utils.constant import BURP_LISTEN_OPTION
     from .misc.parser.utils import Config
     from .app import get_redis_server
 
@@ -922,21 +878,13 @@ def diag(client, host, tips):
                     continue
 
             if ret != 0:
-                click.echo(
-                    click.style(
-                        'Unable to contact the redis server, disabling it',
-                        fg='yellow'
-                    )
-                )
+                warn('Unable to contact the redis server, disabling it')
 
         except ImportError:
-            click.echo(
-                click.style(
-                    'Unable to activate redis & celery. Did you ran the '
-                    '\'pip install "burp-ui[celery]"\' and '
-                    '\'pip install "burp-ui[gunicorn-extra]"\' commands first?',
-                    fg='yellow'
-                )
+            warn(
+                'Unable to activate redis & celery. Did you ran the '
+                '\'pip install "burp-ui[celery]"\' and '
+                '\'pip install "burp-ui[gunicorn-extra]"\' commands first?'
             )
 
     if 'Production' in app.conf.options and \
@@ -944,31 +892,17 @@ def diag(client, host, tips):
         try:
             from .ext.sql import db  # noqa
         except ImportError:
-            click.echo(
-                click.style(
-                    'It looks like some dependencies are missing. Did you ran '
-                    'the \'pip install "burp-ui[sql]"\' command first?',
-                    fg='yellow'
-                )
+            warn(
+                'It looks like some dependencies are missing. Did you ran '
+                'the \'pip install "burp-ui[sql]"\' command first?'
             )
 
     section = 'Burp'
     if not app.conf.section_exists(section):
-        click.echo(
-            click.style(
-                'Section [Burp] not found, looking for the old [Burp2] section '
-                'instead.',
-                fg='yellow'
-            )
-        )
+        warn('Section [Burp] not found, looking for the old [Burp2] section instead.')
         section = 'Burp2'
         if not app.conf.section_exists(section):
-            click.echo(
-                click.style(
-                    'No [Burp*] section found at all!',
-                    fg='red'
-                )
-            )
+            err('No [Burp*] section found at all!', err=False)
             section = 'Burp'
 
     bconfcli = app.conf.options.get(section, {}).get('bconfcli') or \
@@ -988,18 +922,16 @@ def diag(client, host, tips):
             msg = str(e)
 
     if msg:
-        click.echo(click.style(msg, fg='red'))
+        err(msg, err=False)
         if 'could not connect' in msg:
-            click.echo(
-                click.style(
-                    'It looks like your burp-client can not reach your '
-                    'burp-server. Please check both your \'server\' setting in '
-                    'your \'{}\' file and \'status_address\' in your \'{}\' '
-                    'file.'.format(bconfcli, bconfsrv),
-                    fg='yellow'
-                )
+            warn(
+                'It looks like your burp-client can not reach your '
+                'burp-server. Please check both your \'server\' setting in '
+                'your \'{}\' file and \'status_address\' in your \'{}\' '
+                'file.'.format(bconfcli, bconfsrv)
             )
 
+    c_status_port = 4972
     errors = False
     if os.path.exists(bconfcli):
         parser = app.client.get_parser()
@@ -1008,69 +940,94 @@ def diag(client, host, tips):
         confcli.set_default(bconfcli)
         confcli.parse()
 
+        c_status_port = confcli.get('status_port', [4972])[0]
+
         if confcli.get('cname') != client:
-            click.echo(
-                click.style(
-                    'The cname of your burp client does not match: '
-                    '{} != {}'.format(confcli.get('cname'), client),
-                    fg='yellow'
-                )
+            warn(
+                'The cname of your burp client does not match: '
+                '{} != {}'.format(confcli.get('cname'), client)
             )
             errors = True
         if confcli.get('server') != host:
-            click.echo(
-                click.style(
-                    'The burp server address does not match: '
-                    '{} != {}'.format(confcli.get('server'), host),
-                    fg='yellow'
-                )
+            warn(
+                'The burp server address does not match: '
+                '{} != {}'.format(confcli.get('server'), host)
             )
             errors = True
 
     else:
-        click.echo(
-            click.style(
-                'No client conf file found: {} does not exist'.format(bconfcli),
-                fg='red'
-            ),
-            err=True
-        )
+        err('No client conf file found: {} does not exist'.format(bconfcli))
         errors = True
 
     if os.path.exists(bconfsrv):
+
+        is_burp_2_2_10_plus = False
+        listen_opt = 'status_address'
+        server_version = app.client.get_server_version()
+        if server_version and server_version >= BURP_LISTEN_OPTION:
+            is_burp_2_2_10_plus = True
+            listen_opt = 'listen_status'
+
         parser = app.client.get_parser()
 
         confsrv = Config(bconfsrv, parser, 'srv')
         confsrv.set_default(bconfsrv)
         confsrv.parse()
 
-        if host not in ['::1', '127.0.0.1']:
-            bind = confsrv.get('status_address')
-            if (bind and bind not in [host, '::', '0.0.0.0']) or not bind:
-                click.echo(
-                    click.style(
-                        'It looks like your burp server is not exposing it\'s '
-                        'status port in a way that is reachable by Burp-UI!',
-                        fg='yellow'
-                    )
-                )
-                click.echo(
-                    click.style(
-                        'You may want to set the \'status_address\' setting with '
-                        'either \'{}\', \'::\' or \'0.0.0.0\' in the {} file '
-                        'in order to make Burp-UI work'.format(host, bconfsrv),
-                        fg='blue'
-                    )
-                )
+        bind_index = -1
 
-        max_status_children = confsrv.get('max_status_children', [-1])
-        if all([x < 15 for x in max_status_children]):
-            click.echo(
-                click.style(
-                    '\'max_status_children\' is to low, you need to set it to '
-                    '15 or more. Please edit your {} file.'.format(bconfsrv),
-                    fg='blue'
+        if host not in ['::1', '127.0.0.1']:
+            bind = confsrv.get(listen_opt)
+            if is_burp_2_2_10_plus:
+                bind_list = list(bind)
+                for idx, line in enumerate(bind_list):
+                    if line.endswith(':{}'.format(c_status_port)):
+                        bind = line.split(':')[0]
+                        bind_index = idx
+                        break
+                else:
+                    warn(
+                        'Unable to locate a \'listen_status\' associated to your client '
+                        '\'status_port\' ({})'.format(c_status_port)
+                    )
+            if (bind and bind not in [host, '::', '0.0.0.0']) or not bind:
+                warn(
+                    'It looks like your burp server is not exposing it\'s '
+                    'status port in a way that is reachable by Burp-UI!'
                 )
+                info(
+                    'You may want to set the \'{0}\' setting with '
+                    'either \'{1}{3}\', \'::{3}\' or \'0.0.0.0{3}\' in the {2} file '
+                    'in order to make Burp-UI work'.format(
+                        listen_opt,
+                        host,
+                        bconfsrv,
+                        ':{}'.format(c_status_port) if is_burp_2_2_10_plus else ''
+                    )
+                )
+                errors = True
+
+        status_port = confsrv.get('status_port', [4972])
+        if 'max_status_children' not in confsrv:
+            do_warn = True
+        else:
+            max_status_children = confsrv.get('max_status_children', [])
+            do_warn = False
+            if not is_burp_2_2_10_plus:
+                for idx, value in enumerate(status_port):
+                    if value == c_status_port:
+                        bind_index = idx
+                        break
+            if bind_index >= 0 and len(max_status_children) >= bind_index:
+                if max_status_children[bind_index] < 15:
+                    do_warn = True
+            else:
+                if max_status_children[-1] < 15:
+                    do_warn = True
+        if do_warn:
+            info(
+                '\'max_status_children\' is to low, you need to set it to '
+                '15 or more. Please edit your {} file.'.format(bconfsrv)
             )
             errors = True
 
@@ -1079,23 +1036,17 @@ def diag(client, host, tips):
             restore = confsrv.getlist('restore_client')
 
         if client not in restore:
-            click.echo(
-                click.style(
-                    'Your burp client is not listed as a \'restore_client\'. '
-                    'You won\'t be able to view other clients stats!',
-                    fg='yellow'
-                )
+            warn(
+                'Your burp client is not listed as a \'restore_client\'. '
+                'You won\'t be able to view other clients stats!'
             )
             errors = True
 
         if 'monitor_browse_cache' not in confsrv or not \
                 confsrv.get('monitor_browse_cache'):
-            click.echo(
-                click.style(
-                    'For performance reasons, it is recommended to enable the '
-                    '\'monitor_browse_cache\'.',
-                    fg='yellow'
-                )
+            warn(
+                'For performance reasons, it is recommended to enable the '
+                '\'monitor_browse_cache\'.'
             )
             errors = True
 
@@ -1104,33 +1055,23 @@ def diag(client, host, tips):
             try:
                 os.makedirs(ca_client_dir)
             except IOError as exp:
-                click.echo(
-                    click.style(
-                        'Unable to create "{}" dir: {}'.format(ca_client_dir, exp),
-                        fg='yellow'
-                    ),
+                _log(
+                    'Unable to create "{}" dir: {}'.format(ca_client_dir, exp),
+                    color='yellow',
                     err=True
                 )
 
         if confsrv.get('clientconfdir'):
             bconfagent = os.path.join(confsrv.get('clientconfdir'), client)
         else:
-            click.echo(
-                click.style(
-                    'Unable to find "clientconfdir" option. Something is wrong '
-                    'with your setup.',
-                    fg='yellow'
-                )
+            warn(
+                'Unable to find "clientconfdir" option. Something is wrong '
+                'with your setup.'
             )
             bconfagent = 'ihopethisfiledoesnotexistbecauseitisrelatedtoburpui'
 
         if not os.path.exists(bconfagent) and bconfagent.startswith('/'):
-            click.echo(
-                click.style(
-                    'Unable to find the {} file.'.format(bconfagent),
-                    fg='yellow'
-                )
-            )
+            warn('Unable to find the {} file.'.format(bconfagent))
             errors = True
         else:
             confagent = Config(bconfagent, parser, 'cli')
@@ -1138,56 +1079,37 @@ def diag(client, host, tips):
             confagent.parse()
 
             if confagent.get('password') != confcli.get('password'):
-                click.echo(
-                    click.style(
-                        'It looks like the passwords in the {} and the {} files '
-                        'mismatch. Burp-UI will not work properly until you fix '
-                        'this.'.format(bconfcli, bconfagent),
-                        fg='yellow'
-                    )
+                warn(
+                    'It looks like the passwords in the {} and the {} files '
+                    'mismatch. Burp-UI will not work properly until you fix '
+                    'this.'.format(bconfcli, bconfagent)
                 )
     else:
-        click.echo(
-            click.style(
-                'Unable to locate burp-server configuration: {} does not '
-                'exist.'.format(bconfsrv),
-                fg='red'
-            ),
-            err=True
-        )
+        err('Unable to locate burp-server configuration: {} does not '
+            'exist.'.format(bconfsrv))
         errors = True
 
     if errors:
         if not tips:
-            click.echo(
-                click.style(
-                    'Some errors have been found in your configuration. '
-                    'Please make sure you ran this command with the right flags! '
-                    '(see --help for details).'.format(sys.argv[0], sys.argv[1]),
-                    fg='red'
-                ),
-                err=True
+            err(
+                'Some errors have been found in your configuration. '
+                'Please make sure you ran this command with the right flags! '
+                '(see --help for details).'.format(sys.argv[0], sys.argv[1])
             )
         else:
-            click.echo(
-                click.style(
-                    '\n'
-                    'Well, if you are sure about your settings, you can run the '
-                    'following command to help you setup your Burp-UI agent. '
-                    '(Note, the \'--dry\' flag is here to show you the '
-                    'modifications that will be applied. Once you are OK with '
-                    'those, you can re-run the command without the \'--dry\' flag):',
-                    fg='blue'
-                )
+            info(
+                '\n'
+                'Well, if you are sure about your settings, you can run the '
+                'following command to help you setup your Burp-UI agent. '
+                '(Note, the \'--dry\' flag is here to show you the '
+                'modifications that will be applied. Once you are OK with '
+                'those, you can re-run the command without the \'--dry\' flag):'
             )
-            click.echo('    > bui-manage setup_burp --host="{}" --client="{}" --dry'.format(host, client))
+            log('    > bui-manage setup-burp --host="{}" --client="{}" --dry'.format(host, client))
     else:
-        click.echo(
-            click.style(
-                'Congratulations! It seems everything is alright. Burp-UI '
-                'should run without any issue now.',
-                fg='green'
-            )
+        ok(
+            'Congratulations! It seems everything is alright. Burp-UI '
+            'should run without any issue now.',
         )
 
 
@@ -1218,19 +1140,19 @@ def sysinfo(verbose, load):
     embedded_ws = str(app.config['WITH_WS'])
     available_ws = str(WS_AVAILABLE)
 
-    click.echo('Python version:      {}.{}.{}'.format(sys.version_info[0], sys.version_info[1], sys.version_info[2]))
-    click.echo('Burp-UI version:     {} ({})'.format(__version__, __release__))
-    click.echo('OS:                  {}:{} ({})'.format(platform.system(), platform.release(), os.name))
+    log('Python version:      {}.{}.{}'.format(sys.version_info[0], sys.version_info[1], sys.version_info[2]))
+    log('Burp-UI version:     {} ({})'.format(__version__, __release__))
+    log('OS:                  {}:{} ({})'.format(platform.system(), platform.release(), os.name))
     if platform.system() == 'Linux':
-        click.echo('Distribution:        {} {} {}'.format(*platform.dist()))
-    click.echo('Single mode:         {}'.format(app.config['STANDALONE']))
-    click.echo('Backend:             {}'.format(backend))
-    click.echo('WebSocket embedded:  {}'.format(click.style(embedded_ws, fg=colors[embedded_ws])))
-    click.echo('WebSocket available: {}'.format(click.style(available_ws, colors[available_ws])))
-    click.echo('Config file:         {}'.format(app.config.conffile))
+        log('Distribution:        {} {} {}'.format(*platform.dist()))
+    log('Single mode:         {}'.format(app.config['STANDALONE']))
+    log('Backend:             {}'.format(backend))
+    log('WebSocket embedded:  {}'.format(click.style(embedded_ws, fg=colors[embedded_ws])))
+    log('WebSocket available: {}'.format(click.style(available_ws, colors[available_ws])))
+    log('Config file:         {}'.format(app.config.conffile))
     if load:
         if not app.config['STANDALONE'] and not msg:
-            click.echo('Agents:')
+            log('Agents:')
             for agent, obj in app.client.servers.items():
                 client_version = server_version = 'unknown'
                 try:
@@ -1244,9 +1166,9 @@ def sysinfo(verbose, load):
                     status = click.style('ALIVE', fg='green')
                 else:
                     status = click.style('DISCONNECTED', fg='red')
-                click.echo(' - {} ({})'.format(agent, status))
-                click.echo('   * client version: {}'.format(client_version))
-                click.echo('   * server version: {}'.format(server_version))
+                log(' - {} ({})'.format(agent, status))
+                log('   * client version: {}'.format(client_version))
+                log('   * server version: {}'.format(server_version))
         elif not msg:
             server_version = 'unknown'
             try:
@@ -1254,14 +1176,11 @@ def sysinfo(verbose, load):
                 server_version = app.client.get_server_version()
             except BUIserverException:
                 pass
-            click.echo('Burp client version: {}'.format(app.client.client_version))
-            click.echo('Burp server version: {}'.format(server_version))
+            log('Burp client version: {}'.format(app.client.client_version))
+            log('Burp server version: {}'.format(server_version))
     if verbose:
-        click.echo('>>>>> Extra verbose informations:')
-        click.echo(click.style(
-            '!!! PLEASE MAKE SURE NO SENSITIVE DATA GET EXPOSED !!!',
-            fg='red'
-        ))
+        log('>>>>> Extra verbose informations:')
+        err('!!! PLEASE MAKE SURE NO SENSITIVE DATA GET EXPOSED !!!', err=False)
         sections = [
             'WebSocket',
             'Burp',
@@ -1271,11 +1190,11 @@ def sysinfo(verbose, load):
         sections.reverse()
         for section in sections:
             if section in app.config.options:
-                click.echo()
-                click.echo('    8<{}BEGIN[{}]'.format('-' * (67 - len(section)), section))
+                log()
+                log('    8<{}BEGIN[{}]'.format('-' * (67 - len(section)), section))
                 for key, val in app.config.options.get(section, {}).items():
-                    click.echo('    {} = {}'.format(key, val))
-                click.echo('    8<{}END[{}]'.format('-' * (69 - len(section)), section))
+                    log('    {} = {}'.format(key, val))
+                log('    8<{}END[{}]'.format('-' * (69 - len(section)), section))
 
     if load and msg:
         _die(msg, 'sysinfo')

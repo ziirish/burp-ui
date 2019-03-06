@@ -15,7 +15,7 @@ from wtforms import StringField, PasswordField, BooleanField, SelectField, valid
 
 
 class LoginForm(FlaskForm):
-    username = StringField(__('Username'), [validators.Required()])
-    password = PasswordField(__('Password'), [validators.Required()])
+    username = StringField(__('Username'), [validators.DataRequired()])
+    password = PasswordField(__('Password'), [validators.DataRequired()])
     language = SelectField(__('Language'), choices=LANGUAGES.items(), default=get_locale)
     remember = BooleanField(__('Remember me'), [validators.Optional()])

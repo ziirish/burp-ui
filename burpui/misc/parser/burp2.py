@@ -6,6 +6,7 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 """
 from .burp1 import Parser as Burp1
+from ..backend.utils.constant import BURP_LISTEN_OPTION, BURP_BIND_MULTIPLE
 
 
 def __(string):
@@ -20,46 +21,73 @@ class Parser(Burp1):
 
     _pair_srv = None
     _pair_associations = None
+    _multi_srv = None
+    _integer_srv = None
 
     @property
     def pair_associations(self):
         if self._pair_associations is None:
-            self._pair_associations = {
-                'port': 'max_children',
-                'max_children': 'port',
-                'status_port': 'max_status_children',
-                'max_status_children': 'status_port',
-            }
-            if self.backend and (getattr(self.backend, 'server_version', None) or '') >= '2.1.10':
+            if self.backend and (getattr(self.backend, 'server_version', None) or '') >= BURP_LISTEN_OPTION:
                 self._pair_associations = {
                     'listen': 'max_children',
                     'max_children': 'listen',
                     'listen_status': 'max_status_children',
                     'max_status_children': 'listen_status',
                 }
+            elif self.backend and (getattr(self.backend, 'server_version', None) or '') >= BURP_BIND_MULTIPLE:
+                self._pair_associations = {
+                    'port': 'max_children',
+                    'max_children': 'port',
+                    'status_port': 'max_status_children',
+                    'max_status_children': 'status_port',
+                }
+            else:
+                self._pair_associations = {}
         return self._pair_associations
 
     @property
     def pair_srv(self):
         if self._pair_srv is None:
-            self._pair_srv = [
-                'port',
-                'max_children',
-                'status_port',
-                'max_status_children',
-            ]
-            if self.backend and (getattr(self.backend, 'server_version', None) or '') >= '2.1.10':
+            if self.backend and (getattr(self.backend, 'server_version', None) or '') >= BURP_LISTEN_OPTION:
                 self._pair_srv = [
                     'listen',
                     'max_children',
                     'listen_status',
                     'max_status_children',
                 ]
+            elif self.backend and (getattr(self.backend, 'server_version', None) or '') >= BURP_BIND_MULTIPLE:
+                self._pair_srv = [
+                    'port',
+                    'max_children',
+                    'status_port',
+                    'max_status_children',
+                ]
+            else:
+                self._pair_srv = []
         return self._pair_srv
 
-    integer_srv = Burp1.integer_srv
-    for rem in ['port', 'max_children', 'status_port', 'max_status_children']:
-        integer_srv.remove(rem)
+    @property
+    def multi_srv(self):
+        if self._multi_srv is None:
+            self._multi_srv = Burp1.multi_srv + [
+                'label'
+            ]
+            if self.backend and getattr(self.backend, 'server_version', '') >= BURP_BIND_MULTIPLE:
+                self._multi_srv += [
+                    'port',
+                    'status_port'
+                ]
+        return self._multi_srv
+
+    @property
+    def integer_srv(self):
+        if self._integer_srv is None:
+            self._integer_srv = Burp1.integer_srv
+            if self.backend and getattr(self.backend, 'server_version', '') >= BURP_BIND_MULTIPLE:
+                for rem in ['port', 'max_children', 'status_port', 'max_status_children']:
+                    self._integer_srv.remove(rem)
+        return self._integer_srv
+
     advanced_type = Burp1.advanced_type
     advanced_type.update({
         'port': 'integer',
@@ -67,9 +95,6 @@ class Parser(Burp1):
         'status_port': 'integer',
         'max_status_children': 'integer',
     })
-    multi_srv = Burp1.multi_srv + [
-        'label',
-    ]
     string_srv = Burp1.string_srv + [
         'manual_delete',
         'rblk_memory_max',

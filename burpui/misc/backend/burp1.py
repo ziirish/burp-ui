@@ -109,8 +109,8 @@ class Burp(BUIbackend):
         """
         if dummy:
             return
-        self.client_version = None
-        self.server_version = None
+        self.client_version = ''
+        self.server_version = ''
 
         BUIbackend.__init__(self, server, conf)
 

@@ -1,7 +1,7 @@
 import os
 import tempfile
 
-from burpui.misc.parser.utils import OptionMulti, OptionPair
+from burpui.misc.parser.utils import OptionMulti, OptionInt
 
 def test_confsrv(parser):
     confsrv = parser.server_conf
@@ -14,9 +14,9 @@ def test_confsrv(parser):
     assert keep == [3, 2]
     assert isinstance(keep_raw, OptionMulti)
     assert keep_raw.dump() == 'keep := 3\nkeep = 2'
-    assert port == [4971]
-    assert isinstance(port_raw, OptionPair)
-    assert port_raw.dump() == 'port = 4971\nmax_children = 5'
+    assert port == 4971
+    assert isinstance(port_raw, OptionInt)
+    # assert port_raw.dump() == 'port = 4971\nmax_children = 5'
 
 def test_save_conf(parser):
     (tmp, tmp_dest) = tempfile.mkstemp()

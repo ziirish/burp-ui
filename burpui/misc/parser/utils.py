@@ -1179,9 +1179,9 @@ class File(dict):
             with codecs.open(dest, 'w', 'utf-8', errors='ignore') as fil:
                 # f.write('# Auto-generated configuration using Burp-UI\n')
                 data_keys = list(data.keys())
-                if len(self.template) > 0 or 'templates' in data:
+                if 'templates' in data:
                     _dump(' {}'.format(BEGIN_TEMPLATES), True)
-                    tpls = data.getlist('templates') or [x['value'] for x in self.template]
+                    tpls = data.getlist('templates')
                     for tpl in tpls:
                         self._write_key(fil, '.', tpl)
                     _dump(' {}'.format(END_TEMPLATES), True)
@@ -1611,10 +1611,9 @@ class Config(File):
     def _get(self, key, default=None, raw=False):
         self._refresh()
         try:
-            if key in self._options_for_type('pair') and not raw:
-                obj = self.options[key].get(key)
-            else:
-                obj = self.options[key]
+            obj = self.options[key]
+            if obj.type in ['pair'] and not raw:
+                obj = obj.get(key)
         except KeyError:
             if default:
                 return default
