@@ -1,8 +1,8 @@
 Changelog
 =========
 
-0.6.2
------
+0.6.2 (03/05/2019)
+------------------
 
 - Fix: wrong command suggestion `#296 <https://git.ziirish.me/ziirish/burp-ui/issues/296>`__
 - Fix: allow templates removal `#290 <https://git.ziirish.me/ziirish/burp-ui/issues/290>`__
