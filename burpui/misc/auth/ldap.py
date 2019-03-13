@@ -193,6 +193,7 @@ class LdapLoader(BUIloader):
             attrs = record['attributes']
             if self.attr in attrs:
                 self.users.append(attrs[self.attr][0])
+        self.logger.debug(self.users)
 
     def check(self, dn=None, passwd=None):
         """:func:`burpui.misc.auth.ldap.LdapLoader.check` authenticates a user
@@ -222,6 +223,8 @@ class UserHandler(BUIhandler):
     __doc__ = __('Connects to a LDAP database to authenticate users. Handles '
                  'searching for and binding as.')
     priority = 50
+
+    preload_users = False
 
     """The :class:`burpui.misc.auth.ldap.UserHandler` class maintains a list of
     ``Burp-UI`` users.

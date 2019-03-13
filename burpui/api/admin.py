@@ -1385,6 +1385,7 @@ class AuthUsers(Resource):
         ret = []
         for _, backend in iteritems(handler.backends):
             loader = backend.loader
+            preload_users = getattr(backend, 'preload_users', True)
             try:
                 users = getattr(loader, 'users')
             except AttributeError:
@@ -1393,7 +1394,7 @@ class AuthUsers(Resource):
                 if isinstance(users, list):
                     for user in users:
                         append = {
-                            'id': backend.user(user).get_id(),
+                            'id': backend.user(user).get_id() if preload_users else user,
                             'name': user,
                             'backend': backend.name
                         }

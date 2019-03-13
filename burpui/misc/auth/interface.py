@@ -34,6 +34,8 @@ class BUIhandler(with_metaclass(ABCMeta, object)):
     del_user = False
     change_password = False
 
+    preload_users = True
+
     @abstractmethod
     def user(self, name=None, refresh=False):
         """The :func:`burpui.misc.auth.interface.BUIhandler.user` function
