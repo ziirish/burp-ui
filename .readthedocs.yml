@@ -5,6 +5,7 @@ build:
 python:
   version: 3.7
   install:
+    - requirements: rtdrequirements.txt
     - method: pip
       path: .
       extra_requirements:
