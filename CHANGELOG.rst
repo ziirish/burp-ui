@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.6.3 (03/13/2019)
+------------------
+
+- Fix: don't preload LDAP users `#270 <https://git.ziirish.me/ziirish/burp-ui/issues/270>`__
+
 0.6.2 (03/05/2019)
 ------------------
 
