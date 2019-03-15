@@ -132,6 +132,13 @@ class Monitor(object):
             self.status()
         return self._server_version or ''
 
+    @property
+    def alive(self):
+        # clients may be idle for some time, in that case we may need to start them again
+        if not self._proc_is_alive():
+            self._spawn_burp()
+        return self._proc_is_alive()
+
     def _exit(self):
         """try not to leave child process server side"""
         self.logger.debug(f'Exiting {self.ident}')
@@ -197,10 +204,6 @@ class Monitor(object):
         if self.status_delimiter:
             self.proc.stdin.write(to_bytes('j:response-markers-on\n'))
             self._read_proc_stdout(self.timeout, 'j:response-markers-on')
-
-    @property
-    def alive(self):
-        return self._proc_is_alive()
 
     def _proc_is_alive(self):
         """Check if the burp client process is still alive"""
