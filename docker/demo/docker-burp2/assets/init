@@ -15,6 +15,9 @@ appStart () {
   echo "Starting burp..."
   supervisorctl start burp >/dev/null
 
+  echo "Starting bui-monitor..."
+  supervisorctl start buimonitor >/dev/null
+
   echo "Starting bui-agent..."
   supervisorctl start buiagent >/dev/null
 
@@ -25,7 +28,9 @@ appStart () {
 appStop() {
   echo ""
   echo "Stopping bui-agent..."
-  supervisorctl stop bui-agent >/dev/null
+  supervisorctl stop buiagent >/dev/null
+  echo "Stopping bui-monitor..."
+  supervisorctl stop buimonitor >/dev/null
   echo "Stopping burp..."
   supervisorctl stop burp >/dev/null
   echo "Stopping crond..."

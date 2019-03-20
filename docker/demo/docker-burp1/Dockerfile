@@ -1,7 +1,7 @@
-FROM debian:jessie
+FROM debian:buster
 
 RUN apt-get update \
- && DEBIAN_FRONTEND=noninteractive apt-get install -y supervisor logrotate locales wget curl uthash-dev g++ make libssl-dev librsync-dev python2.7-dev git python-virtualenv python-pip cron libffi-dev \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y supervisor logrotate locales wget curl uthash-dev g++ make libssl-dev librsync-dev python3-dev git python3-virtualenv python3-pip cron libffi-dev \
  && update-locale LANG=C.UTF-8 LC_MESSAGES=POSIX \
  && locale-gen en_US.UTF-8 \
  && dpkg-reconfigure -f noninteractive locales \

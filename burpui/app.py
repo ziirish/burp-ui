@@ -67,10 +67,6 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
     celery_worker = kwargs.get('celery_worker', False)
     websocket_server = kwargs.get('websocket_server', False)
 
-    if not unittest:  # pragma: no cover
-        from ._compat import patch_json
-        patch_json()
-
     # We initialize the core
     app = BurpUI()
 

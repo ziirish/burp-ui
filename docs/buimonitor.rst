@@ -122,10 +122,8 @@ Each option is commented, but here is a more detailed documentation:
 As with `Burp-UI`_, you need the ``[Burp]`` section to specify `Burp`_ client
 options. There are fewer options because we only launch client processes.
 
-.. warning:: Please note there seem to be an issue Burp side when you request
-             concurrently too much status monitor processes. I'll tend to say
-             the pool size should not exeed the number of CPU cores available
-             on your machine.
+.. warning:: Please note there was a bug in burp versions prior 2.2.12 that is
+             easily triggered by this new asynchronous workload.
 
 Benchmark
 ---------

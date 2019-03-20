@@ -4,7 +4,7 @@ set -e
 
 SETUP_DIR="/app/setup"
 CONFIG_DIR="${SETUP_DIR}/config"
-BURP="https://git.ziirish.me/ziirish/burp.git"
+BURP="https://github.com/grke/burp.git"
 BURP_VERSION="1.4.40"
 BURPUI="/tmp/burp-ui-agent.dev.tar.gz"
 
@@ -16,22 +16,11 @@ git checkout tags/$BURP_VERSION
 make -j4
 make install
 
-apt-get remove -y python-cffi
-apt-get update
-apt-get install -y libssl-dev
-
 cd
 
 # Install burp-ui
-# FIXME: pip 10 is kind of broken
-#pip install --upgrade pip
 pip install --upgrade setuptools
-pip install gevent
 pip install --upgrade $BURPUI
-pip install ujson
-# seems required for an unknown reason
-pip install ipaddress
-pip install enum34
 
 # Create burp-ui User
 useradd -m -s /bin/bash -d /var/lib/burpui -c 'Burp-UI daemon user' -u 5337 burpui
@@ -107,7 +96,7 @@ EOF
 cat ${CONFIG_DIR}/burp/burp.conf >/tmp/burp.conf
 chown burpui: /tmp/burp.conf
 
-sed -i "s/^max_status_children.*$/max_status_children = 10000/" /etc/burp/burp-server.conf
+sed -i "s/^max_status_children.*$/max_status_children = 15/" /etc/burp/burp-server.conf
 echo "restore_client = agent" >>/etc/burp/burp-server.conf
 
 cp ${CONFIG_DIR}/burp-ui/buiagent.cfg /etc/burp/buiagent.cfg

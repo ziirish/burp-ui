@@ -119,9 +119,6 @@ def agent(options=None):
     import trio
     from burpui.engines.agent import BUIAgent as Agent
     from burpui.utils import lookup_file
-    from burpui._compat import patch_json
-
-    patch_json()
 
     if not options:
         options, _ = parse_args(mode=False, name='bui-agent')
@@ -141,9 +138,6 @@ def monitor(options=None):
     import trio
     from burpui.engines.monitor import MonitorPool
     from burpui.utils import lookup_file
-    from burpui._compat import patch_json
-
-    patch_json()
 
     if not options:
         options, _ = parse_args(mode=False, name='bui-agent')

@@ -304,7 +304,6 @@ setup(
     install_requires=requires,
     extras_require={
         'ldap_authentication': ['ldap3'],
-        'extra': ['ujson'],
         'gunicorn': ['gevent', 'gunicorn'],
         'gunicorn-extra': ['redis', 'Flask-Session==0.3.1'],
         'ci': test_requires,
