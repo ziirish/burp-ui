@@ -4,8 +4,8 @@ RUN apk add --no-cache supervisor logrotate librsync libressl tzdata bash coreut
 	&& apk add --no-cache --virtual .fetch-deps \
 		tar \
 	\
-	&& wget -O burp.tar.gz https://github.com/grke/burp/archive/2.0.54.tar.gz \
-	&& wget -O uthash.tar.gz https://github.com/troydhanson/uthash/archive/v2.0.1.tar.gz \
+	&& wget -O burp.tar.gz https://github.com/grke/burp/archive/2.2.18.tar.gz \
+	&& wget -O uthash.tar.gz https://github.com/troydhanson/uthash/archive/v2.1.0.tar.gz \
 	&& mkdir -p /usr/src/burp /usr/src/uthash \
 	&& tar -xC /usr/src/burp --strip-components=1 -f burp.tar.gz \
 	&& tar -xC /usr/src/uthash --strip-components=1 -f uthash.tar.gz \
@@ -54,7 +54,7 @@ ADD assets/setup/ /app/setup/
 
 RUN chmod 755 /app/init
 RUN chmod 755 /app/setup/install
-RUn /app/setup/install
+RUN /app/setup/install
 
 EXPOSE 4971/tcp
 EXPOSE 4972/tcp
