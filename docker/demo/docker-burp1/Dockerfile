@@ -9,6 +9,7 @@ RUN apt-get update \
  && dpkg-reconfigure -f noninteractive tzdata \
  && rm -rf /var/lib/apt/lists/*
 
+ADD assets/patch/ /app/patch/
 ADD assets/setup/ /app/setup/
 ADD assets/config/ /app/setup/config/
 # @BUIAGENT_ARTIFACTS@

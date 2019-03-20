@@ -11,7 +11,7 @@ git clone $BURP
 cd burp
 git checkout tags/$BURP_VERSION
 ./configure --disable-ipv6
-make -j4
+make -j
 make install
 
 # configure supervisord log rotation

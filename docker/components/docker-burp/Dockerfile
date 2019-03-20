@@ -33,7 +33,7 @@ RUN apk add --no-cache supervisor logrotate librsync libressl tzdata bash coreut
 		--prefix=/usr \
 		--sysconfdir=/etc/burp \
 		--localstatedir=/var \
-	&& make -j$(getconf _NPROCESSORS_ONLN) \
+	&& make -j \
 	&& make install \
 	&& make install-configs \
 	\

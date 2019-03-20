@@ -13,7 +13,8 @@ git clone $BURP
 cd burp
 git checkout tags/$BURP_VERSION
 ./configure --disable-ipv6
-make -j4
+patch -p0 </app/patch/burp-libssl1.1.patch
+make -j
 make install
 
 cd
