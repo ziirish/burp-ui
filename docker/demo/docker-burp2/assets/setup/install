@@ -107,7 +107,7 @@ EOF
 cat ${CONFIG_DIR}/burp/burp.conf >/tmp/burp.conf
 chown burpui: /tmp/burp.conf
 
-cat ${CONFIG_DIR}/burp/CA.cnf >/etc/burp/CA.cnf
+cat ${CONFIG_DIR}/burp/CA.cnf >/etc/burp/CA-2.1.cnf
 
 sed -i "s/^max_status_children.*$/max_status_children = 15/" /etc/burp/burp-server.conf
 echo "restore_client = agent" >>/etc/burp/burp-server.conf
@@ -120,10 +120,13 @@ rm -rf /etc/burp/clientconfdir
 cp -r ${CONFIG_DIR}/burp/clientconfdir/ /etc/burp/
 
 mkdir -p /tmp/burp2/CA-client
+chown -R burp /tmp/burp2
 chgrp -R burpui /tmp/burp2
 chmod -R g+w /tmp/burp2
 
 /usr/sbin/burp -g -c /etc/burp/burp-server.conf
+
+chown -R burp: /var/spool/burp/
 
 # cleanup
 rm -rf /var/lib/apt/lists/*

@@ -157,12 +157,10 @@ class MonitorPool:
 
     @asynccontextmanager
     async def get_mon(self, ident) -> Monitor:
-        # if self.monitor_pool.empty():
-        #    async with trio.open_nursery() as nursery:
-        #        for i in range(self.pool):
-        #            nursery.start_soon(self.launch_monitor, i + 1)
-        #    if self.monitor_pool.empty():
-        #        raise OSError('Unable to run burp client')
+        if self.pool.empty():
+            await self.fill_pool()
+        if self.pool.empty():
+            raise BUIserverException("Unable to spawn Monitors")
         self.logger.info(f'{ident} - Waiting for a monitor...')
         t1 = trio.current_time()
         mon = await self.pool.get()  # type: Monitor
@@ -288,12 +286,15 @@ class MonitorPool:
             mon = await self.monitor_pool.get()  # noqa
             del mon
 
+    async def fill_pool(self):
+        self.logger.info('Starting clients...')
+        async with trio.open_nursery() as nursery:
+            for i in range(self.pool_size):
+                nursery.start_soon(self.launch_monitor, i + 1)
+
     async def run(self):
         async with self.pool:
-            self.logger.info('Starting clients...')
-            async with trio.open_nursery() as nursery:
-                for i in range(self.pool_size):
-                    nursery.start_soon(self.launch_monitor, i + 1)
+            await self.fill_pool()
             self.logger.info(f'Ready to serve requests on {self.bind}:{self.port}')
             try:
                 ctx = self._ssl_context()
