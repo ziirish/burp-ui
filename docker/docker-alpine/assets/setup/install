@@ -23,7 +23,6 @@ cd /burp-ui
 git submodule update --init
 pip install -r requirements.txt
 python setup.py sdist
-pip install ujson
 pip install gunicorn
 pip install gevent
 pip install gevent-websocket

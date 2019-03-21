@@ -123,6 +123,7 @@ build:docker:demo:
   - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
   - docker build --pull -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:demo -f docker/Dockerfile .
   - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:demo
+  - apk add --no-cache curl
   - "curl $SENTRY_WEBHOOK -X POST -H 'Content-Type: application/json' -d '{\"version\": \"'$CI_COMMIT_REF_NAME'_'$CI_COMMIT_SHA'\"}'"
   only:
   - demo@ziirish/burp-ui
@@ -138,8 +139,7 @@ deploy:demo:
   - test -d /srv/demo/docker && rm -rf /srv/demo/docker
   - cp -r docker/demo/ /srv/demo/docker
   - cd /srv/demo/docker/
-# old docker client, we need the "-e" flag
-  - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN -e $DUMMY_EMAIL $CI_REGISTRY
+  - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
   - docker-compose build --pull
   - docker-compose stop
   - docker-compose rm -f
