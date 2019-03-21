@@ -151,3 +151,5 @@ deploy:demo:
   environment:
     name: demo
     url: https://demo.burp-ui.org/
+  variables:
+    DOCKER_HOST: unix:///var/run/docker.sock
