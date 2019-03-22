@@ -10,6 +10,7 @@
 import re
 import json
 import ssl
+import time
 import trio
 import struct
 
@@ -32,6 +33,7 @@ BUI_DEFAULTS = {
         'password': 'password123456',
         'timeout': 15,
         'concurrency': 2,
+        'init_wait': 15,
     },
 }
 
@@ -183,6 +185,9 @@ class Burp(Burp2):
     _server_version = None
     _batch_list_supported = None
 
+    _ready = False
+    parser = None
+
     def __init__(self, server=None, conf=None):
         """
         :param server: ``Burp-UI`` server instance in order to access logger
@@ -196,9 +201,8 @@ class Burp(Burp2):
         BUIbackend.__init__(self, server, conf)
 
         self.conf = conf
-        self.concurrency = conf.safe_get('concurrency', 'integer', section='Parallel', defaults=BUI_DEFAULTS)
-
-        self.parser = Parser(self)
+        self.concurrency = conf.safe_get('concurrency', 'integer', 'Parallel', BUI_DEFAULTS)
+        self.init_wait = conf.safe_get('init_wait', 'integer', 'Parallel', BUI_DEFAULTS)
 
         self.logger.info('burp conf cli: {}'.format(self.burpconfcli))
         self.logger.info('burp conf srv: {}'.format(self.burpconfsrv))
@@ -209,6 +213,29 @@ class Burp(Burp2):
         self.logger.info('enforce: {}'.format(self.enforce))
         self.logger.info('revoke: {}'.format(self.revoke))
         self.logger.info('concurrency: {}'.format(self.concurrency))
+        self.logger.info('init_wait: {}'.format(self.init_wait))
+
+        if self.init_wait:
+            exc = None
+            init_mon = Parallel(conf)
+            for _ in range(self.init_wait):
+                try:
+                    self.logger.warning('monitor not ready, waiting for it...')
+                    trio.run(init_mon.conn)
+                    if init_mon.connected:
+                        break
+                except BUIserverException as eee:
+                    exc = eee
+                time.sleep(1)
+            else:
+                self.logger.error('monitor not ready, giving up!')
+                raise exc
+            del init_mon
+            self.init_all()
+
+    def init_all(self):
+        self._ready = True
+        self.parser = Parser(self)
 
     @property
     def client_version(self):
@@ -243,6 +270,8 @@ class Burp(Burp2):
             return await async_client.status(query, timeout, cache)
         except OSError as exc:
             raise BUIserverException(str(exc))
+        if not self._ready:
+            self.init_all()
 
     async def _async_request(self, func, *args, **kwargs):
         async_client = Parallel(self.conf)
@@ -250,6 +279,8 @@ class Burp(Burp2):
             return await async_client.request(func, *args, **kwargs)
         except OSError as exc:
             raise BUIserverException(str(exc))
+        if not self._ready:
+            self.init_all()
 
     @usetriorun
     def status(self, query='c:\n', timeout=None, cache=True, agent=None):
@@ -795,7 +826,7 @@ class AsyncBurp(Burp):
     def statistics(self, agent=None):
         return Burp.statistics(self)
 
-    # this method must not be async
+    # this method must not be async!
     @implement
     def get_parser(self, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_parser`"""

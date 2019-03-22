@@ -18,6 +18,9 @@ appStart () {
   echo "Starting bui-monitor..."
   supervisorctl start buimonitor >/dev/null
 
+  # wait for the monitor to be up and running
+  sleep 10
+
   echo "Starting bui-agent..."
   supervisorctl start buiagent >/dev/null
 

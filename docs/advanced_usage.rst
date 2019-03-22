@@ -404,6 +404,10 @@ Once this backend is enabled, you have to configure the ``[Parallel]`` section.
     # number of operations to process concurrently
     # the value should not exceed the pool size you set in the bui-monitor.cfg file
     concurrency = 2
+    # time to wait at startup, mainly used by the bui-agent
+    # the bui-monitor must be started before your agent, but since it needs to
+    # initialize its workers first you may need to wait a bit for it to be available
+    init_wait = 15
 
 
 To configure your monitor pool, please refer to the `bui-monitor`_ page.
