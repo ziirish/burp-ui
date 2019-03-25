@@ -50,7 +50,7 @@ demo-bui:
   restart: always
   build: docker-burpui/
   ports:
-    - 127.0.0.1:5005:8000
+    - 0.0.0.0:5005:8000
   environment:
     - SENTRY_DSN
     - PIWIK_URL

@@ -245,7 +245,8 @@ def create_websocket(myapp, websocket_server=False, celery_worker=False,
         socketio.init_app(
             myapp,
             message_queue=myapp.config.get('WS_MESSAGE_QUEUE'),
-            manage_session=myapp.config.get('WS_MANAGE_SESSION', False)
+            manage_session=myapp.config.get('WS_MANAGE_SESSION', False),
+            async_mode=myapp.config.get('WS_ASYNC_MODE', 'gevent')
         )
         myapp.config['WS_AVAILABLE'] = True
     except ImportError:

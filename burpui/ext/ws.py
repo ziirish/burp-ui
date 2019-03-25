@@ -11,8 +11,7 @@ from ..config import config
 from flask_socketio import SocketIO
 
 options = {}
-if config.get('WS_ASYNC_MODE'):
-    options['async_mode'] = config.get('WS_ASYNC_MODE')
+options['async_mode'] = config.get('WS_ASYNC_MODE', 'gevent')
 
 #    engineio_logger=config.get('WS_DEBUG', False),
 socketio = SocketIO(
