@@ -12,6 +12,27 @@ from setuptools import setup, find_packages
 # only used to build the package
 ROOT = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..')
 
+raw_requirements = [
+    'trio',
+    'arrow',
+    'tzlocal',
+    'pyOpenSSL',
+    'configobj',
+]
+requirements = []
+try:
+    with open(os.path.join(ROOT, 'requirements.txt'), 'r') as req:
+        for line in req.readlines():
+            line = line.rstrip()
+            for i, look in enumerate(list(raw_requirements)):
+                if re.match(r'{}(=><)?'.format(look), line, re.IGNORECASE):
+                    requirements.append(line)
+                    del raw_requirements[i]
+                    break
+    requirements += raw_requirements
+except OSError:
+    pass
+
 if 'sdist' in sys.argv or 'bdist' in sys.argv:
     if not os.path.exists('burpui_agent'):
         os.makedirs('burpui_agent', mode=0o0755)
@@ -112,15 +133,7 @@ setup(
     data_files=[
         (confdir, [os.path.join(confdir, 'buiagent.sample.cfg')]),
     ],
-    install_requires=[
-        'trio==0.10.0',
-        'arrow==0.12.1',
-        'tzlocal==1.5.1',
-        'pyOpenSSL>=17.5.0',
-        'configobj==5.0.6',
-        'pyasn1>=0.2.3',
-        'cffi>=1.10.0',
-    ],
+    install_requires=requirements,
     classifiers=[
         'Intended Audience :: System Administrators',
         'Natural Language :: English',

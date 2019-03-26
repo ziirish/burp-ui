@@ -11,11 +11,17 @@ Current
 - Add: new ``bui-monitor`` processes pool + ``async`` backend to parallelize some requests `#278 <https://git.ziirish.me/ziirish/burp-ui/issues/278>`_ 
 - Add: new `listen` and `listen_status` options in burp-2.2.10 `#279 <https://git.ziirish.me/ziirish/burp-ui/issues/279>`_ 
 - Add: allow to hide selected clients/servers `#282 <https://git.ziirish.me/ziirish/burp-ui/issues/282>`_
+- Fix: sync pkgs requirements with burp-ui's `#300 <https://git.ziirish.me/ziirish/burp-ui/issues/300>`__
 - Fix: wrong command suggestion `#296 <https://git.ziirish.me/ziirish/burp-ui/issues/296>`__
 - Fix: allow templates removal `#290 <https://git.ziirish.me/ziirish/burp-ui/issues/290>`__
 - Fix: don't preload LDAP users `#270 <https://git.ziirish.me/ziirish/burp-ui/issues/270>`__
 - Fix: issue `#268 <https://git.ziirish.me/ziirish/burp-ui/issues/268>`_
 - `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/0.6.0...master>`__
+
+0.6.4 (03/26/2019)
+------------------
+
+- Fix: sync pkgs requirements with burp-ui's `#300 <https://git.ziirish.me/ziirish/burp-ui/issues/300>`__
 
 0.6.3 (03/13/2019)
 ------------------
