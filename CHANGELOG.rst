@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.6.4 (03/26/2019)
+------------------
+
+- Fix: sync pkgs requirements with burp-ui's `#300 <https://git.ziirish.me/ziirish/burp-ui/issues/300>`__
+
 0.6.3 (03/13/2019)
 ------------------
 
