@@ -1,4 +1,5 @@
 Flask==0.12.4
+werkzeug<0.15
 Flask-Login==0.4.1
 Flask-Bower==1.3.0
 Flask-Babel==0.11.2
