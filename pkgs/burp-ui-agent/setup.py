@@ -10,6 +10,7 @@ import subprocess
 from setuptools import setup, find_packages
 
 # only used to build the package
+CWD = os.path.dirname(os.path.realpath(__file__))
 ROOT = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..')
 
 raw_requirements = [
@@ -23,20 +24,26 @@ raw_requirements = [
     'cffi',
 ]
 requirements = []
-try:
-    with open(os.path.join(ROOT, 'requirements.txt'), 'r') as req:
-        for line in req.readlines():
-            line = line.rstrip()
-            for i, look in enumerate(list(raw_requirements)):
-                if re.match(r'{}(=><)?'.format(look), line, re.IGNORECASE):
-                    requirements.append(line)
-                    del raw_requirements[i]
-                    break
-    requirements += raw_requirements
-except OSError:
-    pass
 
 if 'sdist' in sys.argv or 'bdist' in sys.argv:
+    try:
+        with open(os.path.join(ROOT, 'requirements.txt'), 'r') as req:
+            for line in req.readlines():
+                line = line.rstrip()
+                for i, look in enumerate(list(raw_requirements)):
+                    if re.match(r'{}(=><)?'.format(look), line, re.IGNORECASE):
+                        requirements.append(line)
+                        del raw_requirements[i]
+                        break
+        requirements += raw_requirements
+    except OSError:
+        pass
+    if requirements:
+        try:
+            with open(os.path.join(CWD, 'requirements.txt'), 'w') as req:
+                req.write('\n'.join(requirements))
+        except OSError:
+            pass
     if not os.path.exists('burpui_agent'):
         os.makedirs('burpui_agent', mode=0o0755)
     if os.path.exists(os.path.join(ROOT, 'burpui', 'VERSION')):
@@ -74,7 +81,7 @@ if 'sdist' in sys.argv or 'bdist' in sys.argv:
     for decoy in out.splitlines():
         real = os.path.normpath(os.path.join(os.path.dirname(decoy),os.readlink(decoy)))
         # print '{} -> {}'.format(decoy, real)
-        target = os.path.join('burpui_agent', re.sub(r'.*/burpui/', '', real))
+        target = os.path.join(b'burpui_agent', re.sub(b'.*/burpui/', b'', real))
         dirname = os.path.dirname(target)
         if not os.path.isdir(dirname):
             # print 'mkdir {}'.format(dirname)
@@ -90,12 +97,19 @@ if 'sdist' in sys.argv or 'bdist' in sys.argv:
     files = subprocess.Popen(r'find burpui_agent-decoy -type f', shell=True, stdout=subprocess.PIPE)
     (out, _) = files.communicate()
     for src in out.splitlines():
-        dst = src.replace('burpui_agent-decoy', 'burpui_agent')
+        dst = src.replace(b'burpui_agent-decoy', b'burpui_agent')
         dirname = os.path.dirname(dst)
         if not os.path.isdir(dirname):
             # print 'mkdir {}'.format(dirname)
             os.makedirs(dirname, mode=0o0755)
         shutil.copy(src, dst)
+
+if not requirements:
+    try:
+        with open(os.path.join(CWD, 'requirements.txt'), 'r') as req:
+            requirements = [x.rstrip() for x in req.readlines()]
+    except OSError:
+        pass
 
 readme = """
 Burp-UI Meta package for agent requirements

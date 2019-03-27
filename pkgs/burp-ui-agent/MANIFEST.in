@@ -1,3 +1,4 @@
+include requirements.txt
 include README
 include share/burpui/etc/buiagent.sample.cfg
 global-exclude *.pyc
