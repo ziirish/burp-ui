@@ -10,6 +10,7 @@ import subprocess
 from setuptools import setup, find_packages
 
 # only used to build the package
+CWD = os.path.dirname(os.path.realpath(__file__))
 ROOT = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..')
 
 raw_requirements = [
@@ -20,20 +21,26 @@ raw_requirements = [
     'configobj',
 ]
 requirements = []
-try:
-    with open(os.path.join(ROOT, 'requirements.txt'), 'r') as req:
-        for line in req.readlines():
-            line = line.rstrip()
-            for i, look in enumerate(list(raw_requirements)):
-                if re.match(r'{}(=><)?'.format(look), line, re.IGNORECASE):
-                    requirements.append(line)
-                    del raw_requirements[i]
-                    break
-    requirements += raw_requirements
-except OSError:
-    pass
 
 if 'sdist' in sys.argv or 'bdist' in sys.argv:
+    try:
+        with open(os.path.join(ROOT, 'requirements.txt'), 'r') as req:
+            for line in req.readlines():
+                line = line.rstrip()
+                for i, look in enumerate(list(raw_requirements)):
+                    if re.match(r'{}(=><)?'.format(look), line, re.IGNORECASE):
+                        requirements.append(line)
+                        del raw_requirements[i]
+                        break
+        requirements += raw_requirements
+    except OSError:
+        pass
+    if requirements:
+        try:
+            with open(os.path.join(CWD, 'requirements.txt'), 'w') as req:
+                req.Write('\n'.join(requirements))
+        except OSError:
+            pass
     if not os.path.exists('burpui_monitor'):
         os.makedirs('burpui_monitor', mode=0o0755)
     if os.path.exists(os.path.join(ROOT, 'burpui', 'VERSION')):
@@ -94,6 +101,13 @@ if 'sdist' in sys.argv or 'bdist' in sys.argv:
             # print 'mkdir {}'.format(dirname)
             os.makedirs(dirname, mode=0o0755)
         shutil.copy(src, dst)
+
+if not requirements:
+    try:
+        with open(os.path.join(CWD, 'requirements.txt'), 'r') as req:
+            requirements = [x.rstrip() for x in req.readlines()]
+    except OSError:
+        pass
 
 readme = """
 Burp-UI Meta package for monitor requirements
