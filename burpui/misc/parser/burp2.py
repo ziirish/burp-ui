@@ -27,14 +27,14 @@ class Parser(Burp1):
     @property
     def pair_associations(self):
         if self._pair_associations is None:
-            if self.backend and (getattr(self.backend, 'server_version', None) or geattr(self.backend, 'client_version', None) or '') >= BURP_LISTEN_OPTION:
+            if self.backend and (getattr(self.backend, 'server_version', None) or getattr(self.backend, 'client_version', None) or '') >= BURP_LISTEN_OPTION:
                 self._pair_associations = {
                     'listen': 'max_children',
                     'max_children': 'listen',
                     'listen_status': 'max_status_children',
                     'max_status_children': 'listen_status',
                 }
-            elif self.backend and (getattr(self.backend, 'server_version', None) or geattr(self.backend, 'client_version', None) or '') >= BURP_BIND_MULTIPLE:
+            elif self.backend and (getattr(self.backend, 'server_version', None) or getattr(self.backend, 'client_version', None) or '') >= BURP_BIND_MULTIPLE:
                 self._pair_associations = {
                     'port': 'max_children',
                     'max_children': 'port',
@@ -48,14 +48,14 @@ class Parser(Burp1):
     @property
     def pair_srv(self):
         if self._pair_srv is None:
-            if self.backend and (getattr(self.backend, 'server_version', None) or geattr(self.backend, 'client_version', None) or '') >= BURP_LISTEN_OPTION:
+            if self.backend and (getattr(self.backend, 'server_version', None) or getattr(self.backend, 'client_version', None) or '') >= BURP_LISTEN_OPTION:
                 self._pair_srv = [
                     'listen',
                     'max_children',
                     'listen_status',
                     'max_status_children',
                 ]
-            elif self.backend and (getattr(self.backend, 'server_version', None) or geattr(self.backend, 'client_version', None) or '') >= BURP_BIND_MULTIPLE:
+            elif self.backend and (getattr(self.backend, 'server_version', None) or getattr(self.backend, 'client_version', None) or '') >= BURP_BIND_MULTIPLE:
                 self._pair_srv = [
                     'port',
                     'max_children',
@@ -72,7 +72,7 @@ class Parser(Burp1):
             self._multi_srv = Burp1.multi_srv + [
                 'label'
             ]
-            if self.backend and (getattr(self.backend, 'server_version', '') or geattr(self.backend, 'client_version', None) or '') >= BURP_BIND_MULTIPLE:
+            if self.backend and (getattr(self.backend, 'server_version', '') or getattr(self.backend, 'client_version', None) or '') >= BURP_BIND_MULTIPLE:
                 self._multi_srv += [
                     'port',
                     'status_port'
@@ -83,7 +83,7 @@ class Parser(Burp1):
     def integer_srv(self):
         if self._integer_srv is None:
             self._integer_srv = Burp1.integer_srv
-            if self.backend and (getattr(self.backend, 'server_version', '') or geattr(self.backend, 'client_version', None) or '') >= BURP_BIND_MULTIPLE:
+            if self.backend and (getattr(self.backend, 'server_version', '') or getattr(self.backend, 'client_version', None) or '') >= BURP_BIND_MULTIPLE:
                 for rem in ['port', 'max_children', 'status_port', 'max_status_children']:
                     self._integer_srv.remove(rem)
         return self._integer_srv
