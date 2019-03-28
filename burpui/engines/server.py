@@ -447,14 +447,15 @@ class BUIServer(Flask):
                 self.client = mod.Burp(self, conf=self.conf)
         except Exception as exc:
             msg = 'Failed loading backend {0}: {1}'.format(
-                self.backend,
+                module,
                 str(exc)
             )
             if strict:
                 self.logger.critical(msg, exc_info=exc, stack_info=True)
                 sys.exit(2)
             else:
-                raise Exception(msg)
+                exc.args = (msg,)
+                raise exc
 
         self.audit.logger.info('Burp-UI server started')
 

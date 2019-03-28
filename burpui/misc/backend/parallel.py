@@ -148,7 +148,7 @@ class Parallel:
             if not newbuf:
                 # 3 successive read failure => raise exception
                 if tries > 3:
-                    raise Exception('Unable to read full response')
+                    raise IOError('Unable to read full response')
                 tries += 1
                 trio.sleep(0.1)
                 continue
@@ -268,7 +268,7 @@ class Burp(Burp2):
         async_client = Parallel(self.conf)
         try:
             return await async_client.status(query, timeout, cache)
-        except OSError as exc:
+        except (OSError, IOError) as exc:
             raise BUIserverException(str(exc))
         if not self._ready:
             self.init_all()
@@ -277,7 +277,7 @@ class Burp(Burp2):
         async_client = Parallel(self.conf)
         try:
             return await async_client.request(func, *args, **kwargs)
-        except OSError as exc:
+        except (OSError, IOError) as exc:
             raise BUIserverException(str(exc))
         if not self._ready:
             self.init_all()
