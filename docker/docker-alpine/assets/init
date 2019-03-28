@@ -230,7 +230,7 @@ case "$1" in
       prog=$(which $1)
       if [ -n "${prog}" ] ; then
         shift 1
-        su -l burpui -c "$prog $@"
+        id burpui 2>/dev/null && su -l burpui -c "$prog $@" || "$prog $@"
       else
         appHelp
       fi

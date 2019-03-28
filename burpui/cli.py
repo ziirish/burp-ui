@@ -342,8 +342,8 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database,
 
     is_parallel = app.config['BACKEND'] == 'parallel' or (backend and backend == 'parallel')
 
-    if backend and app.config['BACKEND'] != backend:
-        app.config['BACKEND'] = backend
+    # enforce burp2 backend for the configuration
+    app.config['BACKEND'] = 'burp2'
 
     try:
         msg = app.load_modules()
@@ -354,7 +354,7 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database,
         _die(msg, 'setup-burp')
 
     from .misc.parser.utils import Config
-    from .misc.backend.utils.constant import BURP_LISTEN_OPTION
+    from .misc.backend.utils.constant import BURP_LISTEN_OPTION, BURP_BIND_MULTIPLE
     from .app import get_redis_server
     from .config import BUIConfig
     import difflib
@@ -633,7 +633,7 @@ exclude_comp=gz
         confcli['cname'] = client
     if confcli.get('server') != host:
         confcli['server'] = host
-    c_status_port = confcli.get('status_port', [4972])[0]
+    c_status_port = confcli.get('status_port', [4972])[0] if confcli.version >= BURP_BIND_MULTIPLE else confcli.get('status_port', 4972)
 
     if confcli.dirty:
         if dry:
@@ -710,15 +710,20 @@ exclude_comp=gz
             )
 
     status_port = confsrv.get('status_port', [4972])
+    do_warn = False
     if 'max_status_children' not in confsrv:
         info(
             'We need to set the number of \'max_status_children\'. '
             'Setting it to 15.'
         )
         confsrv['max_status_children'] = 15
+    elif confsrv.version < BURP_BIND_MULTIPLE:
+        max_status_children = confsrv.get('max_status_children')
+        if not max_status_children or max_status_children < 15:
+            confsrv['max_status_children'] = 15
+            do_warn = True
     else:
         max_status_children = confsrv.get('max_status_children', [])
-        do_warn = False
         if not is_burp_2_2_10_plus:
             for idx, value in enumerate(status_port):
                 if value == c_status_port:
@@ -732,8 +737,9 @@ exclude_comp=gz
             if max_status_children[-1] < 15:
                 confsrv['max_status_children'][-1] = 15
                 do_warn = True
-        if do_warn:
-            warn('We need to raise the number of \'max_status_children\'.')
+
+    if do_warn:
+        warn('We need to raise the number of \'max_status_children\'.')
 
     if 'restore_client' not in confsrv:
         confsrv['restore_client'] = client

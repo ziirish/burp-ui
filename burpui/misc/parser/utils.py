@@ -669,6 +669,12 @@ class File(dict):
         self._changed = mtime != self.mtime
         return self._changed
 
+    @property
+    def version(self):
+        return getattr(self.parser.backend, 'server_version', None) or \
+            getattr(self.parser.backend, 'client_version', None) or '' \
+            if self.parser.backend else ''
+
     def _ret_data(self, raw=True):
         if raw:
             ret = self._raw_data
