@@ -7,6 +7,7 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
+import os
 import re
 import json
 import ssl
@@ -203,6 +204,11 @@ class Burp(Burp2):
         self.conf = conf
         self.concurrency = conf.safe_get('concurrency', 'integer', 'Parallel', BUI_DEFAULTS)
         self.init_wait = conf.safe_get('init_wait', 'integer', 'Parallel', BUI_DEFAULTS)
+
+        if os.getenv('BUI_MODE', '') == 'celery':
+            # we cap the concurrency level in order not to prevent our main server
+            # to talk to the monitor
+            self.concurrency = max(1, self.concurrency // 2)
 
         self.logger.info('burp conf cli: {}'.format(self.burpconfcli))
         self.logger.info('burp conf srv: {}'.format(self.burpconfsrv))

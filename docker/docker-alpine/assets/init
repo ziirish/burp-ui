@@ -155,14 +155,17 @@ EOF
   echo "Starting crond..."
   supervisorctl start cron >/dev/null
 
-  [ -n "$CELERY" ] && {
-    echo "Starting bui-celery..."
-    supervisorctl start bui-celery >/dev/null
-  }
-
   [ -n "$ASYNC" ] && {
     echo "Starting bui-monitor..."
     supervisorctl start bui-monitor >/dev/null
+
+    echo "Wait a bit for the monitor to be up and running..."
+    sleep 10
+  }
+
+  [ -n "$CELERY" ] && {
+    echo "Starting bui-celery..."
+    supervisorctl start bui-celery >/dev/null
   }
 
   echo "Starting gunicorn..."
