@@ -475,7 +475,7 @@ class Burp(Burp1):
             ret['percent'] = round(
                 float(ret['bytes']) / float(ret['estimated_bytes']) * 100
             )
-        except ZeroDivisionError, KeyError:
+        except (ZeroDivisionError, KeyError):
             # You know... division by 0
             ret['percent'] = 0
 
