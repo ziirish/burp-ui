@@ -38,7 +38,7 @@ if 'sdist' in sys.argv or 'bdist' in sys.argv:
     if requirements:
         try:
             with open(os.path.join(CWD, 'requirements.txt'), 'w') as req:
-                req.Write('\n'.join(requirements))
+                req.write('\n'.join(requirements))
         except OSError:
             pass
     if not os.path.exists('burpui_monitor'):
