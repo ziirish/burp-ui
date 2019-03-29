@@ -232,7 +232,7 @@ def create_websocket(myapp, websocket_server=False, celery_worker=False,
             redis_url = 'redis://{}:{}/{}'.format(host, port, db)
         myapp.config['WS_MESSAGE_QUEUE'] = redis_url
     myapp.config['WS_MANAGE_SESSION'] = not myapp.config.get('WITH_SRV_SESSION', False)
-    if os.getenv('BUI_MODE') == 'celery':
+    if os.getenv('BUI_MODE', '') == 'celery':
         myapp.config['WS_ASYNC_MODE'] = 'threading'
     # myapp.config['WS_ASYNC_MODE'] = 'threading' if not gunicorn else None
 

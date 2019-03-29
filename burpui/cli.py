@@ -717,7 +717,7 @@ exclude_comp=gz
             'Setting it to 15.'
         )
         confsrv['max_status_children'] = 15
-    elif confsrv.version < BURP_BIND_MULTIPLE:
+    elif confsrv.version and confsrv.version < BURP_BIND_MULTIPLE:
         max_status_children = confsrv.get('max_status_children')
         if not max_status_children or max_status_children < 15:
             confsrv['max_status_children'] = 15
