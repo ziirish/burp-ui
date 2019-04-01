@@ -161,12 +161,15 @@ class Burp(Burp1):
     @property
     def server_version(self):
         if self._server_version is None:
-            self.status()
-        return self._server_version
+            try:
+                self.status()
+            except BUIserverException:
+                return ''
+        return self._server_version or ''
 
     @property
     def client_version(self):
-        return self._client_version
+        return self._client_version or ''
 
     def __exit__(self, typ, value, traceback):
         """try not to leave child process server side"""
