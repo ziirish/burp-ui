@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..
 
 from burpui._compat import PY3  # noqa
 from burpui.config import config  # noqa
-from burpui.ext.async import celery  # noqa
+from burpui.ext.tasks import celery  # noqa
 from burpui.ext.cache import cache  # noqa
 from burpui.sessions import session_manager  # noqa
 from burpui.server import BUIServer  # noqa

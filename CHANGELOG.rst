@@ -1,9 +1,10 @@
 Changelog
 =========
 
-0.6.6 (04/01/2019)
+0.6.6 (04/02/2019)
 ------------------
 
+- Fix: python 3.7 compatibility `#304 <https://git.ziirish.me/ziirish/burp-ui/issues/304>`__
 - Fix: agent cannot start `#302 <https://git.ziirish.me/ziirish/burp-ui/issues/302>`__
 
 0.6.5 (03/27/2019)

@@ -309,7 +309,7 @@ def create_celery(myapp, warn=True):
             redis_url
         myapp.config['CELERY_RESULT_BACKEND'] = redis_url
 
-        from .ext.async import celery
+        from .ext.tasks import celery
         celery.conf.update(myapp.config)
 
         if not hasattr(celery, 'flask_app'):

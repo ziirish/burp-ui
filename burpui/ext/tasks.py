@@ -1,8 +1,8 @@
 # -*- coding: utf8 -*-
 """
-.. module:: burpui.ext.async
+.. module:: burpui.ext.tasks
     :platform: Unix
-    :synopsis: Burp-UI external Async module.
+    :synopsis: Burp-UI external Tasks module.
 
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
