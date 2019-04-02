@@ -18,6 +18,11 @@ Current
 - Fix: issue `#268 <https://git.ziirish.me/ziirish/burp-ui/issues/268>`_
 - `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/0.6.0...master>`__
 
+0.6.6 (04/01/2019)
+------------------
+
+- Fix: agent cannot start `#302 <https://git.ziirish.me/ziirish/burp-ui/issues/302>`__
+
 0.6.5 (03/27/2019)
 ------------------
 

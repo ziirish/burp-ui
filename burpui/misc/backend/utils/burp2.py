@@ -129,14 +129,20 @@ class Monitor(object):
     @property
     def server_version(self):
         if self._server_version is None:
-            self.status()
+            try:
+                self.status()
+            except BUIserverException:
+                return ''
         return self._server_version or ''
 
     @property
     def alive(self):
         # clients may be idle for some time, in that case we may need to start them again
         if not self._proc_is_alive():
-            self._spawn_burp()
+            try:
+                self._spawn_burp()
+            except OSError:
+                pass
         return self._proc_is_alive()
 
     def _exit(self):

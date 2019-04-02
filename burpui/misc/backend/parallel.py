@@ -224,9 +224,9 @@ class Burp(Burp2):
         if self.init_wait:
             exc = None
             init_mon = Parallel(conf)
-            for _ in range(self.init_wait):
+            for i in range(self.init_wait):
                 try:
-                    self.logger.warning('monitor not ready, waiting for it...')
+                    self.logger.warning('monitor not ready, waiting for it... {}/{}'.format(i, self.init_wait))
                     trio.run(init_mon.conn)
                     if init_mon.connected:
                         break
@@ -237,6 +237,8 @@ class Burp(Burp2):
                 self.logger.error('monitor not ready, giving up!')
                 raise exc
             del init_mon
+        stats = self.statistics()
+        if 'alive' in stats and stats['alive']:
             self.init_all()
 
     def init_all(self):
@@ -262,12 +264,18 @@ class Burp(Burp2):
 
     def get_client_version(self, agent=None):
         if self._client_version is None:
-            self._client_version = trio.run(self._async_request, 'client_version')
+            try:
+                self._client_version = trio.run(self._async_request, 'client_version')
+            except BUIserverException:
+                return ''
         return self._client_version or ''
 
     def get_server_version(self, agent=None):
         if self._server_version is None:
-            self._server_version = trio.run(self._async_request, 'server_version')
+            try:
+                self._server_version = trio.run(self._async_request, 'server_version')
+            except BUIserverException:
+                return ''
         return self._server_version or ''
 
     async def _async_status(self, query='c:\n', timeout=None, cache=True, agent=None):
@@ -285,8 +293,6 @@ class Burp(Burp2):
             return await async_client.request(func, *args, **kwargs)
         except (OSError, IOError) as exc:
             raise BUIserverException(str(exc))
-        if not self._ready:
-            self.init_all()
 
     @usetriorun
     def status(self, query='c:\n', timeout=None, cache=True, agent=None):
@@ -827,6 +833,12 @@ class Burp(Burp2):
 # Make every "Burp" method async
 class AsyncBurp(Burp):
 
+    @property
+    async def batch_list_supported(self):
+        if self._batch_list_supported is None:
+            self._batch_list_supported = json.loads(await self._async_request('batch_list_supported'))
+        return self._batch_list_supported
+
     # this method must not be async!
     @implement
     def statistics(self, agent=None):
@@ -876,6 +888,17 @@ class AsyncBurp(Burp):
         :func:`burpui.misc.backend.interface.BUIbackend.get_all_clients`
         """
         return await self._async_get_all_clients()
+
+    @implement
+    async def get_attr(self, name, default=None, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.get_attr`"""
+        try:
+            try:
+                return await getattr(self, name, default)
+            except TypeError:
+                return getattr(self, name, default)
+        except AttributeError:
+            return default
 
     def __getattribute__(self, name):
         if name in BUIBACKEND_INTERFACE_METHODS or name in ['_guess_os']:

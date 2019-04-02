@@ -31,6 +31,11 @@ v0.7.0
   ``:AUTH`` suffix (so ``BASIC`` becomes ``BASIC:AUTH``, etc.).
   Please make sure you rename those sections accordingly so you won't be locked
   out.
+- **Breaking** - the ``bui-agent`` will now exit when its *system* requirements
+  are not met at startup time (that is: the burp-server must be up and running
+  and the burp-client used by burp-ui must be able to reach the burp-server).
+  A new timeout has been added though in order for ``bui-agent`` to wait for the
+  burp-server to be ready.
 
 v0.6.0
 ------

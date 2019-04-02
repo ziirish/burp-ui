@@ -13,6 +13,7 @@ import sys
 import ssl
 import json
 import logging
+import time
 import trio
 
 from ..exceptions import BUIserverException
@@ -38,6 +39,7 @@ BUI_DEFAULTS = {
         'sslkey': '',
         'backend': 'burp2',
         'password': 'azerty',
+        'init_wait': 15,
     },
 }
 
@@ -50,10 +52,11 @@ class BurpHandler(BUIbackend):
     foreign = BUIbackend.__abstractmethods__
     BUIbackend.__abstractmethods__ = frozenset()
 
-    def __init__(self, backend='burp2', logger=None, conf=None):
+    def __init__(self, backend='burp2', logger=None, conf=None, init_wait=0):
         self.backend_name = backend
         self.is_async = backend == 'parallel'
         self.logger = logger
+        wait = init_wait
 
         top = __name__
         if '.' in self.backend_name:
@@ -70,8 +73,16 @@ class BurpHandler(BUIbackend):
             else:
                 Client = mod.Burp
             self.backend = Client(conf=conf)
-            stats = self.backend.statistics()
-            if 'alive' not in stats or not stats['alive']:
+            def __backend_alive():
+                stats = self.backend.statistics()
+                return 'alive' in stats and stats['alive']
+            alive = __backend_alive()
+            while not alive and wait > 0:
+                self.logger.debug("Waiting for the backend to become alive... {}/{}".format(init_wait - wait, init_wait))
+                time.sleep(1)
+                alive = __backend_alive()
+                wait -= 1
+            if not alive:
                 raise BUIserverException('Cannot talk to burp server')
         except Exception as exc:
             self.logger.error('Failed loading backend {}: {}'.format(self.backend_name, str(exc)), exc_info=exc, stack_info=True)
@@ -117,9 +128,10 @@ class BUIAgent(BUIbackend):
         self.sslcert = self.conf.safe_get('sslcert')
         self.sslkey = self.conf.safe_get('sslkey')
         self.password = self.conf.safe_get('password')
+        self.init_wait = self.conf.safe_get('init_wait', 'integer')
         self.conf.setdefault('BUI_AGENT', True)
 
-        self.client = BurpHandler(self.backend, self.logger, self.conf)
+        self.client = BurpHandler(self.backend, self.logger, self.conf, self.init_wait)
 
     def _ssl_context(self):
         if not self.ssl:

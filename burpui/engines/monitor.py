@@ -206,6 +206,8 @@ class MonitorPool:
                         'server_version': 'unknown',
                         'client_version': 'unknown'
                     }
+                    if self.pool.empty():
+                        await self.fill_pool()
                     while not self.pool.empty():
                         mon = await self.pool.get()
                         tmp.append(mon)

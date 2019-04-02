@@ -113,6 +113,9 @@ section as below:
     version = 1
     # agent password
     password = password
+    # time to wait at startup
+    # the burp server must be started before your agent
+    init_wait = 15
 
 
 Each option is commented, but here is a more detailed documentation:
@@ -125,6 +128,8 @@ Each option is commented, but here is a more detailed documentation:
 - *version*: What version of `Burp`_ this `bui-agent`_ instance manages. (see
   `Burp-UI versions <advanced_usage.html#versions>`__ for more details)
 - *password*: The shared secret between the `Burp-UI`_ server and `bui-agent`_.
+- *init_wait*: The time to wait for the backend to be alive (this is useful in
+  case you start every services at the same time).
 
 As with `Burp-UI`_, you need a specific ``[Burp]`` section.
 Please refer to the `Burp-UI versions <advanced_usage.html#options>`__
