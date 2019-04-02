@@ -50,6 +50,7 @@ build:py3:
   only:
   - master@ziirish/burp-ui
   - demo@ziirish/burp-ui
+  - stable@ziirish/burp-ui
   artifacts:
     paths:
     - dist/
