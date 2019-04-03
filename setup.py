@@ -308,7 +308,7 @@ setup(
         'gunicorn-extra': ['redis', 'Flask-Session==0.3.1'],
         'ci': test_requires,
         'dev': dev_requires,
-        'celery': ['Celery', 'redis'],
+        'celery': ['Celery>=4.3', 'redis'],
         'sql': ['Flask-SQLAlchemy', 'Flask-Migrate>=2.1.0', 'sqlalchemy-utils'],
         'limit': ['Flask-Limiter', 'redis'],
         'websocket': ['flask-socketio', 'redis', 'gevent-websocket'],
