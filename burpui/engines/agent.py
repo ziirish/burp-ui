@@ -73,9 +73,11 @@ class BurpHandler(BUIbackend):
             else:
                 Client = mod.Burp
             self.backend = Client(conf=conf)
+
             def __backend_alive():
                 stats = self.backend.statistics()
                 return 'alive' in stats and stats['alive']
+
             alive = __backend_alive()
             while not alive and wait > 0:
                 self.logger.debug("Waiting for the backend to become alive... {}/{}".format(init_wait - wait, init_wait))
