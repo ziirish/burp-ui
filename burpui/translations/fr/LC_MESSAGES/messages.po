@@ -49,11 +49,11 @@ msgstr "Rester connecté"
 
 #: burpui/routes.py:280 burpui/routes.py:287
 msgid "Sorry, there are no running backups"
-msgstr "Désolé, il n'y a pas de backups"
+msgstr "Désolé, il n'y a pas de backups en cours"
 
 #: burpui/routes.py:307 burpui/routes.py:345
 msgid "Sorry, there are no restore file found for this client"
-msgstr "Désolé, il n&#39;y a pas restoration prévue pour ce client"
+msgstr "Désolé, il n'y a pas restoration prévue pour ce client"
 
 #: burpui/routes.py:504
 msgid "Logged in successfully"
@@ -1474,7 +1474,7 @@ msgstr ""
 #: burpui/templates/client-browse.html:42
 #: burpui/templates/js/client-browse.js:36
 msgid "Expand tree"
-msgstr "Déplier l&#39;arborescence"
+msgstr "Déplier l'arborescence"
 
 #: burpui/templates/client-browse.html:43
 msgid "This may take some time depending the number of files in your backup"
@@ -1526,7 +1526,7 @@ msgstr "Télécharger les fichiers sélectionnés"
 #: burpui/templates/client-browse.html:90
 #: burpui/templates/client-browse.html:104
 msgid "Number of leading path components to strip"
-msgstr "Nombre d'éléments du préfix à masquer "
+msgstr "Nombre d'éléments du préfixe à masquer "
 
 #: burpui/templates/client-browse.html:91
 msgid "Archive format"
@@ -1538,11 +1538,11 @@ msgstr "Mot de passe de déchiffrement "
 
 #: burpui/templates/client-browse.html:101
 msgid "Server initiated restore"
-msgstr "Réstauration depuis le serveur"
+msgstr "Restauration depuis le serveur"
 
 #: burpui/templates/client-browse.html:105
 msgid "Prefix to the restore path"
-msgstr "Chemin de la réstauration "
+msgstr "Chemin de la restauration "
 
 #: burpui/templates/client-browse.html:105
 msgid "prefix"
@@ -1550,7 +1550,7 @@ msgstr "chemin"
 
 #: burpui/templates/client-browse.html:107
 msgid "Restore files on an other client"
-msgstr "Réstaurer sur un autre client "
+msgstr "Restaurer sur un autre client "
 
 #: burpui/templates/client-browse.html:109
 #: burpui/templates/clients-report.html:35
@@ -1636,7 +1636,7 @@ msgstr "Supprimer"
 
 #: burpui/templates/client.html:46
 msgid "<strong>Sorry!</strong> There are no backups for this client."
-msgstr "<strong>Désolé !</strong> Il n'y a pas de sauvegardes pour ce client."
+msgstr "<strong>Désolé!</strong> Il n'y a pas de sauvegardes pour ce client."
 
 #: burpui/templates/client.html:53
 msgid "Edit restore"
@@ -2235,7 +2235,7 @@ msgstr "Le backend ne supporte pas la suppression de groupes"
 
 #: burpui/templates/js/client-browse.js:135
 msgid "Collapse tree"
-msgstr "Réduire l&#39;arborescence"
+msgstr "Réduire l'arborescence"
 
 #: burpui/templates/js/client-browse.js:250
 #: burpui/templates/js/client-browse.js:273
