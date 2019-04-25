@@ -316,13 +316,15 @@ def compile_translation():
 @click.option('-m', '--monitor', default=None,
               help='bui-monitor configuration file')
 @click.option('-C', '--concurrency', default=None, type=click.INT,
-              help='Number of concurrent parallel processes to spawn')
+              help='Number of concurrent requests addressed to the monitor')
+@click.option('-P', '--pool-size', 'pool', default=None, type=click.INT,
+              help='Number of burp-client processes to spawn in the monitor')
 @click.option('-B', '--backend', default=None,
               help='Switch to another backend', type=click.Choice(['burp2', 'parallel']))
 @click.option('-n', '--dry', is_flag=True,
               help='Dry mode. Do not edit the files but display changes')
 def setup_burp(bconfcli, bconfsrv, client, host, redis, database,
-               plugins, monitor, concurrency, backend, dry):
+               plugins, monitor, concurrency, pool, backend, dry):
     """Setup burp client for burp-ui."""
     if app.config['BACKEND'] not in ['burp2', 'parallel'] and not backend:
         err("Sorry, you can only setup the 'burp2' and the 'parallel' backends")
@@ -338,6 +340,13 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database,
             warn(
                 'Warning: setting a concurrency level higher than the available CPU'
                 ' count might cause you some troubles'
+            )
+
+    if pool and concurrency:
+        if concurrency > pool:
+            warn(
+                'Warning: setting a concurrency level higher than the available'
+                ' processes in the monitor is not recommended'
             )
 
     is_parallel = app.config['BACKEND'] == 'parallel' or (backend and backend == 'parallel')
@@ -451,9 +460,9 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database,
     if refresh:
         app.conf._refresh(True)
 
-    if monitor and concurrency:
+    if monitor and pool:
         refresh = False
-        refresh |= _edit_conf('pool', concurrency, None, 'Global', None, monconf)
+        refresh |= _edit_conf('pool', pool, None, 'Global', None, monconf)
         refresh |= _edit_conf('bconfcli', bconfcli, None, 'Burp', None, monconf)
         if refresh:
             monconf._refresh(True)
@@ -709,18 +718,19 @@ exclude_comp=gz
                 )
             )
 
+    MAX_STATUS_CHILDREN = pool if pool is not None else 15
     status_port = confsrv.get('status_port', [4972])
     do_warn = False
     if 'max_status_children' not in confsrv:
         info(
             'We need to set the number of \'max_status_children\'. '
-            'Setting it to 15.'
+            'Setting it to {}.'.format(MAX_STATUS_CHILDREN)
         )
-        confsrv['max_status_children'] = 15
+        confsrv['max_status_children'] = MAX_STATUS_CHILDREN
     elif confsrv.version and confsrv.version < BURP_BIND_MULTIPLE:
         max_status_children = confsrv.get('max_status_children')
-        if not max_status_children or max_status_children < 15:
-            confsrv['max_status_children'] = 15
+        if not max_status_children or max_status_children < MAX_STATUS_CHILDREN:
+            confsrv['max_status_children'] = MAX_STATUS_CHILDREN
             do_warn = True
     else:
         max_status_children = confsrv.get('max_status_children', [])
@@ -730,16 +740,16 @@ exclude_comp=gz
                     bind_index = idx
                     break
         if bind_index >= 0 and len(max_status_children) >= bind_index:
-            if max_status_children[bind_index] < 15:
-                confsrv['max_status_children'][bind_index] = 15
+            if max_status_children[bind_index] < MAX_STATUS_CHILDREN:
+                confsrv['max_status_children'][bind_index] = MAX_STATUS_CHILDREN
                 do_warn = True
         else:
-            if max_status_children[-1] < 15:
-                confsrv['max_status_children'][-1] = 15
+            if max_status_children[-1] < MAX_STATUS_CHILDREN:
+                confsrv['max_status_children'][-1] = MAX_STATUS_CHILDREN
                 do_warn = True
 
     if do_warn:
-        warn('We need to raise the number of \'max_status_children\'.')
+        warn('We need to raise the number of \'max_status_children\' to {}.'.format(MAX_STATUS_CHILDREN))
 
     if 'restore_client' not in confsrv:
         confsrv['restore_client'] = client

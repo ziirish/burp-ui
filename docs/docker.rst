@@ -13,38 +13,51 @@ provided. There are a few variables supported to setup your system:
 
 
  - **BURPUI_CONFIG** - Specify where the `Burp-UI`_ configuration file is
-   located. It defaults to "/etc/burp/burpui.cfg".
+   located. It defaults to ``/etc/burp/burpui.cfg``.
+ - **BURPUI_MONITOR_CONFIG** - Specify where the `bui-monitor`_ configuration
+   file is located. It defaults to ``/etc/burp/buimonitor.cfg``.
  - **BURPUI_VERBOSE** - Specify the log verbosity (between 0 and 4). It defaults
    to 0.
  - **BURPUI_CLIENT_NAME** - Specify the name of the burp client that will be
-   used by `Burp-UI`_. It defaults to "bui".
+   used by `Burp-UI`_. It defaults to ``bui``.
  - **BURPUI_UID** - uid of the *burpui* user you want to map in your host. It
-   defaults to 5337.
+   defaults to ``5337``.
  - **BURPUI_GID** - gid of the *burpui* group you want to map in your host. It
-   defaults to 5337.
- - **BURPUI_PLUGINS** - Directory where to look for plugins. It defaults to none
-   which means no plugins will be loaded.
+   defaults to ``5337``.
+ - **BURPUI_PLUGINS** - Directory where to look for plugins. It defaults to
+   ``none`` which means no plugins will be loaded.
  - **BURPUI_WS_WORKERS** - How many WebSocket servers to spawn. Defaults to the
    number of CPU cores/sockets/threads found.
  - **BURPUI_RP_SCHEME** - HTTP Scheme to set for the reverse-proxy. If you are
-   behind a reverse-proxy that provides SSL, you should set this to *https*
+   behind a reverse-proxy that provides SSL, you should set this to ``https``
    which is the default value.
  - **BURP_CLIENT_CONFIG** - Specify the path of the burp client configuration
-   file to use for the `Burp-UI`_ client. It defaults to "/tmp/burp.conf". It
+   file to use for the `Burp-UI`_ client. It defaults to ``/tmp/burp.conf``. It
    means you won't have access to it outside of the container. It is intended
-   to not override the */etc/burp/burp.conf* file if you already use it.
+   to not override the ``/etc/burp/burp.conf`` file if you already use it.
  - **BURP_SERVER_CONFIG** - Specify the path of the burp-server configuration
-   file. It defaults to "/etc/burp/burp-server.conf".
+   file. It defaults to ``/etc/burp/burp-server.conf``.
  - **DATABASE_URL** - Specify the URL of the database to connect to. It defaults
-   to "sqlite:////var/lib/burpui/store.db".
+   to ``postgresql://burpui:burpui@pgsql/burpuidb`` which is the default db
+   shipped with the *docker-compose.yml*.
  - **GUNICORN_WORKERS** - How many gunicorn workers to spawn. Defaults to the
    number of CPU cores/sockets/threads found.
+ - **GUNICORN_WORKER_CLASS** - What kind of gunicorn workers to use. Defaults to
+   ``sync`` which is the only worker supported if you are running the
+   ``parallel`` backend.
  - **REDIS_SERVER** - Specify the address of the redis server. It defaults to
-   "redis:6379".
+   ``redis:6379``.
  - **BURP_SERVER_ADDR** - Specify the address of the burp-server status port.
    If set to "auto", we will use the address of the docker host.
    Make sure your status port is listening on this interface.
-   Defaults to "burp-server" which is the burp container in the stack.
+   Defaults to ``burp-server`` which is the burp container shipped with the
+   *docker-compose.yml*.
+ - **ASYNC_POOL_SIZE** - Size of the `bui-monitor`_ pool size. Defaults to the
+   number of CPU cores/sockets/threads found.
+ - **ASYNC_CONCURRENCY** - Number of parallel requests to send to the
+   `bui-monitor`_ when using the ``parallel`` backend (defined in
+   **BURPUI_BACKEND**). The value should not exceed the **ASYNC_POOL_SIZE** and
+   defaults to ``2`` if **ASYNC_POOL_SIZE** > 2 else it defaults to ``1``.
  - **TIMEZONE** - Specify the timezone of your burp-server. It defaults to
    Europe/Paris.
 
@@ -150,5 +163,6 @@ running:
 
 
 .. _Burp-UI: https://git.ziirish.me/ziirish/burp-ui
+.. _bui-monitor: buimonitor.html
 .. _docker: https://docs.docker.com/engine/installation/linux/ubuntulinux/
 .. _docker-compose: https://docs.docker.com/compose/install/

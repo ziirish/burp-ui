@@ -22,6 +22,7 @@ DATABASE_URL=${DATABASE_URL:-postgresql://burpui:burpui@pgsql/burpuidb}
 GUNICORN_WORKERS=${GUNICORN_WORKERS:-$(getconf _NPROCESSORS_ONLN)}
 GUNICORN_WORKER_CLASS=${GUNICORN_WORKER_CLASS:-sync}
 ASYNC_POOL_SIZE=${ASYNC_POOL_SIZE:-$(getconf _NPROCESSORS_ONLN)}
+ASYNC_CONCURRENCY=${ASYNC_CONCURRENCY:-$(test $ASYNC_POOL_SIZE -gt 2 && echo 2 || echo 1)}
 TIMEZONE=${TIMEZONE:-Europe/Paris}
 
 trap appStop SIGINT SIGTERM
@@ -68,7 +69,7 @@ appStart () {
 
   LOGFILE=$(doas burpui mktemp)
   echo "Setting up burp & burp-ui:"
-  COMMAND="bui-manage -c $BURPUI_CONFIG setup-burp --burp-conf-cli $BURP_CLIENT_CONFIG --burp-conf-serv $BURP_SERVER_CONFIG --host $BURP_SERVER_ADDR --client $BURPUI_CLIENT_NAME --redis $REDIS_SERVER --database $DATABASE_URL --plugins $BURPUI_PLUGINS --monitor $BURPUI_MONITOR_CONFIG --concurrency $ASYNC_POOL_SIZE --backend $BURPUI_BACKEND"
+  COMMAND="bui-manage -c $BURPUI_CONFIG setup-burp --burp-conf-cli $BURP_CLIENT_CONFIG --burp-conf-serv $BURP_SERVER_CONFIG --host $BURP_SERVER_ADDR --client $BURPUI_CLIENT_NAME --redis $REDIS_SERVER --database $DATABASE_URL --plugins $BURPUI_PLUGINS --monitor $BURPUI_MONITOR_CONFIG --concurrency $ASYNC_CONCURRENCY --pool-size $ASYNC_POOL_SIZE --backend $BURPUI_BACKEND"
   echo $COMMAND
   doas burpui "$COMMAND 2>&1 | tee $LOGFILE"
   ret=$?
