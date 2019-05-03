@@ -13,3 +13,4 @@ tzlocal==1.5.1
 pyOpenSSL==19.0.0
 configobj==5.0.6
 async_generator
+Click==7.0

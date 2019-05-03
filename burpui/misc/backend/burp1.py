@@ -121,7 +121,7 @@ class Burp(BUIbackend):
 
         try:
             cmd = [self.burpbin, '-v']
-            self.client_version = subprocess.check_output(cmd, universal_newlines=True).rstrip().replace('burp-', '')
+            self.client_version = subprocess.check_output(cmd).rstrip().replace('burp-', '')
         except:
             pass
 
@@ -129,7 +129,7 @@ class Burp(BUIbackend):
             cmd = [self.burpbin, '-a', 'l']
             if self.burpconfcli:
                 cmd += ['-c', self.burpconfcli]
-            for line in subprocess.check_output(cmd, universal_newlines=True).split('\n'):
+            for line in subprocess.check_output(cmd).split('\n'):
                 result = re.search(r'^.*Server version:\s+(\d+\.\d+\.\d+)', line)
                 if result:
                     self.server_version = result.group(1)

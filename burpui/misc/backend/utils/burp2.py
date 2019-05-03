@@ -84,7 +84,6 @@ class Monitor(object):
                 try:
                     version = subprocess.check_output(
                         cmd,
-                        universal_newlines=True,
                         stderr=subprocess.DEVNULL
                     ).rstrip()
                 except subprocess.CalledProcessError:
@@ -93,7 +92,7 @@ class Monitor(object):
                     cmd = [self.burpbin, '-v']
                     version = subprocess.check_output(
                         cmd,
-                        universal_newlines=True
+                        stderr=subprocess.DEVNULL
                     ).rstrip()
                 if version < BURP_MINIMAL_VERSION and \
                         getattr(self.app, 'strict', True):
