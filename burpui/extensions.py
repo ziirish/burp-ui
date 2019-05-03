@@ -320,8 +320,9 @@ def create_celery(myapp, warn=True):
         # may fail in case redis is not running (this can happen while running
         # the bui-manage script)
         try:
-            from .tasks import force_scheduling_now
-            force_scheduling_now()
+            if os.getenv('BUI_MODE', '') == 'celery':
+                from .tasks import force_scheduling_now
+                force_scheduling_now()
         except:  # pragma: no cover
             pass
 
