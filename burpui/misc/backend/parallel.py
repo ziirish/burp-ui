@@ -39,11 +39,11 @@ BUI_DEFAULTS = {
 }
 
 
-class Parallel:
+class Connector:
     logger = logger
 
     def __init__(self, conf):
-        """Parallel client
+        """Connector client
 
         :param conf: Configuration to use
         :type conf: :class:`burpui.config.BUIConfig`
@@ -79,13 +79,16 @@ class Parallel:
         self.connected = True
         return self.client_stream
 
-    async def _do_process(self, data):
-        res = '[]'
+    async def _send(self, data):
         data = to_bytes(data)
         length = struct.pack('!Q', len(data))
         await self.client_stream.send_all(length)
-        self.logger.debug(f'Sending: {data!r}')
+        self.logger.debug(f"Sending: {data!r}")
         await self.client_stream.send_all(data)
+
+    async def _do_process(self, data):
+        res = '[]'
+        await self._send(data)
         tmp = await self.client_stream.receive_some(2)
         tmp = to_unicode(tmp)
         if tmp == 'ER':
@@ -223,12 +226,13 @@ class Burp(Burp2):
 
         if self.init_wait:
             exc = None
-            init_mon = Parallel(conf)
             for i in range(self.init_wait):
+                connector = Connector(conf)
                 try:
                     self.logger.warning('monitor not ready, waiting for it... {}/{}'.format(i, self.init_wait))
-                    trio.run(init_mon.conn)
-                    if init_mon.connected:
+                    trio.run(connector.conn)
+                    if connector.connected:
+                        trio.run(connector._send, 'RE')
                         break
                 except BUIserverException as eee:
                     exc = eee
@@ -236,7 +240,6 @@ class Burp(Burp2):
             else:
                 self.logger.error('monitor not ready, giving up!')
                 raise exc
-            del init_mon
         stats = self.statistics()
         if 'alive' in stats and stats['alive']:
             self.init_all()
@@ -279,18 +282,18 @@ class Burp(Burp2):
         return self._server_version or ''
 
     async def _async_status(self, query='c:\n', timeout=None, cache=True, agent=None):
-        async_client = Parallel(self.conf)
         try:
-            return await async_client.status(query, timeout, cache)
+            connector = Connector(self.conf)
+            return await connector.status(query, timeout, cache)
         except (OSError, IOError) as exc:
             raise BUIserverException(str(exc))
         if not self._ready:
             self.init_all()
 
     async def _async_request(self, func, *args, **kwargs):
-        async_client = Parallel(self.conf)
         try:
-            return await async_client.request(func, *args, **kwargs)
+            connector = Connector(self.conf)
+            return await connector.request(func, *args, **kwargs)
         except (OSError, IOError) as exc:
             raise BUIserverException(str(exc))
 
@@ -419,7 +422,7 @@ class Burp(Burp2):
 
     async def _async_get_clients_report(self, clients, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_clients_report`"""
-        async def __compute_client_report(cli, limit, queue):
+        async def __compute_client_report(cli, queue, limit):
             async with limit:
                 if not cli:
                     return
@@ -434,7 +437,7 @@ class Burp(Burp2):
 
         async with trio.open_nursery() as nursery:
             for client in clients:
-                nursery.start_soon(__compute_client_report, client, limiter, data)
+                nursery.start_soon(__compute_client_report, client, data, limiter)
 
         return self._do_get_clients_report(data)
 
@@ -487,7 +490,7 @@ class Burp(Burp2):
         """
         ret = []
         try:
-            clients = await self._async_get_all_clients()
+            clients = await self._async_get_all_clients(deep=False)
         except BUIserverException:
             return ret
         return self._do_is_one_backup_running(clients)
@@ -586,13 +589,13 @@ class Burp(Burp2):
         """
         return trio.run(self._async_guess_os, name)
 
-    async def _async_get_all_clients(self, agent=None):
+    async def _async_get_all_clients(self, agent=None, deep=True):
         ret = []
         query = await self._async_status()
         if not query or 'clients' not in query:
             return ret
 
-        async def __compute_client_data(client, limit, queue):
+        async def __compute_client_data(client, queue, limit):
             async with limit:
                 cli = {}
                 cli['name'] = client['name']
@@ -604,8 +607,11 @@ class Burp(Burp2):
                     cli['last'] = 'never'
                 else:
                     infos = infos[0]
-                    logs = await self._async_get_backup_logs(infos['number'], client['name'])
-                    cli['last'] = logs['start']
+                    if deep:
+                        logs = await self._async_get_backup_logs(infos['number'], client['name'])
+                        cli['last'] = logs['start']
+                    else:
+                        cli['last'] = infos['timestamp']
                 queue.append(cli)
 
         clients = query['clients']
@@ -613,7 +619,7 @@ class Burp(Burp2):
 
         async with trio.open_nursery() as nursery:
             for client in clients:
-                nursery.start_soon(__compute_client_data, client, limiter, ret)
+                nursery.start_soon(__compute_client_data, client, ret, limiter)
 
         return ret
 

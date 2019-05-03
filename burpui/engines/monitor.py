@@ -118,7 +118,6 @@ class MonitorPool:
 
         self.conf.setdefault('BUI_MONITOR', True)
 
-        # self.monitor_pool = trio.Queue(self.pool)
         self.pool = Pool(self.pool_size)
 
     def _ssl_context(self):
@@ -157,10 +156,6 @@ class MonitorPool:
 
     @asynccontextmanager
     async def get_mon(self, ident) -> Monitor:
-        if self.pool.empty():
-            await self.fill_pool()
-        if self.pool.empty():
-            raise BUIserverException("Unable to spawn Monitors")
         self.logger.info(f'{ident} - Waiting for a monitor...')
         t1 = trio.current_time()
         mon = await self.pool.get()  # type: Monitor
@@ -206,9 +201,7 @@ class MonitorPool:
                         'server_version': 'unknown',
                         'client_version': 'unknown'
                     }
-                    if self.pool.empty():
-                        await self.fill_pool()
-                    while not self.pool.empty():
+                    while not res['alive'] and len(tmp) < self.pool.size:
                         mon = await self.pool.get()
                         tmp.append(mon)
                         if mon.alive:
@@ -218,6 +211,7 @@ class MonitorPool:
                                 'client_version': getattr(mon, 'client_version', '')
                             }
                             break
+                        await trio.sleep(0.5)
                     for mon in tmp:
                         await self.pool.put(mon)
                     response = json.dumps(res)
@@ -294,15 +288,21 @@ class MonitorPool:
             for i in range(self.pool_size):
                 nursery.start_soon(self.launch_monitor, i + 1)
 
+    async def _run(self):
+        self.logger.info(f'Ready to serve requests on {self.bind}:{self.port}')
+        ctx = self._ssl_context()
+        if ctx:
+            await trio.serve_ssl_over_tcp(self.handle, self.port, ctx, host=self.bind)
+        else:
+            await trio.serve_tcp(self.handle, self.port, host=self.bind)
+
     async def run(self):
         async with self.pool:
-            await self.fill_pool()
-            self.logger.info(f'Ready to serve requests on {self.bind}:{self.port}')
             try:
-                ctx = self._ssl_context()
-                if ctx:
-                    await trio.serve_ssl_over_tcp(self.handle, self.port, ctx, host=self.bind)
-                else:
-                    await trio.serve_tcp(self.handle, self.port, host=self.bind)
+                async with trio.open_nursery() as nursery:
+                    # listen to connections as soon as possible
+                    nursery.start_soon(self._run)
+                    # in parallel we start to populate the pool
+                    nursery.start_soon(self.fill_pool)
             except KeyboardInterrupt:
                 pass
