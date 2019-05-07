@@ -395,7 +395,7 @@ class Burp(Burp1):
                     break
         except KeyError:
             for back in client['backups']:
-                if 'flags' in back and any([x in back['flags'] for x in phases]):
+                if 'flags' in back and any(x in back['flags'] for x in phases):
                     backup = back
                     break
         # check we found a working backup

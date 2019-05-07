@@ -745,7 +745,7 @@ class File(dict):
     @property
     def dirty(self):
         if not self._dirty:
-            self._dirty = any([x.dirty for x in self.options.values()])
+            self._dirty = any(x.dirty for x in self.options.values())
         return self._dirty
 
     @property
@@ -1590,9 +1590,7 @@ class Config(File):
 
     def _refresh(self):
         if self._dirty or \
-                any([x.dirty
-                     for x in self.files.values()]):
-
+                any(x.dirty for x in self.files.values()):
             # cleanup "caches"
             self.options.clear()
             del self.options

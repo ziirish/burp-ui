@@ -426,67 +426,67 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
                         # client_match
                         if client_match is False:
                             if server_match and \
-                                    any([x in adv.get('rw', {}) or
-                                         x in adv.get('rw', {}).get('agents', [])
-                                         for x in server_match]):
+                                    any(x in adv.get('rw', {}) or
+                                        x in adv.get('rw', {}).get('agents', [])
+                                        for x in server_match):
                                 return True
                             if server in adv.get('rw', {}) or \
                                     server in adv.get('rw', {}).get('agents', []):
                                 return True
 
                         if server_match and \
-                                any([x in adv.get('rw', {}) or
-                                     x in adv.get('rw', {}).get('agents', [])
-                                     for x in server_match]):
+                                any(x in adv.get('rw', {}) or
+                                    x in adv.get('rw', {}).get('agents', [])
+                                    for x in server_match):
                             # both agent and client are defined as rw
                             if client_match and \
-                                any([x in adv2.get('rw', []) or
-                                     x in adv2.get('rw', {}).get('clients', []) or
-                                     any([x in adv2.get('rw', {}).get(y, [])
-                                          for y in server_match])
-                                     for x in client_match
-                                     ]):
+                                any(x in adv2.get('rw', []) or
+                                    x in adv2.get('rw', {}).get('clients', []) or
+                                    any(x in adv2.get('rw', {}).get(y, [])
+                                        for y in server_match)
+                                    for x in client_match
+                                    ):
                                 return True
 
                             # the agent is rw but the client is explicitly defined as ro
                             if client_match and \
-                                any([x in adv2.get('ro', []) or
-                                     x in adv2.get('ro', {}).get('clients', []) or
-                                     any([x in adv2.get('ro', {}).get(y, [])
-                                          for y in server_match])
-                                     for x in client_match
-                                     ]):
+                                any(x in adv2.get('ro', []) or
+                                    x in adv2.get('ro', {}).get('clients', []) or
+                                    any(x in adv2.get('ro', {}).get(y, [])
+                                        for y in server_match)
+                                    for x in client_match
+                                    ):
                                 return False
 
                         if server_match and \
-                                any([x in adv.get('ro', {}) or
-                                     x in adv.get('ro', {}).get('agents', [])
-                                     for x in server_match]):
+                                any(x in adv.get('ro', {}) or
+                                    x in adv.get('ro', {}).get('agents', [])
+                                    for x in server_match):
                             # the agent is ro, but the client is explicitly defined as rw
                             if client_match and \
-                                any([x in adv2.get('rw', {}).get('clients', []) or
-                                     x in adv2.get('rw', []) or
-                                     any([x in adv2.get('rw', {}).get(y, [])
-                                          for y in server_match])
-                                     for x in client_match
-                                     ]):
+                                any(x in adv2.get('rw', {}).get('clients', []) or
+                                    x in adv2.get('rw', []) or
+                                    any(x in adv2.get('rw', {}).get(y, [])
+                                        for y in server_match)
+                                    for x in client_match
+                                    ):
                                 return True
 
                             # both server and client are explicitly defined as ro
                             if client_match and \
-                                any([x in adv2.get('ro', {}).get('clients', []) or
-                                     x in adv2.get('ro', []) or
-                                     any([x in adv2.get('ro', {}).get(y, [])
-                                         for y in server_match])
-                                     for x in client_match
-                                     ]):
+                                any(x in adv2.get('ro', {}).get('clients', []) or
+                                    x in adv2.get('ro', []) or
+                                    any(x in adv2.get('ro', {}).get(y, [])
+                                        for y in server_match)
+                                    for x in client_match
+                                    ):
                                 return False
 
             for adv in advanced:
                 # client is explicitly defined as rw
                 rw_clients = adv.get('rw', {}).get('clients', [])
                 if client_match and \
-                        any([x in rw_clients for x in client_match]):
+                        any(x in rw_clients for x in client_match):
                     return True
 
                 if client and \
@@ -496,7 +496,7 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
                 # client is explicitly defined as ro
                 ro_clients = adv.get('ro', {}).get('clients', [])
                 if client_match and \
-                        any([x in ro_clients for x in client_match]):
+                        any(x in ro_clients for x in client_match):
                     return False
 
                 if client and \
@@ -530,15 +530,15 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
 
                 if advanced is not False:
                     for idx, adv in enumerate(advanced):
-                        if all([x not in adv for x in server_match]) and \
-                                any([x in y
-                                     for x in server_match
-                                     for y in self._extract_advanced_mode(username, 'ro', 'agents', idx)
-                                     ]) or \
-                                any([x in y
-                                     for x in server_match
-                                     for y in self._extract_advanced_mode(username, 'rw', 'agents', idx)
-                                     ]):
+                        if all(x not in adv for x in server_match) and \
+                                any(x in y
+                                    for x in server_match
+                                    for y in self._extract_advanced_mode(username, 'ro', 'agents', idx)
+                                    ) or \
+                                any(x in y
+                                    for x in server_match
+                                    for y in self._extract_advanced_mode(username, 'rw', 'agents', idx)
+                                    ):
                             return True
 
                         tmp = set(adv.get(server, []))
@@ -546,7 +546,7 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
                             tmp |= set(adv.get(srv, []))
                         adv2 = list(tmp)
                         if client_match is not False and \
-                                (any([x in adv2 for x in client_match]) or
+                                (any(x in adv2 for x in client_match) or
                                  client in adv2):
                             return True
 
@@ -576,11 +576,11 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
 
             for adv in advanced:
                 # server is explicitly defined as ro
-                if any([x in adv.get('ro', {}).get('agents', []) for x in server_match]):
+                if any(x in adv.get('ro', {}).get('agents', []) for x in server_match):
                     return False
 
                 # server is explicitly defined as rw
-                if any([x in adv.get('rw', {}).get('agents', []) for x in server_match]):
+                if any(x in adv.get('rw', {}).get('agents', []) for x in server_match):
                     return True
 
         return ret
@@ -683,7 +683,7 @@ class BUIaclGrant(BUImetaGrant):
             if not grants:
                 return []
             # ignore mal-formatted json
-            if any([x in grants for x in ['{', '}', '[', ']']]):
+            if any(x in grants for x in ['{', '}', '[', ']']):
                 ret = None
             elif grants and ',' in grants:
                 ret = [x.rstrip() for x in grants.split(',')]

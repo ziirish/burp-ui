@@ -85,7 +85,7 @@ class BUIauditLogger(BUIauditLoggerInterface):
             'audit/handler.py',
         ]
         for frame in stack:
-            if any([frame.filename.endswith(x) for x in exclude]):
+            if any(frame.filename.endswith(x) for x in exclude):
                 continue
             caller = f'{frame.function} [{frame.filename}:{frame.lineno}]'
             break

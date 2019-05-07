@@ -234,7 +234,7 @@ class Parser(Doc):
             return True
 
         path = os.path.normpath(path)
-        cond = [path.startswith(x) for x in self.backend.includes]
+        cond = (path.startswith(x) for x in self.backend.includes)
         if not any(cond) and self.backend.enforce:
             self.logger.warning(
                 'Tried to access non-allowed path: {}'.format(path)
