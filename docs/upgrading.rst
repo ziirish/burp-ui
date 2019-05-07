@@ -36,6 +36,9 @@ v0.7.0
   and the burp-client used by burp-ui must be able to reach the burp-server).
   A new timeout has been added though in order for ``bui-agent`` to wait for the
   burp-server to be ready.
+- **Breaking** - the ``prefix`` option has been moved from the ``[Global]``
+  configuration section to the ``[Production]`` one for consistency with the new
+  *Production* options introduced.
 
 v0.6.0
 ------

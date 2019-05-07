@@ -257,10 +257,10 @@ Sub-root path
 You can host `Burp-UI`_ behind a sub-root path. For instance ``/burpui``.
 To accomplish this, you can either setup your reverse-proxy to announce the
 desired *prefix*, or you can use the ``prefix`` option in your `Burp-UI`_
-configuration file (see `usage <advanced_usage.html>`_ for details).
+configuration file (see `usage <advanced_usage.html#production>`_ for details).
 
 If you want to configure this reverse-proxy side, you need to announce the HTTP
-Header ``X-Script-Name``.
+Header ``X-Script-Name``. Alternatively, you can use the ``X_Forwarded_Prefix``.
 
 Here is a sample configuration for Nginx:
 
@@ -280,6 +280,7 @@ Here is a sample configuration for Nginx:
             proxy_set_header   Host              $http_host;
             proxy_set_header   X-Forwarded-For   $remote_addr;
             # Our service is hosted behind the "/burpui" prefix
+            # Alternatively you can use the "X_FORWARDED_PREFIX" instead
             proxy_set_header   X-Script-Name     /burpui;
 
             proxy_read_timeout 300;

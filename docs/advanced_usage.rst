@@ -55,12 +55,6 @@ The `burpui.cfg`_ configuration file contains a ``[Global]`` section as follow:
     # list the misc/audit directory to see the available backends
     # default is no audit log
     audit = basic
-    # You can change the prefix if you are behind a reverse-proxy under a custom
-    # root path. For example: /burpui
-    # You can also configure your reverse-proxy to announce the prefix through the
-    # 'X-Script-Name' header. In this case, the bellow prefix will be ignored in
-    # favour of the one announced by your reverse-proxy
-    prefix = none
     # list of paths to look for external plugins
     plugins = none
 
@@ -78,8 +72,6 @@ Each option is commented, but here is a more detailed documentation:
 - *auth*: What `Authentication`_ backend to use.
 - *acl*: What `ACL`_ module to use.
 - *audit*: What `Audit`_ module to use.
-- *prefix*: You can host `Burp-UI`_ behind a sub-root path. See the `gunicorn
-  <gunicorn.html#sub-root-path>`__ page for details.
 - *plugins*: Specify a list of paths to look for external plugins. See the
   `Plugins <plugins.html>`_ page for details on how to write plugins.
 
@@ -161,6 +153,30 @@ follow:
     # limiter ratio
     # see https://flask-limiter.readthedocs.io/en/stable/#ratelimit-string
     ratio = 60/minute
+    # you can change the prefix if you are behind a reverse-proxy under a custom
+    # root path. For example: /burpui
+    # You can also configure your reverse-proxy to announce the prefix through the
+    # 'X-Script-Name' header. In this case, the bellow prefix will be ignored in
+    # favour of the one announced by your reverse-proxy
+    prefix = none
+    # ProxyFix
+    # number of reverse-proxy to trust in order to retrieve some HTTP headers
+    # All the details can be found here:
+    # https://werkzeug.palletsprojects.com/en/0.15.x/middleware/proxy_fix/#module-werkzeug.middleware.proxy_fix
+    num_proxies = 0
+    # alternatively, you can specify your own ProxyFix args.
+    # The default is: "{'x_for': {num_proxies}, 'x_host': {num_proxies}, 'x_prefix': {num_proxies}}"
+    # if num_proxies > 0, else it defaults to ProxyFix defaults
+    proxy_fix_args = "{'x_for': {num_proxies}, 'x_host': {num_proxies}, 'x_prefix': {num_proxies}}"
+
+
+- *prefix*: You can host `Burp-UI`_ behind a sub-root path. See the `gunicorn
+  <gunicorn.html#sub-root-path>`__ page for details.
+- *num_proxies*: This is useful only if you host `Burp-UI`_ behind a
+  `reverse-proxy <gunicorn.html#reverse-proxy>`__.
+- *proxy_fix_args*: Same as above. Please refer to `Werkzeug's documentation
+  <https://werkzeug.palletsprojects.com/en/0.15.x/middleware/proxy_fix/#module-werkzeug.middleware.proxy_fix>`_
+  for details.
 
 
 WebSocket

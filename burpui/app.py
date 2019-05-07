@@ -10,6 +10,7 @@ jQuery/Bootstrap
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 """
 import os
+import json
 import time
 import logging
 
@@ -148,9 +149,14 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
 
     # Manage reverse_proxy special tricks & improvements
     if reverse_proxy:  # pragma: no cover
-        from werkzeug.contrib.fixers import ProxyFix
+        from werkzeug.middleware.proxy_fix import ProxyFix
 
-        app.wsgi_app = ProxyFix(app.wsgi_app)
+        kwargs = {}
+        if app.config['NUM_PROXIES'] > 0:
+            kwargs = app.config['PROXY_FIX_ARGS'].format(num_proxies=app.config['NUM_PROXIES'])
+            kwargs = json.loads(kwargs)
+        logger.debug(f"Using {kwargs} as ProxyFix parameters")
+        app = ProxyFix(app, **kwargs)
 
     if app.storage and app.storage.lower() == 'redis':
         try:
@@ -373,10 +379,10 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
         g.date_format = session.get('dateFormat', 'llll')
         # make sure to store secure cookie if required
         if app.config['BUI_SCOOKIE']:
-            criteria = [
+            criteria = (
                 request.is_secure,
                 request.headers.get('X-Forwarded-Proto', 'http') == 'https'
-            ]
+            )
             app.config['SESSION_COOKIE_SECURE'] = \
                 app.config['REMEMBER_COOKIE_SECURE'] = any(criteria)
         if '_extra' in request.args:

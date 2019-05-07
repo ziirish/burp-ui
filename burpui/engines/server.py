@@ -11,6 +11,7 @@ import os
 import re
 import sys
 import logging  # noqa
+import warnings
 
 from ..tools.logging import logger
 from ..misc.auth.handler import UserAuthHandler
@@ -25,8 +26,8 @@ from flask import Flask
 
 BUI_DEFAULTS = {
     'Global': {
-        'port': 5000,
-        'bind': '::',
+        'port': 0,
+        'bind': '',
         'ssl': False,
         'sslcert': '',
         'sslkey': '',
@@ -64,6 +65,8 @@ BUI_DEFAULTS = {
         'database': '',
         'limiter': False,
         'ratio': '60/minute',
+        'num_proxies': 0,
+        'proxy_fix_args': "{'x_for': {num_proxies}, 'x_host': {num_proxies}, 'x_prefix': {num_proxies}}",
     },
     'WebSocket': {
         'enabled': True,
@@ -137,40 +140,41 @@ class BUIServer(Flask):
         self.conf.parse(conf, True, BUI_DEFAULTS)
         self.conf.default_section('Global')
 
-        self.config['BUI_PORT'] = self.conf.safe_get(
-            'port',
-            'integer'
-        )
-        self.demo = self.config['BUI_DEMO'] = self.conf.safe_get(
-            'demo',
-            'boolean'
-        )
+        self.config['BUI_BIND'] = self.conf.safe_get('bind')
+        self.config['BUI_PORT'] = self.conf.safe_get('port', 'integer')
+        if self.config['BUI_BIND'] or self.config['BUI_PORT']:
+            warnings.warn(
+                "The 'bind' and 'port' configuration options are now deprecated and "
+                "have no effect on burp-ui anymore unless you use the 'burp-ui-legacy' "
+                "command.\n"
+                "Please use the '-h' and '-p' command line flags instead.",
+                UserWarning
+            )
+        self.demo = self.config['BUI_DEMO'] = self.conf.safe_get('demo', 'boolean')
         self.config['BUI_DSN'] = self.conf.safe_get('dsn')
         self.config['BUI_PIWIK_URL'] = self.conf.safe_get('piwik_url')
         self.config['BUI_PIWIK_SCRIPT'] = self.conf.safe_get('piwik_script')
         self.config['BUI_PIWIK_ID'] = self.conf.safe_get('piwik_id', 'integer')
-        self.config['BUI_BIND'] = self.conf.safe_get('bind')
         self.config['BACKEND'] = self.conf.safe_get('backend')
+        # FIXME: this sucks, we need to test the burp2 backend as well!
         if unittest:
             self.config['BACKEND'] = 'burp1'
-        self.config['BUI_SSL'] = self.conf.safe_get(
-            'ssl',
-            'boolean'
-        )
         self.config['STANDALONE'] = self.config['BACKEND'] != 'multi'
-        self.config['BUI_SSLCERT'] = self.conf.safe_get(
-            'sslcert'
-        )
-        self.config['BUI_SSLKEY'] = self.conf.safe_get(
-            'sslkey'
-        )
-        prefix = self.config['BUI_PREFIX'] = self.conf.safe_get(
-            'prefix'
-        )
-        if prefix and not prefix.startswith('/'):
-            if prefix.lower() != 'none':
-                self.logger.warning("'prefix' must start with a '/'!")
-            self.config['BUI_PREFIX'] = ''
+        self.config['BUI_SSL'] = self.conf.safe_get('ssl', 'boolean')
+        self.config['BUI_SSLCERT'] = self.conf.safe_get('sslcert')
+        self.config['BUI_SSLKEY'] = self.conf.safe_get('sslkey')
+        if self.config['BUI_SSL'] or self.config['BUI_SSLCERT'] or \
+                self.config['BUI_SSLKEY']:
+            warnings.warn(
+                "The 'ssl', 'sslcert' and 'sslkey' configuration options are deprecated "
+                "as of v0.4.0. It means they have no effect on burp-ui anymore. "
+                "If you really need them, consider using the 'burp-ui-legacy' command "
+                "instead.",
+                UserWarning
+            )
+
+        # TODO: remove in 0.8.0
+        old_prefix = self.conf.safe_get('prefix')
 
         self.plugins = self.config['BUI_PLUGINS'] = self.conf.safe_get(
             'plugins',
@@ -274,6 +278,33 @@ class BUIServer(Flask):
         else:
             self.config['WITH_CELERY'] = self.use_celery and \
                 self.use_celery.lower() != 'none'
+        self.config['NUM_PROXIES'] = self.conf.safe_get(
+            'num_proxies',
+            'integer',
+            section='Production'
+        )
+        self.config['PROXY_FIX_ARGS'] = self.conf.safe_get(
+            'proxy_fix_args',
+            section='Production'
+        )
+        prefix = self.conf.safe_get(
+            'prefix',
+            section='Production'
+        )
+        if not prefix and old_prefix:
+            # TODO: remove in a later version
+            prefix = old_prefix
+            warnings.warn(
+                "The 'prefix' option has been moved from the '[Global]' section to the "
+                "'[Production]' section",
+                UserWarning
+            )
+        if prefix and not prefix.startswith('/'):
+            if prefix.lower() != 'none':
+                self.logger.warning("'prefix' must start with a '/'!")
+            self.config['BUI_PREFIX'] = ''
+        elif prefix:
+            self.config['BUI_PREFIX'] = prefix
 
         # WebSocket options
         self.ws_enabled = self.config['WS_ENABLED'] = self.conf.safe_get(
