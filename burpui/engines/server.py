@@ -302,9 +302,8 @@ class BUIServer(Flask):
         if prefix and not prefix.startswith('/'):
             if prefix.lower() != 'none':
                 self.logger.warning("'prefix' must start with a '/'!")
-            self.config['BUI_PREFIX'] = ''
-        elif prefix:
-            self.config['BUI_PREFIX'] = prefix
+            prefix = ''
+        self.config['BUI_PREFIX'] = prefix
 
         # WebSocket options
         self.ws_enabled = self.config['WS_ENABLED'] = self.conf.safe_get(
