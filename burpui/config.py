@@ -21,29 +21,25 @@ class BUIConfig(dict):
     logger = logger
     mtime = 0
 
-    def __init__(self, config=None, explain=False, defaults=None):
+    def __init__(self, config=None, defaults=None):
         """Wrapper around the ConfigObj class
 
         :param config: Configuration to parse
         :type config: str, list or File
 
-        :param explain: Whether to explain the parsing errors or not
-        :type explain: bool
-
         :param defaults: Default options
         :type defaults: dict
         """
+        if defaults is not None:
+            self.defaults = defaults
         if config:
-            self.parse(config, explain, defaults)
+            self.parse(config, defaults)
 
-    def parse(self, config, explain=False, defaults=None):
+    def parse(self, config, defaults=None):
         """Parse the conf
 
         :param config: Configuration to parse
         :type config: str, list or File
-
-        :param explain: Whether to explain the parsing errors or not
-        :type explain: bool
 
         :param defaults: Default options
         :type defaults: dict
@@ -51,18 +47,16 @@ class BUIConfig(dict):
         self.conf = {}
         self.conffile = config
         self.section = None
-        self.defaults = defaults
+        if defaults is not None or not hasattr(self, 'defaults'):
+            self.defaults = defaults
         self.validator = validate.Validator()
         try:
             self.conf = configobj.ConfigObj(config, encoding='utf-8')
             self.mtime = os.path.getmtime(self.conffile)
         except configobj.ConfigObjError as exp:
             # We were unable to parse the config
-            self.logger.critical('Unable to convert configuration')
-            if explain:
-                self._explain(exp)
-            else:
-                raise exp
+            self.logger.critical('Unable to parse configuration')
+            raise exp
 
     @property
     def options(self):
@@ -148,12 +142,62 @@ class BUIConfig(dict):
         if ori:
             with codecs.open(conffile, 'w', 'utf-8', errors='ignore') as config:
                 for line in ori:
-                    if re.match(r'^\s*(#|;)+\s*\[{}\]'.format(old_section), line):
+                    if re.match(r'^\s*(#|;)*\s*\[{}\]'.format(old_section), line):
                         config.write('{}\n'.format(line.replace(old_section, new_section)))
                         ret = True
                     else:
                         config.write('{}\n'.format(line))
         return ret
+
+    def _rename_option_full(self, orig_option, dest_option, orig_section, dest_section):
+        """Rename a given option and possibly moves it to another section
+        :return: True if the option have been successfully renamed/moved
+        :rtype: bool
+
+        :raises ValueError: if the ``orig_section`` does not exist
+        :raises KeyError: if the ``orig_option`` does not exist in the ``orig_section``
+        """
+        if not self.section_exists(orig_section):
+            raise ValueError("No such section: {}".format(orig_section))
+
+        orig = self.conf[orig_section]
+        if orig_option not in orig:
+            raise KeyError("No such option in the [{}] section: {}".format(orig_section, orig_option))
+
+        # adding the new section if it is missing
+        if orig_section != dest_section and not self.lookup_section(dest_section):
+            self._refresh(True)
+
+        dest = self.conf[dest_section]
+        comments = orig.comments[orig_option]
+        inline_comments = orig.inline_comments[orig_option]
+
+        # copy value and comments from orig to dest
+        dest[dest_option] = orig[orig_option]
+        dest.comments[dest_option] = comments
+        dest.inline_comments[dest_option] = inline_comments
+
+        # remove orig key
+        del orig[orig_option]
+
+        # save
+        self.conf.write()
+        return True
+
+    def rename_option(self, orig_option, dest_option, section):
+        """Rename a given option"""
+        # this is useless
+        if orig_option == dest_option:
+            return False
+        return self._rename_option_full(orig_option, dest_option, section, section)
+
+    def move_option(self, option, orig_section, dest_section):
+        """Move an option to another section, if you need to rename the option use the
+        _rename_option_full function instead"""
+        # useless
+        if orig_section == dest_section:
+            return False
+        return self._rename_option_full(option, option, orig_section, dest_section)
 
     def changed(self, id):
         """Check if the conf has changed"""
@@ -176,19 +220,6 @@ class BUIConfig(dict):
     def default_section(self, section):
         """Set the default section"""
         self.section = section
-
-    @staticmethod
-    def _explain(exception):
-        """Explain parsing errors
-
-        :param exception: Exception object
-        :type exception: :class:`configobj.ConfigObjError`
-        """
-        message = '\n'
-        for error in exception.errors:
-            message += error.message + '\n'
-
-        raise configobj.ConfigObjError(message.rstrip('\n'))
 
     def safe_get(
             self,

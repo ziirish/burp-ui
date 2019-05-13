@@ -102,7 +102,7 @@ class MonitorPool:
 
         # Raise exception if errors are encountered during parsing
         self.conf = config
-        self.conf.parse(conf, True, BUI_DEFAULTS)
+        self.conf.parse(conf, BUI_DEFAULTS)
         self.conf.default_section('Global')
         self.port = self.conf.safe_get('port', 'integer')
         self.bind = self.conf.safe_get('bind')

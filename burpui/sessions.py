@@ -74,7 +74,7 @@ class SessionManager(object):
         """anonymize ip address while running the demo"""
         # Do nothing if not in demo mode
         if self.app.config['BUI_DEMO']:
-            if re.match('^\d+\.\d+\.\d+\.\d+$', ip):
+            if re.match(r'^\d+\.\d+\.\d+\.\d+$', ip):
                 spl = ip.split('.')
                 ip = '{}.x.x.x'.format(spl[0])
             else:

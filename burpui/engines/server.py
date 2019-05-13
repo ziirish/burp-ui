@@ -47,7 +47,7 @@ BUI_DEFAULTS = {
         'refresh': 180,
         'liverefresh': 5,
         'ignore_labels': ["color:.*"],
-        'format_labels': ["s/^os:\s*//"],
+        'format_labels': [r"s/^os:\s*//"],
         'default_strip': 0,
     },
     'Security': {
@@ -137,7 +137,7 @@ class BUIServer(Flask):
             raise IOError('No configuration file found')
 
         # Raise exception if errors are encountered during parsing
-        self.conf.parse(conf, True, BUI_DEFAULTS)
+        self.conf.parse(conf, BUI_DEFAULTS)
         self.conf.default_section('Global')
 
         self.config['BUI_BIND'] = self.conf.safe_get('bind')
