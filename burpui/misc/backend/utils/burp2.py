@@ -82,18 +82,18 @@ class Monitor(object):
                 cmd = [self.burpbin, '-V']
                 version = None
                 try:
-                    version = subprocess.check_output(
+                    version = to_unicode(subprocess.check_output(
                         cmd,
                         stderr=subprocess.DEVNULL
-                    ).rstrip()
+                    )).rstrip()
                 except subprocess.CalledProcessError:
                     pass
                 if version is None:
                     cmd = [self.burpbin, '-v']
-                    version = subprocess.check_output(
+                    version = to_unicode(subprocess.check_output(
                         cmd,
                         stderr=subprocess.DEVNULL
-                    ).rstrip()
+                    )).rstrip()
                 if version < BURP_MINIMAL_VERSION and \
                         getattr(self.app, 'strict', True):
                     self.logger.critical(
