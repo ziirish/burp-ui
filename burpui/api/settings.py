@@ -488,6 +488,7 @@ class ClientSettings(Resource):
     parser_delete.add_argument('delcert', type=inputs.boolean, help='Whether to delete the certificate or not', default=False, nullable=True)
     parser_delete.add_argument('keepconf', type=inputs.boolean, help='Whether to keep the conf or not', default=False, nullable=True)
     parser_delete.add_argument('template', type=inputs.boolean, help='Whether we work on a template or not', default=False, nullable=True)
+    parser_delete.add_argument('delete', type=inputs.boolean, help='Whether we should remove the data as well or not', default=False, nullable=True)
     parser_post = ns.parser()
     parser_post.add_argument('template', type=inputs.boolean, help='Whether we work on a template or not', default=False, nullable=True)
     parser_get = ns.parser()
@@ -606,6 +607,7 @@ class ClientSettings(Resource):
         revoke = args.get('revoke', False)
         keepconf = args.get('keepconf', False)
         template = args.get('template', False)
+        delete = args.get('delete', False)
 
         if not keepconf:
             # clear the cache when we remove a client
@@ -622,8 +624,8 @@ class ClientSettings(Resource):
                 force_scheduling_now()
         parser = bui.client.get_parser(agent=server)
 
-        bui.audit.logger.info(f'deleted client configuration {client} ({conf}), delete certificate: {delcert}, revoke certificate: {revoke}, keep a backup of the configuration: {keepconf}', server=server)
-        return parser.remove_client(client, keepconf, delcert, revoke, template), 200
+        bui.audit.logger.info(f'deleted client configuration {client} ({conf}), delete certificate: {delcert}, revoke certificate: {revoke}, keep a backup of the configuration: {keepconf}, delete data: {delete}', server=server)
+        return parser.remove_client(client, keepconf, delcert, revoke, template, delete), 200
 
 
 @ns.route('/path-expander',

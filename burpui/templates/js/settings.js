@@ -638,7 +638,7 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$timeout', '$scrollspy', 'DTOp
 			{% if template -%}
 			data: { template: true }
 			{% else -%}
-			data: { delcert: $('#delcert').is(':checked'), revoke: $('#revoke').is(':checked'), keepconf: $('#keepconf').is(':checked') }
+			data: { delcert: $('#delcert').is(':checked'), revoke: $('#revoke').is(':checked'), keepconf: $('#keepconf').is(':checked'), delete: $('#deldata').is(':checked') }
 			{% endif -%}
 		})
 		.fail(buiFail)

@@ -9,6 +9,7 @@ import re
 import os
 import json
 import codecs
+import shutil
 
 from glob import glob
 
@@ -288,7 +289,7 @@ class Parser(Doc):
         self.templates_mtime = os.path.getmtime(self.templates_path)
         return res
 
-    def _get_server_path(self, name=None, fil=None):
+    def _get_server_path(self, name=None, fil=''):
         """Returns the path of the 'server *fil*' file"""
         if not name:
             raise BUIserverException('Missing name')
@@ -344,7 +345,8 @@ class Parser(Doc):
             return False
         return self.openssl_auth.check_client_revoked(client)
 
-    def remove_client(self, client=None, keepconf=False, delcert=False, revoke=False, template=False):
+    def remove_client(self, client=None, keepconf=False, delcert=False, revoke=False,
+                      template=False, delete=False):
         """See :func:`burpui.misc.parser.interface.BUIparser.remove_client`"""
         res = []
         revoked = False
@@ -352,6 +354,7 @@ class Parser(Doc):
         if not client:
             return [[NOTIF_ERROR, "No client provided"]]
         try:
+            data = self._get_server_path(client)
             if not keepconf:
                 if template:
                     path = os.path.join(self.templates_path, client)
@@ -369,6 +372,8 @@ class Parser(Doc):
                     del self.filescache[path]
 
                 self._refresh_cache()
+
+            shutil.rmtree(data)
 
         except OSError as exp:
             res.append([NOTIF_ERROR, str(exp)])

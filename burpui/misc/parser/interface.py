@@ -263,7 +263,8 @@ class BUIparser(object, metaclass=ABCMeta):
         )  # pragma: no cover
 
     @abstractmethod
-    def remove_client(self, client=None, keepconf=False, delcert=False, revoke=False, template=False):
+    def remove_client(self, client=None, keepconf=False, delcert=False, revoke=False,
+                      template=False, delete=False):
         """:func:`burpui.misc.parser.interface.BUIparser.remove_client` is used
         to delete a client from burp's configuration.
 
@@ -282,8 +283,12 @@ class BUIparser(object, metaclass=ABCMeta):
         :param template: Whether we remove a template
         :type template: bool
 
+        :param delete: Whether to remove data as well
+        :type delete: bool
+
         :returns: A list of notifications to return to the UI (success or
                   failure)
+        :rtype: list
         """
         raise NotImplementedError(
             "Sorry, the current Parser does not implement this method!"
