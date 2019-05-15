@@ -281,7 +281,7 @@ class UserHandler(BUIuser):
 
     @property
     def backend(self):
-        return getattr(self.real, 'backend')
+        return getattr(self.real, 'backend', None)
 
     def _load_prefs(self):
         session['login'] = self.name

@@ -46,9 +46,9 @@ def basic_login_from_request(request, app):
         if auth:
             from flask import session, g
             app.logger.debug('Found Basic user: {}'.format(auth.username))
-            refresh = False
-            if 'login' in session and session['login'] != auth.username:
-                refresh = True
+            refresh = True
+            if 'login' in session and session['login'] == auth.username:
+                refresh = False
             session['language'] = request.headers.get('X-Language', 'en')
             user = app.uhandler.user(auth.username, refresh)
             if user and user.active and user.login(auth.password):
