@@ -80,7 +80,7 @@ class UserAuthHandler(BUIhandler):
         if session_manager.session_managed():
             session_manager.session_expired()
         if key not in self.users:
-            ret = UserHandler(self.app, self.backends, name, key)
+            ret = UserHandler(self.app, self.backends, name, key, refresh)
             if not ret.name or not ret.active:
                 return None
             self.users[key] = ret
@@ -215,7 +215,7 @@ class BUIanon(AnonymousUserMixin):
 
 class UserHandler(BUIuser):
     """See :class:`burpui.misc.auth.interface.BUIuser`"""
-    def __init__(self, app, backends=None, name=None, id=None):
+    def __init__(self, app, backends=None, name=None, id=None, refresh=False):
         """
         :param app: Application context
         :type app: :class:`burpui.engines.server.BUIServer`
@@ -223,30 +223,45 @@ class UserHandler(BUIuser):
         self.id = id
         self.app = app
         self.active = False
+        last_backend = session.get('backend', None)
         self.authenticated = session.get('authenticated', False)
         self.language = session.get('language', None)
         self.backends = backends
         self.back = None
-        if not is_uuid(name):
-            self.name = name
+
+        if refresh or not is_uuid(name):
+            username = name
         else:
-            self.name = session_manager.get_session_username() or \
+            username = session_manager.get_session_username() or \
                 session.get('login')
         self.real = None
-        if not self.name:
+        if not username:
             return
 
-        for _, back in self.backends.items():
-            user = back.user(self.name)
+        self.name = username
+
+        def _load_from_backend(backend, username):
+            if not backend:
+                return False
+            user = backend.user(username)
             if not user:
-                continue
-            res = user.get_id()
-            if res:
+                return False
+            ext = user.get_id()
+            if ext:
                 self.real = user
                 self.active = True
-                self.name = res
-                self.back = back
-                break
+                self.name = ext
+                self.back = backend
+                return True
+            return False
+
+        if refresh:
+            for _, back in self.backends.items():
+                if _load_from_backend(back, self.name):
+                    break
+        elif last_backend:
+            back = self.backends.get(last_backend)
+            _load_from_backend(back, self.name)
 
         self._acl = ACLproxy(self.app.acl, self.name)
         # now load the available prefs
@@ -290,13 +305,13 @@ class UserHandler(BUIuser):
         if not self.real:
             self.authenticated = False
             for name, back in self.backends.items():
-                u = back.user(self.name)
-                if not u:
+                user = back.user(self.name)
+                if not user:
                     continue
-                res = u.get_id()
-                if u.login(passwd):
+                res = user.get_id()
+                if user.login(passwd):
                     self.authenticated = True
-                    self.real = u
+                    self.real = user
                     self.back = back
                     self.name = res
                     self._acl.username = res
@@ -315,4 +330,5 @@ class UserHandler(BUIuser):
         session['authenticated'] = self.authenticated
         session['language'] = self.language
         session['login'] = self.name
+        session['backend'] = self.backend
         return self.authenticated
