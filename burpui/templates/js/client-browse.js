@@ -33,7 +33,7 @@ $( document ).ready(function() {
 	var treeCollapsed = function() {
 		var btn = $("#btn-expand-collapse-tree");
 		btn.data('collapsed', true);
-		btn.html('<i class="fa fa-expand" aria-hidden="true"></i>&nbsp;{{ _("Expand tree") }}</button>');
+		btn.html('<i class="fa fa-expand" aria-hidden="true"></i>&nbsp;{{ _("Expand tree")|escape }}</button>');
 	};
 
 	$('[data-toggle="tooltip"]').tooltip();
@@ -132,7 +132,7 @@ $( document ).ready(function() {
 			var btn = $("#btn-expand-collapse-tree");
 			if (btn.data('collapsed')) {
 				btn.data('collapsed', false);
-				btn.html('<i class="fa fa-compress" aria-hidden="true"></i>&nbsp;{{ _("Collapse tree") }}');
+				btn.html('<i class="fa fa-compress" aria-hidden="true"></i>&nbsp;{{ _("Collapse tree")|escape }}');
 			}
 		}
 	});
