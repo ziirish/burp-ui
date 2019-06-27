@@ -7,7 +7,7 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
-# Agent do not need "real" HTTP errors
+# Agent does not need "real" HTTP errors
 try:
     from werkzeug.exceptions import HTTPException
     WERKZEUG = True
@@ -29,3 +29,8 @@ class BUIserverException(HTTPException):
 
     def __str__(self):
         return self.description
+
+
+class TooManyRecordsException(Exception):
+    """Raised when there are too many records to treat."""
+    pass

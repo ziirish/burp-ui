@@ -135,17 +135,38 @@ class SessionManager(object):
         # don't need to store it since it is not managed anyway
         return True
 
-    def delete_session(self):
+    def delete_session(self, commit=True):
         """Remove the session"""
-        self.delete_session_by_id(getattr(session, 'sid', None))
+        self.delete_session_by_id(getattr(session, 'sid', None), commit)
 
-    def delete_session_by_id(self, id):
+    def delete_session_by_id(self, id, commit=True):
         """Remove a session by id"""
         if self.session_managed():
             from .ext.sql import db
             from .models import Session
             try:
                 Session.query.filter_by(uuid=id).delete()
+                if commit:
+                    db.session.commit()
+            except:
+                if commit:
+                    db.session.rollback()
+
+    def bulk_session_delete_by_id(self, bucket):
+        """Remove all sessions matching the bucket IDs"""
+        if self.session_managed():
+            from .ext.sql import db
+            from .models import Session
+            try:
+                Session.query.filter(Session.uuid.in_(bucket)).delete(synchronize_session=False)
+                db.session.commit()
+            except:
+                db.session.rollback()
+
+    def commit(self):
+        if self.session_managed():
+            from .ext.sql import db
+            try:
                 db.session.commit()
             except:
                 db.session.rollback()
@@ -169,17 +190,26 @@ class SessionManager(object):
             return getattr(session, 'sid', str(uuid.uuid4()))
         return None
 
-    def get_expired_sessions(self):
+    def get_expired_sessions(self, maxret=-1, count=False):
         """Return all expired sessions"""
         if self.session_managed():
             from .models import Session
             inactive = self.app.config['SESSION_INACTIVE']
             if inactive and inactive.days > 0:
                 limit = datetime.datetime.utcnow() - inactive
-                return Session.query.filter(
+                query = Session.query.filter(
                     Session.timestamp <= limit
-                ).all()
-        return []
+                )
+                if count:
+                    return query.count()
+                if maxret < 0:
+                    return query.all()
+                else:
+                    return query.limit(maxret)
+        return [] if not count else 0
+
+    def get_expired_sessions_count(self):
+        return self.get_expired_sessions(count=True)
 
     def get_user_sessions(self, user):
         """Return all sessions of a given user"""
