@@ -19,6 +19,12 @@ try:
 except ImportError:  # pragma: no cover
     pass
 
+try:
+    from flask_session import Session  # noqa
+    WITH_FLASK_SESSION = True
+except ImportError:
+    WITH_FLASK_SESSION = False
+
 
 class SessionManager(object):
     """Wrapper session to keep a track on every session"""
@@ -68,7 +74,7 @@ class SessionManager(object):
     def session_managed(self):
         """Check if a session is manageable"""
         return self.app.storage and self.app.storage.lower() != 'default' and \
-            self.app.config['WITH_SQL']
+            self.app.config['WITH_SQL'] and WITH_FLASK_SESSION
 
     def anonym_ip(self, ip):
         """anonymize ip address while running the demo"""
