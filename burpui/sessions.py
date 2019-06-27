@@ -20,7 +20,7 @@ except ImportError:  # pragma: no cover
     pass
 
 try:
-    from flask_session import Session  # noqa
+    from flask_session import Session as DummySessionImport  # noqa
     WITH_FLASK_SESSION = True
 except ImportError:
     WITH_FLASK_SESSION = False
