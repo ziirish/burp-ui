@@ -8,7 +8,6 @@ jQuery/Bootstrap
 
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 """
-import sys
 import os
 
 from flask import current_app
@@ -324,6 +323,8 @@ def delete_client(self, client, keepconf, delcert, revoke, template, delete, ser
     self.update_state(state='STARTED', meta={'step': 'doing'})
 
     ret = parser.remove_client(client, keepconf, delcert, revoke, template, delete)
+    if any(x == NOTIF_ERROR for x, _ in ret):
+        raise Exception
 
 
 @celery.task(bind=True)
