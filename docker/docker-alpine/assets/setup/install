@@ -89,7 +89,20 @@ cat > /etc/supervisor.d/bui-celery.ini.sample <<EOF
 [program:bui-celery]
 priority=20
 directory=/tmp
-command=/usr/local/bin/bui-celery -c @BURPUI_CONFIG@ --beat -s /var/lib/burpui/celerybeat-schedule
+command=/usr/local/bin/bui-celery -c @BURPUI_CONFIG@
+user=burpui
+autostart=false
+autorestart=true
+stdout_logfile=/var/log/supervisor/%(program_name)s.log
+stderr_logfile=/var/log/supervisor/%(program_name)s.log
+EOF
+
+# configure celery beat template
+cat > /etc/supervisor.d/bui-celery-beat.ini.sample <<EOF
+[program:bui-celery-beat]
+priority=20
+directory=/tmp
+command=/usr/local/bin/bui-celery -c @BURPUI_CONFIG@ -t beat -s /var/lib/burpui/celerybeat-schedule
 user=burpui
 autostart=false
 autorestart=true

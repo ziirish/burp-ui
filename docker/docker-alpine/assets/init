@@ -127,6 +127,7 @@ EOF
   sed -r "s'@BURPUI_CONFIG@'$BURPUI_CONFIG';s'@BURPUI_VERBOSE@'$BURPUI_VERBOSE'" /etc/supervisor.d/gunicorn.ini.sample >/etc/supervisor.d/gunicorn.ini
 
   sed -r "s'@BURPUI_CONFIG@'$BURPUI_CONFIG'" /etc/supervisor.d/bui-celery.ini.sample >/etc/supervisor.d/bui-celery.ini
+  sed -r "s'@BURPUI_CONFIG@'$BURPUI_CONFIG'" /etc/supervisor.d/bui-celery-beat.ini.sample >/etc/supervisor.d/bui-celery-beat.ini
   sed -r "s'@BURPUI_MONITOR_CONFIG@'$BURPUI_MONITOR_CONFIG'" /etc/supervisor.d/bui-monitor.ini.sample >/etc/supervisor.d/bui-monitor.ini
 
   sed -r "s'@GUNICORN_WORKERS@'$GUNICORN_WORKERS';s'@GUNICORN_WORKER_CLASS@'$GUNICORN_WORKER_CLASS'" /etc/burp-ui/burpui_gunicorn.py.sample >/etc/burp-ui/burpui_gunicorn.py
