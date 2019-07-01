@@ -32,7 +32,9 @@ class Task(db.Model):
             self.expire = datetime.datetime.utcnow() + expire
 
     def __repr__(self):
-        return '<Task {} ({})>'.format(self.task, self.uuid)
+        return '<Task {}-{} ({}, {}/{})>'.format(self.task, self.uuid,
+                                                 self.user, self.timestamp,
+                                                 self.expire)
 
 
 class Session(db.Model):
