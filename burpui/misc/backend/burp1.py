@@ -554,14 +554,14 @@ class Burp(BUIbackend):
 
     def _do_get_clients_report(self, data):
         ret = {}
-        cls = []
+        clients = []
         bkp = []
         for client, backups, stats in data:
             os = stats['os'] if 'os' in stats else "unknown"
             totsize = stats['totsize'] if 'totsize' in stats else 0
             total = stats['total']['total'] if \
                 'total' in stats and 'total' in stats['total'] else 0
-            cls.append({
+            clients.append({
                 'name': client['name'],
                 'stats': {
                     'os': os,
@@ -570,7 +570,7 @@ class Burp(BUIbackend):
                 }
             })
             bkp.append({'name': client['name'], 'number': len(backups)})
-        ret = {'clients': cls, 'backups': bkp}
+        ret = {'clients': clients, 'backups': bkp}
         return ret
 
     def get_counters(self, name=None, agent=None):  # pragma: no cover (hard to test, requires a running backup)
