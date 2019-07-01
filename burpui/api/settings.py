@@ -429,14 +429,15 @@ class NewClientSettings(Resource):
     )
     def put(self, server=None):
         """Creates a new client"""
-        if not current_user.is_anonymous and \
-                current_user.acl.is_moderator() and \
-                not current_user.acl.is_server_rw(server):
-            self.abort(403, 'You don\'t have rights on this server')
-
         newclient = self.parser.parse_args()['newclient']
         if not newclient:
             self.abort(400, 'No client name provided')
+
+        if not current_user.is_anonymous and \
+                current_user.acl.is_moderator() and \
+                not current_user.acl.is_client_rw(newclient, server):
+            self.abort(403, 'You don\'t have rights on this server')
+
         parser = bui.client.get_parser(agent=server)
         clients = parser.list_clients()
         for cl in clients:
@@ -508,7 +509,7 @@ class ClientSettings(Resource):
         """Saves a given client configuration"""
         if not current_user.is_anonymous and \
                 current_user.acl.is_moderator() and \
-                not current_user.acl.is_server_rw(server):
+                not current_user.acl.is_client_rw(client, server):
             self.abort(403, 'You don\'t have rights on this server')
 
         args = self.parser_post.parse_args()
@@ -599,7 +600,7 @@ class ClientSettings(Resource):
         """Deletes a given client"""
         if not current_user.is_anonymous and \
                 current_user.acl.is_moderator() and \
-                not current_user.acl.is_server_rw(server):
+                not current_user.acl.is_client_rw(client, server):
             self.abort(403, 'You don\'t have rights on this server')
 
         args = self.parser_delete.parse_args()
