@@ -235,10 +235,10 @@ class UserHandler(BUIuser):
             username = session_manager.get_session_username() or \
                 session.get('login')
         self.real = None
-        if not username:
-            return
 
         self.name = username
+        if not self.name:
+            return
 
         def _load_from_backend(backend, username):
             if not backend:
