@@ -165,6 +165,10 @@ def create_user(backend, password, ask, verbose, name):
     except Exception as e:
         msg = str(e)
 
+    if not backend.endswith(':AUTH'):
+        backend = f'{backend}:AUTH'
+    backend = backend.upper()
+
     if msg:
         _die(msg, 'create_user')
 
