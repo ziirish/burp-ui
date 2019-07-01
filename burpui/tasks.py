@@ -58,7 +58,7 @@ BEAT_SCHEDULE = {
     },
     'cleanup-expired-sessions-every-four-hours': {
         'task': '{}.cleanup_expired_sessions'.format(ME),
-        'schedule': crontab(hour='*/4'),  # every four hours
+        'schedule': crontab(minute=1, hour='*/4'),  # every four hours
     },
 }
 
