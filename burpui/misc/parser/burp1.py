@@ -373,7 +373,8 @@ class Parser(Doc):
 
                 self._refresh_cache()
 
-            shutil.rmtree(data)
+            if delete:
+                shutil.rmtree(data)
 
         except OSError as exp:
             res.append([NOTIF_ERROR, str(exp)])
