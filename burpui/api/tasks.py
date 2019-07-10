@@ -20,12 +20,14 @@ from ..engines.server import BUIServer  # noqa
 from ..ext.cache import cache
 from ..config import config
 from ..decorators import browser_cache
-from ..tasks import perform_restore, load_all_tree
+from ..tasks import perform_restore, load_all_tree, delete_client, force_scheduling_now
 
 from time import time
 from zlib import adler32
 from flask import url_for, Response, current_app, after_this_request, \
-    send_file, request
+    send_file, request, g, session
+from flask_babel import gettext as _
+from flask_restplus import inputs
 from flask_login import current_user
 from datetime import timedelta
 from werkzeug.datastructures import Headers
@@ -44,9 +46,11 @@ else:
 bui = current_app  # type: BUIServer
 ns = api.namespace('tasks', 'Asynchronous tasks methods')
 
+# tuple composed with <task>, <callback url>
 task_types = {
     'restore': (perform_restore, '.task_get_file'),
     'browse': (load_all_tree, '.task_do_browse_all'),
+    'delete': (delete_client, '.task_deleted_client'),
 }
 
 
@@ -82,7 +86,7 @@ class TaskStatus(Resource):
     def get(self, task_type, task_id, server=None):
         """Returns the state of the given task"""
         if task_type not in task_types:
-            return {'state': 'FAILURE'}
+            self.abort(400)
         task_obj, callback = task_types[task_type]
         task = task_obj.AsyncResult(task_id)
         if task.state == 'FAILURE':
@@ -121,7 +125,7 @@ class TaskStatus(Resource):
     def delete(self, task_type, task_id, server=None):
         """Cancel a given task"""
         if task_type not in task_types:
-            return '', 400
+            self.abort(400)
         task_obj, _ = task_types[task_type]
         task = task_obj.AsyncResult(task_id)
         user = task.result.get('user')
@@ -332,6 +336,14 @@ class TaskRestore(Resource):
         help='List of files/directories to restore',
         nullable=False
     )
+    parser.add_argument(
+        'timeout',
+        type=int,
+        required=False,
+        help='Maximum task duration after you consider it stalled (in minutes)',
+        default=60,
+        nullable=True
+    )
 
     @ns.expect(parser, validate=True)
     @ns.doc(
@@ -363,6 +375,7 @@ class TaskRestore(Resource):
         strip = args['strip']
         fmt = args['format'] or 'zip'
         passwd = args['pass']
+        timeout = args['timeout']
         args_log = args.copy()
         # don't leak secrets in logs
         del args_log['pass']
@@ -399,7 +412,7 @@ class TaskRestore(Resource):
                 task.id,
                 'perform_restore',
                 current_user.name,
-                timedelta(minutes=60)
+                timedelta(minutes=timeout)
             )
             try:
                 db.session.add(db_task)
@@ -407,6 +420,162 @@ class TaskRestore(Resource):
             except:
                 db.session.rollback()
         return {'id': task.id, 'name': 'perform_restore'}, 202
+
+
+@ns.route('/config/<client>',
+          '/config/<client>/<path:conf>',
+          '/<server>/config/<client>',
+          '/<server>/config/<client>/<path:conf>',
+          endpoint='task_delete_client',
+          methods=['DELETE'])
+@ns.doc(
+    params={
+        'server': 'Which server to collect data from when in multi-agent mode',
+        'client': 'Client name',
+        'conf': 'Path of the configuration file',
+    },
+)
+class ClientSettings(Resource):
+    parser_delete = ns.parser()
+    parser_delete.add_argument('revoke', type=inputs.boolean, help='Whether to revoke the certificate or not', default=False, nullable=True)
+    parser_delete.add_argument('delcert', type=inputs.boolean, help='Whether to delete the certificate or not', default=False, nullable=True)
+    parser_delete.add_argument('keepconf', type=inputs.boolean, help='Whether to keep the conf or not', default=False, nullable=True)
+    parser_delete.add_argument('template', type=inputs.boolean, help='Whether we work on a template or not', default=False, nullable=True)
+    parser_delete.add_argument('delete', type=inputs.boolean, help='Whether we should remove the data as well or not', default=False, nullable=True)
+
+    @api.disabled_on_demo()
+    @api.acl_admin_or_moderator_required(message=_('Sorry, you don\'t have rights to access the setting panel'))
+    @ns.expect(parser_delete)
+    @ns.doc(
+        responses={
+            200: 'Success',
+            403: 'Insufficient permissions',
+            409: 'Conflict',
+            500: 'Internal failure',
+        }
+    )
+    def delete(self, server=None, client=None, conf=None):
+        """Deletes a given client"""
+        if not current_user.is_anonymous and \
+                current_user.acl.is_moderator() and \
+                not current_user.acl.is_server_rw(server):
+            self.abort(403, 'You don\'t have rights on this server')
+
+        if bui.client.is_backup_running(client, server):
+            self.abort(409, 'There is currently a backup running for this client hence '
+                            'we cannot delete it for now. Please try again later')
+
+        args = self.parser_delete.parse_args()
+        delcert = args.get('delcert', False)
+        revoke = args.get('revoke', False)
+        keepconf = args.get('keepconf', False)
+        template = args.get('template', False)
+        delete = args.get('delete', False)
+
+        task = delete_client.apply_async(
+            args=[
+                client,
+                keepconf,
+                delcert,
+                revoke,
+                template,
+                delete,
+                server,
+                current_user.name
+            ]
+        )
+
+        if db:
+            db_task = Task(
+                task.id,
+                'delete_client',
+                current_user.name,
+                timedelta(minutes=60)
+            )
+            try:
+                db.session.add(db_task)
+                db.session.commit()
+            except:
+                db.session.rollback()
+        return {'id': task.id, 'name': 'delete_client'}, 202
+
+
+@ns.route('/completed/config/<task_id>',
+          '/completed/<server>/config/<task_id>',
+          endpoint='task_deleted_client')
+@ns.doc(
+    params={
+        'task_id': 'The task ID to process',
+    }
+)
+class TaskDeletedClient(Resource):
+    """The :class:`burpui.api.tasks.TaskDeletedClient` resource allows you to
+    retrieve the result of the delete_client task.
+
+    This resource is part of the :mod:`burpui.api.tasks` module.
+    """
+
+    @ns.doc(
+        responses={
+            400: 'Incomplete task',
+            403: 'Insufficient permissions',
+            500: 'Task failed',
+        },
+    )
+    def get(self, task_id, server=None):
+        """Returns the task result"""
+        task = delete_client.AsyncResult(task_id)
+        if task.state != 'SUCCESS':
+            if task.state == 'FAILURE':
+                self.abort(
+                    500,
+                    'Unsuccessful task: {}'.format(task.result.get('error'))
+                )
+            self.abort(400, 'Task not processed yet: {}'.format(task.state))
+
+        tres = task.result
+
+        user = tres.get('user')
+        dst_server = tres.get('server')
+        resp = tres.get('result')
+        kwargs = tres.get('kwargs')
+
+        client = tres.get('client')
+        delcert = kwargs.get('delcert')
+        revoke = kwargs.get('revoke')
+        keepconf = kwargs.get('keepconf')
+        delete = kwargs.get('delete')
+        template = kwargs.get('template')
+
+        if current_user.name != user or (dst_server and dst_server != server):
+            self.abort(403, 'Unauthorized access')
+
+        task.revoke()
+
+        if not keepconf:
+            # clear the cache when we remove a client
+            cache.clear()
+            # clear client-side cache through the _extra META variable
+            try:
+                _extra = session.get('_extra', g.now)
+                _extra = int(_extra)
+            except ValueError:
+                _extra = 0
+            session['_extra'] = '{}'.format(_extra + 1)
+            if bui.config['WITH_CELERY']:
+                force_scheduling_now()
+
+        bui.audit.logger.info(
+            f'deleted client configuration {client}, delete certificate: {delcert}, '
+            f'revoke certificate: {revoke}, keep a backup of the configuration: '
+            f'{keepconf}, delete data: {delete}, is template: {template}', server=server)
+        return resp
+
+#        if not keepconf:
+#        parser = bui.client.get_parser(agent=server)
+#
+#        bui.audit.logger.info(f'deleted client configuration {client} ({conf}), delete certificate: {delcert}, revoke certificate: {revoke}, keep a backup of the configuration: {keepconf}, delete data: {delete}', server=server)
+#        return parser.remove_client(client, keepconf, delcert, revoke, template, delete), 200
 
 
 @ns.route('/running',

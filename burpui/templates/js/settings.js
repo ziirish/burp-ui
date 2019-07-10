@@ -628,10 +628,23 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$timeout', '$scrollspy', 'DTOp
 	$scope.deleteClient = function() {
 		/* UX tweak: disable the submit button + change text */
 		submit = $('#btn-remove-client');
+		parse_result = function(data) {
+			redirect = data[0][0] == NOTIF_SUCCESS;
+			notifAll(data, redirect);
+			if (redirect) {
+				$timeout(function() {
+					document.location = '{{ url_for("view.settings", server=server) }}';
+				}, 1000);
+			}
+		};
 		sav = submit.html();
 		submit.html('<i class="fa fa-fw fa-spinner fa-pulse" aria-hidden="true"></i>&nbsp;{{ _("Deleting...") }}');
 		submit.attr('disabled', true);
+		{% if config.WITH_CELERY -%}
+		api = '{{ url_for("api.task_delete_client", client=client, server=server) }}';
+		{% else -%}
 		api = '{{ url_for("api.client_settings", client=client, server=server) }}';
+		{% endif -%}
 		$.ajax({
 			url: api,
 			type: 'DELETE',
@@ -643,13 +656,39 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$timeout', '$scrollspy', 'DTOp
 		})
 		.fail(buiFail)
 		.done(function(data) {
-			redirect = data[0][0] == NOTIF_SUCCESS;
-			notifAll(data, redirect);
-			if (redirect) {
-				$timeout(function() {
-					document.location = '{{ url_for("view.settings", server=server) }}';
-				}, 1000);
+			{% if config.WITH_CELERY -%}
+			notif(NOTIF_SUCCESS, '{{ _("The client %(client)s is being deleted", client=client) }}');
+			if ($('#deldata').is(':checked')) {
+				notif(NOTIF_INFO, '{{ _("The data are being deleted in the background, you can leave this page if you like though the client may still shows up in the interface until the task completes") }}');
 			}
+			var _check_task_schedule = undefined;
+			var check_task = function(task_id) {
+				$.getJSON('{{ url_for("api.task_status", task_type="delete", task_id="", server=server) }}'+task_id)
+					.done(function(d2) {
+						if (d2.state != 'SUCCESS') {
+							_check_task_schedule = setTimeout(function() {
+								check_task(task_id);
+							}, 2000);
+						} else {
+							$.getJSON(d2.location).done(parse_result);
+							/* reset the submit button state */
+							submit.html(sav);
+							submit.attr('disabled', false);
+						}
+					})
+					.fail(function(xhr, stat, err) {
+						if (xhr.status != 502) {
+							buiFail(xhr, stat, err);
+						} else if ('responseJSON' in xhr && 'message' in xhr.responseJSON) {
+							notifAll(JSON.parse(xhr.responseJSON.message));
+						}
+
+					});
+			};
+			check_task(data.id);
+			{% else -%}
+			parse_result(data);
+			{% endif -%}
 		})
 		.always(function() {
 			/* reset the submit button state */

@@ -318,13 +318,31 @@ def perform_restore(self, client, backup,
 
 
 @celery.task(bind=True)
-def delete_client(self, client, keepconf, delcert, revoke, template, delete, server):
+def delete_client(self, client, keepconf, delcert, revoke, template, delete, server, user):
     parser = bui.client.get_parser(agent=server)
     self.update_state(state='STARTED', meta={'step': 'doing'})
 
-    ret = parser.remove_client(client, keepconf, delcert, revoke, template, delete)
-    if any(x == NOTIF_ERROR for x, _ in ret):
-        raise Exception
+    res = parser.remove_client(client, keepconf, delcert, revoke, template, delete)
+    if any(x == NOTIF_ERROR for x, _ in res):
+        self.update_state(state='FAILURE', meta={'error': res})
+        raise Exception(res)
+
+    ret = {
+        'result': res,
+        'client': client,
+        'server': server,
+        'user': user,
+        'kwargs': {
+            'keepconf': keepconf,
+            'delcert': delcert,
+            'revoke': revoke,
+            'template': template,
+            'delete': delete,
+            'template': template,
+        },
+    }
+    logger.debug(ret)
+    return ret
 
 
 @celery.task(bind=True)

@@ -593,6 +593,7 @@ class ClientSettings(Resource):
         responses={
             200: 'Success',
             403: 'Insufficient permissions',
+            409: 'Conflict',
             500: 'Internal failure',
         }
     )
@@ -602,6 +603,10 @@ class ClientSettings(Resource):
                 current_user.acl.is_moderator() and \
                 not current_user.acl.is_client_rw(client, server):
             self.abort(403, 'You don\'t have rights on this server')
+
+        if bui.client.is_backup_running(client, server):
+            self.abort(409, 'There is currently a backup running for this client hence '
+                            'we cannot delete it for now. Please try again later')
 
         args = self.parser_delete.parse_args()
         delcert = args.get('delcert', False)
@@ -625,7 +630,10 @@ class ClientSettings(Resource):
                 force_scheduling_now()
         parser = bui.client.get_parser(agent=server)
 
-        bui.audit.logger.info(f'deleted client configuration {client} ({conf}), delete certificate: {delcert}, revoke certificate: {revoke}, keep a backup of the configuration: {keepconf}, delete data: {delete}', server=server)
+        bui.audit.logger.info(
+            f'deleted client configuration {client}, delete certificate: {delcert}, '
+            f'revoke certificate: {revoke}, keep a backup of the configuration: '
+            f'{keepconf}, delete data: {delete}, is template: {template}', server=server)
         return parser.remove_client(client, keepconf, delcert, revoke, template, delete), 200
 
 

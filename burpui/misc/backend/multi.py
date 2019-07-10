@@ -462,6 +462,8 @@ class NClient(BUIbackend):
         if data['func'] == 'get_tree' and data['args'].get('root') == '*':
             # arbitrary raise timeout
             timeout = max(timeout, 300)
+        if data['func'] == 'proxy_parser' and data['method'] == 'remove_client':
+            notimeout = True
         try:
             # don't need a context manager here
             if data['func'] == 'get_file':
