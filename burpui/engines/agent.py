@@ -14,7 +14,10 @@ import ssl
 import json
 import logging
 import time
+
 import trio
+
+from functools import partial
 
 from ..exceptions import BUIserverException
 from ..misc.backend.interface import BUIbackend
@@ -178,16 +181,19 @@ class BUIAgent(BUIbackend):
                 if j['func'] == 'proxy_parser':
                     parser = self.client.get_parser()
                     if j['args']:
-                        res = json.dumps(getattr(parser, j['method'])(**j['args']))
+                        wrap = partial(getattr(parser, j['method']), **j['args'])
                     else:
-                        res = json.dumps(getattr(parser, j['method'])())
+                        wrap = getattr(parser, j['method'])
+                    temp = await trio.run_sync_in_worker_thread(wrap)
+                    res = json.dumps(temp)
                 elif j['func'] == 'agent_version':
                     res = json.dumps(__version__)
                 elif j['func'] == 'restore_files':
+                    wrap = partial(getattr(self.client, j['func']), **j['args'])
                     if self.client.is_async:
-                        res, err = await getattr(self.client, j['func'])(**j['args'])
+                        res, err = await wrap()
                     else:
-                        res, err = getattr(self.client, j['func'])(**j['args'])
+                        res, err = await trio.run_sync_in_worker_thread(wrap)
                     if err:
                         await server_stream.send_all(b'ER')
                         await server_stream.send_all(struct.pack('!Q', len(err)))
@@ -275,15 +281,16 @@ class BUIAgent(BUIbackend):
                             data = data.replace(b'burpui.datastructures', to_bytes(f'{mod}.datastructures'))
                             j['args'] = pickle.loads(data)
 
+                        wrap = partial(callback, **j['args'])
                         if self.client.is_async:
-                            res = json.dumps(await callback(**j['args']))
+                            res = json.dumps(await wrap())
                         else:
-                            res = json.dumps(callback(**j['args']))
+                            res = json.dumps(await trio.run_sync_in_worker_thread(wrap))
                     else:
                         if self.client.is_async:
                             res = json.dumps(await callback())
                         else:
-                            res = json.dumps(callback())
+                            res = json.dumps(await trio.run_sync_in_worker_thread(callback))
                 self.logger.info(f'result: {res}')
                 await server_stream.send_all(b'OK')
             except (BUIserverException, Exception) as exc:
