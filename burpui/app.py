@@ -156,7 +156,7 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
             kwargs = app.config['PROXY_FIX_ARGS'].format(num_proxies=app.config['NUM_PROXIES'])
             kwargs = json.loads(kwargs)
         logger.debug(f"Using {kwargs} as ProxyFix parameters")
-        app = ProxyFix(app, **kwargs)
+        app.wsgi_app = ProxyFix(app.wsgi_app, **kwargs)
 
     if app.storage and app.storage.lower() == 'redis':
         try:
