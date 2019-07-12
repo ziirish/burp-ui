@@ -168,6 +168,7 @@ EOF
   [ -n "$CELERY" ] && {
     echo "Starting bui-celery..."
     supervisorctl start bui-celery >/dev/null
+    supervisorctl start bui-celery-beat >/dev/null
   }
 
   echo "Starting gunicorn..."
@@ -197,6 +198,7 @@ appStop() {
   supervisorctl stop nginx >/dev/null
 
   echo "Stopping bui-celery..."
+  supervisorctl stop bui-celery-beat &>/dev/null || true
   supervisorctl stop bui-celery &>/dev/null || true
 
   echo "Stopping bui-monitor..."
