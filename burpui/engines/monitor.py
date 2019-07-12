@@ -15,6 +15,7 @@ import struct
 import logging
 import datetime
 
+from functools import partial
 from itertools import count
 from async_generator import asynccontextmanager
 
@@ -225,7 +226,8 @@ class MonitorPool:
                         response = self._status_cache[query]
                     else:
                         async with self.get_mon(ident) as mon:
-                            response = mon.status(query, timeout=self.timeout, cache=False, raw=True)
+                            wrap = partial(mon.status, query, timeout=self.timeout, cache=False, raw=True)
+                            response = await trio.run_sync_in_worker_thread(wrap)
 
                         if cache:
                             self._status_cache[query] = response
@@ -271,7 +273,7 @@ class MonitorPool:
                 return
             mon = Monitor(self.burpbin, self.bconfcli, timeout=self.timeout, ident=id)
             # warm up monitor
-            mon.status()
+            await trio.run_sync_in_worker_thread(mon.status)
             await self.pool.put(mon)
         except (BUIserverException, OSError):
             pass
