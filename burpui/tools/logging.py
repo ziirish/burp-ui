@@ -14,7 +14,8 @@ import logging
 
 def convert_level(verbose):
     # This is already a valid level
-    if logging.getLevelName(verbose) != "Level %s" % verbose:
+    if logging.getLevelName(verbose) != "Level %s" % verbose and \
+            (not isinstance(verbose, int) or verbose > 0):
         return verbose
 
     # The debug argument used to be a boolean so we keep supporting this format
