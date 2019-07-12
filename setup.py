@@ -301,6 +301,7 @@ setup(
         (os.path.join(contrib, 'gunicorn'), ['contrib/gunicorn/burpui_gunicorn.py']),
         (os.path.join(contrib, 'systemd'), ['contrib/systemd/bui-agent.service', 'contrib/systemd/bui-celery.service', 'contrib/systemd/bui-gunicorn.service']),
     ] + migrations,
+    python_requires=">=3.6",
     install_requires=requires,
     extras_require={
         'ldap_authentication': ['ldap3'],

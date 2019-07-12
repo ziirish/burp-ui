@@ -4,6 +4,7 @@
 burpui-dev.cfg*
 burpui/RELEASE
 devel.sh
+clean.sh
 *.egg*
 .tox
 .reports
@@ -18,7 +19,5 @@ _build
 .tags
 celerybeat-schedule
 Pipfile*
-pkgs/burp-ui-sql/burpui_sql/VERSION
-pkgs/burp-ui-extra/burpui_extra/VERSION
 pkgs/burp-ui-agent/burpui_agent
 pkgs/burp-ui-monitor/burpui_monitor

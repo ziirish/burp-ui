@@ -3,6 +3,10 @@ variables:
   GIT_SUBMODULE_STRATEGY: recursive
   DOCKER_DRIVER: overlay2
   DOCKER_HOST: tcp://localhost:2375
+  BURP_VERSION: 2.2.18
+  PG_VERSION: 10
+  FLAKE8_IGNORE: E501,E722,W605,W504
+  SRC_DIR: burpui
 
 image: docker:git
 
@@ -14,20 +18,43 @@ stages:
   - build
   - deploy
 
-test:lint:
+test:lint:3.6:
   stage: test
-  image: python:3.6
+  image: python:3.6-alpine
   script:
   - pip install flake8 pylint
-  - make flake8
+  - flake8 --ignore=$FLAKE8_IGNORE $SRC_DIR
   tags:
   - lint
   except:
   - tags
 
-test:py3.6:
+test:lint:3.7:
   stage: test
-  image: python:3.6
+  image: python:3.7-alpine
+  script:
+  - pip install flake8 pylint
+  - flake8 --ignore=$FLAKE8_IGNORE $SRC_DIR
+  tags:
+  - lint
+  except:
+  - tags
+
+test:lint:3.8:
+  stage: test
+  image: python:3.8-rc-alpine
+  script:
+  - pip install flake8 pylint
+  - flake8 --ignore=$FLAKE8_IGNORE $SRC_DIR
+  tags:
+  - lint
+  except:
+  - tags
+  allow_failure: true
+
+test:py:3.6:
+  stage: test
+  image: python:3.6-alpine
   script:
   - pip install tox
   - mkdir .reports
@@ -40,11 +67,42 @@ test:py3.6:
     reports:
       junit: .reports/burpui.junit.xml
 
+test:py:3.7:
+  stage: test
+  image: python:3.7-alpine
+  script:
+  - pip install tox
+  - mkdir .reports
+  - tox -e py37
+  tags:
+  - docker
+  except:
+  - tags
+  artifacts:
+    reports:
+      junit: .reports/burpui.junit.xml
+
+test:py:3.8:
+  stage: test
+  image: python:3.8-rc-alpine
+  script:
+  - pip install tox
+  - mkdir .reports
+  - tox -e py38
+  tags:
+  - docker
+  except:
+  - tags
+  artifacts:
+    reports:
+      junit: .reports/burpui.junit.xml
+  allow_failure: true
+
 build:py3:
   stage: build
-  image: python:3.6
+  image: python:3.6-alpine
   script:
-  - /bin/bash tests/run_build.sh
+  - tests/build.sh
   tags:
   - build
   only:
@@ -59,10 +117,10 @@ build:py3:
 
 build:doc:
   stage: build
-  image: python:3.6
+  image: python:3.6-alpine
   script:
   - pip install -U .[rtd]
-  - make doc
+  - cd doc && make html
   tags:
   - build
   only:
@@ -78,11 +136,11 @@ build:docker:latest:
   script:
   - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
   - docker build --pull -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:latest -f docker/Dockerfile .
-  - (cd docker/demo/docker-pg && docker build --pull -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/pgsql:10 .)
-  - (cd docker/components/docker-burp && docker build --pull -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/burp:2.2.18 .)
+  - (cd docker/demo/docker-pg && docker build --pull -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/pgsql:$PG_VERSION .)
+  - (cd docker/components/docker-burp && docker build --pull -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/burp:$BURP_VERSION .)
   - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:latest
-  - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/pgsql:10
-  - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/burp:2.2.18
+  - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/pgsql:$PG_VERSION
+  - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/burp:$BURP_VERSION
   tags:
   - registry
   only:
@@ -93,11 +151,11 @@ build:docker:release:
   script:
   - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
   - docker build --pull -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$CI_COMMIT_TAG -f docker/Dockerfile .
-  - (cd docker/demo/docker-pg && docker build --pull -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/pgsql:10 .)
-  - (cd docker/components/docker-burp && docker build --pull -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/burp:2.2.18 .)
+  - (cd docker/demo/docker-pg && docker build --pull -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/pgsql:$PG_VERSION .)
+  - (cd docker/components/docker-burp && docker build --pull -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/burp:$BURP_VERSION .)
   - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$CI_COMMIT_TAG
-  - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/pgsql:10
-  - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/burp:2.2.18
+  - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/pgsql:$PG_VERSION
+  - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/burp:$BURP_VERSION
   only:
   - tags
   tags:
@@ -108,11 +166,11 @@ build:docker:stable:
   script:
   - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
   - docker build --pull -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:stable -f docker/Dockerfile .
-  - (cd docker/demo/docker-pg && docker build --pull -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/pgsql:10 .)
-  - (cd docker/components/docker-burp && docker build --pull -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/burp:2.2.18 .)
+  - (cd docker/demo/docker-pg && docker build --pull -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/pgsql:$PG_VERSION .)
+  - (cd docker/components/docker-burp && docker build --pull -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/burp:$BURP_VERSION .)
   - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:stable
-  - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/pgsql:10
-  - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/burp:2.2.18
+  - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/pgsql:$PG_VERSION
+  - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/burp:$BURP_VERSION
   only:
   - stable@ziirish/burp-ui
   tags:
