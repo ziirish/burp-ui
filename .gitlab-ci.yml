@@ -7,7 +7,6 @@ variables:
   PG_VERSION: 10
   FLAKE8_IGNORE: E501,E722,W605,W504
   SRC_DIR: burpui
-  CI_REQUIREMENTS: apk add --no-cache gcc make
 
 image: docker:git
 
@@ -21,9 +20,8 @@ stages:
 
 test:lint:3.6:
   stage: test
-  image: python:3.6-alpine
+  image: python:3.6
   script:
-  - $CI_REQUIREMENTS
   - pip install flake8 pylint
   - flake8 --ignore=$FLAKE8_IGNORE $SRC_DIR
   tags:
@@ -33,9 +31,8 @@ test:lint:3.6:
 
 test:lint:3.7:
   stage: test
-  image: python:3.7-alpine
+  image: python:3.7
   script:
-  - $CI_REQUIREMENTS
   - pip install flake8 pylint
   - flake8 --ignore=$FLAKE8_IGNORE $SRC_DIR
   tags:
@@ -45,9 +42,8 @@ test:lint:3.7:
 
 test:lint:3.8:
   stage: test
-  image: python:3.8-rc-alpine
+  image: python:3.8-rc
   script:
-  - $CI_REQUIREMENTS
   - pip install flake8 pylint
   - flake8 --ignore=$FLAKE8_IGNORE $SRC_DIR
   tags:
@@ -58,9 +54,8 @@ test:lint:3.8:
 
 test:py:3.6:
   stage: test
-  image: python:3.6-alpine
+  image: python:3.6
   script:
-  - $CI_REQUIREMENTS
   - pip install tox
   - mkdir .reports
   - tox -e py36
@@ -74,9 +69,8 @@ test:py:3.6:
 
 test:py:3.7:
   stage: test
-  image: python:3.7-alpine
+  image: python:3.7
   script:
-  - $CI_REQUIREMENTS
   - pip install tox
   - mkdir .reports
   - tox -e py37
@@ -90,9 +84,8 @@ test:py:3.7:
 
 test:py:3.8:
   stage: test
-  image: python:3.8-rc-alpine
+  image: python:3.8-rc
   script:
-  - $CI_REQUIREMENTS
   - pip install tox
   - mkdir .reports
   - tox -e py38
@@ -107,9 +100,8 @@ test:py:3.8:
 
 build:py3:
   stage: build
-  image: python:3.6-alpine
+  image: python:3.6
   script:
-  - $CI_REQUIREMENTS
   - tests/build.sh
   tags:
   - build
@@ -125,9 +117,8 @@ build:py3:
 
 build:doc:
   stage: build
-  image: python:3.6-alpine
+  image: python:3.6
   script:
-  - $CI_REQUIREMENTS
   - pip install -U .[rtd]
   - cd doc && make html
   tags:
