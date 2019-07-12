@@ -120,7 +120,7 @@ build:doc:
   image: python:3.6
   script:
   - pip install -U .[rtd]
-  - cd doc && make html
+  - cd docs && make html
   tags:
   - build
   only:
