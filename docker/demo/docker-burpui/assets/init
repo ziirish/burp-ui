@@ -96,6 +96,7 @@ EOF
   sed -i -r "s'@BURPUI_VERBOSE@'$BURPUI_VERBOSE'" /etc/supervisor.d/gunicorn.ini
 
   sed -r "s'@BURPUI_CONFIG@'$BURPUI_CONFIG'" /etc/supervisor.d/bui-celery.ini.sample >/etc/supervisor.d/bui-celery.ini
+  sed -r "s'@BURPUI_CONFIG@'$BURPUI_CONFIG'" /etc/supervisor.d/bui-celery-beat.ini.sample >/etc/supervisor.d/bui-celery-beat.ini
 
   sed -r "s'@GUNICORN_WORKERS@'$GUNICORN_WORKERS';s'@GUNICORN_WORKER_CLASS@'$GUNICORN_WORKER_CLASS'" /etc/burp-ui/burpui_gunicorn.py.sample >/etc/burp-ui/burpui_gunicorn.py
 
@@ -109,6 +110,7 @@ EOF
 
   echo "Starting bui-celery..."
   supervisorctl start bui-celery >/dev/null
+  supervisorctl start bui-celery-beat >/dev/null
 
   echo "Starting gunicorn..."
   supervisorctl start gunicorn >/dev/null
@@ -142,6 +144,9 @@ appStop() {
       supervisorctl stop websocket-$i
     done
   }
+  echo "Stopping celery..."
+  supervisorctp stop celery-beat >/dev/null
+  supervisorctl stop celery >/dev/null
   echo "Stopping gunicorn..."
   supervisorctl stop gunicorn >/dev/null
   echo "Stopping crond..."
