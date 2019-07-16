@@ -28,6 +28,7 @@ test:lint:3.6:
   - lint
   except:
   - tags
+  - rc
 
 test:lint:3.7:
   stage: test
@@ -50,6 +51,7 @@ test:lint:3.8:
   - lint
   except:
   - tags
+  - rc
   allow_failure: true
 
 test:py:3.6:
@@ -63,6 +65,7 @@ test:py:3.6:
   - docker
   except:
   - tags
+  - rc
   artifacts:
     reports:
       junit: .reports/burpui.junit.xml
@@ -94,6 +97,7 @@ test:py:3.7:
   - docker
   except:
   - tags
+  - rc
   artifacts:
     reports:
       junit: .reports/burpui.junit.xml
