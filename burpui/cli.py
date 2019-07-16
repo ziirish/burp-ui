@@ -89,9 +89,7 @@ def _die(error, appli=None):
     sys.exit(2)
 
 
-def _log(message, *args, **kwargs):
-    color = kwargs.get('color', None)
-    err = kwargs.get('err', False)
+def _log(message, *args, color=None, err=False):
     msg = message % args if args else message
     if color is not None:
         msg = click.style(msg, fg=color)
@@ -114,8 +112,7 @@ def warn(message='', *args):
     _log(message, *args, color='yellow')
 
 
-def err(message='', *args, **kwargs):
-    err = kwargs.get('err', True)
+def err(message='', *args, err=True):
     _log(message, *args, color='red', err=err)
 
 

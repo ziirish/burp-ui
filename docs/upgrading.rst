@@ -13,10 +13,14 @@ For a complete list of changes, you may refer to the
 v0.7.0
 ------
 
+- **Breaking** - you now need python 3.6 or above. `Burp-UI`_ won't work on
+  python 2.7 anymore.
+
 - **Breaking** - the *single* and *version* options within the ``[Global]``
   section have been removed in favor of a new unified *backend* option. See the
   `Backends <advanced_usage.html#backends>`__ section of the documentation for
   details.
+
 - **Breaking** - there was a bug when using burp-server >= 2.1.10 where
   timestamps where wrongly computed on the global clients view due to the fact
   timestamps have offsets since burp-server 2.1.10. The new behaviour is to
@@ -27,15 +31,18 @@ v0.7.0
   `Backend options <advanced_usage.html#options>`__ for details).
   The drawback of enabling the ``deep_inspection`` is this requires some extra
   work that may slow down burp-ui.
+
 - **Breaking** - the authentication backends section have been renamed with the
   ``:AUTH`` suffix (so ``BASIC`` becomes ``BASIC:AUTH``, etc.).
   Please make sure you rename those sections accordingly so you won't be locked
   out.
+
 - **Breaking** - the ``bui-agent`` will now exit when its *system* requirements
   are not met at startup time (that is: the burp-server must be up and running
   and the burp-client used by burp-ui must be able to reach the burp-server).
   A new timeout has been added though in order for ``bui-agent`` to wait for the
   burp-server to be ready.
+
 - **Breaking** - the ``prefix`` option has been moved from the ``[Global]``
   configuration section to the ``[Production]`` one for consistency with the new
   *Production* options introduced.

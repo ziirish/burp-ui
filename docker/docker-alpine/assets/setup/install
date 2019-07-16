@@ -31,7 +31,6 @@ pip install mysqlclient
 pip install psycopg2
 pip install psycogreen
 pip install flask-limiter
-pip install Flask-Session
 pip install Flask-SQLAlchemy
 pip install Flask-Migrate
 pip install sqlalchemy-utils

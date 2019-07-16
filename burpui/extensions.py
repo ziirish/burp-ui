@@ -193,8 +193,7 @@ def create_db(myapp, cli=False, unittest=False, create=True, celery_worker=False
     return None
 
 
-def create_websocket(myapp, websocket_server=False, celery_worker=False,
-                     gunicorn=False, cli=False):
+def create_websocket(myapp, websocket_server=False, celery_worker=False, cli=False):
     """Create the websocket server if possible
 
     :param myapp: Application context
@@ -234,7 +233,6 @@ def create_websocket(myapp, websocket_server=False, celery_worker=False,
     myapp.config['WS_MANAGE_SESSION'] = not myapp.config.get('WITH_SRV_SESSION', False)
     if os.getenv('BUI_MODE', '') == 'celery':
         myapp.config['WS_ASYNC_MODE'] = 'threading'
-    # myapp.config['WS_ASYNC_MODE'] = 'threading' if not gunicorn else None
 
     if celery_worker:
         return False

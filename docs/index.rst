@@ -19,7 +19,6 @@ Documentation
    :maxdepth: 2
 
    introduction
-   requirements
    architecture
    installation
    basic_usage

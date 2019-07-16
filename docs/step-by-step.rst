@@ -119,14 +119,11 @@ Our `Burp`_ server is now set up, we can start it:
     /etc/init.d/burp start
 
 
-Now we can configure `Burp-UI`_. The package comes with a default configuration
-and init scripts. We copy them at the right place:
+Now we can configure `Burp-UI`_. The package comes with a default configuration.
+We copy it at the right place:
 
 ::
 
-    cp /usr/local/share/burpui/contrib/debian/init.sh /etc/init.d/burp-ui
-    chmod +x /etc/init.d/burp-ui
-    update-rc.d burp-ui defaults
     cp /usr/local/share/burpui/etc/burpui.sample.cfg /etc/burp/burpui.cfg
 
 
@@ -135,7 +132,7 @@ server:
 
 ::
 
-    sed -i "s/^version = .*/version = 1/" /etc/burp/burpui.cfg
+    sed -i "s/^backend = .*/backend = burp1/" /etc/burp/burpui.cfg
 
 
 The default configuration is plug and play for this case, we just have to start
@@ -143,7 +140,7 @@ The default configuration is plug and play for this case, we just have to start
 
 ::
 
-    /etc/init.d/burp-ui start
+    burp-ui -- -h 0.0.0.0 -p 5000
 
 
 Your server is now fully set-up, you can access `Burp-UI`_ by pointing your
@@ -184,7 +181,7 @@ Now we retrieve the `Burp`_ sources and then we compile and install it:
     cd /usr/src
     git clone https://github.com/grke/burp.git
     cd burp
-    git checkout tags/2.0.54
+    git checkout tags/2.2.18
     ./configure --prefix=/usr --sysconfdir=/etc/burp --localstatedir=/var
     make
     make install
@@ -263,14 +260,11 @@ Our `Burp`_ server is now set up, we can start it:
     /etc/init.d/burp start
 
 
-Now we can configure `Burp-UI`_. The package comes with a default configuration
-and init scripts. We copy them at the right place:
+Now we can configure `Burp-UI`_. The package comes with a default configuration.
+We copy it at the right place:
 
 ::
 
-    cp /usr/local/share/burpui/contrib/debian/init.sh /etc/init.d/burp-ui
-    chmod +x /etc/init.d/burp-ui
-    update-rc.d burp-ui defaults
     cp /usr/local/share/burpui/etc/burpui.sample.cfg /etc/burp/burpui.cfg
 
 
@@ -279,7 +273,7 @@ We can start `Burp-UI`_:
 
 ::
 
-    /etc/init.d/burp-ui start
+    burp-ui -- -h 0.0.0.0 -p 5000
 
 
 Your server is now fully set-up, you can access `Burp-UI`_ by pointing your

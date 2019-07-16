@@ -6,6 +6,7 @@ Flask-Babel==0.12.2
 Flask-WTF==0.14.2
 flask-restplus==0.12.1
 Flask-Caching==1.7.2
+Flask-Session==0.3.1
 WTForms==2.1
 arrow==0.14.2
 pluginbase==1.0.0

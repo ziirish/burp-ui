@@ -77,7 +77,7 @@ backlog = 2048
 # 'geventwebsocket.gunicorn.workers.GeventWebSocketWorker'
 
 workers = 5
-worker_class = 'gevent'
+worker_class = 'sync'
 worker_connections = 1000
 timeout = 300
 keepalive = 2

@@ -30,9 +30,9 @@ Compatibility
 +----------------------------+-------+-------+
 |     2.0.0 => 2.0.16        |       |       |
 +----------------------------+-------+-------+
-| 2.0.18 => 2.0.X protocol 1 |       |   X   |
+| 2.0.18 => 2.3.X protocol 1 |       |   X   |
 +----------------------------+-------+-------+
-| 2.0.18 => 2.0.X protocol 2 |       |   X*  |
+| 2.0.18 => 2.3.X protocol 2 |       |   X*  |
 +----------------------------+-------+-------+
 
 \* The protocol 2 is in heavy development Burp side so the support in
@@ -48,5 +48,156 @@ issues in the `bug-tracker <https://git.ziirish.me/ziirish/burp-ui/issues>`_.
 You will also find there the current opened issues.
 
 
+Requirements
+------------
+
+Please note that, `Burp-UI`_ must be running on the same server that runs the
+burp-server for some features.
+
+.. note::
+    At the moment, `Burp-UI`_ and this doc is mostly debian-centric but feel
+    free to contribute for other distributions!
+
+
+Python
+^^^^^^
+
+`Burp-UI`_ is built against python 3.6. The support for python <=3.5 has been
+removed since `v0.7.0 <upgrading.html#v0-7-0>`__. Python 2.7 is about to be EOL
+and won't be supported anymore by the CPython core team by the end of 2019.
+Unit tests are ran against python 3.6 and python 3.7. If you encounter
+compilation errors with one of these version, feel free to report them.
+
+Libraries
+^^^^^^^^^
+
+Some libraries are required to be able to compile some requirements:
+
+::
+
+    apt-get install libffi-dev libssl-dev python-dev python-pip
+
+
+LDAP
+^^^^
+
+For `LDAP authentication <advanced_usage.html#ldap>`__ (optional), we need extra
+dependencies. You can install them using the following command:
+
+::
+
+    pip install "burp-ui[ldap_authentication]"
+
+
+Redis
+^^^^^
+
+If you wish to use redis for Caching and/or managing user sessions, you need
+additional dependencies:
+
+::
+
+    pip install "burp-ui[gunicorn-extra]"
+
+
+Redis is also a required dependency if you want to use `celery <celery.html>`__.
+
+Celery
+^^^^^^
+
+The `celery <celery.html>`__ worker also needs additional dependencies that you
+can install using:
+
+::
+
+    pip install "burp-ui[celery]"
+
+
+SQL
+^^^
+
+If you need persistent data, you will need additional dependencies as well:
+
+::
+
+    pip install "burp-ui[sql]"
+
+
+Now if you want to use a MySQL database, you will need the proper driver. For
+instance:
+
+::
+
+    pip install mysqlclient
+
+
+.. warning:: The MySQL driver does not seem to play nicely with concurrency, you
+             should set ``preload=False`` within your gunicorn config.
+
+To use a PostgreSQL database, you need the ``psycopg2`` driver:
+
+::
+
+    pip install psycopg2
+
+
+.. warning:: The PostgreSQL driver does not seem to play nicely with
+             concurrency, you should set ``preload=False`` within your gunicorn
+             config.
+
+
+Limiter
+^^^^^^^
+
+If you want to `rate-limit <advanced_usage.html#production>`__ the API, you will
+need additional dependencies too:
+
+::
+
+    pip install flask-limiter
+
+
+WebSocket
+^^^^^^^^^
+
+If you want to enable the `WebSockets <websocket.html>`__ support, you need to
+install the following:
+
+::
+
+    pip install "burp-ui[websocket]"
+
+
+Burp1
+-----
+
+The `burp1 backend <advanced_usage.html#burp1>`__ supports burp versions from
+1.3.48 to 1.4.40.
+With these versions of burp, the status port is only listening on the local
+machine loopback interface (ie. ``localhost`` or ``127.0.0.1``). It means you
+*MUST* run `Burp-UI`_ on the same host that is running your burp server in order
+to be able to access burp's statistics.
+Alternatively, you can use a `bui-agent <buiagent.html>`__.
+
+
+Burp2
+-----
+
+The `burp2 backend <advanced_usage.html#burp2>`__ supports only burp 2.0.18 and
+above.
+Some versions are known to contain critical issues resulting in a non-functional
+`Burp-UI`_: 2.0.24, 2.0.26 and 2.0.30
+If you are using an older version of burp2 `Burp-UI`_ will fail to start.
+
+
+Getting started
+---------------
+
+The first thing to do before digging into `Burp-UI`_ is probably to read its
+`architecture <architecture.html>`_ in order to understand how it works.
+Once it's done, you can refer to the `installation <installation.html>`_ page.
+
+
+.. _Burp-UI: https://git.ziirish.me/ziirish/burp-ui
 .. _Burp: http://burp.grke.org/
 .. _Burp-UI: https://git.ziirish.me/ziirish/burp-ui

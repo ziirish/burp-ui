@@ -340,7 +340,7 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
     app.login_manager.init_app(app)
 
     # Create WebSocket server
-    if create_websocket(app, websocket_server, celery_worker, gunicorn, cli):
+    if create_websocket(app, websocket_server, celery_worker, cli):
         return app
 
     # Create celery app if enabled

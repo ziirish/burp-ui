@@ -306,7 +306,7 @@ setup(
     extras_require={
         'ldap_authentication': ['ldap3'],
         'gunicorn': ['gunicorn'],
-        'gunicorn-extra': ['redis', 'Flask-Session==0.3.1'],
+        'gunicorn-extra': ['redis'],
         'ci': test_requires,
         'dev': dev_requires,
         'celery': ['Celery>=4.3', 'redis'],
