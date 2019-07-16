@@ -29,6 +29,7 @@ test:lint:3.6:
   except:
   - tags
   - rc
+  - demo
 
 test:lint:3.7:
   stage: test
@@ -52,6 +53,7 @@ test:lint:3.8:
   except:
   - tags
   - rc
+  - demo
   allow_failure: true
 
 test:py:3.6:
@@ -66,6 +68,7 @@ test:py:3.6:
   except:
   - tags
   - rc
+  - demo
   artifacts:
     reports:
       junit: .reports/burpui.junit.xml
@@ -98,6 +101,7 @@ test:py:3.7:
   except:
   - tags
   - rc
+  - demo
   artifacts:
     reports:
       junit: .reports/burpui.junit.xml
@@ -105,7 +109,7 @@ test:py:3.7:
 
 build:py3:
   stage: build
-  image: python:3.6
+  image: python:3.7
   script:
   - tests/build.sh
   tags:
@@ -122,7 +126,7 @@ build:py3:
 
 build:doc:
   stage: build
-  image: python:3.6
+  image: python:3.7
   script:
   - pip install -U .[rtd]
   - cd docs && make html
