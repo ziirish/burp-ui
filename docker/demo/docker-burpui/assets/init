@@ -42,7 +42,7 @@ appStart () {
 
   # patch demo with piwik
   REP=$(cat ${CONFIG_DIR}/patch/piwik.patch)
-  awk -v r="$REP" '{gsub(/^.*@DEMO@.*$/,r)}1' /usr/local/lib/python3.6/site-packages/burpui/templates/layout.html >/tmp/layout.html
+  awk -v r="$REP" '{gsub(/^.*@DEMO@.*$/,r)}1' /usr/local/lib/python3.7/site-packages/burpui/templates/layout.html >/tmp/layout.html
   cat /tmp/layout.html >/usr/local/lib/python3.6/site-packages/burpui/templates/layout.html
   rm /tmp/layout.html
 
