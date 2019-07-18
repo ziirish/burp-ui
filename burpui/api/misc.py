@@ -10,6 +10,7 @@
 from . import api, cache_key, force_refresh
 from ..engines.server import BUIServer  # noqa
 from .custom import fields, Resource
+from .client import ClientLabels
 from ..filter import mask
 from ..exceptions import BUIserverException
 from ..decorators import browser_cache
@@ -96,6 +97,7 @@ class Counters(Resource):
         'client': fields.String(required=True, description='Client name'),
         'agent': fields.String(description='Server (agent) name'),
         'counters': fields.Nested(counters_fields, description='Various statistics about the running backup'),
+        'labels': fields.List(fields.String, description='List of labels'),
     })
 
     @ns.marshal_with(monitor_fields, code=200, description='Success')
@@ -151,6 +153,10 @@ class Counters(Resource):
         res['client'] = client
         res['agent'] = server
         res['counters'] = counters
+        try:
+            res['labels'] = ClientLabels._get_labels(client, server)
+        except BUIserverException as exp:
+            self.abort(500, str(exp))
         return res
 
 
@@ -177,6 +183,7 @@ class Live(Resource):
         'client': fields.String(required=True, description='Client name'),
         'agent': fields.String(description='Server (agent) name'),
         'counters': fields.Nested(counters_fields, description='Various statistics about the running backup'),
+        'labels': fields.List(fields.String, description='List of labels'),
     })
 
     @ns.marshal_list_with(live_fields, code=200, description='Success')
@@ -197,7 +204,10 @@ class Live(Resource):
                     'phase': 2,
                     'path': '/etc/some/configuration',
                     '...': '...'
-                }
+                },
+                'labels': [
+                    '...'
+                ]
               },
               {
                 'client': 'client12',
@@ -206,7 +216,10 @@ class Live(Resource):
                     'phase': 3,
                     'path': '/etc/some/other/configuration',
                     '...': '...'
-                }
+                },
+                'labels': [
+                    '...'
+                ]
               }
             ]
 
@@ -255,6 +268,10 @@ class Live(Resource):
                         data['counters'] = bui.client.get_counters(client, agent=serv)
                     except BUIserverException:
                         data['counters'] = {}
+                    try:
+                        data['labels'] = ClientLabels._get_labels(client, serv)
+                    except BUIserverException as exp:
+                        data['labels'] = []
                     res.append(data)
         else:
             for client in running:
@@ -268,6 +285,10 @@ class Live(Resource):
                     data['counters'] = bui.client.get_counters(client, agent=server)
                 except BUIserverException:
                     data['counters'] = {}
+                try:
+                    data['labels'] = ClientLabels._get_labels(client)
+                except BUIserverException as exp:
+                    data['labels'] = []
                 res.append(data)
         return res
 

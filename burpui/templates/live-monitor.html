@@ -7,9 +7,9 @@
             <li class="active">{{ _('Live monitor') }}</li>
           </ul>
           <div class="row" id="live-container" ng-cloak>
-            <div class="col-lg-12" ng-repeat="client in clients">
+            <div class="col-lg-12" ng-repeat="client in clients | orderBy:'client'">
               <br />
-              <h1 class="page-header">{{ _('{{ ::client.client }}<span ng-if="client.agent"> on {{ ::client.agent }}</span>') }}</h1>
+              <h1 class="page-header">{{ _('{{ ::client.client }}<span ng-if="client.agent"> on {{ ::client.agent }}</span><span class="pull-right"><span ng-repeat="label in client.labels" class="label label-info">{{ label }}</span></span> ') }}</h1>
             {# From here, the jinja syntax is escaped because we use the angularjs syntax #}
             {% raw %}
               <h4>{{ client.counters.percent | number:0 }}%</h4>
