@@ -270,7 +270,7 @@ class Live(Resource):
                         data['counters'] = {}
                     try:
                         data['labels'] = ClientLabels._get_labels(client, serv)
-                    except BUIserverException as exp:
+                    except BUIserverException:
                         data['labels'] = []
                     res.append(data)
         else:
@@ -287,7 +287,7 @@ class Live(Resource):
                     data['counters'] = {}
                 try:
                     data['labels'] = ClientLabels._get_labels(client)
-                except BUIserverException as exp:
+                except BUIserverException:
                     data['labels'] = []
                 res.append(data)
         return res
