@@ -1048,21 +1048,22 @@ class ClientLabels(Resource):
         return {'labels': labels}
 
     @staticmethod
-    def _get_labels(client, server):
+    def _get_labels(client, server=None):
         key = 'labels-{}-{}'.format(client, server)
         ret = cache.cache.get(key)
         if ret is not None:
             return ret
         labels = bui.client.get_client_labels(client, agent=server)
         ret = []
+        ignore = re.compile('|'.join(bui.ignore_labels)) if bui.ignore_labels else None
+        reformat = [(re.compile(regex), replace) for regex, replace in bui.format_labels] if bui.format_labels else []
         for label in labels:
             if bui.ignore_labels and \
-                    re.search('|'.join(bui.ignore_labels), label):
+                    ignore.search(label):
                 continue
             tmp_label = label
-            if bui.format_labels:
-                for regex, replace in bui.format_labels:
-                    tmp_label = re.sub(regex, replace, tmp_label)
+            for regex, replace in reformat:
+                tmp_label = regex.sub(replace, tmp_label)
             ret.append(tmp_label)
         cache.cache.set(key, ret, 1800)
         return ret

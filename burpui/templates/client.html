@@ -17,7 +17,15 @@
           {% if current_user and current_user.is_authenticated and (current_user.is_admin or current_user.is_moderator) -%}
           {% set extra_features = True %}
           {% endif -%}
-          <h1 class="page-header">{{ cname }} {% if extra_features %}<a href="{{ url_for("view.cli_settings", server=server, client=cname) }}" class="btn btn-info" title="{{ _('edit') }}"><i class="fa fa-pencil" aria-hidden="true"></i></a>{% endif %}</h1>
+          <div class="row page-header">
+            <div class="col-md-4">
+              <h1>{{ cname }} {% if extra_features %}<a href="{{ url_for("view.cli_settings", server=server, client=cname) }}" class="btn btn-info" title="{{ _('edit') }}"><i class="fa fa-pencil" aria-hidden="true"></i></a>{% endif %}</h1>
+            </div>
+            <div class="col-md-8">
+              <div class="pull-right" id="client-labels">
+              </div>
+            </div>
+          </div>
 
           <h2 class="sub-header">{{ _('Backups') }} <span id="running-status" class="label pull-right"></span></h2>
           <p>

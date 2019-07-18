@@ -213,10 +213,12 @@ var refresh_status = function( is_running ) {
 	{% endif %}
 	var url = '{{ url_for(api_running_clients, client=cname, server=server) }}';
 	var client_status_url = '{{ url_for("api.client_running_status", name=cname, server=server) }}';
+	var client_labels_url = '{{ url_for("api.client_labels", name=cname, server=server) }}';
 	var _get_running = undefined;
 	var _get_status = undefined;
 	var _client_running = false;
 	var _span = $('#running-status');
+	var _labels = $('#client-labels');
 	var _inner_format_status = function(status) {
 		var _content = '<i class="'+__icons[status.state]+'" aria-hidden="true"></i>&nbsp;';
 		if (status.state == '{{ _("running") }}') {
@@ -242,6 +244,13 @@ var refresh_status = function( is_running ) {
 			_span.addClass(__status[_status.state]);
 		});
 	};
+	$.getJSON(client_labels_url, function(labels) {
+		var _labels_span = '';
+		_.forEach(labels, function(label) {
+			_labels_span += '<span class="label label-info">' + label + '</span>&nbsp;';
+		});
+		_labels.html(_labels_span);
+	});
 	if (is_running) {
 		_get_running = $.getJSON(url, function(running) {
 			if (_.indexOf(running, '{{ cname }}') != -1) {
