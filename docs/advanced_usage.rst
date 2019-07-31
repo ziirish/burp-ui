@@ -114,6 +114,8 @@ follow:
     # storage backend for session and cache
     # may be either 'default' or 'redis'
     storage = default
+    # redis server to connect to
+    redis = localhost:6379
     # session database to use
     # may also be a backend url like: redis://localhost:6379/0
     # if set to 'redis', the backend url defaults to:
@@ -128,8 +130,6 @@ follow:
     # where <redis_host> is the host part, and <redis_port> is the port part of
     # the below "redis" setting
     cache = default
-    # redis server to connect to
-    redis = localhost:6379
     # whether to use celery or not
     # may also be a broker url like: redis://localhost:6379/0
     # if set to "true", the broker url defaults to:
@@ -137,11 +137,6 @@ follow:
     # where <redis_host> is the host part, and <redis_port> is the port part of
     # the above "redis" setting
     celery = false
-    # database url to store some persistent data
-    # none or a connect string supported by SQLAlchemy:
-    # http://docs.sqlalchemy.org/en/latest/core/engines.html#database-urls
-    # example: sqlite:////var/lib/burpui/store.db
-    database = none
     # whether to rate limit the API or not
     # may also be a redis url like: redis://localhost:6379/0
     # if set to "true" or "redis" or "default", the url defaults to:
@@ -153,6 +148,11 @@ follow:
     # limiter ratio
     # see https://flask-limiter.readthedocs.io/en/stable/#ratelimit-string
     ratio = 60/minute
+    # database url to store some persistent data
+    # none or a connect string supported by SQLAlchemy:
+    # http://docs.sqlalchemy.org/en/latest/core/engines.html#database-urls
+    # example: sqlite:////var/lib/burpui/store.db
+    database = none
     # you can change the prefix if you are behind a reverse-proxy under a custom
     # root path. For example: /burpui
     # You can also configure your reverse-proxy to announce the prefix through the
@@ -170,6 +170,23 @@ follow:
     proxy_fix_args = "{'x_for': {num_proxies}, 'x_host': {num_proxies}, 'x_prefix': {num_proxies}}"
 
 
+- *storage*: What storage engine should be used for sessions, cache, etc. Can
+  only be one of: ``default`` or ``redis``.
+- *redis*: redis server to use.
+- *session*: redis database to use, by default (if set to ``redis``) we use
+  database **0** on the server provided in *redis*.
+- *cache*: redis database to use, by default (if set to ``redis``) we use
+  database **1** on the server provided in *redis*.
+- *celery*: redis database to use as broker and message queue for Celery, by
+  default (if set to ``true``) we use database **2** on the server provided in
+  *redis*. You can also set it to ``false`` to disable Celery support.
+- *limiter*: redis database to use, by default (if set to ``redis``) we use
+  database **3** on the server provided in *redis*.
+- *ratio*: Limiter ratio. See `Limiter <https://flask-limiter.readthedocs.io/en/stable/#ratelimit-string>`_
+  documentation for details.
+- *database*: Enable SQL persistent storage. Can be ``none`` (to disable SQL)
+  or any valid `SQLAlchemy <http://docs.sqlalchemy.org/en/latest/core/engines.html#database-urls>`_
+  connect string.
 - *prefix*: You can host `Burp-UI`_ behind a sub-root path. See the `gunicorn
   <gunicorn.html#sub-root-path>`__ page for details.
 - *num_proxies*: This is useful only if you host `Burp-UI`_ behind a
@@ -867,7 +884,7 @@ Now you can add *basic audit* specific options:
 
 .. note::
     The *basic* audit backend inherit the global application logger, so you may
-    see *duplicates* log entry depending of both your loggers debug level.
+    see *duplicates* log entry depending on both your loggers debug level.
 
 
 .. _Burp: http://burp.grke.org/

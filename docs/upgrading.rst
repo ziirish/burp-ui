@@ -13,15 +13,21 @@ For a complete list of changes, you may refer to the
 v0.7.0
 ------
 
-- **Breaking** - you now need python 3.6 or above. `Burp-UI`_ won't work on
+- **Breaking** - You now need python 3.6 or above. `Burp-UI`_ won't work on
   python 2.7 anymore.
 
-- **Breaking** - the *single* and *version* options within the ``[Global]``
+- **Breaking** - The **new** `parallel <advanced_usage.html#parallel>`__ backend
+  only work with the
+  `sync <http://docs.gunicorn.org/en/stable/design.html#sync-workers>`_ gunicorn
+  worker. TL;DR, **don't** use the ``-w gevent`` flag when starting gunicorn if
+  you use the ``parallel`` backend.
+
+- **Breaking** - The *single* and *version* options within the ``[Global]``
   section have been removed in favor of a new unified *backend* option. See the
   `Backends <advanced_usage.html#backends>`__ section of the documentation for
   details.
 
-- **Breaking** - there was a bug when using burp-server >= 2.1.10 where
+- **Breaking** - There was a bug when using burp-server >= 2.1.10 where
   timestamps where wrongly computed on the global clients view due to the fact
   timestamps have offsets since burp-server 2.1.10. The new behaviour is to
   suppose every timestamp have offset whenever we detect your current
@@ -32,20 +38,30 @@ v0.7.0
   The drawback of enabling the ``deep_inspection`` is this requires some extra
   work that may slow down burp-ui.
 
-- **Breaking** - the authentication backends section have been renamed with the
+- **Breaking** - The authentication backends section have been renamed with the
   ``:AUTH`` suffix (so ``BASIC`` becomes ``BASIC:AUTH``, etc.).
   Please make sure you rename those sections accordingly so you won't be locked
   out.
 
-- **Breaking** - the ``bui-agent`` will now exit when its *system* requirements
+- **Breaking** - The ``bui-agent`` will now exit when its *system* requirements
   are not met at startup time (that is: the burp-server must be up and running
   and the burp-client used by burp-ui must be able to reach the burp-server).
   A new timeout has been added though in order for ``bui-agent`` to wait for the
   burp-server to be ready.
 
-- **Breaking** - the ``prefix`` option has been moved from the ``[Global]``
+- **Breaking** - The ``prefix`` option has been moved from the ``[Global]``
   configuration section to the ``[Production]`` one for consistency with the new
   *Production* options introduced.
+
+- **Breaking** - The database schema evolved between *v0.6.0* and *v0.7.0*. In
+  order to apply these modifications, you **MUST** run the
+  ``bui-manage db upgrade`` command before restarting your `Burp-UI`_
+  application (if you are using celery, you must restart it too).
+
+- **New** - `bui-monitor <buimonitor.html>`__ is a distributed pool of burp
+  client processes. Its purpose is to centralize every requests to the burp
+  server in a single place with the ability to process hundreds of requests
+  asynchronously.
 
 v0.6.0
 ------
@@ -73,11 +89,16 @@ v0.6.0
   you'll have to manually upgrade/migrate your data `following this
   documentation <https://github.com/tianon/docker-postgres-upgrade>`_.
 
+- **Breaking** - The database schema evolved between *v0.5.0* and *v0.6.0*. In
+  order to apply these modifications, you **MUST** run the
+  ``bui-manage db upgrade`` command before restarting your `Burp-UI`_
+  application (if you are using celery, you must restart it too).
+
 - **Breaking** - The ``docker-compose.yml`` file now uses the ``version: '2'``
   format.
 
 - **Breaking** - The old config file format with colons (:) as separator is no
-  more supported.
+  longer supported.
 
 - **New** - Plugin system to enhance ACL and Authentication backends. See the
   `Plugins <plugins.html>`__ documentation for details.

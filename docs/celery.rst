@@ -17,6 +17,23 @@ application. I chose `Redis`_ so you will need a working `Redis`_ server
 (Basically you just need to run ``apt-get install redis-server`` on Debian based
 distributions)
 
+Configure `Burp-UI`_ to enable `Celery`_ support by setting both the ``redis``
+and ``celery`` option of the ``[Production]`` section. Example:
+
+::
+
+    [Production]
+    # redis server to connect to
+    redis = localhost:6379
+    # whether to use celery or not
+    # may also be a broker url like: redis://localhost:6379/0
+    # if set to "true", the broker url defaults to:
+    # redis://<redis_host>:<redis_port>/2
+    # where <redis_host> is the host part, and <redis_port> is the port part of
+    # the above "redis" setting
+    celery = true
+
+
 Runner
 ------
 

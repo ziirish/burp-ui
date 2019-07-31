@@ -88,6 +88,20 @@ You will also need some extra requirements:
     pip install --upgrade "burp-ui[sql]"
 
 
+Configure `Burp-UI`_ in order to enable SQL support by editing the ``database``
+option of the ``[Production]`` section. Example:
+
+::
+
+    [Production]
+    # ...
+    # database url to store some persistent data
+    # none or a connect string supported by SQLAlchemy:
+    # http://docs.sqlalchemy.org/en/latest/core/engines.html#database-urls
+    # example: sqlite:////var/lib/burpui/store.db
+    database = sqlite:////var/lib/burpui/store.db
+
+
 Then you just have to run the following command to have your database setup:
 
 ::
@@ -218,17 +232,25 @@ The available options are:
       Setup burp client for burp-ui.
 
     Options:
-      -b, --burp-conf-cli TEXT   Burp client configuration file
-      -s, --burp-conf-serv TEXT  Burp server configuration file
-      -c, --client TEXT          Name of the burp client that will be used by
-                                 Burp-UI (defaults to "bui")
-      -h, --host TEXT            Address of the status server (defaults to "::1")
-      -r, --redis TEXT           Redis URL to connect to
-      -d, --database TEXT        Database to connect to for persistent storage
-      -p, --plugins TEXT         Plugins location
-      -n, --dry                  Dry mode. Do not edit the files but display
-                                 changes
-      --help                     Show this message and exit.
+      -b, --burp-conf-cli TEXT        Burp client configuration file
+      -s, --burp-conf-serv TEXT       Burp server configuration file
+      -c, --client TEXT               Name of the burp client that will be used by
+                                      Burp-UI (defaults to "bui")
+      -h, --host TEXT                 Address of the status server (defaults to
+                                      "::1")
+      -r, --redis TEXT                Redis URL to connect to
+      -d, --database TEXT             Database to connect to for persistent
+                                      storage
+      -p, --plugins TEXT              Plugins location
+      -m, --monitor TEXT              bui-monitor configuration file
+      -C, --concurrency INTEGER       Number of concurrent requests addressed to
+                                      the monitor
+      -P, --pool-size INTEGER         Number of burp-client processes to spawn in
+                                      the monitor
+      -B, --backend [burp2|parallel]  Switch to another backend
+      -n, --dry                       Dry mode. Do not edit the files but display
+                                      changes
+      --help                          Show this message and exit.
 
 
 The script needs the `Burp`_ configuration files to be readable **AND**

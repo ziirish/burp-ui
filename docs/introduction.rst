@@ -59,6 +59,11 @@ burp-server for some features.
     free to contribute for other distributions!
 
 
+.. note::
+    On RedHat/CentOS you'll have to replace every call to ``pip`` with ``pip3``.
+    This can also apply to debian prior Buster.
+
+
 Python
 ^^^^^^
 
@@ -71,11 +76,18 @@ compilation errors with one of these version, feel free to report them.
 Libraries
 ^^^^^^^^^
 
-Some libraries are required to be able to compile some requirements:
+Some libraries are required to be able to compile ``pyOpenSSL``:
 
 ::
 
     apt-get install libffi-dev libssl-dev python-dev python-pip
+
+
+On RedHat/CentOS the requirements should be:
+
+::
+
+    yum install gcc python36-devel openssl-devel
 
 
 LDAP

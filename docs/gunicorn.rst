@@ -7,17 +7,48 @@ online restoration) may take some time and thus may block any further requests.
 With `Gunicorn`_, you have several workers that can proceed the requests so you
 can handle more users.
 
-You need to install ``gunicorn`` and ``gevent``:
+You need to install ``gunicorn``:
 
 ::
 
     pip install "burp-ui[gunicorn]"
 
+
+Gunicorn is an application server that will work similarly to php-fpm and the
+like. That is, it will fork several processes to handle the load.
+Due to this, you may need to enable advanced `Burp-UI`_ features so those
+processes can talk to each other (and share resources).
+Here is what settings can be changed in the configuration as an illustration:
+
+::
+
+    [Production]
+    # storage backend for session and cache
+    # may be either 'default' or 'redis'
+    storage = redis
+    # redis server to connect to
+    redis = localhost:6379
+    # session database to use
+    # may also be a backend url like: redis://localhost:6379/0
+    # if set to 'redis', the backend url defaults to:
+    # redis://<redis_host>:<redis_port>/0
+    # where <redis_host> is the host part, and <redis_port> is the port part of
+    # the below "redis" setting
+    session = redis
+    # cache database to use
+    # may also be a backend url like: redis://localhost:6379/0
+    # if set to 'redis', the backend url defaults to:
+    # redis://<redis_host>:<redis_port>/1
+    # where <redis_host> is the host part, and <redis_port> is the port part of
+    # the below "redis" setting
+    cache = redis
+
+
 You will then be able to launch `Burp-UI`_ this way:
 
 ::
 
-    gunicorn -k gevent -w 4 'burpui:create_app(conf="/path/to/burpui.cfg")'
+    gunicorn -w 4 'burpui:create_app(conf="/path/to/burpui.cfg")'
 
 
 .. note:: If you decide to use gunicorn AND the embedded websocket server,
@@ -68,7 +99,7 @@ Usage example:
 Daemon
 ------
 
-If you wish to run `Burp-UI`_ as a daemon process, the recommanded way is to use
+If you wish to run `Burp-UI`_ as a daemon process, the recommended way is to use
 `Gunicorn`_.
 
 Requirements
@@ -166,34 +197,11 @@ Finally you can restart your ``burp-server``.
           adapt the paths.
 
 
-Debian-style
-^^^^^^^^^^^^
-
-When installing the *gunicorn* package on debian, there is a handler script that
-is able to start several instances of `Gunicorn`_ as daemons.
-
-All you need to do is installing the *gunicorn* package and adding a
-configuration file in */etc/gunicorn.d/*.
-
-There is a sample configuration file available
-`here <https://git.ziirish.me/ziirish/burp-ui/blob/master/contrib/gunicorn.d/burp-ui>`__.
-
-::
-
-    # install the gunicorn package
-    apt-get install gunicorn
-    # copy the gunicorn sample configuration
-    cp /usr/local/share/burpui/contrib/gunicorn.d/burp-ui /etc/gunicorn.d/
-    # now restart gunicorn
-    service gunicorn restart
-
-
 Systemd
 ^^^^^^^
 
-If you are not running on debian or you prefer not to use the gunicorn debian
-package, the handler script may not be available. You will then have to create
-your own service. We can do this for systemd for example:
+You will have to create your own service. We can do this for systemd for
+example:
 
 ::
 
