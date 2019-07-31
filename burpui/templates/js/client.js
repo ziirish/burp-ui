@@ -244,9 +244,9 @@ var refresh_status = function( is_running ) {
 			_span.addClass(__status[_status.state]);
 		});
 	};
-	$.getJSON(client_labels_url, function(labels) {
+	$.getJSON(client_labels_url, function(data) {
 		var _labels_span = '';
-		_.forEach(labels, function(label) {
+		_.forEach(data.labels, function(label) {
 			_labels_span += '<span class="label label-info">' + label + '</span>&nbsp;';
 		});
 		_labels.html(_labels_span);
