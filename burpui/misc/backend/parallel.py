@@ -814,16 +814,16 @@ class Burp(Burp2):
         """
         return trio.run(self._async_get_client_labels, client)
 
+    async def _async_restore_files(self, name=None, backup=None, files=None, strip=None,
+                                   archive='zip', password=None, agent=None):
+        return await trio.run_sync_in_worker_thread(Burp2.restore_files, self, name, backup, files, strip, archive, password, agent)
+
+    @usetriorun
+    def restore_files(self, name=None, backup=None, files=None, strip=None,
+                      archive='zip', password=None, agent=None):
+        return trio.run(self._async_restore_files, name, backup, files, strip, archive, password, agent)
+
     # Same as in Burp1 backend
-    # def restore_files(
-    #     self,
-    #     name=None,
-    #     backup=None,
-    #     files=None,
-    #     strip=None,
-    #     archive='zip',
-    #     password=None,
-    #     agent=None):
 
     # def read_conf_cli(self, agent=None):
 
