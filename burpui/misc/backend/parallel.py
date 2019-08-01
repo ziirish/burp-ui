@@ -816,7 +816,7 @@ class Burp(Burp2):
 
     async def _async_restore_files(self, name=None, backup=None, files=None, strip=None,
                                    archive='zip', password=None, agent=None):
-        return await trio.run_sync_in_worker_thread(Burp2.restore_files, self, name, backup, files, strip, archive, password, agent)
+        return await trio.to_thread.run_sync(Burp2.restore_files, self, name, backup, files, strip, archive, password, agent)
 
     @usetriorun
     def restore_files(self, name=None, backup=None, files=None, strip=None,

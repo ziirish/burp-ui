@@ -184,7 +184,7 @@ class BUIAgent(BUIbackend):
                         wrap = partial(getattr(parser, j['method']), **j['args'])
                     else:
                         wrap = getattr(parser, j['method'])
-                    temp = await trio.run_sync_in_worker_thread(wrap)
+                    temp = await trio.to_thread.run_sync(wrap)
                     res = json.dumps(temp)
                 elif j['func'] == 'agent_version':
                     res = json.dumps(__version__)
@@ -193,7 +193,7 @@ class BUIAgent(BUIbackend):
                     if self.client.is_async:
                         res, err = await wrap()
                     else:
-                        res, err = await trio.run_sync_in_worker_thread(wrap)
+                        res, err = await trio.to_thread.run_sync(wrap)
                     if err:
                         await server_stream.send_all(b'ER')
                         await server_stream.send_all(struct.pack('!Q', len(err)))
@@ -285,12 +285,12 @@ class BUIAgent(BUIbackend):
                         if self.client.is_async:
                             res = json.dumps(await wrap())
                         else:
-                            res = json.dumps(await trio.run_sync_in_worker_thread(wrap))
+                            res = json.dumps(await trio.to_thread.run_sync(wrap))
                     else:
                         if self.client.is_async:
                             res = json.dumps(await callback())
                         else:
-                            res = json.dumps(await trio.run_sync_in_worker_thread(callback))
+                            res = json.dumps(await trio.to_thread.run_sync(callback))
                 self.logger.info(f'result: {res}')
                 await server_stream.send_all(b'OK')
             except (BUIserverException, Exception) as exc:

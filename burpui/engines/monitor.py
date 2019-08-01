@@ -227,7 +227,7 @@ class MonitorPool:
                     else:
                         async with self.get_mon(ident) as mon:
                             wrap = partial(mon.status, query, timeout=self.timeout, cache=False, raw=True)
-                            response = await trio.run_sync_in_worker_thread(wrap)
+                            response = await trio.to_thread.run_sync(wrap)
 
                         if cache:
                             self._status_cache[query] = response
@@ -273,7 +273,7 @@ class MonitorPool:
                 return
             mon = Monitor(self.burpbin, self.bconfcli, timeout=self.timeout, ident=id)
             # warm up monitor
-            await trio.run_sync_in_worker_thread(mon.status)
+            await trio.to_thread.run_sync(mon.status)
             await self.pool.put(mon)
         except (BUIserverException, OSError):
             pass
