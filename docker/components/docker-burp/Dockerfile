@@ -1,11 +1,14 @@
 FROM alpine:3.10
 
+ARG BURP_VERSION=2.2.18
+ARG UTHASH_VERSION=2.1.0
+
 RUN apk add --no-cache supervisor logrotate librsync libressl tzdata bash coreutils \
 	&& apk add --no-cache --virtual .fetch-deps \
 		tar \
 	\
-	&& wget -O burp.tar.gz https://github.com/grke/burp/archive/2.2.18.tar.gz \
-	&& wget -O uthash.tar.gz https://github.com/troydhanson/uthash/archive/v2.1.0.tar.gz \
+	&& wget -O burp.tar.gz https://github.com/grke/burp/archive/${BURP_VERSION}.tar.gz \
+	&& wget -O uthash.tar.gz https://github.com/troydhanson/uthash/archive/v${UTHASH_VERSION}.tar.gz \
 	&& mkdir -p /usr/src/burp /usr/src/uthash \
 	&& tar -xC /usr/src/burp --strip-components=1 -f burp.tar.gz \
 	&& tar -xC /usr/src/uthash --strip-components=1 -f uthash.tar.gz \

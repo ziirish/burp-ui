@@ -306,6 +306,8 @@ def compile_translation():
 @click.option('-c', '--client', default='bui',
               help='Name of the burp client that will be used by Burp-UI '
                    '(defaults to "bui")')
+@click.option('-l', '--listen', default='0.0.0.0:5971',
+              help='Setup a custom listen port for the Burp-UI restorations')
 @click.option('-h', '--host', default='::1',
               help='Address of the status server (defaults to "::1")')
 @click.option('-r', '--redis', default=None,
@@ -324,7 +326,7 @@ def compile_translation():
               help='Switch to another backend', type=click.Choice(['burp2', 'parallel']))
 @click.option('-n', '--dry', is_flag=True,
               help='Dry mode. Do not edit the files but display changes')
-def setup_burp(bconfcli, bconfsrv, client, host, redis, database,
+def setup_burp(bconfcli, bconfsrv, client, listen, host, redis, database,
                plugins, monitor, concurrency, pool, backend, dry):
     """Setup burp client for burp-ui."""
     if app.config['BACKEND'] not in ['burp2', 'parallel'] and not backend:
@@ -597,14 +599,16 @@ def setup_burp(bconfcli, bconfsrv, client, host, redis, database,
         is_burp_2_2_10_plus = True
         listen_opt = 'listen_status'
 
+    _, restore_port = listen.split(':')
+
     if not os.path.exists(bconfcli):
-        clitpl = """
+        clitpl = f"""
 mode = client
-port = 4971
+port = {restore_port}
 status_port = 4972
 server = ::1
 password = abcdefgh
-cname = {0}
+cname = {client}
 protocol = 1
 pidfile = /tmp/burp.client.pid
 syslog = 0
@@ -615,7 +619,7 @@ server_can_restore = 0
 cross_all_filesystems=0
 ca_burp_ca = /usr/sbin/burp_ca
 ca_csr_dir = /etc/burp/CA-client
-ssl_cert_ca = /etc/burp/ssl_cert_ca-client-{0}.pem
+ssl_cert_ca = /etc/burp/ssl_cert_ca-client-{client}.pem
 ssl_cert = /etc/burp/ssl_cert-bui-client.pem
 ssl_key = /etc/burp/ssl_cert-bui-client.key
 ssl_key_password = password
@@ -626,7 +630,7 @@ exclude_fs = tmpfs
 nobackup = .nobackup
 exclude_comp=bz2
 exclude_comp=gz
-""".format(client)
+"""
 
         if dry:
             (_, dest_bconfcli) = tempfile.mkstemp()
@@ -644,6 +648,9 @@ exclude_comp=gz
     if confcli.get('server') != host:
         confcli['server'] = host
     c_status_port = confcli.get('status_port', [4972])[0] if confcli.version >= BURP_BIND_MULTIPLE else confcli.get('status_port', 4972)
+    c_server_port = confcli.get('port', [4971])[0] if confcli.version >= BURP_BIND_MULTIPLE else confcli.get('port', 4971)
+    if c_server_port != restore_port:
+        confcli['port'] = [restore_port]
 
     if confcli.dirty:
         if dry:
@@ -720,6 +727,14 @@ exclude_comp=gz
             )
 
     MAX_STATUS_CHILDREN = pool if pool is not None else 15
+    if not is_burp_2_2_10_plus:
+        s_port = confsrv.get('port', [4971])
+        if restore_port not in s_port:
+            confsrv['port'] = restore_port
+    else:
+        s_listen = confsrv.get('listen', [])
+        if listen not in s_listen:
+            confsrv['listen'] = listen
     status_port = confsrv.get('status_port', [4972])
     do_warn = False
     if 'max_status_children' not in confsrv:

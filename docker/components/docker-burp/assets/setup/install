@@ -44,6 +44,12 @@ stdout_logfile=/var/log/supervisor/%(program_name)s.log
 stderr_logfile=/var/log/supervisor/%(program_name)s.log
 EOF
 
+# add a dedicated listen port for burp-ui restorations
+cat >>/etc/burp/burp-server.conf<<EOF
+listen = 0.0.0.0:5971
+max_children = 5
+EOF
+
 # cleanup
 delgroup ping
 rm -rf ~/.cache

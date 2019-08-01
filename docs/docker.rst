@@ -37,6 +37,9 @@ provided. There are a few variables supported to setup your system:
    to not override the ``/etc/burp/burp.conf`` file if you already use it.
  - **BURP_SERVER_CONFIG** - Specify the path of the burp-server configuration
    file. It defaults to ``/etc/burp/burp-server.conf``.
+ - **BURP_RESTORE_LISTEN_ADDR** - Specify a custom listen address that will be
+   dedicated for restorations processed by `Burp-UI`_. It defaults to
+   ``0.0.0.0:5971``.
  - **DATABASE_URL** - Specify the URL of the database to connect to. It defaults
    to ``postgresql://burpui:burpui@pgsql/burpuidb`` which is the default db
    shipped with the *docker-compose.yml*.

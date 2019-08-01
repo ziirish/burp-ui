@@ -864,7 +864,10 @@ class File(dict):
             opt = OptionInt(key, value)
         elif key in self._options_for_type('multi'):
             opt = self.options.get(key, OptionMulti(self.parser, key))
-            opt.append(value)
+            if isinstance(value, list):
+                opt.update(value)
+            else:
+                opt.append(value)
         elif key in self._options_for_type('pair'):
             association = self.parser.pair_associations.get(key)
             if key not in self.options and association not in self.options:
@@ -874,7 +877,10 @@ class File(dict):
                 opt = self.options.get(association)
             else:
                 opt = self.options.get(key)
-            opt.append(key, value)
+            if isinstance(value, list):
+                opt.update(key, value)
+            else:
+                opt.append(key, value)
         elif key == '.':
             key = value
             if self._parsing_templates:

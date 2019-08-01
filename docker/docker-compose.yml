@@ -70,6 +70,7 @@ services:
   #    - GUNICORN_WORKER_CLASS=sync
   #    - REDIS_SERVER=redis:6379
   #    - BURP_SERVER_ADDR=burp-server
+  #    - BURP_RESTORE_LISTEN_ADDR=0.0.0.0:5971
   #    - ASYNC_POOL_SIZE=4
   #    - ASYNC_CONCURRENCY=2
   #    - TIMEZONE=Europe/Paris
