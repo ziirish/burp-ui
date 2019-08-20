@@ -58,7 +58,7 @@ class BUIbackend(object, metaclass=ABCMeta):
         self.host = G_BURPHOST
         self.port = G_BURPPORT
         self.burpbin = G_BURPBIN
-        self.stripbin = G_STRIPBIN
+        self.stripbin = G_STRIPBIN2
         self.burpconfcli = G_BURPCONFCLI
         self.burpconfsrv = G_BURPCONFSRV
         self.includes = G_INCLUDES
@@ -70,7 +70,7 @@ class BUIbackend(object, metaclass=ABCMeta):
             'bport': G_BURPPORT,
             'bhost': G_BURPHOST,
             'burpbin': G_BURPBIN,
-            'stripbin': G_STRIPBIN,
+            'stripbin': G_STRIPBIN2,
             'bconfcli': G_BURPCONFCLI,
             'bconfsrv': G_BURPCONFSRV,
             'timeout': G_TIMEOUT,
@@ -91,7 +91,7 @@ class BUIbackend(object, metaclass=ABCMeta):
                 'enforce': G_ENFORCE,
             },
         }
-        self.defaults['Burp2']['stripbin'] = G_STRIPBIN2
+        self.defaults['Burp1']['stripbin'] = G_STRIPBIN
         tmpdir = G_TMPDIR
         if conf is not None:
             conf.update_defaults(self.defaults)
@@ -116,9 +116,9 @@ class BUIbackend(object, metaclass=ABCMeta):
                 G_BURPBIN,
                 sect=section
             )
-            STRIPBIN_DEFAULT = G_STRIPBIN
-            if self._vers == 2:
-                STRIPBIN_DEFAULT = G_STRIPBIN2
+            STRIPBIN_DEFAULT = G_STRIPBIN2
+            if self._vers == 1:
+                STRIPBIN_DEFAULT = G_STRIPBIN
             self.stripbin = self._get_binary_path(
                 conf,
                 'stripbin',

@@ -966,25 +966,29 @@ def diag(client, host, tips):
     c_status_port = 4972
     errors = False
     if os.path.exists(bconfcli):
-        parser = app.client.get_parser()
+        try:
+            parser = app.client.get_parser()
 
-        confcli = Config(bconfcli, parser, 'srv')
-        confcli.set_default(bconfcli)
-        confcli.parse()
+            confcli = Config(bconfcli, parser, 'srv')
+            confcli.set_default(bconfcli)
+            confcli.parse()
 
-        c_status_port = confcli.get('status_port', [4972])[0]
+            c_status_port = confcli.get('status_port', [4972])[0]
 
-        if confcli.get('cname') != client:
-            warn(
-                'The cname of your burp client does not match: '
-                '{} != {}'.format(confcli.get('cname'), client)
-            )
-            errors = True
-        if confcli.get('server') != host:
-            warn(
-                'The burp server address does not match: '
-                '{} != {}'.format(confcli.get('server'), host)
-            )
+            if confcli.get('cname') != client:
+                warn(
+                    'The cname of your burp client does not match: '
+                    '{} != {}'.format(confcli.get('cname'), client)
+                )
+                errors = True
+            if confcli.get('server') != host:
+                warn(
+                    'The burp server address does not match: '
+                    '{} != {}'.format(confcli.get('server'), host)
+                )
+                errors = True
+        except BUIserverException as exc:
+            err(str(exc))
             errors = True
 
     else:
@@ -992,130 +996,133 @@ def diag(client, host, tips):
         errors = True
 
     if os.path.exists(bconfsrv):
+        try:
+            is_burp_2_2_10_plus = False
+            listen_opt = 'status_address'
+            server_version = app.client.get_server_version()
+            if server_version and server_version >= BURP_LISTEN_OPTION:
+                is_burp_2_2_10_plus = True
+                listen_opt = 'listen_status'
 
-        is_burp_2_2_10_plus = False
-        listen_opt = 'status_address'
-        server_version = app.client.get_server_version()
-        if server_version and server_version >= BURP_LISTEN_OPTION:
-            is_burp_2_2_10_plus = True
-            listen_opt = 'listen_status'
+            parser = app.client.get_parser()
 
-        parser = app.client.get_parser()
+            confsrv = Config(bconfsrv, parser, 'srv')
+            confsrv.set_default(bconfsrv)
+            confsrv.parse()
 
-        confsrv = Config(bconfsrv, parser, 'srv')
-        confsrv.set_default(bconfsrv)
-        confsrv.parse()
+            bind_index = -1
 
-        bind_index = -1
-
-        if host not in ['::1', '127.0.0.1']:
-            bind = confsrv.get(listen_opt)
-            if is_burp_2_2_10_plus:
-                bind_list = list(bind)
-                for idx, line in enumerate(bind_list):
-                    if line.endswith(':{}'.format(c_status_port)):
-                        bind = line.split(':')[0]
-                        bind_index = idx
-                        break
-                else:
+            if host not in ['::1', '127.0.0.1']:
+                bind = confsrv.get(listen_opt)
+                if is_burp_2_2_10_plus:
+                    bind_list = list(bind)
+                    for idx, line in enumerate(bind_list):
+                        if line.endswith(':{}'.format(c_status_port)):
+                            bind = line.split(':')[0]
+                            bind_index = idx
+                            break
+                    else:
+                        warn(
+                            'Unable to locate a \'listen_status\' associated to your client '
+                            '\'status_port\' ({})'.format(c_status_port)
+                        )
+                if (bind and bind not in [host, '::', '0.0.0.0']) or not bind:
                     warn(
-                        'Unable to locate a \'listen_status\' associated to your client '
-                        '\'status_port\' ({})'.format(c_status_port)
+                        'It looks like your burp server is not exposing it\'s '
+                        'status port in a way that is reachable by Burp-UI!'
                     )
-            if (bind and bind not in [host, '::', '0.0.0.0']) or not bind:
-                warn(
-                    'It looks like your burp server is not exposing it\'s '
-                    'status port in a way that is reachable by Burp-UI!'
-                )
+                    info(
+                        'You may want to set the \'{0}\' setting with '
+                        'either \'{1}{3}\', \'::{3}\' or \'0.0.0.0{3}\' in the {2} file '
+                        'in order to make Burp-UI work'.format(
+                            listen_opt,
+                            host,
+                            bconfsrv,
+                            ':{}'.format(c_status_port) if is_burp_2_2_10_plus else ''
+                        )
+                    )
+                    errors = True
+
+            status_port = confsrv.get('status_port', [4972])
+            if 'max_status_children' not in confsrv:
+                do_warn = True
+            else:
+                max_status_children = confsrv.get('max_status_children', [])
+                do_warn = False
+                if not is_burp_2_2_10_plus:
+                    for idx, value in enumerate(status_port):
+                        if value == c_status_port:
+                            bind_index = idx
+                            break
+                if bind_index >= 0 and len(max_status_children) >= bind_index:
+                    if max_status_children[bind_index] < 15:
+                        do_warn = True
+                else:
+                    if max_status_children[-1] < 15:
+                        do_warn = True
+            if do_warn:
                 info(
-                    'You may want to set the \'{0}\' setting with '
-                    'either \'{1}{3}\', \'::{3}\' or \'0.0.0.0{3}\' in the {2} file '
-                    'in order to make Burp-UI work'.format(
-                        listen_opt,
-                        host,
-                        bconfsrv,
-                        ':{}'.format(c_status_port) if is_burp_2_2_10_plus else ''
-                    )
+                    '\'max_status_children\' is to low, you need to set it to '
+                    '15 or more. Please edit your {} file.'.format(bconfsrv)
                 )
                 errors = True
 
-        status_port = confsrv.get('status_port', [4972])
-        if 'max_status_children' not in confsrv:
-            do_warn = True
-        else:
-            max_status_children = confsrv.get('max_status_children', [])
-            do_warn = False
-            if not is_burp_2_2_10_plus:
-                for idx, value in enumerate(status_port):
-                    if value == c_status_port:
-                        bind_index = idx
-                        break
-            if bind_index >= 0 and len(max_status_children) >= bind_index:
-                if max_status_children[bind_index] < 15:
-                    do_warn = True
-            else:
-                if max_status_children[-1] < 15:
-                    do_warn = True
-        if do_warn:
-            info(
-                '\'max_status_children\' is to low, you need to set it to '
-                '15 or more. Please edit your {} file.'.format(bconfsrv)
-            )
-            errors = True
+            restore = []
+            if 'restore_client' in confsrv:
+                restore = confsrv.getlist('restore_client')
 
-        restore = []
-        if 'restore_client' in confsrv:
-            restore = confsrv.getlist('restore_client')
-
-        if client not in restore:
-            warn(
-                'Your burp client is not listed as a \'restore_client\'. '
-                'You won\'t be able to view other clients stats!'
-            )
-            errors = True
-
-        if 'monitor_browse_cache' not in confsrv or not \
-                confsrv.get('monitor_browse_cache'):
-            warn(
-                'For performance reasons, it is recommended to enable the '
-                '\'monitor_browse_cache\'.'
-            )
-            errors = True
-
-        ca_client_dir = confsrv.get('ca_csr_dir')
-        if ca_client_dir and not os.path.exists(ca_client_dir):
-            try:
-                os.makedirs(ca_client_dir)
-            except IOError as exp:
-                _log(
-                    'Unable to create "{}" dir: {}'.format(ca_client_dir, exp),
-                    color='yellow',
-                    err=True
-                )
-
-        if confsrv.get('clientconfdir'):
-            bconfagent = os.path.join(confsrv.get('clientconfdir'), client)
-        else:
-            warn(
-                'Unable to find "clientconfdir" option. Something is wrong '
-                'with your setup.'
-            )
-            bconfagent = 'ihopethisfiledoesnotexistbecauseitisrelatedtoburpui'
-
-        if not os.path.exists(bconfagent) and bconfagent.startswith('/'):
-            warn('Unable to find the {} file.'.format(bconfagent))
-            errors = True
-        else:
-            confagent = Config(bconfagent, parser, 'cli')
-            confagent.set_default(bconfagent)
-            confagent.parse()
-
-            if confagent.get('password') != confcli.get('password'):
+            if client not in restore:
                 warn(
-                    'It looks like the passwords in the {} and the {} files '
-                    'mismatch. Burp-UI will not work properly until you fix '
-                    'this.'.format(bconfcli, bconfagent)
+                    'Your burp client is not listed as a \'restore_client\'. '
+                    'You won\'t be able to view other clients stats!'
                 )
+                errors = True
+
+            if 'monitor_browse_cache' not in confsrv or not \
+                    confsrv.get('monitor_browse_cache'):
+                warn(
+                    'For performance reasons, it is recommended to enable the '
+                    '\'monitor_browse_cache\'.'
+                )
+                errors = True
+
+            ca_client_dir = confsrv.get('ca_csr_dir')
+            if ca_client_dir and not os.path.exists(ca_client_dir):
+                try:
+                    os.makedirs(ca_client_dir)
+                except IOError as exp:
+                    _log(
+                        'Unable to create "{}" dir: {}'.format(ca_client_dir, exp),
+                        color='yellow',
+                        err=True
+                    )
+
+            if confsrv.get('clientconfdir'):
+                bconfagent = os.path.join(confsrv.get('clientconfdir'), client)
+            else:
+                warn(
+                    'Unable to find "clientconfdir" option. Something is wrong '
+                    'with your setup.'
+                )
+                bconfagent = 'ihopethisfiledoesnotexistbecauseitisrelatedtoburpui'
+
+            if not os.path.exists(bconfagent) and bconfagent.startswith('/'):
+                warn('Unable to find the {} file.'.format(bconfagent))
+                errors = True
+            else:
+                confagent = Config(bconfagent, parser, 'cli')
+                confagent.set_default(bconfagent)
+                confagent.parse()
+
+                if confagent.get('password') != confcli.get('password'):
+                    warn(
+                        'It looks like the passwords in the {} and the {} files '
+                        'mismatch. Burp-UI will not work properly until you fix '
+                        'this.'.format(bconfcli, bconfagent)
+                    )
+        except BUIserverException as exc:
+            err(str(exc))
+            errors = True
     else:
         err('Unable to locate burp-server configuration: {} does not '
             'exist.'.format(bconfsrv))

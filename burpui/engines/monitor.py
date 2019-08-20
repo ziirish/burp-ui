@@ -115,7 +115,7 @@ class MonitorPool:
 
         self.burpbin = self.conf.safe_get('burpbin', section='Burp')
         self.bconfcli = self.conf.safe_get('bconfcli', section='Burp')
-        self.timeout = self.conf.safe_get('timeout', 'integer', section='Burp')
+        self.timeout = self.conf.safe_get('timeout', 'integer', section='Burp', defaults=15)
 
         self.conf.setdefault('BUI_MONITOR', True)
 

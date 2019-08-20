@@ -238,11 +238,14 @@ class Burp(Burp2):
                     exc = eee
                 time.sleep(1)
             else:
-                self.logger.error('monitor not ready, giving up!')
-                raise exc
-        stats = self.statistics()
-        if 'alive' in stats and stats['alive']:
-            self.init_all()
+                self.logger.error(f'monitor not ready, giving up!: {exc}')
+
+        try:
+            stats = self.statistics()
+            if 'alive' in stats and stats['alive']:
+                self.init_all()
+        except BUIserverException:
+            pass
 
     def init_all(self):
         self._ready = True
