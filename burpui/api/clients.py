@@ -16,7 +16,7 @@ from ..exceptions import BUIserverException
 from ..decorators import browser_cache
 from ..filter import mask
 
-from flask import current_app
+from flask import current_app, g
 from flask_login import current_user
 
 bui = current_app  # type: BUIServer
@@ -505,6 +505,8 @@ class ClientsStats(Resource):
                 self.abort(500, str(exp))
             tmp_client['labels'] = labels
             ret.append(tmp_client)
+            if tmp_client['state'] != 'idle':
+                g.DONOTCACHE = True
 
         return ret
 

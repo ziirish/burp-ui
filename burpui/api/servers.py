@@ -9,7 +9,7 @@ from ..ext.cache import cache
 from ..decorators import browser_cache
 from ..exceptions import BUIserverException
 
-from flask import current_app
+from flask import current_app, g
 from flask_login import current_user
 
 bui = current_app  # type: BUIServer
@@ -76,6 +76,7 @@ class ServersStats(Resource):
                 alive = bui.client.servers[serv].ping()
             except BUIserverException:
                 alive = False
+                g.DONOTCACHE = True
 
             try:
                 clients = bui.client.servers[serv].get_all_clients(serv)

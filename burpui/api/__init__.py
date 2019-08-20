@@ -13,7 +13,7 @@ import sys
 import uuid
 import hashlib
 
-from flask import Blueprint, Response, request, current_app, session, abort
+from flask import Blueprint, Response, request, current_app, session, abort, g
 from flask_restplus import Api as ApiPlus
 from flask_login import current_user
 from importlib import import_module
@@ -31,7 +31,8 @@ EXEMPT_METHODS = set(['OPTIONS'])
 
 
 def force_refresh():
-    return request.headers.get('X-No-Cache', False) is not False
+    return request.headers.get('X-No-Cache', False) is not False or \
+        getattr(g, 'DONOTCACHE', False)
 
 
 def cache_key():
