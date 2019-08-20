@@ -70,7 +70,7 @@ class human_readable(int):
         # do the precision bit first, so width/alignment works with the suffix
         if float(self) == 0:
             return "{0:{1}f}".format(v, precis)
-        t = ("{0:{1}f}" + mult[i] + suffix).format(v, precis)
+        t = ("{0:{1}f} " + mult[i] + suffix).format(v, precis)
 
         return "{0:{1}}".format(t, width) if width != "" else t
 

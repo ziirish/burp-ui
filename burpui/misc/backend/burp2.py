@@ -23,12 +23,6 @@ from ...utils import human_readable as _hr, utc_to_local
 from ...exceptions import BUIserverException
 from ..._compat import to_unicode
 
-from threading import RLock as _RLock
-try:
-    from gevent.lock import RLock
-except ImportError:
-    RLock = _RLock
-
 
 # Some functions are the same as in Burp1 backend
 class Burp(Burp1):
@@ -60,8 +54,6 @@ class Burp(Burp1):
         :param conf: Configuration to use
         :type conf: :class:`burpui.config.BUIConfig`
         """
-
-        self.plock = RLock()
 
         BUIbackend.__init__(self, server, conf)
 
@@ -134,8 +126,7 @@ class Burp(Burp1):
 
     def status(self, query='c:\n', timeout=None, cache=True, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.status`"""
-        with self.plock:
-            return self.monitor.status(query, timeout, cache)
+        return self.monitor.status(query, timeout, cache)
 
     def _get_backup_logs(self, number, client, forward=False, deep=False):
         """See
