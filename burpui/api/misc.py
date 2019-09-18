@@ -18,7 +18,6 @@ from ..ext.cache import cache
 from ..ext.i18n import LANGUAGES
 
 from flask import flash, get_flashed_messages, url_for, current_app, session
-from flask.ctx import _request_ctx_stack
 from flask_login import current_user
 
 import random
