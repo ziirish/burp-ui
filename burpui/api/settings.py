@@ -451,7 +451,6 @@ class NewClientSettings(Resource):
         #    flash('Could not proceed, no \'clientconfdir\' find', 'warning')
         #    return redirect(request.referrer)
         data = MultiDict()
-        data_templates = []
         if templates:
             real_templates = {x['name']: x['value'] for x in parser._list_templates()}
             if any(x not in real_templates for x in templates):
