@@ -18,7 +18,7 @@ from flask_babel import gettext as _, refresh
 from flask import jsonify, request, url_for, current_app, g, session
 from flask_login import current_user
 from flask_restplus import inputs
-from ..datastructures import ImmutableMultiDict
+from ..datastructures import ImmutableMultiDict, MultiDict
 
 bui = current_app  # type: BUIServer
 ns = api.namespace('settings', 'Settings methods')
@@ -415,6 +415,7 @@ class NewTemplateSettings(Resource):
 class NewClientSettings(Resource):
     parser = ns.parser()
     parser.add_argument('newclient', required=True, help="No 'newclient' provided")
+    parser.add_argument('templates', help="Templates list", action='split')
 
     @api.disabled_on_demo()
     @api.acl_admin_or_moderator_required(message='Sorry, you don\'t have rights to access the setting panel')
@@ -429,7 +430,9 @@ class NewClientSettings(Resource):
     )
     def put(self, server=None):
         """Creates a new client"""
-        newclient = self.parser.parse_args()['newclient']
+        args = self.parser.parse_args()
+        newclient = args['newclient']
+        templates = args['templates']
         if not newclient:
             self.abort(400, 'No client name provided')
 
@@ -447,7 +450,14 @@ class NewClientSettings(Resource):
         # if not clientconfdir:
         #    flash('Could not proceed, no \'clientconfdir\' find', 'warning')
         #    return redirect(request.referrer)
-        noti = bui.client.store_conf_cli(ImmutableMultiDict(), newclient, None, agent=server)
+        data = MultiDict()
+        data_templates = []
+        if templates:
+            real_templates = {x['name']: x['value'] for x in parser._list_templates()}
+            if any(x not in real_templates for x in templates):
+                self.abort(400, 'Wrong template')
+            data.setlist('templates', [real_templates[x] for x in templates])
+        noti = bui.client.store_conf_cli(ImmutableMultiDict(data), newclient, None, agent=server)
         if server:
             url = url_for('view.cli_settings', server=server, client=newclient)
         else:
