@@ -197,7 +197,10 @@ class Parser(Doc):
         return False
 
     def _get_client(self, name, path):
-        """Return client conf and refresh it if necessary"""
+        """Return client conf and refresh it if necessary
+
+        :rtype: Config
+        """
         if self._clientconfdir_changed() and name not in self._clients_conf:
             self._clients_conf.clear()
             self._load_conf_clients()
@@ -208,7 +211,10 @@ class Parser(Doc):
         return self._clients_conf[name]
 
     def _get_template(self, name, path=None):
-        """Return template conf and refresh it if necessary"""
+        """Return template conf and refresh it if necessary
+
+        :rtype: Config
+        """
         if self._clientconfdir_changed() and name not in self._templates_conf:
             self._templates_conf.clear()
             self._load_conf_templates()
@@ -219,7 +225,10 @@ class Parser(Doc):
         return self._templates_conf[name]
 
     def _get_config(self, path, mode='cli'):
-        """Return conf by it's path"""
+        """Return conf by it's path
+
+        :rtype: Config
+        """
         if path in self._configs:
             ret = self._configs[path]
         else:
@@ -400,6 +409,79 @@ class Parser(Doc):
                 res.append([NOTIF_ERROR, str(exp)])
             if not revoked:
                 res.append([NOTIF_WARN, "The client certificate may still be used!"])
+
+        return res
+
+    def rename_client(self, client=None, newname=None, template=False, keepcert=False,
+                      keepdata=False):
+        """See :func:`burpui.misc.parser.interface.BUIparser.rename_client`"""
+        res = []
+        if not client:
+            return [[NOTIF_ERROR, "No client provided"]]
+        if not newname:
+            return [[NOTIF_ERROR, "No newname provided"]]
+
+        if template:
+            path = os.path.join(self.templates_path, client)
+            newpath = os.path.join(self.templates_path, newname)
+        else:
+            data = self._get_server_path(client)
+            conf = self.clients_conf.get(client)
+            newdata = os.path.join(conf.get('directory'), newname)
+            path = os.path.join(self.clientconfdir, client)
+            newpath = os.path.join(self.clientconfdir, newname)
+        try:
+            os.rename(path, newpath)
+            res.append([NOTIF_OK, "'{}' successfully renamed '{}'".format(client, newname)])
+        except OSError as exp:
+            res.append([NOTIF_ERROR, str(exp)])
+
+        if client in self._clients_conf and not template:
+            del self._clients_conf[client]
+        elif template and client in self._templates_conf:
+            del self._templates_conf[client]
+        if path in self.filescache:
+            del self.filescache[path]
+
+        self._refresh_cache()
+
+        if template:
+            return res
+
+        if keepdata:
+            if os.path.exists(newdata):
+                res.append([NOTIF_ERROR, "'{}' already exists".format(newdata)])
+            else:
+                try:
+                    shutil.move(data, newdata)
+                except OSError as exp:
+                    res.append([NOTIF_ERROR, str(exp)])
+
+        ca_dir = self.openssl_conf.values.get('CA_DIR')
+        path = os.path.join(ca_dir, client)
+        newpath = os.path.join(ca_dir, newname)
+        if keepcert:
+            config = self._get_client(newname, newpath)  # type: Config
+            if 'ssl_peer_cn' not in config:
+                config['ssl_peer_cn'] = client
+                config.store()
+            try:
+                os.rename(f"{path}.csr", f"{newpath}.csr")
+            except OSError as exp:
+                res.append([NOTIF_WARN, str(exp)])
+            try:
+                os.rename(f"{path}.crt", f"{newpath}.crt")
+            except OSError as exp:
+                res.append([NOTIF_ERROR, str(exp)])
+        else:
+            try:
+                os.unlink('{}.csr'.format(path))
+            except OSError as exp:
+                res.append([NOTIF_WARN, str(exp)])
+            try:
+                os.unlink('{}.crt'.format(path))
+            except OSError as exp:
+                res.append([NOTIF_ERROR, str(exp)])
 
         return res
 

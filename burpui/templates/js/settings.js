@@ -264,6 +264,8 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$timeout', '$scrollspy', 'DTOp
 					form.find('#'+value.name+'_reset_bui_CUSTOM_view-'+i).attr('disabled', true);
 				});
 			});
+			/* disable the newname fields */
+			form.find('#newname').attr('disabled', true);
 			$scope.invalid = {};
 			/* UX tweak: disable the submit button + change text */
 			submit = form.find('button[type="submit"]');
@@ -304,6 +306,8 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$timeout', '$scrollspy', 'DTOp
 				submit.html(sav);
 				submit.attr('disabled', false);
 			});
+			/* re-enable the newname field */
+			form.find('#newname').attr('disabled', false);
 			/* re-enable the checkboxes */
 			angular.forEach($scope.bools, function(value, key) {
 				form.find('#'+value.name+'_view').attr('disabled', false);
@@ -623,6 +627,39 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$timeout', '$scrollspy', 'DTOp
 			/* reset the submit button state */
 			submit.html(sav);
 			submit.attr('disabled', false);
+		});
+	};
+	$scope.renameClient = function() {
+		submit = $('#btn-rename-client');
+		parse_result = function(data) {
+			redirect = data[0][0] == NOTIF_SUCCESS;
+			notifAll(data, redirect);
+			if (redirect) {
+				$timeout(function() {
+					document.location = '{{ url_for("view.cli_settings", server=server) }}?client=' + $('#newname').val();
+				}, 1000);
+			}
+		};
+		sav = submit.html();
+		submit.html('<i class="fa fa-fw fa-spinner fa-pulse" aria-hidden="true"></i>&nbsp;{{ _("Renaming...") }}');
+		submit.attr('disabled', true);
+		api = '{{ url_for("api.client_settings", client=client, server=server) }}';
+		$.ajax({
+			url: api,
+			type: 'PUT',
+			{% if template -%}
+			data: {template: true, newname: $('#newname').val() }
+			{% else -%}
+			data: { newname: $('#newname').val(), keepcert: $('#keepcert').is(':checked'), keepdata: $('#keepdata').is(':checked') }
+			{% endif -%}
+		})
+		.fail(buiFail)
+		.done(function(data) {
+			parse_result(data);
+		})
+		.always(function() {
+			submit.attr('disabled', false);
+			submit.html(sav);
 		});
 	};
 	$scope.deleteClient = function() {

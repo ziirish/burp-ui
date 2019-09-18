@@ -17,7 +17,8 @@ from ..decorators import browser_cache
 from ..ext.cache import cache
 from ..ext.i18n import LANGUAGES
 
-from flask import flash, url_for, current_app, session
+from flask import flash, get_flashed_messages, url_for, current_app, session
+from flask.ctx import _request_ctx_stack
 from flask_login import current_user
 
 import random
@@ -328,6 +329,10 @@ class Alert(Resource):
             if new not in levels:
                 return 'danger'
             return new
+
+        # retrieve last flashed messages so we don't loose anything
+        for level, message in get_flashed_messages(with_categories=True):
+            flash(message, level)
 
         args = self.parser.parse_args()
         message = args['message']

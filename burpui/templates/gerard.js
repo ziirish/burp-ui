@@ -63,6 +63,7 @@ function escapeDoubleQuotes(str) {
 
 var notifAll = function(messages, forward) {
 	forward = (typeof forward === "undefined") ? false : forward;
+	jQuery.ajaxSetup({async:false});
 	if (messages instanceof Array && messages.length > 0) {
 		if (messages[0] instanceof Array) {
 			$.each(messages, function(i, n) {
@@ -90,6 +91,7 @@ var notifAll = function(messages, forward) {
 			}
 		}
 	}
+	jQuery.ajaxSetup({async:true});
 };
 
 var notif = function(type, message, timeout) {

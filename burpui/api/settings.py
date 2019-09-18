@@ -475,7 +475,7 @@ class NewClientSettings(Resource):
           '/<server>/config/<client>',
           '/<server>/config/<client>/<path:conf>',
           endpoint='client_settings',
-          methods=['GET', 'POST', 'DELETE'])
+          methods=['GET', 'POST', 'PUT', 'DELETE'])
 @ns.doc(
     params={
         'server': 'Which server to collect data from when in multi-agent mode',
@@ -490,6 +490,11 @@ class ClientSettings(Resource):
     parser_delete.add_argument('keepconf', type=inputs.boolean, help='Whether to keep the conf or not', default=False, nullable=True)
     parser_delete.add_argument('template', type=inputs.boolean, help='Whether we work on a template or not', default=False, nullable=True)
     parser_delete.add_argument('delete', type=inputs.boolean, help='Whether we should remove the data as well or not', default=False, nullable=True)
+    parser_put = ns.parser()
+    parser_put.add_argument('newname', help='New name of the client/template')
+    parser_put.add_argument('template', type=inputs.boolean, help='Whether we work on a template or not', default=False, nullable=True)
+    parser_put.add_argument('keepcert', type=inputs.boolean, help='Whether to keep the same certificate or not', default=False, nullable=True)
+    parser_put.add_argument('keepdata', type=inputs.boolean, help='Whether to keep the data or not', default=False, nullable=True)
     parser_post = ns.parser()
     parser_post.add_argument('template', type=inputs.boolean, help='Whether we work on a template or not', default=False, nullable=True)
     parser_get = ns.parser()
@@ -635,6 +640,54 @@ class ClientSettings(Resource):
             f'revoke certificate: {revoke}, keep a backup of the configuration: '
             f'{keepconf}, delete data: {delete}, is template: {template}', server=server)
         return parser.remove_client(client, keepconf, delcert, revoke, template, delete), 200
+
+    @api.disabled_on_demo()
+    @api.acl_admin_or_moderator_required(message=_('Sorry, you don\'t have rights to access the setting panel'))
+    @ns.expect(parser_put)
+    @ns.doc(
+        responses={
+            200: 'Success',
+            403: 'Insufficient permissions',
+            409: 'Conflict',
+            500: 'Internal failure',
+        }
+    )
+    def put(self, server=None, client=None, conf=None):
+        """Rename a given client"""
+        if not current_user.is_anonymous and \
+                current_user.acl.is_moderator() and \
+                not current_user.acl.is_client_rw(client, server):
+            self.abort(403, 'You don\'t have rights on this server')
+
+        if bui.client.is_backup_running(client, server):
+            self.abort(409, 'There is currently a backup running for this client hence '
+                            'we cannot delete it for now. Please try again later')
+
+        args = self.parser_put.parse_args()
+        newname = args.get('newname', None)
+        keepcert = args.get('keepcert', False)
+        keepdata = args.get('keepdata', False)
+        template = args.get('template', False)
+
+        # clear the cache when we remove a client
+        cache.clear()
+        # clear client-side cache through the _extra META variable
+        try:
+            _extra = session.get('_extra', g.now)
+            _extra = int(_extra)
+        except ValueError:
+            _extra = 0
+        session['_extra'] = '{}'.format(_extra + 1)
+        if bui.config['WITH_CELERY']:
+            from ..tasks import force_scheduling_now
+            force_scheduling_now()
+        parser = bui.client.get_parser(agent=server)
+
+        bui.audit.logger.info(
+            f'renaming client configuration {client} to {newname}, '
+            f'keep data: {keepdata}, keep certificate: {keepcert}, '
+            f'is template: {template}', server=server)
+        return parser.rename_client(client, newname, template, keepcert, keepdata), 200
 
 
 @ns.route('/path-expander',

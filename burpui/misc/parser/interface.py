@@ -295,6 +295,35 @@ class BUIparser(object, metaclass=ABCMeta):
         )  # pragma: no cover
 
     @abstractmethod
+    def rename_client(self, client=None, newname=None, template=False, keepcert=False,
+                      keepdata=False):
+        """:func:`burpui.misc.parser.interface.BUIParser.rename_client` is used to
+        rename a client.
+
+        :param client: The name of the client to rename
+        :type client: str
+
+        :param newname: The new name of the client
+        :type newname: str
+
+        :param template: Whether we remove a template
+        :type template: bool
+
+        :param keepcert: Whether to keep using the same certificate or not
+        :type keepcert: bool
+
+        :param keepdata: Whether to keep the already saved data or not
+        :type keepdata: bool
+
+        :returns: A list of notifications to return to the UI (success or
+                  failure)
+        :rtype: list
+        """
+        raise NotImplementedError(
+            "Sorry, the current Parser does not implement this method!"
+        )  # pragma: no cover
+
+    @abstractmethod
     def read_client_conf(self, client=None, conf=None, template=False):
         """:func:`burpui.misc.parser.interface.BUIparser.read_client_conf` is
         called by :func:`burpui.misc.backend.interface.BUIbackend.read_conf_cli`

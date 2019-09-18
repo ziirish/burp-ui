@@ -407,6 +407,17 @@
                         </ul>
                         {% endif -%}
                       </div>
+                      <div class="btn-group dropup text-right">
+                        <button type="button" class="btn btn-warning" id="btn-rename-client" ng-click="renameClient()"><i class="fa fa-fw fa-share" aria-hidden="true"></i>&nbsp;{{ _("Rename '%(client)s'", client=client) }}</button>
+                        <button class="btn btn-warning dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
+                        <ul class="dropdown-menu browse">
+                          <li><label for="newname">{{ _('New name:') }}&nbsp;</label><input type="input" id="newname" name="newname"></li>
+                          {% if not template -%}
+                          <li><label for="keepcert">{{ _('Keep associated certificate:') }}&nbsp;</label><input type="checkbox" id="keepcert" name="keepcert"></li>
+                          <li><label for="keepdata">{{ _('Keep associated data:') }}&nbsp;</label><input type="checkbox" id="keepdata" name="keepdata"></li>
+                          {% endif -%}
+                        </ul>
+                      </div>
                       {% elif conf -%}
                       <button type="button" class="btn btn-danger" id="btn-remove-file" ng-click="deleteFile()"><i class="fa fa-fw fa-trash" aria-hidden="true"></i>{{ _("Remove file") }}</button>
                       {% endif -%}

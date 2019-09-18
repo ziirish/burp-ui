@@ -681,6 +681,7 @@ class File(dict):
         else:
             ret = self._data
         if ret and not self.dirty:
+            ret.setlist('includes', [x for x in self.flatten('include', False).keys()])
             return ret
         ret.clear()
         for key, val in self.options.items():
@@ -690,6 +691,8 @@ class File(dict):
                 ret.setlist(key, val.parse(key))
             else:
                 ret[key] = val if raw else val.parse()
+        ret.setlist('includes', [x for x in self.flatten('include', False).keys()])
+        ret.setlist('includes_ori', [x for x in self.flatten('include', False).keys()])
         return ret
 
     @property
@@ -990,7 +993,7 @@ class File(dict):
                 ret[key] = resets
         return ret
 
-    def _write_key(self, fil, key, data, index=None, dry=False):
+    def _format_key(self, key, data, index=None, dry=False):
         strict = 'regex' not in key
         if not dry:
             self._changed = True
@@ -1000,8 +1003,10 @@ class File(dict):
             val = sanitize_string(data)
             if self._is_template and not val.startswith('../'):
                 val = '../{}'.format(val)
-            fil.write('. {}\n'.format(val))
-            return val
+            if dry:
+                return val
+            else:
+                return f'. {val}'
 
         if index is not None and index >= 0:
             if key not in self.updated:
@@ -1013,8 +1018,7 @@ class File(dict):
                 self.updated.append(key)
                 if key in self.reset:
                     self[key].set_resets(self.reset[key])
-            fil.write('{}\n'.format(self[key].dump_index(index, strict)))
-            return None
+            return str(self[key].dump_index(index, strict))
 
         if key in getattr(self.parser, 'multi_{}'.format(self.mode)) or \
                 key in getattr(self.parser, 'pair_{}'.format(self.mode), []):
@@ -1028,8 +1032,7 @@ class File(dict):
                 if key in self.reset:
                     self[key].set_resets(self.reset[key])
             val = self[key]
-            fil.write('{}\n'.format(self[key].dump(strict=strict)))
-            return None
+            return str(self[key].dump(strict=strict))
 
         if key not in self.updated:
             if key in self.parser.boolean_srv or key in self.parser.boolean_cli:
@@ -1049,7 +1052,7 @@ class File(dict):
             if index is not None:
                 return ret[index]
             return ret
-        fil.write('{}\n'.format(self[key]))
+        return str(self[key])
 
     def parse(self, force=False):
         """Parse the current config"""
@@ -1157,6 +1160,7 @@ class File(dict):
         already_pair = set()
         already_file = []
         written = []
+        result = []
         self.updated = []
 
         def _lookup_option(key, val, start=0, strict=True, comment=True):
@@ -1180,23 +1184,22 @@ class File(dict):
 
         def _dump(line, comment=None, raw=False):
             if raw:
-                fil.write('{}\n'.format(line))
-                return
+                return line
             lead = ''
             if comment:
                 lead = '#'
-            fil.write('{}{}\n'.format(lead, line))
+            return '{}{}'.format(lead, line)
 
         try:
             with codecs.open(dest, 'w', 'utf-8', errors='ignore') as fil:
                 # f.write('# Auto-generated configuration using Burp-UI\n')
                 data_keys = list(data.keys())
                 if 'templates' in data:
-                    _dump(' {}'.format(BEGIN_TEMPLATES), True)
+                    result.append(_dump(' {}'.format(BEGIN_TEMPLATES), True))
                     tpls = data.getlist('templates')
                     for tpl in tpls:
-                        self._write_key(fil, '.', tpl)
-                    _dump(' {}'.format(END_TEMPLATES), True)
+                        result.append(self._format_key('.', tpl))
+                    result.append(_dump(' {}'.format(END_TEMPLATES), True))
                 skip_line = False
                 for idx, line in enumerate(orig):
                     if self._line_is_comment(line) and BEGIN_TEMPLATES in line:
@@ -1211,7 +1214,7 @@ class File(dict):
                             not self._line_is_comment(line) and
                             not self._line_is_file_include(line)):
                         # The line was removed, we comment it
-                        _dump(line, comment=True)
+                        result.append(_dump(line, comment=True))
                     elif self._line_is_file_include(line):
                         # The line is a file inclusion, we check if the line
                         # was already present
@@ -1222,14 +1225,14 @@ class File(dict):
                                 ori not in already_file:
                             idx = data.getlist('includes_ori').index(ori)
                             inc = data.getlist('includes')[idx]
-                            self._write_key(fil, '.', inc)
+                            result.append(self._format_key('.', inc))
                             already_file.append(inc)
                         else:
                             if not insecure:
                                 comment = not self._line_is_comment(line)
-                                _dump(line, comment=comment)
+                                result.append(_dump(line, comment=comment))
                             else:
-                                _dump(line)
+                                result.append(_dump(line))
 
                     elif key in data_keys:
                         # The line is still present or has been un-commented,
@@ -1241,7 +1244,7 @@ class File(dict):
                         if multi and key not in multi_index_map:
                             multi_index_map[key] = 0
                         if key in written:
-                            _dump(line, comment=(not self._line_is_comment(line)))
+                            result.append(_dump(line, comment=(not self._line_is_comment(line))))
                         else:
                             if multi:
                                 length = len(self[key]) if key in self else -1
@@ -1249,15 +1252,12 @@ class File(dict):
                                         (key not in self or
                                          (key in self and
                                           length > multi_index_map[key])):
-                                    self._write_key(
-                                        fil,
-                                        key,
-                                        data,
-                                        multi_index_map[key]
-                                    )
+                                    result.append(self._format_key(
+                                        key, data, multi_index_map[key]
+                                    ))
                                     multi_index_map[key] += 1
                                 else:
-                                    _dump(line, comment=(not self._line_is_comment(line)))
+                                    result.append(_dump(line, comment=(not self._line_is_comment(line))))
                                     continue
                                 if len(self[key]) == multi_index_map[key]:
                                     already_multi.add(key)
@@ -1267,7 +1267,7 @@ class File(dict):
                                 if not _is_key_after(key, idx + 1):
                                     rest = self[key].dump(multi_index_map[key])
                                     if rest:
-                                        fil.write('{}\n'.format(rest))
+                                        result.append(_dump(rest))
                                     multi_index_map[key] = length
                                     already_multi.add(key)
                             elif pair:
@@ -1276,15 +1276,12 @@ class File(dict):
                                         (key not in self or
                                          (key in self and
                                           length > pair_index_map[key])):
-                                    self._write_key(
-                                        fil,
-                                        key,
-                                        data,
-                                        pair_index_map[key]
-                                    )
+                                    result.append(self._format_key(
+                                        key, data, pair_index_map[key]
+                                    ))
                                     pair_index_map[key] += 1
                                 else:
-                                    _dump(line, comment=(not self._line_is_comment(line)))
+                                    result.append(_dump(line, comment=(not self._line_is_comment(line))))
                                     continue
                                 if len(self[key]) == pair_index_map[key]:
                                     already_pair.add(key)
@@ -1294,53 +1291,60 @@ class File(dict):
                                 if not _is_key_after(key, idx + 1):
                                     rest = self[key].dump(pair_index_map[key])
                                     if rest:
-                                        fil.write('{}\n'.format(rest))
+                                        result.append(_dump(rest))
                                     pair_index_map[key] = length
                                     already_pair.add(key)
                             else:
+                                # if key is not a multi and is not a password, we
+                                # recycle the line
+                                if key not in getattr(self.parser, 'multi_{}'.format(self.mode)) and \
+                                        (key == 'password_check' or 'password' not in key):
+                                    if self._line_is_comment(line) and key in data:
+                                        result.append(self._format_key(key, data))
+                                        ridx = newkeys.index(key)
+                                        del newkeys[ridx]
+                                        continue
                                 # The line was a comment and there was a further
                                 # matching setting, so we just jump to the
                                 # following
-                                if self._line_is_comment(line) and \
-                                        _lookup_option(key, None, idx + 1, False):
-                                    _dump(line, raw=True)
-                                    continue
+                                else:
+                                    if self._line_is_comment(line) and \
+                                            _lookup_option(key, None, idx + 1, False):
+                                        result.append(_dump(line, raw=True))
+                                        continue
 
-                                val = self._write_key(
-                                    fil,
-                                    key,
-                                    data,
-                                    dry=True
+                                val = self._format_key(
+                                    key, data, dry=True
                                 )
                                 lookup, _ = _lookup_option(key, val, idx + 1)
                                 # The same option is here later, skip the
                                 # current one
                                 if lookup != -1:
-                                    _dump(line, raw=True)
+                                    result.append(_dump(line, raw=True))
                                     continue
 
                                 written.append(key)
-                                self._write_key(
-                                    fil,
-                                    key,
-                                    data
-                                )
+                                result.append(self._format_key(
+                                    key, data
+                                ))
                     else:
-                        _dump(line, comment=(key in written and not self._line_is_comment(line)))
+                        result.append(_dump(line, comment=(key in written and not self._line_is_comment(line))))
 
                 # write the rest of the multi settings
                 for key, idx in multi_index_map.items():
                     if key not in already_multi and idx < self[key].len():
-                        fil.write('{}\n'.format(self[key].dump(idx)))
+                        result.append(_dump(self[key].dump(idx)))
                 # write the rest of the pair settings
                 for key, idx in pair_index_map.items():
                     if key not in already_pair and idx < self[key].len():
-                        fil.wrrite('{}\n'.format(self[key].dump(idx)))
+                        result.append(_dump(self[key].dump(idx)))
                 # Write the rest of file inclusions
                 if 'includes' in data:
                     for inc in data.getlist('includes'):
                         if inc not in already_file:
-                            self._write_key(fil, '.', inc)
+                            result.append(self._format_key(
+                                '.', inc
+                            ))
                 # Write the new keys
                 for key in newkeys:
                     if key.endswith(RESET_IDENTIFIER):
@@ -1348,11 +1352,13 @@ class File(dict):
                     if key not in written and key not in already_multi and \
                             key not in already_pair and \
                             key not in ['includes', 'includes_ori', 'templates']:
-                        self._write_key(
-                            fil,
-                            key,
-                            data,
-                        )
+                        result.append(self._format_key(
+                            key, data
+                        ))
+
+                if len(result) > 0 and result[-1] != '':
+                    result.append('')
+                fil.write('\n'.join(result))
 
         except Exception as exp:
             return [[NOTIF_ERROR, str(exp)]]
