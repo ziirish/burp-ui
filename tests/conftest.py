@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 import pytest
-import sys
 import os
 import tempfile
 import shutil

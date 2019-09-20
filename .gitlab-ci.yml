@@ -5,7 +5,6 @@ variables:
   DOCKER_HOST: tcp://localhost:2375
   BURP_VERSION: 2.2.18
   PG_VERSION: 10
-  FLAKE8_IGNORE: E501,E722,W605,W504
   SRC_DIR: burpui
 
 image: docker:git
@@ -22,8 +21,8 @@ test:lint:3.6:
   stage: test
   image: python:3.6
   script:
-  - pip install flake8 pylint
-  - flake8 --ignore=$FLAKE8_IGNORE $SRC_DIR
+  - pip install tox
+  - tox -e pep8
   tags:
   - lint
   except:
@@ -35,8 +34,8 @@ test:lint:3.7:
   stage: test
   image: python:3.7
   script:
-  - pip install flake8 pylint
-  - flake8 --ignore=$FLAKE8_IGNORE $SRC_DIR
+  - pip install tox
+  - tox -e pep8
   tags:
   - lint
   except:
@@ -46,8 +45,8 @@ test:lint:3.8:
   stage: test
   image: python:3.8-rc
   script:
-  - pip install flake8 pylint
-  - flake8 --ignore=$FLAKE8_IGNORE $SRC_DIR
+  - pip install tox
+  - tox -e pep8
   tags:
   - lint
   except:

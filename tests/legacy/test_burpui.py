@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
-import sys
 import os
 import json
 import unittest
@@ -10,7 +9,7 @@ import mockredis
 from urllib.request import urlopen
 from flask_testing import LiveServerTestCase, TestCase
 from mock import patch
-from flask import url_for, session
+from flask import url_for
 
 from burpui import create_app as BUIinit
 
@@ -39,10 +38,10 @@ class BurpuiLiveTestCase(LiveServerTestCase):
         return bui
 
     def setUp(self):
-        print ('\nBegin Test 1\n')
+        print('\nBegin Test 1\n')
 
     def tearDown(self):
-        print ('\nTest 1 Finished!\n')
+        print('\nTest 1 Finished!\n')
 
     def test_server_is_up_and_running(self):
         import socket
@@ -59,10 +58,10 @@ class BurpuiLiveTestCase(LiveServerTestCase):
 class BurpuiAPIBasicHTTPTestCase(TestCase):
 
     def setUp(self):
-        print ('\nBegin Test 2\n')
+        print('\nBegin Test 2\n')
 
     def tearDown(self):
-        print ('\nTest 2 Finished!\n')
+        print('\nTest 2 Finished!\n')
         os.unlink(self.logfile)
 
     def create_app(self):
@@ -92,10 +91,10 @@ class BurpuiAPIBasicHTTPTestCase(TestCase):
 class BurpuiAPITestCase(TestCase):
 
     def setUp(self):
-        print ('\nBegin Test 3\n')
+        print('\nBegin Test 3\n')
 
     def tearDown(self):
-        print ('\nTest 3 Finished!\n')
+        print('\nTest 3 Finished!\n')
 
     def create_app(self):
         conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../configs/test2.cfg')
@@ -122,7 +121,7 @@ class BurpuiAPITestCase(TestCase):
         self.assert500(response)
 
     def test_server_config_parsing(self):
-        rv = self.login('admin', 'admin')
+        self.login('admin', 'admin')
         response = self.client.get(url_for('api.server_settings'))
         asse = dict((
                     (
@@ -152,7 +151,7 @@ class BurpuiAPITestCase(TestCase):
         self.assertEqual(response.json, asse)
 
     def test_client_config_parsing(self):
-        rv = self.login('admin', 'admin')
+        self.login('admin', 'admin')
         response = self.client.get(url_for('api.client_settings', client='toto'))
         asse = dict((
                     (
@@ -240,10 +239,10 @@ def mock_status(query='\n', timeout=None, agent=None):
 class BurpuiRoutesTestCase(TestCase):
 
     def setUp(self):
-        print ('\nBegin Test 4\n')
+        print('\nBegin Test 4\n')
 
     def tearDown(self):
-        print ('\nTest 4 Finished!\n')
+        print('\nTest 4 Finished!\n')
 
     def login(self, username, password):
         return self.client.post(url_for('view.login'), data=dict(
@@ -282,10 +281,10 @@ class BurpuiRoutesTestCase(TestCase):
 class BurpuiLoginTestCase(TestCase):
 
     def setUp(self):
-        print ('\nBegin Test 5\n')
+        print('\nBegin Test 5\n')
 
     def tearDown(self):
-        print ('\nTest 5 Finished!\n')
+        print('\nTest 5 Finished!\n')
 
     def login(self, username, password):
         return self.client.post(url_for('view.login'), data=dict(
@@ -304,7 +303,7 @@ class BurpuiLoginTestCase(TestCase):
         return bui
 
     def test_config_render(self):
-        rv = self.login('admin', 'admin')
+        self.login('admin', 'admin')
         response = self.client.get(url_for('view.settings'))
         assert 'Burp Server Configuration' in response.data.decode('utf-8')
 
@@ -324,10 +323,10 @@ class BurpuiLoginTestCase(TestCase):
 class BurpuiACLTestCase(TestCase):
 
     def setUp(self):
-        print ('\nBegin Test 6\n')
+        print('\nBegin Test 6\n')
 
     def tearDown(self):
-        print ('\nTest 6 Finished!\n')
+        print('\nTest 6 Finished!\n')
 
     def login(self, username, password, headers=None):
         return self.client.post(url_for('view.login'), data=dict(
@@ -356,14 +355,14 @@ class BurpuiACLTestCase(TestCase):
 
     def test_config_render(self):
         with self.client:
-            rv = self.login('admin', 'admin')
+            self.login('admin', 'admin')
             response = self.client.get(url_for('view.settings'))
             assert 'Burp Server Configuration' in response.data.decode('utf-8')
             self.logout()
 
     def test_admin_api(self):
         with self.client:
-            rv = self.login('admin', 'admin')
+            self.login('admin', 'admin')
             response = self.client.get(url_for('api.auth_users'))
             response2 = self.client.get(url_for('api.auth_backends'))
             self.assertEqual(sorted(response.json, key=lambda k: k['name']), sorted([{'id': 'admin', 'name': 'admin', 'backend': 'BASIC:AUTH'}, {'id': 'user1', 'name': 'user1', 'backend': 'BASIC:AUTH'}], key=lambda k: k['name']))
@@ -371,20 +370,20 @@ class BurpuiACLTestCase(TestCase):
 
     def test_change_password(self):
         with self.client:
-            rv = self.login('user1', 'password')
+            self.login('user1', 'password')
             response = self.client.post(url_for('api.auth_users', name='user1'), data={'backend': 'BASIC:AUTH', 'old_password': 'plop', 'password': 'toto'}, headers={'X-Language': 'en'})
             self.assert_status(response, 200)
 
     def test_config_render_ko(self):
         with self.client:
-            rv = self.login('user1', 'password')
+            self.login('user1', 'password')
             response = self.client.get(url_for('view.settings'))
             self.assert403(response)
             self.logout()
 
     def test_cli_settings_ko(self):
         with self.client:
-            rv = self.login('user1', 'password')
+            self.login('user1', 'password')
             response = self.client.get(url_for('api.client_settings', client='toto'))
             self.assert403(response)
             self.logout()
@@ -440,10 +439,10 @@ class BurpuiACLTestCase(TestCase):
 class BurpuiRedisTestCase(TestCase):
 
     def setUp(self):
-        print ('\nBegin Test 7\n')
+        print('\nBegin Test 7\n')
 
     def tearDown(self):
-        print ('\nTest 7 Finished!\n')
+        print('\nTest 7 Finished!\n')
         if os.path.exists('this-file-should-not-exist'):
             os.rmdir('this-file-should-not-exist')
 
@@ -471,7 +470,7 @@ class BurpuiRedisTestCase(TestCase):
         with bui.app_context():
             from burpui.app import create_db
             from burpui.ext.sql import db
-            from burpui.models import Session, Task
+            from burpui.models import Session, Task  # noqa
             bui.config['WITH_SQL'] = True
             create_db(bui, True)
             db.create_all()
@@ -479,10 +478,9 @@ class BurpuiRedisTestCase(TestCase):
         return bui
 
     def test_login_and_revoke_session(self):
-        from burpui.sessions import session_manager
         with self.client:
             # create a second session
-            rv = self.login('admin', 'admin')
+            self.login('admin', 'admin')
             response = self.client.get(url_for('api.admin_me'))
             self.assertEqual(response.json, {'id': 'admin', 'name': 'admin', 'backend': 'BASIC:AUTH'})
             sess = self.client.get(url_for('api.user_sessions'))
@@ -495,9 +493,9 @@ class BurpuiRedisTestCase(TestCase):
             self.assert401(response)
 
     def test_current_session(self):
-#        with self.app.test_client() as c:
-#            with c.session_transaction() as sess:
-#                sess['authenticated'] = True
+        #        with self.app.test_client() as c:
+        #            with c.session_transaction() as sess:
+        #                sess['authenticated'] = True
 
         from burpui.sessions import session_manager
         from burpui.ext.sql import db
@@ -511,7 +509,7 @@ class BurpuiRedisTestCase(TestCase):
         self.assertTrue(session_manager.session_expired())
 
 
-#class BurpuiAPILoginTestCase(TestCase):
+# class BurpuiAPILoginTestCase(TestCase):
 #
 #    def setUp(self):
 #        print ('\nBegin Test 7\n')

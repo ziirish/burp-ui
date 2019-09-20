@@ -17,7 +17,7 @@ def logout(client):
 
 
 def test_prefs_hide(client, app):
-    rv = login(client, 'admin', 'admin')
+    login(client, 'admin', 'admin')
     URL = url_for('api.prefs_ui_hide')
 
     response = client.get(URL)
@@ -44,11 +44,11 @@ def test_prefs_hide(client, app):
     assert response.json == []
     app.config['WITH_SQL'] = True
 
-    rv = logout(client)
+    logout(client)
 
 
 def test_prefs(client, app):
-    rv = login(client, 'admin', 'admin')
+    login(client, 'admin', 'admin')
     URL = url_for('api.prefs_ui')
 
     response = client.get(URL)
@@ -66,4 +66,4 @@ def test_prefs(client, app):
     assert response.status_code == 200
     assert response.json == {'language': 'en', 'dateFormat': 'llll', 'pageLength': None}
 
-    rv = logout(client)
+    logout(client)

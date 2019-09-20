@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 import os
-import re
 import sys
 
 from subprocess import check_output, call, STDOUT
@@ -15,7 +13,7 @@ from setuptools.command.install import install
 from setuptools.command.bdist_egg import bdist_egg
 from setuptools.command.egg_info import egg_info
 
-ROOT=os.path.join(os.path.dirname(os.path.realpath(__file__)))
+ROOT = os.path.join(os.path.dirname(os.path.realpath(__file__)))
 DEVNULL = open(os.devnull, 'wb')
 
 # Not sure bower was a great idea...
@@ -127,6 +125,7 @@ class SdistWithBuildStatic(sdist):
 class PyTest(Command):
     user_options = []
     description = "Run tests"
+
     def initialize_options(self):
         pass
 
@@ -144,6 +143,7 @@ class PyTest(Command):
 class BuildStatic(Command):
     user_options = []
     description = "Install bower dependencies"
+
     def initialize_options(self):
         pass
 
@@ -209,6 +209,7 @@ class CustomInstall(install):
         self.run_command('build_static')
         install.run(self)
 
+
 def readme():
     """
     Function used to skip the screenshots part
@@ -229,10 +230,11 @@ def readme():
             desc += l
     return desc
 
+
 sys.path.insert(0, os.path.join(ROOT))
 
 from burpui.desc import __author__, __author_email__, __description__, \
-        __url__, __title__
+                        __url__, __title__  # noqa
 name = __title__
 author = __author__
 author_email = __author_email__
@@ -264,7 +266,7 @@ datadir = os.path.join('share', 'burpui')
 confdir = os.path.join(datadir, 'etc')
 contrib = os.path.join(datadir, 'contrib')
 migrations = [(os.path.join(datadir, root), [os.path.join(root, f) for f in files if not f.endswith('.pyc')])
-    for root, dirs, files in os.walk('migrations')]
+              for root, dirs, files in os.walk('migrations')]
 
 setup(
     name=name,
@@ -338,6 +340,5 @@ setup(
         'install': CustomInstall,
         'bdist_egg': BdistWithBuildStatic,
         'egg_info': EggWithBuildStatic,
-#        'test': PyTest,
     }
 )

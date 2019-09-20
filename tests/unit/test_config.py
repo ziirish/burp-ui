@@ -1,7 +1,7 @@
 import os
 import pytest
 import configobj
-import validate
+# import validate
 
 from tempfile import mkstemp
 
@@ -41,7 +41,7 @@ def test_config_init():
 
     config = BUIConfig(tmpfile)
     with pytest.raises(configobj.ConfigObjError):
-        fail = BUIConfig(wrong, defaults={})
+        BUIConfig(wrong, defaults={})
 
     assert config.safe_get('backend', section='Global') == 'something'
     assert config.safe_get('timeout', 'integer', 'Global') == 12
