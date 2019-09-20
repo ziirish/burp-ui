@@ -341,6 +341,10 @@ legend[id] {
   color: #fff;
 }
 
+.ui-select-multiple input.ui-select-search {
+  width: auto !important;
+}
+
 .table-responsive {
   overflow-x: visible;
 }

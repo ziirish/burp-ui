@@ -432,7 +432,7 @@ class NewClientSettings(Resource):
         """Creates a new client"""
         args = self.parser.parse_args()
         newclient = args['newclient']
-        templates = args['templates']
+        templates = [x for x in args.get('templates', []) if x]
         if not newclient:
             self.abort(400, 'No client name provided')
 

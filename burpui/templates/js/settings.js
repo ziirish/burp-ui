@@ -133,6 +133,7 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$timeout', '$scrollspy', 'DTOp
 	$scope.client = {};
 	$scope.defaults = {};
 	$scope.placeholders = {};
+	$scope.newclient = {};
 	$scope.all = {};
 	$scope.avail = {};
 	$scope.suggest = {};
@@ -737,8 +738,12 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$timeout', '$scrollspy', 'DTOp
 		/* we disable the 'real' form submission */
 		e.preventDefault();
 		var form = $(e.target);
+		var templates = form.find('input[name="templates"]');
 		submit = form.find('button[type="submit"]');
 		sav = submit.html();
+		if ($scope.newclient.templates) {
+			templates.val($scope.newclient.templates.join(','));
+		}
 		submit.html('<i class="fa fa-fw fa-spinner fa-pulse" aria-hidden="true"></i>&nbsp;{{ _("Creating...") }}');
 		submit.attr('disabled', true);
 		$.ajax({

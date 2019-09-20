@@ -466,12 +466,27 @@
                 <form action="{{ url_for('api.new_client', server=server) }}" method="POST" ng-submit="createClient($event)">
                   <fieldset>
                     <Legend>{{ _('Create new client') }}</Legend>
-                    <div class="input-group col-lg-3">
-                      <input class="form-control" type="text" name="newclient" id="newclient" placeholder="{{ _('Create new client') }}">
-                      <span class="input-group-btn">
-                        <button class="btn btn-success" type="submit"><i class="fa fa-plus" aria-hidden="true"></i></button>
-                      </span>
+                    <div class="form-group">
+                      <div class="input-group">
+                        <input class="form-control" type="text" name="newclient" id="newclient" placeholder="{{ _('Create new client') }}">
+                        <span class="input-group-btn">
+                          <button class="btn btn-success" type="submit"><i class="fa fa-plus" aria-hidden="true"></i></button>
+                        </span>
+                      </div>
                     </div>
+                    <div class="form-group">
+                      <ui-select multiple ng-model="newclient.templates" ng-disabled="!raw.templates" theme="bootstrap">
+                        <ui-select-match placeholder="{{ _('Select one or several templates') }}">
+                        {% raw %}
+                          {{ $item.name }}
+                        {% endraw %}
+                        </ui-select-match>
+                        <ui-select-choices repeat="value.name as value in raw.templates | filter: $select.search">
+                          <div ng-bind-html="value.name | highlight: $select.search"></div>
+                        </ui-select-choices>
+                      </ui-select>
+                    </div>
+                    <input type="hidden" name="templates">
                   </fieldset>
                 </form>
               </div>
@@ -500,7 +515,7 @@
                 <form action="{{ url_for('api.new_template', server=server) }}" method="POST" ng-submit="createTemplate($event)">
                   <fieldset>
                     <Legend>{{ _('Create new template') }}</Legend>
-                    <div class="input-group col-lg-3">
+                    <div class="input-group">
                       <input class="form-control" type="text" name="newtemplate" id="newtemplate" placeholder="{{ _('Create new template') }}">
                       <span class="input-group-btn">
                         <button class="btn btn-success" type="submit"><i class="fa fa-plus" aria-hidden="true"></i></button>
