@@ -10,6 +10,7 @@ jQuery/Bootstrap
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 """
 import os
+import sys
 import json
 import time
 import logging
@@ -116,7 +117,7 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
     logger.info('Using configuration: {}'.format(app.config['CFG']))
 
     app.setup(app.config['CFG'], unittest, cli)
-    if cli and not websocket_server:
+    if cli and not websocket_server and 'shell' not in sys.argv:
         return app
 
     if debug:

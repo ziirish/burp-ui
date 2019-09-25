@@ -787,6 +787,22 @@ keyword.
   deletable), you can also create/update/delete client configuration files.
 
 
+Since *v0.7.0*, you can also define an additional ``order`` keyword in order
+to specify in which order the ACL engine should evaluate the rules (should we
+match ``ro`` first or ``rw``). The default evaluation order is ``rw`` then ``ro``.
+Example:
+
+::
+
+    myuser = '{"agents": {"agent1": {"order": ["ro", "rw"], "ro": ["client.specific.*"], "rw": ["client.*"]}}}'
+
+
+With the above rule, the engine will treat ``client.specific.test`` as ``ro``
+whereas without the ``order`` keywoard, ``client.specific.test`` would have
+matched the ``rw`` rule first and thus would be considered as ``rw``.
+
+
+
 About the ``inverse_inheritance`` option, here is a concrete example. We assume
 you have this piece of configuration:
 

@@ -16,6 +16,26 @@ import re
 import json
 import fnmatch
 
+PARSE_EXCLUDE_KEYS = ['agents', 'clients', 'ro', 'rw', 'order']
+PARSE_RESERVED_KEYS = ['ro', 'rw', 'order']
+DEFAULT_EVAL_ORDER = ['rw', 'ro']
+MODE_RETURN = {
+    'ro': False,
+    'rw': True,
+}
+
+
+def _get_order(data, key):
+    if not isinstance(data, dict):
+        return DEFAULT_EVAL_ORDER
+    order = data.get('order', {})
+    if key in order:
+        return order[key]
+    elif 'clients' in order:
+        return order['clients']
+    else:
+        return DEFAULT_EVAL_ORDER
+
 
 class BUImetaGrant(object):
 
@@ -58,20 +78,20 @@ class BUImetaGrant(object):
         advanced = {}
         if isinstance(data, list):
             if mode:
-                if parent and parent not in ['agents', 'clients', 'ro', 'rw']:
+                if parent and parent not in PARSE_EXCLUDE_KEYS:
                     advanced[mode] = {parent: data}
                 else:
                     advanced[mode] = {'clients': data}
             return data, agents, advanced
         if not isinstance(data, dict):
             if mode:
-                if parent and parent not in ['agents', 'clients', 'ro', 'rw']:
+                if parent and parent not in PARSE_EXCLUDE_KEYS:
                     advanced[mode] = {parent: make_list(data)}
                 else:
                     advanced[mode] = {'clients': make_list(data)}
             return make_list(data), agents, advanced
         for key, val in data.items():
-            if key in ['agents', 'clients', 'ro', 'rw']:
+            if key in PARSE_EXCLUDE_KEYS:
                 continue
             cl1, ag1, ad1 = self._parse_clients(val, parent=key)
             agents = self._merge_data(agents, ag1)
@@ -80,20 +100,24 @@ class BUImetaGrant(object):
             advanced = self._merge_data(advanced, ad1)
             advanced = self._merge_data(advanced, {key: cl1})
             if mode:
-                if parent and parent not in ['agents', 'clients', 'ro', 'rw']:
+                if parent and parent not in PARSE_EXCLUDE_KEYS:
                     advanced = self._merge_data(advanced, {mode: {parent: cl1}})
                 else:
                     advanced = self._merge_data(advanced, {mode: {key: cl1}})
 
-        for key in ['clients', 'ro', 'rw']:
+        for key in ['clients'] + PARSE_RESERVED_KEYS:
             md = None
             if key in data:
-                if key in ['ro', 'rw']:
+                if key in PARSE_RESERVED_KEYS:
                     md = key
-                cl2, ag2, ad2 = self._parse_clients(data[key], md, parent=key)
+                    par = parent
+                else:
+                    par = key
+                cl2, ag2, ad2 = self._parse_clients(data[key], md, parent=par)
                 agents = self._merge_data(agents, ag2)
-                clients = self._merge_data(clients, cl2)
-                if parent and parent not in ['agents', 'clients', 'ro', 'rw']:
+                if not md or md not in ['order']:
+                    clients = self._merge_data(clients, cl2)
+                if parent and parent not in PARSE_EXCLUDE_KEYS:
                     ro = ad2.get('ro')
                     rw = ad2.get('rw')
                     if ro and 'clients' in ro:
@@ -126,7 +150,7 @@ class BUImetaGrant(object):
                 advanced[mode] = {'agents': make_list(data)}
             return make_list(data), clients, advanced
         for key, val in data.items():
-            if key in ['agents', 'clients', 'ro', 'rw']:
+            if key in PARSE_EXCLUDE_KEYS:
                 continue
             cl1, ag1, ad1 = self._parse_clients(data)
             agents = self._merge_data(agents, ag1)
@@ -140,10 +164,10 @@ class BUImetaGrant(object):
             # if mode:
             #     advanced = self._merge_data(advanced, {mode: {key: cl1}})
 
-        for key in ['agents', 'ro', 'rw']:
+        for key in ['agents'] + PARSE_RESERVED_KEYS:
             md = None
             if key in data:
-                if key in ['ro', 'rw']:
+                if key in PARSE_RESERVED_KEYS:
                     md = key
                 ag2, cl2, ad2 = self._parse_agents(data[key], md)
                 agents = self._merge_data(agents, ag2)
@@ -421,6 +445,7 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
                     return is_admin or self.opt('assume_rw', True)
 
                 for adv in advanced:
+                    order = _get_order(adv, server)
                     for adv2 in advanced:
                         # the whole agent is rw and we did not find explicit entry for
                         # client_match
@@ -438,70 +463,46 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
                                 any(x in adv.get('rw', {}) or
                                     x in adv.get('rw', {}).get('agents', [])
                                     for x in server_match):
-                            # both agent and client are defined as rw
-                            if client_match and \
-                                any(x in adv2.get('rw', []) or
-                                    x in adv2.get('rw', {}).get('clients', []) or
-                                    any(x in adv2.get('rw', {}).get(y, [])
-                                        for y in server_match)
-                                    for x in client_match
-                                    ):
-                                return True
-
-                            # the agent is rw but the client is explicitly defined as ro
-                            if client_match and \
-                                any(x in adv2.get('ro', []) or
-                                    x in adv2.get('ro', {}).get('clients', []) or
-                                    any(x in adv2.get('ro', {}).get(y, [])
-                                        for y in server_match)
-                                    for x in client_match
-                                    ):
-                                return False
+                            for odr in order:
+                                if client_match and \
+                                    any(x in adv2.get(odr, []) or
+                                        x in adv2.get(odr, {}).get('clients', []) or
+                                        any(x in adv2.get(odr, {}).get(y, [])
+                                            for y in server_match)
+                                        for x in client_match
+                                        ):
+                                    return MODE_RETURN.get(odr, False)
 
                         if server_match and \
                                 any(x in adv.get('ro', {}) or
                                     x in adv.get('ro', {}).get('agents', [])
                                     for x in server_match):
-                            # the agent is ro, but the client is explicitly defined as rw
-                            if client_match and \
-                                any(x in adv2.get('rw', {}).get('clients', []) or
-                                    x in adv2.get('rw', []) or
-                                    any(x in adv2.get('rw', {}).get(y, [])
-                                        for y in server_match)
-                                    for x in client_match
-                                    ):
-                                return True
-
-                            # both server and client are explicitly defined as ro
-                            if client_match and \
-                                any(x in adv2.get('ro', {}).get('clients', []) or
-                                    x in adv2.get('ro', []) or
-                                    any(x in adv2.get('ro', {}).get(y, [])
-                                        for y in server_match)
-                                    for x in client_match
-                                    ):
-                                return False
+                            for odr in order:
+                                if client_match and \
+                                    any(x in adv2.get(odr, {}).get('clients', []) or
+                                        x in adv2.get(odr, []) or
+                                        any(x in adv2.get(odr, {}).get(y, [])
+                                            for y in server_match)
+                                        for x in client_match
+                                        ):
+                                    return MODE_RETURN.get(odr, False)
 
             for adv in advanced:
-                # client is explicitly defined as rw
-                rw_clients = adv.get('rw', {}).get('clients', [])
-                if client_match and \
-                        any(x in rw_clients for x in client_match):
-                    return True
+                if server:
+                    key = server
+                else:
+                    key = 'clients'
+                order = _get_order(adv, key)
 
-                if client and \
-                        client in rw_clients:
-                    return True
+                for odr in order:
+                    eval_clients = adv.get(odr, {}).get('clients', [])
+                    if client_match and \
+                            any(x in eval_clients for x in client_match):
+                        return MODE_RETURN.get(odr, False)
 
-                # client is explicitly defined as ro
-                ro_clients = adv.get('ro', {}).get('clients', [])
-                if client_match and \
-                        any(x in ro_clients for x in client_match):
-                    return False
-
-                if client and \
-                        client in ro_clients:
-                    return False
+                    if client and \
+                            client in eval_clients:
+                        return MODE_RETURN.get(odr, False)
 
         return ret
 
@@ -575,13 +576,10 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
             advanced = self._extract_advanced(username)
 
             for adv in advanced:
-                # server is explicitly defined as ro
-                if any(x in adv.get('ro', {}).get('agents', []) for x in server_match):
-                    return False
-
-                # server is explicitly defined as rw
-                if any(x in adv.get('rw', {}).get('agents', []) for x in server_match):
-                    return True
+                order = _get_order(adv, server)
+                for odr in order:
+                    if any(x in adv.get(odr, {}).get('agents', []) for x in server_match):
+                        return MODE_RETURN.get(odr, False)
 
         return ret
 
