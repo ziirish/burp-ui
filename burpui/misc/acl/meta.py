@@ -16,25 +16,37 @@ import re
 import json
 import fnmatch
 
-PARSE_EXCLUDE_KEYS = ['agents', 'clients', 'ro', 'rw', 'order']
-PARSE_RESERVED_KEYS = ['ro', 'rw', 'order']
-DEFAULT_EVAL_ORDER = ['rw', 'ro']
+PARSE_EXCLUDE_KEYS = ['agents', 'clients', 'ro', 'rw', 'order', 'exclude']
+PARSE_RESERVED_KEYS = ['ro', 'rw', 'order', 'exclude']
+DEFAULT_EVAL_ORDER = ['exclude', 'rw', 'ro']
 MODE_RETURN = {
     'ro': False,
     'rw': True,
 }
 
 
-def _get_order(data, key):
+def _extract_key(data, key, name, default=[], fallback='clients'):
     if not isinstance(data, dict):
-        return DEFAULT_EVAL_ORDER
-    order = data.get('order', {})
-    if key in order:
-        return order[key]
-    elif 'clients' in order:
-        return order['clients']
-    else:
-        return DEFAULT_EVAL_ORDER
+        return default
+
+    ret = None
+    extract = data.get(key, {})
+
+    if isinstance(name, list):
+        for nm in name:
+            if nm in extract:
+                ret = make_list(extract[nm])
+    elif name:
+        if name in extract:
+            ret = make_list(extract[name])
+
+    if ret:
+        if key == 'order':
+            for odr in DEFAULT_EVAL_ORDER:
+                if odr not in ret:
+                    ret.append(odr)
+        return ret
+    return extract.get(fallback, default)
 
 
 class BUImetaGrant(object):
@@ -115,7 +127,7 @@ class BUImetaGrant(object):
                     par = key
                 cl2, ag2, ad2 = self._parse_clients(data[key], md, parent=par)
                 agents = self._merge_data(agents, ag2)
-                if not md or md not in ['order']:
+                if not md or md not in ['order', 'exclude']:
                     clients = self._merge_data(clients, cl2)
                 if parent and parent not in PARSE_EXCLUDE_KEYS:
                     ro = ad2.get('ro')
@@ -445,7 +457,7 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
                     return is_admin or self.opt('assume_rw', True)
 
                 for adv in advanced:
-                    order = _get_order(adv, server)
+                    order = _extract_key(adv, 'order', [server] + server_match, DEFAULT_EVAL_ORDER)
                     for adv2 in advanced:
                         # the whole agent is rw and we did not find explicit entry for
                         # client_match
@@ -489,10 +501,10 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
 
             for adv in advanced:
                 if server:
-                    key = server
+                    key = [server] + self._server_match(username, server)
                 else:
-                    key = 'clients'
-                order = _get_order(adv, key)
+                    key = None
+                order = _extract_key(adv, 'order', key, DEFAULT_EVAL_ORDER)
 
                 for odr in order:
                     eval_clients = adv.get(odr, {}).get('clients', [])
@@ -531,29 +543,46 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
 
                 if advanced is not False:
                     for idx, adv in enumerate(advanced):
-                        if all(x not in adv for x in server_match) and \
-                                any(x in y
-                                    for x in server_match
-                                    for y in self._extract_advanced_mode(username, 'ro', 'agents', idx)
-                                    ) or \
-                                any(x in y
-                                    for x in server_match
-                                    for y in self._extract_advanced_mode(username, 'rw', 'agents', idx)
-                                    ):
-                            return True
+                        order = _extract_key(adv, 'order', [server] + server_match, DEFAULT_EVAL_ORDER)
+                        excludes = _extract_key(adv, 'exclude', [server] + server_match, fallback='agents')
+                        if all(x not in adv for x in server_match):
+                            for odr in order:
+                                if odr == 'exclude' and (
+                                        any(x in excludes for x in client_match) or
+                                        client in excludes):
+                                    return False
+                                elif any(x in y
+                                         for x in server_match
+                                         for y in self._extract_advanced_mode(username, odr, 'agents', idx)
+                                         ):
+                                    return True
 
                         tmp = set(adv.get(server, []))
                         for srv in server_match:
                             tmp |= set(adv.get(srv, []))
                         adv2 = list(tmp)
-                        if client_match is not False and \
-                                (any(x in adv2 for x in client_match) or
-                                 client in adv2):
-                            return True
+                        excludes = _extract_key(adv, 'exclude', [server] + server_match)
+                        for odr in order:
+                            if odr == 'exclude' and (
+                                    any(x in excludes for x in client_match) or
+                                    client in excludes):
+                                return False
+                            elif client_match is not False and \
+                                    (any(x in adv2 for x in client_match) or
+                                     client in adv2):
+                                return True
 
                     return False
 
-        return client_match is not False or is_admin
+        order = _extract_key(adv, 'order', None, DEFAULT_EVAL_ORDER)
+        excludes = _extract_key(adv, 'exclude', None)
+
+        for odr in order:
+            if odr == 'exclude' and client_match and (
+                    any(x in excludes for x in client_match) or
+                    client in excludes):
+                return False
+            return client_match is not False or is_admin
 
     def is_server_rw(self, username=None, server=None):
         """See :func:`burpui.misc.acl.interface.BUIacl.is_server_rw`"""
@@ -576,7 +605,7 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
             advanced = self._extract_advanced(username)
 
             for adv in advanced:
-                order = _get_order(adv, server)
+                order = _extract_key(adv, 'order', [server] + server_match, DEFAULT_EVAL_ORDER)
                 for odr in order:
                     if any(x in adv.get(odr, {}).get('agents', []) for x in server_match):
                         return MODE_RETURN.get(odr, False)

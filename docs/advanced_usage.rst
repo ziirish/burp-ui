@@ -801,6 +801,33 @@ With the above rule, the engine will treat ``client.specific.test`` as ``ro``
 whereas without the ``order`` keywoard, ``client.specific.test`` would have
 matched the ``rw`` rule first and thus would be considered as ``rw``.
 
+There is also a new ``exclude`` keyword that supports excluding clients from
+the matching rules.
+
+Here is an example:
+
+::
+
+    # rule is: myuser = '{"agents": {"agent1": {"exclude": ["client.test1"], "ro": ["client.specific.*"], "rw": ["client.*", "server.*"]}, "agent2": {"rw": ["client.*"]}}}'
+
+    In [3]: meta_grants.is_client_rw('myuser', 'client.specific.test1', 'agent1')
+    Out[3]: False
+
+    In [4]: meta_grants.is_client_rw('myuser', 'client.test1', 'agent1')
+    Out[4]: False
+
+    In [5]: meta_grants.is_client_rw('myuser', 'client.test2', 'agent1')
+    Out[5]: True
+
+    In [6]: meta_grants.is_client_rw('myuser', 'client.test1', 'agent2')
+    Out[6]: True
+
+    In [7]: meta_grants.is_client_allowed('myuser', 'client.test1', 'agent1')
+    Out[7]: False
+
+    In [8]: meta_grants.is_client_allowed('myuser', 'client.specific.test1', 'agent1')
+    Out[8]: True
+
 
 
 About the ``inverse_inheritance`` option, here is a concrete example. We assume
