@@ -49,6 +49,27 @@ def _extract_key(data, key, name, default=[], fallback='clients'):
     return extract.get(fallback, default)
 
 
+def _glob_match(globs, string, extended=True):
+    def __eval_glob(glob):
+        if extended:
+            reg = fnmatch.translate(glob)
+            return re.match(reg, string)
+        return glob == string
+    if not isinstance(globs, list):
+        if __eval_glob(globs):
+            return [globs]
+        return []
+    ret = []
+    for glob in globs:
+        if __eval_glob(glob):
+            if extended:
+                ret.append(glob)
+            else:
+                ret.append(string)
+                break
+    return ret
+
+
 class BUImetaGrant(object):
 
     def _merge_data(self, d1, d2):
@@ -549,7 +570,7 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
                             for odr in order:
                                 if odr == 'exclude' and (
                                         any(x in excludes for x in client_match) or
-                                        client in excludes):
+                                        _glob_match(excludes, client, self.opt('extended'))):
                                     return False
                                 elif any(x in y
                                          for x in server_match
@@ -565,7 +586,7 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
                         for odr in order:
                             if odr == 'exclude' and (
                                     any(x in excludes for x in client_match) or
-                                    client in excludes):
+                                    _glob_match(excludes, client, self.opt('extended'))):
                                 return False
                             elif client_match is not False and \
                                     (any(x in adv2 for x in client_match) or
@@ -580,7 +601,7 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
         for odr in order:
             if odr == 'exclude' and client_match and (
                     any(x in excludes for x in client_match) or
-                    client in excludes):
+                    _glob_match(excludes, client, self.opt('extended'))):
                 return False
             return client_match is not False or is_admin
 

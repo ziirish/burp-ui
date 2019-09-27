@@ -788,8 +788,10 @@ keyword.
 
 
 Since *v0.7.0*, you can also define an additional ``order`` keyword in order
-to specify in which order the ACL engine should evaluate the rules (should we
-match ``ro`` first or ``rw``). The default evaluation order is ``rw`` then ``ro``.
+to specify in which order the ACL engine should evaluate the rules.
+The default being ``exclude``, then ``rw`` then ``ro``.
+Note: any omitted value will be appended to your list (ie. ``"order": ["ro", "rw"]``
+will be interpreted as ``["ro", "rw", "exclude"]``).
 Example:
 
 ::
@@ -802,7 +804,7 @@ whereas without the ``order`` keywoard, ``client.specific.test`` would have
 matched the ``rw`` rule first and thus would be considered as ``rw``.
 
 There is also a new ``exclude`` keyword that supports excluding clients from
-the matching rules.
+the matching rules. Of course, ``exclude`` also supports *globs* patterns.
 
 Here is an example:
 

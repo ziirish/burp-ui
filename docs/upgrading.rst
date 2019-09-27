@@ -63,6 +63,11 @@ v0.7.0
   server in a single place with the ability to process hundreds of requests
   asynchronously.
 
+- **New** - The ``ACL`` engine now allows you to specify the evaluation *order*
+  through a new ``order`` keyword. You can also explicitly exclude clients
+  from any rule with the ``exclude`` keyword. See the
+  `BASIC ACL <advanced_usage.html#basic-acl>`__ documentation for details.
+
 v0.6.0
 ------
 
