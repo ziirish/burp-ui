@@ -11,8 +11,7 @@
 import flask_restplus.fields
 
 from flask_restplus.fields import *  # noqa # pylint: disable=locally-disabled, wildcard-import, unused-wildcard-import
-from .my_fields import DateTime, DateTimeHuman, BackupNumber, SafeString, LocalizedString, Wildcard  # noqa
-from .my_fields2 import Nested  # noqa
+from .my_fields import DateTime, DateTimeHuman, BackupNumber, SafeString, LocalizedString  # noqa
 
 __all__ = flask_restplus.fields.__all__ + \
-    (DateTime, DateTimeHuman, BackupNumber, SafeString, LocalizedString, Wildcard)
+    (DateTime, DateTimeHuman, BackupNumber, SafeString, LocalizedString)
