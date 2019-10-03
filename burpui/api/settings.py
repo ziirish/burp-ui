@@ -7,6 +7,8 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
+import json
+
 from . import api
 from ..engines.server import BUIServer  # noqa
 from ..ext.cache import cache
@@ -15,10 +17,13 @@ from .._compat import unquote
 from ..utils import NOTIF_INFO
 
 from flask_babel import gettext as _, refresh
-from flask import jsonify, request, url_for, current_app, g, session
+from flask import jsonify, request, url_for, current_app, g, session, render_template_string
 from flask_login import current_user
 from flask_restplus import inputs
+from jinja2 import Environment, meta
 from ..datastructures import ImmutableMultiDict, MultiDict
+
+TEMPLATE_EXCLUDES = ['client', 'agent']
 
 bui = current_app  # type: BUIServer
 ns = api.namespace('settings', 'Settings methods')
@@ -323,6 +328,89 @@ class ClientsList(Resource):
         return jsonify(result=res)
 
 
+@ns.route('/static-templates',
+          '/<server>/static-templates',
+          endpoint='static_templates_list')
+@ns.doc(
+    params={
+        'server': 'Which server to collect data from when in multi-agent mode',
+    },
+)
+class StaticTemplatesList(Resource):
+
+    @api.acl_admin_or_moderator_required(message='Sorry, you don\'t have rights to access the setting panel')
+    @ns.doc(
+        responses={
+            200: 'Success',
+            403: 'Insufficient permissions',
+            500: 'Internal failure',
+        }
+    )
+    def get(self, server=None):
+        """Returns a list of clients"""
+        parser = bui.client.get_parser(agent=server)
+        res = parser.list_static_templates()
+        env = Environment()
+        for obj in res:
+            ast = env.parse(obj['content'])
+            obj['variables'] = [x for x in meta.find_undeclared_variables(ast) if x not in TEMPLATE_EXCLUDES]
+        return jsonify(result=res)
+
+
+@ns.route('/static-template',
+          '/<server>/static-template',
+          endpoint='new_static_template',
+          methods=['PUT'])
+@ns.doc(
+    params={
+        'server': 'Which server to collect data from when in multi-agent mode',
+    },
+)
+class NewStaticTemplateSettings(Resource):
+    parser = ns.parser()
+    parser.add_argument('newstatictemplate', required=True, help="No 'newstatictemplate' provided")
+
+    @api.disabled_on_demo()
+    @api.acl_admin_or_moderator_required(message='Sorry, you don\'t have rights to access the setting panel')
+    @ns.expect(parser)
+    @ns.doc(
+        responses={
+            200: 'Success',
+            400: 'Missing parameter',
+            403: 'Insufficient permissions',
+            500: 'Internal failure',
+        }
+    )
+    def put(self, server=None):
+        """Creates a new template"""
+        if not current_user.is_anonymous and \
+                current_user.acl.is_moderator() and \
+                not current_user.acl.is_server_rw(server):
+            self.abort(403, 'You don\'t have rights on this server')
+
+        newtemplate = self.parser.parse_args()['newstatictemplate']
+        if not newtemplate:
+            self.abort(400, 'No template name provided')
+        parser = bui.client.get_parser(agent=server)
+        templates = parser.list_static_templates()
+        if any(tpl['name'] == newtemplate for tpl in templates):
+            self.abort(409, "Static template '{}' already exists".format(newtemplate))
+        # clientconfdir = bui.client.get_parser_attr('clientconfdir', server)
+        # if not clientconfdir:
+        #    flash('Could not proceed, no \'clientconfdir\' find', 'warning')
+        #    return redirect(request.referrer)
+        noti = bui.client.store_conf_cli(ImmutableMultiDict(), newtemplate, None, False, True, server)
+        if server:
+            url = url_for('view.cli_settings', server=server, client=newtemplate, statictemplate=True)
+        else:
+            url = url_for('view.cli_settings', client=newtemplate, statictemplate=True)
+        noti.append([NOTIF_INFO, _('<a href="%(url)s">Click here</a> to edit \'%(template)s\' configuration', url=url, template=newtemplate)])
+        # clear the cache when we add a new client
+        cache.clear()
+        bui.audit.logger.info(f'created new static template {newtemplate}', server=server)
+        return {'notif': noti}, 201
+
+
 @ns.route('/templates',
           '/<server>/templates',
           endpoint='templates_list')
@@ -391,7 +479,7 @@ class NewTemplateSettings(Resource):
         # if not clientconfdir:
         #    flash('Could not proceed, no \'clientconfdir\' find', 'warning')
         #    return redirect(request.referrer)
-        noti = bui.client.store_conf_cli(ImmutableMultiDict(), newtemplate, None, True, server)
+        noti = bui.client.store_conf_cli(ImmutableMultiDict(), newtemplate, None, True, False, server)
         if server:
             url = url_for('view.cli_settings', server=server, client=newtemplate, template=True)
         else:
@@ -416,6 +504,8 @@ class NewClientSettings(Resource):
     parser = ns.parser()
     parser.add_argument('newclient', required=True, help="No 'newclient' provided")
     parser.add_argument('templates', help="Templates list", action='split')
+    parser.add_argument('statictemplate', help="Static template")
+    parser.add_argument('variables', help="Template variables")
 
     @api.disabled_on_demo()
     @api.acl_admin_or_moderator_required(message='Sorry, you don\'t have rights to access the setting panel')
@@ -433,6 +523,10 @@ class NewClientSettings(Resource):
         args = self.parser.parse_args()
         newclient = args['newclient']
         templates = [x for x in args.get('templates', []) if x]
+        statictemplate = args['statictemplate']
+        variables = json.loads(args['variables']) if args['variables'] else {}
+        variables['agent'] = server
+        variables['client'] = newclient
         if not newclient:
             self.abort(400, 'No client name provided')
 
@@ -451,12 +545,18 @@ class NewClientSettings(Resource):
         #    flash('Could not proceed, no \'clientconfdir\' find', 'warning')
         #    return redirect(request.referrer)
         data = MultiDict()
+        content = ''
         if templates:
             real_templates = {x['name']: x['value'] for x in parser._list_templates()}
             if any(x not in real_templates for x in templates):
                 self.abort(400, 'Wrong template')
             data.setlist('templates', [real_templates[x] for x in templates])
-        noti = bui.client.store_conf_cli(ImmutableMultiDict(data), newclient, None, agent=server)
+        if statictemplate:
+            statics = parser._list_static_templates()
+            for tpl in statics:
+                if tpl['name'] == statictemplate:
+                    content = render_template_string(tpl['content'], **variables)
+        noti = bui.client.store_conf_cli(ImmutableMultiDict(data), newclient, None, content=content, agent=server)
         if server:
             url = url_for('view.cli_settings', server=server, client=newclient)
         else:
@@ -498,16 +598,20 @@ class ClientSettings(Resource):
     parser_delete.add_argument('delcert', type=inputs.boolean, help='Whether to delete the certificate or not', default=False, nullable=True)
     parser_delete.add_argument('keepconf', type=inputs.boolean, help='Whether to keep the conf or not', default=False, nullable=True)
     parser_delete.add_argument('template', type=inputs.boolean, help='Whether we work on a template or not', default=False, nullable=True)
+    parser_delete.add_argument('statictemplate', type=inputs.boolean, help='Whether we work on a static template or not', default=False, nullable=True)
     parser_delete.add_argument('delete', type=inputs.boolean, help='Whether we should remove the data as well or not', default=False, nullable=True)
     parser_put = ns.parser()
     parser_put.add_argument('newname', help='New name of the client/template')
     parser_put.add_argument('template', type=inputs.boolean, help='Whether we work on a template or not', default=False, nullable=True)
+    parser_put.add_argument('statictemplate', type=inputs.boolean, help='Whether we work on a static template or not', default=False, nullable=True)
     parser_put.add_argument('keepcert', type=inputs.boolean, help='Whether to keep the same certificate or not', default=False, nullable=True)
     parser_put.add_argument('keepdata', type=inputs.boolean, help='Whether to keep the data or not', default=False, nullable=True)
     parser_post = ns.parser()
     parser_post.add_argument('template', type=inputs.boolean, help='Whether we work on a template or not', default=False, nullable=True)
+    parser_post.add_argument('statictemplate', type=inputs.boolean, help='Whether we work on a static template or not', default=False, nullable=True)
     parser_get = ns.parser()
     parser_get.add_argument('template', type=inputs.boolean, help='Whether we work on a template or not', default=False, nullable=True)
+    parser_get.add_argument('statictemplate', type=inputs.boolean, help='Whether we work on a static template or not', default=False, nullable=True)
 
     @api.disabled_on_demo()
     @api.acl_admin_or_moderator_required(message=_('Sorry, you don\'t have rights to access the setting panel'))
@@ -528,7 +632,8 @@ class ClientSettings(Resource):
 
         args = self.parser_post.parse_args()
         template = args.get('template', False)
-        noti = bui.client.store_conf_cli(request.form, client, conf, template, server)
+        statictemplate = args.get('statictemplate', False)
+        noti = bui.client.store_conf_cli(request.form, client, conf, template, statictemplate, server)
         # clear cache
         cache.clear()
         # clear client-side cache through the _extra META variable
@@ -559,8 +664,9 @@ class ClientSettings(Resource):
             pass
         args = self.parser_get.parse_args()
         template = args.get('template', False)
+        statictemplate = args.get('statictemplate', False)
         parser = bui.client.get_parser(agent=server)
-        res = parser.read_client_conf(client, conf, template)
+        res = parser.read_client_conf(client, conf, template, statictemplate)
         refresh()
         # Translate the doc and placeholder API side
         cache_keys = {
@@ -627,6 +733,7 @@ class ClientSettings(Resource):
         revoke = args.get('revoke', False)
         keepconf = args.get('keepconf', False)
         template = args.get('template', False)
+        statictemplate = args.get('statictemplate', False)
         delete = args.get('delete', False)
 
         if not keepconf:
@@ -647,8 +754,9 @@ class ClientSettings(Resource):
         bui.audit.logger.info(
             f'deleted client configuration {client}, delete certificate: {delcert}, '
             f'revoke certificate: {revoke}, keep a backup of the configuration: '
-            f'{keepconf}, delete data: {delete}, is template: {template}', server=server)
-        return parser.remove_client(client, keepconf, delcert, revoke, template, delete), 200
+            f'{keepconf}, delete data: {delete}, is template: {template} '
+            f'is static template: {statictemplate}', server=server)
+        return parser.remove_client(client, keepconf, delcert, revoke, template, statictemplate, delete), 200
 
     @api.disabled_on_demo()
     @api.acl_admin_or_moderator_required(message=_('Sorry, you don\'t have rights to access the setting panel'))
@@ -677,6 +785,7 @@ class ClientSettings(Resource):
         keepcert = args.get('keepcert', False)
         keepdata = args.get('keepdata', False)
         template = args.get('template', False)
+        statictemplate = args.get('statictemplate', False)
 
         # clear the cache when we remove a client
         cache.clear()
@@ -695,8 +804,8 @@ class ClientSettings(Resource):
         bui.audit.logger.info(
             f'renaming client configuration {client} to {newname}, '
             f'keep data: {keepdata}, keep certificate: {keepcert}, '
-            f'is template: {template}', server=server)
-        return parser.rename_client(client, newname, template, keepcert, keepdata), 200
+            f'is template: {template}, is static template: {statictemplate}', server=server)
+        return parser.rename_client(client, newname, template, statictemplate, keepcert, keepdata), 200
 
 
 @ns.route('/path-expander',

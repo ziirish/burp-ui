@@ -254,11 +254,13 @@ def cli_settings(server=None, client=None, conf=None):
     client = client or request.args.get('client')
     server = server or request.args.get('serverName')
     template = request.args.get('template') or False
+    statictemplate = request.args.get('statictemplate') or False
     return render_template(
         'settings.html',
         settings=True,
         client_mode=True,
         template=template,
+        statictemplate=statictemplate,
         client=client,
         server=server,
         conf=conf,

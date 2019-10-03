@@ -187,6 +187,8 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$timeout', '$scrollspy', 'DTOp
 		{% if client -%}
 			{% if template -%}
 		$http.get('{{ url_for("api.client_settings", client=client, conf=conf, template=True, server=server) }}', { headers: { 'X-From-UI': true } })
+		  {% elif statictemplate -%}
+		$http.get('{{ url_for("api.client_settings", client=client, conf=conf, statictemplate=True, server=server) }}', { headers: { 'X-From-UI': true } })
 			{% else -%}
 		$http.get('{{ url_for("api.client_settings", client=client, conf=conf, server=server) }}', { headers: { 'X-From-UI': true } })
 			{% endif -%}
@@ -603,6 +605,25 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$timeout', '$scrollspy', 'DTOp
 			}
 		);
 	};
+	$scope.getStaticTemplatesList = function() {
+		api = '{{ url_for("api.static_templates_list", server=server) }}';
+		$http.get(
+			api,
+			{
+				headers: { 'X-From-UI': true },
+			}
+		).then(
+			function(response) {
+				var data = response.data;
+				$scope.raw.static_templates = data.result;
+				$scope.raw.static_templates.splice(0, 0, {'name': '{{ _("None") }}'});
+				$scope.all.static_templates = {};
+				_(data.result).forEach(function(r) {
+					$scope.all.static_templates[r.name] = {'value': r.value, 'variables': r.variables};
+				});
+			}
+		);
+	};
 	$scope.deleteFile = function() {
 		/* UX tweak: disable the submit button + change text */
 		submit = $('#btn-remove-file');
@@ -650,6 +671,8 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$timeout', '$scrollspy', 'DTOp
 			type: 'PUT',
 			{% if template -%}
 			data: {template: true, newname: $('#newname').val() }
+			{% elif statictemplate -%}
+			data: {statictemplate: true, newname: $('#newname').val() }
 			{% else -%}
 			data: { newname: $('#newname').val(), keepcert: $('#keepcert').is(':checked'), keepdata: $('#keepdata').is(':checked') }
 			{% endif -%}
@@ -688,6 +711,8 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$timeout', '$scrollspy', 'DTOp
 			type: 'DELETE',
 			{% if template -%}
 			data: { template: true }
+			{% elif statictemplate -%}
+			data: {statictemplate: true }
 			{% else -%}
 			data: { delcert: $('#delcert').is(':checked'), revoke: $('#revoke').is(':checked'), keepconf: $('#keepconf').is(':checked'), delete: $('#deldata').is(':checked') }
 			{% endif -%}
@@ -739,10 +764,23 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$timeout', '$scrollspy', 'DTOp
 		e.preventDefault();
 		var form = $(e.target);
 		var templates = form.find('input[name="templates"]');
-		submit = form.find('button[type="submit"]');
-		sav = submit.html();
+		var variables = form.find('input[name="variables"]');
+		var submit = form.find('button[type="submit"]');
+		var disabled = [];
+		var sav = submit.html();
 		if ($scope.newclient.templates) {
 			templates.val($scope.newclient.templates.join(','));
+		}
+		if ($scope.newclient.statictemplate && $scope.newclient.statictemplate != 'None') {
+			temp = {};
+			_($('.static-variables').find('input')).forEach(function(raw) {
+				var input = $(raw);
+				console.log(input);
+				temp[input.attr('name')] = input.val();
+				input.attr('disabled', true);
+				disabled.push(input);
+			});
+			variables.val(JSON.stringify(temp));
 		}
 		submit.html('<i class="fa fa-fw fa-spinner fa-pulse" aria-hidden="true"></i>&nbsp;{{ _("Creating...") }}');
 		submit.attr('disabled', true);
@@ -766,6 +804,9 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$timeout', '$scrollspy', 'DTOp
 		.always(function() {
 			submit.attr('disabled', false);
 			submit.html(sav);
+			_(disabled).forEach(function(input) {
+				input.attr('disabled', false);
+			});
 		});
 	};
 	$scope.createTemplate = function(e) {
@@ -789,6 +830,36 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$timeout', '$scrollspy', 'DTOp
 				notif(data.notif[0][0], data.notif[0][1]);
 				if (data.notif[0][0] == NOTIF_SUCCESS) {
 					$scope.getTemplatesList();
+					notif(data.notif[1][0], data.notif[1][1], 20000);
+				}
+			}
+		})
+		.always(function() {
+			submit.attr('disabled', false);
+			submit.html(sav);
+		});
+	};
+	$scope.createStaticTemplate = function(e) {
+		/* we disable the 'real' form submission */
+		e.preventDefault();
+		var form = $(e.target);
+		submit = form.find('button[type="submit"]');
+		sav = submit.html();
+		submit.html('<i class="fa fa-fw fa-spinner fa-pulse" aria-hidden="true"></i>&nbsp;{{ _("Creating...") }}');
+		submit.attr('disabled', true);
+		$.ajax({
+			url: form.attr('action'),
+			type: 'PUT',
+			data: form.serialize()
+		})
+		.fail(buiFail)
+		.done(function(data) {
+			/* The server answered correctly but some errors may have occurred server
+			 * side so we display them */
+			if (data.notif) {
+				notif(data.notif[0][0], data.notif[0][1]);
+				if (data.notif[0][0] == NOTIF_SUCCESS) {
+					$scope.getStaticTemplatesList();
 					notif(data.notif[1][0], data.notif[1][1], 20000);
 				}
 			}
@@ -823,10 +894,12 @@ app.controller('ConfigCtrl', ['$scope', '$http', '$timeout', '$scrollspy', 'DTOp
 	$scope.loadConfig();
 	$scope.getClientsList();
 	$scope.getTemplatesList();
+	$scope.getStaticTemplatesList();
 }]);
 
 {{ macros.page_length('#table-list-clients') }}
 {{ macros.page_length('#table-list-templates') }}
+{{ macros.page_length('#table-list-static-templates') }}
 
 $(document).ready(function () {
 	$('#config-nav a').click(function (e) {

@@ -133,7 +133,8 @@ class BUIparser(object, metaclass=ABCMeta):
         )  # pragma: no cover
 
     @abstractmethod
-    def store_client_conf(self, data, client=None, conf=None, template=False):
+    def store_client_conf(self, data, client=None, conf=None, template=False,
+                          statictemplate=False, content=''):
         """:func:`burpui.misc.parser.interface.BUIparser.store_client_conf` is
         used by :func:`burpui.misc.backend.BUIbackend.store_conf_cli`.
 
@@ -149,6 +150,12 @@ class BUIparser(object, metaclass=ABCMeta):
 
         :param template: Is this file a template
         :type template: bool
+
+        :param statictemplate: Whether we remove a static template
+        :type statictemplate: bool
+
+        :param content: What default content to put in the file
+        :type content: str
         """
         raise NotImplementedError(
             "Sorry, the current Parser does not implement this method!"
@@ -156,7 +163,7 @@ class BUIparser(object, metaclass=ABCMeta):
 
     @abstractmethod
     def store_conf(self, data, conf=None, client=None, mode='srv',
-                   insecure=False, template=False):
+                   insecure=False, template=False, statictemplate=False, content=''):
         """:func:`burpui.misc.parser.interface.BUIparser.store_conf` is used to
         store the configuration from the web-ui into the actual configuration
         files.
@@ -180,6 +187,12 @@ class BUIparser(object, metaclass=ABCMeta):
 
         :param template: Is it a template
         :type template: bool
+
+        :param statictemplate: Whether we remove a static template
+        :type statictemplate: bool
+
+        :param content: What default content to put in the file
+        :type content: str
 
         :returns: A list of notifications to return to the UI (success or
                   failure)
@@ -249,6 +262,17 @@ class BUIparser(object, metaclass=ABCMeta):
         )  # pragma: no cover
 
     @abstractmethod
+    def list_static_templates(self):
+        """:func:`burpui.misc.parser.interface.BUIparser.list_static_templates` is used
+        to retrieve a list of static templates with their absolute paths.
+
+        :returns: A list of templates
+        """
+        raise NotImplementedError(
+            "Sorry, the current Parser does not implement this method!"
+        )  # pragma: no cover
+
+    @abstractmethod
     def is_client_revoked(self, client=None):
         """:func:`burpui.misc.parser.interface.BUIparser.is_client_revoked` is
         used to check if a given client has it's certificate revoked or not.
@@ -264,7 +288,7 @@ class BUIparser(object, metaclass=ABCMeta):
 
     @abstractmethod
     def remove_client(self, client=None, keepconf=False, delcert=False, revoke=False,
-                      template=False, delete=False):
+                      template=False, statictemplate=False, delete=False):
         """:func:`burpui.misc.parser.interface.BUIparser.remove_client` is used
         to delete a client from burp's configuration.
 
@@ -283,6 +307,9 @@ class BUIparser(object, metaclass=ABCMeta):
         :param template: Whether we remove a template
         :type template: bool
 
+        :param statictemplate: Whether we remove a static template
+        :type statictemplate: bool
+
         :param delete: Whether to remove data as well
         :type delete: bool
 
@@ -295,8 +322,8 @@ class BUIparser(object, metaclass=ABCMeta):
         )  # pragma: no cover
 
     @abstractmethod
-    def rename_client(self, client=None, newname=None, template=False, keepcert=False,
-                      keepdata=False):
+    def rename_client(self, client=None, newname=None, template=False,
+                      statictemplate=False, keepcert=False, keepdata=False):
         """:func:`burpui.misc.parser.interface.BUIParser.rename_client` is used to
         rename a client.
 
@@ -308,6 +335,9 @@ class BUIparser(object, metaclass=ABCMeta):
 
         :param template: Whether we remove a template
         :type template: bool
+
+        :param statictemplate: Whether we remove a static template
+        :type statictemplate: bool
 
         :param keepcert: Whether to keep using the same certificate or not
         :type keepcert: bool
@@ -324,7 +354,7 @@ class BUIparser(object, metaclass=ABCMeta):
         )  # pragma: no cover
 
     @abstractmethod
-    def read_client_conf(self, client=None, conf=None, template=False):
+    def read_client_conf(self, client=None, conf=None, template=False, statictemplate=False):
         """:func:`burpui.misc.parser.interface.BUIparser.read_client_conf` is
         called by :func:`burpui.misc.backend.interface.BUIbackend.read_conf_cli`
         in order to parse the burp-clients configuration files.

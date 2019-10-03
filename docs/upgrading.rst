@@ -68,6 +68,14 @@ v0.7.0
   from any rule with the ``exclude`` keyword. See the
   `BASIC ACL <advanced_usage.html#basic-acl>`__ documentation for details.
 
+- **New** - You can now create *static templates* which support `jinja2
+  variables <https://jinja.palletsprojects.com/en/2.10.x/templates/#variables>`_
+  format. These templates are applied only *once* at the creation of a new
+  client if you choose to use them. Also note there are two default variables:
+  ``{{client}}`` and ``{{agent}}`` injected while rendering them which contain
+  respectively the name of the *client* being created and the name of the
+  *agent* you are working on.
+
 v0.6.0
 ------
 

@@ -39,12 +39,17 @@ class Parser(Doc):
         self._client_conf = {}
         self._clients_conf = {}
         self._templates_conf = {}
+        self._static_templates_conf = {}
         self.clientconfdir = None
         self.clientconfdir_mtime = None
         self.templates = []
         self.templates_dir = '.buitemplates'
         self.templates_path = None
         self.templates_mtime = None
+        self.static_templates = []
+        self.static_templates_dir = '.buistatictemplates'
+        self.static_templates_path = None
+        self.static_templates_mtime = None
         self.filescache = {}
         self._configs = {}
         self.root = None
@@ -102,6 +107,7 @@ class Parser(Doc):
         if purge:
             self._cleanup()
         self._list_templates(True)
+        self._list_static_templates(True)
         self._list_clients(True)
 
     def _load_conf_srv(self):
@@ -113,6 +119,12 @@ class Parser(Doc):
         if not os.path.exists(self.templates_path):
             try:
                 os.makedirs(self.templates_path, 0o755)
+            except OSError as exp:
+                self.logger.warning(str(exp))
+        self.static_templates_path = os.path.join(self.clientconfdir, self.static_templates_dir)
+        if not os.path.exists(self.static_templates_path):
+            try:
+                os.makedirs(self.static_templates_path, 0o755)
             except OSError as exp:
                 self.logger.warning(str(exp))
 
@@ -156,6 +168,22 @@ class Parser(Doc):
                 conf.parse()
                 self._templates_conf[template['name']] = conf
 
+    def _load_conf_static_templates(self, name=None, in_path=None):
+        """Load all static templates configuration"""
+        if name:
+            templates = [{'name': name, 'value': in_path}]
+        else:
+            templates = self._list_static_templates(True)
+
+        for template in templates:
+            conf = self.server_conf.clone()
+            path = os.path.join(self.static_templates_path, template['name'])
+            if template['name'] not in self._static_templates_conf:
+                conf.add_file(path)
+                conf.set_default(path)
+                conf.parse()
+                self._static_templates_conf[template['name']] = conf
+
     def _load_all_conf(self):
         """Load all configurations"""
         self._cleanup()
@@ -173,6 +201,11 @@ class Parser(Doc):
         """Create new template conf"""
         self._load_conf_templates(name, path)
         return self._templates_conf[name]
+
+    def _new_static_template_conf(self, name, path):
+        """Create new static template conf"""
+        self._load_conf_static_templates(name, path)
+        return self._static_templates_conf[name]
 
     def _clientconfdir_changed(self):
         """Detect changes in clientconfdir"""
@@ -193,6 +226,17 @@ class Parser(Doc):
         changed = mtime != self.templates_mtime
         if changed:
             self.templates_mtime = mtime
+            return True
+        return False
+
+    def _static_templates_changed(self):
+        """Detect changes in static_templates_dir"""
+        if not self.static_templates_path:
+            return False
+        mtime = os.path.getmtime(self.static_templates_path)
+        changed = mtime != self.static_templates_mtime
+        if changed:
+            self.static_templates_mtime = mtime
             return True
         return False
 
@@ -220,9 +264,25 @@ class Parser(Doc):
             self._load_conf_templates()
         if name not in self._templates_conf:
             return self._new_template_conf(name, path)
-        if self._templates_conf[name].changed:
-            self._templates_conf[name].parse()
-        return self._templates_conf[name]
+        template = self._templates_conf[name]
+        if template.changed:
+            template.parse()
+        return template
+
+    def _get_static_template(self, name, path=None):
+        """Return static template conf and refresh it if necessary
+
+        :rtype: Config
+        """
+        if self._static_templates_changed() and name not in self._static_templates_conf:
+            self._static_templates_conf.clear()
+            self._load_conf_static_templates()
+        if name not in self._static_templates_conf:
+            return self._new_static_template_conf(name, path)
+        template = self._static_templates_conf[name]
+        if template.changed:
+            template.parse()
+        return template
 
     def _get_config(self, path, mode='cli'):
         """Return conf by it's path
@@ -298,6 +358,35 @@ class Parser(Doc):
         self.templates_mtime = os.path.getmtime(self.templates_path)
         return res
 
+    def _list_static_templates(self, force=False):
+        res = []
+        if not self.clientconfdir or not os.path.isdir(self.static_templates_path):
+            return res
+
+        if self.static_templates and not force and \
+                not self._clientconfdir_changed() and \
+                not self._static_templates_changed():
+            return self.static_templates
+
+        for tpl in os.listdir(self.static_templates_path):
+            full_file = os.path.join(self.static_templates_path, tpl)
+            if os.path.isfile(full_file) and not tpl.startswith('.') and \
+                    not tpl.endswith('~'):
+                try:
+                    with open(full_file) as template:
+                        res.append({
+                            'name': tpl,
+                            'value': os.path.join(self.static_templates_dir, tpl),
+                            'content': template.read()
+                        })
+                except OSError as exp:
+                    self.logger.warning(str(exp))
+
+        self.static_templates = res
+        self.clientconfdir_mtime = os.path.getmtime(self.clientconfdir)
+        self.static_templates_mtime = os.path.getmtime(self.static_templates_path)
+        return res
+
     def _get_server_path(self, name=None, fil=''):
         """Returns the path of the 'server *fil*' file"""
         if not name:
@@ -355,7 +444,7 @@ class Parser(Doc):
         return self.openssl_auth.check_client_revoked(client)
 
     def remove_client(self, client=None, keepconf=False, delcert=False, revoke=False,
-                      template=False, delete=False):
+                      template=False, statictemplate=False, delete=False):
         """See :func:`burpui.misc.parser.interface.BUIparser.remove_client`"""
         res = []
         revoked = False
@@ -367,16 +456,20 @@ class Parser(Doc):
             if not keepconf:
                 if template:
                     path = os.path.join(self.templates_path, client)
+                elif statictemplate:
+                    path = os.path.join(self.static_templates_path, client)
                 else:
                     path = os.path.join(self.clientconfdir, client)
                 os.unlink(path)
                 res.append([NOTIF_OK, "'{}' successfully removed".format(client)])
                 removed = True
 
-                if client in self._clients_conf and not template:
+                if client in self._clients_conf and not (template or statictemplate):
                     del self._clients_conf[client]
                 elif template and client in self._templates_conf:
                     del self._templates_conf[client]
+                elif statictemplate and client in self._static_templates_conf:
+                    del self._static_templates_conf[client]
                 if path in self.filescache:
                     del self.filescache[path]
 
@@ -412,8 +505,8 @@ class Parser(Doc):
 
         return res
 
-    def rename_client(self, client=None, newname=None, template=False, keepcert=False,
-                      keepdata=False):
+    def rename_client(self, client=None, newname=None, template=False,
+                      statictemplate=False, keepcert=False, keepdata=False):
         """See :func:`burpui.misc.parser.interface.BUIparser.rename_client`"""
         res = []
         if not client:
@@ -424,6 +517,9 @@ class Parser(Doc):
         if template:
             path = os.path.join(self.templates_path, client)
             newpath = os.path.join(self.templates_path, newname)
+        elif statictemplate:
+            path = os.path.join(self.static_templates_path, client)
+            newpath = os.path.join(self.static_templates_path, newname)
         else:
             data = self._get_server_path(client)
             conf = self.clients_conf.get(client)
@@ -436,16 +532,18 @@ class Parser(Doc):
         except OSError as exp:
             res.append([NOTIF_ERROR, str(exp)])
 
-        if client in self._clients_conf and not template:
+        if client in self._clients_conf and not (template or statictemplate):
             del self._clients_conf[client]
         elif template and client in self._templates_conf:
             del self._templates_conf[client]
+        elif statictemplate and client in self._static_templates_conf:
+            del self._static_templates_conf[client]
         if path in self.filescache:
             del self.filescache[path]
 
         self._refresh_cache()
 
-        if template:
+        if template or statictemplate:
             return res
 
         if keepdata:
@@ -485,7 +583,7 @@ class Parser(Doc):
 
         return res
 
-    def read_client_conf(self, client=None, conf=None, template=False):
+    def read_client_conf(self, client=None, conf=None, template=False, statictemplate=False):
         """
         See :func:`burpui.misc.parser.interface.BUIparser.read_client_conf`
         """
@@ -510,6 +608,9 @@ class Parser(Doc):
             if template:
                 mconf = os.path.join(self.templates_path, client)
                 config = self._get_template(client, mconf)
+            elif statictemplate:
+                mconf = os.path.join(self.static_templates_path, client)
+                config = self._get_static_template(client, mconf)
             else:
                 mconf = os.path.join(self.clientconfdir, client)
                 config = self._get_client(client, mconf)
@@ -599,7 +700,13 @@ class Parser(Doc):
         self.read_server_conf()
         return self._list_templates()
 
-    def store_client_conf(self, data, client=None, conf=None, template=False):
+    def list_static_templates(self):
+        """See :func:`burpui.misc.parser.interface.BUIparser.list_static_templates`"""
+        self.read_server_conf()
+        return self._list_static_templates()
+
+    def store_client_conf(self, data, client=None, conf=None, template=False,
+                          statictemplate=False, content=''):
         """
         See :func:`burpui.misc.parser.interface.BUIparser.store_client_conf`
         """
@@ -608,21 +715,30 @@ class Parser(Doc):
         if not conf and not client:
             if template:
                 return [[NOTIF_ERROR, 'Sorry, no template defined']]
+            elif statictemplate:
+                return [[NOTIF_ERROR, 'Sorry, no static template defined']]
             return [[NOTIF_ERROR, 'Sorry, no client defined']]
         elif client and not conf:
             if template:
                 if not self.templates_path:
                     return [[NOTIF_ERROR, 'Sorry, no template directory found']]
                 conf = os.path.join(self.templates_path, client)
+            elif statictemplate:
+                if not self.static_templates_path:
+                    return [[NOTIF_ERROR, 'Sorry, no static template directory found']]
+                conf = os.path.join(self.static_templates_path, client)
             else:
                 conf = os.path.join(self.clientconfdir, client)
-        ret = self.store_conf(data, conf, client, mode='cli', template=template)
+        ret = self.store_conf(data, conf, client, mode='cli', template=template,
+                              statictemplate=statictemplate, content=content)
         self._refresh_cache()  # refresh client list
         return ret
 
     def store_conf(self, data, conf=None, client=None, mode='srv',
-                   insecure=False, template=False):
+                   insecure=False, template=False, statictemplate=False,
+                   content=''):
         """See :func:`burpui.misc.parser.interface.BUIparser.store_conf`"""
+        ret = []
         mconf = None
         if not conf:
             mconf = self.conf
@@ -642,16 +758,42 @@ class Parser(Doc):
                 ]
             ]
 
+        wrote_content = False
+        if content:
+            if os.path.exists(mconf):
+                ret.append([NOTIF_WARN, 'The file already exists, we won\'t override it'])
+            else:
+                try:
+                    with open(mconf, 'w') as temp:
+                        if not content.endswith('\n'):
+                            content += '\n'
+                        temp.write(content)
+                        ret.append([NOTIF_OK, 'File successfully written from template'])
+                    wrote_content = True
+                except IOError as exp:
+                    ret.append([NOTIF_WARN, str(exp)])
+
         check = False
         if template:
             conffile = self._get_template(client, mconf).get_file(mconf)
+        elif statictemplate:
+            conffile = self._get_static_template(client, mconf).get_file(mconf)
         elif client:
             conffile = self._get_client(client, mconf).get_file(mconf)
         else:
             conffile = self.server_conf.get_file(mconf)
             check = True
 
-        ret = conffile.store_data(data, insecure)
+        if wrote_content and data:
+            for key in data.keys():
+                tmp = data.getlist(key)
+                if len(tmp) == 1:
+                    conffile[key] = tmp[0]
+                else:
+                    conffile[key] = tmp
+            ret += conffile.store(insecure=insecure)
+        elif not wrote_content:
+            ret += conffile.store_data(data, insecure)
 
         if check:
             clientconfdir = conffile.get('clientconfdir')

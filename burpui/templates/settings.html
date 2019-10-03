@@ -18,6 +18,8 @@
                 {% else -%}
                   {% if template -%}
             <li class="active">{{ _('Template %(name)s on %(server)s', name=client, server=server) }}</li>
+                  {% elif statictemplate -%}
+            <li class="active">{{ _('Static template %(name)s on %(server)s', name=client, server=server) }}</li>
                   {% else -%}
             <li class="active">{{ _('%(client)s on %(server)s', client=client, server=server) }}</li>
                   {% endif -%}
@@ -40,6 +42,8 @@
                 {% else -%}
                   {% if template -%}
             <li class="active">{{ _('Template %(name)s', name=client) }}</li>
+                  {% elif statictemplate -%}
+            <li class="active">{{ _('Static template %(name)s', name=client) }}</li>
                   {% else -%}
             <li class="active">{{ client }}</li>
                   {% endif -%}
@@ -64,6 +68,7 @@
             {% endif -%}
             <li {% if is_moderator and not is_admin %}class="active"{% endif %}><a href="#clients" data-toggle="tab" aria-expanded="false">{{ _('Clients') }}</a></li>
             <li><a href="#list-templates" data-toggle="tab" aria-expanded="false">{{ _('Templates') }}</a></li>
+            <li><a href="#list-static-templates" data-toggle="tab" aria-expanded="false">{{ _('Static templates') }}</a></li>
           </ul>
           <div id="config-tab-content" class="tab-content">
             {% if (not is_moderator and is_admin) or client_mode -%}
@@ -80,6 +85,8 @@
                 {% if client -%}
                   {% if template -%}
                 <form class="form-horizontal" action="{{ url_for('api.client_settings', client=client, conf=conf, template=template, server=server) }}" method="POST" ng-submit="submit($event)" name="setSettings" onbeforeunload>
+                  {% elif statictemplate -%}
+                <form class="form-horizontal" action="{{ url_for('api.client_settings', client=client, conf=conf, statictemplate=statictemplate, server=server) }}" method="POST" ng-submit="submit($event)" name="setSettings" onbeforeunload>
                   {% else -%}
                 <form class="form-horizontal" action="{{ url_for('api.client_settings', client=client, conf=conf, server=server) }}" method="POST" ng-submit="submit($event)" name="setSettings" onbeforeunload>
                   {% endif -%}
@@ -486,7 +493,32 @@
                         </ui-select-choices>
                       </ui-select>
                     </div>
+                    <div class="form-group">
+                      <ui-select ng-model="newclient.statictemplate" ng-disabled="!raw.static_templates" theme="bootstrap">
+                        <ui-select-match placeholder="{{ _('Select a static template') }}">
+                        {% raw %}
+                          {{ $select.selected.name }}
+                        {% endraw %}
+                        </ui-select-match>
+                        <ui-select-choices repeat="value.name as value in raw.static_templates | filter: $select.search">
+                          <div ng-bind-html="value.name | highlight: $select.search"></div>
+                        </ui-select-choices>
+                      </ui-select>
+                    </div>
+                    <div class="static-variables" ng-if="newclient.statictemplate && newclient.statictemplate != 'None'">
+                      <div class="form-group row" ng-repeat="val in all.static_templates[newclient.statictemplate]['variables'] track by $index">
+                        {% raw -%}
+                        <label for="static-variables_{{ val }}" class="col-lg-2 control-label">{{ val }}</label>
+                        <div class="col-lg-10">
+                          <input type="text" class="form-control" id="static-variables_{{ val }}" name="{{ val }}"
+                        {% endraw -%}
+                           placeholder="{{ _('Enter value') }}">
+                        </div>
+                      </div>
+                    </div>
                     <input type="hidden" name="templates">
+                    <input type="hidden" name="variables">
+                    <input type="hidden" name="statictemplate" ng-value="newclient.statictemplate">
                   </fieldset>
                 </form>
               </div>
@@ -517,6 +549,40 @@
                     <Legend>{{ _('Create new template') }}</Legend>
                     <div class="input-group">
                       <input class="form-control" type="text" name="newtemplate" id="newtemplate" placeholder="{{ _('Create new template') }}">
+                      <span class="input-group-btn">
+                        <button class="btn btn-success" type="submit"><i class="fa fa-plus" aria-hidden="true"></i></button>
+                      </span>
+                    </div>
+                  </fieldset>
+                </form>
+              </div>
+            </div>
+            <div class="tab-pane fade" id="list-static-templates">
+              <div style="padding-top: 80px; margin-top: -45px;"></div>
+              <div id="table-static-templates" class="table-responsive row">
+                <table class="table table-striped table-hover nowrap" width="100%" datatable="ng" dt-options="dtOptions" dt-column-defs="dtColumnDefs" id="table-list-static-templates">
+                  <thead>
+                    <tr>
+                      <th>{{ _('Name') }}</th><th>{{ _('Path') }}</th><th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr ng-repeat="template in raw.static_templates" ng-if="template.name != 'None'">
+                      {% raw -%}
+                      <td>{{ template.name }}</td>
+                      <td>{{ template.value }}</td>
+                      {% endraw -%}
+                      <td><a href="{{ url_for("view.cli_settings", server=server) }}?client={{ '{{' }} template.name {{ '}}' }}&statictemplate=true" class="btn btn-info btn-xs no-link pull-right" title="{{ _('edit') }}"><i class="fa fa-pencil" aria-hidden="true"></i></a></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="row well">
+                <form action="{{ url_for('api.new_static_template', server=server) }}" method="POST" ng-submit="createStaticTemplate($event)">
+                  <fieldset>
+                    <Legend>{{ _('Create new static template') }}</Legend>
+                    <div class="input-group">
+                      <input class="form-control" type="text" name="newstatictemplate" id="newstatictemplate" placeholder="{{ _('Create new static template') }}">
                       <span class="input-group-btn">
                         <button class="btn btn-success" type="submit"><i class="fa fa-plus" aria-hidden="true"></i></button>
                       </span>
