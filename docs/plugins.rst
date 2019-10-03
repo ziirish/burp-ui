@@ -2,7 +2,7 @@ Plugins
 =======
 
 Since *v0.6.0*, you can write your own external plugins.
-For now, only *authentication* and *acl* plugins are supported.
+For now, *authentication*,  *acl* and *audit* plugins are supported.
 
 Authentication
 --------------
@@ -19,7 +19,7 @@ Please refer to the `Auth API <auth.html>`_ page for more details.
     __type__ = 'auth'
 
     class UserHandler(interface.BUIhandler):
-        name = 'CUSTOM'
+        name = 'CUSTOM:AUTH'
         priority = 1000
 
         def __init__(self, app):
@@ -224,3 +224,75 @@ You can omit either the ``meta_grants.set_grant`` or the
 ``meta_grants.set_group`` part if you like. For instance to define the grants
 of a given group using another ACL backend, and using your plugin to manage
 groups membership only.
+
+Audit
+-----
+
+# BUIaudit, BUIauditLogger as BUIauditLoggerInterface
+You will find here a fully working example of an external *audit* plugin.
+Please refer to the `Audit API <audit.html>`_ page for more details.
+
+.. code-block:: python
+    :linenos:
+
+    from burpui.misc.audit import interface
+
+    import logging
+
+    __type__ = 'audit'
+
+    class BUIauditLoader(interface.BUIhandler):
+        name = 'CUSTOM:AUDIT'
+        priority = 1000
+
+        def __init__(self, app):
+            self.app = app
+            self.conf = app.conf
+            self.level = default = logging.getLevelName(self.app.logger.getEffectiveLevel())
+
+            if self.section in self.conf.options:
+                self.level = self.conf.safe_get(
+                    'level',
+                    section=self.section,
+                    defaults=default
+                )
+
+            if self.level != default:
+                self.level = logging.getLevelName(f'{self.level}'.upper())
+                if not isinstance(self.level, int):
+                    self.level = default
+
+            self._logger = BUIauditLogger(self)
+
+
+    class BUIauditLogger(interface.BUIauditLogger):
+
+        def __init__(self, loader):
+            self.loader = loader
+            self._level = self.loader.level
+
+            self.LOG_FORMAT = 'CUSTOM AUDIT LOG %(levelname)s in %(from)s: %(message)s'
+
+        def log(self, level, message, *args, **kwargs):
+            kwargs['levelname'] = level
+            kwargs['message'] = message % args if args else message
+            print(self.LOG_FORMAT % kwargs)
+
+
+Line 1 is mandatory since you must implement the *audit* interface in order for
+your plugin to work.
+
+Line 5 ``__type__ = 'audit'`` defines a *auth* plugin.
+
+Line 8 defines your *auth* backend name.
+
+The rest of the code is just a minimal implementation of the *audit* interface.
+
+You **must** define a ``self._logger`` object that implements the
+``BUIauditLogger`` interface (see line 28).
+
+
+In our example, the ``BUIauditLogger`` object is defined line 31.
+
+This object **must** implement the ``log`` method. This is the method that will
+be called when the *loglevel* matches your minimal log level.

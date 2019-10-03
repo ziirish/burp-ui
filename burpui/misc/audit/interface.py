@@ -12,29 +12,6 @@ import logging
 from abc import ABCMeta, abstractmethod, abstractproperty
 
 
-class BUIaudit(object, metaclass=ABCMeta):
-    """The :class:`burpui.misc.audit.interface.BUIaudit` class defines the audit
-    interface.
-
-    :param app: Instance of the app we are running in
-    :type app: :class:`burpui.engines.server.BUIServer`
-    """
-
-    priority = 0
-
-    name = None
-    _logger = None
-
-    def __init__(self, app):
-        self.app = app
-
-    @abstractproperty
-    @property
-    def logger(self):
-        """:rtype: class:`BUIauditLogger`"""
-        return self._logger
-
-
 class BUIauditLogger(object, metaclass=ABCMeta):
     """The :class:`burpui.misc.audit.interface.BUIauditLogger` class defines the audit
     Logger interface.
@@ -73,3 +50,25 @@ class BUIauditLogger(object, metaclass=ABCMeta):
     @abstractmethod
     def log(self, level, message, *args, **kwargs):
         pass
+
+
+class BUIaudit(object, metaclass=ABCMeta):
+    """The :class:`burpui.misc.audit.interface.BUIaudit` class defines the audit
+    interface.
+
+    :param app: Instance of the app we are running in
+    :type app: :class:`burpui.engines.server.BUIServer`
+    """
+
+    priority = 0
+
+    name = None
+    _logger = None
+
+    def __init__(self, app):
+        self.app = app
+
+    @property
+    def logger(self) -> BUIauditLogger:
+        """:rtype: class:`BUIauditLogger`"""
+        return self._logger

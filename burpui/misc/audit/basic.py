@@ -64,10 +64,6 @@ class BUIauditLoader(BUIaudit):
 
         self._logger = BUIauditLogger(self)
 
-    @property
-    def logger(self):
-        return self._logger
-
 
 class BUIauditLogger(BUIauditLoggerInterface):
     _logger = parent_logger.getChild('audit')  # type: logging.Logger

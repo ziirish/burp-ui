@@ -57,10 +57,6 @@ class BUIauditLoader(BUIaudit):
             self.backends[obj.name] = obj
         self._logger = BUIauditLogger(self)
 
-    @property
-    def logger(self) -> BUIauditLoggerInterface:
-        return self._logger
-
 
 class BUIauditLogger(BUIauditLoggerInterface):
 

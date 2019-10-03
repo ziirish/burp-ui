@@ -11,4 +11,5 @@ Developer Guide
    parser
    auth
    acl
+   audit
    plugins
