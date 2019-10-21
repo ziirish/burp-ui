@@ -165,9 +165,9 @@ follow:
     # https://werkzeug.palletsprojects.com/en/0.15.x/middleware/proxy_fix/#module-werkzeug.middleware.proxy_fix
     num_proxies = 0
     # alternatively, you can specify your own ProxyFix args.
-    # The default is: "{'x_for': {num_proxies}, 'x_host': {num_proxies}, 'x_prefix': {num_proxies}}"
+    # The default is: "{'x_proto': {num_proxies}, 'x_for': {num_proxies}, 'x_host': {num_proxies}, 'x_prefix': {num_proxies}}"
     # if num_proxies > 0, else it defaults to ProxyFix defaults
-    proxy_fix_args = "{'x_for': {num_proxies}, 'x_host': {num_proxies}, 'x_prefix': {num_proxies}}"
+    proxy_fix_args = "{'x_proto': {num_proxies}, 'x_for': {num_proxies}, 'x_host': {num_proxies}, 'x_prefix': {num_proxies}}"
 
 
 - *storage*: What storage engine should be used for sessions, cache, etc. Can

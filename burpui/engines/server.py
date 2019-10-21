@@ -66,7 +66,7 @@ BUI_DEFAULTS = {
         'limiter': False,
         'ratio': '60/minute',
         'num_proxies': 0,
-        'proxy_fix_args': "{'x_for': {num_proxies}, 'x_host': {num_proxies}, 'x_prefix': {num_proxies}}",
+        'proxy_fix_args': "{'x_proto': {num_proxies}, 'x_for': {num_proxies}, 'x_host': {num_proxies}, 'x_prefix': {num_proxies}}",
     },
     'WebSocket': {
         'enabled': True,
