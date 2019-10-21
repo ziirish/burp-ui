@@ -6,6 +6,8 @@ variables:
   BURP_VERSION: 2.2.18
   PG_VERSION: 10
   SRC_DIR: burpui
+  # docker TLS issue. see: https://gitlab.com/gitlab-org/gitlab-runner/issues/4501
+  DOCKER_TLS_CERTDIR: ""
 
 image: docker:git
 
