@@ -276,9 +276,9 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     package_data={
-        'static': 'burpui/static/*',
-        'templates': 'burpui/templates/*',
-        'VERSION': 'burpui/VERSION',
+        'static': ['burpui/static/*'],
+        'templates': ['burpui/templates/*'],
+        'VERSION': ['burpui/VERSION'],
     },
     entry_points={
         'console_scripts': [
