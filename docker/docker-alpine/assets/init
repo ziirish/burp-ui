@@ -59,8 +59,8 @@ appStart () {
 
   LOGFILE=$(doas burpui mktemp)
   echo "Setting up burp & burp-ui:"
-  echo "bui-manage -c $BURPUI_CONFIG setup_burp -b $BURP_CLIENT_CONFIG -s $BURP_SERVER_CONFIG -h $BURP_SERVER_ADDR -c $BURPUI_CLIENT_NAME -r $REDIS_SERVER -d $DATABASE_URL -p $BURPUI_PLUGINS"
-  doas burpui "bui-manage -c $BURPUI_CONFIG setup_burp -b $BURP_CLIENT_CONFIG -s $BURP_SERVER_CONFIG -h $BURP_SERVER_ADDR -c $BURPUI_CLIENT_NAME -r $REDIS_SERVER -d $DATABASE_URL -p $BURPUI_PLUGINS 2>&1 | tee $LOGFILE"
+  echo "bui-manage -c $BURPUI_CONFIG setup-burp -b $BURP_CLIENT_CONFIG -s $BURP_SERVER_CONFIG -h $BURP_SERVER_ADDR -c $BURPUI_CLIENT_NAME -r $REDIS_SERVER -d $DATABASE_URL -p $BURPUI_PLUGINS"
+  doas burpui "bui-manage -c $BURPUI_CONFIG setup-burp -b $BURP_CLIENT_CONFIG -s $BURP_SERVER_CONFIG -h $BURP_SERVER_ADDR -c $BURPUI_CLIENT_NAME -r $REDIS_SERVER -d $DATABASE_URL -p $BURPUI_PLUGINS 2>&1 | tee $LOGFILE"
   ret=$?
 
   CELERY="True"
