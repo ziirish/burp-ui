@@ -10,7 +10,6 @@
 import time
 import datetime
 
-from flask import g
 from functools import wraps
 
 
@@ -31,6 +30,7 @@ def browser_cache(expires=None):
 
     """
     from wsgiref.handlers import format_date_time
+    from flask import g
     from flask_restplus.utils import unpack
 
     def cache_decorator(view):
