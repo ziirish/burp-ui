@@ -50,6 +50,8 @@ listen = 0.0.0.0:5971
 max_children = 5
 EOF
 
+cp -a /etc/burp /etc/ori.burp
+
 # cleanup
 delgroup ping
 rm -rf ~/.cache

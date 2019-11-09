@@ -48,9 +48,8 @@ services:
       - pgsql
     ports:
       - 127.0.0.1:5000:8000
-    volumes:
-      - /etc/burp:/etc/burp
-      - /var/spool/burp:/var/spool/burp
+    volumes_from:
+      - burp-server
   # Additionally, you can override some default settings
   #  environment:
   #    - BURPUI_CONFIG=/etc/burp/burpui.cfg

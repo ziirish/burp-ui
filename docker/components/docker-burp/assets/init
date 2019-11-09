@@ -32,6 +32,24 @@ appStart () {
   echo "Starting burp-server..."
   supervisorctl start burp-server >/dev/null
 
+  echo "Checking burp-server status..."
+  sleep 3
+  if ! supervisorctl status burp-server | awk '{print $2}' | grep -q RUNNING; then
+    echo "There seem to be a problem with your burp-server setup. Trying to fix it..."
+    if [ $(ls /etc/burp/ | grep -vE "^(burpui|bui.*).cfg$" | wc -l) != 0 ]; then
+      echo "Saving your current config into the 'sav' sub-directory"
+      mkdir /etc/burp/sav
+      mkdir /tmp/buisav
+      mv /etc/burp/burpui.cfg /etc/burp/bui* /tmp/buisav || true
+      mv /etc/burp/* /etc/burp/sav/ || true
+      mv /tmp/buisav/* /etc/burp/
+    fi
+    echo "Copying default known good config..."
+    cp -a /etc/ori.burp/* /etc/burp/
+
+    supervisorctl restart burp-server
+  fi
+
   # wait a bit for the logs to be populated
   sleep 2
 
