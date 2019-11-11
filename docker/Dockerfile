@@ -1,6 +1,6 @@
 FROM python:3.7-alpine3.10
 
-RUN apk add --no-cache supervisor logrotate librsync libressl tzdata nginx \
+RUN apk add --no-cache supervisor bash logrotate librsync libressl tzdata nginx \
 	&& apk add --no-cache --virtual .fetch-deps \
 		tar \
 	\

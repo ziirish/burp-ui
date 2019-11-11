@@ -54,6 +54,8 @@ EOF
 cat >>/etc/burp/burp-server.conf<<EOF
 listen = 0.0.0.0:5971
 max_children = 5
+listen_status = 0.0.0.0:4972
+max_status_children = 10
 EOF
 
 # the following file is checked by the burp-ui image
