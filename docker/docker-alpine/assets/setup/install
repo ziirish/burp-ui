@@ -164,7 +164,10 @@ try:
     server.supervisor.stopProcess('burp-server', True)
 except:
     pass
-server.supervisor.startProcess('burp-server', True)
+try:
+    server.supervisor.startProcess('burp-server', True)
+except:
+    pass
 EOF
 
 # configure nginx

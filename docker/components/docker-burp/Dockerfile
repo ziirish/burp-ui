@@ -3,7 +3,7 @@ FROM alpine:3.10
 ARG BURP_VERSION=2.2.18
 ARG UTHASH_VERSION=2.1.0
 
-RUN apk add --no-cache supervisor logrotate librsync libressl tzdata bash coreutils \
+RUN apk add --no-cache supervisor bash logrotate librsync libressl tzdata bash coreutils \
 	&& apk add --no-cache --virtual .fetch-deps \
 		tar \
 	\

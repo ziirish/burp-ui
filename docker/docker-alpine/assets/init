@@ -72,8 +72,10 @@ appStart () {
   echo "Setting up burp & burp-ui:"
   COMMAND="bui-manage -c $BURPUI_CONFIG setup-burp --burp-conf-cli $BURP_CLIENT_CONFIG --burp-conf-serv $BURP_SERVER_CONFIG --host $BURP_SERVER_ADDR --client $BURPUI_CLIENT_NAME --redis $REDIS_SERVER --database $DATABASE_URL --plugins $BURPUI_PLUGINS --monitor $BURPUI_MONITOR_CONFIG --concurrency $ASYNC_CONCURRENCY --pool-size $ASYNC_POOL_SIZE --backend $BURPUI_BACKEND --listen $BURP_RESTORE_LISTEN_ADDR"
   echo $COMMAND
+  set +e
   doas burpui "$COMMAND 2>&1 | tee $LOGFILE"
   ret=$?
+  set -e
 
   # restart burp-server
   python /check-burp-server.py
@@ -89,6 +91,7 @@ appStart () {
     echo "8<---------------------------------------------------"
     cat $LOGFILE
     echo "8<---------------------------------------------------"
+    exit 1
   }
   rm $LOGFILE
 
