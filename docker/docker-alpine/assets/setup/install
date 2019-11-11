@@ -23,6 +23,17 @@ cd /burp-ui
 git submodule update --init
 pip install -r requirements.txt
 python setup.py sdist
+mkdir meta
+cd pkgs
+for pkg in *
+do
+    [ "$pkg" = "burp-ui-tpl" -o -f "$pkg" ] && continue
+    cd $pkg
+    python setup.py sdist
+    find dist -type f -exec cp "{}" ../../meta/ \;
+    cd ..
+done
+cd ..
 pip install gunicorn
 pip install gevent
 pip install gevent-websocket
@@ -37,6 +48,7 @@ pip install sqlalchemy-utils
 pip install celery
 pip install Flask-SocketIO
 pip install dist/*.tar.gz
+pip install meta/*.tar.gz
 
 cd
 rm -rf /burp-ui
@@ -141,6 +153,18 @@ autostart=false
 autorestart=true
 stdout_logfile=/var/log/supervisor/%(program_name)s.log
 stderr_logfile=/var/log/supervisor/%(program_name)s.log
+EOF
+
+# burp-server monitoring script
+cat > /check-burp-server.py <<EOF
+from xmlrpc.client import ServerProxy
+server = ServerProxy('http://burp-server:9001/RPC2')
+
+try:
+    server.supervisor.stopProcess('burp-server', True)
+except:
+    pass
+server.supervisor.startProcess('burp-server', True)
 EOF
 
 # configure nginx

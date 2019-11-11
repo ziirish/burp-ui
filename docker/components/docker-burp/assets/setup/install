@@ -34,6 +34,12 @@ stdout_logfile=/var/log/supervisor/%(program_name)s.log
 stderr_logfile=/var/log/supervisor/%(program_name)s.log
 EOF
 
+# configure supervisord API
+cat > /etc/supervisor.d/api.ini <<EOF
+[inet_http_server]
+port = 0.0.0.0:9001
+EOF
+
 # configure burp
 cat >/etc/supervisor.d/burp-server.ini <<EOF
 [program:burp-server]
@@ -50,6 +56,8 @@ listen = 0.0.0.0:5971
 max_children = 5
 EOF
 
+# the following file is checked by the burp-ui image
+touch /etc/burp/this_is_a_decoy_file_to_know_if_we_can_chown
 cp -a /etc/burp /etc/ori.burp
 
 # cleanup

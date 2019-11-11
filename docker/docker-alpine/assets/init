@@ -75,6 +75,9 @@ appStart () {
   doas burpui "$COMMAND 2>&1 | tee $LOGFILE"
   ret=$?
 
+  # restart burp-server
+  python /check-burp-server.py
+
   ASYNC="True"
   CELERY="True"
   grep -q "Unable to contact the redis server" $LOGFILE && CELERY=""

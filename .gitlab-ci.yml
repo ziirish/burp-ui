@@ -90,7 +90,7 @@ test:py:3.7:
       junit: .reports/burpui.junit.xml
 
 # This test is temporarily disabled because werkzeug doesn't run yet on 3.8
-.test:py:3.8:
+test:py:3.8:
   stage: test
   image: python:3.8-rc
   script:
