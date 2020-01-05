@@ -54,6 +54,7 @@ RUN apk add --no-cache supervisor bash logrotate librsync libressl tzdata bash c
 
 ADD assets/init /app/init
 ADD assets/setup/ /app/setup/
+ADD assets/config/ /app/setup/config/
 
 RUN chmod 755 /app/init
 RUN chmod 755 /app/setup/install
