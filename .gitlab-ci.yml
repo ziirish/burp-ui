@@ -2,7 +2,7 @@ variables:
   GIT_DEPTH: 1
   GIT_SUBMODULE_STRATEGY: recursive
   DOCKER_DRIVER: overlay2
-  DOCKER_HOST: tcp://docker:2375
+  DOCKER_HOST: tcp://docker:2376
   BURP_VERSION: 2.2.18
   PG_VERSION: 10
   SRC_DIR: burpui
