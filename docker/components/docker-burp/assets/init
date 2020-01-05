@@ -23,6 +23,11 @@ appStart () {
   pidfile=$(grep -E "^pidfile" /etc/burp/burp-server.conf | sed -r "s/^pidfile *= *(.*)$/\1/")
   [ -n "$pidfile" ] && touch $pidfile && chown burp: $pidfile
 
+  [ "$(ls /var/lib/burp | wc -l)" -eq 0 ] && {
+    mkdir -p /var/lib/burp/ssl/client /var/lib/burp/ssl/server
+    chown -R burp: /var/lib/burp
+  }
+
   # start supervisord
   /usr/bin/supervisord -c /etc/supervisord.conf
 
