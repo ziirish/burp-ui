@@ -50,13 +50,8 @@ stdout_logfile=/var/log/supervisor/%(program_name)s.log
 stderr_logfile=/var/log/supervisor/%(program_name)s.log
 EOF
 
-# add a dedicated listen port for burp-ui restorations
-cat >>/etc/burp/burp-server.conf<<EOF
-listen = 0.0.0.0:5971
-max_children = 5
-listen_status = 0.0.0.0:4972
-max_status_children = 10
-EOF
+cp $CONFIG_DIR/burp-server.conf /etc/burp/burp-server.conf
+cp $CONFIG_DIR/CA-2.1.cnf /etc/burp/CA-2.1.cnf
 
 # the following file is checked by the burp-ui image
 touch /etc/burp/this_is_a_decoy_file_to_know_if_we_can_chown

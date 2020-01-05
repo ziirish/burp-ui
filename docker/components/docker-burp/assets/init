@@ -33,7 +33,7 @@ appStart () {
   supervisorctl start burp-server >/dev/null
 
   echo "Checking burp-server status..."
-  sleep 3
+  sleep 5
   if ! supervisorctl status burp-server | awk '{print $2}' | grep -q RUNNING; then
     echo "There seem to be a problem with your burp-server setup. Trying to fix it..."
     if [ $(ls /etc/burp/ | grep -vE "^(burpui|bui.*).cfg$" | wc -l) != 0 ]; then
