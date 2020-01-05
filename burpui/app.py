@@ -128,8 +128,13 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
     SENTRY_AVAILABLE = False
     if app.demo:
         try:
-            from .ext.sentry import sentry
-            sentry.init_app(app, dsn=app.config['BUI_DSN'])
+            import sentry_sdk
+            from sentry_sdk.integrations.flask import FlaskIntegration
+
+            sentry_sdk.init(
+                dsn=app.config['BUI_DSN'],
+                integrations=[FlaskIntegration()]
+            )
             SENTRY_AVAILABLE = True
         except ImportError:
             pass
@@ -424,15 +429,5 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
             if session_manager.invalidate_current_session():
                 session_manager.delete_session()
         return response
-
-    if app.demo and SENTRY_AVAILABLE:
-        @app.errorhandler(500)
-        def internal_server_error(error):
-            from .ext.sentry import sentry
-            return render_template(
-                '500_sentry.html',
-                event_id=g.sentry_event_id,
-                public_dsn=sentry.client.get_public_dsn('https')
-            )
 
     return app
