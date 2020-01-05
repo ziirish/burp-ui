@@ -26,7 +26,7 @@ services:
 
   burp-server:
     restart: always
-    image: registry.ziirish.me/ziirish/burp-ui/burp:2.0.54
+    image: registry.ziirish.me/ziirish/burp-ui/burp:2.2.18
     ports:
       - 0.0.0.0:4971:4971
       - 0.0.0.0:4972:4972
