@@ -47,7 +47,7 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
 
     :returns: A :class:`burpui.engines.server.BUIServer` object
     """
-    from flask import g, request, session, render_template
+    from flask import g, request, session
     from flask_login import LoginManager
     from flask_bower import Bower
     from flask_babel import gettext
@@ -125,7 +125,6 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
         app.config['TEMPLATES_AUTO_RELOAD'] = True
         app.config['DEBUG'] = True
 
-    SENTRY_AVAILABLE = False
     if app.demo:
         try:
             import sentry_sdk
@@ -135,7 +134,6 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
                 dsn=app.config['BUI_DSN'],
                 integrations=[FlaskIntegration()]
             )
-            SENTRY_AVAILABLE = True
         except ImportError:
             pass
 
