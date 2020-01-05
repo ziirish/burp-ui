@@ -318,6 +318,8 @@ def compile_translation():
               help='Plugins location')
 @click.option('-m', '--monitor', default=None,
               help='bui-monitor configuration file')
+@click.option('-i', '--monitor-listen', 'mbind', default=None,
+              help='bui-monitor bind address')
 @click.option('-C', '--concurrency', default=None, type=click.INT,
               help='Number of concurrent requests addressed to the monitor')
 @click.option('-P', '--pool-size', 'pool', default=None, type=click.INT,
@@ -327,7 +329,7 @@ def compile_translation():
 @click.option('-n', '--dry', is_flag=True,
               help='Dry mode. Do not edit the files but display changes')
 def setup_burp(bconfcli, bconfsrv, client, listen, host, redis, database,
-               plugins, monitor, concurrency, pool, backend, dry):
+               plugins, monitor, mbind, concurrency, pool, backend, dry):
     """Setup burp client for burp-ui."""
     if app.config['BACKEND'] not in ['burp2', 'parallel'] and not backend:
         err("Sorry, you can only setup the 'burp2' and the 'parallel' backends")
@@ -459,13 +461,18 @@ def setup_burp(bconfcli, bconfsrv, client, listen, host, redis, database,
         refresh |= _edit_conf('backend', backend, None, 'Global', None)
     if is_parallel and concurrency:
         refresh |= _edit_conf('concurrency', concurrency, None, 'Parallel', None)
+    if mbind:
+        refresh |= _edit_conf('host', mbind, None, 'Parallel', None)
 
     if refresh:
         app.conf._refresh(True)
 
+    refresh = False
     if monitor and pool:
-        refresh = False
         refresh |= _edit_conf('pool', pool, None, 'Global', None, monconf)
+    if monitor and mbind:
+        refresh |= _edit_conf('bind', mbind, None, 'Global', None, monconf)
+    if monitor:
         refresh |= _edit_conf('bconfcli', bconfcli, None, 'Burp', None, monconf)
         if refresh:
             monconf._refresh(True)

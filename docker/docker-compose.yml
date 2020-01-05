@@ -55,6 +55,7 @@ services:
   #  environment:
   #    - BURPUI_CONFIG=/etc/burp/burpui.cfg
   #    - BURPUI_MONITOR_CONFIG=/etc/burp/buimonitor.cfg
+  #    - BURPUI_MONITOR_LISTEN=127.0.0.1
   #    - BURPUI_VERBOSE=0
   #    - BURPUI_CLIENT_NAME=bui
   #    - BURPUI_UID=5337

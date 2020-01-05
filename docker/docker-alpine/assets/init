@@ -6,6 +6,7 @@ CONFIG_DIR="${SETUP_DIR}/config"
 
 BURPUI_CONFIG=${BURPUI_CONFIG:-/etc/burp/burpui.cfg}
 BURPUI_MONITOR_CONFIG=${BURPUI_MONITOR_CONFIG:-/etc/burp/buimonitor.cfg}
+BURPUI_MONITOR_LISTEN=${BURPUI_MONITOR_LISTEN:-127.0.0.1}
 BURPUI_CLIENT_NAME=${BURPUI_CLIENT_NAME:-bui}
 BURPUI_VERBOSE=${BURPUI_VERBOSE:-0}
 BURPUI_UID=${BURPUI_UID:-5337}
@@ -70,7 +71,7 @@ appStart () {
 
   LOGFILE=$(doas burpui mktemp)
   echo "Setting up burp & burp-ui:"
-  COMMAND="bui-manage -c $BURPUI_CONFIG setup-burp --burp-conf-cli $BURP_CLIENT_CONFIG --burp-conf-serv $BURP_SERVER_CONFIG --host $BURP_SERVER_ADDR --client $BURPUI_CLIENT_NAME --redis $REDIS_SERVER --database $DATABASE_URL --plugins $BURPUI_PLUGINS --monitor $BURPUI_MONITOR_CONFIG --concurrency $ASYNC_CONCURRENCY --pool-size $ASYNC_POOL_SIZE --backend $BURPUI_BACKEND --listen $BURP_RESTORE_LISTEN_ADDR"
+  COMMAND="bui-manage -c $BURPUI_CONFIG setup-burp --burp-conf-cli $BURP_CLIENT_CONFIG --burp-conf-serv $BURP_SERVER_CONFIG --host $BURP_SERVER_ADDR --client $BURPUI_CLIENT_NAME --redis $REDIS_SERVER --database $DATABASE_URL --plugins $BURPUI_PLUGINS --monitor $BURPUI_MONITOR_CONFIG --monitor-listen $BURPUI_MONITOR_LISTEN --concurrency $ASYNC_CONCURRENCY --pool-size $ASYNC_POOL_SIZE --backend $BURPUI_BACKEND --listen $BURP_RESTORE_LISTEN_ADDR"
   echo $COMMAND
   set +e
   doas burpui "$COMMAND 2>&1 | tee $LOGFILE"
