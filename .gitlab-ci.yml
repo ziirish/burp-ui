@@ -145,9 +145,9 @@ build:docker:latest:
   stage: build
   script:
   - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-  - docker build --pull -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:latest -f docker/Dockerfile .
-  - (cd docker/demo/docker-pg && docker build --pull -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/pgsql:$PG_VERSION .)
-  - (cd docker/components/docker-burp && docker build --pull -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/burp:$BURP_VERSION .)
+  - docker build --network host --pull -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:latest -f docker/Dockerfile .
+  - (cd docker/demo/docker-pg && docker build --network host --pull -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/pgsql:$PG_VERSION .)
+  - (cd docker/components/docker-burp && docker build --network host --pull -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/burp:$BURP_VERSION .)
   - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:latest
   - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/pgsql:$PG_VERSION
   - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/burp:$BURP_VERSION
@@ -160,9 +160,9 @@ build:docker:release:
   stage: build
   script:
   - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-  - docker build --pull -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$CI_COMMIT_TAG -f docker/Dockerfile .
-  - (cd docker/demo/docker-pg && docker build --pull -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/pgsql:$PG_VERSION .)
-  - (cd docker/components/docker-burp && docker build --pull -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/burp:$BURP_VERSION .)
+  - docker build --network host --pull -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$CI_COMMIT_TAG -f docker/Dockerfile .
+  - (cd docker/demo/docker-pg && docker build --network host --pull -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/pgsql:$PG_VERSION .)
+  - (cd docker/components/docker-burp && docker build --network host --pull -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/burp:$BURP_VERSION .)
   - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$CI_COMMIT_TAG
   - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/pgsql:$PG_VERSION
   - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/burp:$BURP_VERSION
@@ -175,9 +175,9 @@ build:docker:stable:
   stage: build
   script:
   - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-  - docker build --pull -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:stable -f docker/Dockerfile .
-  - (cd docker/demo/docker-pg && docker build --pull -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/pgsql:$PG_VERSION .)
-  - (cd docker/components/docker-burp && docker build --pull -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/burp:$BURP_VERSION .)
+  - docker build --network host --pull -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:stable -f docker/Dockerfile .
+  - (cd docker/demo/docker-pg && docker build --network host --pull -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/pgsql:$PG_VERSION .)
+  - (cd docker/components/docker-burp && docker build --network host --pull -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/burp:$BURP_VERSION .)
   - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:stable
   - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/pgsql:$PG_VERSION
   - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/burp:$BURP_VERSION
@@ -190,7 +190,7 @@ build:docker:demo:
   stage: build
   script:
   - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-  - docker build --pull -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:demo -f docker/Dockerfile .
+  - docker build --network host --pull -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:demo -f docker/Dockerfile .
   - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:demo
   - apk add --no-cache curl
   - "curl $SENTRY_WEBHOOK -X POST -H 'Content-Type: application/json' -d '{\"version\": \"'$CI_COMMIT_REF_NAME'_'$CI_COMMIT_SHA'\"}'"
