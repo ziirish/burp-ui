@@ -62,6 +62,7 @@ RUN /app/setup/install
 EXPOSE 4971/tcp
 EXPOSE 4972/tcp
 
+VOLUME ["/var/lib/burp"]
 VOLUME ["/var/spool/burp"]
 VOLUME ["/etc/burp"]
 

@@ -31,8 +31,9 @@ services:
       - 0.0.0.0:4971:4971
       - 0.0.0.0:4972:4972
     volumes:
-      - /etc/burp:/etc/burp
-      - /var/spool/burp:/var/spool/burp
+      - /etc/burp
+      - /var/spool/burp
+      - /var/lib/burp
   # Additionally, you can override some default settings
   #  environment:
   #    - BURP_UID=5337
