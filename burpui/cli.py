@@ -11,6 +11,7 @@ jQuery/Bootstrap
 """
 import os
 import sys
+import time
 import click
 
 if os.getenv('BUI_MODE') in ['server', 'ws'] or 'websocket' in sys.argv:
@@ -500,21 +501,28 @@ def setup_burp(bconfcli, bconfsrv, client, listen, host, redis, database,
                 app.conf.options['Production']['redis'] != redis) and \
                     app.redis != redis:
                 app.conf.options['Production']['redis'] = redis
+                app.redis = redis
 
             rhost, rport, _ = get_redis_server(app)
             ret = -1
-            for res in socket.getaddrinfo(rhost, rport, socket.AF_UNSPEC, socket.SOCK_STREAM):
+            for _ in range(10):
                 if ret == 0:
                     break
-                af, socktype, proto, _, sa = res
-                try:
-                    s = socket.socket(af, socktype, proto)
-                except socket.error:
-                    continue
-                try:
-                    ret = s.connect_ex(sa)
-                except:
-                    continue
+
+                for res in socket.getaddrinfo(rhost, rport, socket.AF_UNSPEC, socket.SOCK_STREAM):
+                    if ret == 0:
+                        break
+                    af, socktype, proto, _, sa = res
+                    try:
+                        s = socket.socket(af, socktype, proto)
+                    except socket.error:
+                        continue
+                    try:
+                        ret = s.connect_ex(sa)
+                    except:
+                        continue
+
+                time.sleep(1)
 
             if ret == 0:
                 app.conf.options['Production']['celery'] = 'true'
