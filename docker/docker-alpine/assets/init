@@ -66,8 +66,8 @@ appStart () {
     chown burpui: $BURPUI_MONITOR_CONFIG
   }
 
-  # wait for redis to be up
-  sleep 3
+  # wait for redis and burp-server to be up
+  sleep 10
 
   LOGFILE=$(doas burpui mktemp)
   echo "Setting up burp & burp-ui:"
@@ -80,6 +80,9 @@ appStart () {
 
   # restart burp-server
   python /check-burp-server.py
+
+  # generate burp certifs
+  doas burpui "/usr/sbin/burp -c $BURP_CLIENT_CONFIG -a l"
 
   ASYNC="True"
   CELERY="True"

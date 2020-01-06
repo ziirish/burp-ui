@@ -28,6 +28,9 @@ appStart () {
     chown -R burp: /var/lib/burp
   }
 
+  # generate CA if necessary
+  /usr/sbin/burp -c /etc/burp/burp-server.conf -g
+
   # start supervisord
   /usr/bin/supervisord -c /etc/supervisord.conf
 
