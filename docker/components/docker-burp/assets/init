@@ -20,10 +20,16 @@ appStart () {
   getent group | grep -q burp || addgroup -g $BURP_GID burp
   getent passwd | grep -q burp || adduser -h /var/spool/burp -D -s /sbin/nologin -u $BURP_UID -G burp burp
 
+  [ "$(ls /etc/burp | wc -l)" -eq 0 ] && {
+    echo "No burp-server config found. Copying default config..."
+    cp -a /etc/ori.burp/* /etc/burp/
+  }
+
   pidfile=$(grep -E "^pidfile" /etc/burp/burp-server.conf | sed -r "s/^pidfile *= *(.*)$/\1/")
   [ -n "$pidfile" ] && touch $pidfile && chown burp: $pidfile
 
   [ "$(ls /var/lib/burp | wc -l)" -eq 0 ] && {
+    echo "Empty default burp PKI location. Creating initial skeleton..."
     mkdir -p /var/lib/burp/ssl/client /var/lib/burp/ssl/server
     chown -R burp: /var/lib/burp
   }
@@ -41,7 +47,7 @@ appStart () {
   supervisorctl start burp-server >/dev/null
 
   echo "Checking burp-server status..."
-  sleep 5
+  sleep 2
   if ! supervisorctl status burp-server | awk '{print $2}' | grep -q RUNNING; then
     echo "There seem to be a problem with your burp-server setup. Trying to fix it..."
     if [ $(ls /etc/burp/ | grep -vE "^(burpui|bui.*).cfg$" | wc -l) != 0 ]; then
