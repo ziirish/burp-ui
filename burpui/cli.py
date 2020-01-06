@@ -427,19 +427,18 @@ def setup_burp(bconfcli, bconfsrv, client, listen, host, redis, database,
         monconf._refresh(True)
 
     def _edit_conf(key, val, attr, section='Burp', obj=app.client, conf=app.conf):
-        if val and (((key not in app.conf.options[section]) or
-                    (key in app.conf.options[section] and
-                    val != app.conf.options[section][key])) and
-                    ((obj and getattr(obj, attr) != val) or (not obj))):
+        if val and ((key not in conf.options[section]) or
+                    (key in conf.options[section] and
+                     val != conf.options[section][key])):
             adding = key not in conf.options[section]
             conf.options[section][key] = val
             conf.options.write()
             if obj:
                 setattr(obj, attr, val)
             if adding:
-                msg = f'Adding new option "{key}={val}" to section [{section}]'
+                msg = f'Adding new option "{key}={val}" to section [{section}] in {conf.conffile}'
             else:
-                msg = f'Updating option "{key}={val}" in section [{section}]'
+                msg = f'Updating option "{key}={val}" in section [{section}] in {conf.conffile}'
             info(msg)
             return True
         return False
@@ -474,8 +473,9 @@ def setup_burp(bconfcli, bconfsrv, client, listen, host, redis, database,
         refresh |= _edit_conf('bind', mbind, None, 'Global', None, monconf)
     if monitor:
         refresh |= _edit_conf('bconfcli', bconfcli, None, 'Burp', None, monconf)
-        if refresh:
-            monconf._refresh(True)
+
+    if refresh:
+        monconf._refresh(True)
 
     if monitor and app.config['BACKEND'] == 'parallel':
         mon_password = monconf.options['Global'].get('password')
