@@ -38,6 +38,7 @@ services:
   #  environment:
   #    - BURP_UID=5337
   #    - BURP_GID=5337
+  #    - CHOWN_SPOOL=NO
   #    - TIMEZONE=Europe/Paris
 
   burpui:

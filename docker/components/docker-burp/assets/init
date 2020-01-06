@@ -9,7 +9,10 @@ appStart () {
 
   BURP_UID=${BURP_UID:-5337}
   BURP_GID=${BURP_GID:-5337}
+  CHOWN_SPOOL=${CHOWN_SPOOL:-NO}
   TIMEZONE=${TIMEZONE:-Europe/Paris}
+
+  CHOWN_SPOOL=$(echo $CHOWN_SPOOL | tr [A-Z] [a-z])
 
   [ -e /usr/share/zoneinfo/$TIMEZONE ] && {
     cp /usr/share/zoneinfo/$TIMEZONE /etc/localtime
@@ -27,6 +30,8 @@ appStart () {
 
   pidfile=$(grep -E "^pidfile" /etc/burp/burp-server.conf | sed -r "s/^pidfile *= *(.*)$/\1/")
   [ -n "$pidfile" ] && touch $pidfile && chown burp: $pidfile
+  directory=$(grep -E "^directory" /etc/burp/burp-server.conf | sed -r "s/^directory *= *(.*)$/\1/")
+  [ -n "$directory" ] && [ "$CHOWN_SPOOL" == "yes" ] && chown -R burp: $directory
 
   [ "$(ls /var/lib/burp | wc -l)" -eq 0 ] && {
     echo "Empty default burp PKI location. Creating initial skeleton..."
@@ -50,22 +55,21 @@ appStart () {
   sleep 2
   if ! supervisorctl status burp-server | awk '{print $2}' | grep -q RUNNING; then
     echo "There seem to be a problem with your burp-server setup. Trying to fix it..."
+    echo "Saving your current config into the 'sav' sub-directory"
+    mkdir /etc/burp/sav
     if [ $(ls /etc/burp/ | grep -vE "^(burpui|bui.*).cfg$" | wc -l) != 0 ]; then
-      echo "Saving your current config into the 'sav' sub-directory"
-      mkdir /etc/burp/sav
       mkdir /tmp/buisav
       mv /etc/burp/burpui.cfg /etc/burp/bui* /tmp/buisav || true
-      mv /etc/burp/* /etc/burp/sav/ || true
-      mv /tmp/buisav/* /etc/burp/
+    fi
+    mv /etc/burp/* /etc/burp/sav/ || true
+    if [ $(ls /etc/burp/ | grep -vE "^(burpui|bui.*).cfg$" | wc -l) != 0 ]; then
+      mv /tmp/buisav/* /etc/burp/ || true
     fi
     echo "Copying default known good config..."
     cp -a /etc/ori.burp/* /etc/burp/
 
     supervisorctl restart burp-server
   fi
-
-  # wait a bit for the logs to be populated
-  sleep 2
 
   # watch the access logs
   tail -F /var/log/supervisor/burp-server.log
