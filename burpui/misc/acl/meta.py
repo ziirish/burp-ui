@@ -595,15 +595,18 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
 
                     return False
 
-        order = _extract_key(adv, 'order', None, DEFAULT_EVAL_ORDER)
-        excludes = _extract_key(adv, 'exclude', None)
+        advanced = self._extract_advanced(username)
+        if advanced:
+            for adv in advanced:
+                order = _extract_key(adv, 'order', None, DEFAULT_EVAL_ORDER)
+                excludes = _extract_key(adv, 'exclude', None)
 
-        for odr in order:
-            if odr == 'exclude' and client_match and (
-                    any(x in excludes for x in client_match) or
-                    _glob_match(excludes, client, self.opt('extended'))):
-                return False
-            return client_match is not False or is_admin
+                for odr in order:
+                    if odr == 'exclude' and client_match and (
+                            any(x in excludes for x in client_match) or
+                            _glob_match(excludes, client, self.opt('extended'))):
+                        return False
+        return client_match is not False or is_admin
 
     def is_server_rw(self, username=None, server=None):
         """See :func:`burpui.misc.acl.interface.BUIacl.is_server_rw`"""
