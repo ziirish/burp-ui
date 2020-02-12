@@ -20,7 +20,7 @@ from time import gmtime, strftime, time
 from flask import Response, send_file, make_response, after_this_request, \
     current_app
 from flask_login import current_user
-from flask_restplus import inputs
+from flask_restx import inputs
 from werkzeug.datastructures import Headers
 from werkzeug.exceptions import HTTPException
 

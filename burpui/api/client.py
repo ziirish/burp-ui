@@ -17,8 +17,8 @@ from ..decorators import browser_cache
 from ..ext.cache import cache
 from ..exceptions import BUIserverException
 
-from flask_restplus.marshalling import marshal
-from flask_restplus import inputs
+from flask_restx.marshalling import marshal
+from flask_restx import inputs
 from flask import current_app, request
 from flask_login import current_user
 

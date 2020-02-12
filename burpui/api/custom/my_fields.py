@@ -13,7 +13,7 @@ import arrow
 
 from ...ext.i18n import get_locale
 
-from flask_restplus import fields
+from flask_restx import fields
 from flask_babel import gettext as _
 from flask import escape
 from tzlocal import get_localzone

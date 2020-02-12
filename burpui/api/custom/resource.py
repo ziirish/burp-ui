@@ -10,8 +10,8 @@
 import inspect
 import json
 
-from flask_restplus import Resource as ResourcePlus
-from flask_restplus.errors import abort
+from flask_restx import Resource as ResourcePlus
+from flask_restx.errors import abort
 
 from ...tools.logging import logger
 
@@ -28,7 +28,7 @@ class Resource(ResourcePlus):
         """
         Properly abort the current request
 
-        See: :func:`~flask_restplus.errors.abort`
+        See: :func:`~flask_restx.errors.abort`
         """
         if message and not isinstance(message, str):
             try:

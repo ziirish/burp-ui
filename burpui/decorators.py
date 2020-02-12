@@ -31,7 +31,7 @@ def browser_cache(expires=None):
     """
     from wsgiref.handlers import format_date_time
     from flask import g
-    from flask_restplus.utils import unpack
+    from flask_restx.utils import unpack
 
     def cache_decorator(view):
         @wraps(view)

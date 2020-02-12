@@ -14,7 +14,7 @@ import uuid
 import hashlib
 
 from flask import Blueprint, Response, request, current_app, session, abort, g
-from flask_restplus import Api as ApiPlus
+from flask_restx import Api as ApiPlus
 from flask_login import current_user
 from importlib import import_module
 from functools import wraps
@@ -95,7 +95,7 @@ def check_acl(func):
 
 
 class Api(ApiPlus):
-    """Wrapper class around :class:`flask_restplus.Api`"""
+    """Wrapper class around :class:`flask_restx.Api`"""
     logger = logger
     # TODO: should use global object instead of reference
     loaded = False

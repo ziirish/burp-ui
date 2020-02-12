@@ -27,7 +27,7 @@ from zlib import adler32
 from flask import url_for, Response, current_app, after_this_request, \
     send_file, request, g, session
 from flask_babel import gettext as _
-from flask_restplus import inputs
+from flask_restx import inputs
 from flask_login import current_user
 from datetime import timedelta
 from werkzeug.datastructures import Headers

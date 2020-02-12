@@ -19,7 +19,7 @@ from ..utils import NOTIF_INFO
 from flask_babel import gettext as _, refresh
 from flask import jsonify, request, url_for, current_app, g, session, render_template_string
 from flask_login import current_user
-from flask_restplus import inputs
+from flask_restx import inputs
 from jinja2 import Environment, meta
 from ..datastructures import ImmutableMultiDict, MultiDict
 

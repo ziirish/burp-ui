@@ -8,10 +8,10 @@
 
 
 """
-import flask_restplus.fields
+import flask_restx.fields
 
-from flask_restplus.fields import *  # noqa # pylint: disable=locally-disabled, wildcard-import, unused-wildcard-import
+from flask_restx.fields import *  # noqa # pylint: disable=locally-disabled, wildcard-import, unused-wildcard-import
 from .my_fields import DateTime, DateTimeHuman, BackupNumber, SafeString, LocalizedString  # noqa
 
-__all__ = flask_restplus.fields.__all__ + \
+__all__ = flask_restx.fields.__all__ + \
     (DateTime, DateTimeHuman, BackupNumber, SafeString, LocalizedString)
