@@ -1607,7 +1607,7 @@ class Config(File):
             self.options.clear()
             del self.options
             self.options = OrderedDict()
-            for key in self.types.keys():
+            for key in list(self.types.keys()):
                 del self.types[key]
                 self.types[key] = OrderedDict()
 
