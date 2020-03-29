@@ -1,6 +1,5 @@
 import os
 import pytest
-import mockredis
 
 from flask import url_for
 
