@@ -901,6 +901,8 @@ class Burp(BUIbackend):
         flist = json.loads(files)
         if password:
             tmphandler, tmpfile = tempfile.mkstemp()
+        if not os.path.exists(self.tmpdir):
+            os.makedirs(self.tmpdir)
         tmpdir = tempfile.mkdtemp(dir=self.tmpdir)
         if 'restore' not in flist:
             return None, 'Wrong call'
