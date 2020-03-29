@@ -2,9 +2,9 @@ trio==0.13.0
 Flask==1.1.1
 Flask-Login==0.4.1
 Flask-Bower==1.3.0
-Flask-Babel==0.12.2
-Flask-WTF==0.14.2
-flask-restx==0.1.1
+Flask-Babel==1.0.0
+Flask-WTF==0.14.3
+flask-restx==0.2.0
 Flask-Caching==1.8.0
 Flask-Session==0.3.1
 WTForms==2.2.1
@@ -14,4 +14,4 @@ tzlocal==2.0.0
 pyOpenSSL==19.1.0
 configobj==5.0.6
 async_generator
-Click==7.0
+Click==7.1.1

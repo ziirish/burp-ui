@@ -249,7 +249,7 @@ test_requires = [
     'pytest',
     'pytest-cov',
     'pytest-flask',
-    'Flask-Testing',
+    'pytest-mock',
     'nose',
     'coverage',
     'mock',
