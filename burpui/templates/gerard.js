@@ -7,6 +7,12 @@ var SESSION_TAG = $('meta[name=session]').attr("content");
 var _EXTRA = $('meta[name=_extra]').attr('content');
 var AJAX_CACHE = true;
 
+{% if g.timezone -%}
+var TIMEZONE = "{{ g.timezone }}";
+{% else -%}
+var TIMEZONE = moment.tz.guess();
+{% endif -%}
+
 var _ajax_setup = function() {
 	$.ajaxSetup({
 		headers: { 'X-From-UI': true, 'X-Session-Tag': SESSION_TAG },

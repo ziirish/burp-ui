@@ -282,7 +282,7 @@ var _sessions_table = $('#table-sessions').DataTable( {
 				if (type === 'filter') {
 					return data;
 				}
-				return '<span data-toggle="tooltip" title="'+data+'">'+moment(data, moment.ISO_8601).subtract(3, 'seconds').fromNow()+'</span>';
+				return '<span data-toggle="tooltip" title="'+data+'">'+moment(data, moment.ISO_8601).tz(TIMEZONE).subtract(3, 'seconds').fromNow()+'</span>';
 			}
 		},
 		{ 
@@ -343,7 +343,7 @@ var _sessions_table = $('#table-sessions').DataTable( {
 				if (type === 'filter') {
 					return data;
 				}
-				return '<span data-toggle="tooltip" title="'+data+'">'+moment(data, moment.ISO_8601).fromNow()+'</span>';
+				return '<span data-toggle="tooltip" title="'+data+'">'+moment(data, moment.ISO_8601).tz(TIMEZONE).fromNow()+'</span>';
 			}
 		},
 	],

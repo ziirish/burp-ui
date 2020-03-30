@@ -149,6 +149,12 @@ class PrefsUI(Resource):
         required=False,
         help='Date format'
     )
+    parser.add_argument(
+        'timezone',
+        type=str,
+        required=False,
+        help='Timezone'
+    )
 
     @staticmethod
     def _user_language(language):
