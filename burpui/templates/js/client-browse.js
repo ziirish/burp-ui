@@ -118,7 +118,7 @@ $( document ).ready(function() {
 			$tdList.eq(2).text(node.data.uid);
 			$tdList.eq(3).text(node.data.gid);
 			$tdList.eq(4).text(node.data.size);
-			$tdList.eq(5).html('<span title="'+node.data.date+'">'+moment(node.data.date).format({{ g.date_format|tojson }})+'</span>');
+			$tdList.eq(5).html('<span title="'+node.data.date+'">'+moment(node.data.date).tz(TIMEZONE).format({{ g.date_format|tojson }})+'</span>');
 		},
 		select: function(event, data) {
 			toggleRestorationForms(data.tree);

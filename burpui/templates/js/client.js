@@ -115,7 +115,7 @@ var _client_table = $('#table-client').DataTable( {
 			data: 'date',
 			type: 'timestamp',
 			render: function ( data, type, row ) {
-				return '<span data-toggle="tooltip" title="'+data+'">'+moment(data, moment.ISO_8601).format({{ g.date_format|tojson }})+'</span>';
+				return '<span data-toggle="tooltip" title="'+data+'">'+moment(data, moment.ISO_8601).tz(TIMEZONE).format({{ g.date_format|tojson }})+'</span>';
 			}
 		},
 		{

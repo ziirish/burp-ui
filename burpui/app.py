@@ -381,6 +381,7 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
         g.locale = get_locale()
         g.now = round(time.time())
         g.date_format = session.get('dateFormat', 'llll')
+        g.timezone = session.get('timezone')
         # make sure to store secure cookie if required
         if app.config['BUI_SCOOKIE']:
             criteria = (

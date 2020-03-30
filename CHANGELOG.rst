@@ -18,6 +18,7 @@ Current
 - Add: allow to delete clients data upon removal `#232 <https://git.ziirish.me/ziirish/burp-ui/issues/232>`_
 - Add: allow to create clients from templates in one call `#266 <https://git.ziirish.me/ziirish/burp-ui/issues/266>`_
 - Add: allow to rename clients/templates `#274 <https://git.ziirish.me/ziirish/burp-ui/issues/274>`_
+- Add: allow to set a custom timezone in which to display UI dates `#329 <https://git.ziirish.me/ziirish/burp-ui/issues/329>`_
 - Fix: sync pkgs requirements with burp-ui's `#300 <https://git.ziirish.me/ziirish/burp-ui/issues/300>`__
 - Fix: wrong command suggestion `#296 <https://git.ziirish.me/ziirish/burp-ui/issues/296>`__
 - Fix: allow templates removal `#290 <https://git.ziirish.me/ziirish/burp-ui/issues/290>`__
