@@ -55,7 +55,6 @@ test:lint:3.8:
   - tags
   - rc
   - demo
-  allow_failure: true
 
 test:py:3.6:
   stage: test
@@ -106,7 +105,6 @@ test:py:3.8:
   artifacts:
     reports:
       junit: .reports/burpui.junit.xml
-  allow_failure: true
 
 build:py3:
   stage: build
