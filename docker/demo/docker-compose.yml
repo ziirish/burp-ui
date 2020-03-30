@@ -1,63 +1,68 @@
-demo-burp1:
-  restart: always
-  build: docker-burp1/
-  volumes:
-    - /srv/demo/spool/burp1/backup:/var/spool/burp
-    - /srv/demo/spool/burp1/tmp:/tmp/bui
+version: '2'
 
-demo-burp2:
-  restart: always
-  build: docker-burp2/
-  volumes:
-    - /srv/demo/spool/burp2/backup:/var/spool/burp
-    - /srv/demo/spool/burp2/tmp:/tmp/bui
+services:
+  demo-burp1:
+    restart: always
+    build: docker-burp1/
+    volumes:
+      - /srv/demo/spool/burp1/backup:/var/spool/burp
+      - /srv/demo/spool/burp1/tmp:/tmp/bui
 
-demo-redis:
-  restart: always
-  image: redis:3
-  command: redis-server --appendonly yes
+  demo-burp2:
+    restart: always
+    build: docker-burp2/
+    volumes:
+      - /srv/demo/spool/burp2/backup:/var/spool/burp
+      - /srv/demo/spool/burp2/tmp:/tmp/bui
 
-#demo-mariadb:
-#  restart: always
-#  image: mariadb
-#  environment:
-#    - MYSQL_USER=burpui
-#    - MYSQL_PASSWORD=burpui
-#    - MYSQL_DATABASE=burpuidb
-#    - MYSQL_RANDOM_ROOT_PASSWORD=yes
+  demo-redis:
+    restart: always
+    image: redis:3
+    command: redis-server --appendonly yes
 
-demo-pg:
-  restart: always
-  build: docker-pg/
+#  demo-mariadb:
+#    restart: always
+#    image: mariadb
+#    environment:
+#      - MYSQL_USER=burpui
+#      - MYSQL_PASSWORD=burpui
+#      - MYSQL_DATABASE=burpuidb
+#      - MYSQL_RANDOM_ROOT_PASSWORD=yes
 
-demo-cli1:
-  restart: always
-  build: docker-cli1/
-  volumes:
-    - /srv/demo/files:/home
-  links:
-    - demo-burp1
+  demo-pg:
+    restart: always
+    build: docker-pg/
+    enviromnent:
+      - POSTGRES_PASSWORD=password
 
-demo-cli2:
-  restart: always
-  build: docker-cli2/
-  volumes:
-    - /srv/demo/files:/home
-  links:
-    - demo-burp2
+  demo-cli1:
+    restart: always
+    build: docker-cli1/
+    volumes:
+      - /srv/demo/files:/home
+    links:
+      - demo-burp1
 
-demo-bui:
-  restart: always
-  build: docker-burpui/
-  ports:
-    - 0.0.0.0:5005:8000
-  environment:
-    - SENTRY_DSN
-    - PIWIK_URL
-    - PIWIK_SCRIPT
-    - PIWIK_ID
-  links:
-    - demo-redis
-    - demo-burp1
-    - demo-burp2
-    - demo-pg
+  demo-cli2:
+    restart: always
+    build: docker-cli2/
+    volumes:
+      - /srv/demo/files:/home
+    links:
+      - demo-burp2
+
+  demo-bui:
+    restart: always
+    build: docker-burpui/
+    ports:
+      - 0.0.0.0:5005:8000
+    environment:
+      - SENTRY_DSN
+      - PIWIK_URL
+      - PIWIK_SCRIPT
+      - PIWIK_ID
+    links:
+      - demo-redis
+      - demo-burp1
+      - demo-burp2
+      - demo-pg
