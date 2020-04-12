@@ -77,6 +77,7 @@
     <!-- MomentJS
     ================================================== -->
     <script src="{{ url_for('bower.static', filename='moment/min/moment.min.js') }}"></script>
+    <script src="{{ url_for('bower.static', filename='moment-timezone/builds/moment-timezone-with-data-10-year-range.min.js') }}"></script>
     {% if g.locale and g.locale != 'en' -%}
     <script src="{{ url_for('bower.static', filename='moment/locale/{}.js'.format(g.locale)) }}"></script>
     {% endif -%}

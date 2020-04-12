@@ -48,6 +48,7 @@ $(document).ready(function() {
 
 	$('#calendar').fullCalendar({
 		{{ macros.translate_calendar() }}
+		timezone: TIMEZONE,
 		editable: false,
 		eventLimit: true,
 		eventLimitClick: 'day',

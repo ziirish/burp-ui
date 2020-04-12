@@ -52,11 +52,11 @@ def test_prefs(client, app):
     URL = url_for('api.prefs_ui')
 
     response = client.get(URL)
-    assert response.json == {'language': 'en', 'dateFormat': None, 'pageLength': None}
+    assert response.json == {'language': 'en', 'dateFormat': None, 'pageLength': None, 'timezone': None}
 
-    response = client.put(URL, data=dict(language='fr', dateFormat='llll', pageLength=25))
+    response = client.put(URL, data=dict(language='fr', dateFormat='llll', pageLength=25, timezone='UTC'))
     assert response.status_code == 201
-    assert response.json == {'language': 'fr', 'dateFormat': 'llll', 'pageLength': 25}
+    assert response.json == {'language': 'fr', 'dateFormat': 'llll', 'pageLength': 25, 'timezone': 'UTC'}
 
     response = client.post(URL, data=dict(language='en'))
     assert response.status_code == 200
@@ -64,6 +64,6 @@ def test_prefs(client, app):
 
     response = client.delete(URL, data=dict(pageLength=25))
     assert response.status_code == 200
-    assert response.json == {'language': 'en', 'dateFormat': 'llll', 'pageLength': None}
+    assert response.json == {'language': 'en', 'dateFormat': 'llll', 'pageLength': None, 'timezone': 'UTC'}
 
     logout(client)
