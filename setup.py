@@ -219,8 +219,8 @@ def readme():
     cpt = 0
     skip = False
     with open(os.path.join(ROOT, 'README.rst')) as f:
-        for l in f.readlines():
-            if l.rstrip() == 'Screenshots':
+        for line in f.readlines():
+            if line.rstrip() == 'Screenshots':
                 skip = True
             if skip:
                 cpt += 1
@@ -228,7 +228,7 @@ def readme():
                 skip = False
             if skip:
                 continue
-            desc += l
+            desc += line
     return desc
 
 

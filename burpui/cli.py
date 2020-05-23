@@ -1148,7 +1148,7 @@ def diag(client, host, tips):
             err(
                 'Some errors have been found in your configuration. '
                 'Please make sure you ran this command with the right flags! '
-                '(see --help for details).'.format(sys.argv[0], sys.argv[1])
+                '(see --help for details).'
             )
         else:
             info(

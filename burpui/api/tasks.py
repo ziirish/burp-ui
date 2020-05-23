@@ -244,16 +244,16 @@ class TaskGetFile(Resource):
         lengthbuf = socket.recv(8)
         length, = struct.unpack('!Q', lengthbuf)
 
-        def stream(sock, l):
+        def stream(sock, size):
             """The restoration took place on another server so we need
             to stream the file that is not present on the current
             machine.
             """
             bsize = 1024
             received = 0
-            if l < bsize:
-                bsize = l
-            while received < l:
+            if size < bsize:
+                bsize = size
+            while received < size:
                 buf = b''
                 r, _, _ = select.select([sock], [], [], 5)
                 if not r:
@@ -262,7 +262,7 @@ class TaskGetFile(Resource):
                 if not buf:
                     continue
                 received += len(buf)
-                self.logger.debug('{}/{}'.format(received, l))
+                self.logger.debug('{}/{}'.format(received, size))
                 yield buf
             sock.sendall(struct.pack('!Q', 2))
             sock.sendall(b'RE')
