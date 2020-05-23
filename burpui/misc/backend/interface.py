@@ -501,12 +501,16 @@ class BUIbackend(object, metaclass=ABCMeta):
         raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
 
     @abstractmethod
-    def get_all_clients(self, agent=None):
+    def get_all_clients(self, agent=None, last_attempt=True):
         """The :func:`burpui.misc.backend.interface.BUIbackend.get_all_clients`
         function returns a list containing all the clients with their states.
 
         :param agent: What server to ask (only in multi-agent mode)
         :type agent: str
+
+        :param last_attempt: Whether to return last backup attempt or not. This requires
+                             one more query per client hence we can disable it.
+        :type last_attempt: bool
 
         :returns: A list of clients
 

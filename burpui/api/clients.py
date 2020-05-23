@@ -94,7 +94,7 @@ class RunningClients(Resource):
 
                 def __extract_running_clients(serv):
                     try:
-                        clients = [x['name'] for x in bui.client.get_all_clients(serv)]
+                        clients = [x['name'] for x in bui.client.get_all_clients(serv, last_attempt=False)]
                     except BUIserverException:
                         clients = []
                     allowed = [x for x in clients if mask.is_client_allowed(current_user, x, serv)]
@@ -108,7 +108,7 @@ class RunningClients(Resource):
                 return ret
             else:
                 try:
-                    clients = [x['name'] for x in bui.client.get_all_clients(server)]
+                    clients = [x['name'] for x in bui.client.get_all_clients(server, last_attempt=False)]
                 except BUIserverException:
                     clients = []
                 allowed = [x for x in clients if mask.is_client_allowed(current_user, x, server)]
@@ -174,7 +174,7 @@ class RunningBackup(Resource):
                 new = {}
                 for serv in bui.client.servers:
                     try:
-                        clients = [x['name'] for x in bui.client.get_all_clients(serv)]
+                        clients = [x['name'] for x in bui.client.get_all_clients(serv, last_attempt=False)]
                     except BUIserverException:
                         clients = []
                     allowed = [x for x in clients if mask.is_client_allowed(current_user, x, serv)]
@@ -182,7 +182,7 @@ class RunningBackup(Resource):
                 res = new
             else:
                 try:
-                    clients = [x['name'] for x in bui.client.get_all_clients(server)]
+                    clients = [x['name'] for x in bui.client.get_all_clients(server, last_attempt=False)]
                 except BUIserverException:
                     clients = []
                 allowed = [x for x in clients if mask.is_client_allowed(current_user, x, server)]
@@ -388,7 +388,7 @@ class ClientsReport(Resource):
     def _parse_clients_reports(self, res=None, server=None):
         if not res:
             try:
-                clients = bui.client.get_all_clients(agent=server)
+                clients = bui.client.get_all_clients(agent=server, last_attempt=False)
             except BUIserverException as e:
                 self.abort(500, str(e))
             if mask.has_filters(current_user):
@@ -425,6 +425,7 @@ class ClientsStats(Resource):
     parser.add_argument('serverName', help='Which server to collect data from when in multi-agent mode')
     client_fields = ns.model('ClientsStatsSingle', {
         'last': fields.DateTime(required=True, dt_format='iso8601', description='Date of last backup'),
+        'last_attempt': fields.DateTime(dt_format='iso8601', description='Date of last backup attempt'),
         'name': fields.String(required=True, description='Client name'),
         'state': fields.LocalizedString(required=True, description='Current state of the client (idle, backup, etc.)'),
         'phase': fields.String(description='Phase of the current running backup'),
@@ -454,6 +455,7 @@ class ClientsStats(Resource):
               [
                 {
                   "last": "2015-05-17 11:40:02",
+                  "last_attempt": "2015-05-17 11:40:02",
                   "name": "client1",
                   "state": "idle",
                   "phase": "phase1",
@@ -464,6 +466,7 @@ class ClientsStats(Resource):
                 },
                 {
                   "last": "never",
+                  "last_attempt": "never",
                   "name": "client2",
                   "state": "idle",
                   "phase": "phase2",
@@ -601,7 +604,7 @@ class AllClients(Resource):
 
         if server:
             try:
-                clients = [x['name'] for x in bui.client.get_all_clients(agent=server)]
+                clients = [x['name'] for x in bui.client.get_all_clients(agent=server, last_attempt=False)]
             except BUIserverException:
                 clients = []
             if not is_admin:
@@ -613,7 +616,7 @@ class AllClients(Resource):
 
         if bui.config['STANDALONE']:
             try:
-                clients = [x['name'] for x in bui.client.get_all_clients()]
+                clients = [x['name'] for x in bui.client.get_all_clients(last_attempt=False)]
             except BUIserverException:
                 clients = []
             if not is_admin:
@@ -625,7 +628,7 @@ class AllClients(Resource):
             clients_cache = {}
             for serv in bui.client.servers:
                 try:
-                    clients = [x['name'] for x in bui.client.get_all_clients(serv)]
+                    clients = [x['name'] for x in bui.client.get_all_clients(serv, last_attempt=False)]
                     clients_cache[serv] = clients
                 except BUIserverException:
                     clients = []

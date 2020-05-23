@@ -636,7 +636,7 @@ class History(Resource):
             if data and server in data:
                 clients = [{'name': x} for x in data[server].keys()]
             else:
-                clients = bui.client.get_all_clients(agent=server)
+                clients = bui.client.get_all_clients(agent=server, last_attempt=False)
             # manage ACL
             if has_filters:
                 clients = [x for x in clients if mask.is_client_allowed(current_user, x['name'], server)]
@@ -656,7 +656,7 @@ class History(Resource):
                 clients_list = data.keys()
             else:
                 try:
-                    clients_list = [x['name'] for x in bui.client.get_all_clients()]
+                    clients_list = [x['name'] for x in bui.client.get_all_clients(last_attempt=False)]
                 except BUIserverException:
                     clients_list = []
                 if has_filters:
@@ -676,7 +676,7 @@ class History(Resource):
             for serv in bui.client.servers:
                 if has_filters:
                     try:
-                        all_clients = [x['name'] for x in bui.client.get_all_clients(serv)]
+                        all_clients = [x['name'] for x in bui.client.get_all_clients(serv, last_attempt=False)]
                     except BUIserverException:
                         all_clients = []
                     grants[serv] = [x for x in all_clients if mask.is_client_allowed(current_user, x, serv)]
@@ -687,7 +687,7 @@ class History(Resource):
                     if data and serv in data:
                         clients = data[serv].keys()
                     else:
-                        clients = [x['name'] for x in bui.client.get_all_clients(agent=serv)]
+                        clients = [x['name'] for x in bui.client.get_all_clients(agent=serv, last_attempt=False)]
                 for cl in clients:
                     (color, text) = self.gen_colors(cl, serv)
                     feed = {

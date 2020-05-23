@@ -40,7 +40,7 @@ def test_get_clients(client, mocker):
     mocker.patch('burpui.misc.backend.burp1.Burp.status', side_effect=mock_status)
     login(client, 'admin', 'admin')
     response = client.get(url_for('api.clients_stats'))
-    assert sorted(response.json, key=lambda k: k['name']) == sorted([{u'state': u'idle', u'last': u'never', u'name': u'testclient', u'phase': None, u'percent': 0, u'labels': []}], key=lambda k: k['name'])
+    assert sorted(response.json, key=lambda k: k['name']) == sorted([{'state': 'idle', 'last': 'never', 'last_attempt': 'never', 'name': 'testclient', 'phase': None, 'percent': 0, 'labels': []}], key=lambda k: k['name'])
 
 
 #    def test_live_monitor(self):

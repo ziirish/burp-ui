@@ -79,7 +79,7 @@ class ServersStats(Resource):
                 g.DONOTCACHE = True
 
             try:
-                clients = bui.client.servers[serv].get_all_clients(serv)
+                clients = bui.client.servers[serv].get_all_clients(serv, last_attempt=False)
             except BUIserverException:
                 clients = []
 
@@ -193,7 +193,7 @@ class ServersReport(Resource):
                 if check and not mask.is_server_allowed(current_user, serv):
                     continue
                 try:
-                    clients = bui.client.get_all_clients(agent=serv)
+                    clients = bui.client.get_all_clients(agent=serv, last_attempt=False)
                 except BUIserverException:
                     continue
                 if check:

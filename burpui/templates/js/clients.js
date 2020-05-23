@@ -141,6 +141,19 @@ var _clients_table = $('#table-clients').DataTable( {
 			}
 		},
 		{
+			data: 'last_attempt',
+			type: 'timestamp',
+			render: function (data, type, row ) {
+				if (type === 'filter' || type === 'sort') {
+					return data;
+				}
+				if (!(data in __status || data in __date)) {
+					return '<span data-toggle="tooltip" title="'+data+'">'+moment(data, moment.ISO_8601).tz(TIMEZONE).format({{ g.date_format|tojson }})+'</span>';
+				}
+				return data;
+			}
+		},
+		{
 			data: 'labels',
 			render: function (data, type, row) {
 				if (type === 'filter' || type === 'sort') {

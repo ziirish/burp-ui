@@ -14,6 +14,7 @@ Current
 - Add: new `order` keyword in ACL definitions in order to decide whether `rw` should be evaluated first or not `#305 <https://git.ziirish.me/ziirish/burp-ui/issues/305>`__
 - Add: new `exclude` keyword in ACL definitions in order to exclude some clients from the rules `#305 <https://git.ziirish.me/ziirish/burp-ui/issues/305>`__
 - Add: new *static templates* that allow you to create *onetime* (variables) templates `#280 <https://git.ziirish.me/ziirish/burp-ui/issues/280>`_
+- Add: return last backup attempt `#309 <https://git.ziirish.me/ziirish/burp-ui/issues/309>`_
 - Add: allow to hide selected clients/servers `#282 <https://git.ziirish.me/ziirish/burp-ui/issues/282>`_
 - Add: allow to delete clients data upon removal `#232 <https://git.ziirish.me/ziirish/burp-ui/issues/232>`_
 - Add: allow to create clients from templates in one call `#266 <https://git.ziirish.me/ziirish/burp-ui/issues/266>`_

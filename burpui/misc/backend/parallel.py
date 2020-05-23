@@ -16,6 +16,7 @@ import trio
 import struct
 
 from asyncio import iscoroutinefunction
+from functools import partial
 
 from .burp2 import Burp as Burp2
 from .interface import BUIbackend, BUIBACKEND_INTERFACE_METHODS
@@ -23,6 +24,7 @@ from .utils.constant import BURP_STATUS_FORMAT_V2
 from ..parser.burp2 import Parser
 from ...exceptions import BUIserverException
 from ...decorators import implement, usetriorun
+from ...utils import utc_to_local
 from ..._compat import to_unicode, to_bytes
 from ...tools.logging import logger
 
@@ -493,7 +495,7 @@ class Burp(Burp2):
         """
         ret = []
         try:
-            clients = await self._async_get_all_clients(deep=False)
+            clients = await self._async_get_all_clients(deep=False, last_attempt=False)
         except BUIserverException:
             return ret
         return self._do_is_one_backup_running(clients)
@@ -505,31 +507,43 @@ class Burp(Burp2):
         """
         return trio.run(self._async_is_one_backup_running)
 
-    async def _async_get_last_backup(self, name):
+    async def _async_get_last_backup(self, name, working=True):
         """Return the last backup of a given client
 
         :param name: Name of the client
         :type name: str
+
+        :param working: Also return uncomplete backups
+        :type working: bool
 
         :returns: The last backup
         """
         try:
             clients = await self._async_status('c:{}'.format(name))
             client = clients['clients'][0]
-            return client['backups'][0]
-        except (KeyError, BUIserverException):
+            i = 0
+            while True:
+                ret = client['backups'][i]
+                if not working and "working" in ret["flags"]:
+                    i += 1
+                    continue
+                return ret
+        except (KeyError, IndexError, BUIserverException):
             return None
 
     @usetriorun
-    def _get_last_backup(self, name):
+    def _get_last_backup(self, name, working=True):
         """Return the last backup of a given client
 
         :param name: Name of the client
         :type name: str
 
+        :param working: Also return uncomplete backups
+        :type working: bool
+
         :returns: The last backup
         """
-        return trio.run(self._async_get_last_backup, name)
+        return trio.run(self._async_get_last_backup, name, working)
 
     async def _async_guess_os(self, name):
         """Return the OS of the given client based on the magic *os* label
@@ -561,7 +575,7 @@ class Burp(Burp2):
             ret = OSES[-1]
         else:
             # more aggressive check
-            last = await self._async_get_last_backup(name)
+            last = await self._async_get_last_backup(name, False)
             if last:
                 try:
                     tree = await self._async_get_tree(name, last['number'])
@@ -592,7 +606,7 @@ class Burp(Burp2):
         """
         return trio.run(self._async_guess_os, name)
 
-    async def _async_get_all_clients(self, agent=None, deep=True):
+    async def _async_get_all_clients(self, agent=None, deep=True, last_attempt=True):
         ret = []
         query = await self._async_status()
         if not query or 'clients' not in query:
@@ -606,15 +620,28 @@ class Burp(Burp2):
                 infos = client['backups']
                 if cli['state'] in ['running']:
                     cli['last'] = 'now'
+                    cli['last_attempt'] = 'now'
                 elif not infos:
                     cli['last'] = 'never'
+                    cli['last_attempt'] = 'never'
                 else:
+                    convert = True
                     infos = infos[0]
+                    if self.server_version and self.server_version < BURP_STATUS_FORMAT_V2:
+                        cli['last'] = infos['timestamp']
+                        convert = False
+                    # only do deep inspection when server >= BURP_STATUS_FORMAT_V2
                     if deep:
                         logs = await self._async_get_backup_logs(infos['number'], client['name'])
                         cli['last'] = logs['start']
                     else:
-                        cli['last'] = infos['timestamp']
+                        cli['last'] = utc_to_local(infos['timestamp'])
+                    if last_attempt:
+                        last_backup = await self._async_get_last_backup(client['name'])
+                        if convert:
+                            cli['last_attempt'] = utc_to_local(last_backup['timestamp'])
+                        else:
+                            cli['last_attempt'] = last_backup['timestamp']
                 queue.append(cli)
 
         clients = query['clients']
@@ -626,16 +653,17 @@ class Burp(Burp2):
 
         return ret
 
-    def get_all_clients(self, agent=None):
+    def get_all_clients(self, agent=None, last_attempt=True):
         """See
         :func:`burpui.misc.backend.interface.BUIbackend.get_all_clients`
         """
         # don't need async processing if burp-server < BURP_STATUS_FORMAT_V2
         if not self.deep_inspection or (self.server_version and
                                         self.server_version < BURP_STATUS_FORMAT_V2):
-            return Burp2.get_all_clients(self)
+            return Burp2.get_all_clients(self, last_attempt=last_attempt)
         # the deep inspection can take advantage of async processing
-        return trio.run(self._async_get_all_clients)
+        callback = partial(self._async_get_all_clients, last_attempt=last_attempt)
+        return trio.run(callback)
 
     async def _async_get_client_status(self, name=None, agent=None):
         ret = {}
@@ -892,11 +920,11 @@ class AsyncBurp(Burp):
         return await self._async_get_backup_logs(number, client, forward, deep)
 
     @implement
-    async def get_all_clients(self, agent=None):
+    async def get_all_clients(self, agent=None, last_attempt=True):
         """See
         :func:`burpui.misc.backend.interface.BUIbackend.get_all_clients`
         """
-        return await self._async_get_all_clients()
+        return await self._async_get_all_clients(last_attempt=last_attempt)
 
     @implement
     async def get_attr(self, name, default=None, agent=None):

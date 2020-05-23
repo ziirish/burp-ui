@@ -498,7 +498,7 @@ class Burp(Burp1):
         """
         ret = []
         try:
-            clients = self.get_all_clients()
+            clients = self.get_all_clients(last_attempt=False)
         except BUIserverException:
             return ret
         return self._do_is_one_backup_running(clients)
@@ -527,19 +527,28 @@ class Burp(Burp1):
             return 'server crashed'
         return status
 
-    def _get_last_backup(self, name):
+    def _get_last_backup(self, name, working=True):
         """Return the last backup of a given client
 
         :param name: Name of the client
         :type name: str
+
+        :param working: Also return uncomplete backups
+        :type working: bool
 
         :returns: The last backup
         """
         try:
             clients = self.status('c:{}'.format(name))
             client = clients['clients'][0]
-            return client['backups'][0]
-        except (KeyError, TypeError, BUIserverException):
+            i = 0
+            while True:
+                ret = client['backups'][i]
+                if not working and "working" in ret["flags"]:
+                    i += 1
+                    continue
+                return ret
+        except (KeyError, TypeError, IndexError, BUIserverException):
             return None
 
     def _guess_os(self, name):
@@ -572,7 +581,7 @@ class Burp(Burp1):
             ret = OSES[-1]
         else:
             # more aggressive check
-            last = self._get_last_backup(name)
+            last = self._get_last_backup(name, False)
             if last:
                 try:
                     tree = self.get_tree(name, last['number'])
@@ -587,7 +596,7 @@ class Burp(Burp1):
         self._os_cache[name] = ret
         return ret
 
-    def get_all_clients(self, agent=None):
+    def get_all_clients(self, agent=None, last_attempt=True):
         """See
         :func:`burpui.misc.backend.interface.BUIbackend.get_all_clients`
         """
@@ -603,18 +612,28 @@ class Burp(Burp1):
             infos = client['backups']
             if cli['state'] in ['running']:
                 cli['last'] = 'now'
+                cli['last_attempt'] = 'now'
             elif not infos:
                 cli['last'] = 'never'
+                cli['last_attempt'] = 'never'
             else:
+                convert = True
                 infos = infos[0]
                 if self.server_version and self.server_version < BURP_STATUS_FORMAT_V2:
                     cli['last'] = infos['timestamp']
+                    convert = False
                 # only do deep inspection when server >= BURP_STATUS_FORMAT_V2
                 elif self.deep_inspection:
                     logs = self.get_backup_logs(infos['number'], client['name'])
                     cli['last'] = logs['start']
                 else:
                     cli['last'] = utc_to_local(infos['timestamp'])
+                if last_attempt:
+                    last_backup = self._get_last_backup(client['name'])
+                    if convert:
+                        cli['last_attempt'] = utc_to_local(last_backup['timestamp'])
+                    else:
+                        cli['last_attempt'] = last_backup['timestamp']
 
             ret.append(cli)
         return ret

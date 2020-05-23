@@ -651,15 +651,15 @@ class Burp(BUIbackend):
         """See :func:`burpui.misc.backend.interface.BUIbackend.is_one_backup_running`"""
         res = []
         try:
-            cls = self.get_all_clients()
+            clients = self.get_all_clients(last_attempt=False)
         except BUIserverException:
             return res
-        for cli in cls:
-            if self.is_backup_running(cli['name']):
-                res.append(cli['name'])
+        for client in clients:
+            if self.is_backup_running(client['name']):
+                res.append(client['name'])
         return res
 
-    def get_all_clients(self, agent=None):
+    def get_all_clients(self, agent=None, last_attempt=True):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_all_clients`"""
         res = []
         filemap = self.status()
@@ -693,6 +693,7 @@ class Burp(BUIbackend):
                 spl = infos.split('\t')
                 cli['last'] = int((spl[-1].split())[-1])
             cli['last'] = utc_to_local(cli['last'])
+            cli['last_attempt'] = cli['last']
             res.append(cli)
         return res
 
