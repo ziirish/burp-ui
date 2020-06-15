@@ -327,10 +327,12 @@ def compile_translation():
               help='Number of burp-client processes to spawn in the monitor')
 @click.option('-B', '--backend', default=None,
               help='Switch to another backend', type=click.Choice(['burp2', 'parallel']))
+@click.option('-a', '--assume-version', 'assume', default=None,
+              help='If we cannot determine server version use this one')
 @click.option('-n', '--dry', is_flag=True,
               help='Dry mode. Do not edit the files but display changes')
 def setup_burp(bconfcli, bconfsrv, client, listen, host, redis, database,
-               plugins, monitor, mbind, concurrency, pool, backend, dry):
+               plugins, monitor, mbind, concurrency, pool, backend, assume, dry):
     """Setup burp client for burp-ui."""
     if app.config['BACKEND'] not in ['burp2', 'parallel'] and not backend:
         err("Sorry, you can only setup the 'burp2' and the 'parallel' backends")
@@ -391,7 +393,7 @@ def setup_burp(bconfcli, bconfsrv, client, listen, host, redis, database,
             monconf.options.filename = temp
 
     parser = app.client.get_parser()
-    server_version = app.client.get_server_version()
+    server_version = app.client.get_server_version() or assume
     orig = source = None
     conf_orig = []
     if dry:
@@ -652,7 +654,7 @@ exclude_comp=gz
         with open(dest_bconfcli, 'w') as confcli:
             confcli.write(clitpl)
 
-    parser = app.client.get_parser()
+    parser = app.client.get_parser(assume)
 
     confcli = Config(dest_bconfcli, parser, 'srv')
     confcli.set_default(dest_bconfcli)

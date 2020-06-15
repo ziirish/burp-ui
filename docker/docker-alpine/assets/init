@@ -19,6 +19,7 @@ BURP_CLIENT_CONFIG=${BURP_CLIENT_CONFIG:-/tmp/burp.conf}
 BURP_SERVER_CONFIG=${BURP_SERVER_CONFIG:-/etc/burp/burp-server.conf}
 BURP_SERVER_ADDR=${BURP_SERVER_ADDR:-burp-server}
 BURP_RESTORE_LISTEN_ADDR=${BURP_RESTORE_LISTEN_ADDR:-0.0.0.0:5971}
+BURP_VERSION=${BURP_VERSION:-2.2.18}
 REDIS_SERVER=${REDIS_SERVER:-redis:6379}
 DATABASE_URL=${DATABASE_URL:-postgresql://burpui:burpui@pgsql/burpuidb}
 GUNICORN_WORKERS=${GUNICORN_WORKERS:-$(getconf _NPROCESSORS_ONLN)}
@@ -71,7 +72,7 @@ appStart () {
 
   LOGFILE=$(doas burpui mktemp)
   echo "Setting up burp & burp-ui:"
-  COMMAND="bui-manage -c $BURPUI_CONFIG setup-burp --burp-conf-cli $BURP_CLIENT_CONFIG --burp-conf-serv $BURP_SERVER_CONFIG --host $BURP_SERVER_ADDR --client $BURPUI_CLIENT_NAME --redis $REDIS_SERVER --database $DATABASE_URL --plugins $BURPUI_PLUGINS --monitor $BURPUI_MONITOR_CONFIG --monitor-listen $BURPUI_MONITOR_LISTEN --concurrency $ASYNC_CONCURRENCY --pool-size $ASYNC_POOL_SIZE --backend $BURPUI_BACKEND --listen $BURP_RESTORE_LISTEN_ADDR"
+  COMMAND="bui-manage -c $BURPUI_CONFIG setup-burp --burp-conf-cli $BURP_CLIENT_CONFIG --burp-conf-serv $BURP_SERVER_CONFIG --host $BURP_SERVER_ADDR --client $BURPUI_CLIENT_NAME --redis $REDIS_SERVER --database $DATABASE_URL --assume-version $BURP_VERSION --plugins $BURPUI_PLUGINS --monitor $BURPUI_MONITOR_CONFIG --monitor-listen $BURPUI_MONITOR_LISTEN --concurrency $ASYNC_CONCURRENCY --pool-size $ASYNC_POOL_SIZE --backend $BURPUI_BACKEND --listen $BURP_RESTORE_LISTEN_ADDR"
   echo $COMMAND
   set +e
   doas burpui "$COMMAND 2>&1 | tee $LOGFILE"

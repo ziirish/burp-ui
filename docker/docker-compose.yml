@@ -13,6 +13,7 @@ services:
   #    - MYSQL_PASSWORD=burpui
   #    - MYSQL_DATABASE=burpuidb
   #    - MYSQL_RANDOM_ROOT_PASSWORD=yes
+  #    - TZ=Europe/Paris
   ## Additionally, you may want to persist data
   ## volumes:
   ##   - /var/lib/buistore/mariadb:/var/lib/mysql
@@ -22,6 +23,8 @@ services:
     image: registry.ziirish.me/ziirish/burp-ui/pgsql:10
     environment:
       - POSTGRES_PASSWORD=password
+  #    - TZ=Europe/Paris
+  #    - PGTZ=Europe/Paris
   ## Additionally, you may want to persist data
   ## volumes:
   ##   - /var/lib/buistore/pgsql/10/data:/var/lib/postgresql/data
@@ -33,9 +36,9 @@ services:
       - 0.0.0.0:4971:4971
       - 0.0.0.0:4972:4972
     volumes:
-      - /etc/burp
-      - /var/spool/burp
-      - /var/lib/burp
+      - /etc/burp:/etc/burp
+      - /var/spool/burp:/var/spool/burp
+      - /var/lib/burp:/var/lib/burp
   # Additionally, you can override some default settings
   #  environment:
   #    - BURP_UID=5337

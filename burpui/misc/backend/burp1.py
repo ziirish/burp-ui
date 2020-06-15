@@ -1085,9 +1085,11 @@ class Burp(BUIbackend):
         except AttributeError:
             return default
 
-    def get_parser(self, agent=None):
+    def get_parser(self, assume_version=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_parser`"""
         if self.parser:
+            if assume_version:
+                self.parser._assume_server_version = assume_version
             return self.parser
         raise BUIserverException('Missing parser')
 

@@ -28,6 +28,9 @@ class Parser(Doc):
     """
     pver = 1
 
+    _assume_server_version = ''
+    _assume_client_version = ''
+
     def __init__(self, backend=None):
         """
         :param backend: Backend context
