@@ -24,6 +24,7 @@ Current
 - Fix: wrong command suggestion `#296 <https://git.ziirish.me/ziirish/burp-ui/issues/296>`__
 - Fix: allow templates removal `#290 <https://git.ziirish.me/ziirish/burp-ui/issues/290>`__
 - Fix: don't preload LDAP users `#270 <https://git.ziirish.me/ziirish/burp-ui/issues/270>`__
+- Fix: don't screw up configuration files `#333 <https://git.ziirish.me/ziirish/burp-ui/issues/333>`__
 - Fix: issue `#268 <https://git.ziirish.me/ziirish/burp-ui/issues/268>`_
 - `Full changelog <https://git.ziirish.me/ziirish/burp-ui/compare/0.6.0...master>`__
 

@@ -1301,8 +1301,9 @@ class File(dict):
                                         (key == 'password_check' or 'password' not in key):
                                     if self._line_is_comment(line) and key in data:
                                         result.append(self._format_key(key, data))
-                                        ridx = newkeys.index(key)
-                                        del newkeys[ridx]
+                                        if key in newkeys:
+                                            ridx = newkeys.index(key)
+                                            del newkeys[ridx]
                                         continue
                                 # The line was a comment and there was a further
                                 # matching setting, so we just jump to the
@@ -1361,6 +1362,9 @@ class File(dict):
                 fil.write('\n'.join(result))
 
         except Exception as exp:
+            # something went wrong, we revert to the last file
+            with codecs.open(dest, 'w', 'utf-8', errors='ignore') as fil:
+                fil.writelines(orig)
             return [[NOTIF_ERROR, str(exp)]]
 
         self.parse(True)
