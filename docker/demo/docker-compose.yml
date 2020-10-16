@@ -17,7 +17,7 @@ services:
 
   demo-redis:
     restart: always
-    image: redis:3
+    image: redis:6
     command: redis-server --appendonly yes
 
 #  demo-mariadb:
