@@ -24,7 +24,7 @@ import random
 import re
 
 bui = current_app  # type: BUIServer
-ns = api.namespace('misc', 'Misc methods')
+ns = api.namespace("misc", "Misc methods")
 
 
 def clear_cache(pattern=None):
@@ -32,51 +32,112 @@ def clear_cache(pattern=None):
     if pattern is None:
         cache.clear()
     else:
-        if hasattr(cache.cache, '_client') and hasattr(cache.cache._client, 'keys'):
-            if hasattr(cache.cache, 'key_prefix') and cache.cache.key_prefix:
+        if hasattr(cache.cache, "_client") and hasattr(cache.cache._client, "keys"):
+            if hasattr(cache.cache, "key_prefix") and cache.cache.key_prefix:
                 pattern = cache.cache.key_prefix + pattern
             keys = cache.cache._client.keys(pattern)
             cache.cache._client.delete(keys)
 
 
-counters_fields = ns.model('Counters', {
-    'phase': fields.String(description='Backup phase'),
-    'Total': fields.List(fields.Integer, description='new/deleted/scanned/unchanged/total', attribute='total'),
-    'Files': fields.List(fields.Integer, description='new/deleted/scanned/unchanged/total', attribute='files'),
-    'Files (encrypted)': fields.List(fields.Integer, description='new/deleted/scanned/unchanged/total', attribute='files_encrypted'),
-    'Meta data': fields.List(fields.Integer, description='new/deleted/scanned/unchanged/total', attribute='meta_data'),
-    'Meta data (enc)': fields.List(fields.Integer, description='new/deleted/scanned/unchanged/total', attribute='meta_data_encrypted'),
-    'Directories': fields.List(fields.Integer, description='new/deleted/scanned/unchanged/total', attribute='directories'),
-    'Soft links': fields.List(fields.Integer, description='new/deleted/scanned/unchanged/total', attribute='soft_links'),
-    'Hard links': fields.List(fields.Integer, description='new/deleted/scanned/unchanged/total', attribute='hard_links'),
-    'Special files': fields.List(fields.Integer, description='new/deleted/scanned/unchanged/total', attribute='special_files'),
-    'VSS headers': fields.List(fields.Integer, description='new/deleted/scanned/unchanged/total', attribute='vss_headers'),
-    'VSS headers (enc)': fields.List(fields.Integer, description='new/deleted/scanned/unchanged/total', attribute='vss_headers_encrypted'),
-    'VSS footers': fields.List(fields.Integer, description='new/deleted/scanned/unchanged/total', attribute='vss_footers'),
-    'VSS footers (enc)': fields.List(fields.Integer, description='new/deleted/scanned/unchanged/total', attribute='vss_footers_encrypted'),
-    'Grand total': fields.List(fields.Integer, description='new/deleted/scanned/unchanged/total', attribute='grand_total'),
-    'warning': fields.Integer(description='Number of warnings so far'),
-    'estimated_bytes': fields.Integer(description='Estimated Bytes in backup'),
-    'bytes': fields.Integer(description='Bytes in backup'),
-    'bytes_in': fields.Integer(description='Bytes received since backup started'),
-    'bytes_out': fields.Integer(description='Bytes sent since backup started'),
-    'start': fields.String(description='Timestamp of the start date of the backup'),
-    'speed': fields.Integer(description='Backup speed', default=-1),
-    'timeleft': fields.Integer(description='Estimated time left'),
-    'percent': fields.Integer(required=True, description='Percentage done'),
-    'path': fields.String(description='File that is currently treated by burp'),
-})
+counters_fields = ns.model(
+    "Counters",
+    {
+        "phase": fields.String(description="Backup phase"),
+        "Total": fields.List(
+            fields.Integer,
+            description="new/deleted/scanned/unchanged/total",
+            attribute="total",
+        ),
+        "Files": fields.List(
+            fields.Integer,
+            description="new/deleted/scanned/unchanged/total",
+            attribute="files",
+        ),
+        "Files (encrypted)": fields.List(
+            fields.Integer,
+            description="new/deleted/scanned/unchanged/total",
+            attribute="files_encrypted",
+        ),
+        "Meta data": fields.List(
+            fields.Integer,
+            description="new/deleted/scanned/unchanged/total",
+            attribute="meta_data",
+        ),
+        "Meta data (enc)": fields.List(
+            fields.Integer,
+            description="new/deleted/scanned/unchanged/total",
+            attribute="meta_data_encrypted",
+        ),
+        "Directories": fields.List(
+            fields.Integer,
+            description="new/deleted/scanned/unchanged/total",
+            attribute="directories",
+        ),
+        "Soft links": fields.List(
+            fields.Integer,
+            description="new/deleted/scanned/unchanged/total",
+            attribute="soft_links",
+        ),
+        "Hard links": fields.List(
+            fields.Integer,
+            description="new/deleted/scanned/unchanged/total",
+            attribute="hard_links",
+        ),
+        "Special files": fields.List(
+            fields.Integer,
+            description="new/deleted/scanned/unchanged/total",
+            attribute="special_files",
+        ),
+        "VSS headers": fields.List(
+            fields.Integer,
+            description="new/deleted/scanned/unchanged/total",
+            attribute="vss_headers",
+        ),
+        "VSS headers (enc)": fields.List(
+            fields.Integer,
+            description="new/deleted/scanned/unchanged/total",
+            attribute="vss_headers_encrypted",
+        ),
+        "VSS footers": fields.List(
+            fields.Integer,
+            description="new/deleted/scanned/unchanged/total",
+            attribute="vss_footers",
+        ),
+        "VSS footers (enc)": fields.List(
+            fields.Integer,
+            description="new/deleted/scanned/unchanged/total",
+            attribute="vss_footers_encrypted",
+        ),
+        "Grand total": fields.List(
+            fields.Integer,
+            description="new/deleted/scanned/unchanged/total",
+            attribute="grand_total",
+        ),
+        "warning": fields.Integer(description="Number of warnings so far"),
+        "estimated_bytes": fields.Integer(description="Estimated Bytes in backup"),
+        "bytes": fields.Integer(description="Bytes in backup"),
+        "bytes_in": fields.Integer(description="Bytes received since backup started"),
+        "bytes_out": fields.Integer(description="Bytes sent since backup started"),
+        "start": fields.String(description="Timestamp of the start date of the backup"),
+        "speed": fields.Integer(description="Backup speed", default=-1),
+        "timeleft": fields.Integer(description="Estimated time left"),
+        "percent": fields.Integer(required=True, description="Percentage done"),
+        "path": fields.String(description="File that is currently treated by burp"),
+    },
+)
 
 
-@ns.route('/counters',
-          '/<server>/counters',
-          '/counters/<client>',
-          '/<server>/counters/<client>',
-          endpoint='counters')
+@ns.route(
+    "/counters",
+    "/<server>/counters",
+    "/counters/<client>",
+    "/<server>/counters/<client>",
+    endpoint="counters",
+)
 @ns.doc(
     params={
-        'server': 'Which server to collect data from when in multi-agent mode',
-        'client': 'Client name',
+        "server": "Which server to collect data from when in multi-agent mode",
+        "client": "Client name",
     },
 )
 class Counters(Resource):
@@ -90,23 +151,32 @@ class Counters(Resource):
     A mandatory ``GET`` parameter called ``clientName`` is used to know what client we
     are working on.
     """
-    parser = ns.parser()
-    parser.add_argument('serverName', help='Which server to collect data from when in multi-agent mode')
-    parser.add_argument('clientName', help='Client name')
-    monitor_fields = ns.model('Monitor', {
-        'client': fields.String(required=True, description='Client name'),
-        'agent': fields.String(description='Server (agent) name'),
-        'counters': fields.Nested(counters_fields, description='Various statistics about the running backup'),
-        'labels': fields.List(fields.String, description='List of labels'),
-    })
 
-    @ns.marshal_with(monitor_fields, code=200, description='Success')
+    parser = ns.parser()
+    parser.add_argument(
+        "serverName", help="Which server to collect data from when in multi-agent mode"
+    )
+    parser.add_argument("clientName", help="Client name")
+    monitor_fields = ns.model(
+        "Monitor",
+        {
+            "client": fields.String(required=True, description="Client name"),
+            "agent": fields.String(description="Server (agent) name"),
+            "counters": fields.Nested(
+                counters_fields,
+                description="Various statistics about the running backup",
+            ),
+            "labels": fields.List(fields.String, description="List of labels"),
+        },
+    )
+
+    @ns.marshal_with(monitor_fields, code=200, description="Success")
     @ns.expect(parser)
     @ns.doc(
         responses={
-            400: 'Missing argument',
-            403: 'Insufficient permissions',
-            404: 'Client not found in the running clients list',
+            400: "Missing argument",
+            403: "Insufficient permissions",
+            404: "Client not found in the running clients list",
         },
     )
     def get(self, server=None, client=None):
@@ -120,20 +190,27 @@ class Counters(Resource):
         :returns: Counters
         """
         args = self.parser.parse_args()
-        server = server or args['serverName']
-        client = client or args['clientName']
+        server = server or args["serverName"]
+        client = client or args["clientName"]
         # Check params
         if not client:
-            self.abort(400, 'No client name provided')
+            self.abort(400, "No client name provided")
         # Manage ACL
-        if not current_user.is_anonymous and \
-                not current_user.acl.is_admin() and \
-                not current_user.acl.is_client_allowed(client, server):
+        if (
+            not current_user.is_anonymous
+            and not current_user.acl.is_admin()
+            and not current_user.acl.is_client_allowed(client, server)
+        ):
             self.abort(403, "Not allowed to view '{}' counters".format(client))
         running = bui.client.is_one_backup_running()
         if isinstance(running, dict):
             if server and client not in running[server]:
-                self.abort(404, "'{}' not found in the list of running clients for '{}'".format(client, server))
+                self.abort(
+                    404,
+                    "'{}' not found in the list of running clients for '{}'".format(
+                        client, server
+                    ),
+                )
             else:
                 found = False
                 for (_, cls) in running.items():
@@ -150,22 +227,20 @@ class Counters(Resource):
         except BUIserverException:
             counters = {}
         res = {}
-        res['client'] = client
-        res['agent'] = server
-        res['counters'] = counters
+        res["client"] = client
+        res["agent"] = server
+        res["counters"] = counters
         try:
-            res['labels'] = ClientLabels._get_labels(client, server)
+            res["labels"] = ClientLabels._get_labels(client, server)
         except BUIserverException as exp:
             self.abort(500, str(exp))
         return res
 
 
-@ns.route('/monitor',
-          '/<server>/monitor',
-          endpoint='live')
+@ns.route("/monitor", "/<server>/monitor", endpoint="live")
 @ns.doc(
     params={
-        'server': 'Which server to collect data from when in multi-agent mode',
+        "server": "Which server to collect data from when in multi-agent mode",
     },
 )
 class Live(Resource):
@@ -177,16 +252,25 @@ class Live(Resource):
     An optional ``GET`` parameter called ``serverName`` is supported when running
     in multi-agent mode.
     """
-    parser = ns.parser()
-    parser.add_argument('serverName', help='Which server to collect data from when in multi-agent mode')
-    live_fields = ns.model('Live', {
-        'client': fields.String(required=True, description='Client name'),
-        'agent': fields.String(description='Server (agent) name'),
-        'counters': fields.Nested(counters_fields, description='Various statistics about the running backup'),
-        'labels': fields.List(fields.String, description='List of labels'),
-    })
 
-    @ns.marshal_list_with(live_fields, code=200, description='Success')
+    parser = ns.parser()
+    parser.add_argument(
+        "serverName", help="Which server to collect data from when in multi-agent mode"
+    )
+    live_fields = ns.model(
+        "Live",
+        {
+            "client": fields.String(required=True, description="Client name"),
+            "agent": fields.String(description="Server (agent) name"),
+            "counters": fields.Nested(
+                counters_fields,
+                description="Various statistics about the running backup",
+            ),
+            "labels": fields.List(fields.String, description="List of labels"),
+        },
+    )
+
+    @ns.marshal_list_with(live_fields, code=200, description="Success")
     @ns.expect(parser)
     def get(self, server=None):
         """Returns a list of clients that are currently running a backup
@@ -234,7 +318,7 @@ class Live(Resource):
         """
 
         args = self.parser.parse_args()
-        server = server or args['serverName']
+        server = server or args["serverName"]
         res = []
         is_admin = True
         has_acl = not current_user.is_anonymous
@@ -243,90 +327,101 @@ class Live(Resource):
             is_admin = current_user.acl.is_admin()
 
         # ACL
-        if has_acl and \
-                not is_admin and \
-                server and not current_user.acl.is_server_allowed(server):
-            self.abort(403, 'You are not allowed to view stats of this server')
+        if (
+            has_acl
+            and not is_admin
+            and server
+            and not current_user.acl.is_server_allowed(server)
+        ):
+            self.abort(403, "You are not allowed to view stats of this server")
         if server:
             running = bui.client.is_one_backup_running(server)
             # ACL
             if mask.has_filters(current_user):
-                running = [x for x in running if mask.is_client_allowed(current_user, x, server)]
+                running = [
+                    x
+                    for x in running
+                    if mask.is_client_allowed(current_user, x, server)
+                ]
         else:
             running = bui.client.is_one_backup_running()
         if isinstance(running, dict):
             for (serv, clients) in running.items():
                 for client in clients:
                     # ACL
-                    if mask.has_filters(current_user) and \
-                            not mask.is_client_allowed(current_user, client, serv):
+                    if mask.has_filters(current_user) and not mask.is_client_allowed(
+                        current_user, client, serv
+                    ):
                         continue
                     data = {}
-                    data['client'] = client
-                    data['agent'] = serv
+                    data["client"] = client
+                    data["agent"] = serv
                     try:
-                        data['counters'] = bui.client.get_counters(client, agent=serv)
+                        data["counters"] = bui.client.get_counters(client, agent=serv)
                     except BUIserverException:
-                        data['counters'] = {}
+                        data["counters"] = {}
                     try:
-                        data['labels'] = ClientLabels._get_labels(client, serv)
+                        data["labels"] = ClientLabels._get_labels(client, serv)
                     except BUIserverException:
-                        data['labels'] = []
+                        data["labels"] = []
                     res.append(data)
         else:
             for client in running:
                 # ACL
-                if mask.has_filters(current_user) and \
-                        not mask.is_client_allowed(current_user, client, server):
+                if mask.has_filters(current_user) and not mask.is_client_allowed(
+                    current_user, client, server
+                ):
                     continue
                 data = {}
-                data['client'] = client
+                data["client"] = client
                 try:
-                    data['counters'] = bui.client.get_counters(client, agent=server)
+                    data["counters"] = bui.client.get_counters(client, agent=server)
                 except BUIserverException:
-                    data['counters'] = {}
+                    data["counters"] = {}
                 try:
-                    data['labels'] = ClientLabels._get_labels(client)
+                    data["labels"] = ClientLabels._get_labels(client)
                 except BUIserverException:
-                    data['labels'] = []
+                    data["labels"] = []
                 res.append(data)
         return res
 
 
-@ns.route('/alert', endpoint='alert')
+@ns.route("/alert", endpoint="alert")
 class Alert(Resource):
     """The :class:`burpui.api.misc.Alert` resource allows you to propagate a
     message to the next screen.
 
     This resource is part of the :mod:`burpui.api.misc` module.
     """
+
     parser = ns.parser()
-    parser.add_argument('message', required=True, help='Message to display')
-    parser.add_argument('level', help='Alert level', choices=('danger', 'warning', 'info', 'success', '0', '1', '2', '3'), default='danger')
+    parser.add_argument("message", required=True, help="Message to display")
+    parser.add_argument(
+        "level",
+        help="Alert level",
+        choices=("danger", "warning", "info", "success", "0", "1", "2", "3"),
+        default="danger",
+    )
 
     @ns.expect(parser)
     @ns.doc(
         responses={
-            201: 'Success',
+            201: "Success",
         },
     )
     def post(self):
         """Propagate a message to the next screen (or whatever reads the session)"""
+
         def translate(level):
-            levels = ['danger', 'warning', 'info', 'success']
-            convert = {
-                '0': 'success',
-                '1': 'warning',
-                '2': 'error',
-                '3': 'info'
-            }
+            levels = ["danger", "warning", "info", "success"]
+            convert = {"0": "success", "1": "warning", "2": "error", "3": "info"}
             if not level:
-                return 'danger'
+                return "danger"
             # return the converted value or the one we already had
             new = convert.get(level, level)
             # if the level is not handled, assume 'danger'
             if new not in levels:
-                return 'danger'
+                return "danger"
             return new
 
         # retrieve last flashed messages so we don't loose anything
@@ -334,26 +429,30 @@ class Alert(Resource):
             flash(message, level)
 
         args = self.parser.parse_args()
-        message = args['message']
-        level = translate(args['level'])
+        message = args["message"]
+        level = translate(args["level"])
         flash(message, level)
-        return {'message': message, 'level': level}, 201
+        return {"message": message, "level": level}, 201
 
 
-@ns.route('/languages', endpoint='languages')
+@ns.route("/languages", endpoint="languages")
 class Languages(Resource):
     """The :class:`burpui.api.misc.Languages` resource allows you to retrieve
     a list of supported languages.
 
     This resource is part of the :mod:`burpui.api.misc` module.
     """
-    wild = fields.Wildcard(fields.String, description='Supported languages')
-    languages_fields = ns.model('Languages', {
-        '*': wild,
-    })
+
+    wild = fields.Wildcard(fields.String, description="Supported languages")
+    languages_fields = ns.model(
+        "Languages",
+        {
+            "*": wild,
+        },
+    )
 
     @cache.cached(timeout=3600, key_prefix=cache_key, unless=force_refresh)
-    @ns.marshal_with(languages_fields, code=200, description='Success')
+    @ns.marshal_with(languages_fields, code=200, description="Success")
     @browser_cache(3600)
     def get(self):
         """Returns a list of supported languages
@@ -374,12 +473,10 @@ class Languages(Resource):
         return LANGUAGES
 
 
-@ns.route('/about',
-          '/<server>/about',
-          endpoint='about')
+@ns.route("/about", "/<server>/about", endpoint="about")
 @ns.doc(
     params={
-        'server': 'Which server to collect data from when in multi-agent mode',
+        "server": "Which server to collect data from when in multi-agent mode",
     },
 )
 class About(Resource):
@@ -389,87 +486,106 @@ class About(Resource):
     An optional ``GET`` parameter called ``serverName`` is supported when running
     in multi-agent mode.
     """
+
     # Login not required on this view
     login_required = False
 
     parser = ns.parser()
-    parser.add_argument('serverName', help='Which server to collect data from when in multi-agent mode')
-    burp_fields = ns.model('Burp', {
-        'name': fields.String(required=True, description='Instance name', default='Burp'),
-        'client': fields.String(description='Burp client version'),
-        'server': fields.String(description='Burp server version'),
-    })
-    about_fields = ns.model('About', {
-        'version': fields.String(required=True, description='Burp-UI version'),
-        'release': fields.String(description='Burp-UI release (commit number)'),
-        'api': fields.String(description='Burp-UI API documentation URL'),
-        'burp': fields.Nested(burp_fields, as_list=True, description='Burp version'),
-    })
+    parser.add_argument(
+        "serverName", help="Which server to collect data from when in multi-agent mode"
+    )
+    burp_fields = ns.model(
+        "Burp",
+        {
+            "name": fields.String(
+                required=True, description="Instance name", default="Burp"
+            ),
+            "client": fields.String(description="Burp client version"),
+            "server": fields.String(description="Burp server version"),
+        },
+    )
+    about_fields = ns.model(
+        "About",
+        {
+            "version": fields.String(required=True, description="Burp-UI version"),
+            "release": fields.String(description="Burp-UI release (commit number)"),
+            "api": fields.String(description="Burp-UI API documentation URL"),
+            "burp": fields.Nested(
+                burp_fields, as_list=True, description="Burp version"
+            ),
+        },
+    )
 
     @cache.cached(timeout=3600, key_prefix=cache_key, unless=force_refresh)
-    @ns.marshal_with(about_fields, code=200, description='Success')
+    @ns.marshal_with(about_fields, code=200, description="Success")
     @ns.expect(parser)
     @browser_cache(3600)
     def get(self, server=None):
         """Returns various informations about Burp-UI"""
         args = self.parser.parse_args()
         res = {}
-        server = server or args['serverName']
-        res['version'] = api.version
-        res['release'] = api.release
-        res['api'] = url_for('api.doc')
-        res['burp'] = []
+        server = server or args["serverName"]
+        res["version"] = api.version
+        res["release"] = api.release
+        res["api"] = url_for("api.doc")
+        res["burp"] = []
         cli = bui.client.get_client_version(server)
         srv = bui.client.get_server_version(server)
         multi = {}
         if isinstance(cli, dict):
             for (name, val) in cli.items():
-                multi[name] = {'client': val}
+                multi[name] = {"client": val}
         if isinstance(srv, dict):
             for (name, val) in srv.items():
-                multi[name]['server'] = val
+                multi[name]["server"] = val
         if not multi:
-            res['burp'].append({'client': cli, 'server': srv})
+            res["burp"].append({"client": cli, "server": srv})
         else:
             for (name, val) in multi.items():
                 tmp = val
-                tmp.update({'name': name})
-                res['burp'].append(tmp)
+                tmp.update({"name": name})
+                res["burp"].append(tmp)
         return res
 
 
-@ns.route('/ping', endpoint='ping')
+@ns.route("/ping", endpoint="ping")
 class Ping(Resource):
     """The :class:`burpui.api.misc.Ping` resource allows you to ping the API.
     It is actually a Dummy endpoint that does nothing"""
+
     # Login not required on this view
     login_required = False
 
-    ping_fields = ns.model('Ping', {
-        'alive': fields.Boolean(required=True, description="API alive?"),
-    })
+    ping_fields = ns.model(
+        "Ping",
+        {
+            "alive": fields.Boolean(required=True, description="API alive?"),
+        },
+    )
 
-    @ns.marshal_list_with(ping_fields, code=200, description='Success')
+    @ns.marshal_list_with(ping_fields, code=200, description="Success")
     @ns.doc(
         responses={
-            200: 'Success',
-            403: 'Insufficient permissions',
+            200: "Success",
+            403: "Insufficient permissions",
         },
     )
     def get(self):
         """Tells if the API is alive"""
-        return {'alive': True}
+        return {"alive": True}
 
 
-@ns.route('/history',
-          '/history/<client>',
-          '/<server>/history',
-          '/<server>/history/<client>',
-          endpoint='history')
+@ns.route(
+    "/history",
+    "/history/<client>",
+    "/<server>/history",
+    "/<server>/history/<client>",
+    endpoint="history",
+)
 @ns.doc(
     params={
-        'server': 'Which server to collect data from when in multi-agent mode',
-        'client': 'Client name',
+        "server": "Which server to collect data from when in multi-agent mode",
+        "client": "Client name",
     },
 )
 class History(Resource):
@@ -514,34 +630,53 @@ class History(Resource):
         });
 
     """
-    parser = ns.parser()
-    parser.add_argument('serverName', help='Which server to collect data from when in multi-agent mode')
-    parser.add_argument('clientName', help='Which client to collect data from')
-    parser.add_argument('start', help='Return events after this date')
-    parser.add_argument('end', help='Return events before this date')
 
-    event_fields = ns.model('Event', {
-        'title': fields.String(required=True, description='Event name'),
-        'start': fields.DateTime(dt_format='iso8601', description='Start time of the event', attribute='date'),
-        'end': fields.DateTime(dt_format='iso8601', description='End time of the event'),
-        'name': fields.String(description='Client name'),
-        'backup': fields.BackupNumber(description='Backup number', attribute='number'),
-        'url': fields.String(description='Callback URL'),
-    })
-    history_fields = ns.model('History', {
-        'events': fields.Nested(event_fields, as_list=True, description='Events list'),
-        'color': fields.String(description='Background color'),
-        'textColor': fields.String(description='Text color'),
-        'name': fields.String(description='Feed name'),
-    })
+    parser = ns.parser()
+    parser.add_argument(
+        "serverName", help="Which server to collect data from when in multi-agent mode"
+    )
+    parser.add_argument("clientName", help="Which client to collect data from")
+    parser.add_argument("start", help="Return events after this date")
+    parser.add_argument("end", help="Return events before this date")
+
+    event_fields = ns.model(
+        "Event",
+        {
+            "title": fields.String(required=True, description="Event name"),
+            "start": fields.DateTime(
+                dt_format="iso8601",
+                description="Start time of the event",
+                attribute="date",
+            ),
+            "end": fields.DateTime(
+                dt_format="iso8601", description="End time of the event"
+            ),
+            "name": fields.String(description="Client name"),
+            "backup": fields.BackupNumber(
+                description="Backup number", attribute="number"
+            ),
+            "url": fields.String(description="Callback URL"),
+        },
+    )
+    history_fields = ns.model(
+        "History",
+        {
+            "events": fields.Nested(
+                event_fields, as_list=True, description="Events list"
+            ),
+            "color": fields.String(description="Background color"),
+            "textColor": fields.String(description="Text color"),
+            "name": fields.String(description="Feed name"),
+        },
+    )
 
     @cache.cached(timeout=1800, key_prefix=cache_key, unless=force_refresh)
-    @ns.marshal_list_with(history_fields, code=200, description='Success')
+    @ns.marshal_list_with(history_fields, code=200, description="Success")
     @ns.expect(parser)
     @ns.doc(
         responses={
-            200: 'Success',
-            403: 'Insufficient permissions',
+            200: "Success",
+            403: "Insufficient permissions",
         },
     )
     @browser_cache(1800)
@@ -588,27 +723,31 @@ class History(Resource):
 
     def _check_acl(self, client=None, server=None):
         args = self.parser.parse_args()
-        client = client or args['clientName']
-        server = server or args['serverName']
+        client = client or args["clientName"]
+        server = server or args["serverName"]
 
-        if server and mask.has_filters(current_user) and \
-                not mask.is_server_allowed(current_user, server):
+        if (
+            server
+            and mask.has_filters(current_user)
+            and not mask.is_server_allowed(current_user, server)
+        ):
             self.abort(403, "You are not allowed to view this server infos")
 
-        if client and mask.has_filters(current_user) and \
-                not mask.is_client_allowed(current_user, client, server):
+        if (
+            client
+            and mask.has_filters(current_user)
+            and not mask.is_client_allowed(current_user, client, server)
+        ):
             self.abort(403, "You are not allowed to view this client infos")
 
     def _get_backup_history(self, client=None, server=None, data=None):
         import arrow
+
         ret = []
         args = self.parser.parse_args()
-        client = client or args['clientName']
-        server = server or args['serverName']
-        moments = {
-            'start': None,
-            'end': None
-        }
+        client = client or args["clientName"]
+        server = server or args["serverName"]
+        moments = {"start": None, "end": None}
         has_filters = mask.has_filters(current_user)
 
         for moment in moments.keys():
@@ -622,52 +761,63 @@ class History(Resource):
         if client:
             (color, text) = self.gen_colors(client, server)
             feed = {
-                'color': color,
-                'textColor': text,
-                'events': self.gen_events(client, moments, server, data),
+                "color": color,
+                "textColor": text,
+                "events": self.gen_events(client, moments, server, data),
             }
             name = client
             if server:
-                name += ' on {}'.format(server)
-            feed['name'] = name
+                name += " on {}".format(server)
+            feed["name"] = name
             ret.append(feed)
             return ret
         elif server:
             if data and server in data:
-                clients = [{'name': x} for x in data[server].keys()]
+                clients = [{"name": x} for x in data[server].keys()]
             else:
                 clients = bui.client.get_all_clients(agent=server, last_attempt=False)
             # manage ACL
             if has_filters:
-                clients = [x for x in clients if mask.is_client_allowed(current_user, x['name'], server)]
+                clients = [
+                    x
+                    for x in clients
+                    if mask.is_client_allowed(current_user, x["name"], server)
+                ]
             for cl in clients:
-                (color, text) = self.gen_colors(cl['name'], server)
+                (color, text) = self.gen_colors(cl["name"], server)
                 feed = {
-                    'events': self.gen_events(cl['name'], moments, server, data),
-                    'textColor': text,
-                    'color': color,
-                    'name': '{} on {}'.format(cl['name'], server),
+                    "events": self.gen_events(cl["name"], moments, server, data),
+                    "textColor": text,
+                    "color": color,
+                    "name": "{} on {}".format(cl["name"], server),
                 }
                 ret.append(feed)
             return ret
 
-        if bui.config['STANDALONE']:
+        if bui.config["STANDALONE"]:
             if data:
                 clients_list = data.keys()
             else:
                 try:
-                    clients_list = [x['name'] for x in bui.client.get_all_clients(last_attempt=False)]
+                    clients_list = [
+                        x["name"]
+                        for x in bui.client.get_all_clients(last_attempt=False)
+                    ]
                 except BUIserverException:
                     clients_list = []
                 if has_filters:
-                    clients_list = [x for x in clients_list if mask.is_client_allowed(current_user, x)]
+                    clients_list = [
+                        x
+                        for x in clients_list
+                        if mask.is_client_allowed(current_user, x)
+                    ]
             for cl in clients_list:
                 (color, text) = self.gen_colors(cl)
                 feed = {
-                    'events': self.gen_events(cl, moments, data=data),
-                    'textColor': text,
-                    'color': color,
-                    'name': cl,
+                    "events": self.gen_events(cl, moments, data=data),
+                    "textColor": text,
+                    "color": color,
+                    "name": cl,
                 }
                 ret.append(feed)
             return ret
@@ -676,25 +826,39 @@ class History(Resource):
             for serv in bui.client.servers:
                 if has_filters:
                     try:
-                        all_clients = [x['name'] for x in bui.client.get_all_clients(serv, last_attempt=False)]
+                        all_clients = [
+                            x["name"]
+                            for x in bui.client.get_all_clients(
+                                serv, last_attempt=False
+                            )
+                        ]
                     except BUIserverException:
                         all_clients = []
-                    grants[serv] = [x for x in all_clients if mask.is_client_allowed(current_user, x, serv)]
+                    grants[serv] = [
+                        x
+                        for x in all_clients
+                        if mask.is_client_allowed(current_user, x, serv)
+                    ]
                 else:
-                    grants[serv] = 'all'
+                    grants[serv] = "all"
             for (serv, clients) in grants.items():
                 if not isinstance(clients, list):
                     if data and serv in data:
                         clients = data[serv].keys()
                     else:
-                        clients = [x['name'] for x in bui.client.get_all_clients(agent=serv, last_attempt=False)]
+                        clients = [
+                            x["name"]
+                            for x in bui.client.get_all_clients(
+                                agent=serv, last_attempt=False
+                            )
+                        ]
                 for cl in clients:
                     (color, text) = self.gen_colors(cl, serv)
                     feed = {
-                        'events': self.gen_events(cl, moments, serv, data),
-                        'textColor': text,
-                        'color': color,
-                        'name': '{} on {}'.format(cl, serv),
+                        "events": self.gen_events(cl, moments, serv, data),
+                        "textColor": text,
+                        "color": color,
+                        "name": "{} on {}".format(cl, serv),
                     }
                     ret.append(feed)
 
@@ -704,24 +868,26 @@ class History(Resource):
         """Generates color for an events feed"""
         cache = self._get_color_session(client, agent)
         if cache:
-            return (cache['color'], cache['text'])
+            return (cache["color"], cache["text"])
         labels = bui.client.get_client_labels(client, agent)
-        HTML_COLOR = r'((?P<hex>#(?P<red_hex>[0-9a-f]{1,2})(?P<green_hex>[0-9a-f]{1,2})(?P<blue_hex>[0-9a-f]{1,2}))|(?P<rgb>rgb\s*\(\s*(?P<red>2[0-5]{2}|2[0-4]\d|[0-1]?\d\d?)\s*,\s*(?P<green>2[0-5]{2}|2[0-4]\d|[0-1]?\d\d?)\s*,\s*(?P<blue>2[0-5]{2}|2[0-4]\d|[0-1]?\d\d?)\s*\))|(?P<plain>[\w-]+$))'
+        HTML_COLOR = r"((?P<hex>#(?P<red_hex>[0-9a-f]{1,2})(?P<green_hex>[0-9a-f]{1,2})(?P<blue_hex>[0-9a-f]{1,2}))|(?P<rgb>rgb\s*\(\s*(?P<red>2[0-5]{2}|2[0-4]\d|[0-1]?\d\d?)\s*,\s*(?P<green>2[0-5]{2}|2[0-4]\d|[0-1]?\d\d?)\s*,\s*(?P<blue>2[0-5]{2}|2[0-4]\d|[0-1]?\d\d?)\s*\))|(?P<plain>[\w-]+$))"
         color_found = False
         color = None
         text = None
         for label in labels:
             # We are looking for labels starting with "color:" or "text:"
-            if re.search(r'^color:', label, re.IGNORECASE):
-                search = re.search(r'^color:\s*{}'.format(HTML_COLOR), label, re.IGNORECASE)
+            if re.search(r"^color:", label, re.IGNORECASE):
+                search = re.search(
+                    r"^color:\s*{}".format(HTML_COLOR), label, re.IGNORECASE
+                )
                 # we allow various color forms. For instance:
                 # hex: #fa12e6
                 # rgb: rgb (123, 42, 9)
                 # plain: black
-                if search.group('hex'):
-                    red = search.group('red_hex')
-                    green = search.group('green_hex')
-                    blue = search.group('blue_hex')
+                if search.group("hex"):
+                    red = search.group("red_hex")
+                    green = search.group("green_hex")
+                    blue = search.group("blue_hex")
                     # ensure ensure the hex part is of the form XX
                     red = red + red if len(red) == 1 else red
                     green = green + green if len(green) == 1 else green
@@ -730,45 +896,51 @@ class History(Resource):
                     red = int(red, 16)
                     green = int(green, 16)
                     blue = int(blue, 16)
-                elif search.group('rgb'):
-                    red = int(search.group('red'))
-                    green = int(search.group('green'))
-                    blue = int(search.group('blue'))
-                elif search.group('plain'):
+                elif search.group("rgb"):
+                    red = int(search.group("red"))
+                    green = int(search.group("green"))
+                    blue = int(search.group("blue"))
+                elif search.group("plain"):
                     # if plain color is provided, we cannot guess the adapted
                     # text color, so we assume white (unless text is specified)
                     red = 0
                     green = 0
                     blue = 0
-                    color = search.group('plain')
+                    color = search.group("plain")
                 else:
                     continue
-                color = color or '#{:02X}{:02X}{:02X}'.format(red, green, blue)
+                color = color or "#{:02X}{:02X}{:02X}".format(red, green, blue)
                 color_found = True
-            if re.search(r'^text:', label, re.IGNORECASE):
-                search = re.search(r'^text:\s*{}'.format(HTML_COLOR), label, re.IGNORECASE)
+            if re.search(r"^text:", label, re.IGNORECASE):
+                search = re.search(
+                    r"^text:\s*{}".format(HTML_COLOR), label, re.IGNORECASE
+                )
                 # if we don't find anything, we'll generate a color based on
                 # the value of the red, green and blue variables
-                text = search.group('hex') or search.group('rgb') or search.group('plain')
+                text = (
+                    search.group("hex") or search.group("rgb") or search.group("plain")
+                )
             if color and text:
                 break
 
         if not color_found:
+
             def rand():
                 return random.randint(0, 255)
+
             red = rand()
             green = rand()
             blue = rand()
 
         text = text or self._get_text_color(red, green, blue)
-        color = color or '#{:02X}{:02X}{:02X}'.format(red, green, blue)
+        color = color or "#{:02X}{:02X}{:02X}".format(red, green, blue)
         self._set_color_session(color, text, client, agent)
         return (color, text)
 
     def _get_text_color(self, red=0, green=0, blue=0):
         """Generates the text color for a given color"""
         yiq = ((red * 299) + (green * 587) + (blue * 114)) / 1000
-        return 'black' if yiq >= 128 else 'white'
+        return "black" if yiq >= 128 else "white"
 
     def _get_color_session(self, client, agent=None):
         """Since we can *paginate* the rendering, we need to store the already
@@ -777,8 +949,8 @@ class History(Resource):
         This method allows to retrieve already generated colors if any
         """
         sess = session._get_current_object()
-        if 'colors' in sess:
-            colors = sess['colors']
+        if "colors" in sess:
+            colors = sess["colors"]
             if agent and agent in colors:
                 return colors[agent].get(client)
             elif not agent:
@@ -794,35 +966,31 @@ class History(Resource):
         sess = session._get_current_object()
         dic = {}
         if agent:
-            if 'colors' in sess and agent in sess['colors']:
-                dic[agent] = sess['colors'][agent]
+            if "colors" in sess and agent in sess["colors"]:
+                dic[agent] = sess["colors"][agent]
             else:
                 dic[agent] = {}
-            dic[agent][client] = {
-                'color': color,
-                'text': text
-            }
+            dic[agent][client] = {"color": color, "text": text}
         else:
-            dic[client] = {
-                'color': color,
-                'text': text
-            }
-        if 'colors' in sess:
-            sess['colors'].update(dic)
+            dic[client] = {"color": color, "text": text}
+        if "colors" in sess:
+            sess["colors"].update(dic)
         else:
-            sess['colors'] = dic
+            sess["colors"] = dic
 
     def gen_events(self, client, moments, server=None, data=None):
         """Creates events for a given client"""
         events = []
         filtered = False
         if data:
-            if bui.config['STANDALONE']:
+            if bui.config["STANDALONE"]:
                 events = data.get(client, [None])
             else:
                 events = data.get(server, {}).get(client, [None])
         if not events:
-            events = bui.client.get_client_filtered(client, start=moments['start'], end=moments['end'], agent=server)
+            events = bui.client.get_client_filtered(
+                client, start=moments["start"], end=moments["end"], agent=server
+            )
             filtered = True
 
         ret = []
@@ -831,15 +999,22 @@ class History(Resource):
                 continue
             if data and not filtered:
                 # events are sorted by date DESC
-                if moments['start'] and ev['date'] < moments['start']:
+                if moments["start"] and ev["date"] < moments["start"]:
                     continue
-                if moments['end'] and ev['date'] > moments['end']:
+                if moments["end"] and ev["date"] > moments["end"]:
                     continue
-            ev['title'] = 'Client: {0}, Backup n°{1:07d}'.format(client, int(ev['number']))
+            ev["title"] = "Client: {0}, Backup n°{1:07d}".format(
+                client, int(ev["number"])
+            )
             if server:
-                ev['title'] += ', Server: {0}'.format(server)
-            ev['name'] = client
-            ev['url'] = url_for('view.backup_report', name=client, server=server, backup=int(ev['number']))
+                ev["title"] += ", Server: {0}".format(server)
+            ev["name"] = client
+            ev["url"] = url_for(
+                "view.backup_report",
+                name=client,
+                server=server,
+                backup=int(ev["number"]),
+            )
             ret.append(ev)
 
         return ret

@@ -40,25 +40,22 @@ class OSSLAuth(object):
         crl_path = self._get_crl_path()
         try:
             with open(crl_path) as crl:
-                self.crl = crypto.load_crl(
-                    crypto.FILETYPE_PEM,
-                    crl.read()
-                )
+                self.crl = crypto.load_crl(crypto.FILETYPE_PEM, crl.read())
         except IOError as err:
             self.logger.warning(str(err))
             self.crl = None
 
     def _get_crt_path(self, client):
-        return '{}.crt'.format(
-            os.path.join(self.ossl_conf.values.get('CA_DIR'), client)
+        return "{}.crt".format(
+            os.path.join(self.ossl_conf.values.get("CA_DIR"), client)
         )
 
     def _get_crl_path(self):
         """Returns the CRL path of a given CA"""
-        path = self.ossl_conf.values.get('CA_DIR')
+        path = self.ossl_conf.values.get("CA_DIR")
         if not path:
-            return ''
-        return '{}/CA_{}.crl'.format(path, self.name)
+            return ""
+        return "{}/CA_{}.crl".format(path, self.name)
 
     def check_client_revoked(self, client):
         """Check whether the given client certificate has been revoked
@@ -73,10 +70,7 @@ class OSSLAuth(object):
         c_cert = self._get_crt_path(client)
         try:
             with open(c_cert) as crt:
-                client_crt = crypto.load_certificate(
-                    crypto.FILETYPE_PEM,
-                    crt.read()
-                )
+                client_crt = crypto.load_certificate(crypto.FILETYPE_PEM, crt.read())
         except IOError as err:
             self.logger.warning(str(err))
             return False
@@ -103,38 +97,42 @@ class OSSLAuth(object):
             return False
         c_cert = self._get_crt_path(client)
         try:
-            DEVNULL = open(os.devnull, 'w')
-            serial = ''
+            DEVNULL = open(os.devnull, "w")
+            serial = ""
             with open(c_cert) as c_file:
                 cert = crypto.load_certificate(crypto.FILETYPE_PEM, c_file.read())
-                serial = '{0:x}'.format(cert.get_serial_number())
+                serial = "{0:x}".format(cert.get_serial_number())
 
-            self.logger.debug('{} serial: {}'.format(client, serial))
-            subprocess.check_call([
-                self.global_conf.get('ca_burp_ca'),
-                '--name',
-                self.name,
-                '--config',
-                self.global_conf.get('ca_conf'),
-                '--dir',
-                self.ossl_conf.values.get('CA_DIR'),
-                '--revoke',
-                serial],
+            self.logger.debug("{} serial: {}".format(client, serial))
+            subprocess.check_call(
+                [
+                    self.global_conf.get("ca_burp_ca"),
+                    "--name",
+                    self.name,
+                    "--config",
+                    self.global_conf.get("ca_conf"),
+                    "--dir",
+                    self.ossl_conf.values.get("CA_DIR"),
+                    "--revoke",
+                    serial,
+                ],
                 stderr=subprocess.STDOUT,
-                stdout=DEVNULL
+                stdout=DEVNULL,
             )
             if update:
-                subprocess.check_call([
-                    self.global_conf.get('ca_burp_ca'),
-                    '--name',
-                    self.name,
-                    '--config',
-                    self.global_conf.get('ca_conf'),
-                    '--dir',
-                    self.ossl_conf.values.get('CA_DIR'),
-                    '--crl'],
+                subprocess.check_call(
+                    [
+                        self.global_conf.get("ca_burp_ca"),
+                        "--name",
+                        self.name,
+                        "--config",
+                        self.global_conf.get("ca_conf"),
+                        "--dir",
+                        self.ossl_conf.values.get("CA_DIR"),
+                        "--crl",
+                    ],
                     stderr=subprocess.STDOUT,
-                    stdout=DEVNULL
+                    stdout=DEVNULL,
                 )
                 self._load_crl()
         except (subprocess.CalledProcessError, IOError) as err:
@@ -167,8 +165,8 @@ class OSSLConf(object):
         ret = []
         try:
             if self.conffile:
-                with codecs.open(self.conffile, 'r', 'utf-8', errors='ignore') as fil:
-                    ret = [x.rstrip('\n') for x in fil.readlines()]
+                with codecs.open(self.conffile, "r", "utf-8", errors="ignore") as fil:
+                    ret = [x.rstrip("\n") for x in fil.readlines()]
         except IOError:
             pass
         return ret
@@ -183,9 +181,9 @@ class OSSLConf(object):
             return
 
         for line in self._read():
-            if re.match(r'^\s*#', line):
+            if re.match(r"^\s*#", line):
                 continue
-            res = re.search(r'\s*([^#][^=\s]+)\s*=\s*(.*)$', line)
+            res = re.search(r"\s*([^#][^=\s]+)\s*=\s*(.*)$", line)
             if res:
                 key = res.group(1)
                 val = res.group(2)
@@ -205,18 +203,10 @@ class OSSLConf(object):
         dic = temp
         env = self._is_env(res)
         for match in env:
-            res = dic[key] = self._translate_env(
-                dic,
-                match,
-                res
-            )
+            res = dic[key] = self._translate_env(dic, match, res)
         lcl = self._is_local(res)
         for match in lcl:
-            res = dic[key] = self._translate_local(
-                dic,
-                match,
-                res
-            )
+            res = dic[key] = self._translate_local(dic, match, res)
         if not lcl and not env:
             return res
         return self._translate(dic, key, res)
@@ -224,21 +214,21 @@ class OSSLConf(object):
     @staticmethod
     def _is_local(val):
         """Look for 'local' variables (ie. $dir)"""
-        lcl = re.compile(r'\${?(\w+)}?')
-        res = [x for x in lcl.findall(val) if x.lower() != 'env']
+        lcl = re.compile(r"\${?(\w+)}?")
+        res = [x for x in lcl.findall(val) if x.lower() != "env"]
         return res
 
     def _translate_local(self, temp, pattern, val):
         """Translate 'local' variables (ie. $dir is replaced by the content of
         the 'dir' variable)
         """
-        res = self.conf.get(pattern) or temp.get(pattern) or ''
-        return re.sub(r'\${?' + pattern + '}?', res, val)
+        res = self.conf.get(pattern) or temp.get(pattern) or ""
+        return re.sub(r"\${?" + pattern + "}?", res, val)
 
     @staticmethod
     def _is_env(val):
         """Look for 'global' variables (ie. $ENV::HOME)"""
-        env = re.compile(r'\${?ENV::(\w+)}?')
+        env = re.compile(r"\${?ENV::(\w+)}?")
         res = env.findall(val)
         return res if res else []
 
@@ -247,10 +237,15 @@ class OSSLConf(object):
         content of the 'HOME' variable if available in the file or with the
         $HOME environment variable
         """
-        res = self.env_cache.get(pattern) or os.getenv(pattern) or \
-            self.conf.get(pattern) or temp.get(pattern) or ''
+        res = (
+            self.env_cache.get(pattern)
+            or os.getenv(pattern)
+            or self.conf.get(pattern)
+            or temp.get(pattern)
+            or ""
+        )
         self.env_cache[pattern] = res
-        return re.sub(r'\${?ENV::' + pattern + '}?', res, val)
+        return re.sub(r"\${?ENV::" + pattern + "}?", res, val)
 
     @staticmethod
     def _md5(path):

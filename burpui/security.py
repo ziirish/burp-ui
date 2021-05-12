@@ -20,12 +20,13 @@ def sanitize_string(string, strict=True, paranoid=False):
     if not string:
         return ""
     if paranoid:
-        return to_unicode(string.encode('unicode_escape'))
+        return to_unicode(string.encode("unicode_escape"))
     elif strict:
-        return to_unicode(string).split('\n')[0]
+        return to_unicode(string).split("\n")[0]
     else:
         import re
-        ret = repr(string).replace('\\\\', '\\')
+
+        ret = repr(string).replace("\\\\", "\\")
         ret = re.sub(r"^u?(?P<quote>['\"])(.*)(?P=quote)$", r"\2", ret)
         return to_unicode(ret)
 
@@ -39,45 +40,47 @@ def basic_login_from_request(request, app):
     :param app: The application context
     :type app: :class:`burpui.engines.server.BUIServer`
     """
-    if app.auth != 'none':
-        if request.headers.get('X-From-UI', False):
+    if app.auth != "none":
+        if request.headers.get("X-From-UI", False):
             return None
         auth = request.authorization
         if auth:
             from flask import session, g
-            app.logger.debug('Found Basic user: {}'.format(auth.username))
+
+            app.logger.debug("Found Basic user: {}".format(auth.username))
             refresh = True
-            if 'login' in session and session['login'] == auth.username:
+            if "login" in session and session["login"] == auth.username:
                 refresh = False
-            session['language'] = request.headers.get('X-Language', 'en')
+            session["language"] = request.headers.get("X-Language", "en")
             user = app.uhandler.user(auth.username, refresh)
             if user and user.active and user.login(auth.password):
                 from flask_login import login_user
                 from .sessions import session_manager
-                if 'login' in session and session['login'] != auth.username:
+
+                if "login" in session and session["login"] != auth.username:
                     session.clear()
-                    session['login'] = auth.username
-                    session['language'] = request.headers.get('X-Language', 'en')
+                    session["login"] = auth.username
+                    session["language"] = request.headers.get("X-Language", "en")
                 login_user(user)
-                if request.headers.get('X-Reuse-Session', False):
+                if request.headers.get("X-Reuse-Session", False):
                     session_manager.store_session(
                         auth.username,
                         request.remote_addr,
-                        request.headers.get('User-Agent'),
+                        request.headers.get("User-Agent"),
                         remember=False,
-                        api=True
+                        api=True,
                     )
                 else:
                     g.basic_session = True
-                app.logger.debug('Successfully logged in')
+                app.logger.debug("Successfully logged in")
                 return user
-            app.logger.warning('Failed to log-in')
+            app.logger.warning("Failed to log-in")
     return None
 
 
 def is_safe_url(target):
     from flask import request
+
     ref_url = urlparse(request.host_url)
     test_url = urlparse(urljoin(request.host_url, target))
-    return test_url.scheme in ('http', 'https') and \
-        ref_url.netloc == test_url.netloc
+    return test_url.scheme in ("http", "https") and ref_url.netloc == test_url.netloc

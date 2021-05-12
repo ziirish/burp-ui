@@ -16,6 +16,7 @@ ACL_METHODS = BUIacl.__abstractmethods__
 
 class UserAuthHandler(BUIhandler):
     """See :class:`burpui.misc.auth.interface.BUIhandler`"""
+
     def __init__(self, app=None):
         """See :func:`burpui.misc.auth.interface.BUIhandler.__init__`
 
@@ -26,37 +27,38 @@ class UserAuthHandler(BUIhandler):
         self.users = {}
         backends = []
         self.errors = {}
-        if self.app.auth and 'none' not in self.app.auth:
+        if self.app.auth and "none" not in self.app.auth:
             me, _ = os.path.splitext(os.path.basename(__file__))
             back = self.app.auth
             for au in back:
                 if au == me:
-                    self.app.logger.critical('Recursive import not permitted!')
+                    self.app.logger.critical("Recursive import not permitted!")
                     continue
                 try:
-                    (modpath, _) = __name__.rsplit('.', 1)
-                    mod = import_module('.' + au, modpath)
+                    (modpath, _) = __name__.rsplit(".", 1)
+                    mod = import_module("." + au, modpath)
                     obj = mod.UserHandler(self.app)
                     backends.append(obj)
                 except:
                     import traceback
+
                     self.errors[au] = traceback.format_exc()
-        for name, plugin in self.app.plugin_manager.get_plugins_by_type('auth').items():
+        for name, plugin in self.app.plugin_manager.get_plugins_by_type("auth").items():
             try:
                 obj = plugin.UserHandler(self.app)
                 backends.append(obj)
             except:
                 import traceback
+
                 self.errors[name] = traceback.format_exc()
-        backends.sort(key=lambda x: getattr(x, 'priority', -1), reverse=True)
+        backends.sort(key=lambda x: getattr(x, "priority", -1), reverse=True)
         if not backends:
             raise ImportError(
-                'No backend found for \'{}\':\n{}'.format(self.app.auth,
-                                                          self.errors)
+                "No backend found for '{}':\n{}".format(self.app.auth, self.errors)
             )
         for name, err in self.errors.items():
             self.app.logger.error(
-                'Unable to load module {}:\n{}'.format(repr(name), err)
+                "Unable to load module {}:\n{}".format(repr(name), err)
             )
         self.backends = OrderedDict()
         for obj in backends:
@@ -65,14 +67,18 @@ class UserAuthHandler(BUIhandler):
     def user(self, name=None, refresh=False):
         """See :func:`burpui.misc.auth.interface.BUIhandler.user`"""
         key = session_manager.get_session_id() or name
-        if key != name and is_uuid(name) and name in self.users and \
-                not session_manager.session_expired_by_id(name):
+        if (
+            key != name
+            and is_uuid(name)
+            and name in self.users
+            and not session_manager.session_expired_by_id(name)
+        ):
             usr = self.users[name]
             usr.id = key
             self.users[key] = usr
             del self.users[name]
             session_manager.session_import_from(name)
-            session['authenticated'] = True
+            session["authenticated"] = True
         if not key:
             return None
         if refresh and key in self.users:
@@ -102,6 +108,7 @@ class UserAuthHandler(BUIhandler):
 
 class ProxyACLCall(object):
     """Class that actually calls the ACL method"""
+
     def __init__(self, acl, username, method):
         """
         :param acl: ACL to use
@@ -133,9 +140,7 @@ class ProxyACLCall(object):
         #     x = my_function('blah', titi='blih')
         #
         # => {'toto': 'blah', 'titi': 'blih'}
-        encoded_args = {
-            'username': self.username
-        }
+        encoded_args = {"username": self.username}
         for idx, opt in enumerate(args):
             encoded_args[args_name[idx]] = opt
         encoded_args.update(kwargs)
@@ -155,7 +160,7 @@ class ACLproxy(BUIacl):
     def __getattribute__(self, name):
         # always return this value because we need it and if we don't do that
         # we'll end up with an infinite loop
-        if name in ['foreign', 'acl', 'username']:
+        if name in ["foreign", "acl", "username"]:
             return object.__getattribute__(self, name)
         # now we can retrieve the 'foreign' list and know if the object called
         # needs to be "proxyfied"
@@ -184,7 +189,7 @@ class ACLanon(BUIacl):
     def __getattribute__(self, name):
         # always return this value because we need it and if we don't do that
         # we'll end up with an infinite loop
-        if name == 'foreign':
+        if name == "foreign":
             return object.__getattribute__(self, name)
         # now we can retrieve the 'foreign' list and know if the object called
         # needs to be "proxyfied"
@@ -195,7 +200,7 @@ class ACLanon(BUIacl):
 
 class BUIanon(AnonymousUserMixin):
     _acl = ACLanon()
-    name = 'Unknown'
+    name = "Unknown"
 
     def login(self, passwd=None):
         return False
@@ -215,6 +220,7 @@ class BUIanon(AnonymousUserMixin):
 
 class UserHandler(BUIuser):
     """See :class:`burpui.misc.auth.interface.BUIuser`"""
+
     def __init__(self, app, backends=None, name=None, id=None, refresh=False):
         """
         :param app: Application context
@@ -223,17 +229,16 @@ class UserHandler(BUIuser):
         self.id = id
         self.app = app
         self.active = False
-        last_backend = session.get('backend', None)
-        self.authenticated = session.get('authenticated', False)
-        self.language = session.get('language', None)
+        last_backend = session.get("backend", None)
+        self.authenticated = session.get("authenticated", False)
+        self.language = session.get("language", None)
         self.backends = backends
         self.back = None
 
         if refresh or not is_uuid(name):
             username = name
         else:
-            username = session_manager.get_session_username() or \
-                session.get('login')
+            username = session_manager.get_session_username() or session.get("login")
         self.real = None
 
         self.name = username
@@ -281,23 +286,24 @@ class UserHandler(BUIuser):
 
     @property
     def backend(self):
-        return getattr(self.real, 'backend', None)
+        return getattr(self.real, "backend", None)
 
     def _load_prefs(self):
-        session['login'] = self.name
-        if self.app.config['WITH_SQL']:
+        session["login"] = self.name
+        if self.app.config["WITH_SQL"]:
             from ...models import Pref
+
             prefs = Pref.query.filter_by(user=self.name).all()
             for pref in prefs:
-                if pref.key == 'language':
+                if pref.key == "language":
                     continue
                 if hasattr(self, pref.key):
                     setattr(self, pref.key, pref.value)
                 session[pref.key] = pref.value
 
     def refresh_session(self):
-        self.authenticated = session.get('authenticated', False)
-        self.language = session.get('language', None)
+        self.authenticated = session.get("authenticated", False)
+        self.language = session.get("language", None)
         self._load_prefs()
 
     def login(self, passwd=None):
@@ -317,7 +323,7 @@ class UserHandler(BUIuser):
                     self._acl.username = res
                     break
         elif self.real:  # pragma: no cover
-            if self.back and getattr(self.back, 'changed', False):
+            if self.back and getattr(self.back, "changed", False):
                 self.real = None
                 self.back = None
                 return self.login(passwd)
@@ -327,8 +333,8 @@ class UserHandler(BUIuser):
                 self.real = None
                 self.back = None
                 return self.login(passwd)
-        session['authenticated'] = self.authenticated
-        session['language'] = self.language
-        session['login'] = self.name
-        session['backend'] = self.backend
+        session["authenticated"] = self.authenticated
+        session["language"] = self.language
+        session["login"] = self.name
+        session["backend"] = self.backend
         return self.authenticated

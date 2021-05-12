@@ -16,8 +16,13 @@ import time
 import logging
 
 from .desc import __version__, __release__
-from .extensions import create_celery, create_db, create_websocket, \
-    parse_db_setting, get_redis_server
+from .extensions import (
+    create_celery,
+    create_db,
+    create_websocket,
+    parse_db_setting,
+    get_redis_server,
+)
 
 
 def create_app(conf=None, verbose=0, logfile=None, **kwargs):
@@ -61,20 +66,20 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
     from .ext.i18n import babel, get_locale
     from .misc.auth.handler import BUIanon
 
-    gunicorn = kwargs.get('gunicorn', True)
-    unittest = kwargs.get('unittest', False)
-    debug = kwargs.get('debug', False)
-    cli = kwargs.get('cli', False)
-    reverse_proxy = kwargs.get('reverse_proxy', gunicorn)
-    celery_worker = kwargs.get('celery_worker', False)
-    websocket_server = kwargs.get('websocket_server', False)
+    gunicorn = kwargs.get("gunicorn", True)
+    unittest = kwargs.get("unittest", False)
+    debug = kwargs.get("debug", False)
+    cli = kwargs.get("cli", False)
+    reverse_proxy = kwargs.get("reverse_proxy", gunicorn)
+    celery_worker = kwargs.get("celery_worker", False)
+    websocket_server = kwargs.get("websocket_server", False)
 
     # We initialize the core
     app = BurpUI()
 
-    app.config['CFG'] = None
-    app.config['LOG_FILE'] = logfile
-    app.config['LOG_LEVEL'] = verbose
+    app.config["CFG"] = None
+    app.config["LOG_FILE"] = logfile
+    app.config["LOG_LEVEL"] = verbose
 
     logger.init_app(app)
     if verbose:
@@ -83,47 +88,47 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
     app.gunicorn = gunicorn
 
     logger.debug(
-        'conf: {}\n'.format(conf) +
-        'verbose: {}\n'.format(logging.getLevelName(verbose)) +
-        'logfile: {}\n'.format(logfile) +
-        'gunicorn: {}\n'.format(gunicorn) +
-        'debug: {}\n'.format(debug) +
-        'unittest: {}\n'.format(unittest) +
-        'cli: {}\n'.format(cli) +
-        'reverse_proxy: {}\n'.format(reverse_proxy) +
-        'celery_worker: {}\n'.format(celery_worker) +
-        'websocket_server: {}'.format(websocket_server)
+        "conf: {}\n".format(conf)
+        + "verbose: {}\n".format(logging.getLevelName(verbose))
+        + "logfile: {}\n".format(logfile)
+        + "gunicorn: {}\n".format(gunicorn)
+        + "debug: {}\n".format(debug)
+        + "unittest: {}\n".format(unittest)
+        + "cli: {}\n".format(cli)
+        + "reverse_proxy: {}\n".format(reverse_proxy)
+        + "celery_worker: {}\n".format(celery_worker)
+        + "websocket_server: {}".format(websocket_server)
     )
 
     # Some config
-    app.config['BUI_CLI'] = cli
+    app.config["BUI_CLI"] = cli
 
     # FIXME: strange behavior when bundling errors
     # app.config['BUNDLE_ERRORS'] = True
 
-    app.config['REMEMBER_COOKIE_HTTPONLY'] = True
+    app.config["REMEMBER_COOKIE_HTTPONLY"] = True
 
     if debug and not gunicorn:  # pragma: no cover
-        app.config['DEBUG'] = True and not unittest
-        app.config['TESTING'] = True and not unittest
+        app.config["DEBUG"] = True and not unittest
+        app.config["TESTING"] = True and not unittest
 
     # Still need to test conf file here because the init function can be called
     # by gunicorn directly
     if conf:
-        app.config['CFG'] = lookup_file(conf, guess=False)
+        app.config["CFG"] = lookup_file(conf, guess=False)
     else:
-        app.config['CFG'] = lookup_file()
+        app.config["CFG"] = lookup_file()
 
-    logger.info('Using configuration: {}'.format(app.config['CFG']))
+    logger.info("Using configuration: {}".format(app.config["CFG"]))
 
-    app.setup(app.config['CFG'], unittest, cli)
-    if cli and not websocket_server and 'shell' not in sys.argv:
+    app.setup(app.config["CFG"], unittest, cli)
+    if cli and not websocket_server and "shell" not in sys.argv:
         return app
 
     if debug:
-        app.config.setdefault('TEMPLATES_AUTO_RELOAD', True)
-        app.config['TEMPLATES_AUTO_RELOAD'] = True
-        app.config['DEBUG'] = True
+        app.config.setdefault("TEMPLATES_AUTO_RELOAD", True)
+        app.config["TEMPLATES_AUTO_RELOAD"] = True
+        app.config["DEBUG"] = True
 
     if app.demo:
         try:
@@ -131,22 +136,24 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
             from sentry_sdk.integrations.flask import FlaskIntegration
 
             sentry_sdk.init(
-                dsn=app.config['BUI_DSN'],
-                integrations=[FlaskIntegration()]
+                dsn=app.config["BUI_DSN"], integrations=[FlaskIntegration()]
             )
         except ImportError:
             pass
 
     # manage application secret key
-    if app.secret_key and \
-            (app.secret_key.lower() == 'none' or
-             (app.secret_key.lower() == 'random' and
-              gunicorn)):  # pragma: no cover
-        logger.critical('Your setup is not secure! Please consider setting a'
-                        ' secret key in your configuration file')
-        app.secret_key = 'Burp-UI'
-    if not app.secret_key or app.secret_key.lower() == 'random':
+    if app.secret_key and (
+        app.secret_key.lower() == "none"
+        or (app.secret_key.lower() == "random" and gunicorn)
+    ):  # pragma: no cover
+        logger.critical(
+            "Your setup is not secure! Please consider setting a"
+            " secret key in your configuration file"
+        )
+        app.secret_key = "Burp-UI"
+    if not app.secret_key or app.secret_key.lower() == "random":
         from base64 import b64encode
+
         app.secret_key = b64encode(os.urandom(256))
 
     app.wsgi_app = ReverseProxied(app.wsgi_app, app)
@@ -156,27 +163,33 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
         from werkzeug.middleware.proxy_fix import ProxyFix
 
         kwargs = {}
-        if app.config['NUM_PROXIES'] > 0:
-            kwargs = app.config['PROXY_FIX_ARGS'].format(num_proxies=app.config['NUM_PROXIES'])
+        if app.config["NUM_PROXIES"] > 0:
+            kwargs = app.config["PROXY_FIX_ARGS"].format(
+                num_proxies=app.config["NUM_PROXIES"]
+            )
             kwargs = json.loads(kwargs)
         logger.debug(f"Using {kwargs} as ProxyFix parameters")
         app.wsgi_app = ProxyFix(app.wsgi_app, **kwargs)
 
-    if app.storage and app.storage.lower() == 'redis':
+    if app.storage and app.storage.lower() == "redis":
         try:
             # Session setup
-            if not app.session_db or \
-                    str(app.session_db).lower() not in ['none', 'false']:
+            if not app.session_db or str(app.session_db).lower() not in [
+                "none",
+                "false",
+            ]:
                 from redis import Redis
                 from .ext.session import sess
+
                 host, port, pwd = get_redis_server(app)
                 db = 0
-                if app.session_db and \
-                        str(app.session_db).lower() not \
-                        in ['redis', 'default', 'true']:
+                if app.session_db and str(app.session_db).lower() not in [
+                    "redis",
+                    "default",
+                    "true",
+                ]:
                     try:  # pragma: no cover
-                        (_, _, pwd, host, port, db) = \
-                            parse_db_setting(app.session_db)
+                        (_, _, pwd, host, port, db) = parse_db_setting(app.session_db)
                     except ValueError as exp:
                         logger.warning(str(exp))
                 try:
@@ -184,54 +197,49 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
                 except ValueError:
                     db = 0
                 logger.debug(
-                    'SESSION: Using redis://guest:****@{}:{}/{}'.format(
-                        host,
-                        port,
-                        db)
+                    "SESSION: Using redis://guest:****@{}:{}/{}".format(host, port, db)
                 )
                 red = Redis(host=host, port=port, db=db, password=pwd)
-                app.config['WITH_SRV_SESSION'] = True
-                app.config['SESSION_TYPE'] = 'redis'
-                app.config['SESSION_REDIS'] = red
-                app.config['SESSION_USE_SIGNER'] = app.secret_key is not None
-                app.config['SESSION_PERMANENT'] = False
+                app.config["WITH_SRV_SESSION"] = True
+                app.config["SESSION_TYPE"] = "redis"
+                app.config["SESSION_REDIS"] = red
+                app.config["SESSION_USE_SIGNER"] = app.secret_key is not None
+                app.config["SESSION_PERMANENT"] = False
                 sess.init_app(app)
                 session_manager.backend = red
         except Exception as exp:  # pragma: no cover
-            logger.warning('Unable to initialize session: {}'.format(str(exp)))
-            app.config['WITH_SRV_SESSION'] = False
+            logger.warning("Unable to initialize session: {}".format(str(exp)))
+            app.config["WITH_SRV_SESSION"] = False
         try:
             # Cache setup
-            if not app.cache_db or \
-                    str(app.cache_db).lower() not in ['none', 'false']:
+            if not app.cache_db or str(app.cache_db).lower() not in ["none", "false"]:
                 host, port, pwd = get_redis_server(app)
                 db = 1
-                if app.cache_db and \
-                        str(app.cache_db).lower() not \
-                        in ['redis', 'default', 'true']:
+                if app.cache_db and str(app.cache_db).lower() not in [
+                    "redis",
+                    "default",
+                    "true",
+                ]:
                     try:  # pragma: no cover
-                        (_, _, pwd, host, port, db) = \
-                            parse_db_setting(app.cache_db)
+                        (_, _, pwd, host, port, db) = parse_db_setting(app.cache_db)
                     except ValueError as exp:
                         logger.warning(str(exp))
                 try:
                     db = int(db)
                 except ValueError:
                     db = 1
-                logger.debug('CACHE: Using redis://guest:****@{}:{}/{}'.format(
-                    host,
-                    port,
-                    db)
+                logger.debug(
+                    "CACHE: Using redis://guest:****@{}:{}/{}".format(host, port, db)
                 )
                 cache.init_app(
                     app,
                     config={
-                        'CACHE_TYPE': 'redis',
-                        'CACHE_REDIS_HOST': host,
-                        'CACHE_REDIS_PORT': port,
-                        'CACHE_REDIS_PASSWORD': pwd,
-                        'CACHE_REDIS_DB': db
-                    }
+                        "CACHE_TYPE": "redis",
+                        "CACHE_REDIS_HOST": host,
+                        "CACHE_REDIS_PORT": port,
+                        "CACHE_REDIS_PASSWORD": pwd,
+                        "CACHE_REDIS_DB": db,
+                    },
                 )
                 # clear cache at startup in case we removed or added servers
                 with app.app_context():
@@ -239,49 +247,47 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
             else:  # pragma: no cover
                 cache.init_app(app)
         except Exception as exp:  # pragma: no cover
-            logger.warning('Unable to initialize cache: {}'.format(str(exp)))
+            logger.warning("Unable to initialize cache: {}".format(str(exp)))
             cache.init_app(app)
         try:
             # Limiter setup
-            if app.limiter and str(app.limiter).lower() not \
-                    in ['none', 'false']:  # pragma: no cover
+            if app.limiter and str(app.limiter).lower() not in [
+                "none",
+                "false",
+            ]:  # pragma: no cover
                 from .ext.limit import limiter
-                app.config['RATELIMIT_HEADERS_ENABLED'] = True
-                if app.limiter and str(app.limiter).lower() not \
-                        in ['default', 'redis', 'true']:
-                    app.config['RATELIMIT_STORAGE_URL'] = app.limiter
+
+                app.config["RATELIMIT_HEADERS_ENABLED"] = True
+                if app.limiter and str(app.limiter).lower() not in [
+                    "default",
+                    "redis",
+                    "true",
+                ]:
+                    app.config["RATELIMIT_STORAGE_URL"] = app.limiter
                 else:
                     db = 3
                     host, port, pwd = get_redis_server(app)
                     if pwd:
-                        conn = 'redis://guest:{}@{}:{}/{}'.format(
-                            pwd,
-                            host,
-                            port,
-                            db
-                        )
+                        conn = "redis://guest:{}@{}:{}/{}".format(pwd, host, port, db)
                     else:
-                        conn = 'redis://{}:{}/{}'.format(host, port, db)
-                    app.config['RATELIMIT_STORAGE_URL'] = conn
+                        conn = "redis://{}:{}/{}".format(host, port, db)
+                    app.config["RATELIMIT_STORAGE_URL"] = conn
 
                 (_, _, pwd, host, port, db) = parse_db_setting(
-                    app.config['RATELIMIT_STORAGE_URL']
+                    app.config["RATELIMIT_STORAGE_URL"]
                 )
 
                 logger.debug(
-                    'LIMITER: Using redis://guest:****@{}:{}/{}'.format(
-                        host,
-                        port,
-                        db
-                    )
+                    "LIMITER: Using redis://guest:****@{}:{}/{}".format(host, port, db)
                 )
                 limiter.init_app(app)
-                app.config['WITH_LIMIT'] = True
+                app.config["WITH_LIMIT"] = True
         except ImportError:  # pragma: no cover
-            logger.warning('Unable to load limiter. Did you run \'pip install '
-                           'flask-limiter\'?')
+            logger.warning(
+                "Unable to load limiter. Did you run 'pip install " "flask-limiter'?"
+            )
         except Exception as exp:  # pragma: no cover
-            logger.warning('Unable to initialize limiter: {}'.format(str(exp)))
+            logger.warning("Unable to initialize limiter: {}".format(str(exp)))
     else:
         cache.init_app(app)
 
@@ -299,7 +305,7 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
             isinstance=isinstance,
             list=list,
             mypad=mypad,
-            version_id='{}-{}'.format(__version__, __release__),
+            version_id="{}-{}".format(__version__, __release__),
         )
 
         # We initialize the API
@@ -310,11 +316,8 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
         app.register_blueprint(view)
 
         # Initialize Bower ext
-        app.config.setdefault(
-            'BOWER_COMPONENTS_ROOT',
-            os.path.join('static', 'vendor')
-        )
-        app.config.setdefault('BOWER_REPLACE_URL_FOR', True)
+        app.config.setdefault("BOWER_COMPONENTS_ROOT", os.path.join("static", "vendor"))
+        app.config.setdefault("BOWER_REPLACE_URL_FOR", True)
         bower = Bower()
         bower.init_app(app)
 
@@ -329,15 +332,13 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
     # And the login_manager
     app.login_manager = LoginManager()
     app.login_manager.anonymous_user = BUIanon
-    app.login_manager.login_view = 'view.login'
-    app.login_manager.login_message_category = 'info'
-    app.login_manager.session_protection = 'strong'
+    app.login_manager.login_view = "view.login"
+    app.login_manager.login_message_category = "info"
+    app.login_manager.session_protection = "strong"
     # This is just to have the strings in the .po files
-    app.login_manager.login_message = gettext(
-        'Please log in to access this page.'
-    )
+    app.login_manager.login_message = gettext("Please log in to access this page.")
     app.login_manager.needs_refresh_message = gettext(
-        'Please reauthenticate to access this page.'
+        "Please reauthenticate to access this page."
     )
     # This will be called at runtime and will then translate the strings
     app.login_manager.localize_callback = gettext
@@ -353,14 +354,14 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
     def _check_session(user, request, api=False):
         """Check if the session is in the db"""
         if user and not session_manager.session_in_db():  # pragma: no cover
-            login = getattr(user, 'name', None)
+            login = getattr(user, "name", None)
             if login and not is_uuid(login):
-                remember = session.get('persistent', False)
+                remember = session.get("persistent", False)
                 if not remember:
                     from flask_login import decode_cookie
+
                     remember_cookie = request.cookies.get(
-                        app.config.get('REMEMBER_COOKIE_NAME'),
-                        False
+                        app.config.get("REMEMBER_COOKIE_NAME"), False
                     )
                     # check if the remember_cookie is legit
                     if remember_cookie and decode_cookie(remember_cookie):
@@ -368,45 +369,47 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
                 session_manager.store_session(
                     login,
                     request.remote_addr,
-                    request.headers.get('User-Agent'),
+                    request.headers.get("User-Agent"),
                     remember,
-                    api
+                    api,
                 )
             elif login:
                 app.uhandler.remove(login)
 
     @app.before_request
     def setup_request():
-        g.version = '{}-{}'.format(__version__, __release__)
+        g.version = "{}-{}".format(__version__, __release__)
         g.locale = get_locale()
         g.now = round(time.time())
-        g.date_format = session.get('dateFormat', 'llll')
-        g.timezone = session.get('timezone')
+        g.date_format = session.get("dateFormat", "llll")
+        g.timezone = session.get("timezone")
         # make sure to store secure cookie if required
-        if app.config['BUI_SCOOKIE']:
+        if app.config["BUI_SCOOKIE"]:
             criteria = (
                 request.is_secure,
-                request.headers.get('X-Forwarded-Proto', 'http') == 'https'
+                request.headers.get("X-Forwarded-Proto", "http") == "https",
             )
-            app.config['SESSION_COOKIE_SECURE'] = \
-                app.config['REMEMBER_COOKIE_SECURE'] = any(criteria)
-        if '_extra' in request.args:
-            session['_extra'] = request.args.get('_extra')
-        g._extra = session.get('_extra', '')
+            app.config["SESSION_COOKIE_SECURE"] = app.config[
+                "REMEMBER_COOKIE_SECURE"
+            ] = any(criteria)
+        if "_extra" in request.args:
+            session["_extra"] = request.args.get("_extra")
+        g._extra = session.get("_extra", "")
 
     @app.login_manager.user_loader
     def load_user(userid):
         """User loader callback"""
-        if app.auth != 'none':
+        if app.auth != "none":
             user = app.uhandler.user(userid)
             if not user:
                 return None
-            if 'X-Language' in request.headers:
-                language = request.headers.get('X-Language')
+            if "X-Language" in request.headers:
+                language = request.headers.get("X-Language")
                 user.language = language
-                session['language'] = language
-            if '_id' not in session:
+                session["language"] = language
+            if "_id" not in session:
                 from flask_login import login_user
+
                 # if _id is not in session, it means we loaded the user from
                 # cache/db using the remember cookie so we need to login it
                 login_user(user, remember=user.is_authenticated, fresh=False)
@@ -417,14 +420,14 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
     @app.login_manager.request_loader
     def load_user_from_request(request):
         """User loader from request callback"""
-        if app.auth != 'none':
+        if app.auth != "none":
             user = basic_login_from_request(request, app)
             _check_session(user, request, True)
             return user
 
     @app.after_request
     def after_request(response):
-        if getattr(g, 'basic_session', False):
+        if getattr(g, "basic_session", False):
             if session_manager.invalidate_current_session():
                 session_manager.delete_session()
         return response

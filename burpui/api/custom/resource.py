@@ -18,6 +18,7 @@ from ...tools.logging import logger
 
 class Resource(ResourcePlus):
     """Subclass default Resource to manage ACL"""
+
     # by default, we require valid login for all routes. This can be disabled
     # per resource
     login_required = True
@@ -36,22 +37,12 @@ class Resource(ResourcePlus):
             except:
                 message = None
         # Add extra logs when raising abort exception
-        (
-            frm,
-            filename,
-            line_no,
-            func,
-            source_code,
-            source_index
-        ) = inspect.stack()[1]
+        (frm, filename, line_no, func, source_code, source_index) = inspect.stack()[1]
         mod = inspect.getmodule(frm)
-        self.logger.debug('Abort in {}:{}'.format(filename, line_no))
+        self.logger.debug("Abort in {}:{}".format(filename, line_no))
         self.logger.warning(
-            '[{}] {}: {}{}'.format(
-                mod.__name__,
-                code,
-                message,
-                ' - {}'.format(kwargs) if kwargs else ''
+            "[{}] {}: {}{}".format(
+                mod.__name__, code, message, " - {}".format(kwargs) if kwargs else ""
             )
         )
         # This raises a Flask Exception

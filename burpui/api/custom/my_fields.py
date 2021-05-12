@@ -23,6 +23,7 @@ TZ = str(get_localzone())
 
 class DateTime(fields.DateTime):
     """Custom DateTime parser on top of :mod:`arrow` to provide lossless dates"""
+
     def parse(self, value):
         """Parse the value"""
         if value is None:
@@ -42,7 +43,7 @@ class DateTime(fields.DateTime):
             new_value = self.parse(value)
             if not new_value:
                 return value
-            if self.dt_format == 'iso8601':
+            if self.dt_format == "iso8601":
                 return new_value.isoformat()
             else:
                 return fields.DateTime.format(self, value)
@@ -54,6 +55,7 @@ class DateTime(fields.DateTime):
 
 class DateTimeHuman(fields.Raw):
     """Custom parser to display human readable times (like '1 hour ago')"""
+
     def parse(self, value):
         """Parse the value"""
         if value is None:
@@ -74,16 +76,18 @@ class DateTimeHuman(fields.Raw):
 
 class BackupNumber(fields.String):
     """Custom BackupNumber field"""
+
     def format(self, value):
         """Format the value"""
         try:
-            return fields.String.format(self, '{0:07d}'.format(int(value)))
+            return fields.String.format(self, "{0:07d}".format(int(value)))
         except ValueError as e:
             raise fields.MarshallingError(e)
 
 
 class SafeString(fields.String):
     """Custom SafeString field to encode HTML entities"""
+
     def format(self, value):
         """Format the value"""
         return fields.String.format(self, escape(value))
@@ -91,6 +95,7 @@ class SafeString(fields.String):
 
 class LocalizedString(fields.String):
     """Custom LocalizedString to return localized strings"""
+
     def format(self, value):
         """Format the value"""
         return fields.String.format(self, _(value))

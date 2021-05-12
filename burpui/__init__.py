@@ -13,7 +13,7 @@ import warnings
 
 from .app import create_app
 
-warnings.simplefilter('always', RuntimeWarning)
+warnings.simplefilter("always", RuntimeWarning)
 
 
 # backward compatibility

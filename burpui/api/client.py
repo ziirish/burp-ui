@@ -23,97 +23,66 @@ from flask import current_app, request
 from flask_login import current_user
 
 bui = current_app  # type: BUIServer
-ns = api.namespace('client', 'Client methods')
+ns = api.namespace("client", "Client methods")
 
-node_fields = ns.model('ClientTree', {
-    'date': fields.DateTime(
-        required=True,
-        dt_format='iso8601',
-        description='Human representation of the backup date'
-    ),
-    'gid': fields.Integer(
-        required=True,
-        description='gid owner of the node'
-    ),
-    'inodes': fields.Integer(
-        required=True,
-        description='Inodes of the node'
-    ),
-    'mode': fields.String(
-        required=True,
-        description='Human readable mode. Example: "drwxr-xr-x"'
-    ),
-    'name': fields.String(
-        required=True,
-        description='Node name'
-    ),
-    'title': fields.SafeString(
-        required=True,
-        description='Node name (alias)',
-        attribute='name'
-    ),
-    'fullname': fields.String(
-        required=True,
-        description='Full name of the Node'
-    ),
-    'key': fields.String(
-        required=True,
-        description='Full name of the Node (alias)',
-        attribute='fullname'
-    ),
-    'parent': fields.String(
-        required=True,
-        description='Parent node name'
-    ),
-    'size': fields.String(
-        required=True,
-        description='Human readable size. Example: "12.0KiB"'
-    ),
-    'type': fields.String(
-        required=True,
-        description='Node type. Example: "d"'
-    ),
-    'uid': fields.Integer(
-        required=True,
-        description='uid owner of the node'
-    ),
-    'selected': fields.Boolean(
-        required=False,
-        description='Is path selected',
-        default=False
-    ),
-    'lazy': fields.Boolean(
-        required=False,
-        description='Do the children have been loaded during this' +
-                    ' request or not',
-        default=True
-    ),
-    'folder': fields.Boolean(
-        required=True,
-        description='Is it a folder'
-    ),
-    'expanded': fields.Boolean(
-        required=False,
-        description='Should we expand the node',
-        default=False
-    ),
-    # Cannot use nested on own
-    'children': fields.Raw(
-        required=False,
-        description='List of children'
-    ),
-})
+node_fields = ns.model(
+    "ClientTree",
+    {
+        "date": fields.DateTime(
+            required=True,
+            dt_format="iso8601",
+            description="Human representation of the backup date",
+        ),
+        "gid": fields.Integer(required=True, description="gid owner of the node"),
+        "inodes": fields.Integer(required=True, description="Inodes of the node"),
+        "mode": fields.String(
+            required=True, description='Human readable mode. Example: "drwxr-xr-x"'
+        ),
+        "name": fields.String(required=True, description="Node name"),
+        "title": fields.SafeString(
+            required=True, description="Node name (alias)", attribute="name"
+        ),
+        "fullname": fields.String(required=True, description="Full name of the Node"),
+        "key": fields.String(
+            required=True,
+            description="Full name of the Node (alias)",
+            attribute="fullname",
+        ),
+        "parent": fields.String(required=True, description="Parent node name"),
+        "size": fields.String(
+            required=True, description='Human readable size. Example: "12.0KiB"'
+        ),
+        "type": fields.String(required=True, description='Node type. Example: "d"'),
+        "uid": fields.Integer(required=True, description="uid owner of the node"),
+        "selected": fields.Boolean(
+            required=False, description="Is path selected", default=False
+        ),
+        "lazy": fields.Boolean(
+            required=False,
+            description="Do the children have been loaded during this"
+            + " request or not",
+            default=True,
+        ),
+        "folder": fields.Boolean(required=True, description="Is it a folder"),
+        "expanded": fields.Boolean(
+            required=False, description="Should we expand the node", default=False
+        ),
+        # Cannot use nested on own
+        "children": fields.Raw(required=False, description="List of children"),
+    },
+)
 
 
-@ns.route('/browse/<name>/<int:backup>',
-          '/<server>/browse/<name>/<int:backup>',
-          endpoint='client_tree')
+@ns.route(
+    "/browse/<name>/<int:backup>",
+    "/<server>/browse/<name>/<int:backup>",
+    endpoint="client_tree",
+)
 @ns.doc(
     params={
-        'server': 'Which server to collect data from when in' +
-                  ' multi-agent mode',
-        'name': 'Client name',
-        'backup': 'Backup number',
+        "server": "Which server to collect data from when in" + " multi-agent mode",
+        "name": "Client name",
+        "backup": "Backup number",
     },
 )
 class ClientTree(Resource):
@@ -127,49 +96,49 @@ class ClientTree(Resource):
     A mandatory ``GET`` parameter called ``root`` is used to know what path we
     are working on.
     """
+
     parser = ns.parser()
     parser.add_argument(
-        'serverName',
-        help='Which server to collect data from when in multi-agent mode'
+        "serverName", help="Which server to collect data from when in multi-agent mode"
     )
     parser.add_argument(
-        'root',
-        help='Root path to expand. You may specify several of them',
-        action='append'
+        "root",
+        help="Root path to expand. You may specify several of them",
+        action="append",
     )
     parser.add_argument(
-        'recursive',
+        "recursive",
         type=inputs.boolean,
-        help='Returns the whole tree instead of just the sub-tree',
+        help="Returns the whole tree instead of just the sub-tree",
         nullable=True,
         required=False,
-        default=False
+        default=False,
     )
     parser.add_argument(
-        'selected',
+        "selected",
         type=inputs.boolean,
-        help='Make the returned path selected at load time. Only works' +
-             ' if \'recursive\' is True',
+        help="Make the returned path selected at load time. Only works"
+        + " if 'recursive' is True",
         nullable=True,
         required=False,
-        default=False
+        default=False,
     )
     parser.add_argument(
-        'init',
+        "init",
         type=inputs.boolean,
-        help='First call to load the root of the tree',
+        help="First call to load the root of the tree",
         nullable=True,
         required=False,
-        default=False
+        default=False,
     )
 
     @cache.cached(timeout=3600, key_prefix=cache_key, unless=force_refresh)
-    @ns.marshal_list_with(node_fields, code=200, description='Success')
+    @ns.marshal_list_with(node_fields, code=200, description="Success")
     @ns.expect(parser)
     @ns.doc(
         responses={
-            '403': 'Insufficient permissions',
-            '500': 'Internal failure',
+            "403": "Insufficient permissions",
+            "500": "Internal failure",
         },
     )
     @browser_cache(3600)
@@ -218,31 +187,33 @@ class ClientTree(Resource):
         :returns: The *JSON* described above.
         """
         args = self.parser.parse_args()
-        server = server or args['serverName']
+        server = server or args["serverName"]
         json = []
         if not name or not backup:
             return json
 
-        root_list = sorted(args['root']) if args['root'] else []
+        root_list = sorted(args["root"]) if args["root"] else []
         root_loaded = False
         paths_loaded = []
         to_select_list = []
 
-        if not current_user.is_anonymous and \
-                not current_user.acl.is_admin() and \
-                not current_user.acl.is_client_allowed(name, server):
-            self.abort(403, 'Sorry, you are not allowed to view this client')
+        if (
+            not current_user.is_anonymous
+            and not current_user.acl.is_admin()
+            and not current_user.acl.is_client_allowed(name, server)
+        ):
+            self.abort(403, "Sorry, you are not allowed to view this client")
 
         from_cookie = None
-        if args['init'] and not root_list:
-            from_cookie = request.cookies.get('fancytree-1-expanded', '')
+        if args["init"] and not root_list:
+            from_cookie = request.cookies.get("fancytree-1-expanded", "")
             if from_cookie:
-                args['recursive'] = True
+                args["recursive"] = True
                 _root = bui.client.get_tree(name, backup, agent=server)
-                root_list = [x['name'] for x in _root]
-                for path in from_cookie.split('~'):
-                    if not path.endswith('/'):
-                        path += '/'
+                root_list = [x["name"] for x in _root]
+                for path in from_cookie.split("~"):
+                    if not path.endswith("/"):
+                        path += "/"
                     if path not in root_list:
                         root_list.append(path)
                 root_list = sorted(root_list)
@@ -251,93 +222,79 @@ class ClientTree(Resource):
             root_list_clean = []
 
             for root in root_list:
-                if args['recursive']:
-                    path = ''
+                if args["recursive"]:
+                    path = ""
                     # fetch the root first if not already loaded
                     if not root_loaded:
-                        part = bui.client.get_tree(
-                            name,
-                            backup,
-                            level=0,
-                            agent=server
-                        )
+                        part = bui.client.get_tree(name, backup, level=0, agent=server)
                         root_loaded = True
                     else:
                         part = []
-                    root = root.rstrip('/')
-                    to_select = root.rsplit('/', 1)
+                    root = root.rstrip("/")
+                    to_select = root.rsplit("/", 1)
                     if not to_select[0]:
-                        to_select[0] = '/'
+                        to_select[0] = "/"
                     if len(to_select) == 1:
                         # special case we want to select '/'
-                        to_select = ('', '/')
+                        to_select = ("", "/")
                     if not root:
-                        root = '/'
+                        root = "/"
                     to_select_list.append(to_select)
                     root_list_clean.append(root)
-                    paths = root.split('/')
+                    paths = root.split("/")
                     for level, sub in enumerate(paths, start=1):
                         path = os.path.join(path, sub)
                         if not path:
-                            path = '/'
+                            path = "/"
                         if path in paths_loaded:
                             continue
                         temp = bui.client.get_tree(
-                            name,
-                            backup,
-                            path,
-                            level,
-                            agent=server
+                            name, backup, path, level, agent=server
                         )
                         paths_loaded.append(path)
                         part += temp
                 else:
-                    part = bui.client.get_tree(
-                        name,
-                        backup,
-                        root,
-                        agent=server
-                    )
+                    part = bui.client.get_tree(name, backup, root, agent=server)
                 json += part
 
-            if args['selected']:
+            if args["selected"]:
                 for entry in json:
                     for parent, fold in to_select_list:
-                        if entry['parent'] == parent and entry['name'] == fold:
-                            entry['selected'] = True
+                        if entry["parent"] == parent and entry["name"] == fold:
+                            entry["selected"] = True
                             break
-                    if entry['parent'] in root_list_clean:
-                        entry['selected'] = True
+                    if entry["parent"] in root_list_clean:
+                        entry["selected"] = True
 
             if not root_list:
                 json = bui.client.get_tree(name, backup, agent=server)
-                if args['selected']:
+                if args["selected"]:
                     for entry in json:
-                        if not entry['parent']:
-                            entry['selected'] = True
+                        if not entry["parent"]:
+                            entry["selected"] = True
 
-            if args['recursive']:
+            if args["recursive"]:
                 tree = {}
                 rjson = []
                 roots = []
                 for entry in json:
                     # /!\ after marshalling, 'fullname' will be 'key'
-                    tree[entry['fullname']] = marshal(entry, node_fields)
+                    tree[entry["fullname"]] = marshal(entry, node_fields)
 
                 for key, entry in tree.items():
-                    parent = entry['parent']
-                    if not entry['children']:
-                        entry['children'] = None
+                    parent = entry["parent"]
+                    if not entry["children"]:
+                        entry["children"] = None
                     if parent:
                         node = tree[parent]
-                        if not node['children']:
-                            node['children'] = []
-                        node['children'].append(entry)
-                        if node['folder']:
-                            node['lazy'] = False
-                            node['expanded'] = True
+                        if not node["children"]:
+                            node["children"] = []
+                        node["children"].append(entry)
+                        if node["folder"]:
+                            node["lazy"] = False
+                            node["expanded"] = True
                     else:
-                        roots.append(entry['key'])
+                        roots.append(entry["key"])
 
                 for fullname in roots:
                     rjson.append(tree[fullname])
@@ -345,24 +302,25 @@ class ClientTree(Resource):
                 json = rjson
             else:
                 for entry in json:
-                    entry['children'] = None
-                    if not entry['folder']:
-                        entry['lazy'] = False
+                    entry["children"] = None
+                    if not entry["folder"]:
+                        entry["lazy"] = False
 
         except BUIserverException as e:
             self.abort(500, str(e))
         return json
 
 
-@ns.route('/browseall/<name>/<int:backup>',
-          '/<server>/browseall/<name>/<int:backup>',
-          endpoint='client_tree_all')
+@ns.route(
+    "/browseall/<name>/<int:backup>",
+    "/<server>/browseall/<name>/<int:backup>",
+    endpoint="client_tree_all",
+)
 @ns.doc(
     params={
-        'server': 'Which server to collect data from when in' +
-                  ' multi-agent mode',
-        'name': 'Client name',
-        'backup': 'Backup number',
+        "server": "Which server to collect data from when in" + " multi-agent mode",
+        "name": "Client name",
+        "backup": "Backup number",
     },
 )
 class ClientTreeAll(Resource):
@@ -374,20 +332,20 @@ class ClientTreeAll(Resource):
     An optional ``GET`` parameter called ``serverName`` is supported when
     running in multi-agent mode.
     """
+
     parser = ns.parser()
     parser.add_argument(
-        'serverName',
-        help='Which server to collect data from when in multi-agent mode'
+        "serverName", help="Which server to collect data from when in multi-agent mode"
     )
 
     @cache.cached(timeout=3600, key_prefix=cache_key, unless=force_refresh)
-    @ns.marshal_list_with(node_fields, code=200, description='Success')
+    @ns.marshal_list_with(node_fields, code=200, description="Success")
     @ns.expect(parser)
     @ns.doc(
         responses={
-            '403': 'Insufficient permissions',
-            '405': 'Method not allowed',
-            '500': 'Internal failure',
+            "403": "Insufficient permissions",
+            "405": "Method not allowed",
+            "500": "Internal failure",
         },
     )
     @browser_cache(3600)
@@ -436,18 +394,17 @@ class ClientTreeAll(Resource):
         :returns: The *JSON* described above.
         """
         args = self.parser.parse_args()
-        server = server or args['serverName']
+        server = server or args["serverName"]
 
-        if not bui.client.get_attr('batch_list_supported', False, server):
-            self.abort(
-                405,
-                'Sorry, the requested backend does not support this method'
-            )
+        if not bui.client.get_attr("batch_list_supported", False, server):
+            self.abort(405, "Sorry, the requested backend does not support this method")
 
-        if not current_user.is_anonymous and \
-                not current_user.acl.is_admin() and \
-                not current_user.acl.is_client_allowed(name, server):
-            self.abort(403, 'Sorry, you are not allowed to view this client')
+        if (
+            not current_user.is_anonymous
+            and not current_user.acl.is_admin()
+            and not current_user.acl.is_client_allowed(name, server)
+        ):
+            self.abort(403, "Sorry, you are not allowed to view this client")
 
         try:
             json = self._get_tree_all(name, backup, server)
@@ -457,7 +414,7 @@ class ClientTreeAll(Resource):
 
     @staticmethod
     def _get_tree_all(name, backup, server):
-        json = bui.client.get_tree(name, backup, '*', agent=server)
+        json = bui.client.get_tree(name, backup, "*", agent=server)
         tree = {}
         rjson = []
         roots = []
@@ -466,7 +423,7 @@ class ClientTreeAll(Resource):
             res = {}
             for entry in js:
                 # /!\ after marshalling, 'fullname' will be 'key'
-                res[entry['fullname']] = marshal(entry, node_fields)
+                res[entry["fullname"]] = marshal(entry, node_fields)
             return res
 
         tree = __expand_json(json)
@@ -476,9 +433,9 @@ class ClientTreeAll(Resource):
         while redo:
             redo = False
             for key, entry in tree.items().copy():
-                parent = entry['parent']
-                if not entry['children']:
-                    entry['children'] = None
+                parent = entry["parent"]
+                if not entry["children"]:
+                    entry["children"] = None
                 if parent:
                     if parent not in tree:
                         parent2 = parent
@@ -487,13 +444,10 @@ class ClientTreeAll(Resource):
                             if not parent2:
                                 last = True
                             json = bui.client.get_tree(
-                                name,
-                                backup,
-                                parent2,
-                                agent=server
+                                name, backup, parent2, agent=server
                             )
-                            if parent2 == '/':
-                                parent2 = ''
+                            if parent2 == "/":
+                                parent2 = ""
                             else:
                                 parent2 = os.path.dirname(parent2)
                             tree2 = __expand_json(json)
@@ -502,16 +456,16 @@ class ClientTreeAll(Resource):
                         redo = True
                         break
                     node = tree[parent]
-                    if not node['children']:
-                        node['children'] = []
-                    elif entry in node['children']:
+                    if not node["children"]:
+                        node["children"] = []
+                    elif entry in node["children"]:
                         continue
-                    node['children'].append(entry)
-                    if node['folder']:
-                        node['lazy'] = False
-                        node['expanded'] = False
+                    node["children"].append(entry)
+                    if node["folder"]:
+                        node["lazy"] = False
+                        node["expanded"] = False
                 else:
-                    roots.append(entry['key'])
+                    roots.append(entry["key"])
 
         for fullname in roots:
             rjson.append(tree[fullname])
@@ -519,17 +473,18 @@ class ClientTreeAll(Resource):
         return rjson
 
 
-@ns.route('/report/<name>',
-          '/<server>/report/<name>',
-          '/report/<name>/<int:backup>',
-          '/<server>/report/<name>/<int:backup>',
-          endpoint='client_report')
+@ns.route(
+    "/report/<name>",
+    "/<server>/report/<name>",
+    "/report/<name>/<int:backup>",
+    "/<server>/report/<name>/<int:backup>",
+    endpoint="client_report",
+)
 @ns.doc(
     params={
-        'server': 'Which server to collect data from when in multi-agent' +
-                  ' mode',
-        'name': 'Client name',
-        'backup': 'Backup number',
+        "server": "Which server to collect data from when in multi-agent" + " mode",
+        "name": "Client name",
+        "backup": "Backup number",
     },
 )
 class ClientReport(Resource):
@@ -541,121 +496,84 @@ class ClientReport(Resource):
     An optional ``GET`` parameter called ``serverName`` is supported when
     running in multi-agent mode.
     """
+
     parser = ns.parser()
     parser.add_argument(
-        'serverName',
-        help='Which server to collect data from when in multi-agent mode'
+        "serverName", help="Which server to collect data from when in multi-agent mode"
     )
-    report_tpl_fields = ns.model('ClientReportTpl', {
-        'changed': fields.Integer(
-            required=True,
-            description='Number of changed files',
-            default=0
-        ),
-        'deleted': fields.Integer(
-            required=True,
-            description='Number of deleted files',
-            default=0
-        ),
-        'new': fields.Integer(
-            required=True,
-            description='Number of new files',
-            default=0
-        ),
-        'scanned': fields.Integer(
-            required=True,
-            description='Number of scanned files',
-            default=0
-        ),
-        'total': fields.Integer(
-            required=True,
-            description='Total number of files',
-            default=0
-        ),
-        'unchanged': fields.Integer(
-            required=True,
-            description='Number of scanned files',
-            default=0
-        ),
-    })
-    report_fields = ns.model('ClientReport', {
-        'dir': fields.Nested(
-            report_tpl_fields,
-            required=True
-        ),
-        'duration': fields.Integer(
-            required=True,
-            description='Backup duration in seconds'
-        ),
-        'efs': fields.Nested(
-            report_tpl_fields,
-            required=True
-        ),
-        'encrypted': fields.Boolean(
-            required=True,
-            description='Is the backup encrypted'
-        ),
-        'end': fields.DateTime(
-            dt_format='iso8601',
-            required=True,
-            description='Timestamp of the end date of the backup'
-        ),
-        'files': fields.Nested(
-            report_tpl_fields,
-            required=True
-        ),
-        'files_enc': fields.Nested(
-            report_tpl_fields,
-            required=True
-        ),
-        'hardlink': fields.Nested(
-            report_tpl_fields,
-            required=True
-        ),
-        'meta': fields.Nested(
-            report_tpl_fields,
-            required=True
-        ),
-        'meta_enc': fields.Nested(
-            report_tpl_fields,
-            required=True
-        ),
-        'number': fields.Integer(
-            required=True,
-            description='Backup number'
-        ),
-        'received': fields.Integer(
-            required=True,
-            description='Bytes received'
-        ),
-        'softlink': fields.Nested(report_tpl_fields, required=True),
-        'special': fields.Nested(report_tpl_fields, required=True),
-        'start': fields.DateTime(
-            dt_format='iso8601',
-            required=True,
-            description='Timestamp of the beginning of the backup'
-        ),
-        'totsize': fields.Integer(
-            required=True,
-            description='Total size of the backup'
-        ),
-        'vssfooter': fields.Nested(report_tpl_fields, required=True),
-        'vssfooter_enc': fields.Nested(report_tpl_fields, required=True),
-        'vssheader': fields.Nested(report_tpl_fields, required=True),
-        'vssheader_enc': fields.Nested(report_tpl_fields, required=True),
-        'windows': fields.Boolean(
-            required=True,
-            description='Is the client a windows system'
-        ),
-    })
+    report_tpl_fields = ns.model(
+        "ClientReportTpl",
+        {
+            "changed": fields.Integer(
+                required=True, description="Number of changed files", default=0
+            ),
+            "deleted": fields.Integer(
+                required=True, description="Number of deleted files", default=0
+            ),
+            "new": fields.Integer(
+                required=True, description="Number of new files", default=0
+            ),
+            "scanned": fields.Integer(
+                required=True, description="Number of scanned files", default=0
+            ),
+            "total": fields.Integer(
+                required=True, description="Total number of files", default=0
+            ),
+            "unchanged": fields.Integer(
+                required=True, description="Number of scanned files", default=0
+            ),
+        },
+    )
+    report_fields = ns.model(
+        "ClientReport",
+        {
+            "dir": fields.Nested(report_tpl_fields, required=True),
+            "duration": fields.Integer(
+                required=True, description="Backup duration in seconds"
+            ),
+            "efs": fields.Nested(report_tpl_fields, required=True),
+            "encrypted": fields.Boolean(
+                required=True, description="Is the backup encrypted"
+            ),
+            "end": fields.DateTime(
+                dt_format="iso8601",
+                required=True,
+                description="Timestamp of the end date of the backup",
+            ),
+            "files": fields.Nested(report_tpl_fields, required=True),
+            "files_enc": fields.Nested(report_tpl_fields, required=True),
+            "hardlink": fields.Nested(report_tpl_fields, required=True),
+            "meta": fields.Nested(report_tpl_fields, required=True),
+            "meta_enc": fields.Nested(report_tpl_fields, required=True),
+            "number": fields.Integer(required=True, description="Backup number"),
+            "received": fields.Integer(required=True, description="Bytes received"),
+            "softlink": fields.Nested(report_tpl_fields, required=True),
+            "special": fields.Nested(report_tpl_fields, required=True),
+            "start": fields.DateTime(
+                dt_format="iso8601",
+                required=True,
+                description="Timestamp of the beginning of the backup",
+            ),
+            "totsize": fields.Integer(
+                required=True, description="Total size of the backup"
+            ),
+            "vssfooter": fields.Nested(report_tpl_fields, required=True),
+            "vssfooter_enc": fields.Nested(report_tpl_fields, required=True),
+            "vssheader": fields.Nested(report_tpl_fields, required=True),
+            "vssheader_enc": fields.Nested(report_tpl_fields, required=True),
+            "windows": fields.Boolean(
+                required=True, description="Is the client a windows system"
+            ),
+        },
+    )
 
     @cache.cached(timeout=1800, key_prefix=cache_key, unless=force_refresh)
-    @ns.marshal_with(report_fields, code=200, description='Success')
+    @ns.marshal_with(report_fields, code=200, description="Success")
     @ns.expect(parser)
     @ns.doc(
         responses={
-            '403': 'Insufficient permissions',
-            '500': 'Internal failure',
+            "403": "Insufficient permissions",
+            "500": "Internal failure",
         },
     )
     @browser_cache(1800)
@@ -806,16 +724,18 @@ class ClientReport(Resource):
 
         :returns: The *JSON* described above.
         """
-        server = server or self.parser.parse_args()['serverName']
+        server = server or self.parser.parse_args()["serverName"]
         json = []
         if not name:
-            err = [[1, 'No client defined']]
+            err = [[1, "No client defined"]]
             self.abort(400, err)
 
-        if not current_user.is_anonymous and \
-                not current_user.acl.is_admin() and \
-                not current_user.acl.is_client_allowed(name, server):
-            self.abort(403, 'You don\'t have rights to view this client report')
+        if (
+            not current_user.is_anonymous
+            and not current_user.acl.is_admin()
+            and not current_user.acl.is_client_allowed(name, server)
+        ):
+            self.abort(403, "You don't have rights to view this client report")
         if backup:
             try:
                 json = bui.client.get_backup_logs(backup, name, agent=server)
@@ -829,13 +749,13 @@ class ClientReport(Resource):
         return json
 
     @api.disabled_on_demo()
-    @ns.marshal_with(report_fields, code=202, description='Success')
+    @ns.marshal_with(report_fields, code=202, description="Success")
     @ns.expect(parser)
     @ns.doc(
         responses={
-            '400': 'Missing arguments',
-            '403': 'Insufficient permissions',
-            '500': 'Internal failure',
+            "400": "Missing arguments",
+            "403": "Insufficient permissions",
+            "500": "Internal failure",
         },
     )
     def delete(self, name, backup, server=None):
@@ -856,33 +776,36 @@ class ClientReport(Resource):
         :param backup: The backup we are working on
         :type backup: int
         """
-        server = server or self.parser.parse_args()['serverName']
+        server = server or self.parser.parse_args()["serverName"]
         if not name:
-            err = [[1, 'No client defined']]
+            err = [[1, "No client defined"]]
             self.abort(400, err)
 
-        if not current_user.is_anonymous and \
-                not current_user.acl.is_admin() and \
-                (not current_user.acl.is_moderator() or
-                 current_user.acl.is_moderator() and
-                 not current_user.acl.is_client_rw(name, server)):
-            self.abort(403, 'You don\'t have rights on this client')
+        if (
+            not current_user.is_anonymous
+            and not current_user.acl.is_admin()
+            and (
+                not current_user.acl.is_moderator()
+                or current_user.acl.is_moderator()
+                and not current_user.acl.is_client_rw(name, server)
+            )
+        ):
+            self.abort(403, "You don't have rights on this client")
 
         msg = bui.client.delete_backup(name, backup, server)
         if msg:
             self.abort(500, msg)
-        bui.audit.logger.info(f'requested the deletion of backup {backup} for {name}', server=server)
-        return 202, ''
+        bui.audit.logger.info(
+            f"requested the deletion of backup {backup} for {name}", server=server
+        )
+        return 202, ""
 
 
-@ns.route('/stats/<name>',
-          '/<server>/stats/<name>',
-          endpoint='client_stats')
+@ns.route("/stats/<name>", "/<server>/stats/<name>", endpoint="client_stats")
 @ns.doc(
     params={
-        'server': 'Which server to collect data from when in multi-agent' +
-                  ' mode',
-        'name': 'Client name',
+        "server": "Which server to collect data from when in multi-agent" + " mode",
+        "name": "Client name",
     },
 )
 class ClientStats(Resource):
@@ -894,37 +817,38 @@ class ClientStats(Resource):
     An optional ``GET`` parameter called ``serverName`` is supported when
     running in multi-agent mode.
     """
+
     parser = ns.parser()
     parser.add_argument(
-        'serverName',
-        help='Which server to collect data from when in multi-agent mode'
+        "serverName", help="Which server to collect data from when in multi-agent mode"
     )
-    client_fields = ns.model('ClientStats', {
-        'number': fields.Integer(required=True, description='Backup number'),
-        'received': fields.Integer(required=True, description='Bytes received'),
-        'size': fields.Integer(required=True, description='Total size'),
-        'encrypted': fields.Boolean(
-            required=True,
-            description='Is the backup encrypted'
-        ),
-        'deletable': fields.Boolean(
-            required=True,
-            description='Is the backup deletable'
-        ),
-        'date': fields.DateTime(
-            required=True,
-            dt_format='iso8601',
-            description='Human representation of the backup date'
-        ),
-    })
+    client_fields = ns.model(
+        "ClientStats",
+        {
+            "number": fields.Integer(required=True, description="Backup number"),
+            "received": fields.Integer(required=True, description="Bytes received"),
+            "size": fields.Integer(required=True, description="Total size"),
+            "encrypted": fields.Boolean(
+                required=True, description="Is the backup encrypted"
+            ),
+            "deletable": fields.Boolean(
+                required=True, description="Is the backup deletable"
+            ),
+            "date": fields.DateTime(
+                required=True,
+                dt_format="iso8601",
+                description="Human representation of the backup date",
+            ),
+        },
+    )
 
     @cache.cached(timeout=1800, key_prefix=cache_key, unless=force_refresh)
-    @ns.marshal_list_with(client_fields, code=200, description='Success')
+    @ns.marshal_list_with(client_fields, code=200, description="Success")
     @ns.expect(parser)
     @ns.doc(
         responses={
-            '403': 'Insufficient permissions',
-            '500': 'Internal failure',
+            "403": "Insufficient permissions",
+            "500": "Internal failure",
         },
     )
     @browser_cache(1800)
@@ -959,26 +883,25 @@ class ClientStats(Resource):
 
         :returns: The *JSON* described above.
         """
-        server = server or self.parser.parse_args()['serverName']
+        server = server or self.parser.parse_args()["serverName"]
         try:
-            if not current_user.is_anonymous and \
-                    not current_user.acl.is_admin() and \
-                    not current_user.acl.is_client_allowed(name, server):
-                self.abort(403, 'Sorry, you cannot access this client')
+            if (
+                not current_user.is_anonymous
+                and not current_user.acl.is_admin()
+                and not current_user.acl.is_client_allowed(name, server)
+            ):
+                self.abort(403, "Sorry, you cannot access this client")
             json = bui.client.get_client(name, agent=server)
         except BUIserverException as exp:
             self.abort(500, str(exp))
         return json
 
 
-@ns.route('/labels/<name>',
-          '/<server>/labels/<name>',
-          endpoint='client_labels')
+@ns.route("/labels/<name>", "/<server>/labels/<name>", endpoint="client_labels")
 @ns.doc(
     params={
-        'server': 'Which server to collect data from when in multi-agent' +
-                  ' mode',
-        'name': 'Client name',
+        "server": "Which server to collect data from when in multi-agent" + " mode",
+        "name": "Client name",
     },
 )
 class ClientLabels(Resource):
@@ -990,23 +913,26 @@ class ClientLabels(Resource):
     An optional ``GET`` parameter called ``serverName`` is supported when
     running in multi-agent mode.
     """
+
     parser = ns.parser()
     parser.add_argument(
-        'serverName',
-        help='Which server to collect data from when in multi-agent mode'
+        "serverName", help="Which server to collect data from when in multi-agent mode"
     )
-    parser.add_argument('clientName', help='Client name')
-    labels_fields = ns.model('ClientLabels', {
-        'labels': fields.List(fields.String, description='List of labels'),
-    })
+    parser.add_argument("clientName", help="Client name")
+    labels_fields = ns.model(
+        "ClientLabels",
+        {
+            "labels": fields.List(fields.String, description="List of labels"),
+        },
+    )
 
     @cache.cached(timeout=1800, key_prefix=cache_key, unless=force_refresh)
-    @ns.marshal_list_with(labels_fields, code=200, description='Success')
+    @ns.marshal_list_with(labels_fields, code=200, description="Success")
     @ns.expect(parser)
     @ns.doc(
         responses={
-            '403': 'Insufficient permissions',
-            '500': 'Internal failure',
+            "403": "Insufficient permissions",
+            "500": "Internal failure",
         },
     )
     @browser_cache(1800)
@@ -1038,28 +964,33 @@ class ClientLabels(Resource):
         :returns: The *JSON* described above.
         """
         try:
-            if not current_user.is_anonymous and \
-                    not current_user.acl.is_admin() and \
-                    not current_user.acl.is_client_allowed(name, server):
-                self.abort(403, 'Sorry, you cannot access this client')
+            if (
+                not current_user.is_anonymous
+                and not current_user.acl.is_admin()
+                and not current_user.acl.is_client_allowed(name, server)
+            ):
+                self.abort(403, "Sorry, you cannot access this client")
             labels = self._get_labels(name, server)
         except BUIserverException as exp:
             self.abort(500, str(exp))
-        return {'labels': labels}
+        return {"labels": labels}
 
     @staticmethod
     def _get_labels(client, server=None):
-        key = 'labels-{}-{}'.format(client, server)
+        key = "labels-{}-{}".format(client, server)
         ret = cache.cache.get(key)
         if ret is not None:
             return ret
         labels = bui.client.get_client_labels(client, agent=server)
         ret = []
-        ignore = re.compile('|'.join(bui.ignore_labels)) if bui.ignore_labels else None
-        reformat = [(re.compile(regex), replace) for regex, replace in bui.format_labels] if bui.format_labels else []
+        ignore = re.compile("|".join(bui.ignore_labels)) if bui.ignore_labels else None
+        reformat = (
+            [(re.compile(regex), replace) for regex, replace in bui.format_labels]
+            if bui.format_labels
+            else []
+        )
         for label in labels:
-            if bui.ignore_labels and \
-                    ignore.search(label):
+            if bui.ignore_labels and ignore.search(label):
                 continue
             tmp_label = label
             for regex, replace in reformat:
@@ -1069,16 +1000,17 @@ class ClientLabels(Resource):
         return ret
 
 
-@ns.route('/running',
-          '/running/<name>',
-          '/<server>/running',
-          '/<server>/running/<name>',
-          endpoint='client_running_status')
+@ns.route(
+    "/running",
+    "/running/<name>",
+    "/<server>/running",
+    "/<server>/running/<name>",
+    endpoint="client_running_status",
+)
 @ns.doc(
     params={
-        'server': 'Which server to collect data from when in multi-agent' +
-                  ' mode',
-        'name': 'Client name',
+        "server": "Which server to collect data from when in multi-agent" + " mode",
+        "name": "Client name",
     },
 )
 class ClientRunningStatus(Resource):
@@ -1090,37 +1022,34 @@ class ClientRunningStatus(Resource):
     An optional ``GET`` parameter called ``serverName`` is supported when
     running in multi-agent mode.
     """
+
     parser = ns.parser()
     parser.add_argument(
-        'serverName',
-        help='Which server to collect data from when in multi-agent mode'
+        "serverName", help="Which server to collect data from when in multi-agent mode"
     )
-    parser.add_argument('clientName', help='Client name')
-    running_fields = ns.model('ClientRunningStatus', {
-        'state': fields.LocalizedString(required=True, description='Running state'),
-        'percent': fields.Integer(
-            required=False,
-            description='Backup progress in percent',
-            default=-1
-        ),
-        'phase': fields.String(
-            required=False,
-            description='Backup phase',
-            default=None
-        ),
-        'last': fields.DateTime(
-            required=False,
-            dt_format='iso8601',
-            description='Date of last backup'
-        ),
-    })
+    parser.add_argument("clientName", help="Client name")
+    running_fields = ns.model(
+        "ClientRunningStatus",
+        {
+            "state": fields.LocalizedString(required=True, description="Running state"),
+            "percent": fields.Integer(
+                required=False, description="Backup progress in percent", default=-1
+            ),
+            "phase": fields.String(
+                required=False, description="Backup phase", default=None
+            ),
+            "last": fields.DateTime(
+                required=False, dt_format="iso8601", description="Date of last backup"
+            ),
+        },
+    )
 
-    @ns.marshal_list_with(running_fields, code=200, description='Success')
+    @ns.marshal_list_with(running_fields, code=200, description="Success")
     @ns.expect(parser)
     @ns.doc(
         responses={
-            '403': 'Insufficient permissions',
-            '500': 'Internal failure',
+            "403": "Insufficient permissions",
+            "500": "Internal failure",
         },
     )
     def get(self, server=None, name=None):
@@ -1151,13 +1080,15 @@ class ClientRunningStatus(Resource):
         :returns: The *JSON* described above.
         """
         args = self.parser.parse_args()
-        server = server or args['serverName']
-        name = name or args['clientName']
+        server = server or args["serverName"]
+        name = name or args["clientName"]
         try:
-            if not current_user.is_anonymous and \
-                    not current_user.acl.is_admin() and \
-                    not current_user.acl.is_client_allowed(name, server):
-                self.abort(403, 'Sorry, you cannot access this client')
+            if (
+                not current_user.is_anonymous
+                and not current_user.acl.is_admin()
+                and not current_user.acl.is_client_allowed(name, server)
+            ):
+                self.abort(403, "Sorry, you cannot access this client")
             json = bui.client.get_client_status(name, agent=server)
         except BUIserverException as exp:
             self.abort(500, str(exp))

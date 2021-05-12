@@ -6,41 +6,56 @@ from flask import url_for
 from burpui.app import create_app
 
 
-def mock_status(query='\n', timeout=None, agent=None):
+def mock_status(query="\n", timeout=None, agent=None):
     answers = {
-        '': ['testclient  2   i   0'],
-        '\n': ['testclient  2   i   0'],
+        "": ["testclient  2   i   0"],
+        "\n": ["testclient  2   i   0"],
     }
     return answers.get(query, [])
 
 
 @pytest.fixture
 def app(mocker):
-    mocker.patch('socket.socket')
-    conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../configs/test4.cfg')
-    bui = create_app(conf, logfile='/dev/null', gunicorn=False, unittest=True)
+    mocker.patch("socket.socket")
+    conf = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), "../configs/test4.cfg"
+    )
+    bui = create_app(conf, logfile="/dev/null", gunicorn=False, unittest=True)
     bui.setup(conf, True)
-    bui.config['TESTING'] = True
-    bui.config['LIVESERVER_PORT'] = 5001
-    bui.config['SECRET_KEY'] = 'toto'
-    bui.config['WTF_CSRF_ENABLED'] = False
+    bui.config["TESTING"] = True
+    bui.config["LIVESERVER_PORT"] = 5001
+    bui.config["SECRET_KEY"] = "toto"
+    bui.config["WTF_CSRF_ENABLED"] = False
     bui.login_manager.init_app(bui)
     return bui
 
 
 def login(client, username, password):
-    return client.post(url_for('view.login'), data=dict(
-        username=username,
-        password=password,
-        language='en'
-    ), follow_redirects=True)
+    return client.post(
+        url_for("view.login"),
+        data=dict(username=username, password=password, language="en"),
+        follow_redirects=True,
+    )
 
 
 def test_get_clients(client, mocker):
-    mocker.patch('burpui.misc.backend.burp1.Burp.status', side_effect=mock_status)
-    login(client, 'admin', 'admin')
-    response = client.get(url_for('api.clients_stats'))
-    assert sorted(response.json, key=lambda k: k['name']) == sorted([{'state': 'idle', 'last': 'never', 'last_attempt': 'never', 'name': 'testclient', 'phase': None, 'percent': 0, 'labels': []}], key=lambda k: k['name'])
+    mocker.patch("burpui.misc.backend.burp1.Burp.status", side_effect=mock_status)
+    login(client, "admin", "admin")
+    response = client.get(url_for("api.clients_stats"))
+    assert sorted(response.json, key=lambda k: k["name"]) == sorted(
+        [
+            {
+                "state": "idle",
+                "last": "never",
+                "last_attempt": "never",
+                "name": "testclient",
+                "phase": None,
+                "percent": 0,
+                "labels": [],
+            }
+        ],
+        key=lambda k: k["name"],
+    )
 
 
 #    def test_live_monitor(self):

@@ -9,4 +9,4 @@ jQuery/Bootstrap
 
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 """
-__title__ = 'burp-ui-monitor'
+__title__ = "burp-ui-monitor"

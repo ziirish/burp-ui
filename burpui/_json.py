@@ -9,18 +9,18 @@
 """
 import ujson
 
-__implements__ = ['dumps', 'loads']
+__implements__ = ["dumps", "loads"]
 ori_dumps = None
 ori_loads = None
 
 IMPLEMENTED_DUMPS_KWARGS = [
-    'ensure_ascii',
-    'double_precision',
-    'encode_html_chars',
-    'sort_keys',
+    "ensure_ascii",
+    "double_precision",
+    "encode_html_chars",
+    "sort_keys",
 ]
 IMPLEMENTED_LOADS_KWARGS = [
-    'precise_float',
+    "precise_float",
 ]
 
 

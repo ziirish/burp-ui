@@ -10,6 +10,7 @@
 # Agent does not need "real" HTTP errors
 try:
     from werkzeug.exceptions import HTTPException
+
     WERKZEUG = True
 except ImportError:
     HTTPException = Exception
@@ -18,6 +19,7 @@ except ImportError:
 
 class BUIserverException(HTTPException):
     """Raised in case of internal error."""
+
     code = 500
 
     def __init__(self, message="Internal Error", response=None):
@@ -33,4 +35,5 @@ class BUIserverException(HTTPException):
 
 class TooManyRecordsException(Exception):
     """Raised when there are too many records to treat."""
+
     pass

@@ -17,13 +17,14 @@ from ...datastructures import ImmutableMultiDict
 
 INTERFACE_METHODS = BUIbackend.__abstractmethods__
 PARSER_INTERFACE_METHODS = BUIparser.__abstractmethods__
-AGENT_VERSION_CAST = '0.4.9999'
+AGENT_VERSION_CAST = "0.4.9999"
 
 
 class ProxyCall(object):
     """Class to dispatch call of unknown methods in order to dynamically
     call agents one without maintaining the explicit list of methods.
     """
+
     def __init__(self, proxy, method, network=False):
         """
         :param proxy: Class to proxify
@@ -60,14 +61,14 @@ class ProxyCall(object):
 
         # Special case for network calls
         if self.network:
-            data = {'func': self.method, 'args': encoded_args}
+            data = {"func": self.method, "args": encoded_args}
             return json.loads(self.proxy.do_command(data))
         # normal case for "standard" interface
-        if 'agent' not in encoded_args:
+        if "agent" not in encoded_args:
             raise AttributeError(str(encoded_args))
-        agentName = encoded_args['agent']
+        agentName = encoded_args["agent"]
         # we don't need this argument anymore
-        del encoded_args['agent']
+        del encoded_args["agent"]
         try:
             agent = self.proxy.servers[agentName]
         except KeyError:
@@ -82,6 +83,7 @@ class ProxyCall(object):
 
 class ProxyParserCall(object):
     """Class that actually calls the Parser method"""
+
     def __init__(self, agent, method):
         """
         :param agent: Agent to use
@@ -112,12 +114,13 @@ class ProxyParserCall(object):
             encoded_args[args_name[idx]] = opt
         encoded_args.update(kwargs)
 
-        data = {'func': 'proxy_parser', 'method': self.method, 'args': encoded_args}
+        data = {"func": "proxy_parser", "method": self.method, "args": encoded_args}
         return json.loads(self.agent.do_command(data))
 
 
 class ProxyParser(BUIparser):
     """Class to generate a "virtual" parser object"""
+
     # These functions MUST be implemented because we inherit an abstract class.
     # The hack here is to get the list of the functions and let the interpreter
     # think we don't have to implement them.
@@ -135,7 +138,7 @@ class ProxyParser(BUIparser):
     def __getattribute__(self, name):
         # always return this value because we need it and if we don't do that
         # we'll end up with an infinite loop
-        if name == 'foreign':
+        if name == "foreign":
             return object.__getattribute__(self, name)
         # now we can retrieve the 'foreign' list and know if the object called
         # needs to be "proxyfied"
@@ -161,6 +164,7 @@ class Burp(BUIbackend):
     :param conf: Configuration file to use
     :type conf: str
     """
+
     # These functions MUST be implemented because we inherit an abstract class.
     # The hack here is to get the list of the functions and let the interpreter
     # think we don't have to implement them.
@@ -179,29 +183,31 @@ class Burp(BUIbackend):
         self.app = server
         self.acl_handler = server.acl_handler
         self.servers = {}
-        self.app.config['SERVERS'] = []
+        self.app.config["SERVERS"] = []
         if conf:
             for sect in conf.options.keys():
-                r = re.match('^Agent:(.+)$', sect)
+                r = re.match("^Agent:(.+)$", sect)
                 if r:
-                    host = conf.safe_get('host', section=sect)
-                    port = conf.safe_get('port', 'integer', section=sect) or 10000
-                    password = conf.safe_get('password', section=sect)
-                    ssl = conf.safe_get('ssl', 'boolean', section=sect) or False
-                    timeout = conf.safe_get('timeout', 'integer', section=sect) or 5
+                    host = conf.safe_get("host", section=sect)
+                    port = conf.safe_get("port", "integer", section=sect) or 10000
+                    password = conf.safe_get("password", section=sect)
+                    ssl = conf.safe_get("ssl", "boolean", section=sect) or False
+                    timeout = conf.safe_get("timeout", "integer", section=sect) or 5
 
-                    self.servers[r.group(1)] = NClient(self.app, host, port, password, ssl, timeout)
-                    self.app.config['SERVERS'].append(r.group(1))
+                    self.servers[r.group(1)] = NClient(
+                        self.app, host, port, password, ssl, timeout
+                    )
+                    self.app.config["SERVERS"].append(r.group(1))
 
         if not self.servers:
-            self.logger.error('No agent configured!')
+            self.logger.error("No agent configured!")
         else:
             self.logger.debug(self.servers)
 
     def __getattribute__(self, name):
         # always return this value because we need it and if we don't do that
         # we'll end up with an infinite loop
-        if name == 'foreign':
+        if name == "foreign":
             return object.__getattribute__(self, name)
         # now we can retrieve the 'foreign' list and know if the object called
         # needs to be "proxyfied"
@@ -210,10 +216,10 @@ class Burp(BUIbackend):
             func = None
             try:
                 func = object.__getattribute__(self, name)
-                proxy = not getattr(func, '__ismethodimplemented__', False)
+                proxy = not getattr(func, "__ismethodimplemented__", False)
             except:
                 pass
-            self.logger.debug('func: {} - {}'.format(name, proxy))
+            self.logger.debug("func: {} - {}".format(name, proxy))
             if proxy:
                 return ProxyCall(self, name)
             elif func:
@@ -242,7 +248,7 @@ class Burp(BUIbackend):
         """get versions"""
 
         if not method:
-            raise BUIserverException('Wrong method call')
+            raise BUIserverException("Wrong method call")
 
         res = {}
 
@@ -251,7 +257,7 @@ class Burp(BUIbackend):
             try:
                 res[name] = func()
             except BUIserverException:
-                res[name] = 'Unknown'
+                res[name] = "Unknown"
 
         return res
 
@@ -267,7 +273,7 @@ class Burp(BUIbackend):
     def get_parser(self, agent=None):
         # Need to return a proxy object to interact with a remote parser
         if not agent:
-            raise BUIserverException('No agent provided')
+            raise BUIserverException("No agent provided")
 
         return ProxyParser(self.servers.get(agent))
 
@@ -275,14 +281,14 @@ class Burp(BUIbackend):
     def get_client_version(self, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_client_version`"""
         if not agent:
-            return self._get_version('get_client_version')
+            return self._get_version("get_client_version")
         return self.servers[agent].get_client_version()
 
     @implement
     def get_server_version(self, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_server_version`"""
         if not agent:
-            return self._get_version('get_server_version')
+            return self._get_version("get_server_version")
         return self.servers[agent].get_server_version()
 
     @implement
@@ -293,7 +299,7 @@ class Burp(BUIbackend):
         return self.servers[agent].statistics()
 
 
-class Gsocket():
+class Gsocket:
     def __init__(self, host, port, ssl=False, timeout=5, notimeout=False):
         self.host = host
         self.port = port
@@ -304,15 +310,20 @@ class Gsocket():
     def conn(self):
         if self.ssl:
             import ssl
+
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             if not self.notimeout:
                 s.settimeout(self.timeout)
             s.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-            ret = ssl.wrap_socket(s, cert_reqs=ssl.CERT_NONE, ssl_version=ssl.PROTOCOL_SSLv23)
+            ret = ssl.wrap_socket(
+                s, cert_reqs=ssl.CERT_NONE, ssl_version=ssl.PROTOCOL_SSLv23
+            )
             ret.connect((self.host, self.port))
         else:
             if not self.notimeout:
-                ret = socket.create_connection((self.host, self.port), timeout=self.timeout)
+                ret = socket.create_connection(
+                    (self.host, self.port), timeout=self.timeout
+                )
             else:
                 ret = socket.create_connection((self.host, self.port))
             ret.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
@@ -330,7 +341,7 @@ class Gsocket():
 
     def recvall(self, length=1024):
         """Read the answer of the agent"""
-        buf = b''
+        buf = b""
         bsize = 1024
         received = 0
         if length < bsize:
@@ -366,6 +377,7 @@ class NClient(BUIbackend):
     :param ssl: Use SSL to communicate with the agent
     :type ssl: bool
     """
+
     # These functions MUST be implemented because we inherit an abstract class.
     # The hack here is to get the list of the functions and let the interpreter
     # think we don't have to implement them.
@@ -373,7 +385,9 @@ class NClient(BUIbackend):
     foreign = INTERFACE_METHODS
     BUIbackend.__abstractmethods__ = frozenset()
 
-    def __init__(self, app=None, host=None, port=None, password=None, ssl=None, timeout=5):
+    def __init__(
+        self, app=None, host=None, port=None, password=None, ssl=None, timeout=5
+    ):
         self.host = host
         self.port = port
         self.password = password
@@ -385,7 +399,7 @@ class NClient(BUIbackend):
     def __getattribute__(self, name):
         # always return this value because we need it and if we don't do that
         # we'll end up with an infinite loop
-        if name == 'foreign':
+        if name == "foreign":
             return object.__getattribute__(self, name)
         # now we can retrieve the 'foreign' list and know if the object called
         # needs a dynamic implementation
@@ -394,10 +408,10 @@ class NClient(BUIbackend):
             func = None
             try:
                 func = object.__getattribute__(self, name)
-                proxy = not getattr(func, '__ismethodimplemented__', False)
+                proxy = not getattr(func, "__ismethodimplemented__", False)
             except:
                 pass
-            self.logger.debug('func: {} - {}'.format(name, proxy))
+            self.logger.debug("func: {} - {}".format(name, proxy))
             if proxy:
                 return ProxyCall(self, name, network=True)
             elif func:
@@ -406,7 +420,7 @@ class NClient(BUIbackend):
 
     def _get_agent_version(self):
         if self.ping() and not self._agent_version:
-            data = {'func': 'agent_version'}
+            data = {"func": "agent_version"}
             try:
                 vers = self.do_command(data)
                 self._agent_version = json.loads(to_unicode(vers))
@@ -421,8 +435,8 @@ class NClient(BUIbackend):
         res = False
         try:
             with Gsocket(self.host, self.port, self.ssl, self.timeout) as (sock, gsock):
-                sock.sendall(struct.pack('!Q', 2))
-                sock.sendall(b'RE')
+                sock.sendall(struct.pack("!Q", 2))
+                sock.sendall(b"RE")
                 res = True
         except socket.error:
             pass
@@ -430,76 +444,83 @@ class NClient(BUIbackend):
 
     def setup(self, sock, gsock, data):
         data = to_bytes(data)
-        length = struct.pack('!Q', len(data))
+        length = struct.pack("!Q", len(data))
         sock.sendall(length)
         sock.sendall(data)
         self.logger.debug(f"Sending: {data!r}")
         tmp = to_unicode(sock.recv(2))
         self.logger.debug("recv: '{}'".format(tmp))
-        if 'ER' == tmp:
+        if "ER" == tmp:
             lengthbuf = sock.recv(8)
-            length, = struct.unpack('!Q', lengthbuf)
+            (length,) = struct.unpack("!Q", lengthbuf)
             err = to_unicode(gsock.recvall(length))
             raise BUIserverException(err)
-        if 'OK' != tmp:
-            self.logger.debug('Ooops, unsuccessful!')
+        if "OK" != tmp:
+            self.logger.debug("Ooops, unsuccessful!")
             return False
         self.logger.debug("Data sent successfully")
         return True
 
     def do_command(self, data=None, restarted=False):
         """Send a command to the remote agent"""
-        res = '[]'
+        res = "[]"
         err = None
         notimeout = False
         timeout = self.timeout
         if not data:
-            raise BUIserverException('Missing data')
-        data['password'] = self.password
+            raise BUIserverException("Missing data")
+        data["password"] = self.password
         # manage long running operations
-        if data['func'] in ['restore_files', 'get_file', 'del_file']:
+        if data["func"] in ["restore_files", "get_file", "del_file"]:
             notimeout = True
-        if data['func'] == 'get_tree' and data['args'].get('root') == '*':
+        if data["func"] == "get_tree" and data["args"].get("root") == "*":
             # arbitrary raise timeout
             timeout = max(timeout, 300)
-        if data['func'] == 'proxy_parser' and data['method'] == 'remove_client':
+        if data["func"] == "proxy_parser" and data["method"] == "remove_client":
             notimeout = True
         try:
             # don't need a context manager here
-            if data['func'] == 'get_file':
+            if data["func"] == "get_file":
                 gsock = Gsocket(self.host, self.port, self.ssl, notimeout=True)
                 gsock.conn()
                 raw = json.dumps(data)
                 if not self.setup(gsock.sock, gsock, raw):
                     return res
                 return gsock.sock
-            with Gsocket(self.host, self.port, self.ssl, timeout, notimeout) as (sock, gsock):
+            with Gsocket(self.host, self.port, self.ssl, timeout, notimeout) as (
+                sock,
+                gsock,
+            ):
                 try:
                     raw = json.dumps(data)
                     if not self.setup(gsock.sock, gsock, raw):
                         return res
                     lengthbuf = sock.recv(8)
-                    length, = struct.unpack('!Q', lengthbuf)
+                    (length,) = struct.unpack("!Q", lengthbuf)
                     res = to_unicode(gsock.recvall(length))
                 except IOError as exc:
                     if not restarted and exc.errno == errno.EPIPE:
-                        self.logger.warning('Broken pipe, restarting the request')
+                        self.logger.warning("Broken pipe, restarting the request")
                         return self.do_command(data, True)
                     elif exc.errno == errno.ECONNRESET:
-                        self.logger.error('!!! {} !!!\nPlease check your SSL configuration on both sides!'.format(str(exc)))
+                        self.logger.error(
+                            "!!! {} !!!\nPlease check your SSL configuration on both sides!".format(
+                                str(exc)
+                            )
+                        )
                     else:
-                        self.logger.error('!!! {} !!!'.format(str(exc)), exc_info=True)
+                        self.logger.error("!!! {} !!!".format(str(exc)), exc_info=True)
                     raise exc
                 except socket.timeout as exc:
                     if self.app.gunicorn and not restarted:
-                        self.logger.warning('Socket timed-out, restarting the request')
+                        self.logger.warning("Socket timed-out, restarting the request")
                         return self.do_command(data, True)
-                    self.logger.error('!!! {} !!!'.format(str(exc)), exc_info=exc)
+                    self.logger.error("!!! {} !!!".format(str(exc)), exc_info=exc)
                     raise exc
                 # catch all
                 except Exception as exc:
-                    self.logger.error('!!! {} !!!'.format(str(exc)), exc_info=exc)
-                    if data['func'] == 'restore_files':
+                    self.logger.error("!!! {} !!!".format(str(exc)), exc_info=exc)
+                    if data["func"] == "restore_files":
                         err = str(exc)
                     elif isinstance(exc, BUIserverException):
                         raise
@@ -508,10 +529,10 @@ class NClient(BUIbackend):
         except Exception as exc:
             if isinstance(exc, BUIserverException):
                 raise
-            self.logger.error('!!! {} !!!'.format(str(exc)), exc_info=exc)
+            self.logger.error("!!! {} !!!".format(str(exc)), exc_info=exc)
             raise BUIserverException(str(exc))
 
-        if data['func'] == 'restore_files':
+        if data["func"] == "restore_files":
             if err:
                 res = None
             return res, err
@@ -523,34 +544,55 @@ class NClient(BUIbackend):
     """
 
     @implement
-    def store_conf_cli(self, data, client=None, conf=None, template=False,
-                       statictemplate=False, content='', agent=None):
+    def store_conf_cli(
+        self,
+        data,
+        client=None,
+        conf=None,
+        template=False,
+        statictemplate=False,
+        content="",
+        agent=None,
+    ):
         """See :func:`burpui.misc.backend.interface.BUIbackend.store_conf_cli`"""
         # serialize data as it is a nested dict
         import hmac
         import hashlib
         from base64 import b64encode
+
         if not isinstance(data, (_ImmutableMultiDict, ImmutableMultiDict)):
-            msg = 'Wrong data type'
+            msg = "Wrong data type"
             self.logger.warning(msg)
             raise BUIserverException(msg)
         vers = self._get_agent_version()
         if vers and vers >= AGENT_VERSION_CAST:
             # convert the data to our custom ImmutableMultiDict
             data = ImmutableMultiDict(data.to_dict(False))
-        key = '{}{}'.format(self.password, 'store_conf_cli')
+        key = "{}{}".format(self.password, "store_conf_cli")
         key = to_bytes(key)
         pickles = to_unicode(
             b64encode(
                 pickle.dumps(
-                    {'data': data, 'conf': conf, 'client': client, 'template': template,
-                     'statictemplate': statictemplate, 'content': content}, 2
+                    {
+                        "data": data,
+                        "conf": conf,
+                        "client": client,
+                        "template": template,
+                        "statictemplate": statictemplate,
+                        "content": content,
+                    },
+                    2,
                 )
             )
         )
         bytes_pickles = to_bytes(pickles)
         digest = to_unicode(hmac.new(key, bytes_pickles, hashlib.sha1).hexdigest())
-        data = {'func': 'store_conf_cli', 'args': pickles, 'pickled': True, 'digest': digest}
+        data = {
+            "func": "store_conf_cli",
+            "args": pickles,
+            "pickled": True,
+            "digest": digest,
+        }
         return json.loads(self.do_command(data))
 
     @implement
@@ -560,36 +602,61 @@ class NClient(BUIbackend):
         import hmac
         import hashlib
         from base64 import b64encode
+
         if not isinstance(data, (_ImmutableMultiDict, ImmutableMultiDict)):
-            msg = 'Wrong data type'
+            msg = "Wrong data type"
             self.logger.warning(msg)
             raise BUIserverException(msg)
         vers = self._get_agent_version()
         if vers and vers >= AGENT_VERSION_CAST:
             # convert the data to our custom ImmutableMultiDict
             data = ImmutableMultiDict(data.to_dict(False))
-        key = '{}{}'.format(self.password, 'store_conf_srv')
+        key = "{}{}".format(self.password, "store_conf_srv")
         key = to_bytes(key)
-        pickles = to_unicode(b64encode(pickle.dumps({'data': data, 'conf': conf}, 2)))
+        pickles = to_unicode(b64encode(pickle.dumps({"data": data, "conf": conf}, 2)))
         bytes_pickles = to_bytes(pickles)
         digest = to_unicode(hmac.new(key, bytes_pickles, hashlib.sha1).hexdigest())
-        data = {'func': 'store_conf_srv', 'args': pickles, 'pickled': True, 'digest': digest}
+        data = {
+            "func": "store_conf_srv",
+            "args": pickles,
+            "pickled": True,
+            "digest": digest,
+        }
         return json.loads(self.do_command(data))
 
     @implement
-    def restore_files(self, name=None, backup=None, files=None, strip=None, archive='zip', password=None, agent=None):
+    def restore_files(
+        self,
+        name=None,
+        backup=None,
+        files=None,
+        strip=None,
+        archive="zip",
+        password=None,
+        agent=None,
+    ):
         """See :func:`burpui.misc.backend.interface.BUIbackend.restore_files`"""
-        data = {'func': 'restore_files', 'args': {'name': name, 'backup': backup, 'files': files, 'strip': strip, 'archive': archive, 'password': password}}
+        data = {
+            "func": "restore_files",
+            "args": {
+                "name": name,
+                "backup": backup,
+                "files": files,
+                "strip": strip,
+                "archive": archive,
+                "password": password,
+            },
+        }
         return self.do_command(data)
 
     @implement
     def get_file(self, path, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_file`"""
-        data = {'func': 'get_file', 'path': path}
+        data = {"func": "get_file", "path": path}
         return self.do_command(data)
 
     @implement
     def del_file(self, path, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.del_file`"""
-        data = {'func': 'del_file', 'path': path}
+        data = {"func": "del_file", "path": path}
         return json.loads(self.do_command(data))

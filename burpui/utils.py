@@ -35,11 +35,11 @@ class human_readable(int):
 
     code from: http://code.activestate.com/recipes/578323-human-readable-filememory-sizes-v2/
     """
+
     def __format__(self, fmt):  # pragma: no cover
         # is it an empty format or not a special format for the size class
         if fmt == "" or fmt[-2:].lower() not in ["em", "sm", "cm"]:
-            if fmt[-1].lower() in \
-                    ['b', 'c', 'd', 'o', 'x', 'n', 'e', 'f', 'g', '%']:
+            if fmt[-1].lower() in ["b", "c", "d", "o", "x", "n", "e", "f", "g", "%"]:
                 # Numeric format.
                 return int(self).__format__(fmt)
             else:
@@ -64,8 +64,8 @@ class human_readable(int):
         v, i = (v, i) if v > 0.5 else (v * base, i - 1)
 
         # Identify if there is a width and extract it
-        width = "" if fmt.find(".") == -1 else fmt[:fmt.index(".")]
-        precis = fmt[:-2] if width == "" else fmt[fmt.index("."):-2]
+        width = "" if fmt.find(".") == -1 else fmt[: fmt.index(".")]
+        precis = fmt[:-2] if width == "" else fmt[fmt.index(".") : -2]
 
         # do the precision bit first, so width/alignment works with the suffix
         if float(self) == 0:
@@ -75,10 +75,11 @@ class human_readable(int):
         return "{0:{1}}".format(t, width) if width != "" else t
 
 
-class BUIcompress():
+class BUIcompress:
     """Provides a context to generate any kind of archive supported by
     burp-ui
     """
+
     def __init__(self, name, archive, zip64=False):  # pragma: no cover
         self.name = name
         self.archive = archive
@@ -86,24 +87,24 @@ class BUIcompress():
 
     def __enter__(self):
         self.arch = None
-        if self.archive == 'zip':
+        if self.archive == "zip":
             self.arch = zipfile.ZipFile(
                 self.name,
-                mode='w',
+                mode="w",
                 compression=zipfile.ZIP_DEFLATED,
-                allowZip64=self.zip64
+                allowZip64=self.zip64,
             )
-        elif self.archive == 'tar.gz':
-            self.arch = tarfile.open(self.name, 'w:gz')
-        elif self.archive == 'tar.bz2':
-            self.arch = tarfile.open(self.name, 'w:bz2')
+        elif self.archive == "tar.gz":
+            self.arch = tarfile.open(self.name, "w:gz")
+        elif self.archive == "tar.bz2":
+            self.arch = tarfile.open(self.name, "w:bz2")
         return self
 
     def __exit__(self, type, value, traceback):
         self.arch.close()
 
     def append(self, path, arcname):
-        if self.archive == 'zip':
+        if self.archive == "zip":
             if os.path.islink(path):
                 # This is a symlink, we virtually create one in memory
                 # because zipfile does not seem to support them natively
@@ -115,7 +116,7 @@ class BUIcompress():
                 self.arch.writestr(vfile, os.readlink(path))
             else:
                 self.arch.write(path, arcname)
-        elif self.archive in ['tar.gz', 'tar.bz2']:
+        elif self.archive in ["tar.gz", "tar.bz2"]:
             self.arch.add(path, arcname=arcname, recursive=False)
 
 
@@ -126,51 +127,51 @@ def is_uuid(string):
     except ValueError:
         return False
 
-    return val.hex == string.replace('-', '')
+    return val.hex == string.replace("-", "")
 
 
 def lookup_file(name=None, guess=True, directory=False, check=True):
     if name and isinstance(name, str):
-        if os.path.isfile(name) or name == '/dev/null':
+        if os.path.isfile(name) or name == "/dev/null":
             return name
         elif directory and os.path.isdir(name):
             return name
         elif not guess:
             if check:
-                raise IOError('File not found: \'{}\''.format(name))
+                raise IOError("File not found: '{}'".format(name))
             return name
     if name and isinstance(name, str):
         names = [name]
     elif name:
         names = name
     else:
-        names = ['burpui.cfg', 'burpui.sample.cfg']
+        names = ["burpui.cfg", "burpui.sample.cfg"]
     roots = [
-        '',
-        'share/burpui',
-        '/etc/burp',
+        "",
+        "share/burpui",
+        "/etc/burp",
         os.path.join(
             sys.prefix,
-            'share',
-            'burpui',
+            "share",
+            "burpui",
         ),
         os.path.join(
             sys.prefix,
-            'local',
-            'share',
-            'burpui',
+            "local",
+            "share",
+            "burpui",
         ),
         os.path.join(
             os.path.dirname(os.path.realpath(__file__)),
-            '..',
-            '..',
-            '..',
-            '..',
-            'share',
-            'burpui',
+            "..",
+            "..",
+            "..",
+            "..",
+            "share",
+            "burpui",
         ),
     ]
-    prefixes = ['', 'etc']
+    prefixes = ["", "etc"]
     for filename in names:
         for root in roots:
             for prefix in prefixes:
@@ -185,6 +186,7 @@ def utc_to_local(timestamp):
     try:
         import arrow
         from tzlocal import get_localzone
+
         # 1487607525 -> 1487611125
         utc = arrow.get(datetime.datetime.fromtimestamp(timestamp))
         local = utc.to(str(get_localzone()))
@@ -199,7 +201,7 @@ def __(string):
 
 
 class ReverseProxied(object):
-    '''Wrap the application in this middleware and configure the
+    """Wrap the application in this middleware and configure the
     front-end server to add these headers, to let you quietly bind
     this to a URL other than / and to an HTTP scheme that is
     different than what is used locally.
@@ -231,19 +233,20 @@ class ReverseProxied(object):
     :param wsgi_app: the WSGI application
 
     Inspired by: http://flask.pocoo.org/snippets/35/
-    '''
+    """
+
     def __init__(self, wsgi_app, app):
         self.wsgi_app = wsgi_app
         self.app = app
 
     def __call__(self, environ, start_response):
-        script_name = environ.get('HTTP_X_SCRIPT_NAME', self.app.config['BUI_PREFIX'])
+        script_name = environ.get("HTTP_X_SCRIPT_NAME", self.app.config["BUI_PREFIX"])
         if script_name:
-            if script_name.startswith('/'):
-                environ['SCRIPT_NAME'] = script_name
-                path_info = environ['PATH_INFO']
+            if script_name.startswith("/"):
+                environ["SCRIPT_NAME"] = script_name
+                path_info = environ["PATH_INFO"]
                 if path_info.startswith(script_name):
-                    environ['PATH_INFO'] = path_info[len(script_name):]
+                    environ["PATH_INFO"] = path_info[len(script_name) :]
             else:
                 self.app.warning("'prefix' must start with a '/'!")
 

@@ -16,16 +16,16 @@ import re
 import json
 import fnmatch
 
-PARSE_EXCLUDE_KEYS = ['agents', 'clients', 'ro', 'rw', 'order', 'exclude']
-PARSE_RESERVED_KEYS = ['ro', 'rw', 'order', 'exclude']
-DEFAULT_EVAL_ORDER = ['exclude', 'rw', 'ro']
+PARSE_EXCLUDE_KEYS = ["agents", "clients", "ro", "rw", "order", "exclude"]
+PARSE_RESERVED_KEYS = ["ro", "rw", "order", "exclude"]
+DEFAULT_EVAL_ORDER = ["exclude", "rw", "ro"]
 MODE_RETURN = {
-    'ro': False,
-    'rw': True,
+    "ro": False,
+    "rw": True,
 }
 
 
-def _extract_key(data, key, name, default=[], fallback='clients'):
+def _extract_key(data, key, name, default=[], fallback="clients"):
     if not isinstance(data, dict):
         return default
 
@@ -41,7 +41,7 @@ def _extract_key(data, key, name, default=[], fallback='clients'):
             ret = make_list(extract[name])
 
     if ret:
-        if key == 'order':
+        if key == "order":
             for odr in DEFAULT_EVAL_ORDER:
                 if odr not in ret:
                     ret.append(odr)
@@ -55,6 +55,7 @@ def _glob_match(globs, string, extended=True):
             reg = fnmatch.translate(glob)
             return re.match(reg, string)
         return glob == string
+
     if not isinstance(globs, list):
         if __eval_glob(globs):
             return [globs]
@@ -71,7 +72,6 @@ def _glob_match(globs, string, extended=True):
 
 
 class BUImetaGrant(object):
-
     def _merge_data(self, d1, d2):
         """Merge data as list or dict recursively avoiding duplicates"""
         if not d1 and not d2:
@@ -114,14 +114,14 @@ class BUImetaGrant(object):
                 if parent and parent not in PARSE_EXCLUDE_KEYS:
                     advanced[mode] = {parent: data}
                 else:
-                    advanced[mode] = {'clients': data}
+                    advanced[mode] = {"clients": data}
             return data, agents, advanced
         if not isinstance(data, dict):
             if mode:
                 if parent and parent not in PARSE_EXCLUDE_KEYS:
                     advanced[mode] = {parent: make_list(data)}
                 else:
-                    advanced[mode] = {'clients': make_list(data)}
+                    advanced[mode] = {"clients": make_list(data)}
             return make_list(data), agents, advanced
         for key, val in data.items():
             if key in PARSE_EXCLUDE_KEYS:
@@ -138,7 +138,7 @@ class BUImetaGrant(object):
                 else:
                     advanced = self._merge_data(advanced, {mode: {key: cl1}})
 
-        for key in ['clients'] + PARSE_RESERVED_KEYS:
+        for key in ["clients"] + PARSE_RESERVED_KEYS:
             md = None
             if key in data:
                 if key in PARSE_RESERVED_KEYS:
@@ -148,23 +148,23 @@ class BUImetaGrant(object):
                     par = key
                 cl2, ag2, ad2 = self._parse_clients(data[key], md, parent=par)
                 agents = self._merge_data(agents, ag2)
-                if not md or md not in ['order', 'exclude']:
+                if not md or md not in ["order", "exclude"]:
                     clients = self._merge_data(clients, cl2)
                 if parent and parent not in PARSE_EXCLUDE_KEYS:
-                    ro = ad2.get('ro')
-                    rw = ad2.get('rw')
-                    if ro and 'clients' in ro:
-                        ro[parent] = ro['clients']
-                        del ro['clients']
-                        ad2['ro'] = ro
-                    if rw and 'clients' in rw:
-                        rw[parent] = rw['clients']
-                        del rw['clients']
-                        ad2['rw'] = rw
+                    ro = ad2.get("ro")
+                    rw = ad2.get("rw")
+                    if ro and "clients" in ro:
+                        ro[parent] = ro["clients"]
+                        del ro["clients"]
+                        ad2["ro"] = ro
+                    if rw and "clients" in rw:
+                        rw[parent] = rw["clients"]
+                        del rw["clients"]
+                        ad2["rw"] = rw
                 advanced = self._merge_data(advanced, ad2)
 
-        if 'agents' in data:
-            ag3, cl3, ad3 = self._parse_agents(data['agents'])
+        if "agents" in data:
+            ag3, cl3, ad3 = self._parse_agents(data["agents"])
             agents = self._merge_data(agents, ag3)
             clients = self._merge_data(clients, cl3)
             advanced = self._merge_data(advanced, ad3)
@@ -176,11 +176,11 @@ class BUImetaGrant(object):
         advanced = {}
         if isinstance(data, list):
             if mode:
-                advanced[mode] = {'agents': data}
+                advanced[mode] = {"agents": data}
             return data, clients, advanced
         if not isinstance(data, dict):
             if mode:
-                advanced[mode] = {'agents': make_list(data)}
+                advanced[mode] = {"agents": make_list(data)}
             return make_list(data), clients, advanced
         for key, val in data.items():
             if key in PARSE_EXCLUDE_KEYS:
@@ -197,7 +197,7 @@ class BUImetaGrant(object):
             # if mode:
             #     advanced = self._merge_data(advanced, {mode: {key: cl1}})
 
-        for key in ['agents'] + PARSE_RESERVED_KEYS:
+        for key in ["agents"] + PARSE_RESERVED_KEYS:
             md = None
             if key in data:
                 if key in PARSE_RESERVED_KEYS:
@@ -207,8 +207,8 @@ class BUImetaGrant(object):
                 clients = self._merge_data(clients, cl2)
                 advanced = self._merge_data(advanced, ad2)
 
-        if 'clients' in data:
-            cl3, ag3, ad3 = self._parse_clients(data['clients'])
+        if "clients" in data:
+            cl3, ag3, ad3 = self._parse_clients(data["clients"])
             agents = self._merge_data(agents, ag3)
             clients = self._merge_data(clients, cl3)
             advanced = self._merge_data(advanced, ad3)
@@ -220,9 +220,10 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
     """This class is here to handle grants in a generic way.
     It will automatically merge grants from various backends that register to it
     """
+
     _id = 1
-    _gp_admin_name = '@BUIADMINRESERVED'
-    _gp_moderator_name = '@moderator'
+    _gp_admin_name = "@BUIADMINRESERVED"
+    _gp_moderator_name = "@moderator"
     _gp_hidden = set([str(_gp_admin_name[1:]), str(_gp_moderator_name[1:])])
 
     _grants = {}
@@ -231,7 +232,7 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
     _options = {}
     _backends = {}
 
-    _name = 'meta_grant'
+    _name = "meta_grant"
 
     @property
     def id(self):
@@ -257,8 +258,8 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
     def options(self, value):
         """set the options of our engine"""
         self._options = value
-        if self._options.get('legacy'):
-            self._options['extended'] = False
+        if self._options.get("legacy"):
+            self._options["extended"] = False
 
     def changed(self, sid):
         """detect a configuration change"""
@@ -327,7 +328,7 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
         return groups
 
     def _gen_key(self, username):
-        return '{}-{}'.format(self._name, username)
+        return "{}-{}".format(self._name, username)
 
     def _set_cached(self, username, value):
         key = self._gen_key(username)
@@ -354,23 +355,17 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
                 grants = []
 
             clients, agents, advanced = self._parse_clients(grants)
-            data['clients'] = clients
-            data['agents'] = agents
-            data['advanced'] = [advanced] if advanced else []
+            data["clients"] = clients
+            data["agents"] = agents
+            data["advanced"] = [advanced] if advanced else []
 
             def __merge_grants_with(grp, prt):
                 data2 = self._extract_grants(grp, prt)
-                data['clients'] = self._merge_data(
-                    data['clients'],
-                    data2['clients']
-                )
-                data['agents'] = self._merge_data(
-                    data['agents'],
-                    data2['agents']
-                )
-                tmp = data2['advanced']
+                data["clients"] = self._merge_data(data["clients"], data2["clients"])
+                data["agents"] = self._merge_data(data["agents"], data2["agents"])
+                tmp = data2["advanced"]
                 if tmp:
-                    data['advanced'] += tmp
+                    data["advanced"] += tmp
 
             # moderator is also a group
             for gname, group in self.groups.items():
@@ -391,17 +386,17 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
 
     def _extract_clients(self, username):
         ret = self._extract_grants(username)
-        return ret.get('clients', [])
+        return ret.get("clients", [])
 
     def _extract_agents(self, username):
         ret = self._extract_grants(username)
-        return ret.get('agents', [])
+        return ret.get("agents", [])
 
     def _extract_advanced(self, username, idx=None):
-        ret = self._extract_grants(username).get('advanced', [])
+        ret = self._extract_grants(username).get("advanced", [])
         if idx is not None:
             return ret[idx]
-        if self.opt('inverse_inheritance'):
+        if self.opt("inverse_inheritance"):
             return reversed(ret)
         return ret
 
@@ -413,7 +408,7 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
         if not clients:
             return None
 
-        if self.opt('extended'):
+        if self.opt("extended"):
             matches = []
             for exp in clients:
                 regex = fnmatch.translate(exp)
@@ -428,7 +423,7 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
         if not servers:
             return None
 
-        if self.opt('extended'):
+        if self.opt("extended"):
             matches = []
             for exp in servers:
                 regex = fnmatch.translate(exp)
@@ -459,11 +454,11 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
 
         (is_admin, _) = self.is_admin(username)
 
-        ret = is_admin or self.opt('assume_rw', True) or self.opt('legacy')
+        ret = is_admin or self.opt("assume_rw", True) or self.opt("legacy")
 
         if self.is_client_allowed(username, client, server):
             # legacy mode: assume rw for everyone
-            if self.opt('legacy'):
+            if self.opt("legacy"):
                 return True
             client_match = self._client_match(username, client)
             advanced = self._extract_advanced(username)
@@ -475,49 +470,59 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
                 server_match = self._server_match(username, server)
 
                 if not server_match and not client_match:
-                    return is_admin or self.opt('assume_rw', True)
+                    return is_admin or self.opt("assume_rw", True)
 
                 for adv in advanced:
-                    order = _extract_key(adv, 'order', [server] + server_match, DEFAULT_EVAL_ORDER)
+                    order = _extract_key(
+                        adv, "order", [server] + server_match, DEFAULT_EVAL_ORDER
+                    )
                     for adv2 in advanced:
                         # the whole agent is rw and we did not find explicit entry for
                         # client_match
                         if client_match is False:
-                            if server_match and \
-                                    any(x in adv.get('rw', {}) or
-                                        x in adv.get('rw', {}).get('agents', [])
-                                        for x in server_match):
+                            if server_match and any(
+                                x in adv.get("rw", {})
+                                or x in adv.get("rw", {}).get("agents", [])
+                                for x in server_match
+                            ):
                                 return True
-                            if server in adv.get('rw', {}) or \
-                                    server in adv.get('rw', {}).get('agents', []):
+                            if server in adv.get("rw", {}) or server in adv.get(
+                                "rw", {}
+                            ).get("agents", []):
                                 return True
 
-                        if server_match and \
-                                any(x in adv.get('rw', {}) or
-                                    x in adv.get('rw', {}).get('agents', [])
-                                    for x in server_match):
+                        if server_match and any(
+                            x in adv.get("rw", {})
+                            or x in adv.get("rw", {}).get("agents", [])
+                            for x in server_match
+                        ):
                             for odr in order:
-                                if client_match and \
-                                    any(x in adv2.get(odr, []) or
-                                        x in adv2.get(odr, {}).get('clients', []) or
-                                        any(x in adv2.get(odr, {}).get(y, [])
-                                            for y in server_match)
-                                        for x in client_match
-                                        ):
+                                if client_match and any(
+                                    x in adv2.get(odr, [])
+                                    or x in adv2.get(odr, {}).get("clients", [])
+                                    or any(
+                                        x in adv2.get(odr, {}).get(y, [])
+                                        for y in server_match
+                                    )
+                                    for x in client_match
+                                ):
                                     return MODE_RETURN.get(odr, False)
 
-                        if server_match and \
-                                any(x in adv.get('ro', {}) or
-                                    x in adv.get('ro', {}).get('agents', [])
-                                    for x in server_match):
+                        if server_match and any(
+                            x in adv.get("ro", {})
+                            or x in adv.get("ro", {}).get("agents", [])
+                            for x in server_match
+                        ):
                             for odr in order:
-                                if client_match and \
-                                    any(x in adv2.get(odr, {}).get('clients', []) or
-                                        x in adv2.get(odr, []) or
-                                        any(x in adv2.get(odr, {}).get(y, [])
-                                            for y in server_match)
-                                        for x in client_match
-                                        ):
+                                if client_match and any(
+                                    x in adv2.get(odr, {}).get("clients", [])
+                                    or x in adv2.get(odr, [])
+                                    or any(
+                                        x in adv2.get(odr, {}).get(y, [])
+                                        for y in server_match
+                                    )
+                                    for x in client_match
+                                ):
                                     return MODE_RETURN.get(odr, False)
 
             for adv in advanced:
@@ -525,16 +530,14 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
                     key = [server] + self._server_match(username, server)
                 else:
                     key = None
-                order = _extract_key(adv, 'order', key, DEFAULT_EVAL_ORDER)
+                order = _extract_key(adv, "order", key, DEFAULT_EVAL_ORDER)
 
                 for odr in order:
-                    eval_clients = adv.get(odr, {}).get('clients', [])
-                    if client_match and \
-                            any(x in eval_clients for x in client_match):
+                    eval_clients = adv.get(odr, {}).get("clients", [])
+                    if client_match and any(x in eval_clients for x in client_match):
                         return MODE_RETURN.get(odr, False)
 
-                    if client and \
-                            client in eval_clients:
+                    if client and client in eval_clients:
                         return MODE_RETURN.get(odr, False)
 
         return ret
@@ -554,43 +557,54 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
 
         if server:
             server_match = self._server_match(username, server)
-            if server_match is not None or self.opt('legacy'):
+            if server_match is not None or self.opt("legacy"):
                 if not server_match:
                     return is_admin
 
                 advanced = self._extract_advanced(username)
-                if self.opt('implicit_link', True) and not advanced:
+                if self.opt("implicit_link", True) and not advanced:
                     advanced = False
 
                 if advanced is not False:
                     for idx, adv in enumerate(advanced):
-                        order = _extract_key(adv, 'order', [server] + server_match, DEFAULT_EVAL_ORDER)
-                        excludes = _extract_key(adv, 'exclude', [server] + server_match, fallback='agents')
+                        order = _extract_key(
+                            adv, "order", [server] + server_match, DEFAULT_EVAL_ORDER
+                        )
+                        excludes = _extract_key(
+                            adv, "exclude", [server] + server_match, fallback="agents"
+                        )
                         if all(x not in adv for x in server_match):
                             for odr in order:
-                                if odr == 'exclude' and (
-                                        any(x in excludes for x in client_match) or
-                                        _glob_match(excludes, client, self.opt('extended'))):
+                                if odr == "exclude" and (
+                                    any(x in excludes for x in client_match)
+                                    or _glob_match(
+                                        excludes, client, self.opt("extended")
+                                    )
+                                ):
                                     return False
-                                elif any(x in y
-                                         for x in server_match
-                                         for y in self._extract_advanced_mode(username, odr, 'agents', idx)
-                                         ):
+                                elif any(
+                                    x in y
+                                    for x in server_match
+                                    for y in self._extract_advanced_mode(
+                                        username, odr, "agents", idx
+                                    )
+                                ):
                                     return True
 
                         tmp = set(adv.get(server, []))
                         for srv in server_match:
                             tmp |= set(adv.get(srv, []))
                         adv2 = list(tmp)
-                        excludes = _extract_key(adv, 'exclude', [server] + server_match)
+                        excludes = _extract_key(adv, "exclude", [server] + server_match)
                         for odr in order:
-                            if odr == 'exclude' and (
-                                    any(x in excludes for x in client_match) or
-                                    _glob_match(excludes, client, self.opt('extended'))):
+                            if odr == "exclude" and (
+                                any(x in excludes for x in client_match)
+                                or _glob_match(excludes, client, self.opt("extended"))
+                            ):
                                 return False
-                            elif client_match is not False and \
-                                    (any(x in adv2 for x in client_match) or
-                                     client in adv2):
+                            elif client_match is not False and (
+                                any(x in adv2 for x in client_match) or client in adv2
+                            ):
                                 return True
 
                     return False
@@ -598,13 +612,18 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
         advanced = self._extract_advanced(username)
         if advanced:
             for adv in advanced:
-                order = _extract_key(adv, 'order', None, DEFAULT_EVAL_ORDER)
-                excludes = _extract_key(adv, 'exclude', None)
+                order = _extract_key(adv, "order", None, DEFAULT_EVAL_ORDER)
+                excludes = _extract_key(adv, "exclude", None)
 
                 for odr in order:
-                    if odr == 'exclude' and client_match and (
-                            any(x in excludes for x in client_match) or
-                            _glob_match(excludes, client, self.opt('extended'))):
+                    if (
+                        odr == "exclude"
+                        and client_match
+                        and (
+                            any(x in excludes for x in client_match)
+                            or _glob_match(excludes, client, self.opt("extended"))
+                        )
+                    ):
                         return False
         return client_match is not False or is_admin
 
@@ -614,24 +633,28 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
             return False
 
         # special case single-agent mode
-        if not server and config.get('STANDALONE'):
-            server = 'local'
+        if not server and config.get("STANDALONE"):
+            server = "local"
 
         (is_admin, _) = self.is_admin(username)
 
-        ret = is_admin or self.opt('assume_rw', True) or self.opt('legacy')
+        ret = is_admin or self.opt("assume_rw", True) or self.opt("legacy")
 
         if self.is_server_allowed(username, server):
             server_match = self._server_match(username, server)
             if not server_match:
-                return is_admin or self.opt('assume_rw', True)
+                return is_admin or self.opt("assume_rw", True)
 
             advanced = self._extract_advanced(username)
 
             for adv in advanced:
-                order = _extract_key(adv, 'order', [server] + server_match, DEFAULT_EVAL_ORDER)
+                order = _extract_key(
+                    adv, "order", [server] + server_match, DEFAULT_EVAL_ORDER
+                )
                 for odr in order:
-                    if any(x in adv.get(odr, {}).get('agents', []) for x in server_match):
+                    if any(
+                        x in adv.get(odr, {}).get("agents", []) for x in server_match
+                    ):
                         return MODE_RETURN.get(odr, False)
 
         return ret
@@ -644,7 +667,7 @@ class BUIgrantHandler(BUImetaGrant, BUIacl):
         server_match = self._server_match(username, server)
         (is_admin, _) = self.is_admin(username)
 
-        if server_match is None and self.opt('legacy'):
+        if server_match is None and self.opt("legacy"):
             server_match = False
 
         return server_match is not False or is_admin
@@ -661,8 +684,8 @@ class BUIaclGroup(object):
 
     def _parse_members(self, members):
         # we support only lists
-        if members and ',' in members and not isinstance(members, list):
-            parsed = [x.strip() for x in members.split(',')]
+        if members and "," in members and not isinstance(members, list):
+            parsed = [x.strip() for x in members.split(",")]
         else:
             parsed = make_list(members)
         return parsed
@@ -692,14 +715,16 @@ class BUIaclGroup(object):
                 # avoid infinite loop with mutual inheritance
                 if parent and mem in parent:
                     continue
-                if mem.startswith('@'):
+                if mem.startswith("@"):
                     self.has_subgroups += 1
                     if mem in meta_grants._groups:
                         if parent:
                             parent.append(mem)
                         else:
                             parent = [mem]
-                        (ret, inh2) = meta_grants._groups[mem].is_member(member, parent=parent)
+                        (ret, inh2) = meta_grants._groups[mem].is_member(
+                            member, parent=parent
+                        )
                         if ret:
                             for subinh in inh2:
                                 inherit.add(subinh)
@@ -709,7 +734,7 @@ class BUIaclGroup(object):
 
     @property
     def name(self):
-        if self._name and any(self._name.startswith(x) for x in ['@', '+']):
+        if self._name and any(self._name.startswith(x) for x in ["@", "+"]):
             return str(self._name[1:])
         return self._name
 
@@ -734,17 +759,17 @@ class BUIaclGrant(BUImetaGrant):
             if not grants:
                 return []
             # ignore mal-formatted json
-            if any(x in grants for x in ['{', '}', '[', ']']):
+            if any(x in grants for x in ["{", "}", "[", "]"]):
                 ret = None
-            elif grants and ',' in grants:
-                ret = [x.rstrip() for x in grants.split(',')]
+            elif grants and "," in grants:
+                ret = [x.rstrip() for x in grants.split(",")]
             else:
                 ret = make_list(grants)
         return ret
 
     @property
     def name(self):
-        if self._name and any(self._name.startswith(x) for x in ['@', '+']):
+        if self._name and any(self._name.startswith(x) for x in ["@", "+"]):
             return str(self._name[1:])
         return self._name
 

@@ -9,26 +9,29 @@ from burpui.app import create_app
 
 @pytest.fixture
 def app():
-    conf = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../configs/test2.cfg')
+    conf = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), "../configs/test2.cfg"
+    )
     _, logfile = tempfile.mkstemp()
     bui = create_app(conf, 1, logfile, gunicorn=False, unittest=True)
-    bui.config['DEBUG'] = False
+    bui.config["DEBUG"] = False
     return bui
 
 
 def test_auth_required(client):
-    response = client.get(url_for('api.about'))
+    response = client.get(url_for("api.about"))
     assert response.status_code == 200
-    response = client.get(url_for('api.counters'))
+    response = client.get(url_for("api.counters"))
     assert response.status_code == 401
 
 
 def test_auth_valid(client):
     import base64
+
     response = client.get(
-        url_for('api.live'),
+        url_for("api.live"),
         headers={
-            'Authorization': 'Basic ' + base64.b64encode(b'admin:admin').decode('utf-8')
-        }
+            "Authorization": "Basic " + base64.b64encode(b"admin:admin").decode("utf-8")
+        },
     )
     assert response.status_code == 200

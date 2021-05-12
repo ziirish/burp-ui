@@ -12,7 +12,8 @@ class LocalLoader(BUIloader):
     """The :class:`burpui.misc.auth.local.LocalLoader` class loads the *Local*
     users.
     """
-    section = name = 'LOCAL:AUTH'
+
+    section = name = "LOCAL:AUTH"
 
     def __init__(self, app=None, handler=None):
         """:func:`burpui.misc.auth.Local.localLoader.__init__` loads users from
@@ -30,23 +31,18 @@ class LocalLoader(BUIloader):
             # Maybe the handler argument is None, maybe the 'priority'
             # option is missing. We don't care.
             try:
-                handler.priority = conf.safe_get(
-                    'priority',
-                    'integer',
-                    section=self.section
-                ) or handler.priority
+                handler.priority = (
+                    conf.safe_get("priority", "integer", section=self.section)
+                    or handler.priority
+                )
             except:
                 pass
-            users = conf.safe_get(
-                'users',
-                cast='force_list',
-                section=self.section
-            )
+            users = conf.safe_get("users", cast="force_list", section=self.section)
             limit = conf.safe_get(
-                'limit',
-                cast='integer',
+                "limit",
+                cast="integer",
                 section=self.section,
-                defaults={self.section: {'limit': limit}}
+                defaults={self.section: {"limit": limit}},
             )
             if users != [None]:
                 self.users = users
@@ -57,7 +53,7 @@ class LocalLoader(BUIloader):
                 if user[2] >= limit:
                     self.users.append(user[0])
 
-        self.logger.debug('Local users: ' + str(self.users))
+        self.logger.debug("Local users: " + str(self.users))
 
     def fetch(self, uid=None):
         """:func:`burpui.misc.auth.local.LocalLoader.fetch` searches for a user
@@ -92,10 +88,11 @@ class LocalLoader(BUIloader):
 
 
 class UserHandler(BUIhandler):
-    __doc__ = __('Authenticate users against local PAM database.')
+    __doc__ = __("Authenticate users against local PAM database.")
     priority = 0
 
     """See :class:`burpui.misc.auth.interface.BUIhandler`"""
+
     def __init__(self, app=None, auth=None):
         """See :func:`burpui.misc.auth.interface.BUIhandler.__init__`"""
         self.local = LocalLoader(app, self)
@@ -117,6 +114,7 @@ class UserHandler(BUIhandler):
 
 class LocalUser(BUIuser):
     """See :class:`burpui.misc.auth.interface.BUIuser`"""
+
     def __init__(self, local=None, name=None):
         self.active = False
         self.authenticated = False
@@ -166,8 +164,8 @@ from ctypes.util import find_library  # noqa
 
 
 def load_library(nickname, search_names=None):
-    '''Load a library based on the result of find_library(nickname),
-    or hardcoded names found in `search_names`.'''
+    """Load a library based on the result of find_library(nickname),
+    or hardcoded names found in `search_names`."""
 
     library = None
     if search_names is None:
@@ -193,7 +191,7 @@ def load_library(nickname, search_names=None):
         raise AssertionError("Failed to load '%s' library." % (nickname))
 
 
-def load_library_from_aix_archive(path, member_name='shr.o'):
+def load_library_from_aix_archive(path, member_name="shr.o"):
     """
     Extract the shared object from the archive and load it as a normal
     library.
@@ -206,6 +204,7 @@ def load_library_from_aix_archive(path, member_name='shr.o'):
     def remove_file_at_exit(path):
         # Reimport os as it might be removed at exit.
         import os
+
         os.remove(path)
 
     archive = arpy.AIXBigArchive(path)
@@ -214,7 +213,7 @@ def load_library_from_aix_archive(path, member_name='shr.o'):
     temp_file = None
     try:
         temp_fd, path = tempfile.mkstemp()
-        temp_file = os.fdopen(temp_fd, 'wb')
+        temp_file = os.fdopen(temp_fd, "wb")
         atexit.register(remove_file_at_exit, path)
         temp_file.write(member.read())
     finally:
@@ -223,12 +222,12 @@ def load_library_from_aix_archive(path, member_name='shr.o'):
     return CDLL(path)
 
 
-if sys.platform.startswith('aix'):
-    LIBPAM = load_library_from_aix_archive('/lib/libpam.a')
-    LIBC = load_library_from_aix_archive('/lib/libc.a')
+if sys.platform.startswith("aix"):
+    LIBPAM = load_library_from_aix_archive("/lib/libpam.a")
+    LIBC = load_library_from_aix_archive("/lib/libc.a")
 else:
-    LIBPAM = load_library('pam', ['libpam.so', 'libpam.so.0', 'libpam.so.1'])
-    LIBC = load_library('c', ['libc.so', 'libc.so.6', 'libc.so.5'])
+    LIBPAM = load_library("pam", ["libpam.so", "libpam.so.0", "libpam.so.1"])
+    LIBC = load_library("c", ["libc.so", "libc.so.6", "libc.so.5"])
 
 CALLOC = LIBC.calloc
 CALLOC.restype = c_void_p
@@ -247,9 +246,8 @@ PAM_TEXT_INFO = 4
 
 class PamHandle(Structure):
     """wrapper class for pam_handle_t"""
-    _fields_ = [
-        ("handle", c_void_p)
-    ]
+
+    _fields_ = [("handle", c_void_p)]
 
     def __init__(self):
         Structure.__init__(self)
@@ -258,6 +256,7 @@ class PamHandle(Structure):
 
 class PamMessage(Structure):
     """wrapper class for pam_message structure"""
+
     _fields_ = [
         ("msg_style", c_int),
         ("msg", POINTER(c_char)),
@@ -269,6 +268,7 @@ class PamMessage(Structure):
 
 class PamResponse(Structure):
     """wrapper class for pam_response structure"""
+
     _fields_ = [
         ("resp", POINTER(c_char)),
         ("resp_retcode", c_int),
@@ -278,23 +278,20 @@ class PamResponse(Structure):
         return "<PamResponse %i '%s'>" % (self.resp_retcode, self.resp)
 
 
-CONV_FUNC = CFUNCTYPE(c_int,
-                      c_int, POINTER(POINTER(PamMessage)),
-                      POINTER(POINTER(PamResponse)), c_void_p)
+CONV_FUNC = CFUNCTYPE(
+    c_int, c_int, POINTER(POINTER(PamMessage)), POINTER(POINTER(PamResponse)), c_void_p
+)
 
 
 class PamConv(Structure):
     """wrapper class for pam_conv structure"""
-    _fields_ = [
-        ("conv", CONV_FUNC),
-        ("appdata_ptr", c_void_p)
-    ]
+
+    _fields_ = [("conv", CONV_FUNC), ("appdata_ptr", c_void_p)]
 
 
 PAM_START = LIBPAM.pam_start
 PAM_START.restype = c_int
-PAM_START.argtypes = [c_char_p, c_char_p, POINTER(PamConv),
-                      POINTER(PamHandle)]
+PAM_START.argtypes = [c_char_p, c_char_p, POINTER(PamConv), POINTER(PamHandle)]
 
 PAM_END = LIBPAM.pam_end
 PAM_END.restpe = c_int
@@ -305,7 +302,7 @@ PAM_AUTHENTICATE.restype = c_int
 PAM_AUTHENTICATE.argtypes = [PamHandle, c_int]
 
 
-def authenticate(username, password, service='login'):
+def authenticate(username, password, service="login"):
     """Returns True if the given username and password authenticate for the
     given service.  Returns False otherwise
 
@@ -315,6 +312,7 @@ def authenticate(username, password, service='login'):
 
     ``service``: the PAM service to authenticate against.
                  Defaults to 'login'"""
+
     @CONV_FUNC
     def my_conv(n_messages, messages, p_response, app_data):
         """Simple conversation function that responds to any

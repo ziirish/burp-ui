@@ -32,9 +32,9 @@ class Task(db.Model):
             self.expire = datetime.datetime.utcnow() + expire
 
     def __repr__(self):
-        return '<Task {}-{} ({}, {}/{})>'.format(self.task, self.uuid,
-                                                 self.user, self.timestamp,
-                                                 self.expire)
+        return "<Task {}-{} ({}, {}/{})>".format(
+            self.task, self.uuid, self.user, self.timestamp, self.expire
+        )
 
 
 class Session(db.Model):
@@ -48,8 +48,7 @@ class Session(db.Model):
     permanent = db.Column(db.Boolean)
     api = db.Column(db.Boolean)
 
-    def __init__(self, uuid, user, ip=None, ua=None,
-                 permanent=False, api=False):
+    def __init__(self, uuid, user, ip=None, ua=None, permanent=False, api=False):
         self.uuid = uuid
         self.user = user
         self.ip = ip
@@ -57,26 +56,21 @@ class Session(db.Model):
         self.permanent = permanent
         self.api = api
         if self.permanent:
-            self.expire = datetime.datetime.utcnow() + \
-                app.permanent_session_lifetime
+            self.expire = datetime.datetime.utcnow() + app.permanent_session_lifetime
 
     def refresh(self, ip=None):
         self.timestamp = datetime.datetime.utcnow()
         if ip:
             self.ip = ip
         if self.permanent:
-            self.expire = datetime.datetime.utcnow() + \
-                app.permanent_session_lifetime
-            if 'remember' not in session:
-                session['remember'] = 'set'
+            self.expire = datetime.datetime.utcnow() + app.permanent_session_lifetime
+            if "remember" not in session:
+                session["remember"] = "set"
         db.session.commit()
 
     def __repr__(self):
-        return '<Session {} ({}, {}, {})>'.format(
-            self.uuid,
-            self.user,
-            self.ip,
-            self.ua
+        return "<Session {} ({}, {}, {})>".format(
+            self.uuid, self.user, self.ip, self.ua
         )
 
 
@@ -92,11 +86,7 @@ class Pref(db.Model):
         self.value = value
 
     def __repr__(self):
-        return '<Pref {}: {} = {}>'.format(
-            self.user,
-            self.key,
-            self.value
-        )
+        return "<Pref {}: {} = {}>".format(self.user, self.key, self.value)
 
 
 class Hidden(db.Model):
@@ -111,11 +101,7 @@ class Hidden(db.Model):
         self.server = server
 
     def __repr__(self):
-        return '<Hidden {}: {} ({})'.format(
-            self.user,
-            self.client,
-            self.server
-        )
+        return "<Hidden {}: {} ({})".format(self.user, self.client, self.server)
 
 
 def lazy_loading():

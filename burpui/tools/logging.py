@@ -14,8 +14,9 @@ import logging
 
 def convert_level(verbose):
     # This is already a valid level
-    if logging.getLevelName(verbose) != "Level %s" % verbose and \
-            (not isinstance(verbose, int) or verbose > 0):
+    if logging.getLevelName(verbose) != "Level %s" % verbose and (
+        not isinstance(verbose, int) or verbose > 0
+    ):
         return verbose
 
     # The debug argument used to be a boolean so we keep supporting this format
@@ -30,7 +31,7 @@ def convert_level(verbose):
             logging.ERROR,
             logging.WARNING,
             logging.INFO,
-            logging.DEBUG
+            logging.DEBUG,
         ]
         if verbose >= len(levels):
             verbose = len(levels) - 1
@@ -75,8 +76,8 @@ class Logger(logging.Logger):
         """
         self.app = app
         config = {
-            'level': app.config.get("LOG_LEVEL"),
-            'logfile': app.config.get("LOG_FILE")
+            "level": app.config.get("LOG_LEVEL"),
+            "logfile": app.config.get("LOG_FILE"),
         }
         self.init_logger(config)
 
@@ -98,18 +99,18 @@ class Logger(logging.Logger):
 
         if level > logging.DEBUG:
             LOG_FORMAT = (
-                '[%(asctime)s] %(levelname)s in '
-                '%(module)s.%(funcName)s: %(message)s'
+                "[%(asctime)s] %(levelname)s in " "%(module)s.%(funcName)s: %(message)s"
             )
         else:
             LOG_FORMAT = (
-                '-' * 27 +
-                '[%(asctime)s]' +
-                '-' * 28 + '\n' +
-                '%(levelname)s in %(module)s.%(funcName)s ' +
-                '[%(pathname)s:%(lineno)d]:\n' +
-                '%(message)s\n' +
-                '-' * 80
+                "-" * 27
+                + "[%(asctime)s]"
+                + "-" * 28
+                + "\n"
+                + "%(levelname)s in %(module)s.%(funcName)s "
+                + "[%(pathname)s:%(lineno)d]:\n"
+                + "%(message)s\n"
+                + "-" * 80
             )
 
         handler.setLevel(level)

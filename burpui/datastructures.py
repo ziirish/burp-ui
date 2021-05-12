@@ -14,7 +14,7 @@ from itertools import repeat
 
 
 def is_immutable(self):
-    raise TypeError('%r objects are immutable' % self.__class__.__name__)
+    raise TypeError("%r objects are immutable" % self.__class__.__name__)
 
 
 def iter_multi_items(mapping):
@@ -41,12 +41,11 @@ def native_itermethods(names):
 
 
 class _Missing(object):
-
     def __repr__(self):
-        return 'no value'
+        return "no value"
 
     def __reduce__(self):
-        return '_missing'
+        return "_missing"
 
 
 _missing = _Missing()
@@ -60,6 +59,7 @@ class ImmutableDictMixin(object):
 
     :private:
     """
+
     _hash_cache = None
 
     @classmethod
@@ -173,7 +173,6 @@ class TypeConversionDict(dict):
 
 
 class ViewItems(object):
-
     def __init__(self, multi_dict, method, repr_name, *a, **kw):
         self.__multi_dict = multi_dict
         self.__method = method
@@ -185,13 +184,13 @@ class ViewItems(object):
         return getattr(self.__multi_dict, self.__method)(*self.__a, **self.__kw)
 
     def __repr__(self):
-        return '%s(%r)' % (self.__repr_name, list(self.__get_items()))
+        return "%s(%r)" % (self.__repr_name, list(self.__get_items()))
 
     def __iter__(self):
         return iter(self.__get_items())
 
 
-@native_itermethods(['keys', 'values', 'items', 'lists', 'listvalues'])
+@native_itermethods(["keys", "values", "items", "lists", "listvalues"])
 class MultiDict(TypeConversionDict):
 
     """A :class:`MultiDict` is a dictionary subclass customized to deal with
@@ -516,7 +515,7 @@ class MultiDict(TypeConversionDict):
         return self.deepcopy(memo=memo)
 
     def __repr__(self):
-        return '%s(%r)' % (self.__class__.__name__, list(self.items(multi=True)))
+        return "%s(%r)" % (self.__class__.__name__, list(self.items(multi=True)))
 
 
 class _omd_bucket(object):
@@ -526,7 +525,8 @@ class _omd_bucket(object):
     a lot of extra memory and slows down access a lot, but makes it
     possible to access elements in O(1) and iterate in O(n).
     """
-    __slots__ = ('prev', 'key', 'value', 'next')
+
+    __slots__ = ("prev", "key", "value", "next")
 
     def __init__(self, omd, key, value):
         self.prev = omd._last_bucket
@@ -551,7 +551,7 @@ class _omd_bucket(object):
             omd._last_bucket = self.prev
 
 
-@native_itermethods(['keys', 'values', 'items', 'lists', 'listvalues'])
+@native_itermethods(["keys", "values", "items", "lists", "listvalues"])
 class OrderedMultiDict(MultiDict):
 
     """Works like a regular :class:`MultiDict` but preserves the
@@ -687,8 +687,7 @@ class OrderedMultiDict(MultiDict):
             self.add(key, value)
 
     def setlistdefault(self, key, default_list=None):
-        raise TypeError('setlistdefault is unsupported for '
-                        'ordered multi dicts')
+        raise TypeError("setlistdefault is unsupported for " "ordered multi dicts")
 
     def update(self, mapping):
         for key, value in iter_multi_items(mapping):
@@ -732,7 +731,7 @@ class ImmutableDict(ImmutableDictMixin, dict):
     """
 
     def __repr__(self):
-        return '%s(%s)' % (
+        return "%s(%s)" % (
             self.__class__.__name__,
             dict.__repr__(self),
         )

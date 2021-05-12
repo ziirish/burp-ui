@@ -21,9 +21,9 @@ from ...security import sanitize_string
 from ...datastructures import MultiDict
 
 
-RESET_IDENTIFIER = '_reset_bui_CUSTOM'
-BEGIN_TEMPLATES = 'BURP-UI TEMPLATES'
-END_TEMPLATES = 'END TEMPLATES'
+RESET_IDENTIFIER = "_reset_bui_CUSTOM"
+BEGIN_TEMPLATES = "BURP-UI TEMPLATES"
+END_TEMPLATES = "END TEMPLATES"
 
 
 class Option(object):
@@ -35,9 +35,10 @@ class Option(object):
     :param value: Option value
     :type value: str
     """
+
     type = None
-    delim = '='
-    reset_delim = ':='
+    delim = "="
+    reset_delim = ":="
     _dirty = False
     idx = -1
 
@@ -62,7 +63,7 @@ class Option(object):
 
     def set_reset(self, value=False):
         """Mark this value as requiring a special ':=' syntax"""
-        self._is_reset.append('{}'.format(value).lower() == 'true')
+        self._is_reset.append("{}".format(value).lower() == "true")
         self.idx += 1
 
     def set_resets(self, resets):
@@ -105,8 +106,8 @@ class Option(object):
         return self.dump()
 
     def __eq__(self, other):
-        other_name = getattr(other, 'name', None)
-        other_value = getattr(other, 'value', None)
+        other_name = getattr(other, "name", None)
+        other_value = getattr(other, "value", None)
         return self.name == other_name and self.value == other_value
 
 
@@ -116,7 +117,8 @@ class OptionStr(Option):
     Example:
         server = toto
     """
-    type = 'string'
+
+    type = "string"
 
 
 class OptionInt(Option):
@@ -125,7 +127,8 @@ class OptionInt(Option):
     Example:
         port = 1234
     """
-    type = 'integer'
+
+    type = "integer"
 
     def parse(self):
         """Parse the option value"""
@@ -141,7 +144,8 @@ class OptionBool(Option):
     Example:
         hardlinked_archive = 1
     """
-    type = 'boolean'
+
+    type = "boolean"
 
     def __init__(self, name, value=None):
         self.name = name
@@ -167,7 +171,7 @@ class OptionBool(Option):
                 return False
             elif value is True:
                 return True
-            elif '{}'.format(value).lower() == 'true':
+            elif "{}".format(value).lower() == "true":
                 return True
             # any string will raise the ValueError
             return int(value) == 1
@@ -185,10 +189,11 @@ class OptionInc(Option):
     Example:
         . incexc/windows
     """
-    type = 'include'
+
+    type = "include"
     delim = ""
 
-    def __init__(self, parser, name, value=None, root=None, mode='srv', template=False):
+    def __init__(self, parser, name, value=None, root=None, mode="srv", template=False):
         """
         :param parser: Parser instance
         :type parser: :class:`burpui.misc.parser.burp1.Parser`
@@ -217,7 +222,7 @@ class OptionInc(Option):
         if not os.path.isabs(path):
             if self.root:
                 absolute = os.path.join(self.root, path)
-            elif self.mode == 'srv':
+            elif self.mode == "srv":
                 absolute = os.path.join(self.parser.root, path)
             else:
                 absolute = os.path.join(self.parser.clientconfdir, path)
@@ -237,8 +242,12 @@ class OptionInc(Option):
         paths = []
         root = self._path_absolute(self.value)
         for path in glob(root):
-            if self.parser._is_secure_path(path) and os.path.isfile(path) and \
-                    not path.endswith('~') and not path.endswith('.back'):
+            if (
+                self.parser._is_secure_path(path)
+                and os.path.isfile(path)
+                and not path.endswith("~")
+                and not path.endswith(".back")
+            ):
                 paths.append(path)
         # more than one match mean we have a glob, for sure
         if len(paths) > 1 or (len(paths) == 1 and paths[0] != root):
@@ -258,12 +267,12 @@ class OptionInc(Option):
     def dump(self):
         """Return the option representation to store in configuration file"""
         if self.extend() and not self.parser.backend.enforce:
-            name = self.name or ''
-            if self.is_template and name.startswith('../'):
+            name = self.name or ""
+            if self.is_template and name.startswith("../"):
                 name = str(name[3:])
-            return '. {}'.format(name)
+            return ". {}".format(name)
         # if the include did not match anything, we can safely remove it
-        return ''
+        return ""
 
 
 class OptionTpl(Option):
@@ -272,7 +281,8 @@ class OptionTpl(Option):
     Example:
         . .buitemplates/windows
     """
-    type = 'template'
+
+    type = "template"
     delim = ""
 
     def __init__(self, parser, name, value=None):
@@ -287,7 +297,7 @@ class OptionTpl(Option):
         if name:
             self._id = name.split(os.path.sep)[-1]
         else:
-            self._id = ''
+            self._id = ""
 
     @property
     def dirty(self):
@@ -315,16 +325,16 @@ class OptionTpl(Option):
     def dump(self):
         """Return the option representation to store in configuration file"""
         if self.extend() and not self.parser.backend.enforce:
-            return '. {}'.format(self.name)
+            return ". {}".format(self.name)
         # if the include did not match anything, we can safely remove it
-        return ''
+        return ""
 
 
 option_for_type = {
-    'integer': OptionInt,
-    'string': OptionStr,
-    'boolean': OptionBool,
-    'include': OptionInc,
+    "integer": OptionInt,
+    "string": OptionStr,
+    "boolean": OptionBool,
+    "include": OptionInc,
 }
 
 
@@ -335,15 +345,16 @@ class OptionMulti(Option):
         keep = 7
         keep = 4
     """
-    type = 'multi'
+
+    type = "multi"
 
     def __init__(self, parser, name, value=None):
         self.parser = parser
         self.name = name
         self._dirty = True
         self._is_reset = []
-        self.content_type = self.parser.advanced_type.get(name, 'string')
-        self.associate = getattr(self.parser, 'pair_associations', {}).get(self.name)
+        self.content_type = self.parser.advanced_type.get(name, "string")
+        self.associate = getattr(self.parser, "pair_associations", {}).get(self.name)
         self._init_value(value)
         self.idx = len(self.value) - 1
 
@@ -392,29 +403,31 @@ class OptionMulti(Option):
         for i, x in enumerate(self):
             if x == value:
                 return i
-        raise ValueError('{} is not in list'.format(value))
+        raise ValueError("{} is not in list".format(value))
 
     def len(self):
         return len(self.value)
 
     def dump(self, start=0, strict=True):
         """Return the option representation to store in configuration file"""
-        ret = ''
+        ret = ""
         if start > len(self.value):
             return ret
         res = [self.dump_index(i, strict) for i in range(start, len(self.value))]
-        ret = '\n'.join(res)
-        return ret.rstrip('\n')
+        ret = "\n".join(res)
+        return ret.rstrip("\n")
 
     def dump_index(self, index, strict=True):
         if index >= len(self.value):
-            return ''
+            return ""
         val = self.value[index]
         delim = self.delim
         self.idx = index
         if self.is_reset():
             delim = self.reset_delim
-        return '{} {} {}'.format(self.name, delim, sanitize_string('{}'.format(val.parse()), strict))
+        return "{} {} {}".format(
+            self.name, delim, sanitize_string("{}".format(val.parse()), strict)
+        )
 
     def parse(self):
         return [x.parse() for x in self.value]
@@ -451,12 +464,13 @@ class OptionPair(Option, dict):
         port = 4971
         max_children = 5
     """
-    type = 'pair'
+
+    type = "pair"
 
     def __init__(self, parser, name, value=None):
         self.parser = parser
         self.name = name
-        self.association = getattr(self.parser, 'pair_associations', {}).get(self.name)
+        self.association = getattr(self.parser, "pair_associations", {}).get(self.name)
         self._dirty = True
         self._init_value(name, value)
         # is there a special := syntax for this option
@@ -505,7 +519,7 @@ class OptionPair(Option, dict):
 
     def dump(self, start=0, strict=True):
         """Return the option representation to store in configuration file"""
-        ret = ''
+        ret = ""
         try:
             self_length = len(self.value[self.name])
         except KeyError:
@@ -520,10 +534,10 @@ class OptionPair(Option, dict):
             v1 = self.dump_index(self.name, idx, strict)
             v2 = self.dump_index(self.association, idx, strict)
             if v1:
-                ret += '{}\n'.format(v1)
+                ret += "{}\n".format(v1)
             if v2:
-                ret += '{}\n'.format(v2)
-        return ret.rstrip('\n')
+                ret += "{}\n".format(v2)
+        return ret.rstrip("\n")
 
     def dump_index(self, name, index, strict):
         length = self.len(name)
@@ -532,7 +546,7 @@ class OptionPair(Option, dict):
         except KeyError:
             length = -1
         if index >= length:
-            return ''
+            return ""
         return self.value.get(name).dump_index(index, strict)
 
     def parse(self, key=None):
@@ -599,10 +613,11 @@ class File(dict):
     :param parser: Parser object
     :type parser: :class:`burpui.misc.parser.doc.Doc`
     """
+
     md5 = None
     mtime = 0
 
-    def __init__(self, parser, name=None, mode='srv', parent=None, is_template=False):
+    def __init__(self, parser, name=None, mode="srv", parent=None, is_template=False):
         """
         :param parser: Parser object
         :type parser: :class:`burpui.misc.parser.doc.Doc`
@@ -633,24 +648,24 @@ class File(dict):
         self.reset = {}
         self.options = OrderedDict()
         self.types = {
-            'boolean': OrderedDict(),
-            'integer': OrderedDict(),
-            'include': OrderedDict(),
-            'multi': OrderedDict(),
-            'pair': OrderedDict(),
-            'string': OrderedDict(),
-            'template': OrderedDict(),
+            "boolean": OrderedDict(),
+            "integer": OrderedDict(),
+            "include": OrderedDict(),
+            "multi": OrderedDict(),
+            "pair": OrderedDict(),
+            "string": OrderedDict(),
+            "template": OrderedDict(),
         }
         if self.name:
             self.parse()
 
     @property
     def changed(self):
-        for key, val in self.types['include'].items():
+        for key, val in self.types["include"].items():
             if val.dirty:
                 self._changed = True
                 return self._changed
-        for key, val in self.types['template'].items():
+        for key, val in self.types["template"].items():
             if val.dirty:
                 self._changed = True
                 return self._changed
@@ -671,9 +686,13 @@ class File(dict):
 
     @property
     def version(self):
-        return getattr(self.parser.backend, 'server_version', None) or \
-            getattr(self.parser.backend, 'client_version', None) or '' \
-            if self.parser.backend else ''
+        return (
+            getattr(self.parser.backend, "server_version", None)
+            or getattr(self.parser.backend, "client_version", None)
+            or ""
+            if self.parser.backend
+            else ""
+        )
 
     def _ret_data(self, raw=True):
         if raw:
@@ -681,7 +700,7 @@ class File(dict):
         else:
             ret = self._data
         if ret and not self.dirty:
-            ret.setlist('includes', [x for x in self.flatten('include', False).keys()])
+            ret.setlist("includes", [x for x in self.flatten("include", False).keys()])
             return ret
         ret.clear()
         for key, val in self.options.items():
@@ -691,8 +710,8 @@ class File(dict):
                 ret.setlist(key, val.parse(key))
             else:
                 ret[key] = val if raw else val.parse()
-        ret.setlist('includes', [x for x in self.flatten('include', False).keys()])
-        ret.setlist('includes_ori', [x for x in self.flatten('include', False).keys()])
+        ret.setlist("includes", [x for x in self.flatten("include", False).keys()])
+        ret.setlist("includes_ori", [x for x in self.flatten("include", False).keys()])
         return ret
 
     @property
@@ -726,9 +745,9 @@ class File(dict):
         if listed:
             return [
                 {
-                    'name': key,
-                    'value': opt.parse() if parse else opt,
-                    'reset': opt.get_reset()
+                    "name": key,
+                    "value": opt.parse() if parse else opt,
+                    "reset": opt.get_reset(),
                 }
                 for key, opt in self.types[typ].items()
             ]
@@ -740,9 +759,9 @@ class File(dict):
 
     def flatten_obj(self, name, obj, parse=True):
         return {
-            'name': name,
-            'value': obj.parse() if parse else obj,
-            'reset': obj.get_reset()
+            "name": name,
+            "value": obj.parse() if parse else obj,
+            "reset": obj.get_reset(),
         }
 
     @property
@@ -753,37 +772,39 @@ class File(dict):
 
     @property
     def boolean(self):
-        return self.flatten('boolean')
+        return self.flatten("boolean")
 
     @property
     def integer(self):
-        return self.flatten('integer')
+        return self.flatten("integer")
 
     @property
     def pair(self):
-        return self.flatten('pair')
+        return self.flatten("pair")
 
     @property
     def include(self):
-        return self.flatten('include')
+        return self.flatten("include")
 
     @property
     def template(self):
         ret = []
-        for tpl in self.flatten('template', parse=False):
-            ret.append({
-                'value': tpl['name'],
-                'name': tpl['value']._id,
-            })
+        for tpl in self.flatten("template", parse=False):
+            ret.append(
+                {
+                    "value": tpl["name"],
+                    "name": tpl["value"]._id,
+                }
+            )
         return ret
 
     @property
     def multi(self):
-        return self.flatten('multi')
+        return self.flatten("multi")
 
     @property
     def string(self):
-        return self.flatten('string')
+        return self.flatten("string")
 
     def _refresh_types(self):
         if self._dirty:
@@ -797,13 +818,13 @@ class File(dict):
         self._dirty = False
 
     def _options_for_type(self, typ):
-        return getattr(self.parser, '{}_{}'.format(typ, self.mode), [])
+        return getattr(self.parser, "{}_{}".format(typ, self.mode), [])
 
     def _type_for_option(self, opt):
-        if opt == '.':
-            return 'include'
+        if opt == ".":
+            return "include"
 
-        for typ in ['boolean', 'integer', 'multi', 'string', 'pair']:
+        for typ in ["boolean", "integer", "multi", "string", "pair"]:
             if opt in self._options_for_type(typ):
                 return typ
         return None
@@ -811,17 +832,17 @@ class File(dict):
     def _new_opt(self, key, value=None, typ=None):
         typ = typ or self._type_for_option(key)
 
-        if typ == 'boolean':
+        if typ == "boolean":
             return OptionBool(key, value)
-        if typ == 'integer':
+        if typ == "integer":
             return OptionInt(key, value)
-        if typ == 'multi':
+        if typ == "multi":
             opt = self.options.get(key, OptionMulti(self.parser, key))
             opt.append(value)
             return opt
-        if typ == 'pair':
+        if typ == "pair":
             return OptionPair(self.parser, key, value)
-        if typ == 'include':
+        if typ == "include":
             key = value
             return OptionInc(
                 self.parser,
@@ -829,7 +850,7 @@ class File(dict):
                 value,
                 root=self.name,
                 mode=self.mode,
-                template=self._is_template
+                template=self._is_template,
             )
 
         return OptionStr(key, value)
@@ -848,30 +869,30 @@ class File(dict):
 
     def get(self, key, default=None):
         try:
-            if key in self._options_for_type('pair'):
+            if key in self._options_for_type("pair"):
                 return self.options[key].get(key)
             return self.options[key]
         except KeyError:
             return default
 
     def __getitem__(self, key):
-        if key in self._options_for_type('pair'):
+        if key in self._options_for_type("pair"):
             return self.options[key].get(key)
         return self.options[key]
 
     def __setitem__(self, key, value):
         self._dirty = True
-        if key in self._options_for_type('boolean'):
+        if key in self._options_for_type("boolean"):
             opt = OptionBool(key, value)
-        elif key in self._options_for_type('integer'):
+        elif key in self._options_for_type("integer"):
             opt = OptionInt(key, value)
-        elif key in self._options_for_type('multi'):
+        elif key in self._options_for_type("multi"):
             opt = self.options.get(key, OptionMulti(self.parser, key))
             if isinstance(value, list):
                 opt.update(value)
             else:
                 opt.append(value)
-        elif key in self._options_for_type('pair'):
+        elif key in self._options_for_type("pair"):
             association = self.parser.pair_associations.get(key)
             if key not in self.options and association not in self.options:
                 self.associations.add(association)
@@ -884,7 +905,7 @@ class File(dict):
                 opt.update(key, value)
             else:
                 opt.append(key, value)
-        elif key == '.':
+        elif key == ".":
             key = value
             if self._parsing_templates:
                 opt = OptionTpl(self.parser, key, value)
@@ -895,9 +916,9 @@ class File(dict):
                     value,
                     root=self.name,
                     mode=self.mode,
-                    template=self._is_template
+                    template=self._is_template,
                 )
-                if self._is_template and key.startswith('../'):
+                if self._is_template and key.startswith("../"):
                     key = str(key[3:])
         else:
             opt = OptionStr(key, value)
@@ -907,24 +928,24 @@ class File(dict):
 
     def __repr__(self):
         self._refresh_types()
-        ret = ''
+        ret = ""
         for key, opts in self.types.items():
-            ret += '{} =>\n'.format(key)
+            ret += "{} =>\n".format(key)
             for key2, opt in opts.items():
                 if key2 in self.associations:
                     continue
-                ret += '\t' + repr(opt) + '\n'
-        return ret.rstrip('\n')
+                ret += "\t" + repr(opt) + "\n"
+        return ret.rstrip("\n")
 
     def __str__(self):
-        ret = ''
+        ret = ""
         for key, val in self.options.items():
             if key in self.associations:
                 continue
             tmp = str(val)
             if tmp:
-                ret += tmp + '\n'
-        return ret.rstrip('\n')
+                ret += tmp + "\n"
+        return ret.rstrip("\n")
 
     def __len__(self):
         return len(self.options)
@@ -975,8 +996,8 @@ class File(dict):
         if not self.name:
             return self._raw
         try:
-            with codecs.open(self.name, 'r', 'utf-8', errors='ignore') as fil:
-                self._raw = [x.rstrip('\n') for x in fil.readlines()]
+            with codecs.open(self.name, "r", "utf-8", errors="ignore") as fil:
+                self._raw = [x.rstrip("\n") for x in fil.readlines()]
         except IOError:
             return self._raw
 
@@ -994,19 +1015,19 @@ class File(dict):
         return ret
 
     def _format_key(self, key, data, index=None, dry=False):
-        strict = 'regex' not in key
+        strict = "regex" not in key
         if not dry:
             self._changed = True
 
         # special case
-        if key == '.':
+        if key == ".":
             val = sanitize_string(data)
-            if self._is_template and not val.startswith('../'):
-                val = '../{}'.format(val)
+            if self._is_template and not val.startswith("../"):
+                val = "../{}".format(val)
             if dry:
                 return val
             else:
-                return f'. {val}'
+                return f". {val}"
 
         if index is not None and index >= 0:
             if key not in self.updated:
@@ -1020,8 +1041,9 @@ class File(dict):
                     self[key].set_resets(self.reset[key])
             return str(self[key].dump_index(index, strict))
 
-        if key in getattr(self.parser, 'multi_{}'.format(self.mode)) or \
-                key in getattr(self.parser, 'pair_{}'.format(self.mode), []):
+        if key in getattr(self.parser, "multi_{}".format(self.mode)) or key in getattr(
+            self.parser, "pair_{}".format(self.mode), []
+        ):
             if key not in self.updated:
                 val = data.getlist(key)
                 if key in self:
@@ -1061,21 +1083,21 @@ class File(dict):
 
         self.clear()
         for line in self.raw:
-            if re.match(r'^\s*#', line):
+            if re.match(r"^\s*#", line):
                 if BEGIN_TEMPLATES in line:
                     self._parsing_templates = True
                 if END_TEMPLATES in line:
                     self._parsing_templates = False
                 continue
-            res = re.search(r'\s*([^=\s]+)\s*(:)?=?\s*(.*)$', line)
+            res = re.search(r"\s*([^=\s]+)\s*(:)?=?\s*(.*)$", line)
             if res:
                 key = res.group(1)
                 reset = res.group(2)
                 val = res.group(3)
-                if key == 'compression':
-                    val = val.replace('zlib', 'gzip')
-                elif key == 'ssl_compression':
-                    val = val.replace('gzip', 'zlib')
+                if key == "compression":
+                    val = val.replace("zlib", "gzip")
+                elif key == "ssl_compression":
+                    val = val.replace("gzip", "zlib")
                 self[key] = val
                 if key in self:
                     try:
@@ -1089,7 +1111,7 @@ class File(dict):
         """Store the config"""
         dest = dest or self.name
         if not dest:
-            return [[NOTIF_ERROR, 'No file defined!']]
+            return [[NOTIF_ERROR, "No file defined!"]]
 
         dirname = os.path.dirname(dest)
         filename = os.path.basename(dest)
@@ -1101,8 +1123,8 @@ class File(dict):
 
         if not insecure:
             self.reset = {}
-            ref = os.path.join(dirname, '.{}.bui.init.back~'.format(filename))
-            bak = os.path.join(dirname, '.{}.back~'.format(filename))
+            ref = os.path.join(dirname, ".{}.bui.init.back~".format(filename))
+            bak = os.path.join(dirname, ".{}.back~".format(filename))
 
             if not os.path.isfile(ref) and os.path.isfile(dest):
                 try:
@@ -1118,7 +1140,7 @@ class File(dict):
             self.reset = self._dump_resets()
 
         def _make_it_bool(array):
-            return ['{}'.format(x).lower() == 'true' for x in array]
+            return ["{}".format(x).lower() == "true" for x in array]
 
         errs = []
 
@@ -1126,23 +1148,25 @@ class File(dict):
             if key in self.parser.files:
                 dat = data.get(key)
                 if not os.path.isfile(dat):
-                    typ = 'strings'
-                    if key in getattr(self.parser, 'multi_{}'.format(self.mode)):
-                        typ = 'multis'
-                    elif key in getattr(self.parser, 'boolean_{}'.format(self.mode)):
-                        typ = 'bools'
-                    elif key in getattr(self.parser, 'integer_{}'.format(self.mode)):
-                        typ = 'integers'
+                    typ = "strings"
+                    if key in getattr(self.parser, "multi_{}".format(self.mode)):
+                        typ = "multis"
+                    elif key in getattr(self.parser, "boolean_{}".format(self.mode)):
+                        typ = "bools"
+                    elif key in getattr(self.parser, "integer_{}".format(self.mode)):
+                        typ = "integers"
                     # highlight the wrong parameters
-                    errs.append([
-                        NOTIF_ERROR,
-                        "Sorry, the file '{}' does not exist".format(dat),
-                        key,
-                        typ
-                    ])
+                    errs.append(
+                        [
+                            NOTIF_ERROR,
+                            "Sorry, the file '{}' does not exist".format(dat),
+                            key,
+                            typ,
+                        ]
+                    )
             elif key.endswith(RESET_IDENTIFIER):
-                target = key.replace(RESET_IDENTIFIER, '')
-                if target in getattr(self.parser, 'multi_{}'.format(self.mode)):
+                target = key.replace(RESET_IDENTIFIER, "")
+                if target in getattr(self.parser, "multi_{}".format(self.mode)):
                     self.reset[target] = _make_it_bool(data.getlist(key))
                 else:
                     self.reset[target] = data.get(key)
@@ -1166,14 +1190,14 @@ class File(dict):
         def _lookup_option(key, val, start=0, strict=True, comment=True):
             """returns a list of tuples (idx, line)"""
             # re.match implies /^.../
-            reg = r'\s*{}\s*:?=?'.format(key)
+            reg = r"\s*{}\s*:?=?".format(key)
             if comment:
-                reg = r'\s*#*{}'.format(reg)
+                reg = r"\s*#*{}".format(reg)
             if strict:
-                reg = r'{}\s*{}$'.format(reg, val)
+                reg = r"{}\s*{}$".format(reg, val)
             start = min(start, len(orig))
             for idx, line in enumerate(orig[start:], start):
-                if re.match(reg, line.rstrip('\n')):
+                if re.match(reg, line.rstrip("\n")):
                     return idx, line
             return -1, None
 
@@ -1185,21 +1209,21 @@ class File(dict):
         def _dump(line, comment=None, raw=False):
             if raw:
                 return line
-            lead = ''
+            lead = ""
             if comment:
-                lead = '#'
-            return '{}{}'.format(lead, line)
+                lead = "#"
+            return "{}{}".format(lead, line)
 
         try:
-            with codecs.open(dest, 'w', 'utf-8', errors='ignore') as fil:
+            with codecs.open(dest, "w", "utf-8", errors="ignore") as fil:
                 # f.write('# Auto-generated configuration using Burp-UI\n')
                 data_keys = list(data.keys())
-                if 'templates' in data:
-                    result.append(_dump(' {}'.format(BEGIN_TEMPLATES), True))
-                    tpls = data.getlist('templates')
+                if "templates" in data:
+                    result.append(_dump(" {}".format(BEGIN_TEMPLATES), True))
+                    tpls = data.getlist("templates")
                     for tpl in tpls:
-                        result.append(self._format_key('.', tpl))
-                    result.append(_dump(' {}'.format(END_TEMPLATES), True))
+                        result.append(self._format_key(".", tpl))
+                    result.append(_dump(" {}".format(END_TEMPLATES), True))
                 skip_line = False
                 for idx, line in enumerate(orig):
                     if self._line_is_comment(line) and BEGIN_TEMPLATES in line:
@@ -1210,22 +1234,26 @@ class File(dict):
                     if skip_line:
                         continue
                     key = self._get_line_key(line, False)
-                    if (self._line_removed(line, data_keys) and
-                            not self._line_is_comment(line) and
-                            not self._line_is_file_include(line)):
+                    if (
+                        self._line_removed(line, data_keys)
+                        and not self._line_is_comment(line)
+                        and not self._line_is_file_include(line)
+                    ):
                         # The line was removed, we comment it
                         result.append(_dump(line, comment=True))
                     elif self._line_is_file_include(line):
                         # The line is a file inclusion, we check if the line
                         # was already present
                         ori = self._include_get_file(line)
-                        if self._is_template and ori.startswith('../'):
+                        if self._is_template and ori.startswith("../"):
                             ori = str(ori[3:])
-                        if ori in data.getlist('includes_ori') and \
-                                ori not in already_file:
-                            idx = data.getlist('includes_ori').index(ori)
-                            inc = data.getlist('includes')[idx]
-                            result.append(self._format_key('.', inc))
+                        if (
+                            ori in data.getlist("includes_ori")
+                            and ori not in already_file
+                        ):
+                            idx = data.getlist("includes_ori").index(ori)
+                            inc = data.getlist("includes")[idx]
+                            result.append(self._format_key(".", inc))
                             already_file.append(inc)
                         else:
                             if not insecure:
@@ -1237,27 +1265,40 @@ class File(dict):
                     elif key in data_keys:
                         # The line is still present or has been un-commented,
                         # rewrite it with eventual changes
-                        multi = key in getattr(self.parser, 'multi_{}'.format(self.mode))
-                        pair = key in getattr(self.parser, 'pair_{}'.format(self.mode), [])
+                        multi = key in getattr(
+                            self.parser, "multi_{}".format(self.mode)
+                        )
+                        pair = key in getattr(
+                            self.parser, "pair_{}".format(self.mode), []
+                        )
                         if pair and key not in pair_index_map:
                             pair_index_map[key] = 0
                         if multi and key not in multi_index_map:
                             multi_index_map[key] = 0
                         if key in written:
-                            result.append(_dump(line, comment=(not self._line_is_comment(line))))
+                            result.append(
+                                _dump(line, comment=(not self._line_is_comment(line)))
+                            )
                         else:
                             if multi:
                                 length = len(self[key]) if key in self else -1
-                                if key not in already_multi and \
-                                        (key not in self or
-                                         (key in self and
-                                          length > multi_index_map[key])):
-                                    result.append(self._format_key(
-                                        key, data, multi_index_map[key]
-                                    ))
+                                if key not in already_multi and (
+                                    key not in self
+                                    or (key in self and length > multi_index_map[key])
+                                ):
+                                    result.append(
+                                        self._format_key(
+                                            key, data, multi_index_map[key]
+                                        )
+                                    )
                                     multi_index_map[key] += 1
                                 else:
-                                    result.append(_dump(line, comment=(not self._line_is_comment(line))))
+                                    result.append(
+                                        _dump(
+                                            line,
+                                            comment=(not self._line_is_comment(line)),
+                                        )
+                                    )
                                     continue
                                 if len(self[key]) == multi_index_map[key]:
                                     already_multi.add(key)
@@ -1272,16 +1313,21 @@ class File(dict):
                                     already_multi.add(key)
                             elif pair:
                                 length = len(self[key]) if key in self else -1
-                                if key not in already_pair and \
-                                        (key not in self or
-                                         (key in self and
-                                          length > pair_index_map[key])):
-                                    result.append(self._format_key(
-                                        key, data, pair_index_map[key]
-                                    ))
+                                if key not in already_pair and (
+                                    key not in self
+                                    or (key in self and length > pair_index_map[key])
+                                ):
+                                    result.append(
+                                        self._format_key(key, data, pair_index_map[key])
+                                    )
                                     pair_index_map[key] += 1
                                 else:
-                                    result.append(_dump(line, comment=(not self._line_is_comment(line))))
+                                    result.append(
+                                        _dump(
+                                            line,
+                                            comment=(not self._line_is_comment(line)),
+                                        )
+                                    )
                                     continue
                                 if len(self[key]) == pair_index_map[key]:
                                     already_pair.add(key)
@@ -1297,8 +1343,11 @@ class File(dict):
                             else:
                                 # if key is not a multi and is not a password, we
                                 # recycle the line
-                                if key not in getattr(self.parser, 'multi_{}'.format(self.mode)) and \
-                                        (key == 'password_check' or 'password' not in key):
+                                if key not in getattr(
+                                    self.parser, "multi_{}".format(self.mode)
+                                ) and (
+                                    key == "password_check" or "password" not in key
+                                ):
                                     if self._line_is_comment(line) and key in data:
                                         result.append(self._format_key(key, data))
                                         if key in newkeys:
@@ -1309,14 +1358,13 @@ class File(dict):
                                 # matching setting, so we just jump to the
                                 # following
                                 else:
-                                    if self._line_is_comment(line) and \
-                                            _lookup_option(key, None, idx + 1, False):
+                                    if self._line_is_comment(line) and _lookup_option(
+                                        key, None, idx + 1, False
+                                    ):
                                         result.append(_dump(line, raw=True))
                                         continue
 
-                                val = self._format_key(
-                                    key, data, dry=True
-                                )
+                                val = self._format_key(key, data, dry=True)
                                 lookup, _ = _lookup_option(key, val, idx + 1)
                                 # The same option is here later, skip the
                                 # current one
@@ -1325,11 +1373,16 @@ class File(dict):
                                     continue
 
                                 written.append(key)
-                                result.append(self._format_key(
-                                    key, data
-                                ))
+                                result.append(self._format_key(key, data))
                     else:
-                        result.append(_dump(line, comment=(key in written and not self._line_is_comment(line))))
+                        result.append(
+                            _dump(
+                                line,
+                                comment=(
+                                    key in written and not self._line_is_comment(line)
+                                ),
+                            )
+                        )
 
                 # write the rest of the multi settings
                 for key, idx in multi_index_map.items():
@@ -1340,36 +1393,35 @@ class File(dict):
                     if key not in already_pair and idx < self[key].len():
                         result.append(_dump(self[key].dump(idx)))
                 # Write the rest of file inclusions
-                if 'includes' in data:
-                    for inc in data.getlist('includes'):
+                if "includes" in data:
+                    for inc in data.getlist("includes"):
                         if inc not in already_file:
-                            result.append(self._format_key(
-                                '.', inc
-                            ))
+                            result.append(self._format_key(".", inc))
                 # Write the new keys
                 for key in newkeys:
                     if key.endswith(RESET_IDENTIFIER):
                         continue
-                    if key not in written and key not in already_multi and \
-                            key not in already_pair and \
-                            key not in ['includes', 'includes_ori', 'templates']:
-                        result.append(self._format_key(
-                            key, data
-                        ))
+                    if (
+                        key not in written
+                        and key not in already_multi
+                        and key not in already_pair
+                        and key not in ["includes", "includes_ori", "templates"]
+                    ):
+                        result.append(self._format_key(key, data))
 
-                if len(result) > 0 and result[-1] != '':
-                    result.append('')
-                fil.write('\n'.join(result))
+                if len(result) > 0 and result[-1] != "":
+                    result.append("")
+                fil.write("\n".join(result))
 
         except Exception as exp:
             # something went wrong, we revert to the last file
-            with codecs.open(dest, 'w', 'utf-8', errors='ignore') as fil:
+            with codecs.open(dest, "w", "utf-8", errors="ignore") as fil:
                 fil.writelines(orig)
             return [[NOTIF_ERROR, str(exp)]]
 
         self.parse(True)
 
-        return [[NOTIF_OK, 'Configuration successfully saved.']]
+        return [[NOTIF_OK, "Configuration successfully saved."]]
 
     def store(self, dest=None, insecure=False):
         """Store the current conf object"""
@@ -1385,33 +1437,33 @@ class File(dict):
         """Check whether a given line is a comment or not"""
         if not line:
             return False
-        return line.startswith('#')
+        return line.startswith("#")
 
     @staticmethod
     def _line_is_file_include(line):
         """Check whether a given line is a file inclusion or not"""
         if not line:
             return False
-        return line.startswith('.') or re.match(r'^#+\s*\.', line) is not None
+        return line.startswith(".") or re.match(r"^#+\s*\.", line) is not None
 
     @staticmethod
     def _include_get_file(line):
         """Return the path of the included file(s)"""
         if not line:
             return None
-        _, fil = re.split(r'\s+', line, 1)
+        _, fil = re.split(r"\s+", line, 1)
         return fil
 
     @staticmethod
     def _get_line_key(line, ignore_comments=True):
         """Return the key of a given line"""
         if not line:
-            return ''
-        if '=' not in line:
+            return ""
+        if "=" not in line:
             return line
-        (key, _) = re.split(r'\s*:?=\s*', line, 1)
+        (key, _) = re.split(r"\s*:?=\s*", line, 1)
         if not ignore_comments:
-            key = key.strip('# ')
+            key = key.strip("# ")
         return key.strip()
 
     @staticmethod
@@ -1419,7 +1471,7 @@ class File(dict):
         """Check whether a given line has been removed in the updated version"""
         if not line:
             return False
-        (key, _) = re.split(r'\s+|:?=', line, 1)
+        (key, _) = re.split(r"\s+|:?=", line, 1)
         key = key.strip()
         return key not in keys
 
@@ -1433,7 +1485,7 @@ class Config(File):
     :type parser: :class:`burpui.misc.parser.doc.Doc`
     """
 
-    def __init__(self, path=None, parser=None, mode='srv'):
+    def __init__(self, path=None, parser=None, mode="srv"):
         """
         :param parser: Parser object
         :type parser: :class:`burpui.misc.parser.doc.Doc`
@@ -1466,13 +1518,13 @@ class Config(File):
         orig = self.files.copy()
         for root, conf in orig.items():
             conf.parse()
-            for key, val in conf.flatten('include', False).items():
+            for key, val in conf.flatten("include", False).items():
                 for path in val:
                     if not os.path.isabs(path):
                         path = os.path.join(os.path.dirname(root), path)
                     self.add_file(path, root)
                     self._includes.append(path)
-            for key, path in conf.flatten('template', False).items():
+            for key, path in conf.flatten("template", False).items():
                 if not os.path.isabs(path):
                     path = os.path.join(os.path.dirname(root), path)
                 self.add_file(path, root)
@@ -1493,8 +1545,10 @@ class Config(File):
         removed = []
         orig = self.files.copy()
         for path, conf in orig.items():
-            if conf.parent and ((conf.name not in self._includes and
-               conf.name not in self._templates) or conf.name in removed):
+            if conf.parent and (
+                (conf.name not in self._includes and conf.name not in self._templates)
+                or conf.name in removed
+            ):
                 removed.append(path)
                 self.del_file(path)
 
@@ -1510,12 +1564,12 @@ class Config(File):
             dirname = os.path.dirname(name)
             basename = os.path.basename(name)
             return {
-                'name': basename,
-                'title': basename,
-                'full': name,
-                'dir': dirname,
-                'parent': parent,
-                'children': []
+                "name": basename,
+                "title": basename,
+                "full": name,
+                "dir": dirname,
+                "parent": parent,
+                "children": [],
             }
 
         self._tree[:]
@@ -1535,11 +1589,11 @@ class Config(File):
             if idx > offset:
                 break
             node = __new_node(conf.name)
-            for key, val in conf.flatten('include', False).items():
+            for key, val in conf.flatten("include", False).items():
                 for path in val:
                     if not os.path.isabs(path):
                         path = os.path.join(os.path.dirname(top), path)
-                    node['children'].append(__new_node(path, node['full']))
+                    node["children"].append(__new_node(path, node["full"]))
             temp[conf.name] = node
         self._tree = [x for x in temp.values()]
         return self._tree
@@ -1569,9 +1623,9 @@ class Config(File):
         try:
             default = self.get_default(True)
             if not self.parser and default:
-                self.parser = getattr(self.get_default(), 'parser')
+                self.parser = getattr(self.get_default(), "parser")
             if not self.mode and default:
-                self.mode = getattr(self.get_default(), 'mode')
+                self.mode = getattr(self.get_default(), "mode")
         except ValueError:
             pass
 
@@ -1579,13 +1633,15 @@ class Config(File):
         if self.default:
             return self.get_file(self.default)
         if exc:
-            raise ValueError('No default configuration found')
+            raise ValueError("No default configuration found")
         return File(self.parser, mode=self.mode)
 
     def add_file(self, path=None, parent=None):
         idx = path or self.default
         if idx not in self.files:
-            self.files[idx] = File(self.parser, idx, self.mode, parent, self._is_template)
+            self.files[idx] = File(
+                self.parser, idx, self.mode, parent, self._is_template
+            )
             self._dirty = True
         return self.files[idx]
 
@@ -1605,8 +1661,7 @@ class Config(File):
         self._is_template = val
 
     def _refresh(self):
-        if self._dirty or \
-                any(x.dirty for x in self.files.values()):
+        if self._dirty or any(x.dirty for x in self.files.values()):
             # cleanup "caches"
             self.options.clear()
             del self.options
@@ -1632,7 +1687,7 @@ class Config(File):
         self._refresh()
         try:
             obj = self.options[key]
-            if obj.type in ['pair'] and not raw:
+            if obj.type in ["pair"] and not raw:
                 obj = obj.get(key)
         except KeyError:
             if default:
@@ -1660,7 +1715,7 @@ class Config(File):
 
     def __getitem__(self, key):
         self._refresh()
-        if key in self._options_for_type('pair'):
+        if key in self._options_for_type("pair"):
             return self.options[key].get(key)
         return self.options[key]
 
@@ -1670,11 +1725,11 @@ class Config(File):
 
     def __repr__(self):
         self._refresh()
-        ret = ''
+        ret = ""
         for key, fil in self.files.items():
-            ret += '>' * 5 + key + '<' * 5 + '\n'
-            ret += repr(fil) + '\n'
-        return ret.rstrip('\n')
+            ret += ">" * 5 + key + "<" * 5 + "\n"
+            ret += repr(fil) + "\n"
+        return ret.rstrip("\n")
 
     def __str__(self):
         self._refresh()

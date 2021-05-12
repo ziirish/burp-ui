@@ -15,17 +15,17 @@ from abc import ABCMeta, abstractmethod
 from ...tools.logging import logger
 
 G_BURPPORT = 4972
-G_BURPHOST = '::1'
-G_BURPBIN = '/usr/sbin/burp'
-G_STRIPBIN = '/usr/sbin/vss_strip'
-G_STRIPBIN2 = '/usr/bin/vss_strip'
-G_BURPCONFCLI = '/etc/burp/burp.conf'
-G_BURPCONFSRV = '/etc/burp/burp-server.conf'
-G_TMPDIR = '/tmp/bui'
+G_BURPHOST = "::1"
+G_BURPBIN = "/usr/sbin/burp"
+G_STRIPBIN = "/usr/sbin/vss_strip"
+G_STRIPBIN2 = "/usr/bin/vss_strip"
+G_BURPCONFCLI = "/etc/burp/burp.conf"
+G_BURPCONFSRV = "/etc/burp/burp-server.conf"
+G_TMPDIR = "/tmp/bui"
 G_TIMEOUT = 15
 G_DEEP_INSPECTION = False
 G_ZIP64 = True
-G_INCLUDES = ['/etc/burp']
+G_INCLUDES = ["/etc/burp"]
 G_ENFORCE = False
 G_REVOKE = True
 
@@ -67,100 +67,72 @@ class BUIbackend(object, metaclass=ABCMeta):
         self.deep_inspection = G_DEEP_INSPECTION
         self.running = []
         burp_opts = {
-            'bport': G_BURPPORT,
-            'bhost': G_BURPHOST,
-            'burpbin': G_BURPBIN,
-            'stripbin': G_STRIPBIN2,
-            'bconfcli': G_BURPCONFCLI,
-            'bconfsrv': G_BURPCONFSRV,
-            'timeout': G_TIMEOUT,
-            'tmpdir': G_TMPDIR,
-            'deep_inspection': G_DEEP_INSPECTION,
+            "bport": G_BURPPORT,
+            "bhost": G_BURPHOST,
+            "burpbin": G_BURPBIN,
+            "stripbin": G_STRIPBIN2,
+            "bconfcli": G_BURPCONFCLI,
+            "bconfsrv": G_BURPCONFSRV,
+            "timeout": G_TIMEOUT,
+            "tmpdir": G_TMPDIR,
+            "deep_inspection": G_DEEP_INSPECTION,
         }
         self.defaults = {
-            'Burp': burp_opts,
+            "Burp": burp_opts,
             # TODO: remove this when we drop the compatibility
-            'Burp1': burp_opts,
-            'Burp2': burp_opts,
-            'Experimental': {
-                'zip64': G_ZIP64,
+            "Burp1": burp_opts,
+            "Burp2": burp_opts,
+            "Experimental": {
+                "zip64": G_ZIP64,
             },
-            'Security': {
-                'includes': G_INCLUDES,
-                'revoke': G_REVOKE,
-                'enforce': G_ENFORCE,
+            "Security": {
+                "includes": G_INCLUDES,
+                "revoke": G_REVOKE,
+                "enforce": G_ENFORCE,
             },
         }
-        self.defaults['Burp1']['stripbin'] = G_STRIPBIN
+        self.defaults["Burp1"]["stripbin"] = G_STRIPBIN
         tmpdir = G_TMPDIR
         if conf is not None:
             conf.update_defaults(self.defaults)
-            section = 'Burp'
+            section = "Burp"
             if section not in conf.options:
-                section_old = 'Burp{}'.format(self._vers)
+                section_old = "Burp{}".format(self._vers)
                 if section_old in conf.options:
                     # TODO: remove the compatibility
                     self.logger.critical(
                         'The "[{}]" section is DEPRECATED and will be removed '
                         'in v0.7.0. Please use the "[Burp]" section '
-                        'instead.'.format(section_old)
+                        "instead.".format(section_old)
                     )
                     section = section_old
             conf.default_section(section)
-            self.with_celery = conf.get('WITH_CELERY', False)
-            self.port = conf.safe_get('bport', 'integer')
-            self.host = conf.safe_get('bhost')
+            self.with_celery = conf.get("WITH_CELERY", False)
+            self.port = conf.safe_get("bport", "integer")
+            self.host = conf.safe_get("bhost")
             self.burpbin = self._get_binary_path(
-                conf,
-                'burpbin',
-                G_BURPBIN,
-                sect=section
+                conf, "burpbin", G_BURPBIN, sect=section
             )
             STRIPBIN_DEFAULT = G_STRIPBIN2
             if self._vers == 1:
                 STRIPBIN_DEFAULT = G_STRIPBIN
             self.stripbin = self._get_binary_path(
-                conf,
-                'stripbin',
-                STRIPBIN_DEFAULT,
-                sect=section
+                conf, "stripbin", STRIPBIN_DEFAULT, sect=section
             )
-            confcli = conf.safe_get('bconfcli')
-            confsrv = conf.safe_get('bconfsrv')
-            tmpdir = conf.safe_get('tmpdir')
-            self.timeout = conf.safe_get(
-                'timeout',
-                'integer'
-            )
+            confcli = conf.safe_get("bconfcli")
+            confsrv = conf.safe_get("bconfsrv")
+            tmpdir = conf.safe_get("tmpdir")
+            self.timeout = conf.safe_get("timeout", "integer")
 
-            self.deep_inspection = conf.safe_get(
-                'deep_inspection',
-                'boolean'
-            )
+            self.deep_inspection = conf.safe_get("deep_inspection", "boolean")
 
             # Experimental options
-            self.zip64 = conf.safe_get(
-                'zip64',
-                'boolean',
-                section='Experimental'
-            )
+            self.zip64 = conf.safe_get("zip64", "boolean", section="Experimental")
 
             # Security options
-            self.includes = conf.safe_get(
-                'includes',
-                'force_list',
-                section='Security'
-            )
-            self.enforce = conf.safe_get(
-                'enforce',
-                'boolean',
-                section='Security'
-            )
-            self.revoke = conf.safe_get(
-                'revoke',
-                'boolean',
-                section='Security'
-            )
+            self.includes = conf.safe_get("includes", "force_list", section="Security")
+            self.enforce = conf.safe_get("enforce", "boolean", section="Security")
+            self.revoke = conf.safe_get("revoke", "boolean", section="Security")
 
             if confcli and not os.path.isfile(confcli):
                 self.logger.warning("The file '%s' does not exist", confcli)
@@ -168,39 +140,39 @@ class BUIbackend(object, metaclass=ABCMeta):
             if confsrv and not os.path.isfile(confsrv):
                 self.logger.warning("The file '%s' does not exist", confsrv)
 
-            if not self.burpbin and self._vers == 2 and \
-                    getattr(self.app, 'strict', True):
+            if (
+                not self.burpbin
+                and self._vers == 2
+                and getattr(self.app, "strict", True)
+            ):
                 # The burp binary is mandatory for this backend
                 self.logger.critical(
-                    'This backend *CAN NOT* work without a burp binary'
+                    "This backend *CAN NOT* work without a burp binary"
                 )
 
-            if self.host not in ['127.0.0.1', '::1'] and self._vers == 1:
-                self.logger.warning("Invalid value for 'bhost'. Must be '127.0.0.1' or '::1'. Falling back to '%s'", G_BURPHOST)
+            if self.host not in ["127.0.0.1", "::1"] and self._vers == 1:
+                self.logger.warning(
+                    "Invalid value for 'bhost'. Must be '127.0.0.1' or '::1'. Falling back to '%s'",
+                    G_BURPHOST,
+                )
                 self.host = G_BURPHOST
 
             self.burpconfcli = confcli
             self.burpconfsrv = confsrv
 
-        if (tmpdir and os.path.exists(tmpdir) and
-                not os.path.isdir(tmpdir)):
-            self.logger.warning(
-                "'%s' is not a directory",
-                tmpdir
-            )
-            if tmpdir == G_TMPDIR and \
-                    getattr(self.app, 'strict', True):
-                self.logger.critical(
-                    "Cannot use '{}' as tmpdir".format(tmpdir)
-                )
+        if tmpdir and os.path.exists(tmpdir) and not os.path.isdir(tmpdir):
+            self.logger.warning("'%s' is not a directory", tmpdir)
+            if tmpdir == G_TMPDIR and getattr(self.app, "strict", True):
+                self.logger.critical("Cannot use '{}' as tmpdir".format(tmpdir))
                 self.tmpdir = None
                 return
             tmpdir = G_TMPDIR
-            if os.path.exists(tmpdir) and not os.path.isdir(tmpdir) and \
-                    getattr(self.app, 'strict', True):
-                self.logger.critical(
-                    "Cannot use '{}' as tmpdir".format(tmpdir)
-                )
+            if (
+                os.path.exists(tmpdir)
+                and not os.path.isdir(tmpdir)
+                and getattr(self.app, "strict", True)
+            ):
+                self.logger.critical("Cannot use '{}' as tmpdir".format(tmpdir))
                 self.tmpdir = None
                 return
         if tmpdir and not os.path.exists(tmpdir):
@@ -214,7 +186,7 @@ class BUIbackend(object, metaclass=ABCMeta):
         self.tmpdir = tmpdir
 
     # Utilities functions
-    def _get_binary_path(self, config, field, default=None, sect='Burp'):
+    def _get_binary_path(self, config, field, default=None, sect="Burp"):
         """Helper function to retrieve a binary path from the configuration
 
         :param field: Field name to look for
@@ -225,17 +197,31 @@ class BUIbackend(object, metaclass=ABCMeta):
         """
         temp = config.safe_get(field, section=sect) or default
 
-        if temp and not temp.startswith('/'):
-            self.logger.warning("Please provide an absolute path for the '{}' option. Fallback to '{}'".format(field, default))
+        if temp and not temp.startswith("/"):
+            self.logger.warning(
+                "Please provide an absolute path for the '{}' option. Fallback to '{}'".format(
+                    field, default
+                )
+            )
             temp = default
-        elif temp and not re.match(r'^\S+$', temp):
-            self.logger.warning("Incorrect value for the '{}' option. Fallback to '{}'".format(field, default))
+        elif temp and not re.match(r"^\S+$", temp):
+            self.logger.warning(
+                "Incorrect value for the '{}' option. Fallback to '{}'".format(
+                    field, default
+                )
+            )
             temp = default
         elif temp and (not os.path.isfile(temp) or not os.access(temp, os.X_OK)):
-            self.logger.warning("'{}' does not exist or is not executable. Fallback to '{}'".format(temp, default))
+            self.logger.warning(
+                "'{}' does not exist or is not executable. Fallback to '{}'".format(
+                    temp, default
+                )
+            )
             temp = default
 
-        if temp and (not os.path.isfile(temp) or not os.access(temp, os.X_OK)):  # pragma: no cover
+        if temp and (
+            not os.path.isfile(temp) or not os.access(temp, os.X_OK)
+        ):  # pragma: no cover
             self.logger.error("Ooops, '{}' not found or is not executable".format(temp))
             temp = None
 
@@ -264,10 +250,12 @@ class BUIbackend(object, metaclass=ABCMeta):
                 "client_version": "2.1.12"
             }
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Backend does not implement this method!"
+        )  # pragma: no cover
 
     @abstractmethod
-    def status(self, query='\n', timeout=None, agent=None):
+    def status(self, query="\n", timeout=None, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.status` method is
         used to send queries to the Burp server
 
@@ -289,7 +277,9 @@ class BUIbackend(object, metaclass=ABCMeta):
                 "client2\t2\ti\t1 0 1422189120"
             ]
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Backend does not implement this method!"
+        )  # pragma: no cover
 
     @abstractmethod
     def get_backup_logs(self, number, client, forward=False, deep=False, agent=None):
@@ -439,7 +429,9 @@ class BUIbackend(object, metaclass=ABCMeta):
                 "windows": "false"
             }
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Backend does not implement this method!"
+        )  # pragma: no cover
 
     @abstractmethod
     def get_clients_report(self, clients, agent=None):
@@ -455,7 +447,9 @@ class BUIbackend(object, metaclass=ABCMeta):
 
         :returns: A dict with the computed data
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Backend does not implement this method!"
+        )  # pragma: no cover
 
     @abstractmethod
     def get_counters(self, name=None, agent=None):
@@ -471,7 +465,9 @@ class BUIbackend(object, metaclass=ABCMeta):
 
         :returns: A dict of counters
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Backend does not implement this method!"
+        )  # pragma: no cover
 
     @abstractmethod
     def is_backup_running(self, name=None, agent=None):
@@ -486,7 +482,9 @@ class BUIbackend(object, metaclass=ABCMeta):
 
         :returns: True or False
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Backend does not implement this method!"
+        )  # pragma: no cover
 
     @abstractmethod
     def is_one_backup_running(self, agent=None):
@@ -498,7 +496,9 @@ class BUIbackend(object, metaclass=ABCMeta):
 
         :returns: A list of running clients
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Backend does not implement this method!"
+        )  # pragma: no cover
 
     @abstractmethod
     def get_all_clients(self, agent=None, last_attempt=True):
@@ -529,7 +529,9 @@ class BUIbackend(object, metaclass=ABCMeta):
                 }
             ]
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Backend does not implement this method!"
+        )  # pragma: no cover
 
     @abstractmethod
     def get_client_status(self, name=None, agent=None):
@@ -553,7 +555,9 @@ class BUIbackend(object, metaclass=ABCMeta):
             }
 
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Backend does not implement this method!"
+        )  # pragma: no cover
 
     @abstractmethod
     def get_client(self, name=None, agent=None):
@@ -582,10 +586,14 @@ class BUIbackend(object, metaclass=ABCMeta):
                 }
             ]
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Backend does not implement this method!"
+        )  # pragma: no cover
 
     @abstractmethod
-    def get_client_filtered(self, name=None, limit=-1, page=None, start=None, end=None, agent=None):
+    def get_client_filtered(
+        self, name=None, limit=-1, page=None, start=None, end=None, agent=None
+    ):
         """The :func:`burpui.misc.backend.interface.BUIbackend.get_client_filtered`
         function returns a list of dict representing the backups of a given
         client filtered by the given criteria.
@@ -623,7 +631,9 @@ class BUIbackend(object, metaclass=ABCMeta):
                 }
             ]
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Backend does not implement this method!"
+        )  # pragma: no cover
 
     @abstractmethod
     def get_tree(self, name=None, backup=None, root=None, level=-1, agent=None):
@@ -668,7 +678,9 @@ class BUIbackend(object, metaclass=ABCMeta):
                 }
             ]
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Backend does not implement this method!"
+        )  # pragma: no cover
 
     @abstractmethod
     def delete_backup(self, name=None, backup=None, agent=None):
@@ -687,10 +699,21 @@ class BUIbackend(object, metaclass=ABCMeta):
 
         :returns: An error message if the command failed
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Backend does not implement this method!"
+        )  # pragma: no cover
 
     @abstractmethod
-    def restore_files(self, name=None, backup=None, files=None, strip=None, archive='zip', password=None, agent=None):
+    def restore_files(
+        self,
+        name=None,
+        backup=None,
+        files=None,
+        strip=None,
+        archive="zip",
+        password=None,
+        agent=None,
+    ):
         """The :func:`burpui.misc.backend.interface.BUIbackend.restore_files`
         function performs a restoration and returns a tuple containing the path
         of the generated archive and/or a message if an error happened.
@@ -724,7 +747,9 @@ class BUIbackend(object, metaclass=ABCMeta):
 
         :returns: A tuple with the generated archive path and/or an error message
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Backend does not implement this method!"
+        )  # pragma: no cover
 
     @abstractmethod
     def read_conf_srv(self, conf=None, agent=None):
@@ -813,7 +838,9 @@ class BUIbackend(object, metaclass=ABCMeta):
                 ]
             }
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Backend does not implement this method!"
+        )  # pragma: no cover
 
     @abstractmethod
     def read_conf_cli(self, client=None, conf=None, agent=None):
@@ -822,7 +849,9 @@ class BUIbackend(object, metaclass=ABCMeta):
         :func:`burpui.misc.backend.interface.BUIbackend.read_conf_srv` function
         but for the client config file.
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Backend does not implement this method!"
+        )  # pragma: no cover
 
     @abstractmethod
     def store_conf_srv(self, data, conf=None, agent=None):
@@ -845,11 +874,21 @@ class BUIbackend(object, metaclass=ABCMeta):
 
             [[0, "Success"]]
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Backend does not implement this method!"
+        )  # pragma: no cover
 
     @abstractmethod
-    def store_conf_cli(self, data, client=None, conf=None, template=False,
-                       statictemplate=False, content='', agent=None):
+    def store_conf_cli(
+        self,
+        data,
+        client=None,
+        conf=None,
+        template=False,
+        statictemplate=False,
+        content="",
+        agent=None,
+    ):
         """The :func:`burpui.misc.backend.interface.BUIbackend.store_conf_cli`
         function works the same way as the
         :func:`burpui.misc.backend.interface.BUIbackend.store_conf_srv` function
@@ -859,7 +898,9 @@ class BUIbackend(object, metaclass=ABCMeta):
         :param client: Name of the client for which to apply this config
         :type client: str
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Backend does not implement this method!"
+        )  # pragma: no cover
 
     @abstractmethod
     def get_parser_attr(self, attr=None, agent=None):
@@ -876,7 +917,9 @@ class BUIbackend(object, metaclass=ABCMeta):
 
         :returns: The requested attribute or an empty list
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Backend does not implement this method!"
+        )  # pragma: no cover
 
     @abstractmethod
     def expand_path(self, path=None, source=None, client=None, agent=None):
@@ -899,7 +942,9 @@ class BUIbackend(object, metaclass=ABCMeta):
 
         :returns: A list of files or an empty list
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Backend does not implement this method!"
+        )  # pragma: no cover
 
     @abstractmethod
     def clients_list(self, agent=None):
@@ -909,10 +954,14 @@ class BUIbackend(object, metaclass=ABCMeta):
 
         :returns: A list of clients with their configuration file
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Backend does not implement this method!"
+        )  # pragma: no cover
 
     @abstractmethod
-    def delete_client(self, client=None, keepconf=False, delcert=False, revoke=False, agent=None):
+    def delete_client(
+        self, client=None, keepconf=False, delcert=False, revoke=False, agent=None
+    ):
         """The :func:`burpui.misc.backend.interface.BUIbackend.delete_client`
         function is used to delete a client from burp's configuration.
 
@@ -934,7 +983,9 @@ class BUIbackend(object, metaclass=ABCMeta):
         :returns: A list of notifications to return to the UI (success or
                   failure)
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Backend does not implement this method!"
+        )  # pragma: no cover
 
     @abstractmethod
     def is_server_restore(self, client=None, agent=None):
@@ -951,7 +1002,9 @@ class BUIbackend(object, metaclass=ABCMeta):
         :returns: A dict representing the content of the server-initiated
                   restoration file
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Backend does not implement this method!"
+        )  # pragma: no cover
 
     @abstractmethod
     def cancel_server_restore(self, client=None, agent=None):
@@ -972,10 +1025,22 @@ class BUIbackend(object, metaclass=ABCMeta):
 
             [[0, "Success"]]
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Backend does not implement this method!"
+        )  # pragma: no cover
 
     @abstractmethod
-    def server_restore(self, client=None, backup=None, files=None, strip=None, force=None, prefix=None, restoreto=None, agent=None):
+    def server_restore(
+        self,
+        client=None,
+        backup=None,
+        files=None,
+        strip=None,
+        force=None,
+        prefix=None,
+        restoreto=None,
+        agent=None,
+    ):
         """The :func:`burpui.misc.backend.interface.BUIbackend.server_restore`
         function is used to schedule a server-side initiated restoration.
 
@@ -1006,7 +1071,9 @@ class BUIbackend(object, metaclass=ABCMeta):
         :returns: A list of notifications to return to the UI (success or
                   failure)
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Backend does not implement this method!"
+        )  # pragma: no cover
 
     @abstractmethod
     def is_server_backup(self, client=None, agent=None):
@@ -1022,7 +1089,9 @@ class BUIbackend(object, metaclass=ABCMeta):
 
         :returns: True or False
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Backend does not implement this method!"
+        )  # pragma: no cover
 
     @abstractmethod
     def cancel_server_backup(self, client=None, agent=None):
@@ -1043,7 +1112,9 @@ class BUIbackend(object, metaclass=ABCMeta):
 
             [[0, "Success"]]
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Backend does not implement this method!"
+        )  # pragma: no cover
 
     @abstractmethod
     def server_backup(self, client=None, agent=None):
@@ -1059,7 +1130,9 @@ class BUIbackend(object, metaclass=ABCMeta):
         :returns: A list of notifications to return to the UI (success or
                   failure)
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Backend does not implement this method!"
+        )  # pragma: no cover
 
     @abstractmethod
     def revocation_enabled(self, agent=None):
@@ -1072,7 +1145,9 @@ class BUIbackend(object, metaclass=ABCMeta):
 
         :returns: True or False
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Backend does not implement this method!"
+        )  # pragma: no cover
 
     @abstractmethod
     def get_client_version(self, agent=None):
@@ -1084,7 +1159,9 @@ class BUIbackend(object, metaclass=ABCMeta):
 
         :returns: Burp client version
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Backend does not implement this method!"
+        )  # pragma: no cover
 
     @abstractmethod
     def get_server_version(self, agent=None):
@@ -1096,7 +1173,9 @@ class BUIbackend(object, metaclass=ABCMeta):
 
         :returns: Burp server version
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Backend does not implement this method!"
+        )  # pragma: no cover
 
     @abstractmethod
     def get_client_labels(self, client=None, agent=None):
@@ -1113,42 +1192,54 @@ class BUIbackend(object, metaclass=ABCMeta):
 
         :returns: A list of labels or an empty list
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Backend does not implement this method!"
+        )  # pragma: no cover
 
     @abstractmethod
     def get_attr(self, name, default=None, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.get_attr`
         function returns the given attribute or default.
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Backend does not implement this method!"
+        )  # pragma: no cover
 
     @abstractmethod
     def get_parser(self, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.get_parser`
         function returns the parser of the current backend.
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Backend does not implement this method!"
+        )  # pragma: no cover
 
     @abstractmethod
     def get_file(self, path, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.get_file`
         function is used to retrieve a file on a remote agent.
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Backend does not implement this method!"
+        )  # pragma: no cover
 
     @abstractmethod
     def del_file(self, path, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.del_file`
         function is used to delete a file on a remote agent.
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Backend does not implement this method!"
+        )  # pragma: no cover
 
     @abstractmethod
     def version(self, agent=None):
         """The :func:`burpui.misc.backend.interface.BUIbackend.version` function
         returns the version of the given agent.
         """
-        raise NotImplementedError("Sorry, the current Backend does not implement this method!")  # pragma: no cover
+        raise NotImplementedError(
+            "Sorry, the current Backend does not implement this method!"
+        )  # pragma: no cover
 
 
 BUIBACKEND_INTERFACE_METHODS = BUIbackend.__abstractmethods__.copy()

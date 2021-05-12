@@ -11,24 +11,24 @@ from setuptools import setup, find_packages
 
 # only used to build the package
 CWD = os.path.dirname(os.path.realpath(__file__))
-ROOT = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..')
+ROOT = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "..")
 
 raw_requirements = [
-    'trio',
-    'arrow',
-    'tzlocal',
-    'pyOpenSSL',
-    'configobj',
+    "trio",
+    "arrow",
+    "tzlocal",
+    "pyOpenSSL",
+    "configobj",
 ]
 requirements = []
 
-if 'sdist' in sys.argv or 'bdist' in sys.argv:
+if "sdist" in sys.argv or "bdist" in sys.argv:
     try:
-        with open(os.path.join(ROOT, 'requirements.txt'), 'r') as req:
+        with open(os.path.join(ROOT, "requirements.txt"), "r") as req:
             for line in req.readlines():
                 line = line.rstrip()
                 for i, look in enumerate(list(raw_requirements)):
-                    if re.match(r'{}(=><)?'.format(look), line, re.IGNORECASE):
+                    if re.match(r"{}(=><)?".format(look), line, re.IGNORECASE):
                         requirements.append(line)
                         del raw_requirements[i]
                         break
@@ -37,25 +37,27 @@ if 'sdist' in sys.argv or 'bdist' in sys.argv:
         pass
     if requirements:
         try:
-            with open(os.path.join(CWD, 'requirements.txt'), 'w') as req:
-                req.write('\n'.join(requirements))
+            with open(os.path.join(CWD, "requirements.txt"), "w") as req:
+                req.write("\n".join(requirements))
         except OSError:
             pass
-    if not os.path.exists('burpui_agent'):
-        os.makedirs('burpui_agent', mode=0o0755)
-    if os.path.exists(os.path.join(ROOT, 'burpui', 'VERSION')):
-        shutil.copyfile(os.path.join(ROOT, 'burpui', 'VERSION'), 'burpui_agent/VERSION')
-    rev = 'stable'
-    ci = os.getenv('CI')
-    commit = os.getenv('CI_COMMIT_SHA')
-    if not ci and os.path.exists(os.path.join(ROOT, '.git/HEAD')):
+    if not os.path.exists("burpui_agent"):
+        os.makedirs("burpui_agent", mode=0o0755)
+    if os.path.exists(os.path.join(ROOT, "burpui", "VERSION")):
+        shutil.copyfile(os.path.join(ROOT, "burpui", "VERSION"), "burpui_agent/VERSION")
+    rev = "stable"
+    ci = os.getenv("CI")
+    commit = os.getenv("CI_COMMIT_SHA")
+    if not ci and os.path.exists(os.path.join(ROOT, ".git/HEAD")):
         try:
-            branch = subprocess.check_output('sed s@^.*/@@g {}/.git/HEAD'.format(ROOT).split()).rstrip()
-            ver = open(os.path.join('burpui_agent', 'VERSION')).read().rstrip()
-            if branch and 'dev' in ver:
+            branch = subprocess.check_output(
+                "sed s@^.*/@@g {}/.git/HEAD".format(ROOT).split()
+            ).rstrip()
+            ver = open(os.path.join("burpui_agent", "VERSION")).read().rstrip()
+            if branch and "dev" in ver:
                 rev = branch
             try:
-                with open('burpui_agent/RELEASE', 'wb') as f:
+                with open("burpui_agent/RELEASE", "wb") as f:
                     f.write(rev)
             except:
                 pass
@@ -63,22 +65,26 @@ if 'sdist' in sys.argv or 'bdist' in sys.argv:
             pass
     elif ci:
         try:
-            ver = open(os.path.join('burpui_agent', 'VERSION')).read().rstrip()
-            if 'dev' in ver:
+            ver = open(os.path.join("burpui_agent", "VERSION")).read().rstrip()
+            if "dev" in ver:
                 rev = commit
             try:
-                with open('burpui_agent/RELEASE', 'wb') as f:
+                with open("burpui_agent/RELEASE", "wb") as f:
                     f.write(rev)
             except:
                 pass
         except:
             pass
-    find = subprocess.Popen(r'find burpui_agent-decoy -type l', shell=True, stdout=subprocess.PIPE)
+    find = subprocess.Popen(
+        r"find burpui_agent-decoy -type l", shell=True, stdout=subprocess.PIPE
+    )
     (out, _) = find.communicate()
     for decoy in out.splitlines():
-        real = os.path.normpath(os.path.join(os.path.dirname(decoy), os.readlink(decoy))).decode('utf-8')
+        real = os.path.normpath(
+            os.path.join(os.path.dirname(decoy), os.readlink(decoy))
+        ).decode("utf-8")
         # print '{} -> {}'.format(decoy, real)
-        target = os.path.join('burpui_agent', re.sub('.*/burpui/', '', real))
+        target = os.path.join("burpui_agent", re.sub(".*/burpui/", "", real))
         dirname = os.path.dirname(target)
         if not os.path.isdir(dirname):
             # print 'mkdir {}'.format(dirname)
@@ -91,11 +97,13 @@ if 'sdist' in sys.argv or 'bdist' in sys.argv:
         else:
             shutil.copy(real, target)
 
-    files = subprocess.Popen(r'find burpui_agent-decoy -type f', shell=True, stdout=subprocess.PIPE)
+    files = subprocess.Popen(
+        r"find burpui_agent-decoy -type f", shell=True, stdout=subprocess.PIPE
+    )
     (out, _) = files.communicate()
     for src in out.splitlines():
-        src = src.decode('utf-8')
-        dst = src.replace('burpui_agent-decoy', 'burpui_agent')
+        src = src.decode("utf-8")
+        dst = src.replace("burpui_agent-decoy", "burpui_agent")
         dirname = os.path.dirname(dst)
         if not os.path.isdir(dirname):
             # print 'mkdir {}'.format(dirname)
@@ -104,7 +112,7 @@ if 'sdist' in sys.argv or 'bdist' in sys.argv:
 
 if not requirements:
     try:
-        with open(os.path.join(CWD, 'requirements.txt'), 'r') as req:
+        with open(os.path.join(CWD, "requirements.txt"), "r") as req:
             requirements = [x.rstrip() for x in req.readlines()]
     except OSError:
         pass
@@ -114,8 +122,15 @@ Burp-UI Meta package for agent requirements
 """
 
 from burpui_agent import __title__
-from burpui_agent.desc import __author__, __author_email__, __description__, \
-        __url__, __version__, __license__
+from burpui_agent.desc import (
+    __author__,
+    __author_email__,
+    __description__,
+    __url__,
+    __version__,
+    __license__,
+)
+
 name = __title__
 author = __author__
 author_email = __author_email__
@@ -124,12 +139,12 @@ url = __url__
 version = __version__
 license = __license__
 
-datadir = os.path.join('share', 'burpui')
-confdir = os.path.join(datadir, 'etc')
+datadir = os.path.join("share", "burpui")
+confdir = os.path.join(datadir, "etc")
 
 setup(
     name=name,
-    packages=find_packages(exclude=['burpui_agent-decoy', 'burpui_agent-decoy.*']),
+    packages=find_packages(exclude=["burpui_agent-decoy", "burpui_agent-decoy.*"]),
     version=version,
     description=description,
     long_description=readme,
@@ -138,24 +153,24 @@ setup(
     author_email=author_email,
     url=url,
     include_package_data=True,
-    keywords='burp web ui backup monitoring',
+    keywords="burp web ui backup monitoring",
     entry_points={
-        'console_scripts': [
-            'bui-agent=burpui_agent.__main__:agent',
+        "console_scripts": [
+            "bui-agent=burpui_agent.__main__:agent",
         ],
     },
     data_files=[
-        (confdir, [os.path.join(confdir, 'buiagent.sample.cfg')]),
+        (confdir, [os.path.join(confdir, "buiagent.sample.cfg")]),
     ],
     install_requires=requirements,
     classifiers=[
-        'Intended Audience :: System Administrators',
-        'Natural Language :: English',
-        'License :: OSI Approved :: BSD License',
-        'Operating System :: POSIX :: Linux',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 3.6',
-        'Topic :: System :: Archiving :: Backup',
-        'Topic :: System :: Monitoring',
-    ]
+        "Intended Audience :: System Administrators",
+        "Natural Language :: English",
+        "License :: OSI Approved :: BSD License",
+        "Operating System :: POSIX :: Linux",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3.6",
+        "Topic :: System :: Archiving :: Backup",
+        "Topic :: System :: Monitoring",
+    ],
 )

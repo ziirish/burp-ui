@@ -21,7 +21,7 @@
 #       range.
 #
 
-bind = '0.0.0.0:5000'
+bind = "0.0.0.0:5000"
 backlog = 2048
 
 #
@@ -77,7 +77,7 @@ backlog = 2048
 # 'geventwebsocket.gunicorn.workers.GeventWebSocketWorker'
 
 workers = 5
-worker_class = 'sync'
+worker_class = "sync"
 worker_connections = 1000
 timeout = 300
 keepalive = 2
@@ -136,8 +136,8 @@ spew = False
 daemon = False
 pidfile = None
 umask = 0
-user = 'burpui'
-group = 'burpui'
+user = "burpui"
+group = "burpui"
 tmp_upload_dir = None
 
 #
@@ -152,9 +152,9 @@ tmp_upload_dir = None
 #       A string of "debug", "info", "warning", "error", "critical"
 #
 
-errorlog = '/var/log/gunicorn/burp-ui_error.log'
-loglevel = 'error'
-accesslog = '/var/log/gunicorn/burp-ui_access.log'
+errorlog = "/var/log/gunicorn/burp-ui_error.log"
+loglevel = "error"
+accesslog = "/var/log/gunicorn/burp-ui_access.log"
 access_log_format = '%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"'
 
 #

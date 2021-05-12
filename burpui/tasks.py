@@ -28,11 +28,12 @@ from burpui.utils import NOTIF_ERROR
 
 try:
     from burpui.ext.ws import socketio
+
     WS_AVAILABLE = True
 except ImportError:
     WS_AVAILABLE = False
 
-if config.get('WITH_SQL'):
+if config.get("WITH_SQL"):
     from burpui.ext.sql import db
 else:
     db = None
@@ -44,42 +45,45 @@ ME = __name__
 LOCK_EXPIRE = 60 * 30  # Lock expires in 30 minutes
 
 BEAT_SCHEDULE = {
-    'backup-running-4-minutely': {
-        'task': '{}.backup_running'.format(ME),
-        'schedule': timedelta(seconds=15),  # run every 15 seconds
+    "backup-running-4-minutely": {
+        "task": "{}.backup_running".format(ME),
+        "schedule": timedelta(seconds=15),  # run every 15 seconds
     },
-    'get-all-backups-every-twenty-minutes': {
-        'task': '{}.get_all_backups'.format(ME),
-        'schedule': crontab(minute='*/20'),  # every 20 minutes
+    "get-all-backups-every-twenty-minutes": {
+        "task": "{}.get_all_backups".format(ME),
+        "schedule": crontab(minute="*/20"),  # every 20 minutes
     },
-    'get-all-clients-reports-every-twenty-minutes': {
-        'task': '{}.get_all_clients_reports'.format(ME),
-        'schedule': crontab(minute='*/20'),  # every 20 minutes
+    "get-all-clients-reports-every-twenty-minutes": {
+        "task": "{}.get_all_clients_reports".format(ME),
+        "schedule": crontab(minute="*/20"),  # every 20 minutes
     },
-    'cleanup-expired-sessions-every-four-hours': {
-        'task': '{}.cleanup_expired_sessions'.format(ME),
-        'schedule': crontab(minute=1, hour='*/4'),  # every four hours
+    "cleanup-expired-sessions-every-four-hours": {
+        "task": "{}.cleanup_expired_sessions".format(ME),
+        "schedule": crontab(minute=1, hour="*/4"),  # every four hours
     },
 }
 
 if db:
     from burpui.models import Task
 
-    BEAT_SCHEDULE.update({
-        'cleanup-restore-hourly': {
-            'task': '{}.cleanup_restore'.format(ME),
-            'schedule': crontab(minute='12'),  # run every hour
-        },
-    })
+    BEAT_SCHEDULE.update(
+        {
+            "cleanup-restore-hourly": {
+                "task": "{}.cleanup_restore".format(ME),
+                "schedule": crontab(minute="12"),  # run every hour
+            },
+        }
+    )
 
-if 'CELERYBEAT_SCHEDULE' in celery.conf and \
-        isinstance(celery.conf['CELERYBEAT_SCHEDULE'], dict):
-    celery.conf['CELERYBEAT_SCHEDULE'].update(BEAT_SCHEDULE)
+if "CELERYBEAT_SCHEDULE" in celery.conf and isinstance(
+    celery.conf["CELERYBEAT_SCHEDULE"], dict
+):
+    celery.conf["CELERYBEAT_SCHEDULE"].update(BEAT_SCHEDULE)
 else:
-    celery.conf['CELERYBEAT_SCHEDULE'] = BEAT_SCHEDULE
+    celery.conf["CELERYBEAT_SCHEDULE"] = BEAT_SCHEDULE
 
 
-def acquire_lock(name, value='nyan', timeout=LOCK_EXPIRE):
+def acquire_lock(name, value="nyan", timeout=LOCK_EXPIRE):
     """Utility function to acquire a lock before processing the request"""
     lock = cache.cache.get(name)
     if lock:
@@ -101,9 +105,8 @@ def wait_for(lock_name, value, wait=10, timeout=LOCK_EXPIRE):
     old_lock = None
     if not acquire_lock(lock_name, value, timeout):
         logger.warn(
-            'A task is already running. Wait for it: {}/{}'.format(
-                lock_name,
-                acquire_lock.lock
+            "A task is already running. Wait for it: {}/{}".format(
+                lock_name, acquire_lock.lock
             )
         )
         old_lock = acquire_lock.lock
@@ -113,7 +116,7 @@ def wait_for(lock_name, value, wait=10, timeout=LOCK_EXPIRE):
 
         # TODO: maybe we should check the status of task referenced by"old_lock"
         # to make sure the lock did not expire and the task is actually over
-        logger.debug('lock released by: {}'.format(old_lock))
+        logger.debug("lock released by: {}".format(old_lock))
 
     return old_lock
 
@@ -126,11 +129,7 @@ def backup_running(self):
         return None
     try:
         res = bui.client.is_one_backup_running()
-        cache.cache.set(
-            'backup_running_result',
-            res,
-            120
-        )
+        cache.cache.set("backup_running_result", res, 120)
         if WS_AVAILABLE:
             running = False
             if isinstance(res, dict):
@@ -140,7 +139,7 @@ def backup_running(self):
                         break
             elif len(res) > 0:
                 running = True
-            socketio.emit('backup_running', running, namespace='/ws')
+            socketio.emit("backup_running", running, namespace="/ws")
     finally:
         release_lock(self.name)
 
@@ -153,15 +152,17 @@ def get_all_backups(self):
         return None
     try:
         backups = {}
-        if bui.config['STANDALONE']:
+        if bui.config["STANDALONE"]:
             for cli in bui.client.get_all_clients():
-                backups[cli['name']] = bui.client.get_client(cli['name'])
+                backups[cli["name"]] = bui.client.get_client(cli["name"])
         else:
             for serv in bui.client.servers:
                 backups[serv] = {}
                 for cli in bui.client.get_all_clients(agent=serv):
-                    backups[serv][cli['name']] = bui.client.get_client(cli['name'], agent=serv)
-        cache.cache.set('all_backups', backups, 3600)
+                    backups[serv][cli["name"]] = bui.client.get_client(
+                        cli["name"], agent=serv
+                    )
+        cache.cache.set("all_backups", backups, 3600)
     finally:
         release_lock(self.name)
 
@@ -174,18 +175,24 @@ def get_all_clients_reports(self):
         return None
     try:
         reports = {}
-        if bui.config['STANDALONE']:
+        if bui.config["STANDALONE"]:
             reports = bui.client.get_clients_report(bui.client.get_all_clients())
         else:
             for serv in bui.client.servers:
-                reports[serv] = bui.client.get_clients_report(bui.client.get_all_clients(agent=serv), serv)
-        cache.cache.set('all_clients_reports', reports, 3600)
+                reports[serv] = bui.client.get_clients_report(
+                    bui.client.get_all_clients(agent=serv), serv
+                )
+        cache.cache.set("all_clients_reports", reports, 3600)
     finally:
         release_lock(self.name)
 
 
-@celery.task(ignore_result=True, max_retries=5,
-             autoretry_for=(TooManyRecordsException,), retry_backoff=4)
+@celery.task(
+    ignore_result=True,
+    max_retries=5,
+    autoretry_for=(TooManyRecordsException,),
+    retry_backoff=4,
+)
 def cleanup_expired_sessions():
     bucket = []
 
@@ -208,26 +215,32 @@ def cleanup_expired_sessions():
         raise TooManyRecordsException
 
 
-@celery.task(ignore_result=True, max_retries=3,
-             autoretry_for=(TooManyRecordsException,), retry_backoff=True)
+@celery.task(
+    ignore_result=True,
+    max_retries=3,
+    autoretry_for=(TooManyRecordsException,),
+    retry_backoff=True,
+)
 def cleanup_restore():
     bucket = []
-    query = Task.query.filter(Task.task == 'perform_restore', Task.expire <= datetime.utcnow())
+    query = Task.query.filter(
+        Task.task == "perform_restore", Task.expire <= datetime.utcnow()
+    )
     for rec in query.limit(100):
-        logger.info('Task expired: {}'.format(rec))
+        logger.info("Task expired: {}".format(rec))
         task = perform_restore.AsyncResult(rec.uuid)
         try:
-            if task.state != 'SUCCESS':
+            if task.state != "SUCCESS":
                 logger.warn(
-                    'Task is not done yet or did not end '
-                    'successfully: {}'.format(task.state)
+                    "Task is not done yet or did not end "
+                    "successfully: {}".format(task.state)
                 )
                 continue
             if not task.result:
-                logger.warn('The task did not return anything')
+                logger.warn("The task did not return anything")
                 continue
-            server = task.result.get('server')
-            path = task.result.get('path')
+            server = task.result.get("server")
+            path = task.result.get("path")
             if path:
                 if server:
                     if not bui.client.del_file(path, agent=server):
@@ -248,53 +261,60 @@ def cleanup_restore():
 
 
 @celery.task(bind=True)
-def perform_restore(self, client, backup,
-                    files, strip, fmt, passwd, server=None, user=None,
-                    admin=False, room=None, expire=timedelta(minutes=60)):
+def perform_restore(
+    self,
+    client,
+    backup,
+    files,
+    strip,
+    fmt,
+    passwd,
+    server=None,
+    user=None,
+    admin=False,
+    room=None,
+    expire=timedelta(minutes=60),
+):
     ret = None
     # we can have only one restore per server-client at the time
-    lock_name = '{}-{}-{}'.format(self.name, server, client)
+    lock_name = "{}-{}-{}".format(self.name, server, client)
 
     # TODO: maybe do something with old_lock someday
     wait_for(lock_name, self.request.id)
 
     try:
         if server:
-            filename = 'restoration_%d_%s_on_%s_at_%s.%s' % (
+            filename = "restoration_%d_%s_on_%s_at_%s.%s" % (
                 backup,
                 client,
                 server,
                 strftime("%Y-%m-%d_%H_%M_%S", gmtime()),
-                fmt)
+                fmt,
+            )
         else:
-            filename = 'restoration_%d_%s_at_%s.%s' % (
+            filename = "restoration_%d_%s_at_%s.%s" % (
                 backup,
                 client,
                 strftime("%Y-%m-%d_%H_%M_%S", gmtime()),
-                fmt)
+                fmt,
+            )
 
-        self.update_state(state='STARTED', meta={'step': 'doing'})
+        self.update_state(state="STARTED", meta={"step": "doing"})
         archive, err = bui.client.restore_files(
-            client,
-            backup,
-            files,
-            strip,
-            fmt,
-            passwd,
-            server
+            client, backup, files, strip, fmt, passwd, server
         )
         if not archive:
             if not err:
-                err = 'Something went wrong while restoring'
-            self.update_state(state='FAILURE', meta={'error': to_unicode(err)})
-            logger.error('FAILURE: {}'.format(err))
+                err = "Something went wrong while restoring"
+            self.update_state(state="FAILURE", meta={"error": to_unicode(err)})
+            logger.error("FAILURE: {}".format(err))
         else:
             ret = {
-                'filename': filename,
-                'path': to_unicode(archive),
-                'user': user,
-                'server': server,
-                'admin': admin
+                "filename": filename,
+                "path": to_unicode(archive),
+                "user": user,
+                "server": server,
+                "admin": admin,
             }
             logger.debug(ret)
 
@@ -318,27 +338,29 @@ def perform_restore(self, client, backup,
 
 
 @celery.task(bind=True)
-def delete_client(self, client, keepconf, delcert, revoke, template, delete, server, user):
+def delete_client(
+    self, client, keepconf, delcert, revoke, template, delete, server, user
+):
     parser = bui.client.get_parser(agent=server)
-    self.update_state(state='STARTED', meta={'step': 'doing'})
+    self.update_state(state="STARTED", meta={"step": "doing"})
 
     res = parser.remove_client(client, keepconf, delcert, revoke, template, delete)
     if any(x == NOTIF_ERROR for x, _ in res):
-        self.update_state(state='FAILURE', meta={'error': res})
+        self.update_state(state="FAILURE", meta={"error": res})
         raise Exception(res)
 
     ret = {
-        'result': res,
-        'client': client,
-        'server': server,
-        'user': user,
-        'kwargs': {
-            'keepconf': keepconf,
-            'delcert': delcert,
-            'revoke': revoke,
-            'template': template,
-            'delete': delete,
-            'template': template,
+        "result": res,
+        "client": client,
+        "server": server,
+        "user": user,
+        "kwargs": {
+            "keepconf": keepconf,
+            "delcert": delcert,
+            "revoke": revoke,
+            "template": template,
+            "delete": delete,
+            "template": template,
         },
     }
     logger.debug(ret)
@@ -347,18 +369,18 @@ def delete_client(self, client, keepconf, delcert, revoke, template, delete, ser
 
 @celery.task(bind=True)
 def load_all_tree(self, client, backup, server=None, user=None):
-    key = 'load_all_tree-{}-{}-{}'.format(client, backup, server)
+    key = "load_all_tree-{}-{}-{}".format(client, backup, server)
     ret = cache.cache.get(key)
     if ret:
         return {
-            'client': client,
-            'backup': backup,
-            'server': server,
-            'user': user,
-            'tree': ret
+            "client": client,
+            "backup": backup,
+            "server": server,
+            "user": user,
+            "tree": ret,
         }
 
-    lock_name = '{}-{}'.format(self.name, server)
+    lock_name = "{}-{}".format(self.name, server)
 
     # TODO: maybe do something with old_lock someday
     wait_for(lock_name, self.request.id)
@@ -372,11 +394,11 @@ def load_all_tree(self, client, backup, server=None, user=None):
 
     cache.cache.set(key, ret, 3600)
     return {
-        'client': client,
-        'backup': backup,
-        'server': server,
-        'user': user,
-        'tree': ret
+        "client": client,
+        "backup": backup,
+        "server": server,
+        "user": user,
+        "tree": ret,
     }
 
 

@@ -133,8 +133,15 @@ class BUIparser(object, metaclass=ABCMeta):
         )  # pragma: no cover
 
     @abstractmethod
-    def store_client_conf(self, data, client=None, conf=None, template=False,
-                          statictemplate=False, content=''):
+    def store_client_conf(
+        self,
+        data,
+        client=None,
+        conf=None,
+        template=False,
+        statictemplate=False,
+        content="",
+    ):
         """:func:`burpui.misc.parser.interface.BUIparser.store_client_conf` is
         used by :func:`burpui.misc.backend.BUIbackend.store_conf_cli`.
 
@@ -162,8 +169,17 @@ class BUIparser(object, metaclass=ABCMeta):
         )  # pragma: no cover
 
     @abstractmethod
-    def store_conf(self, data, conf=None, client=None, mode='srv',
-                   insecure=False, template=False, statictemplate=False, content=''):
+    def store_conf(
+        self,
+        data,
+        conf=None,
+        client=None,
+        mode="srv",
+        insecure=False,
+        template=False,
+        statictemplate=False,
+        content="",
+    ):
         """:func:`burpui.misc.parser.interface.BUIparser.store_conf` is used to
         store the configuration from the web-ui into the actual configuration
         files.
@@ -287,8 +303,16 @@ class BUIparser(object, metaclass=ABCMeta):
         )  # pragma: no cover
 
     @abstractmethod
-    def remove_client(self, client=None, keepconf=False, delcert=False, revoke=False,
-                      template=False, statictemplate=False, delete=False):
+    def remove_client(
+        self,
+        client=None,
+        keepconf=False,
+        delcert=False,
+        revoke=False,
+        template=False,
+        statictemplate=False,
+        delete=False,
+    ):
         """:func:`burpui.misc.parser.interface.BUIparser.remove_client` is used
         to delete a client from burp's configuration.
 
@@ -322,8 +346,15 @@ class BUIparser(object, metaclass=ABCMeta):
         )  # pragma: no cover
 
     @abstractmethod
-    def rename_client(self, client=None, newname=None, template=False,
-                      statictemplate=False, keepcert=False, keepdata=False):
+    def rename_client(
+        self,
+        client=None,
+        newname=None,
+        template=False,
+        statictemplate=False,
+        keepcert=False,
+        keepdata=False,
+    ):
         """:func:`burpui.misc.parser.interface.BUIParser.rename_client` is used to
         rename a client.
 
@@ -354,7 +385,9 @@ class BUIparser(object, metaclass=ABCMeta):
         )  # pragma: no cover
 
     @abstractmethod
-    def read_client_conf(self, client=None, conf=None, template=False, statictemplate=False):
+    def read_client_conf(
+        self, client=None, conf=None, template=False, statictemplate=False
+    ):
         """:func:`burpui.misc.parser.interface.BUIparser.read_client_conf` is
         called by :func:`burpui.misc.backend.interface.BUIbackend.read_conf_cli`
         in order to parse the burp-clients configuration files.
@@ -400,14 +433,15 @@ class BUIparser(object, metaclass=ABCMeta):
 
     @abstractmethod
     def server_initiated_restoration(
-            self,
-            name=None,
-            backup=None,
-            files=None,
-            strip=None,
-            force=None,
-            prefix=None,
-            restoreto=None):
+        self,
+        name=None,
+        backup=None,
+        files=None,
+        strip=None,
+        force=None,
+        prefix=None,
+        restoreto=None,
+    ):
         """
         :func:`burpui.misc.parser.interface.BUIparser.server_initiated_restoration`
         called by :func:`burpui.misc.backend.interface.BUIbackend.server_restore`
@@ -489,7 +523,7 @@ class BUIparser(object, metaclass=ABCMeta):
         )  # pragma: no cover
 
     @abstractmethod
-    def param(self, name, obj='server_conf', client=None):
+    def param(self, name, obj="server_conf", client=None):
         """:func:`burpui.misc.parser.interface.BUIparser.param`
         lookup for a given param in the conf.
 

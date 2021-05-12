@@ -17,6 +17,7 @@ def __(string):
 # inherit Burp1 parser so we can just override available options
 class Parser(Burp1):
     """Extends :class:`burpui.misc.parser.burp1.Parser`"""
+
     pver = 2
 
     _pair_srv = None
@@ -27,21 +28,39 @@ class Parser(Burp1):
     @property
     def pair_associations(self):
         if self._pair_associations is None:
-            if self.backend and (getattr(self.backend, 'server_version', self._assume_server_version) or
-                                 getattr(self.backend, 'client_version', self._assume_client_version) or '') >= BURP_LISTEN_OPTION:
+            if (
+                self.backend
+                and (
+                    getattr(self.backend, "server_version", self._assume_server_version)
+                    or getattr(
+                        self.backend, "client_version", self._assume_client_version
+                    )
+                    or ""
+                )
+                >= BURP_LISTEN_OPTION
+            ):
                 self._pair_associations = {
-                    'listen': 'max_children',
-                    'max_children': 'listen',
-                    'listen_status': 'max_status_children',
-                    'max_status_children': 'listen_status',
+                    "listen": "max_children",
+                    "max_children": "listen",
+                    "listen_status": "max_status_children",
+                    "max_status_children": "listen_status",
                 }
-            elif self.backend and (getattr(self.backend, 'server_version', self._assume_server_version) or
-                                   getattr(self.backend, 'client_version', self._assume_client_version) or '') >= BURP_BIND_MULTIPLE:
+            elif (
+                self.backend
+                and (
+                    getattr(self.backend, "server_version", self._assume_server_version)
+                    or getattr(
+                        self.backend, "client_version", self._assume_client_version
+                    )
+                    or ""
+                )
+                >= BURP_BIND_MULTIPLE
+            ):
                 self._pair_associations = {
-                    'port': 'max_children',
-                    'max_children': 'port',
-                    'status_port': 'max_status_children',
-                    'max_status_children': 'status_port',
+                    "port": "max_children",
+                    "max_children": "port",
+                    "status_port": "max_status_children",
+                    "max_status_children": "status_port",
                 }
             else:
                 self._pair_associations = {}
@@ -50,21 +69,39 @@ class Parser(Burp1):
     @property
     def pair_srv(self):
         if self._pair_srv is None:
-            if self.backend and (getattr(self.backend, 'server_version', self._assume_server_version) or
-                                 getattr(self.backend, 'client_version', self._assume_client_version) or '') >= BURP_LISTEN_OPTION:
+            if (
+                self.backend
+                and (
+                    getattr(self.backend, "server_version", self._assume_server_version)
+                    or getattr(
+                        self.backend, "client_version", self._assume_client_version
+                    )
+                    or ""
+                )
+                >= BURP_LISTEN_OPTION
+            ):
                 self._pair_srv = [
-                    'listen',
-                    'max_children',
-                    'listen_status',
-                    'max_status_children',
+                    "listen",
+                    "max_children",
+                    "listen_status",
+                    "max_status_children",
                 ]
-            elif self.backend and (getattr(self.backend, 'server_version', self._assume_server_version) or
-                                   getattr(self.backend, 'client_version', self._assume_client_version) or '') >= BURP_BIND_MULTIPLE:
+            elif (
+                self.backend
+                and (
+                    getattr(self.backend, "server_version", self._assume_server_version)
+                    or getattr(
+                        self.backend, "client_version", self._assume_client_version
+                    )
+                    or ""
+                )
+                >= BURP_BIND_MULTIPLE
+            ):
                 self._pair_srv = [
-                    'port',
-                    'max_children',
-                    'status_port',
-                    'max_status_children',
+                    "port",
+                    "max_children",
+                    "status_port",
+                    "max_status_children",
                 ]
             else:
                 self._pair_srv = []
@@ -73,190 +110,255 @@ class Parser(Burp1):
     @property
     def multi_srv(self):
         if self._multi_srv is None:
-            self._multi_srv = Burp1.multi_srv + [
-                'label'
-            ]
-            if self.backend and (getattr(self.backend, 'server_version', self._assume_server_version) or
-                                 getattr(self.backend, 'client_version', self._assume_client_version) or '') >= BURP_BIND_MULTIPLE:
-                self._multi_srv += [
-                    'port',
-                    'status_port'
-                ]
+            self._multi_srv = Burp1.multi_srv + ["label"]
+            if (
+                self.backend
+                and (
+                    getattr(self.backend, "server_version", self._assume_server_version)
+                    or getattr(
+                        self.backend, "client_version", self._assume_client_version
+                    )
+                    or ""
+                )
+                >= BURP_BIND_MULTIPLE
+            ):
+                self._multi_srv += ["port", "status_port"]
         return self._multi_srv
 
     @property
     def integer_srv(self):
         if self._integer_srv is None:
             self._integer_srv = Burp1.integer_srv
-            if self.backend and (getattr(self.backend, 'server_version', self._assume_server_version) or
-                                 getattr(self.backend, 'client_version', self._assume_client_version) or '') >= BURP_BIND_MULTIPLE:
-                for rem in ['port', 'max_children', 'status_port', 'max_status_children']:
+            if (
+                self.backend
+                and (
+                    getattr(self.backend, "server_version", self._assume_server_version)
+                    or getattr(
+                        self.backend, "client_version", self._assume_client_version
+                    )
+                    or ""
+                )
+                >= BURP_BIND_MULTIPLE
+            ):
+                for rem in [
+                    "port",
+                    "max_children",
+                    "status_port",
+                    "max_status_children",
+                ]:
                     self._integer_srv.remove(rem)
         return self._integer_srv
 
     advanced_type = Burp1.advanced_type
-    advanced_type.update({
-        'port': 'integer',
-        'max_children': 'integer',
-        'status_port': 'integer',
-        'max_status_children': 'integer',
-    })
+    advanced_type.update(
+        {
+            "port": "integer",
+            "max_children": "integer",
+            "status_port": "integer",
+            "max_status_children": "integer",
+        }
+    )
     string_srv = Burp1.string_srv + [
-        'manual_delete',
-        'rblk_memory_max',
+        "manual_delete",
+        "rblk_memory_max",
     ]
     boolean_add = [
-        'acl',
-        'xattr',
-        'glob_after_script_pre',
-        'cname_fqdn',
-        'cname_lowercase',
+        "acl",
+        "xattr",
+        "glob_after_script_pre",
+        "cname_fqdn",
+        "cname_lowercase",
     ]
     boolean_add_cli = [
-        'enabled',
+        "enabled",
     ]
     boolean_srv = Burp1.boolean_srv + boolean_add
     boolean_cli = Burp1.boolean_cli + boolean_add + boolean_add_cli
     multi_cli = Burp1.multi_cli + [
-        'label',
+        "label",
     ]
     integer_cli = Burp1.integer_cli + [
-        'randomise',
+        "randomise",
     ]
-    fields_cli = Burp1.fields_cli + boolean_add + boolean_add_cli + [
-        'randomise',
-        'manual_delete',
-        'label',
-    ]
+    fields_cli = (
+        Burp1.fields_cli
+        + boolean_add
+        + boolean_add_cli
+        + [
+            "randomise",
+            "manual_delete",
+            "label",
+        ]
+    )
     placeholders = Burp1.placeholders
-    placeholders.update({
-        'acl': "0|1",
-        'xattr': "0|1",
-        'randomise': __("max secs"),
-        'manual_delete': __("path"),
-        'label': __("some informations"),
-        'listen': __("[address]:[port]"),
-        'listen_status': __("[address]:[port]"),
-        'status_address': __("address|localhost"),
-        'glob_after_script_pre': "0|1",
-        'enabled': "0|1",
-        'cname_fqdn': "0|1",
-        'cname_lowercase': "0|1",
-        'rblk_memory_max': "b/Kb/Mb/Gb",
-    })
+    placeholders.update(
+        {
+            "acl": "0|1",
+            "xattr": "0|1",
+            "randomise": __("max secs"),
+            "manual_delete": __("path"),
+            "label": __("some informations"),
+            "listen": __("[address]:[port]"),
+            "listen_status": __("[address]:[port]"),
+            "status_address": __("address|localhost"),
+            "glob_after_script_pre": "0|1",
+            "enabled": "0|1",
+            "cname_fqdn": "0|1",
+            "cname_lowercase": "0|1",
+            "rblk_memory_max": "b/Kb/Mb/Gb",
+        }
+    )
     values = Burp1.values
     # status_address can now listen on any address
-    del values['status_address']
+    del values["status_address"]
     defaults = Burp1.defaults
-    defaults.update({
-        'acl': True,
-        'xattr': True,
-        'glob_after_script_pre': True,
-        'randomise': 0,
-        'manual_delete': '',
-        'label': '',
-        'enabled': True,
-        'cname_fqdn': True,
-        'cname_lowercase': False,
-        'rblk_memory_max': '256Mb',
-    })
+    defaults.update(
+        {
+            "acl": True,
+            "xattr": True,
+            "glob_after_script_pre": True,
+            "randomise": 0,
+            "manual_delete": "",
+            "label": "",
+            "enabled": True,
+            "cname_fqdn": True,
+            "cname_lowercase": False,
+            "rblk_memory_max": "256Mb",
+        }
+    )
     doc = Burp1.doc
-    doc.update({
-        'acl': __("If acl support is compiled into burp, this allows you to"
-                  " decide whether or not to backup acls at runtime. The"
-                  " default is '1'."),
-        'xattr': __("If xattr support is compiled into burp, this allows you"
-                    " to decide whether or not to backup xattrs at runtime."
-                    " The default is '1'."),
-        'randomise': __("When running a timed backup, sleep for a random"
-                        " number of seconds (between 0 and the number given)"
-                        " before contacting the server. Alternatively, this"
-                        " can be specified by the '-q' command line option."),
-        'manual_delete': __("This can be overridden by the clientconfdir"
-                            " configuration files in clientconfdir on the"
-                            " server. When the server needs to delete old"
-                            " backups, or rubble left over from generating"
-                            " reverse patches with librsync=1, it will"
-                            " normally delete them in place. If you use the"
-                            " 'manual_delete' option, the files will be moved"
-                            " to the path specified for deletion at a later"
-                            " point. You will then need to configure a cron"
-                            " job, or similar, to delete the files yourself."
-                            " Do not specify a path that is not on the same"
-                            " filesystem as the client storage directory."),
-        'label': __("You can have multiple labels, and they can be"
-                    " overridden in the client configuration files in"
-                    " clientconfdir on the server. They will appear as an"
-                    " array of strings in the server status monitor JSON"
-                    " output. The idea is to provide a mechanism for"
-                    " arbitrary values to be passed to clients of the server"
-                    " status monitor."),
-        'listen': __("Defines the main TCP address and port that the server listens"
-                     " on. The default is either '::' or '0.0.0.0', dependent upon"
-                     " compile time options. Specify multiple 'listen' entries on"
-                     " separate lines in order to listen on multiple addresses and"
-                     " ports. Each pair can be configured with its own 'max_children'"
-                     " value."),
-        'listen_status': __("Defines the main TCP address and port that the server"
-                            " listens on for status requests. Specify multiple"
-                            " 'listen_status' entries on separate lines in order to"
-                            " listen on multiple addresses and ports. Each pair can"
-                            " be configured with its own 'max_status_children' value."
-                            " Comment out to have no status server."),
-        'status_address': __("Defines the main TCP address that the server "
-                             "listens on for status requests. The default  "
-                             "is  special  value  'localhost'  that includes "
-                             "both '::1' (if available) and '127.0.0.1' "
-                             "(always)."),
-        'glob_after_script_pre': __("Set this to 0 if you do not want"
-                                    " include_glob settings to be evaluated"
-                                    " after the pre script is run. The"
-                                    " default is 1."),
-        'enabled': __("Set this to 0 if you want to disable all clients. The"
-                      " default is 1. This option can be overridden"
-                      " per-client in the client configuration files in"
-                      " clientconfdir on the server."),
-        'cname_fqdn': __("Whether to keep fqdn cname (like"
-                         " 'testclient.example.com') when looking-up in"
-                         " clientconfdir. This also affects the fqdn lookup"
-                         " on the client (see client configuration options"
-                         " for details). The default is 1. When set to 0, the"
-                         " fqdn provided by the client while authenticating"
-                         " will be stripped ('testclient.example.com'"
-                         " becomes 'testclient')."),
-        'cname_lowercase': __("Whether to force lowercase cname when"
-                              " looking-up in clientconfdir. This also"
-                              " affects the fqdn lookup on the client (see"
-                              " client configuration options for details)."
-                              " The default is 0. When set to 1 the name"
-                              " provided by the client while authenticating"
-                              " will be lowercased."),
-        'port': __("Defines the main TCP port that the server listens on. "
-                   "Specify multiple 'port' entries on separate lines in "
-                   "order to listen on multiple ports. Each port can be "
-                   "configured with its own 'max_children' value."),
-        'max_children': __("Defines the number of child processes to fork "
-                           "(the number of clients that can simultaneously "
-                           "connect. The default is 5. Specify multiple "
-                           "'max_children' entries on separate lines if you "
-                           "have configured multiple port entries."),
-        'status_port': __("Defines the TCP port that the server listens on "
-                          "for status requests. Comment this out to have no "
-                          "status server. Specify multiple 'status_port' "
-                          "entries on separate lines in order to listen on "
-                          "multiple ports. Each port can be configured with "
-                          "its own 'max_status_children' value."),
-        'max_status_children': __("Defines the number of status child "
-                                  "processes to fork (the number of status "
-                                  "clients that can simultaneously connect. "
-                                  "The default is 5. Specify multiple "
-                                  "'max_status_children' entries on separate "
-                                  "lines if you have configured multiple "
-                                  "status_port entries."),
-        'rblk_memory_max': __("The maximum amount of data from the disk "
-                              "cached in server memory during a protocol2 "
-                              "restore/verify. The default is 256Mb. This "
-                              "option can be overriden per-client in the "
-                              "client configuration files in clientconfdir "
-                              "on the server."),
-    })
+    doc.update(
+        {
+            "acl": __(
+                "If acl support is compiled into burp, this allows you to"
+                " decide whether or not to backup acls at runtime. The"
+                " default is '1'."
+            ),
+            "xattr": __(
+                "If xattr support is compiled into burp, this allows you"
+                " to decide whether or not to backup xattrs at runtime."
+                " The default is '1'."
+            ),
+            "randomise": __(
+                "When running a timed backup, sleep for a random"
+                " number of seconds (between 0 and the number given)"
+                " before contacting the server. Alternatively, this"
+                " can be specified by the '-q' command line option."
+            ),
+            "manual_delete": __(
+                "This can be overridden by the clientconfdir"
+                " configuration files in clientconfdir on the"
+                " server. When the server needs to delete old"
+                " backups, or rubble left over from generating"
+                " reverse patches with librsync=1, it will"
+                " normally delete them in place. If you use the"
+                " 'manual_delete' option, the files will be moved"
+                " to the path specified for deletion at a later"
+                " point. You will then need to configure a cron"
+                " job, or similar, to delete the files yourself."
+                " Do not specify a path that is not on the same"
+                " filesystem as the client storage directory."
+            ),
+            "label": __(
+                "You can have multiple labels, and they can be"
+                " overridden in the client configuration files in"
+                " clientconfdir on the server. They will appear as an"
+                " array of strings in the server status monitor JSON"
+                " output. The idea is to provide a mechanism for"
+                " arbitrary values to be passed to clients of the server"
+                " status monitor."
+            ),
+            "listen": __(
+                "Defines the main TCP address and port that the server listens"
+                " on. The default is either '::' or '0.0.0.0', dependent upon"
+                " compile time options. Specify multiple 'listen' entries on"
+                " separate lines in order to listen on multiple addresses and"
+                " ports. Each pair can be configured with its own 'max_children'"
+                " value."
+            ),
+            "listen_status": __(
+                "Defines the main TCP address and port that the server"
+                " listens on for status requests. Specify multiple"
+                " 'listen_status' entries on separate lines in order to"
+                " listen on multiple addresses and ports. Each pair can"
+                " be configured with its own 'max_status_children' value."
+                " Comment out to have no status server."
+            ),
+            "status_address": __(
+                "Defines the main TCP address that the server "
+                "listens on for status requests. The default  "
+                "is  special  value  'localhost'  that includes "
+                "both '::1' (if available) and '127.0.0.1' "
+                "(always)."
+            ),
+            "glob_after_script_pre": __(
+                "Set this to 0 if you do not want"
+                " include_glob settings to be evaluated"
+                " after the pre script is run. The"
+                " default is 1."
+            ),
+            "enabled": __(
+                "Set this to 0 if you want to disable all clients. The"
+                " default is 1. This option can be overridden"
+                " per-client in the client configuration files in"
+                " clientconfdir on the server."
+            ),
+            "cname_fqdn": __(
+                "Whether to keep fqdn cname (like"
+                " 'testclient.example.com') when looking-up in"
+                " clientconfdir. This also affects the fqdn lookup"
+                " on the client (see client configuration options"
+                " for details). The default is 1. When set to 0, the"
+                " fqdn provided by the client while authenticating"
+                " will be stripped ('testclient.example.com'"
+                " becomes 'testclient')."
+            ),
+            "cname_lowercase": __(
+                "Whether to force lowercase cname when"
+                " looking-up in clientconfdir. This also"
+                " affects the fqdn lookup on the client (see"
+                " client configuration options for details)."
+                " The default is 0. When set to 1 the name"
+                " provided by the client while authenticating"
+                " will be lowercased."
+            ),
+            "port": __(
+                "Defines the main TCP port that the server listens on. "
+                "Specify multiple 'port' entries on separate lines in "
+                "order to listen on multiple ports. Each port can be "
+                "configured with its own 'max_children' value."
+            ),
+            "max_children": __(
+                "Defines the number of child processes to fork "
+                "(the number of clients that can simultaneously "
+                "connect. The default is 5. Specify multiple "
+                "'max_children' entries on separate lines if you "
+                "have configured multiple port entries."
+            ),
+            "status_port": __(
+                "Defines the TCP port that the server listens on "
+                "for status requests. Comment this out to have no "
+                "status server. Specify multiple 'status_port' "
+                "entries on separate lines in order to listen on "
+                "multiple ports. Each port can be configured with "
+                "its own 'max_status_children' value."
+            ),
+            "max_status_children": __(
+                "Defines the number of status child "
+                "processes to fork (the number of status "
+                "clients that can simultaneously connect. "
+                "The default is 5. Specify multiple "
+                "'max_status_children' entries on separate "
+                "lines if you have configured multiple "
+                "status_port entries."
+            ),
+            "rblk_memory_max": __(
+                "The maximum amount of data from the disk "
+                "cached in server memory during a protocol2 "
+                "restore/verify. The default is 256Mb. This "
+                "option can be overriden per-client in the "
+                "client configuration files in clientconfdir "
+                "on the server."
+            ),
+        }
+    )

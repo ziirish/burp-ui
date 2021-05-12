@@ -11,7 +11,8 @@ class BasicLoader(BUIloader):
     """The :class:`burpui.misc.auth.basic.BasicLoader` class loads the *Basic*
     users.
     """
-    section = name = 'BASIC:AUTH'
+
+    section = name = "BASIC:AUTH"
 
     def __init__(self, app=None, handler=None):
         """:func:`burpui.misc.auth.basic.BasicLoader.__init__` loads users from
@@ -40,7 +41,7 @@ class BasicLoader(BUIloader):
                 return False
 
         self._users = {
-            'admin': {'pwd': generate_password_hash('admin'), 'salted': True}
+            "admin": {"pwd": generate_password_hash("admin"), "salted": True}
         }
 
         if self.section in self.conf.options:
@@ -56,32 +57,28 @@ class BasicLoader(BUIloader):
             #         salted = True
             # allow mixed logins (plain and hashed)
             mixed = self.conf.safe_get(
-                'mixed',
-                cast='boolean',
-                section=self.section,
-                defaults=False
+                "mixed", cast="boolean", section=self.section, defaults=False
             )
             self._users = {}
             for opt in self.conf.options.get(self.section).keys():
                 salt = True
-                if opt == 'priority':
+                if opt == "priority":
                     # Maybe the handler argument is None, maybe the 'priority'
                     # option is missing. We don't care.
                     try:
-                        self.handler.priority = self.conf.safe_get(
-                            opt,
-                            'integer',
-                            section=self.section
-                        ) or self.handler.priority
+                        self.handler.priority = (
+                            self.conf.safe_get(opt, "integer", section=self.section)
+                            or self.handler.priority
+                        )
                     except:
                         pass
                     continue  # pragma: no cover
                 # list of reserved options
-                if opt in ['mixed']:
+                if opt in ["mixed"]:
                     continue
                 pwd = self.conf.safe_get(opt, section=self.section)
                 if not salted or mixed:
-                    if not re.match(r'^pbkdf2:.+\$.+\$.+', pwd):
+                    if not re.match(r"^pbkdf2:.+\$.+\$.+", pwd):
                         if mixed:
                             salt = False
                         else:
@@ -91,10 +88,9 @@ class BasicLoader(BUIloader):
                             pwd = generate_password_hash(pwd)
                             self.conf.options[self.section][opt] = pwd
                             changed = True
-                self._users[opt] = {'pwd': pwd, 'salted': salt}
-                self.logger.info('Loading user: {} ({})'.format(
-                    opt,
-                    'hashed' if salt else 'plain')
+                self._users[opt] = {"pwd": pwd, "salted": salt}
+                self.logger.info(
+                    "Loading user: {} ({})".format(opt, "hashed" if salt else "plain")
                 )
 
             if changed:
@@ -137,10 +133,10 @@ class BasicLoader(BUIloader):
         """
         self.load_users()
         if uid in self.users:
-            if self.users[uid]['salted']:
-                return check_password_hash(self.users[uid]['pwd'], passwd)
+            if self.users[uid]["salted"]:
+                return check_password_hash(self.users[uid]["pwd"], passwd)
             else:
-                return self.users[uid]['pwd'] == passwd
+                return self.users[uid]["pwd"] == passwd
         return False
 
     @property
@@ -175,8 +171,8 @@ class BasicLoader(BUIloader):
             message = "user '{}' does not exist".format(user)
             self.logger.error(message)
             return False, message, NOTIF_ERROR
-        if user == 'admin' and len(self.users.keys()) == 1:
-            message = 'trying to delete the admin account!'
+        if user == "admin" and len(self.users.keys()) == 1:
+            message = "trying to delete the admin account!"
             self.logger.warning(message)
             return False, message, NOTIF_WARN
         del self.conf.options[self.section][user]
@@ -191,30 +187,28 @@ class BasicLoader(BUIloader):
         self._setup_users()
         old_users = self.users
         self.load_users(True)
-        current = self.users.get(
-            user,
-            old_users.get(user, None)
-        )
+        current = self.users.get(user, old_users.get(user, None))
 
         if not current:
             message = "user '{}' does not exist".format(user)
             self.logger.error(message)
             return False, message, NOTIF_ERROR
 
-        if current['salted']:
+        if current["salted"]:
             comp = check_password_hash
         else:
+
             def comp(x, y):
                 return x == y
 
-        curr = current['pwd']
+        curr = current["pwd"]
         if old_passwd and not comp(curr, old_passwd):
             message = "unable to authenticate user '{}'".format(user)
             self.logger.error(message)
             return False, message, NOTIF_ERROR
 
         if comp(curr, passwd):
-            message = 'password is the same'
+            message = "password is the same"
             self.logger.warning(message)
             return False, message, NOTIF_WARN
 
@@ -231,6 +225,7 @@ class UserHandler(BUIhandler):
     priority = 100
 
     """See :class:`burpui.misc.auth.interface.BUIhandler`"""
+
     def __init__(self, app=None):
         """See :func:`burpui.misc.auth.interface.BUIhandler.__init__`"""
         self.basic = BasicLoader(app, self)
@@ -260,6 +255,7 @@ class UserHandler(BUIhandler):
 
 class BasicUser(BUIuser):
     """See :class:`burpui.misc.auth.interface.BUIuser`"""
+
     def __init__(self, basic=None, name=None):
         self.active = False
         self.authenticated = False

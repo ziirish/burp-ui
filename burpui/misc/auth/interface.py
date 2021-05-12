@@ -70,6 +70,7 @@ class BUIuser(UserMixin, metaclass=ABCMeta):
     """The :class:`burpui.misc.auth.interface.BUIuser` class extends the
     :class:`flask_login:flask_login.UserMixin` class.
     """
+
     backend = None
     admin = True
     moderator = True
@@ -120,7 +121,7 @@ class BUIuser(UserMixin, metaclass=ABCMeta):
 
     def __str__(self):
         msg = UserMixin.__str__(self)
-        return '{} (id: {}, name: {}, backend: {}, admin: {}, moderator: {}, authenticated: {}, active: {})'.format(
+        return "{} (id: {}, name: {}, backend: {}, admin: {}, moderator: {}, authenticated: {}, active: {})".format(
             msg,
             self.get_id(),
             self.name,
@@ -128,5 +129,5 @@ class BUIuser(UserMixin, metaclass=ABCMeta):
             self.is_admin,
             self.is_moderator,
             self.is_authenticated,
-            self.is_active
+            self.is_active,
         )

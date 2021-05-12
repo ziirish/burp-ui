@@ -22,7 +22,7 @@ class BUIMask(object):
 
     @property
     def is_user_pref(self):
-        return self.app.config['WITH_SQL']
+        return self.app.config["WITH_SQL"]
 
     def has_filters(self, current_user):
         if not current_user.is_anonymous and current_user.acl.is_admin():
@@ -33,11 +33,17 @@ class BUIMask(object):
 
     def query_user(self, username):
         from .models import Hidden
+
         return Hidden.query.filter_by(user=username).first()
 
     def query_hidden(self, username):
         from .models import Hidden
-        return Hidden.query.filter_by(user=username).with_entities(Hidden.client, Hidden.server).all()
+
+        return (
+            Hidden.query.filter_by(user=username)
+            .with_entities(Hidden.client, Hidden.server)
+            .all()
+        )
 
     def hidden_clients(self, username):
         if not self.is_user_pref:

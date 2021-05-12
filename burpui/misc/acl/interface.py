@@ -16,7 +16,7 @@ class BUIaclLoader(object, metaclass=ABCMeta):
     """The :class:`burpui.misc.acl.interface.BUIaclLoader` class is used to
     load the actual ACL backend"""
 
-    logger = logging.getLogger('burp-ui')
+    logger = logging.getLogger("burp-ui")
     priority = 0
 
     add_grant = False

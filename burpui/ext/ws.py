@@ -11,12 +11,12 @@ from ..config import config
 from flask_socketio import SocketIO
 
 options = {}
-options['async_mode'] = config.get('WS_ASYNC_MODE', 'gevent')
+options["async_mode"] = config.get("WS_ASYNC_MODE", "gevent")
 
 #    engineio_logger=config.get('WS_DEBUG', False),
 socketio = SocketIO(
-    message_queue=config.get('WS_MESSAGE_QUEUE'),
-    manage_session=config.get('WS_MANAGE_SESSION', False),
+    message_queue=config.get("WS_MESSAGE_QUEUE"),
+    manage_session=config.get("WS_MANAGE_SESSION", False),
     engineio_logger=False,
     **options
 )

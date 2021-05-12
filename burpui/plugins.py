@@ -30,7 +30,7 @@ class PluginManager(object):
     def _init_manager(self):
         if self.init:
             return
-        self.plugin_base = PluginBase(package='burpui.plugins.ext')
+        self.plugin_base = PluginBase(package="burpui.plugins.ext")
         self.plugin_source = self.plugin_base.make_plugin_source(
             searchpath=self.searchpath
         )
@@ -44,26 +44,20 @@ class PluginManager(object):
             if plugin_name not in self.plugins:
                 try:
                     plugin = self.plugin_source.load_plugin(plugin_name)
-                    current_type = getattr(plugin, '__type__', None)
+                    current_type = getattr(plugin, "__type__", None)
                     if not current_type:
                         self.app.logger.warning(
-                            'No __type__ for {}. Ignoring it'.format(
-                                repr(plugin_name)
-                            )
+                            "No __type__ for {}. Ignoring it".format(repr(plugin_name))
                         )
                         continue
                     self.app.logger.info(
-                        'Loading plugin {} ({})'.format(
-                            repr(plugin_name),
-                            current_type
-                        )
+                        "Loading plugin {} ({})".format(repr(plugin_name), current_type)
                     )
                     self.plugins[plugin_name] = plugin
                 except Exception as exp:
                     self.app.logger.error(
-                        'Unable to load plugin {}: {}'.format(
-                            repr(plugin_name),
-                            str(exp)
+                        "Unable to load plugin {}: {}".format(
+                            repr(plugin_name), str(exp)
                         )
                     )
         self.loaded = True
@@ -71,10 +65,10 @@ class PluginManager(object):
     def get_plugins_by_type(self, plugin_type):
         ret = {}
         for name, plugin in self.plugins.items():
-            current_type = getattr(plugin, '__type__', None)
+            current_type = getattr(plugin, "__type__", None)
             if not current_type:
                 self.app.logger.warning(
-                    'No __type__ for {}. Ignoring it'.format(repr(name))
+                    "No __type__ for {}. Ignoring it".format(repr(name))
                 )
                 continue
             if current_type == plugin_type:

@@ -6,7 +6,7 @@ from ...utils import NOTIF_OK, NOTIF_WARN, NOTIF_ERROR, __
 
 class ACLloader(BUIaclLoader):
     __doc__ = __("Uses the Burp-UI configuration file to load its rules.")
-    section = name = 'BASIC:ACL'
+    section = name = "BASIC:ACL"
     priority = 100
 
     def __init__(self, app=None):
@@ -17,9 +17,7 @@ class ACLloader(BUIaclLoader):
         """
         self.app = app
         self.conf = self.app.conf
-        self.admins = [
-            'admin'
-        ]
+        self.admins = ["admin"]
         self.moderators = []
         self._groups = {}
         self._grants = {}
@@ -47,9 +45,7 @@ class ACLloader(BUIaclLoader):
 
         self.first_setup = False
 
-        self.admins = [
-            'admin'
-        ]
+        self.admins = ["admin"]
         self.moderators = []
         self._grants = {}
         self.groups_def = {}
@@ -62,41 +58,29 @@ class ACLloader(BUIaclLoader):
 
         if self.section in self.conf.options:
             self.priority = self.conf.safe_get(
-                'priority',
-                'integer',
-                section=self.section,
-                defaults=self.priority
+                "priority", "integer", section=self.section, defaults=self.priority
             )
-            adms = self.conf.safe_get(
-                'admin',
-                'force_list',
-                section=self.section
-            )
-            mods = self.conf.safe_get(
-                '+moderator',
-                'force_list',
-                section=self.section
-            )
+            adms = self.conf.safe_get("admin", "force_list", section=self.section)
+            mods = self.conf.safe_get("+moderator", "force_list", section=self.section)
             default_moderator = None
-            if self.conf.get('STANDALONE'):
+            if self.conf.get("STANDALONE"):
                 default_moderator = '{"agents": {"rw": "local"}}'
-            self.moderator = self.conf.safe_get(
-                '@moderator',
-                'force_string',
-                section=self.section,
-                defaults=default_moderator
-            ) or {}
+            self.moderator = (
+                self.conf.safe_get(
+                    "@moderator",
+                    "force_string",
+                    section=self.section,
+                    defaults=default_moderator,
+                )
+                or {}
+            )
             meta_grants.set_moderator_grants(self.moderator)
             for opt in self.conf.options.get(self.section).keys():
-                if opt in ['admin', '+moderator', 'priority', '@moderator']:
+                if opt in ["admin", "+moderator", "priority", "@moderator"]:
                     continue
-                record = self.conf.safe_get(
-                    opt,
-                    'force_string',
-                    section=self.section
-                )
+                record = self.conf.safe_get(opt, "force_string", section=self.section)
 
-                self.logger.debug('record: {} -> {}'.format(opt, record))
+                self.logger.debug("record: {} -> {}".format(opt, record))
 
                 def _record(key):
                     if gname not in self.groups_def:
@@ -105,19 +89,19 @@ class ACLloader(BUIaclLoader):
 
                     return parsed
 
-                if opt[0] == '+':
-                    short = opt.lstrip('+')
-                    gname = '@{}'.format(short)
+                if opt[0] == "+":
+                    short = opt.lstrip("+")
+                    gname = "@{}".format(short)
                     parsed = meta_grants.set_group(gname, record)
                     self._groups[short] = parsed
-                    _record('members')
-                elif opt[0] == '@':
-                    short = opt.lstrip('@')
+                    _record("members")
+                elif opt[0] == "@":
+                    short = opt.lstrip("@")
                     if short not in self._groups:
                         self._groups[short] = []
                     gname = opt
                     parsed = record
-                    _record('grants')
+                    _record("grants")
                     meta_grants.set_grant(gname, parsed)
                 else:
                     self._grants[opt] = BUIaclGrant(opt, record).grants
@@ -131,10 +115,10 @@ class ACLloader(BUIaclLoader):
         meta_grants.set_admin(self.admins)
         meta_grants.set_moderator(self.moderators)
 
-        self.logger.debug('admins: {}'.format(self.admins))
-        self.logger.debug('moderators: {}'.format(self.moderators))
-        self.logger.debug('moderator grants: {}'.format(self.moderator))
-        self.logger.debug('groups: {}'.format(self.groups_def))
+        self.logger.debug("admins: {}".format(self.admins))
+        self.logger.debug("moderators: {}".format(self.moderators))
+        self.logger.debug("moderator grants: {}".format(self.moderator))
+        self.logger.debug("groups: {}".format(self.groups_def))
 
         self.conf_id = self.conf.id
         self.meta_id = meta_grants.id
@@ -148,7 +132,7 @@ class ACLloader(BUIaclLoader):
 
     def add_grant(self, name, content):
         """Add a grant"""
-        if name[0] in ['+', '@']:
+        if name[0] in ["+", "@"]:
             message = "'{}' is not a valid grant name".format(name)
             self.logger.error(message)
             return False, message, NOTIF_ERROR
@@ -165,7 +149,7 @@ class ACLloader(BUIaclLoader):
 
     def del_grant(self, name):
         """Delete a grant"""
-        if name[0] in ['+', '@']:
+        if name[0] in ["+", "@"]:
             message = "'{}' is not a valid grant name".format(name)
             self.logger.error(message)
             return False, message, NOTIF_ERROR
@@ -190,7 +174,7 @@ class ACLloader(BUIaclLoader):
 
     def mod_grant(self, name, content):
         """Update a grant"""
-        if name[0] in ['+', '@']:
+        if name[0] in ["+", "@"]:
             message = "'{}' is not a valid grant name".format(name)
             self.logger.error(message)
             return False, message, NOTIF_ERROR
@@ -209,8 +193,8 @@ class ACLloader(BUIaclLoader):
     def add_group(self, name, content):
         """Create a group"""
         self._setup_acl()
-        name = '@{}'.format(name)
-        if name == 'moderator':
+        name = "@{}".format(name)
+        if name == "moderator":
             message = "'moderator' is a reserved name"
             self.logger.error(message)
             return False, message, NOTIF_ERROR
@@ -228,8 +212,8 @@ class ACLloader(BUIaclLoader):
         """Delete a group"""
         self._setup_acl()
         self.load_acl(True)
-        gname = '@{}'.format(name)
-        if name == 'moderator':
+        gname = "@{}".format(name)
+        if name == "moderator":
             message = "'moderator' is a reserved name"
             self.logger.error(message)
             return False, message, NOTIF_ERROR
@@ -238,7 +222,7 @@ class ACLloader(BUIaclLoader):
             self.logger.error(message)
             return False, message, NOTIF_ERROR
         del self.conf.options[self.section][gname]
-        gmembers = '+{}'.format(name)
+        gmembers = "+{}".format(name)
         if gmembers in self.conf.options[self.section]:
             del self.conf.options[self.section][gmembers]
         self.conf.options.write()
@@ -256,8 +240,8 @@ class ACLloader(BUIaclLoader):
     def mod_group(self, name, content):
         """Update a group"""
         self._setup_acl()
-        name = '@{}'.format(name)
-        if name == 'moderator':
+        name = "@{}".format(name)
+        if name == "moderator":
             message = "'moderator' is a reserved name"
             self.logger.error(message)
             return False, message, NOTIF_ERROR
@@ -283,7 +267,7 @@ class ACLloader(BUIaclLoader):
             return False, message, NOTIF_WARN
         self._setup_acl()
         self._groups[group].append(member)
-        gmembers = '+{}'.format(group)
+        gmembers = "+{}".format(group)
         self.conf.options[self.section][gmembers] = self._groups[group]
         self.conf.options.write()
         self.load_acl(True)
@@ -302,8 +286,8 @@ class ACLloader(BUIaclLoader):
             return False, message, NOTIF_WARN
         self._setup_acl()
         self._groups[group].remove(member)
-        gmembers = '+{}'.format(group)
-        self.conf.options[self.section][gmembers] = self._groups[group] or ''
+        gmembers = "+{}".format(group)
+        self.conf.options[self.section][gmembers] = self._groups[group] or ""
         self.conf.options.write()
         self.load_acl(True)
         message = "'{}' removed from group '{}'".format(member, group)
@@ -317,7 +301,7 @@ class ACLloader(BUIaclLoader):
             return False, message, NOTIF_WARN
         self._setup_acl()
         self.moderators.append(member)
-        self.conf.options[self.section]['+moderator'] = self.moderators
+        self.conf.options[self.section]["+moderator"] = self.moderators
         self.conf.options.write()
         self.load_acl(True)
         message = "'{}' successfully added as moderator".format(member)
@@ -331,7 +315,7 @@ class ACLloader(BUIaclLoader):
             return False, message, NOTIF_WARN
         self._setup_acl()
         self.moderators.remove(member)
-        self.conf.options[self.section]['+moderator'] = self.moderators or ''
+        self.conf.options[self.section]["+moderator"] = self.moderators or ""
         self.conf.options.write()
         self.load_acl(True)
         message = "'{}' successfully removed from moderators".format(member)
@@ -341,7 +325,7 @@ class ACLloader(BUIaclLoader):
         """Update moderator grants"""
         self._setup_acl()
         self.moderator = grants
-        self.conf.options[self.section]['@moderator'] = grants
+        self.conf.options[self.section]["@moderator"] = grants
         self.conf.options.write()
         self.load_acl(True)
         message = "moderator grants updated"
@@ -355,7 +339,7 @@ class ACLloader(BUIaclLoader):
             return False, message, NOTIF_WARN
         self._setup_acl()
         self.admins.append(member)
-        self.conf.options[self.section]['admin'] = self.admins
+        self.conf.options[self.section]["admin"] = self.admins
         self.conf.options.write()
         self.load_acl(True)
         message = "'{}' successfully added as admin".format(member)
@@ -369,7 +353,7 @@ class ACLloader(BUIaclLoader):
             return False, message, NOTIF_WARN
         self._setup_acl()
         self.admins.remove(member)
-        self.conf.options[self.section]['admin'] = self.admins or ''
+        self.conf.options[self.section]["admin"] = self.admins or ""
         self.conf.options.write()
         self.load_acl(True)
         message = "'{}' successfully removed from admins".format(member)

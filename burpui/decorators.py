@@ -40,18 +40,22 @@ def browser_cache(expires=None):
             resp, code, headers = unpack(view(*args, **kwargs))
             now = datetime.datetime.now()
 
-            headers['Last-Modified'] = format_date_time(time.mktime(now.timetuple()))
+            headers["Last-Modified"] = format_date_time(time.mktime(now.timetuple()))
 
             failure = code - 200 >= 100  # this is not a successful answer
-            do_not_cache = getattr(g, 'DONOTCACHE', False)
+            do_not_cache = getattr(g, "DONOTCACHE", False)
 
             if expires is None or failure or do_not_cache:
-                headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0'
+                headers[
+                    "Cache-Control"
+                ] = "no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0"
             else:
-                headers['Cache-Control'] = 'private, max-age={}'.format(expires)
+                headers["Cache-Control"] = "private, max-age={}".format(expires)
 
             return resp, code, headers
+
         return cache_func
+
     return cache_decorator
 
 

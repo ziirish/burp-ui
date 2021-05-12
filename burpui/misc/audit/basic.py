@@ -7,7 +7,7 @@ from ...tools.logging import logger as parent_logger
 
 
 class BUIauditLoader(BUIaudit):
-    section = name = 'BASIC:AUDIT'
+    section = name = "BASIC:AUDIT"
 
     logfile = None
     max_bytes = None
@@ -25,40 +25,29 @@ class BUIauditLoader(BUIaudit):
 
         if self.section in self.conf.options:
             self.priority = self.conf.safe_get(
-                'priority',
-                'integer',
-                self.section,
-                defaults=self.section
+                "priority", "integer", self.section, defaults=self.section
             )
             self.level = self.conf.safe_get(
-                'level',
-                section=self.section,
-                defaults=default
+                "level", section=self.section, defaults=default
             )
-            self.logfile = self.conf.safe_get(
-                'logfile',
-                section=self.section
-            )
+            self.logfile = self.conf.safe_get("logfile", section=self.section)
             self.max_bytes = self.conf.safe_get(
-                'max_bytes',
-                'force_string',
+                "max_bytes",
+                "force_string",
                 section=self.section,
-                defaults='30 * 1024 * 1024'
+                defaults="30 * 1024 * 1024",
             )
             self.rotate = self.conf.safe_get(
-                'rotate',
-                'integer',
-                section=self.section,
-                defaults=5
+                "rotate", "integer", section=self.section, defaults=5
             )
 
-        if self.max_bytes and re.match(r'(\d+\s*[+-/*]?\s*)+$', self.max_bytes):
+        if self.max_bytes and re.match(r"(\d+\s*[+-/*]?\s*)+$", self.max_bytes):
             self.max_bytes = eval(self.max_bytes)
         else:
             self.max_bytes = 0
 
         if self.level != default:
-            self.level = logging.getLevelName(f'{self.level}'.upper())
+            self.level = logging.getLevelName(f"{self.level}".upper())
             if not isinstance(self.level, int):
                 self.level = default
 
@@ -66,22 +55,24 @@ class BUIauditLoader(BUIaudit):
 
 
 class BUIauditLogger(BUIauditLoggerInterface):
-    _logger = parent_logger.getChild('audit')  # type: logging.Logger
+    _logger = parent_logger.getChild("audit")  # type: logging.Logger
 
     def __init__(self, loader):
         self.loader = loader
         self._level = self.loader.level
-        LOG_FORMAT = '[%(asctime)s] AUDIT %(levelname)s in %(from)s: %(message)s'
+        LOG_FORMAT = "[%(asctime)s] AUDIT %(levelname)s in %(from)s: %(message)s"
 
-        if self.loader.logfile and self.loader.logfile.lower() != 'none':
+        if self.loader.logfile and self.loader.logfile.lower() != "none":
             from logging.handlers import RotatingFileHandler
+
             handler = RotatingFileHandler(
                 self.loader.logfile,
                 maxBytes=self.loader.max_bytes,
-                backupCount=self.loader.rotate
+                backupCount=self.loader.rotate,
             )
         else:
             from logging import StreamHandler
+
             handler = StreamHandler()
 
         handler.setLevel(self.level)
