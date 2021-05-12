@@ -71,7 +71,7 @@ $( document ).ready(function() {
 				path: '{{ url_for("api.client_tree", name=cname, backup=nbackup, server=server) }}',
 			},
 		},
-		source: function() { 
+		source: function() {
 			{% if edit and edit.found -%}
 			url = '{{ url_for("api.client_tree", name=cname, backup=nbackup, server=server, root=edit.roots, recursive=True, selected=True) }}';
 			{% else -%}
@@ -230,7 +230,7 @@ $( document ).ready(function() {
 
 	$("#form-restore").on('submit', function(e) {
 		var $preparingFileModal = $("#restore-modal");
-		
+
 		$preparingFileModal.modal('toggle');
 
 		{% if config.WITH_CELERY -%}

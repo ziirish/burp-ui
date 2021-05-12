@@ -5,7 +5,7 @@ index 4d48597c..63cb6ebf 100644
 @@ -279,18 +279,22 @@ EVP_CIPHER_CTX *enc_setup(int encrypt, const char *encryption_password)
  	// compilation warnings on Macs.
  	unsigned char enc_iv[]={'[', 'l', 'k', 'd', '.', '$', 'G', 0xa3, '\0'};
- 
+
 -	if(!(ctx=(EVP_CIPHER_CTX *)malloc(sizeof(EVP_CIPHER_CTX))))
 +	if(!(ctx=(EVP_CIPHER_CTX *)EVP_CIPHER_CTX_new()))
  	{
@@ -50,5 +50,5 @@ index 4d48597c..63cb6ebf 100644
 +               EVP_CIPHER_CTX_free(enc_ctx);
 +               enc_ctx=NULL;
  	}
- 
+
  	if(!ret)

@@ -1,0 +1,8 @@
+[tool.pylint.messages_control]
+disable = "C0330, C0326"
+
+[tool.pylint.format]
+max-line-length = "88"
+
+[tool.black]
+extend-exclude = "(docker/docker-alpine/assets/config/burp-ui/burpui_gunicorn.py|pkgs/burp-ui-tpl/setup.py)"

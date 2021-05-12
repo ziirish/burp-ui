@@ -11,7 +11,7 @@ Restoration
 In order to make the *online* restoration/download functionality work, you
 need to check a few things:
 
-1. Provide the full path of the burp (client) binary file (field *burpbin* in 
+1. Provide the full path of the burp (client) binary file (field *burpbin* in
    `burp-ui configuration <advanced_usage.html#versions>`__)
 2. Provide a burp-client configuration file (field *bconfcli* in
    `burp-ui configuration <advanced_usage.html#versions>`__)

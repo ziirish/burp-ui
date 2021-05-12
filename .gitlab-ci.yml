@@ -19,6 +19,18 @@ stages:
   - build
   - deploy
 
+test:format:
+  stage: test
+  image: python:3.8
+  script:
+  - black --check .
+  tags:
+  - lint
+  except:
+  - tags
+  - rc
+  - demo
+
 test:lint:3.6:
   stage: test
   image: python:3.6
@@ -45,7 +57,7 @@ test:lint:3.7:
 
 test:lint:3.8:
   stage: test
-  image: python:3.8-rc
+  image: python:3.8
   script:
   - pip install tox
   - tox -e pep8
@@ -88,10 +100,9 @@ test:py:3.7:
     reports:
       junit: .reports/burpui.junit.xml
 
-# This test is temporarily disabled because werkzeug doesn't run yet on 3.8
 test:py:3.8:
   stage: test
-  image: python:3.8-rc
+  image: python:3.8
   script:
   - pip install tox
   - mkdir .reports

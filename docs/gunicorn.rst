@@ -166,7 +166,7 @@ You will also need to increase the number of status clients by setting
     echo "max_status_children = 15" >>/etc/burp/burp-server.conf
 
 
-Finally, make sure you set ``bconfcli: /var/lib/burpui/burp.conf`` in your 
+Finally, make sure you set ``bconfcli: /var/lib/burpui/burp.conf`` in your
 `Burp-UI`_ configuration file (*/etc/burp/burpui.cfg*).
 
 

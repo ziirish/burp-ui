@@ -102,7 +102,7 @@ var _client = function() {
 			var html = table.node().outerHTML;
 			if (d.footer !== undefined)
 				html += "<div class='footer'>" + d.footer + "</div>";
-			return html;	
+			return html;
 		});
 
 		_chart_stats.bars.forceY([0]);

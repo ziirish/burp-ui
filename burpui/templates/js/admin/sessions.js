@@ -116,7 +116,7 @@ var _sessions_table = $('#table-sessions').DataTable( {
 				return '<span data-toggle="tooltip" title="'+data+'">'+moment(data, moment.ISO_8601).tz(TIMEZONE).subtract(3, 'seconds').fromNow()+'</span>';
 			}
 		},
-		{ 
+		{
 			data: 'ua',
 			render: function( data, type, row ) {
 				if (type === 'filter' || type === 'sort') {

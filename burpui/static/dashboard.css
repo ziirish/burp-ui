@@ -134,7 +134,7 @@ width:100%;
   -webkit-background-clip: padding-box;
      -moz-background-clip: padding;
           background-clip: padding-box;
-  width:100%;        
+  width:100%;
 }
 
 .tt-suggestion {
@@ -219,7 +219,7 @@ svg text {
   color: #697075;
 }
 
-@keyframes blink {  
+@keyframes blink {
   0% { opacity: 1.0; }
   50% { opacity: 0.0; }
   100% { opacity: 1.0; }

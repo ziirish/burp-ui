@@ -9,8 +9,8 @@ Current
 - **BREAKING**: the authentication backends section have been renamed with the ``:AUTH`` suffix
 - **BREAKING**: the ``prefix`` option has been moved from the ``[Global]`` configuration section to the ``[Production]`` one
 - Add: new `audit logging <https://git.ziirish.me/ziirish/burp-ui/issues/260>`_ system
-- Add: new ``bui-monitor`` processes pool + ``async`` backend to parallelize some requests `#278 <https://git.ziirish.me/ziirish/burp-ui/issues/278>`_ 
-- Add: new `listen` and `listen_status` options in burp-2.2.10 `#279 <https://git.ziirish.me/ziirish/burp-ui/issues/279>`_ 
+- Add: new ``bui-monitor`` processes pool + ``async`` backend to parallelize some requests `#278 <https://git.ziirish.me/ziirish/burp-ui/issues/278>`_
+- Add: new `listen` and `listen_status` options in burp-2.2.10 `#279 <https://git.ziirish.me/ziirish/burp-ui/issues/279>`_
 - Add: new `order` keyword in ACL definitions in order to decide whether `rw` should be evaluated first or not `#305 <https://git.ziirish.me/ziirish/burp-ui/issues/305>`__
 - Add: new `exclude` keyword in ACL definitions in order to exclude some clients from the rules `#305 <https://git.ziirish.me/ziirish/burp-ui/issues/305>`__
 - Add: new *static templates* that allow you to create *onetime* (variables) templates `#280 <https://git.ziirish.me/ziirish/burp-ui/issues/280>`_

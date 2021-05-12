@@ -155,10 +155,10 @@ Examples:
     [*] Adding 'user2' user...
     [+] Success: True
 
-    bui-manage create-user -a user3     
+    bui-manage create-user -a user3
     [*] Adding 'user3' user...
-    Password: 
-    Confirm: 
+    Password:
+    Confirm:
     [+] Success: True
 
 

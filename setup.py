@@ -262,7 +262,7 @@ url = __url__
 with open(os.path.join(ROOT, "requirements.txt")) as f:
     requires = [x.strip() for x in f if x.strip()]
 
-dev_requires = ["flake8", "pylint"]
+dev_requires = ["flake8", "pylint", "black"]
 test_requires = [
     "pytest",
     "pytest-cov",

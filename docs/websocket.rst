@@ -11,7 +11,7 @@ In order to use this feature, you need some extra requirements:
 
 It is highly recommended to use a `Redis`_ *Broker* for the websocket server to
 interact with the celery workers and other pieces of the code.
-It is also advised to run one or several dedicated WebSocket servers behind a 
+It is also advised to run one or several dedicated WebSocket servers behind a
 reverse-proxy because *gunicorn* does not play well with it.
 
 The details of the configuration may be found in the `WebSocket

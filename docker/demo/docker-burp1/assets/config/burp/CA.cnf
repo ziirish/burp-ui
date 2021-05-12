@@ -31,4 +31,3 @@ basicConstraints        = CA:FALSE
 
 [ policy_anything ]
 commonName              = supplied
-
