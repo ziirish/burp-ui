@@ -180,8 +180,510 @@ class Connector:
         return buf
 
 
+# Asynchronous functions for the bui-monitor pool
+class AsyncBurpMixin:
+    async def _async_statistics(self, agent=None):
+        return json.loads(await self._async_request("statistics"))
+
+    async def _async_get_client_version(self, agent=None):
+        if self._client_version is None:
+            try:
+                self._client_version = await self._async_request("client_version")
+            except BUIserverException:
+                return ""
+        return self._client_version or ""
+
+    async def _async_get_server_version(self, agent=None):
+        if self._server_version is None:
+            try:
+                self._server_version = await self._async_request("server_version")
+            except BUIserverException:
+                return ""
+        return self._server_version or ""
+
+    async def _async_status(self, query="c:\n", timeout=None, cache=True, agent=None):
+        try:
+            connector = Connector(self.conf)
+            return await connector.status(query, timeout, cache)
+        except (OSError, IOError) as exc:
+            raise BUIserverException(str(exc))
+        if not self._ready:
+            self.init_all()
+
+    async def _async_request(self, func, *args, **kwargs):
+        try:
+            connector = Connector(self.conf)
+            return await connector.request(func, *args, **kwargs)
+        except (OSError, IOError) as exc:
+            raise BUIserverException(str(exc))
+
+    async def _async_get_backup_logs(
+        self, number, client, forward=False, deep=False, store=None, limit=None
+    ):
+        async def _do_stuff():
+            nonlocal client
+            nonlocal number
+            nonlocal forward
+            nonlocal deep
+            bucket1 = []
+            bucket2 = []
+            ret = {}
+            query = await self._async_status("c:{0}:b:{1}\n".format(client, number))
+            if not query:
+                return ret
+            try:
+                logs = query["clients"][0]["backups"][0]["logs"]["list"]
+            except KeyError:
+                self.logger.warning("No logs found")
+                return ret
+            async with trio.open_nursery() as nursery:
+                if "backup_stats" in logs:
+                    nursery.start_soon(
+                        self._async_parse_backup_stats,
+                        number,
+                        client,
+                        forward,
+                        None,
+                        bucket1,
+                    )
+                if "backup" in logs and deep:
+                    nursery.start_soon(
+                        self._async_parse_backup_log, number, client, bucket2
+                    )
+
+            if bucket1:
+                ret = bucket1[0]
+            if bucket2:
+                ret.update(bucket2[0])
+
+            ret["encrypted"] = False
+            if "files_enc" in ret and ret["files_enc"]["total"] > 0:
+                ret["encrypted"] = True
+            return ret
+
+        if limit is not None:
+            async with limit:
+                res = await _do_stuff()
+        else:
+            res = await _do_stuff()
+
+        if store is not None:
+            store.append(res)
+        else:
+            return res
+
+    async def _async_get_all_backup_logs(self, client, forward=False, deep=False):
+        ret = []
+        backups = await self._async_get_client(client)
+        queue = []
+        limit = trio.CapacityLimiter(self.concurrency)
+        async with trio.open_nursery() as nursery:
+            for back in backups:
+                nursery.start_soon(
+                    self._async_get_backup_logs,
+                    back["number"],
+                    client,
+                    forward,
+                    deep,
+                    queue,
+                    limit,
+                )
+
+        ret = sorted(queue, key=lambda x: x["number"])
+        return ret
+
+    async def _async_parse_backup_log(self, number, client, bucket=None):
+        query = await self._async_status(
+            "c:{0}:b:{1}:l:backup\n".format(client, number)
+        )
+        res = self._do_parse_backup_log(query, client)
+        if bucket is not None:
+            bucket.append(res)
+        return res
+
+    async def _async_parse_backup_stats(
+        self, number, client, forward=False, agent=None, bucket=None
+    ):
+        """The :func:`burpui.misc.backend.parallel.Burp._async_parse_backup_stats`
+        function is used to parse the burp logs.
+
+        :param number: Backup number to work on
+        :type number: int
+
+        :param client: Client name to work on
+        :type client: str
+
+        :param forward: Is the client name needed in later process
+        :type forward: bool
+
+        :param agent: What server to ask (only in multi-agent mode)
+        :type agent: str
+
+        :returns: Dict containing the backup log
+        """
+        backup = {"os": await self._async_guess_os(client), "number": int(number)}
+        if forward:
+            backup["name"] = client
+        query = await self._async_status(
+            "c:{0}:b:{1}:l:backup_stats\n".format(client, number)
+        )
+        ret = self._do_parse_backup_stats(query, backup, number, client, forward, agent)
+        if bucket is not None:
+            bucket.append(ret)
+        return ret
+
+    async def _async_get_clients_report(self, clients, agent=None):
+        """See :func:`burpui.misc.backend.interface.BUIbackend.get_clients_report`"""
+
+        async def __compute_client_report(cli, queue, limit):
+            async with limit:
+                if not cli:
+                    return
+                client = await self._async_get_client(cli["name"])
+                if not client or not client[-1]:
+                    return
+                stats = await self._async_get_backup_logs(
+                    client[-1]["number"], cli["name"]
+                )
+                queue.append((cli, client, stats))
+
+        data = []
+        limiter = trio.CapacityLimiter(self.concurrency)
+
+        async with trio.open_nursery() as nursery:
+            for client in clients:
+                nursery.start_soon(__compute_client_report, client, data, limiter)
+
+        return self._do_get_clients_report(data)
+
+    async def _async_get_counters(self, name=None, agent=None):
+        ret = {}
+        query = await self._async_status("c:{0}\n".format(name), cache=False)
+        # check the status returned something
+        if not query:
+            return ret
+
+        try:
+            client = query["clients"][0]
+        except KeyError:
+            self.logger.warning("Client not found")
+            return ret
+        return self._do_get_counters(client)
+
+    async def _async_is_backup_running(self, name=None, agent=None):
+        """See
+        :func:`burpui.misc.backend.interface.BUIbackend.is_backup_running`
+        """
+        if not name:
+            return False
+        try:
+            query = await self._async_status("c:{0}\n".format(name))
+        except BUIserverException:
+            return False
+        return self._do_is_backup_running(query)
+
+    async def _async_is_one_backup_running(self, agent=None):
+        """See
+        :func:`burpui.misc.backend.interface.BUIbackend.is_one_backup_running`
+        """
+        ret = []
+        try:
+            clients = await self._async_get_all_clients(deep=False, last_attempt=False)
+        except BUIserverException:
+            return ret
+        return self._do_is_one_backup_running(clients)
+
+    async def _async_get_last_backup(self, name, working=True):
+        """Return the last backup of a given client
+
+        :param name: Name of the client
+        :type name: str
+
+        :param working: Also return uncomplete backups
+        :type working: bool
+
+        :returns: The last backup
+        """
+        try:
+            clients = await self._async_status("c:{}".format(name))
+            client = clients["clients"][0]
+            i = 0
+            while True:
+                ret = client["backups"][i]
+                if not working and "working" in ret["flags"]:
+                    i += 1
+                    continue
+                return ret
+        except (KeyError, IndexError, BUIserverException):
+            return None
+
+    async def _async_guess_os(self, name):
+        """Return the OS of the given client based on the magic *os* label
+
+        :param name: Name of the client
+        :type name: str
+
+        :returns: The guessed OS of the client
+
+        ::
+
+            grep label /etc/burp/clientconfdir/toto
+            label = os: Darwin OS
+        """
+        ret = "Unknown"
+        if name in self._os_cache:
+            return self._os_cache[name]
+
+        labels = await self._async_get_client_labels(name)
+        OSES = []
+
+        for label in labels:
+            if re.match("os:", label, re.IGNORECASE):
+                _os = label.split(":", 1)[1].strip()
+                if _os not in OSES:
+                    OSES.append(_os)
+
+        if OSES:
+            ret = OSES[-1]
+        else:
+            # more aggressive check
+            last = await self._async_get_last_backup(name, False)
+            if last:
+                try:
+                    tree = await self._async_get_tree(name, last["number"])
+
+                    if tree[0]["name"] != "/":
+                        ret = "Windows"
+                    else:
+                        ret = "Unix/Linux"
+                except (IndexError, KeyError, BUIserverException):
+                    pass
+
+        self._os_cache[name] = ret
+        return ret
+
+    async def _async_get_all_clients(self, agent=None, deep=True, last_attempt=True):
+        ret = []
+        query = await self._async_status()
+        if not query or "clients" not in query:
+            return ret
+
+        async def __compute_client_data(client, queue, limit):
+            async with limit:
+                cli = {}
+                cli["name"] = client["name"]
+                cli["state"] = self._status_human_readable(client["run_status"])
+                infos = client["backups"]
+                if cli["state"] in ["running"]:
+                    cli["last"] = "now"
+                    cli["last_attempt"] = "now"
+                elif not infos:
+                    cli["last"] = "never"
+                    cli["last_attempt"] = "never"
+                else:
+                    convert = True
+                    infos = infos[0]
+                    server_version = await self._async_get_server_version()
+                    if server_version and server_version < BURP_STATUS_FORMAT_V2:
+                        cli["last"] = infos["timestamp"]
+                        convert = False
+                    # only do deep inspection when server >= BURP_STATUS_FORMAT_V2
+                    if deep:
+                        logs = await self._async_get_backup_logs(
+                            infos["number"], client["name"]
+                        )
+                        cli["last"] = logs["start"]
+                    else:
+                        cli["last"] = utc_to_local(infos["timestamp"])
+                    if last_attempt:
+                        last_backup = await self._async_get_last_backup(client["name"])
+                        if convert:
+                            cli["last_attempt"] = utc_to_local(last_backup["timestamp"])
+                        else:
+                            cli["last_attempt"] = last_backup["timestamp"]
+                queue.append(cli)
+
+        clients = query["clients"]
+        limiter = trio.CapacityLimiter(self.concurrency)
+
+        async with trio.open_nursery() as nursery:
+            for client in clients:
+                nursery.start_soon(__compute_client_data, client, ret, limiter)
+
+        return ret
+
+    async def _async_get_client_status(self, name=None, agent=None):
+        ret = {}
+        if not name:
+            return ret
+        query = await self._async_status("c:{0}\n".format(name))
+        if not query:
+            return ret
+        try:
+            client = query["clients"][0]
+        except (KeyError, IndexError):
+            self.logger.warning("Client not found")
+            return ret
+        return self._do_get_client_status(client)
+
+    async def _async_get_client_filtered(
+        self, name=None, limit=-1, page=None, start=None, end=None, agent=None
+    ):
+        ret = []
+        if not name:
+            return ret
+        query = await self._async_status("c:{0}\n".format(name))
+        if not query:
+            return ret
+        try:
+            backups = query["clients"][0]["backups"]
+        except (KeyError, IndexError):
+            self.logger.warning("Client not found")
+            return ret
+
+        async def __parse_log(backup, client, back, ret, limiter):
+            async with limiter:
+                append = True
+                log = await self._async_get_backup_logs(backup["number"], client)
+                try:
+                    back["encrypted"] = log["encrypted"]
+                    try:
+                        back["received"] = log["received"]
+                    except KeyError:
+                        back["received"] = 0
+                    try:
+                        back["size"] = log["totsize"]
+                    except KeyError:
+                        back["size"] = 0
+                    back["end"] = log["end"]
+                    # override date since the timestamp is odd
+                    back["date"] = log["start"]
+                except Exception:
+                    self.logger.warning("Unable to parse logs")
+                    append = False
+
+                if append:
+                    ret.append(back)
+
+        queue = []
+        limiter = trio.CapacityLimiter(self.concurrency)
+
+        async with trio.open_nursery() as nursery:
+            for idx, backup in enumerate(backups):
+                back = {}
+                # skip the first elements if we are in a page
+                if page and page > 1 and limit > 0:
+                    if idx < (page - 1) * limit:
+                        continue
+
+                # skip running backups since data will be inconsistent
+                if "flags" in backup and "working" in backup["flags"]:
+                    continue
+                back["number"] = backup["number"]
+                if "flags" in backup and "deletable" in backup["flags"]:
+                    back["deletable"] = True
+                else:
+                    back["deletable"] = False
+                back["date"] = backup["timestamp"]
+                # skip backups before "start"
+                if start and backup["timestamp"] < start:
+                    continue
+                # skip backups after "end"
+                if end and backup["timestamp"] > end:
+                    continue
+
+                nursery.start_soon(__parse_log, backup, name, back, queue, limiter)
+
+                # stop after "limit" elements
+                if page and page > 1 and limit > 0:
+                    if idx >= page * limit:
+                        break
+                elif limit > 0 and idx >= limit:
+                    break
+
+        # Here we need to reverse the array so the backups are sorted by num
+        # ASC
+        ret = sorted(queue, key=lambda x: x["number"])
+        return ret
+
+    async def _async_get_tree(
+        self, name=None, backup=None, root=None, level=-1, agent=None
+    ):
+        ret = []
+        if not name or not backup:
+            return ret
+        if not root:
+            top = ""
+        else:
+            top = to_unicode(root)
+
+        # we know this operation may take a while so we arbitrary increase the
+        # read timeout
+        timeout = None
+        if top == "*":
+            timeout = max(self.timeout, 300)
+
+        query = await self._async_status(
+            "c:{0}:b:{1}:p:{2}\n".format(name, backup, top), timeout
+        )
+        return self._format_tree(query, top, level)
+
+    async def _async_get_client(self, name=None, agent=None):
+        return await self._async_get_client_filtered(name)
+
+    async def _async_get_client_labels(self, client=None, agent=None):
+        """See
+        :func:`burpui.misc.backend.interface.BUIbackend.get_client_labels`
+        """
+        ret = []
+        if not client:
+            return ret
+        # micro optimization since the status results are cached in memory for a
+        # couple seconds, using the same global query and iterating over it
+        # will be more efficient than filtering burp-side
+        query = await self._async_status("c:\n")
+        if not query:
+            return ret
+        try:
+            for cli in query["clients"]:
+                if cli["name"] == client:
+                    return cli["labels"]
+        except KeyError:
+            return ret
+
+    async def _async_restore_files(
+        self,
+        name=None,
+        backup=None,
+        files=None,
+        strip=None,
+        archive="zip",
+        password=None,
+        agent=None,
+    ):
+        return await trio.to_thread.run_sync(
+            Burp2.restore_files,
+            self,
+            name,
+            backup,
+            files,
+            strip,
+            archive,
+            password,
+            agent,
+        )
+
+    async def _async_is_backup_deletable(self, name=None, backup=None, agent=None):
+        if not name or not backup:
+            return False
+        query = await self._async_status("c:{0}:b:{1}\n".format(name, backup))
+        if not query:
+            return False
+        return self._do_is_backup_deletable(query)
+
+
 # Some functions are the same as in Burp1 backend
-class Burp(Burp2):
+class Burp(Burp2, AsyncBurpMixin):
     """The :class:`burpui.misc.backend.parallel.Burp` class provides a consistent
     backend for ``burp-2`` servers through the bui-monitor pool. It is also able to
     perform some operations asynchronously to speedup the whole API.
@@ -290,120 +792,26 @@ class Burp(Burp2):
             )
         return self._batch_list_supported
 
+    @usetriorun
     def statistics(self, agent=None):
-        return json.loads(trio.run(self._async_request, "statistics"))
+        return trio.run(self._async_statistics)
 
+    @usetriorun
     def get_client_version(self, agent=None):
         if self._client_version is None:
-            try:
-                self._client_version = trio.run(self._async_request, "client_version")
-            except BUIserverException:
-                return ""
+            self._client_version = trio.run(self._async_get_client_version)
         return self._client_version or ""
 
+    @usetriorun
     def get_server_version(self, agent=None):
         if self._server_version is None:
-            try:
-                self._server_version = trio.run(self._async_request, "server_version")
-            except BUIserverException:
-                return ""
+            self._server_version = trio.run(self._async_get_server_version)
         return self._server_version or ""
-
-    async def _async_status(self, query="c:\n", timeout=None, cache=True, agent=None):
-        try:
-            connector = Connector(self.conf)
-            return await connector.status(query, timeout, cache)
-        except (OSError, IOError) as exc:
-            raise BUIserverException(str(exc))
-        if not self._ready:
-            self.init_all()
-
-    async def _async_request(self, func, *args, **kwargs):
-        try:
-            connector = Connector(self.conf)
-            return await connector.request(func, *args, **kwargs)
-        except (OSError, IOError) as exc:
-            raise BUIserverException(str(exc))
 
     @usetriorun
     def status(self, query="c:\n", timeout=None, cache=True, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.status`"""
         return trio.run(self._async_status, query, timeout, cache)
-
-    async def _async_get_backup_logs(
-        self, number, client, forward=False, deep=False, store=None, limit=None
-    ):
-        async def _do_stuff():
-            nonlocal client
-            nonlocal number
-            nonlocal forward
-            nonlocal deep
-            bucket1 = []
-            bucket2 = []
-            ret = {}
-            query = await self._async_status("c:{0}:b:{1}\n".format(client, number))
-            if not query:
-                return ret
-            try:
-                logs = query["clients"][0]["backups"][0]["logs"]["list"]
-            except KeyError:
-                self.logger.warning("No logs found")
-                return ret
-            async with trio.open_nursery() as nursery:
-                if "backup_stats" in logs:
-                    nursery.start_soon(
-                        self._async_parse_backup_stats,
-                        number,
-                        client,
-                        forward,
-                        None,
-                        bucket1,
-                    )
-                if "backup" in logs and deep:
-                    nursery.start_soon(
-                        self._async_parse_backup_log, number, client, bucket2
-                    )
-
-            if bucket1:
-                ret = bucket1[0]
-            if bucket2:
-                ret.update(bucket2[0])
-
-            ret["encrypted"] = False
-            if "files_enc" in ret and ret["files_enc"]["total"] > 0:
-                ret["encrypted"] = True
-            return ret
-
-        if limit is not None:
-            async with limit:
-                res = await _do_stuff()
-        else:
-            res = await _do_stuff()
-
-        if store is not None:
-            store.append(res)
-        else:
-            return res
-
-    async def _async_get_all_backup_logs(self, client, forward=False, deep=False):
-        ret = []
-        backups = await self._async_get_client(client)
-        queue = []
-        limit = trio.CapacityLimiter(self.concurrency)
-        async with trio.open_nursery() as nursery:
-            for back in backups:
-                nursery.start_soon(
-                    self._async_get_backup_logs,
-                    back["number"],
-                    client,
-                    forward,
-                    deep,
-                    queue,
-                    limit,
-                )
-
-        ret = sorted(queue, key=lambda x: x["number"])
-        return ret
 
     def get_backup_logs(self, number, client, forward=False, deep=False, agent=None):
         """See
@@ -415,15 +823,6 @@ class Burp(Burp2):
         if number == -1:
             return trio.run(self._async_get_all_backup_logs, client, forward, deep)
         return trio.run(self._async_get_backup_logs, number, client, forward, deep)
-
-    async def _async_parse_backup_log(self, number, client, bucket=None):
-        query = await self._async_status(
-            "c:{0}:b:{1}:l:backup\n".format(client, number)
-        )
-        res = self._do_parse_backup_log(query, client)
-        if bucket is not None:
-            bucket.append(res)
-        return res
 
     def _parse_backup_log(self, number, client):
         """The :func:`burpui.misc.backend.burp2.Burp._parse_backup_log`
@@ -440,96 +839,15 @@ class Burp(Burp2):
         """
         return trio.run(self._async_parse_backup_log, number, client)
 
-    async def _async_parse_backup_stats(
-        self, number, client, forward=False, agent=None, bucket=None
-    ):
-        """The :func:`burpui.misc.backend.parallel.Burp._async_parse_backup_stats`
-        function is used to parse the burp logs.
-
-        :param number: Backup number to work on
-        :type number: int
-
-        :param client: Client name to work on
-        :type client: str
-
-        :param forward: Is the client name needed in later process
-        :type forward: bool
-
-        :param agent: What server to ask (only in multi-agent mode)
-        :type agent: str
-
-        :returns: Dict containing the backup log
-        """
-        backup = {"os": await self._async_guess_os(client), "number": int(number)}
-        if forward:
-            backup["name"] = client
-        query = await self._async_status(
-            "c:{0}:b:{1}:l:backup_stats\n".format(client, number)
-        )
-        ret = self._do_parse_backup_stats(query, backup, number, client, forward, agent)
-        if bucket is not None:
-            bucket.append(ret)
-        return ret
-
-    async def _async_get_clients_report(self, clients, agent=None):
-        """See :func:`burpui.misc.backend.interface.BUIbackend.get_clients_report`"""
-
-        async def __compute_client_report(cli, queue, limit):
-            async with limit:
-                if not cli:
-                    return
-                client = await self._async_get_client(cli["name"])
-                if not client or not client[-1]:
-                    return
-                stats = await self._async_get_backup_logs(
-                    client[-1]["number"], cli["name"]
-                )
-                queue.append((cli, client, stats))
-
-        data = []
-        limiter = trio.CapacityLimiter(self.concurrency)
-
-        async with trio.open_nursery() as nursery:
-            for client in clients:
-                nursery.start_soon(__compute_client_report, client, data, limiter)
-
-        return self._do_get_clients_report(data)
-
     @usetriorun
     def get_clients_report(self, clients, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_clients_report`"""
         return trio.run(self._async_get_clients_report, clients)
 
-    async def _async_get_counters(self, name=None, agent=None):
-        ret = {}
-        query = await self._async_status("c:{0}\n".format(name), cache=False)
-        # check the status returned something
-        if not query:
-            return ret
-
-        try:
-            client = query["clients"][0]
-        except KeyError:
-            self.logger.warning("Client not found")
-            return ret
-        return self._do_get_counters(client)
-
     @usetriorun
     def get_counters(self, name=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_counters`"""
         return trio.run(self._async_get_counters, name)
-
-    async def _async_is_backup_running(self, name=None, agent=None):
-        """See
-        :func:`burpui.misc.backend.interface.BUIbackend.is_backup_running`
-        """
-        if not name:
-            return False
-        try:
-            query = await self._async_status("c:{0}\n".format(name))
-        except BUIserverException:
-            return False
-        return self._do_is_backup_running(query)
 
     @usetriorun
     def is_backup_running(self, name=None, agent=None):
@@ -538,47 +856,12 @@ class Burp(Burp2):
         """
         return trio.run(self._async_is_backup_running, name)
 
-    async def _async_is_one_backup_running(self, agent=None):
-        """See
-        :func:`burpui.misc.backend.interface.BUIbackend.is_one_backup_running`
-        """
-        ret = []
-        try:
-            clients = await self._async_get_all_clients(deep=False, last_attempt=False)
-        except BUIserverException:
-            return ret
-        return self._do_is_one_backup_running(clients)
-
     @usetriorun
     def is_one_backup_running(self, agent=None):
         """See
         :func:`burpui.misc.backend.interface.BUIbackend.is_one_backup_running`
         """
         return trio.run(self._async_is_one_backup_running)
-
-    async def _async_get_last_backup(self, name, working=True):
-        """Return the last backup of a given client
-
-        :param name: Name of the client
-        :type name: str
-
-        :param working: Also return uncomplete backups
-        :type working: bool
-
-        :returns: The last backup
-        """
-        try:
-            clients = await self._async_status("c:{}".format(name))
-            client = clients["clients"][0]
-            i = 0
-            while True:
-                ret = client["backups"][i]
-                if not working and "working" in ret["flags"]:
-                    i += 1
-                    continue
-                return ret
-        except (KeyError, IndexError, BUIserverException):
-            return None
 
     @usetriorun
     def _get_last_backup(self, name, working=True):
@@ -593,51 +876,6 @@ class Burp(Burp2):
         :returns: The last backup
         """
         return trio.run(self._async_get_last_backup, name, working)
-
-    async def _async_guess_os(self, name):
-        """Return the OS of the given client based on the magic *os* label
-
-        :param name: Name of the client
-        :type name: str
-
-        :returns: The guessed OS of the client
-
-        ::
-
-            grep label /etc/burp/clientconfdir/toto
-            label = os: Darwin OS
-        """
-        ret = "Unknown"
-        if name in self._os_cache:
-            return self._os_cache[name]
-
-        labels = await self._async_get_client_labels(name)
-        OSES = []
-
-        for label in labels:
-            if re.match("os:", label, re.IGNORECASE):
-                _os = label.split(":", 1)[1].strip()
-                if _os not in OSES:
-                    OSES.append(_os)
-
-        if OSES:
-            ret = OSES[-1]
-        else:
-            # more aggressive check
-            last = await self._async_get_last_backup(name, False)
-            if last:
-                try:
-                    tree = await self._async_get_tree(name, last["number"])
-
-                    if tree[0]["name"] != "/":
-                        ret = "Windows"
-                    else:
-                        ret = "Unix/Linux"
-                except (IndexError, KeyError, BUIserverException):
-                    pass
-
-        self._os_cache[name] = ret
-        return ret
 
     @usetriorun
     def _guess_os(self, name):
@@ -655,58 +893,6 @@ class Burp(Burp2):
         """
         return trio.run(self._async_guess_os, name)
 
-    async def _async_get_all_clients(self, agent=None, deep=True, last_attempt=True):
-        ret = []
-        query = await self._async_status()
-        if not query or "clients" not in query:
-            return ret
-
-        async def __compute_client_data(client, queue, limit):
-            async with limit:
-                cli = {}
-                cli["name"] = client["name"]
-                cli["state"] = self._status_human_readable(client["run_status"])
-                infos = client["backups"]
-                if cli["state"] in ["running"]:
-                    cli["last"] = "now"
-                    cli["last_attempt"] = "now"
-                elif not infos:
-                    cli["last"] = "never"
-                    cli["last_attempt"] = "never"
-                else:
-                    convert = True
-                    infos = infos[0]
-                    if (
-                        self.server_version
-                        and self.server_version < BURP_STATUS_FORMAT_V2
-                    ):
-                        cli["last"] = infos["timestamp"]
-                        convert = False
-                    # only do deep inspection when server >= BURP_STATUS_FORMAT_V2
-                    if deep:
-                        logs = await self._async_get_backup_logs(
-                            infos["number"], client["name"]
-                        )
-                        cli["last"] = logs["start"]
-                    else:
-                        cli["last"] = utc_to_local(infos["timestamp"])
-                    if last_attempt:
-                        last_backup = await self._async_get_last_backup(client["name"])
-                        if convert:
-                            cli["last_attempt"] = utc_to_local(last_backup["timestamp"])
-                        else:
-                            cli["last_attempt"] = last_backup["timestamp"]
-                queue.append(cli)
-
-        clients = query["clients"]
-        limiter = trio.CapacityLimiter(self.concurrency)
-
-        async with trio.open_nursery() as nursery:
-            for client in clients:
-                nursery.start_soon(__compute_client_data, client, ret, limiter)
-
-        return ret
-
     def get_all_clients(self, agent=None, last_attempt=True):
         """See
         :func:`burpui.misc.backend.interface.BUIbackend.get_all_clients`
@@ -720,20 +906,6 @@ class Burp(Burp2):
         callback = partial(self._async_get_all_clients, last_attempt=last_attempt)
         return trio.run(callback)
 
-    async def _async_get_client_status(self, name=None, agent=None):
-        ret = {}
-        if not name:
-            return ret
-        query = await self._async_status("c:{0}\n".format(name))
-        if not query:
-            return ret
-        try:
-            client = query["clients"][0]
-        except (KeyError, IndexError):
-            self.logger.warning("Client not found")
-            return ret
-        return self._do_get_client_status(client)
-
     @usetriorun
     def get_client_status(self, name=None, agent=None):
         """See
@@ -741,93 +913,10 @@ class Burp(Burp2):
         """
         return trio.run(self._async_get_client_status, name)
 
-    async def _async_get_client(self, name=None, agent=None):
-        return await self._async_get_client_filtered(name)
-
     @usetriorun
     def get_client(self, name=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_client`"""
         return trio.run(self._async_get_client, name)
-
-    async def _async_get_client_filtered(
-        self, name=None, limit=-1, page=None, start=None, end=None, agent=None
-    ):
-        ret = []
-        if not name:
-            return ret
-        query = await self._async_status("c:{0}\n".format(name))
-        if not query:
-            return ret
-        try:
-            backups = query["clients"][0]["backups"]
-        except (KeyError, IndexError):
-            self.logger.warning("Client not found")
-            return ret
-
-        async def __parse_log(backup, client, back, ret, limiter):
-            async with limiter:
-                append = True
-                log = await self._async_get_backup_logs(backup["number"], client)
-                try:
-                    back["encrypted"] = log["encrypted"]
-                    try:
-                        back["received"] = log["received"]
-                    except KeyError:
-                        back["received"] = 0
-                    try:
-                        back["size"] = log["totsize"]
-                    except KeyError:
-                        back["size"] = 0
-                    back["end"] = log["end"]
-                    # override date since the timestamp is odd
-                    back["date"] = log["start"]
-                except Exception:
-                    self.logger.warning("Unable to parse logs")
-                    append = False
-
-                if append:
-                    ret.append(back)
-
-        queue = []
-        limiter = trio.CapacityLimiter(self.concurrency)
-
-        async with trio.open_nursery() as nursery:
-            for idx, backup in enumerate(backups):
-                back = {}
-                # skip the first elements if we are in a page
-                if page and page > 1 and limit > 0:
-                    if idx < (page - 1) * limit:
-                        continue
-
-                # skip running backups since data will be inconsistent
-                if "flags" in backup and "working" in backup["flags"]:
-                    continue
-                back["number"] = backup["number"]
-                if "flags" in backup and "deletable" in backup["flags"]:
-                    back["deletable"] = True
-                else:
-                    back["deletable"] = False
-                back["date"] = backup["timestamp"]
-                # skip backups before "start"
-                if start and backup["timestamp"] < start:
-                    continue
-                # skip backups after "end"
-                if end and backup["timestamp"] > end:
-                    continue
-
-                nursery.start_soon(__parse_log, backup, name, back, queue, limiter)
-
-                # stop after "limit" elements
-                if page and page > 1 and limit > 0:
-                    if idx >= page * limit:
-                        break
-                elif limit > 0 and idx >= limit:
-                    break
-
-        # Here we need to reverse the array so the backups are sorted by num
-        # ASC
-        ret = sorted(queue, key=lambda x: x["number"])
-        return ret
 
     @usetriorun
     def get_client_filtered(
@@ -836,14 +925,6 @@ class Burp(Burp2):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_client_filtered`"""
         return trio.run(self._async_get_client_filtered, name, limit, page, start, end)
 
-    async def _async_is_backup_deletable(self, name=None, backup=None, agent=None):
-        if not name or not backup:
-            return False
-        query = await self._async_status("c:{0}:b:{1}\n".format(name, backup))
-        if not query:
-            return False
-        return self._do_is_backup_deletable(query)
-
     @usetriorun
     def is_backup_deletable(self, name=None, backup=None, agent=None):
         """See
@@ -851,52 +932,10 @@ class Burp(Burp2):
         """
         return trio.run(self._async_is_backup_deletable, name, backup)
 
-    async def _async_get_tree(
-        self, name=None, backup=None, root=None, level=-1, agent=None
-    ):
-        ret = []
-        if not name or not backup:
-            return ret
-        if not root:
-            top = ""
-        else:
-            top = to_unicode(root)
-
-        # we know this operation may take a while so we arbitrary increase the
-        # read timeout
-        timeout = None
-        if top == "*":
-            timeout = max(self.timeout, 300)
-
-        query = await self._async_status(
-            "c:{0}:b:{1}:p:{2}\n".format(name, backup, top), timeout
-        )
-        return self._format_tree(query, top, level)
-
     @usetriorun
     def get_tree(self, name=None, backup=None, root=None, level=-1, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.get_tree`"""
         return trio.run(self._async_get_tree, name, backup, root, level)
-
-    async def _async_get_client_labels(self, client=None, agent=None):
-        """See
-        :func:`burpui.misc.backend.interface.BUIbackend.get_client_labels`
-        """
-        ret = []
-        if not client:
-            return ret
-        # micro optimization since the status results are cached in memory for a
-        # couple seconds, using the same global query and iterating over it
-        # will be more efficient than filtering burp-side
-        query = await self._async_status("c:\n")
-        if not query:
-            return ret
-        try:
-            for cli in query["clients"]:
-                if cli["name"] == client:
-                    return cli["labels"]
-        except KeyError:
-            return ret
 
     @usetriorun
     def get_client_labels(self, client=None, agent=None):
@@ -904,28 +943,6 @@ class Burp(Burp2):
         :func:`burpui.misc.backend.interface.BUIbackend.get_client_labels`
         """
         return trio.run(self._async_get_client_labels, client)
-
-    async def _async_restore_files(
-        self,
-        name=None,
-        backup=None,
-        files=None,
-        strip=None,
-        archive="zip",
-        password=None,
-        agent=None,
-    ):
-        return await trio.to_thread.run_sync(
-            Burp2.restore_files,
-            self,
-            name,
-            backup,
-            files,
-            strip,
-            archive,
-            password,
-            agent,
-        )
 
     @usetriorun
     def restore_files(

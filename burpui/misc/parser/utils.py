@@ -1664,7 +1664,6 @@ class Config(File):
         if self._dirty or any(x.dirty for x in self.files.values()):
             # cleanup "caches"
             self.options.clear()
-            del self.options
             self.options = OrderedDict()
             for key in list(self.types.keys()):
                 del self.types[key]
