@@ -23,6 +23,7 @@ test:format:
   stage: test
   image: python:3.8
   script:
+  - pip install black
   - black --check .
   tags:
   - lint

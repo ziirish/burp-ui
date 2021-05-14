@@ -14,6 +14,7 @@ clean.sh
 .pylintrc
 .pytest_cache
 .python-version
+.pre-commit-config.yaml
 dist
 _build
 .tags

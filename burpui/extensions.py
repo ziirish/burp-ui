@@ -16,9 +16,9 @@ from ._compat import to_unicode
 
 def parse_db_setting(string):
     parts = re.search(
-        "(?:(?P<backend>\w+)(?:\+(?P<driver>\w+))?://)?"
-        "(?:(?P<user>\w+)(?::?(?P<pass>.+))?@)?"
-        "(?P<host>[\w_.-]+):?(?P<port>\d+)?(?:/(?P<db>\w+))?",
+        r"(?:(?P<backend>\w+)(?:\+(?P<driver>\w+))?://)?"
+        r"(?:(?P<user>\w+)(?::?(?P<pass>.+))?@)?"
+        r"(?P<host>[\w_.-]+):?(?P<port>\d+)?(?:/(?P<db>\w+))?",
         string,
     )
     if not parts:  # pragma: no cover
