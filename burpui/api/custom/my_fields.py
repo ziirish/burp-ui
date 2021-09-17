@@ -33,8 +33,11 @@ class DateTime(fields.DateTime):
             a = arrow.get(datetime.datetime.utcfromtimestamp(value))
             a = a.replace(tzinfo=TZ)
         except (ValueError, TypeError):
-            a = arrow.get(value)
-            a = a.to(TZ)
+            try:
+                a = arrow.get(value)
+                a = a.to(TZ)
+            except arrow.parser.ParserError:
+                return value
         return fields.DateTime.parse(self, a.datetime)
 
     def format(self, value):
