@@ -37,7 +37,7 @@ class DateTime(fields.DateTime):
                 a = arrow.get(value)
                 a = a.to(TZ)
             except arrow.parser.ParserError:
-                return value
+                return None
         return fields.DateTime.parse(self, a.datetime)
 
     def format(self, value):
