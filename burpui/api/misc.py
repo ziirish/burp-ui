@@ -754,7 +754,7 @@ class History(Resource):
             if moment in args:
                 try:
                     if args[moment] is not None:
-                        moments[moment] = arrow.get(args[moment]).timestamp
+                        moments[moment] = arrow.get(args[moment]).int_timestamp
                 except arrow.parser.ParserError:
                     pass
 

@@ -54,8 +54,8 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
     """
     from flask import g, request, session
     from flask_login import LoginManager
-    from flask_bower import Bower
     from flask_babel import gettext
+    from .thirdparty.flask_bower import Bower
     from .utils import ReverseProxied, lookup_file, is_uuid
     from .tools.logging import logger
     from .security import basic_login_from_request

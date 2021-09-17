@@ -190,7 +190,7 @@ def utc_to_local(timestamp):
         # 1487607525 -> 1487611125
         utc = arrow.get(datetime.datetime.fromtimestamp(timestamp))
         local = utc.to(str(get_localzone()))
-        return local.timestamp
+        return local.int_timestamp
     except (TypeError, arrow.parser.ParserError, ImportError):
         return timestamp
 
