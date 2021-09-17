@@ -240,7 +240,7 @@ def celery():
     env["BUI_MODE"] = "celery"
     env["BUI_CONFIG"] = conf
 
-    args = ["celery", celery_mode, "-A", "engines.worker.celery"]
+    args = ["celery", "-A", "engines.worker.celery", celery_mode]
     args += unknown
     args += [x for x in options.remaining if x != "--"]
 

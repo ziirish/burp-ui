@@ -86,7 +86,7 @@ VENDOR_TO_KEEP = [
     "burpui/static/vendor/components-font-awesome/fonts/fontawesome-webfont.ttf",
     "burpui/static/vendor/components-font-awesome/fonts/fontawesome-webfont.woff",
     "burpui/static/vendor/components-font-awesome/fonts/fontawesome-webfont.woff2",
-    "burpui/static/vendor/socket.io-client/dist/socket.io.js",
+    "burpui/static/vendor/socket.io-client/dist/socket.io.min.js",
     "burpui/static/vendor/js-cookie/src/js.cookie.js",
     "burpui/static/vendor/ace-builds/src-min-noconflict/ace.js",
     "burpui/static/vendor/ace-builds/src-min-noconflict/mode-json.js",

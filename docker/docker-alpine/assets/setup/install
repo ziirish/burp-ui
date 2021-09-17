@@ -14,7 +14,9 @@ apk add --no-cache --virtual .build-deps \
 	gcc \
 	libc-dev \
 	postgresql-dev \
-	make
+	make \
+	cargo \
+	g++
 
 apk add --no-cache mariadb-connector-c libpq
 

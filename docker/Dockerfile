@@ -1,10 +1,10 @@
-FROM python:3.7-alpine3.10
+FROM python:3.7-alpine3.12
 
 RUN apk add --no-cache supervisor bash logrotate librsync libressl tzdata nginx \
 	&& apk add --no-cache --virtual .fetch-deps \
 		tar \
 	\
-	&& wget -O burp.tar.gz https://github.com/grke/burp/archive/2.2.18.tar.gz \
+	&& wget -O burp.tar.gz https://github.com/grke/burp/archive/2.4.0.tar.gz \
 	&& wget -O uthash.tar.gz https://github.com/troydhanson/uthash/archive/v2.1.0.tar.gz \
 	&& mkdir -p /usr/src/burp /usr/src/uthash \
 	&& tar -xC /usr/src/burp --strip-components=1 -f burp.tar.gz \
@@ -23,6 +23,8 @@ RUN apk add --no-cache supervisor bash logrotate librsync libressl tzdata nginx 
 		autoconf \
 		automake \
 		libtool \
+		bsd-compat-headers \
+		linux-headers \
 	\
 # add build deps before removing fetch deps in case there's overlap
 	&& apk del .fetch-deps \

@@ -1,6 +1,6 @@
-FROM alpine:3.10
+FROM alpine:3.12
 
-ARG BURP_VERSION=2.2.18
+ARG BURP_VERSION=2.4.0
 ARG UTHASH_VERSION=2.1.0
 
 RUN apk add --no-cache supervisor bash logrotate librsync libressl tzdata bash coreutils \
@@ -26,6 +26,8 @@ RUN apk add --no-cache supervisor bash logrotate librsync libressl tzdata bash c
 		autoconf \
 		automake \
 		libtool \
+		bsd-compat-headers \
+		linux-headers \
 	\
 # add build deps before removing fetch deps in case there's overlap
 	&& apk del .fetch-deps \
