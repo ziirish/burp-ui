@@ -1,18 +1,11 @@
 variables:
   GIT_DEPTH: 1
   GIT_SUBMODULE_STRATEGY: recursive
-  BURP_VERSION: 2.2.18
+  BURP_VERSION: 2.4.0
   PG_VERSION: 10
   SRC_DIR: burpui
-  DOCKER_DRIVER: overlay2
-  DOCKER_HOST: tcp://docker:2375
-  # docker TLS issue. see: https://gitlab.com/gitlab-org/gitlab-runner/issues/4501
-  DOCKER_TLS_CERTDIR: ""
 
 image: docker:git
-
-services:
-  - docker
 
 stages:
   - test
