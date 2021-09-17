@@ -1,7 +1,5 @@
 # -*- coding: utf8 -*-
-import os
 import pwd
-import sys
 import pam
 
 from flask_login import AnonymousUserMixin
@@ -146,6 +144,7 @@ class LocalUser(BUIuser):
     def get_id(self):
         return self.id
 
+
 def authenticate(username, password, service="login"):
     """Returns True if the given username and password authenticate for the
     given service.  Returns False otherwise
@@ -158,4 +157,4 @@ def authenticate(username, password, service="login"):
                  Defaults to 'login'"""
 
     pam_api = pam.pam()
-    return pam_api.authenticate( username, password, service )
+    return pam_api.authenticate(username, password, service)
