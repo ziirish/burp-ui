@@ -14,3 +14,4 @@ pyOpenSSL==20.0.1
 configobj==5.0.6
 async_generator==1.10
 Click==8.0.1
+python-pam==1.8.4
