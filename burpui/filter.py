@@ -57,6 +57,8 @@ class BUIMask(object):
         return [server for client, server in hidden if not client]
 
     def is_client_allowed(self, current_user, client=None, server=None):
+        if self.app.auth == "none":
+            return True
         if current_user.is_anonymous:
             return False
         if self.has_filters(current_user) and self.is_user_pref:
@@ -68,6 +70,8 @@ class BUIMask(object):
         return current_user.acl.is_client_allowed(client, server)
 
     def is_client_rw(self, current_user, client, server=None):
+        if self.app.auth == "none":
+            return True
         if current_user.is_anonymous:
             return False
         if self.has_filters(current_user) and self.is_user_pref:
@@ -79,6 +83,8 @@ class BUIMask(object):
         return current_user.acl.is_client_rw(client, server)
 
     def is_server_allowed(self, current_user, server):
+        if self.app.auth == "none":
+            return True
         if current_user.is_anonymous:
             return False
         if self.has_filters(current_user) and self.is_user_pref:
@@ -90,6 +96,8 @@ class BUIMask(object):
         return current_user.acl.is_server_allowed(server)
 
     def is_server_rw(self, current_user, server):
+        if self.app.auth == "none":
+            return True
         if current_user.is_anonymous:
             return False
         if self.has_filters(current_user) and self.is_user_pref:
