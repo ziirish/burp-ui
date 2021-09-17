@@ -32,7 +32,7 @@ services:
   demo-pg:
     restart: always
     build: docker-pg/
-    enviromnent:
+    environment:
       - POSTGRES_PASSWORD=password
 
   demo-cli1:
