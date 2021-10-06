@@ -48,10 +48,36 @@ test:lint:3.7:
   - lint
   except:
   - tags
+  - rc
+  - demo
 
 test:lint:3.8:
   stage: test
   image: python:3.8
+  script:
+  - pip install tox
+  - tox -e pep8
+  tags:
+  - lint
+  except:
+  - tags
+
+test:lint:3.9:
+  stage: test
+  image: python:3.9
+  script:
+  - pip install tox
+  - tox -e pep8
+  tags:
+  - lint
+  except:
+  - tags
+  - rc
+  - demo
+
+test:lint:3.10:
+  stage: test
+  image: python:3.10
   script:
   - pip install tox
   - tox -e pep8
@@ -90,6 +116,8 @@ test:py:3.7:
   - docker
   except:
   - tags
+  - rc
+  - demo
   artifacts:
     reports:
       junit: .reports/burpui.junit.xml
@@ -105,6 +133,38 @@ test:py:3.8:
   - docker
   except:
   - tags
+  artifacts:
+    reports:
+      junit: .reports/burpui.junit.xml
+
+test:py:3.9:
+  stage: test
+  image: python:3.9
+  script:
+  - pip install tox
+  - mkdir .reports
+  - tox -e py39
+  tags:
+  - docker
+  except:
+  - tags
+  - rc
+  - demo
+  artifacts:
+    reports:
+      junit: .reports/burpui.junit.xml
+
+test:py:3.10:
+  stage: test
+  image: python:3.10
+  script:
+  - pip install tox
+  - mkdir .reports
+  - tox -e py310
+  tags:
+  - docker
+  except:
+  - tags
   - rc
   - demo
   artifacts:
@@ -113,7 +173,7 @@ test:py:3.8:
 
 build:py3:
   stage: build
-  image: python:3.7
+  image: python:3.8
   script:
   - tests/build.sh
   tags:
@@ -130,7 +190,7 @@ build:py3:
 
 build:doc:
   stage: build
-  image: python:3.7
+  image: python:3.8
   script:
   - pip install -U .[rtd]
   - cd docs && make html

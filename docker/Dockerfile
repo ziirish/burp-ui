@@ -1,4 +1,4 @@
-FROM python:3.7-alpine3.12
+FROM python:3.8-alpine
 
 RUN apk add --no-cache supervisor bash logrotate librsync libressl tzdata nginx \
 	&& apk add --no-cache --virtual .fetch-deps \
