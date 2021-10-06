@@ -899,15 +899,24 @@ class Burp(BUIbackend):
 
     def is_server_backup(self, client=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.is_server_backup`"""
-        return self.parser.read_backup(client)
+        try:
+            return self.parser.read_backup(client)
+        except BUIserverException:
+            return None
 
     def cancel_server_backup(self, client=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.cancel_server_backup`"""
-        return self.parser.cancel_backup(client)
+        try:
+            return self.parser.cancel_backup(client)
+        except BUIserverException:
+            return None
 
     def server_backup(self, client=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.server_backup`"""
-        return self.parser.server_initiated_backup(client)
+        try:
+            return self.parser.server_initiated_backup(client)
+        except BUIserverException:
+            return None
 
     def delete_backup(self, name=None, backup=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.delete_backup`"""

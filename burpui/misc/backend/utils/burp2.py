@@ -51,6 +51,8 @@ class Monitor(object):
     _last_status_cleanup = datetime.datetime.now()
     _time_to_cache = datetime.timedelta(seconds=3)
 
+    _ignore_logs = re.compile(r"^Server version: (\d+\.\d+\.\d+).*$")
+
     def __init__(self, burpbin, burpconf, app=None, timeout=5, ident=None):
         """
         :param app: ``Burp-UI`` server instance in order to access logger
@@ -222,7 +224,7 @@ class Monitor(object):
             return True
         if not self._server_version:
             if "logline" in jso:
-                ret = re.search(r"^Server version: (\d+\.\d+\.\d+).*$", jso["logline"])
+                ret = self._ignore_logs.search(jso["logline"])
                 if ret:
                     self._server_version = ret.group(1)
                     if self.server_version >= BURP_LIST_BATCH:

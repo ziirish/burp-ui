@@ -632,10 +632,11 @@ class Burp(Burp1):
                     cli["last"] = utc_to_local(infos["timestamp"])
                 if last_attempt:
                     last_backup = self._get_last_backup(client["name"])
-                    if convert:
-                        cli["last_attempt"] = utc_to_local(last_backup["timestamp"])
-                    else:
-                        cli["last_attempt"] = last_backup["timestamp"]
+                    if last_attempt:
+                        if convert:
+                            cli["last_attempt"] = utc_to_local(last_backup["timestamp"])
+                        else:
+                            cli["last_attempt"] = last_backup["timestamp"]
 
             ret.append(cli)
         return ret
