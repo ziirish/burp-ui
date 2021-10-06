@@ -1043,7 +1043,18 @@ def diag(client, host, tips):
     from .misc.parser.utils import Config
     from .app import get_redis_server
 
-    if "Production" in app.conf.options and "redis" in app.conf.options["Production"]:
+    def _value_in_option(value, option, section="Production"):
+        if section not in app.conf.options:
+            return False
+        if option not in app.conf.options[section]:
+            return False
+        return value in app.conf.options[section][option]
+
+    if (
+        "Production" in app.conf.options
+        and "redis" in app.conf.options["Production"]
+        and any(_value_in_option("redis", x) for x in ["storage", "session", "cache"])
+    ):
         try:
             # detect missing modules
             import redis as redis_client  # noqa
@@ -1080,6 +1091,7 @@ def diag(client, host, tips):
     if (
         "Production" in app.conf.options
         and "database" in app.conf.options["Production"]
+        and app.conf.options["Production"]["database"] != "none"
     ):
         try:
             from .ext.sql import db  # noqa
