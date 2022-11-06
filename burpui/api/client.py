@@ -432,7 +432,8 @@ class ClientTreeAll(Resource):
         redo = True
         while redo:
             redo = False
-            for key, entry in tree.items().copy():
+            # using a copy
+            for key, entry in dict(tree).items():
                 parent = entry["parent"]
                 if not entry["children"]:
                     entry["children"] = None
