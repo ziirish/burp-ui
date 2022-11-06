@@ -348,7 +348,7 @@ setup(
         "sql": ["Flask-SQLAlchemy", "Flask-Migrate>=2.1.0", "sqlalchemy-utils"],
         "limit": ["Flask-Limiter", "redis"],
         "websocket": ["flask-socketio", "redis", "gevent-websocket"],
-        "rtd": ["sphinxcontrib-httpdomain==1.6.1"],
+        "rtd": ["sphinxcontrib-httpdomain==1.8.0"],
     },
     tests_require=test_requires,
     classifiers=[
