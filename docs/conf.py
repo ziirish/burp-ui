@@ -51,9 +51,9 @@ source_suffix = ".rst"
 master_doc = "index"
 
 # General information about the project.
-project = u"Burp-UI"
-copyright = u"2018, Ziirish"
-author = u"Ziirish"
+project = "Burp-UI"
+copyright = "2018, Ziirish"
+author = "Ziirish"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -235,7 +235,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, "Burp-UI.tex", u"Burp-UI Documentation", u"Ziirish", "manual"),
+    (master_doc, "Burp-UI.tex", "Burp-UI Documentation", "Ziirish", "manual"),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -263,7 +263,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [(master_doc, "burp-ui", u"Burp-UI Documentation", [author], 1)]
+man_pages = [(master_doc, "burp-ui", "Burp-UI Documentation", [author], 1)]
 
 # If true, show URL addresses after external links.
 # man_show_urls = False
@@ -278,7 +278,7 @@ texinfo_documents = [
     (
         master_doc,
         "Burp-UI",
-        u"Burp-UI Documentation",
+        "Burp-UI Documentation",
         author,
         "Burp-UI",
         "Burp-UI is a web-ui for burp backup written in python with Flask and jQuery/Bootstrap.",
