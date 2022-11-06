@@ -25,19 +25,6 @@ test:format:
   - rc
   - demo
 
-test:lint:3.6:
-  stage: test
-  image: python:3.6
-  script:
-  - pip install tox
-  - tox -e pep8
-  tags:
-  - lint
-  except:
-  - tags
-  - rc
-  - demo
-
 test:lint:3.7:
   stage: test
   image: python:3.7
@@ -87,23 +74,6 @@ test:lint:3.10:
   - tags
   - rc
   - demo
-
-test:py:3.6:
-  stage: test
-  image: python:3.6
-  script:
-  - pip install tox
-  - mkdir .reports
-  - tox -e py36
-  tags:
-  - docker
-  except:
-  - tags
-  - rc
-  - demo
-  artifacts:
-    reports:
-      junit: .reports/burpui.junit.xml
 
 test:py:3.7:
   stage: test

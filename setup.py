@@ -336,7 +336,7 @@ setup(
         ),
     ]
     + migrations,
-    python_requires=">=3.6",
+    python_requires=">=3.7",
     install_requires=requires,
     extras_require={
         "ldap_authentication": ["ldap3"],
@@ -358,7 +358,7 @@ setup(
         "License :: OSI Approved :: BSD License",
         "Operating System :: POSIX :: Linux",
         "Programming Language :: Python",
-        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3",
         "Topic :: System :: Archiving :: Backup",
         "Topic :: System :: Monitoring",
     ],
