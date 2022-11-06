@@ -199,10 +199,12 @@ class PrefsUI(Resource):
         sess = session._get_current_object()
         ret = {}
         req = MultiDict()
-        for loc in ["values", "json"]:
-            data = getattr(request, loc, None)
-            if data:
-                req.update(data)
+        data = getattr(request, "values", None)
+        if data:
+            req.update(data)
+        data = request.get_json(silent=True)
+        if data:
+            req.update(data)
         for key in args.keys():
             if key not in req:
                 continue
