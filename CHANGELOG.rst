@@ -1,8 +1,8 @@
 Changelog
 =========
 
-Current
--------
+1.0.0 (11/06/2022)
+------------------
 
 - **BREAKING**: the *single* and *version* options within the ``[Global]`` section have been removed in favor of a new unified *backend* option
 - **BREAKING**: a change introduced by `#284 <https://git.ziirish.me/ziirish/burp-ui/issues/284>`_ may return wrong timestamps for backups made with burp-server <= 2.1.10 if your current burp-server is >= 2.1.10
