@@ -1,7 +1,7 @@
 import os
 import tempfile
 
-from burpui.misc.parser.utils import OptionMulti, OptionInt
+from burpui.misc.parser.utils import OptionInt, OptionMulti
 
 
 def test_confsrv(parser):

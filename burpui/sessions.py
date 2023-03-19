@@ -7,11 +7,11 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
+import datetime
 import re
 import uuid
-import datetime
 
-from flask import session, request
+from flask import request, session
 
 # used for completion
 try:

@@ -7,34 +7,34 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
-import re
 import math
+import re
 import uuid
 
 from flask import (
-    request,
-    render_template,
-    redirect,
-    url_for,
-    abort,
-    flash,
     Blueprint,
-    session,
+    abort,
     current_app,
+    flash,
     g,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
 )
-from flask_login import login_user, login_required, logout_user, current_user
-from flask_babel import gettext as _, refresh as refresh_babel
+from flask_babel import gettext as _
+from flask_babel import refresh as refresh_babel
+from flask_login import current_user, login_required, login_user, logout_user
 
-from .desc import __url__, __doc__
-from .engines.server import BUIServer  # noqa
-from .sessions import session_manager
 from ._compat import quote
-from .forms import LoginForm
+from .desc import __doc__, __url__
+from .engines.server import BUIServer  # noqa
 from .exceptions import BUIserverException
+from .forms import LoginForm
+from .security import is_safe_url, sanitize_string
+from .sessions import session_manager
 from .utils import human_readable as _hr
-from .security import sanitize_string, is_safe_url
-
 
 bui = current_app  # type: BUIServer
 view = Blueprint("view", "burpui", template_folder="templates")

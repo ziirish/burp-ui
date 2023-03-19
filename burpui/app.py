@@ -9,19 +9,19 @@ jQuery/Bootstrap
 
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 """
+import json
+import logging
 import os
 import sys
-import json
 import time
-import logging
 
-from .desc import __version__, __release__
+from .desc import __release__, __version__
 from .extensions import (
     create_celery,
     create_db,
     create_websocket,
-    parse_db_setting,
     get_redis_server,
+    parse_db_setting,
 )
 
 
@@ -53,18 +53,19 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
     :returns: A :class:`burpui.engines.server.BUIServer` object
     """
     from flask import g, request, session
-    from flask_login import LoginManager
     from flask_babel import gettext
-    from .thirdparty.flask_bower import Bower
-    from .utils import ReverseProxied, lookup_file, is_uuid
-    from .tools.logging import logger
-    from .security import basic_login_from_request
+    from flask_login import LoginManager
+
     from .engines.server import BUIServer as BurpUI
-    from .sessions import session_manager
-    from .filter import mask
     from .ext.cache import cache
     from .ext.i18n import babel, get_locale
+    from .filter import mask
     from .misc.auth.handler import BUIanon
+    from .security import basic_login_from_request
+    from .sessions import session_manager
+    from .thirdparty.flask_bower import Bower
+    from .tools.logging import logger
+    from .utils import ReverseProxied, is_uuid, lookup_file
 
     gunicorn = kwargs.get("gunicorn", True)
     unittest = kwargs.get("unittest", False)
@@ -179,6 +180,7 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
                 "false",
             ]:
                 from redis import Redis
+
                 from .ext.session import sess
 
                 host, port, pwd = get_redis_server(app)
@@ -299,7 +301,7 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
 
     if not celery_worker:
         from .api import api, apibp
-        from .routes import view, mypad
+        from .routes import mypad, view
 
         app.jinja_env.globals.update(
             isinstance=isinstance,

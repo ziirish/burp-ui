@@ -57,9 +57,10 @@ def create_db(myapp, cli=False, unittest=False, create=True, celery_worker=False
     """
     if myapp.config["WITH_SQL"]:
         try:
-            from .ext.sql import db
             from sqlalchemy.exc import OperationalError
             from sqlalchemy_utils.functions import database_exists
+
+            from .ext.sql import db
             from .models import lazy_loading
 
             lazy_loading()

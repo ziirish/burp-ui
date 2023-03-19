@@ -9,7 +9,6 @@
 """
 import os
 import re
-
 from abc import ABCMeta, abstractmethod
 
 from ...tools.logging import logger

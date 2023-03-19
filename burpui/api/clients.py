@@ -7,17 +7,17 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
-from . import api, cache_key, force_refresh
-from ..engines.server import BUIServer  # noqa
-from .custom import fields, Resource
-from .client import ClientLabels
-from ..ext.cache import cache
-from ..exceptions import BUIserverException
-from ..decorators import browser_cache
-from ..filter import mask
-
 from flask import current_app, g
 from flask_login import current_user
+
+from ..decorators import browser_cache
+from ..engines.server import BUIServer  # noqa
+from ..exceptions import BUIserverException
+from ..ext.cache import cache
+from ..filter import mask
+from . import api, cache_key, force_refresh
+from .client import ClientLabels
+from .custom import Resource, fields
 
 bui = current_app  # type: BUIServer
 ns = api.namespace("clients", "Clients methods")
@@ -229,7 +229,7 @@ class RunningBackup(Resource):
                 res = [x for x in res if x in allowed]
         running = False
         if isinstance(res, dict):
-            for (_, run) in res.items():
+            for _, run in res.items():
                 running = running or (len(run) > 0)
                 if running:
                     break
@@ -776,7 +776,7 @@ class AllClients(Resource):
             else:
                 for serv in bui.client.servers:
                     grants[serv] = "all"
-            for (serv, clients) in grants.items():
+            for serv, clients in grants.items():
                 if not isinstance(clients, list):
                     clients = clients_cache.get(serv, [])
                 ret += [{"name": x, "agent": serv} for x in clients]

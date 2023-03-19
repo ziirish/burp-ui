@@ -1,9 +1,10 @@
 # -*- coding: utf8 -*-
-import re
 import logging
+import re
 
-from .interface import BUIaudit, BUIauditLogger as BUIauditLoggerInterface
 from ...tools.logging import logger as parent_logger
+from .interface import BUIaudit
+from .interface import BUIauditLogger as BUIauditLoggerInterface
 
 
 class BUIauditLoader(BUIaudit):

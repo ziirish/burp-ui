@@ -1,21 +1,21 @@
 # -*- coding: utf8 -*-
+import ssl
+
 from flask_login import AnonymousUserMixin
 
-from .interface import BUIhandler, BUIuser, BUIloader
 from ...utils import __
-
-import ssl
+from .interface import BUIhandler, BUIloader, BUIuser
 
 try:
     from ldap3 import (
-        Server,
-        Connection,
-        Tls,
         ALL,
-        RESTARTABLE,
-        AUTO_BIND_TLS_BEFORE_BIND,
         AUTO_BIND_NONE,
+        AUTO_BIND_TLS_BEFORE_BIND,
+        RESTARTABLE,
         SIMPLE,
+        Connection,
+        Server,
+        Tls,
     )
 except ImportError:
     raise ImportError("Unable to load 'ldap3' module")
@@ -74,7 +74,7 @@ class LdapLoader(BUIloader):
             )
         except:
             pass
-        for (opt, key) in mapping.items():
+        for opt, key in mapping.items():
             setattr(self, opt, conf.safe_get(key, "force_string", section=self.section))
 
         if self.validate and self.validate.lower() in ["none", "optional", "required"]:

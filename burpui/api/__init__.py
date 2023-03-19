@@ -8,22 +8,22 @@
 
 
 """
+import hashlib
 import os
 import sys
 import uuid
-import hashlib
-
-from flask import Blueprint, Response, request, current_app, session, abort, g
-from flask_restx import Api as ApiPlus
-from flask_login import current_user
-from importlib import import_module
 from functools import wraps
+from importlib import import_module
+
+from flask import Blueprint, Response, abort, current_app, g, request, session
+from flask_login import current_user
+from flask_restx import Api as ApiPlus
 
 from .._compat import to_bytes
-from ..desc import __version__, __release__, __url__, __doc__
+from ..config import config
+from ..desc import __doc__, __release__, __url__, __version__
 from ..engines.server import BUIServer  # noqa
 from ..exceptions import BUIserverException
-from ..config import config
 from ..tools.logging import logger
 
 bui = current_app  # type: BUIServer

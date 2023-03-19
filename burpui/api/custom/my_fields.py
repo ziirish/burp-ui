@@ -9,14 +9,14 @@
 
 """
 import datetime
+
 import arrow
+from flask import escape
+from flask_babel import gettext as _
+from flask_restx import fields
+from tzlocal import get_localzone
 
 from ...ext.i18n import get_locale
-
-from flask_restx import fields
-from flask_babel import gettext as _
-from flask import escape
-from tzlocal import get_localzone
 
 TZ = str(get_localzone())
 

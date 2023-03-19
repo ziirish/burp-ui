@@ -5,12 +5,12 @@
     :synopsis: Burp-UI configuration file parser OpenSSL configuration.
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 """
+import codecs
 import os
 import re
-import codecs
 import subprocess
-
 from hashlib import md5
+
 from OpenSSL import crypto
 
 from ...tools.logging import logger

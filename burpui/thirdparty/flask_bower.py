@@ -342,8 +342,9 @@ library.  If this is what you want to do, use the GNU Lesser General
 Public License instead of this License.
 """
 import os
-from flask import abort, json, send_file, Blueprint, current_app, url_for
 import sys
+
+from flask import Blueprint, abort, current_app, json, send_file, url_for
 
 
 def validate_parameter(param):
@@ -421,7 +422,6 @@ def overlay_url_for(endpoint, filename=None, **values):
         default_url_for_args["filename"] = filename
 
     if endpoint == "static" or endpoint.endswith(".static"):
-
         if os.path.sep in filename:
             filename_parts = filename.split(os.path.sep)
             component = filename_parts[0]

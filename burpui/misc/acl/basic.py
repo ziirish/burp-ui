@@ -1,7 +1,7 @@
 # -*- coding: utf8 -*-
-from .meta import meta_grants, BUIaclGrant
+from ...utils import NOTIF_ERROR, NOTIF_OK, NOTIF_WARN, __
 from .interface import BUIaclLoader
-from ...utils import NOTIF_OK, NOTIF_WARN, NOTIF_ERROR, __
+from .meta import BUIaclGrant, meta_grants
 
 
 class ACLloader(BUIaclLoader):

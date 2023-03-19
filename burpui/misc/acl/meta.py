@@ -7,14 +7,14 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
-from .interface import BUIacl
-from ...utils import make_list
+import fnmatch
+import json
+import re
+
 from ...config import config
 from ...ext.cache import cache
-
-import re
-import json
-import fnmatch
+from ...utils import make_list
+from .interface import BUIacl
 
 PARSE_EXCLUDE_KEYS = ["agents", "clients", "ro", "rw", "order", "exclude"]
 PARSE_RESERVED_KEYS = ["ro", "rw", "order", "exclude"]

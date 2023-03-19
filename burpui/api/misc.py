@@ -7,21 +7,21 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
-from . import api, cache_key, force_refresh
-from ..engines.server import BUIServer  # noqa
-from .custom import fields, Resource
-from .client import ClientLabels
-from ..filter import mask
-from ..exceptions import BUIserverException
-from ..decorators import browser_cache
-from ..ext.cache import cache
-from ..ext.i18n import LANGUAGES
-
-from flask import flash, get_flashed_messages, url_for, current_app, session
-from flask_login import current_user
-
 import random
 import re
+
+from flask import current_app, flash, get_flashed_messages, session, url_for
+from flask_login import current_user
+
+from ..decorators import browser_cache
+from ..engines.server import BUIServer  # noqa
+from ..exceptions import BUIserverException
+from ..ext.cache import cache
+from ..ext.i18n import LANGUAGES
+from ..filter import mask
+from . import api, cache_key, force_refresh
+from .client import ClientLabels
+from .custom import Resource, fields
 
 bui = current_app  # type: BUIServer
 ns = api.namespace("misc", "Misc methods")
@@ -213,7 +213,7 @@ class Counters(Resource):
                 )
             else:
                 found = False
-                for (_, cls) in running.items():
+                for _, cls in running.items():
                     if client in cls:
                         found = True
                         break
@@ -346,7 +346,7 @@ class Live(Resource):
         else:
             running = bui.client.is_one_backup_running()
         if isinstance(running, dict):
-            for (serv, clients) in running.items():
+            for serv, clients in running.items():
                 for client in clients:
                     # ACL
                     if mask.has_filters(current_user) and not mask.is_client_allowed(
@@ -533,15 +533,15 @@ class About(Resource):
         srv = bui.client.get_server_version(server)
         multi = {}
         if isinstance(cli, dict):
-            for (name, val) in cli.items():
+            for name, val in cli.items():
                 multi[name] = {"client": val}
         if isinstance(srv, dict):
-            for (name, val) in srv.items():
+            for name, val in srv.items():
                 multi[name]["server"] = val
         if not multi:
             res["burp"].append({"client": cli, "server": srv})
         else:
-            for (name, val) in multi.items():
+            for name, val in multi.items():
                 tmp = val
                 tmp.update({"name": name})
                 res["burp"].append(tmp)
@@ -841,7 +841,7 @@ class History(Resource):
                     ]
                 else:
                     grants[serv] = "all"
-            for (serv, clients) in grants.items():
+            for serv, clients in grants.items():
                 if not isinstance(clients, list):
                     if data and serv in data:
                         clients = data[serv].keys()

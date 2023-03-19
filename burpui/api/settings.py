@@ -9,27 +9,28 @@
 """
 import json
 
-from . import api
-from ..engines.server import BUIServer  # noqa
-from ..ext.cache import cache
-from .custom import Resource
-from .._compat import unquote
-from ..utils import NOTIF_INFO
-
-from flask_babel import gettext as _, refresh
 from flask import (
-    jsonify,
-    request,
-    url_for,
     current_app,
     g,
-    session,
+    jsonify,
     render_template_string,
+    request,
+    session,
+    url_for,
 )
+from flask_babel import gettext as _
+from flask_babel import refresh
 from flask_login import current_user
 from flask_restx import inputs
 from jinja2 import Environment, meta
+
+from .._compat import unquote
 from ..datastructures import ImmutableMultiDict, MultiDict
+from ..engines.server import BUIServer  # noqa
+from ..ext.cache import cache
+from ..utils import NOTIF_INFO
+from . import api
+from .custom import Resource
 
 TEMPLATE_EXCLUDES = ["client", "agent"]
 
@@ -1026,7 +1027,6 @@ class ClientSettings(Resource):
     },
 )
 class PathExpander(Resource):
-
     parser = ns.parser()
     parser.add_argument("path", required=True, help="No 'path' provided")
     parser.add_argument("source", required=False, help="Which file is it included in")

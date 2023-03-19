@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import os
-import sys
 import shutil
+import sys
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 # only used to build the package
 ROOT = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..')
@@ -18,7 +18,6 @@ Burp-UI Meta package for ##TPL## requirements
 """
 
 from burpui_##TPL## import __author__, __author_email__, __description__, \
-        __url__, __title__, __version__, __license__
 name = __title__
 author = __author__
 author_email = __author_email__

@@ -7,11 +7,10 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
+import datetime
+import json
 import re
 import subprocess
-import json
-import datetime
-
 from select import select
 
 from ...._compat import to_bytes, to_unicode
@@ -21,8 +20,8 @@ from ....tools.logging import logger
 from .constant import (
     BURP_LIST_BATCH,
     BURP_MINIMAL_VERSION,
-    BURP_STATUS_FORMAT_V2,
     BURP_STATUS_DELIMITER,
+    BURP_STATUS_FORMAT_V2,
 )
 
 

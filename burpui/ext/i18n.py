@@ -10,8 +10,9 @@
 from flask import request, session
 from flask_babel import Babel
 from flask_login import current_user
-from ..config import config
+
 from .._compat import to_unicode
+from ..config import config
 
 babel = Babel()
 

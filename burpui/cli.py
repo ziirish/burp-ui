@@ -12,6 +12,7 @@ jQuery/Bootstrap
 import os
 import sys
 import time
+
 import click
 
 if os.getenv("BUI_MODE") in ["server", "ws"] or "websocket" in sys.argv:
@@ -59,9 +60,10 @@ app = create_app(
 )
 
 try:
-    from .extensions import create_db
-    from .ext.sql import db
     from flask_migrate import Migrate
+
+    from .ext.sql import db
+    from .extensions import create_db
 
     # This may have been reseted by create_app
     if isinstance(app.database, bool):
@@ -470,12 +472,13 @@ def setup_burp(
     if msg:
         _die(msg, "setup-burp")
 
-    from .misc.parser.utils import Config
-    from .misc.backend.utils.constant import BURP_LISTEN_OPTION, BURP_BIND_MULTIPLE
-    from .app import get_redis_server
-    from .config import BUIConfig
     import difflib
     import tempfile
+
+    from .app import get_redis_server
+    from .config import BUIConfig
+    from .misc.backend.utils.constant import BURP_BIND_MULTIPLE, BURP_LISTEN_OPTION
+    from .misc.parser.utils import Config
 
     if monitor:
         monconf = BUIConfig(monitor)
@@ -595,9 +598,10 @@ def setup_burp(
     if redis:
         try:
             # detect missing modules
-            import redis as redis_client  # noqa
-            import celery  # noqa
             import socket
+
+            import celery  # noqa
+            import redis as redis_client  # noqa
 
             if (
                 "redis" not in app.conf.options["Production"]
@@ -974,7 +978,6 @@ exclude_comp=gz
         bconfagent = os.devnull
 
     if not os.path.exists(bconfagent):
-
         agenttpl = """
 password = abcdefgh
 """
@@ -1039,9 +1042,9 @@ def diag(client, host, tips):
     if msg:
         _die(msg, "diag")
 
+    from .app import get_redis_server
     from .misc.backend.utils.constant import BURP_LISTEN_OPTION
     from .misc.parser.utils import Config
-    from .app import get_redis_server
 
     def _value_in_option(value, option, section="Production"):
         if section not in app.conf.options:
@@ -1057,9 +1060,10 @@ def diag(client, host, tips):
     ):
         try:
             # detect missing modules
-            import redis as redis_client  # noqa
-            import celery  # noqa
             import socket
+
+            import celery  # noqa
+            import redis as redis_client  # noqa
 
             rhost, rport, _ = get_redis_server(app)
             ret = -1
@@ -1345,8 +1349,9 @@ def diag(client, host, tips):
 )
 def sysinfo(verbose, load):
     """Returns a couple of system informations to help debugging."""
-    from .desc import __release__, __version__
     import platform
+
+    from .desc import __release__, __version__
 
     msg = None
     if load:

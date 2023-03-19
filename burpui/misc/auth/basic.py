@@ -2,9 +2,10 @@
 import re
 
 from flask_login import AnonymousUserMixin
-from .interface import BUIhandler, BUIuser, BUIloader
-from ...utils import NOTIF_ERROR, NOTIF_OK, NOTIF_WARN, __
 from werkzeug.security import check_password_hash, generate_password_hash
+
+from ...utils import NOTIF_ERROR, NOTIF_OK, NOTIF_WARN, __
+from .interface import BUIhandler, BUIloader, BUIuser
 
 
 class BasicLoader(BUIloader):

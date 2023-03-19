@@ -9,9 +9,10 @@
 """
 import datetime
 
-from .ext.sql import db
 from flask import current_app, session
+
 from .engines.server import BUIServer  # noqa
+from .ext.sql import db
 
 app = current_app  # type: BUIServer
 

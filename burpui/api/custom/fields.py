@@ -9,15 +9,15 @@
 
 """
 import flask_restx.fields
-
 from flask_restx.fields import *  # noqa # pylint: disable=locally-disabled, wildcard-import, unused-wildcard-import
+
 from .my_fields import (
-    DateTime,
-    DateTimeHuman,
     BackupNumber,
-    SafeString,
+    DateTime,
+    DateTimeHuman,  # noqa
     LocalizedString,
-)  # noqa
+    SafeString,
+)
 
 __all__ = flask_restx.fields.__all__ + (
     DateTime,

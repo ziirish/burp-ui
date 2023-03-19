@@ -7,20 +7,21 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
-from . import api
+import json
+
+from flask import current_app
+from flask_babel import gettext
+from flask_login import current_user
+
 from ..engines.server import BUIServer  # noqa
-from ..sessions import session_manager
 from ..misc.acl.meta import meta_grants
+from ..sessions import session_manager
 from ..utils import NOTIF_OK
-from .custom import fields, Resource
+from . import api
+from .custom import Resource, fields
 
 #  from ..exceptions import BUIserverException
 
-from flask import current_app
-from flask_login import current_user
-from flask_babel import gettext
-
-import json
 
 bui = current_app  # type: BUIServer
 ns = api.namespace("admin", "Admin methods")

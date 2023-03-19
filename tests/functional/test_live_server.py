@@ -1,9 +1,8 @@
 import os
+from urllib.request import urlopen
 
 import pytest
-
 from flask import url_for
-from urllib.request import urlopen
 
 from burpui import create_app
 
@@ -26,8 +25,8 @@ def app():
 
 
 def test_server_is_up_and_running(live_server):
-    import socket
     import errno
+    import socket
 
     try:
         url = url_for("view.home", _external=True)

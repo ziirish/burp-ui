@@ -7,9 +7,8 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
-import time
 import datetime
-
+import time
 from functools import wraps
 
 
@@ -30,13 +29,13 @@ def browser_cache(expires=None):
 
     """
     from wsgiref.handlers import format_date_time
+
     from flask import g
     from flask_restx.utils import unpack
 
     def cache_decorator(view):
         @wraps(view)
         def cache_func(*args, **kwargs):
-
             resp, code, headers = unpack(view(*args, **kwargs))
             now = datetime.datetime.now()
 

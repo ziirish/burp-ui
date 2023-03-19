@@ -1,10 +1,11 @@
 # -*- coding: utf8 -*-
 import pwd
-import pam
 
+import pam
 from flask_login import AnonymousUserMixin
-from .interface import BUIhandler, BUIuser, BUIloader
+
 from ...utils import __
+from .interface import BUIhandler, BUIloader, BUIuser
 
 
 class LocalLoader(BUIloader):

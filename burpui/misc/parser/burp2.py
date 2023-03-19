@@ -5,8 +5,8 @@
     :synopsis: Burp-UI configuration file parser for Burp2.
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 """
+from ..backend.utils.constant import BURP_BIND_MULTIPLE, BURP_LISTEN_OPTION
 from .burp1 import Parser as Burp1
-from ..backend.utils.constant import BURP_LISTEN_OPTION, BURP_BIND_MULTIPLE
 
 
 def __(string):

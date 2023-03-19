@@ -3,11 +3,11 @@
 
 import os
 import re
-import sys
 import shutil
 import subprocess
+import sys
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 # only used to build the package
 CWD = os.path.dirname(os.path.realpath(__file__))
@@ -128,9 +128,9 @@ from burpui_monitor.desc import (
     __author__,
     __author_email__,
     __description__,
+    __license__,
     __url__,
     __version__,
-    __license__,
 )
 
 name = __title__

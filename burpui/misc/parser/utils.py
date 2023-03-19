@@ -6,20 +6,18 @@
 
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 """
+import codecs
 import os
 import re
-import codecs
 import shutil
-
-from copy import copy
-from hashlib import md5
 from collections import OrderedDict
+from copy import copy
 from glob import glob
+from hashlib import md5
 
-from ...utils import NOTIF_ERROR, NOTIF_OK, NOTIF_WARN
-from ...security import sanitize_string
 from ...datastructures import MultiDict
-
+from ...security import sanitize_string
+from ...utils import NOTIF_ERROR, NOTIF_OK, NOTIF_WARN
 
 RESET_IDENTIFIER = "_reset_bui_CUSTOM"
 BEGIN_TEMPLATES = "BURP-UI TEMPLATES"
@@ -1514,7 +1512,6 @@ class Config(File):
         return False
 
     def _parse(self):
-
         orig = self.files.copy()
         for root, conf in orig.items():
             conf.parse()

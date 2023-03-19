@@ -1,7 +1,7 @@
 import os
-import pytest
-import mockredis
 
+import mockredis
+import pytest
 from flask import url_for
 
 from burpui.app import create_app
@@ -75,10 +75,11 @@ def test_current_session(app):
     #            with c.session_transaction() as sess:
     #                sess['authenticated'] = True
 
-    from burpui.sessions import session_manager
+    from datetime import datetime
+
     from burpui.ext.sql import db
     from burpui.models import Session
-    from datetime import datetime
+    from burpui.sessions import session_manager
 
     session_manager.store_session("toto")
     assert session_manager.session_expired() is False

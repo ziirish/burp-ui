@@ -7,25 +7,24 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
-import ssl
-import trio
-import json
-import math
-import struct
-import logging
 import datetime
-
+import json
+import logging
+import math
+import ssl
+import struct
 from functools import partial
 from itertools import count
+
+import trio
 from async_generator import asynccontextmanager
 
+from .._compat import to_bytes, to_unicode
+from ..config import config
+from ..desc import __version__
 from ..exceptions import BUIserverException
 from ..misc.backend.utils.burp2 import Monitor
-from ..config import config
-from .._compat import to_bytes, to_unicode
 from ..tools.logging import logger
-from ..desc import __version__
-
 
 CONNECTION_COUNTER = count()
 

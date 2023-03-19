@@ -7,9 +7,8 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
-from abc import ABCMeta, abstractmethod, abstractproperty
-
 import logging
+from abc import ABCMeta, abstractmethod, abstractproperty
 
 
 class BUIaclLoader(object, metaclass=ABCMeta):

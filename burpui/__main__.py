@@ -12,8 +12,7 @@ jQuery/Bootstrap
 """
 import os
 import sys
-
-from argparse import ArgumentParser, REMAINDER
+from argparse import REMAINDER, ArgumentParser
 
 ROOT = os.path.dirname(os.path.realpath(__file__))
 # Try to load modules from our current env first
@@ -79,7 +78,7 @@ def parse_args(mode=True, name=None):
         unknown = []
 
     if options.version:
-        from burpui.desc import __title__, __version__, __release__
+        from burpui.desc import __release__, __title__, __version__
 
         ver = "{}: v{}".format(mname or __title__, __version__)
         if options.log:
@@ -153,6 +152,7 @@ def server(options=None, unknown=None):
 
 def agent(options=None):
     import trio
+
     from burpui.engines.agent import BUIAgent as Agent
     from burpui.utils import lookup_file
 
@@ -172,6 +172,7 @@ def agent(options=None):
 
 def monitor(options=None):
     import trio
+
     from burpui.engines.monitor import MonitorPool
     from burpui.utils import lookup_file
 

@@ -1,16 +1,16 @@
 # -*- coding: utf8 -*-
 
 # This is a submodule we can also use "from ..api import api"
-from . import api, cache_key, force_refresh
-from ..engines.server import BUIServer  # noqa
-from .custom import fields, Resource
-from ..filter import mask
-from ..ext.cache import cache
-from ..decorators import browser_cache
-from ..exceptions import BUIserverException
-
 from flask import current_app, g
 from flask_login import current_user
+
+from ..decorators import browser_cache
+from ..engines.server import BUIServer  # noqa
+from ..exceptions import BUIserverException
+from ..ext.cache import cache
+from ..filter import mask
+from . import api, cache_key, force_refresh
+from .custom import Resource, fields
 
 bui = current_app  # type: BUIServer
 ns = api.namespace("servers", "Servers methods")

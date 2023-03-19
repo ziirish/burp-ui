@@ -7,13 +7,13 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
-from . import api
-from ..engines.server import BUIServer  # noqa
-from .custom import Resource
-from ..exceptions import BUIserverException
-
 from flask import current_app
 from flask_login import current_user
+
+from ..engines.server import BUIServer  # noqa
+from ..exceptions import BUIserverException
+from . import api
+from .custom import Resource
 
 bui = current_app  # type: BUIServer
 ns = api.namespace("backup", "Backup methods")

@@ -1,11 +1,10 @@
 # -*- coding: utf8 -*-
 import os
+from collections import OrderedDict
+from importlib import import_module
 
 from .interface import BUIacl, BUIaclLoader
 from .meta import meta_grants
-
-from importlib import import_module
-from collections import OrderedDict
 
 
 class ACLloader(BUIaclLoader):

@@ -7,14 +7,13 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
-import os
+import datetime
 import math
+import os
 import string
 import sys
-import datetime
-import zipfile
 import tarfile
-
+import zipfile
 from uuid import UUID
 
 NOTIF_OK = 0

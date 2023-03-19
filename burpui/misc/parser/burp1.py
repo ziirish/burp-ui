@@ -5,19 +5,18 @@
     :synopsis: Burp-UI configuration file parser for Burp1.
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 """
-import re
-import os
-import json
 import codecs
+import json
+import os
+import re
 import shutil
-
 from glob import glob
 
-from .doc import Doc
-from .utils import Config
-from .openssl import OSSLConf, OSSLAuth
 from ...exceptions import BUIserverException
 from ...utils import NOTIF_ERROR, NOTIF_OK, NOTIF_WARN
+from .doc import Doc
+from .openssl import OSSLAuth, OSSLConf
+from .utils import Config
 
 
 class Parser(Doc):

@@ -7,23 +7,22 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
-import os
-import struct
-import sys
-import ssl
 import json
 import logging
+import os
+import ssl
+import struct
+import sys
 import time
+from functools import partial
 
 import trio
 
-from functools import partial
-
-from ..exceptions import BUIserverException
-from ..misc.backend.interface import BUIbackend
 from .._compat import pickle, to_bytes, to_unicode
 from ..config import config
 from ..desc import __version__
+from ..exceptions import BUIserverException
+from ..misc.backend.interface import BUIbackend
 
 # TODO: sendfile is not yet supported by trio
 # try:
@@ -269,8 +268,8 @@ class BUIAgent(BUIbackend):
                     if j["args"]:
                         if "pickled" in j and j["pickled"]:
                             # de-serialize arguments if needed
-                            import hmac
                             import hashlib
+                            import hmac
                             from base64 import b64decode
 
                             pickles = to_bytes(j["args"])

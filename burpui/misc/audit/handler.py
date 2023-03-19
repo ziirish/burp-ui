@@ -1,12 +1,13 @@
 # -*- coding: utf8 -*-
-import os
 import inspect
-
-from .interface import BUIaudit, BUIauditLogger as BUIauditLoggerInterface
-
-from importlib import import_module
+import os
 from collections import OrderedDict
+from importlib import import_module
+
 from flask_login import current_user
+
+from .interface import BUIaudit
+from .interface import BUIauditLogger as BUIauditLoggerInterface
 
 
 class BUIauditLoader(BUIaudit):

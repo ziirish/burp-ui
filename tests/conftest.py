@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
-import pytest
 import os
-import tempfile
 import shutil
+import tempfile
+
+import pytest
 
 from burpui import create_app as BUIinit  # noqa
 from burpui.misc.parser.burp2 import Parser  # noqa

@@ -7,7 +7,7 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
-from ._compat import to_unicode, urlparse, urljoin
+from ._compat import to_unicode, urljoin, urlparse
 
 
 def sanitize_string(string, strict=True, paranoid=False):
@@ -45,7 +45,7 @@ def basic_login_from_request(request, app):
             return None
         auth = request.authorization
         if auth:
-            from flask import session, g
+            from flask import g, session
 
             app.logger.debug("Found Basic user: {}".format(auth.username))
             refresh = True
@@ -55,6 +55,7 @@ def basic_login_from_request(request, app):
             user = app.uhandler.user(auth.username, refresh)
             if user and user.active and user.login(auth.password):
                 from flask_login import login_user
+
                 from .sessions import session_manager
 
                 if "login" in session and session["login"] != auth.username:

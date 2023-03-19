@@ -7,8 +7,9 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
-from ..config import config
 from flask_socketio import SocketIO
+
+from ..config import config
 
 options = {}
 options["async_mode"] = config.get("WS_ASYNC_MODE", "gevent")

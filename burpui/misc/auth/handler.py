@@ -1,15 +1,15 @@
 # -*- coding: utf8 -*-
 import os
+from collections import OrderedDict
+from importlib import import_module
+
+from flask import session
+from flask_login import AnonymousUserMixin
 
 from ...sessions import session_manager
 from ...utils import is_uuid
-from .interface import BUIhandler, BUIuser
 from ..acl.interface import BUIacl
-
-from importlib import import_module
-from flask import session
-from collections import OrderedDict
-from flask_login import AnonymousUserMixin
+from .interface import BUIhandler, BUIuser
 
 ACL_METHODS = BUIacl.__abstractmethods__
 

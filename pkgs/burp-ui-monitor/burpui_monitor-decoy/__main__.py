@@ -10,10 +10,9 @@ jQuery/Bootstrap
 
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 """
+import logging
 import os
 import sys
-import logging
-
 from argparse import ArgumentParser
 
 ROOT = os.path.dirname(os.path.realpath(__file__))
@@ -63,7 +62,7 @@ def parse_args(name=None):
 
     if options.version:
         from burpui_monitor import __title__
-        from burpui_monitor.desc import __version__, __release__
+        from burpui_monitor.desc import __release__, __version__
 
         ver = "{}: v{}".format(mname or __title__, __version__)
         if options.log:

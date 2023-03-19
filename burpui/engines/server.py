@@ -7,22 +7,21 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
+import logging  # noqa
 import os
 import re
 import sys
-import logging  # noqa
 import warnings
-
-from ..tools.logging import logger
-from ..misc.auth.handler import UserAuthHandler
-from ..misc.acl.handler import ACLloader
-from ..misc.audit.handler import BUIauditLoader
-from ..config import config
-from ..plugins import PluginManager
-
 from datetime import timedelta
+
 from flask import Flask
 
+from ..config import config
+from ..misc.acl.handler import ACLloader
+from ..misc.audit.handler import BUIauditLoader
+from ..misc.auth.handler import UserAuthHandler
+from ..plugins import PluginManager
+from ..tools.logging import logger
 
 BUI_DEFAULTS = {
     "Global": {

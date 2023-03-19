@@ -7,21 +7,21 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
-import re
-import os
-import time
 import json
-
+import os
+import re
+import time
 from collections import OrderedDict
 
+from ..._compat import to_unicode
+from ...exceptions import BUIserverException
+from ...utils import human_readable as _hr
+from ...utils import utc_to_local
+from ..parser.burp2 import Parser
 from .burp1 import Burp as Burp1
 from .interface import BUIbackend
 from .utils.burp2 import Monitor
 from .utils.constant import BURP_REVERSE_COUNTERS, BURP_STATUS_FORMAT_V2
-from ..parser.burp2 import Parser
-from ...utils import human_readable as _hr, utc_to_local
-from ...exceptions import BUIserverException
-from ..._compat import to_unicode
 
 
 # Some functions are the same as in Burp1 backend
@@ -301,7 +301,7 @@ class Burp(Burp1):
                 result[name] = counter["count"]
             else:
                 result[name] = {}
-                for (key, val) in counts.items():
+                for key, val in counts.items():
                     if val in counter:
                         result[name][key] = counter[val]
                     else:

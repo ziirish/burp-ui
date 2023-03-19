@@ -8,8 +8,7 @@
 
 """
 import pickle  # noqa
-
-from urllib.parse import unquote, quote, urlparse, urljoin  # noqa
+from urllib.parse import quote, unquote, urljoin, urlparse  # noqa
 
 text_type = str
 string_types = (str,)

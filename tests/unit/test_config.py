@@ -1,12 +1,13 @@
 import os
-import pytest
+from tempfile import mkstemp
+
 import configobj
+import pytest
+
+from burpui.config import BUIConfig
 
 # import validate
 
-from tempfile import mkstemp
-
-from burpui.config import BUIConfig
 
 TEST_CONFIG = b"""
 [Global]

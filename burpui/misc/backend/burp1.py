@@ -7,24 +7,25 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
-import re
-import os
-import socket
-import time
 import datetime
 import json
+import os
+import re
 import shutil
+import socket
 import subprocess
 import tempfile
-
-from .interface import BUIbackend
-from ..parser.burp1 import Parser
-from ...utils import human_readable as _hr, BUIcompress, utc_to_local
-from ...security import sanitize_string
-from ...exceptions import BUIserverException
-from ..._compat import unquote, to_unicode, to_bytes
-
+import time
 from shlex import quote
+
+from ..._compat import to_bytes, to_unicode, unquote
+from ...exceptions import BUIserverException
+from ...security import sanitize_string
+from ...utils import BUIcompress
+from ...utils import human_readable as _hr
+from ...utils import utc_to_local
+from ..parser.burp1 import Parser
+from .interface import BUIbackend
 
 
 class Burp(BUIbackend):
@@ -510,7 +511,7 @@ class Burp(BUIbackend):
 
             found = False
             # this method is not optimal, but it is easy to read and to maintain
-            for (key, regex) in lookup_easy.items():
+            for key, regex in lookup_easy.items():
                 reg = re.search(regex, line)
                 if reg:
                     found = True
@@ -526,7 +527,7 @@ class Burp(BUIbackend):
                         tmp = reg.group(1).split(":")
                         tmp.reverse()
                         fields = [0] * 4
-                        for (i, val) in enumerate(tmp):
+                        for i, val in enumerate(tmp):
                             fields[i] = int(val)
                         seconds = 0
                         seconds += fields[0]
@@ -543,7 +544,7 @@ class Burp(BUIbackend):
             if found:
                 continue
 
-            for (key, regex) in lookup_complex.items():
+            for key, regex in lookup_complex.items():
                 reg = re.search(regex, line)
                 if reg:
                     # self.logger.debug("match[1]: '{0}'".format(reg.group(1)))

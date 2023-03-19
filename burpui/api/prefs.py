@@ -7,14 +7,14 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
-from flask import session, current_app, request
+from flask import current_app, request, session
 from flask_login import current_user
 from werkzeug.datastructures import MultiDict
 
-from . import api
 from ..engines.server import BUIServer  # noqa
 from ..ext.i18n import LANGUAGES
-from .custom import fields, Resource
+from . import api
+from .custom import Resource, fields
 
 bui = current_app  # type: BUIServer
 ns = api.namespace("preferences", "Preferences methods")

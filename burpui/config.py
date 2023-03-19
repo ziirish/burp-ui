@@ -7,9 +7,10 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
+import codecs
 import os
 import re
-import codecs
+
 import configobj
 import validate
 
@@ -114,7 +115,6 @@ class BUIConfig(dict):
                     found = False
                     for line in ori:
                         if re.match(r"^\s*(#|;)+\s*\[{}\]".format(section), line):
-
                             config.write("[{}]\n".format(section))
                             found = True
                         else:

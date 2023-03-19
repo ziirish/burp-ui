@@ -1,7 +1,7 @@
 import os
-import pytest
 import tempfile
 
+import pytest
 from flask import url_for
 
 from burpui.app import create_app

@@ -1,19 +1,18 @@
 # -*- coding: utf8 -*-
-import re
-import socket
 import errno
 import json
+import re
+import socket
 import struct
 
 from werkzeug.datastructures import ImmutableMultiDict as _ImmutableMultiDict
 
-from .interface import BUIbackend
-from ..parser.interface import BUIparser
-from ...exceptions import BUIserverException
-from ..._compat import pickle, to_unicode, to_bytes
-from ...decorators import implement
+from ..._compat import pickle, to_bytes, to_unicode
 from ...datastructures import ImmutableMultiDict
-
+from ...decorators import implement
+from ...exceptions import BUIserverException
+from ..parser.interface import BUIparser
+from .interface import BUIbackend
 
 INTERFACE_METHODS = BUIbackend.__abstractmethods__
 PARSER_INTERFACE_METHODS = BUIparser.__abstractmethods__
@@ -556,8 +555,8 @@ class NClient(BUIbackend):
     ):
         """See :func:`burpui.misc.backend.interface.BUIbackend.store_conf_cli`"""
         # serialize data as it is a nested dict
-        import hmac
         import hashlib
+        import hmac
         from base64 import b64encode
 
         if not isinstance(data, (_ImmutableMultiDict, ImmutableMultiDict)):
@@ -599,8 +598,8 @@ class NClient(BUIbackend):
     def store_conf_srv(self, data, conf=None, agent=None):
         """See :func:`burpui.misc.backend.interface.BUIbackend.store_conf_srv`"""
         # serialize data as it is a nested dict
-        import hmac
         import hashlib
+        import hmac
         from base64 import b64encode
 
         if not isinstance(data, (_ImmutableMultiDict, ImmutableMultiDict)):

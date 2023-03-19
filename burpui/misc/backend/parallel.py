@@ -7,26 +7,26 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
+import json
 import os
 import re
-import json
 import ssl
-import time
-import trio
 import struct
-
+import time
 from asyncio import iscoroutinefunction
 from functools import partial
 
-from .burp2 import Burp as Burp2
-from .interface import BUIbackend, BUIBACKEND_INTERFACE_METHODS
-from .utils.constant import BURP_STATUS_FORMAT_V2
-from ..parser.burp2 import Parser
-from ...exceptions import BUIserverException
+import trio
+
+from ..._compat import to_bytes, to_unicode
 from ...decorators import implement, usetriorun
-from ...utils import utc_to_local
-from ..._compat import to_unicode, to_bytes
+from ...exceptions import BUIserverException
 from ...tools.logging import logger
+from ...utils import utc_to_local
+from ..parser.burp2 import Parser
+from .burp2 import Burp as Burp2
+from .interface import BUIBACKEND_INTERFACE_METHODS, BUIbackend
+from .utils.constant import BURP_STATUS_FORMAT_V2
 
 BUI_DEFAULTS = {
     "Parallel": {
@@ -136,7 +136,6 @@ class Connector:
         return result
 
     async def status(self, query, timeout=None, cache=True):
-
         request = {
             "query": query,
             "timeout": timeout,

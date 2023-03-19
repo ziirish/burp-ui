@@ -7,8 +7,9 @@
 .. moduleauthor:: Ziirish <hi+burpui@ziirish.me>
 
 """
-from flask_login import UserMixin, AnonymousUserMixin
 from abc import ABCMeta, abstractmethod, abstractproperty
+
+from flask_login import AnonymousUserMixin, UserMixin
 
 from ...tools.logging import logger
 

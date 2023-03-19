@@ -2,16 +2,16 @@
 # -*- coding: utf-8 -*-
 import os
 import sys
-
-from subprocess import check_output, call, STDOUT
 from distutils import log
 from distutils.core import Command
-from setuptools import setup, find_packages
-from setuptools.command.develop import develop
-from setuptools.command.sdist import sdist
-from setuptools.command.install import install
+from subprocess import STDOUT, call, check_output
+
+from setuptools import find_packages, setup
 from setuptools.command.bdist_egg import bdist_egg
+from setuptools.command.develop import develop
 from setuptools.command.egg_info import egg_info
+from setuptools.command.install import install
+from setuptools.command.sdist import sdist
 
 ROOT = os.path.join(os.path.dirname(os.path.realpath(__file__)))
 DEVNULL = open(os.devnull, "wb")
@@ -248,10 +248,10 @@ sys.path.insert(0, os.path.join(ROOT))
 from burpui.desc import (
     __author__,
     __author_email__,
-    __description__,
-    __url__,
+    __description__,  # noqa
     __title__,
-)  # noqa
+    __url__,
+)
 
 name = __title__
 author = __author__
