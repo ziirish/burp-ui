@@ -240,7 +240,7 @@ class TaskGetFile(Resource):
             resp = send_file(
                 fh,
                 as_attachment=True,
-                attachment_filename=filename,
+                download_name=filename,
                 mimetype="application/zip",
             )
             resp.set_cookie("fileDownload", "true")
