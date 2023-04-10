@@ -1380,8 +1380,6 @@ def sysinfo(verbose, load):
             platform.system(), platform.release(), os.name
         )
     )
-    if platform.system() == "Linux":
-        log("Distribution:        {} {} {}".format(*platform.dist()))
     log("Single mode:         {}".format(app.config["STANDALONE"]))
     log("Backend:             {}".format(backend))
     log(
