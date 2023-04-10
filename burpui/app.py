@@ -236,7 +236,7 @@ def create_app(conf=None, verbose=0, logfile=None, **kwargs):
                 cache.init_app(
                     app,
                     config={
-                        "CACHE_TYPE": "redis",
+                        "CACHE_TYPE": "flask_caching.backends.redis",
                         "CACHE_REDIS_HOST": host,
                         "CACHE_REDIS_PORT": port,
                         "CACHE_REDIS_PASSWORD": pwd,

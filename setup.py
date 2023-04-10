@@ -245,13 +245,8 @@ def readme():
 
 sys.path.insert(0, os.path.join(ROOT))
 
-from burpui.desc import (
-    __author__,
-    __author_email__,
-    __description__,  # noqa
-    __title__,
-    __url__,
-)
+from burpui.desc import __description__  # noqa
+from burpui.desc import __author__, __author_email__, __title__, __url__
 
 name = __title__
 author = __author__

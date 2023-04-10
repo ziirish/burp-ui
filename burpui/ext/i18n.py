@@ -14,8 +14,6 @@ from flask_login import current_user
 from .._compat import to_unicode
 from ..config import config
 
-babel = Babel()
-
 LANGUAGES = {
     "en": to_unicode("English"),
     "fr": to_unicode("Français"),
@@ -25,7 +23,6 @@ LANGUAGES = {
 config["LANGUAGES"] = LANGUAGES
 
 
-@babel.localeselector
 def get_locale():
     locale = None
     if current_user and not current_user.is_anonymous:
@@ -35,3 +32,6 @@ def get_locale():
     if locale not in LANGUAGES:
         locale = None
     return locale or request.accept_languages.best_match(config["LANGUAGES"].keys())
+
+
+babel = Babel()

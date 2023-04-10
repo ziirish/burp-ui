@@ -11,13 +11,8 @@
 import flask_restx.fields
 from flask_restx.fields import *  # noqa # pylint: disable=locally-disabled, wildcard-import, unused-wildcard-import
 
-from .my_fields import (
-    BackupNumber,
-    DateTime,
-    DateTimeHuman,  # noqa
-    LocalizedString,
-    SafeString,
-)
+from .my_fields import DateTimeHuman  # noqa
+from .my_fields import BackupNumber, DateTime, LocalizedString, SafeString
 
 __all__ = flask_restx.fields.__all__ + (
     DateTime,

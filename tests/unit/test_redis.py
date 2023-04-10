@@ -34,6 +34,7 @@ def app(mocker):
         from burpui.ext.sql import db
         from burpui.models import Session, Task  # noqa
 
+        del bui.extensions["sqlalchemy"]
         bui.config["WITH_SQL"] = True
         create_db(bui, True)
         db.create_all()
@@ -83,7 +84,11 @@ def test_current_session(app):
 
     session_manager.store_session("toto")
     assert session_manager.session_expired() is False
-    sess = Session.query.filter_by(uuid=session_manager.get_session_id()).first()
+    sess = (
+        db.session.query(Session)
+        .filter_by(uuid=session_manager.get_session_id())
+        .first()
+    )
     sess.timestamp = datetime.utcfromtimestamp(0)
     db.session.commit()
     assert session_manager.session_expired() is True

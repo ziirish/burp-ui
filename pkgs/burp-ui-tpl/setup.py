@@ -18,7 +18,6 @@ Burp-UI Meta package for ##TPL## requirements
 """
 
 from burpui_##TPL## import __author__, __author_email__, __description__, \
-name = __title__
 author = __author__
 author_email = __author_email__
 description = __description__
