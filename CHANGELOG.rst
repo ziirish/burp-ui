@@ -1,6 +1,13 @@
 Changelog
 =========
 
+1.1.0 (05/01/2023)
+------------------
+
+- fix: update dependencies and fix unit tests `#352 <https://git.ziirish.me/ziirish/burp-ui/issues/352>`_
+- fix: platform.dist is no longer part of the std lib
+- fix: adapt send_file usage
+
 1.0.0 (11/06/2022)
 ------------------
 
