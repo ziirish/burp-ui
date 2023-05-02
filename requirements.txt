@@ -1,5 +1,5 @@
 trio==0.22.0
-Flask==2.2.3
+Flask==2.3.2
 Flask-Login==0.6.2
 Flask-Babel==3.0.1
 Flask-WTF==0.15.1
