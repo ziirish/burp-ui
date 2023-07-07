@@ -110,7 +110,8 @@ def create_db(myapp, cli=False, unittest=False, create=True, celery_worker=False
                 myapp.config["SQLALCHEMY_POOL_SIZE"] = 20
                 myapp.config["SQLALCHEMY_POOL_RECYCLE"] = 600
 
-            db.init_app(myapp)
+            if "sqlalchemy" not in myapp.extensions:
+                db.init_app(myapp)
             if not cli and not unittest and not celery_worker:  # pragma: no cover
                 with myapp.app_context():
                     try:
