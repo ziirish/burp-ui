@@ -1,6 +1,12 @@
 Changelog
 =========
 
+1.1.1 (07/07/2023)
+------------------
+
+- fix: remove duplicate compare_type from alembic config
+- fix: make sure we don't initialize the DB connector twice
+
 1.1.0 (05/01/2023)
 ------------------
 
